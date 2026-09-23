@@ -20,6 +20,9 @@ data class MatchMetrics(
     val shots: Shots,
     val kastRounds: Int,
     val survivedRounds: Int,
+    val firstKills: Int,
+    val firstDeaths: Int,
+    val firstKillRoundsWon: Int,
 ) {
     /** 전투점수(ACS). 라운드당 전투 점수입니다. */
     val acs: Double? get() = combatScore over rounds
@@ -38,6 +41,15 @@ data class MatchMetrics(
 
     val survivalRate: Double? get() = survivedRounds over rounds
 
+    /** 퍼블 승률. 내가 퍼블을 딴 라운드 중 이긴 비율입니다. 우리 팀 누군가의 퍼블은 세지 않습니다. */
+    val firstKillWinRate: Double? get() = firstKillRoundsWon over firstKills
+
+    /** 퍼블 관여율. 라운드 첫 교전에 내가 들어간 비율입니다. 퍼블과 퍼데를 모두 셉니다. */
+    val firstDuelInvolvement: Double? get() = (firstKills + firstDeaths) over rounds
+
+    /** 첫 교전 승률. 첫 교전에 들어갔을 때 내가 퍼블을 딴 비율입니다. 라운드 승패와는 무관합니다. */
+    val firstDuelWinRate: Double? get() = firstKills over (firstKills + firstDeaths)
+
     operator fun plus(other: MatchMetrics) = MatchMetrics(
         matches = matches + other.matches,
         rounds = rounds + other.rounds,
@@ -49,6 +61,9 @@ data class MatchMetrics(
         shots = shots + other.shots,
         kastRounds = kastRounds + other.kastRounds,
         survivedRounds = survivedRounds + other.survivedRounds,
+        firstKills = firstKills + other.firstKills,
+        firstDeaths = firstDeaths + other.firstDeaths,
+        firstKillRoundsWon = firstKillRoundsWon + other.firstKillRoundsWon,
     )
 
     companion object {
@@ -63,6 +78,9 @@ data class MatchMetrics(
             shots = Shots.None,
             kastRounds = 0,
             survivedRounds = 0,
+            firstKills = 0,
+            firstDeaths = 0,
+            firstKillRoundsWon = 0,
         )
     }
 }

@@ -62,6 +62,7 @@ class MatchMetricsTest {
         assertNull(metrics.adr)
         assertNull(metrics.kast)
         assertNull(metrics.survivalRate)
+        assertNull(metrics.firstDuelInvolvement)
     }
 
     @Test
@@ -85,6 +86,13 @@ class MatchMetricsTest {
         val metrics = match(round(kill(10.0, Me, Ally))).metrics()
 
         assertEquals(0, metrics.kills)
+    }
+
+    @Test
+    fun `우리 팀을 죽인 킬에 붙은 어시스트도 세지 않는다`() {
+        val metrics = match(round(kill(10.0, Ally, OtherAlly, assistedBy = setOf(Me)))).metrics()
+
+        assertEquals(0, metrics.assists)
     }
 
     @Test

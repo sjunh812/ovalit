@@ -22,32 +22,45 @@ fun Match.metrics(): MatchMetrics {
         shots = rounds.fold(Shots.None) { acc, round -> acc + round.myShots },
         kastRounds = perRound.count { it.kast },
         survivedRounds = perRound.count { !it.died },
+        firstKills = perRound.count { it.firstKill },
+        firstDeaths = perRound.count { it.firstDeath },
+        firstKillRoundsWon = perRound.count { it.firstKill && it.won },
     )
 }
 
 private class RoundResult(
+    val won: Boolean,
     val kills: Int,
     val assists: Int,
     val died: Boolean,
     val kast: Boolean,
+    val firstKill: Boolean,
+    val firstDeath: Boolean,
 )
 
 private fun Round.analyze(me: PlayerId, allies: Set<PlayerId>): RoundResult {
-    // 스킬로 자기를 죽이거나 우리 팀을 죽인 건 킬로 세지 않는다. 응답에는 둘 다 킬로 들어온다.
-    val myKills = kills.count { it.killer == me && it.victim != me && it.victim !in allies }
-    val myAssists = kills.count { me in it.assistants }
-    val myDeath = kills.firstOrNull { it.victim == me }
+    val myTeam = allies + me
+    // 스킬로 자기를 죽이거나 같은 팀을 죽인 건 킬로 세지 않는다. 응답에는 둘 다 킬로 들어온다.
+    val enemyKills = kills.filter { (it.killer in myTeam) != (it.victim in myTeam) }
 
-    val traded = myDeath != null && kills.any { revenge ->
+    val myKills = enemyKills.count { it.killer == me }
+    val myAssists = enemyKills.count { me in it.assistants }
+    val myDeath = kills.firstOrNull { it.victim == me }
+    val firstBlood = enemyKills.minByOrNull { it.atMillis }
+
+    val traded = myDeath != null && enemyKills.any { revenge ->
         revenge.victim == myDeath.killer &&
             revenge.killer in allies &&
             revenge.atMillis - myDeath.atMillis in 0..TRADE_WINDOW_MILLIS
     }
 
     return RoundResult(
+        won = won,
         kills = myKills,
         assists = myAssists,
         died = myDeath != null,
         kast = myKills > 0 || myAssists > 0 || myDeath == null || traded,
+        firstKill = firstBlood?.killer == me,
+        firstDeath = firstBlood?.victim == me,
     )
 }

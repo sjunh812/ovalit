@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  스플래시 아이콘은 288dp 캔버스에 가운데 192dp만 보입니다. 런처 아이콘과 규격이 달라
+  드로어블을 따로 둡니다.
+
+  scale = 132 / 160 = 0.825
+  translate = ((288-132)/2, (288 - 74*0.825)/2)
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+
+    <group
+        android:scaleX="0.825"
+        android:scaleY="0.825"
+        android:translateX="78"
+        android:translateY="113.48">
+
+        <path
+            android:pathData="M9.5,32.5a17.5,17.5 0 1,0 35,0a17.5,17.5 0 1,0 -35,0"
+            android:strokeColor="@color/brand_mark"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="11" />
+
+        <path
+            android:pathData="M61.5,23v28a8,8 0 0 0 8,8h21a8,8 0 0 0 8,-8V23"
+            android:strokeColor="@color/brand_mark"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="11" />
+
+        <path
+            android:pathData="M61.5,37.5h37"
+            android:strokeColor="@color/brand_mark"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="11" />
+
+        <path
+            android:pathData="M115.5,32.5a17.5,17.5 0 1,0 35,0a17.5,17.5 0 1,0 -35,0"
+            android:strokeColor="@color/brand_mark"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="11" />
+    </group>
+</vector>

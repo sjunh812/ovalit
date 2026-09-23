@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  초성 ㅇㅂㅇ. 좌표는 CLAUDE.md의 로고 항목을 그대로 옮긴 것입니다.
+
+  108dp 캔버스지만 런처가 실제로 보여주는 건 가운데 지름 72dp뿐입니다. 뷰박스 폭을 50dp로
+  두면 획 바깥까지 포함한 마크가 그 원의 70% 정도를 차지합니다. 여기서 더 키우면 잘리지는
+  않아도 원에 꽉 차서 답답해 보입니다.
+
+  scale = 50 / 160 = 0.3125
+  translate = ((108-50)/2, (108 - 74*0.3125)/2)
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <group
+        android:scaleX="0.3125"
+        android:scaleY="0.3125"
+        android:translateX="29"
+        android:translateY="42.44">
+
+        <path
+            android:pathData="M9.5,32.5a17.5,17.5 0 1,0 35,0a17.5,17.5 0 1,0 -35,0"
+            android:strokeColor="@color/brand_mark"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="11" />
+
+        <path
+            android:pathData="M61.5,23v28a8,8 0 0 0 8,8h21a8,8 0 0 0 8,-8V23"
+            android:strokeColor="@color/brand_mark"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="11" />
+
+        <path
+            android:pathData="M61.5,37.5h37"
+            android:strokeColor="@color/brand_mark"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="11" />
+
+        <path
+            android:pathData="M115.5,32.5a17.5,17.5 0 1,0 35,0a17.5,17.5 0 1,0 -35,0"
+            android:strokeColor="@color/brand_mark"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="11" />
+    </group>
+</vector>

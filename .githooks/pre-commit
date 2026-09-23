@@ -1,0 +1,19 @@
+#!/bin/sh
+# 규칙과 코드가 따로 노는 걸 막는 알림. 막지는 않고 묻기만 한다.
+# 켜기: git config core.hooksPath .githooks
+
+changed=$(git diff --cached --name-only)
+touched_rules=$(echo "$changed" | grep -E '^(shared|composeApp)/.*(DesignSystem|Theme|Color|Metric|Report|Role)' || true)
+touched_docs=$(echo "$changed" | grep -E '^(CLAUDE\.md|docs/DECISIONS\.md)$' || true)
+
+if [ -n "$touched_rules" ] && [ -z "$touched_docs" ]; then
+  echo ""
+  echo "  규칙에 걸리는 파일이 바뀌었는데 CLAUDE.md와 docs/DECISIONS.md는 그대로입니다."
+  echo ""
+  echo "$touched_rules" | sed 's/^/    /'
+  echo ""
+  echo "  규칙이 바뀐 게 맞으면 문서도 같이 고치세요."
+  echo "  아니면 그대로 진행하시면 됩니다. 이 훅은 막지 않습니다."
+  echo ""
+fi
+exit 0

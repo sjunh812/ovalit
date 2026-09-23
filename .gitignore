@@ -1,0 +1,17 @@
+*.iml
+.gradle/
+.kotlin/
+build/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+.idea/*
+!.idea/icon.svg
+
+.DS_Store
+
+# Kotlin/Native
+*.hprof
+xcuserdata/

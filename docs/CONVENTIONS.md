@@ -200,9 +200,20 @@ Refs: CLAUDE.md#지표-규칙
 
 ## 테스트
 
-테스트는 `commonTest`에 씁니다. 플랫폼별로 갈릴 일이 거의 없고, 한 번 쓰면 안드로이드와
-iOS 양쪽에서 돕니다. 도구는 `kotlin.test` + Turbine(Flow) + Compose UI Test입니다.
-컨벤션 플러그인이 다 걸어주니 모듈에서 따로 적을 게 없습니다.
+테스트는 두 곳에 나눠 씁니다.
+
+| 종류 | 위치 | 도는 곳 |
+| --- | --- | --- |
+| 로직 (지표 계산, 색 대비 등) | `commonTest` | 안드로이드 JVM과 iOS 둘 다 |
+| Compose UI | `iosTest` | iOS 시뮬레이터만 |
+
+UI 테스트를 `commonTest`에 두면 안드로이드 JVM에서 전부 터집니다. JVM에는 화면을 띄울
+환경이 없습니다. iOS는 네이티브 테스트 호스트가 있어서 돕니다. 안드로이드에서도 UI
+테스트를 돌리려면 Robolectric을 붙여야 하는데, `commonTest`에는 `@RunWith`를 달 수 없어
+아직 안 했습니다.
+
+도구는 `kotlin.test` + Turbine(Flow) + Compose UI Test입니다. 컨벤션 플러그인이 다
+걸어주니 모듈에서 따로 적을 게 없습니다.
 
 이름은 백틱으로 감싼 한글 문장입니다. 무엇을 검증하는지가 리포트에 그대로 보입니다.
 
@@ -224,13 +235,27 @@ fun `시작 버튼을 누르면 onStart가 한 번 불린다`() = runComposeUiTe
 
 ### 돌리는 법
 
+로직은 JVM에서 돌립니다. 몇 초면 끝나니 코드를 고칠 때마다 돌려도 됩니다.
+
 ```bash
-./gradlew :shared:core:designsystem:iosSimulatorArm64Test
+./gradlew :shared:core:model:testAndroidHostTest
 ```
 
-지금은 시뮬레이터에서만 돕니다. 한 번에 3분 넘게 걸리니 자주 돌리기는 불편합니다.
-안드로이드 SDK가 갖춰지면 `androidHostTest`가 JVM에서 훨씬 빠르게 돌고, 그쪽이 기본이
-됩니다. 컨벤션 플러그인에 `withHostTestBuilder`를 이미 켜뒀습니다.
+UI는 시뮬레이터에서 돌립니다. 처음 한 번은 시뮬레이터를 띄우느라 몇 분 걸리고, 그 뒤로는
+10초 안팎입니다.
+
+```bash
+./gradlew :shared:feature:onboarding:iosSimulatorArm64Test
+```
+
+### 테스트가 진짜 잡는지 보기
+
+테스트가 통과한다고 테스트가 맞다는 뜻은 아닙니다. 규칙을 하나 새로 넣었으면 그 규칙을
+일부러 지워 보고 테스트가 실패하는지 확인합니다. 안 깨지면 그 규칙을 지키는 테스트가 없는
+겁니다.
+
+지표 계산을 처음 짤 때 이렇게 확인했더니 트레이드 판정의 "우리 팀이 잡았는지" 조건을 아무
+테스트도 지키고 있지 않았습니다. 그 조건을 빼도 전부 통과했습니다.
 
 ## 프리뷰
 

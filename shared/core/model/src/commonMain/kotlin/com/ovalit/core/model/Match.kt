@@ -1,0 +1,72 @@
+package com.ovalit.core.model
+
+import kotlin.time.Instant
+
+/**
+ * 내가 뛴 경기 하나입니다. 지표는 전부 여기서 나옵니다.
+ *
+ * API 응답을 그대로 옮긴 모양이 아닙니다. 응답에는 아직 확인 못 한 부분이 남아 있어서,
+ * 계산에 필요한 것만 도메인 모양으로 정해 두고 네트워크 계층이 여기로 옮겨 담게 합니다.
+ *
+ * @property allies 나를 뺀 우리 팀. 내가 죽은 뒤 누가 복수했는지(트레이드) 가를 때 씁니다.
+ * @property myCombatScore `players[].stats.score`. 라운드별이 아니라 경기 전체 합입니다.
+ * @property rounds 내가 뛴 라운드만 담습니다. 중간에 튕겼다 들어온 경기에서 전체 라운드를
+ * 넣으면 ACS와 ADR이 실제보다 낮게 나옵니다. 응답의 `stats.roundsPlayed`와 개수가 같아야 합니다.
+ */
+data class Match(
+    val id: MatchId,
+    val queue: Queue,
+    val act: ActId,
+    val startedAt: Instant,
+    val me: PlayerId,
+    val myAgent: AgentId,
+    val allies: Set<PlayerId>,
+    val myCombatScore: Int,
+    val rounds: List<Round>,
+)
+
+/**
+ * 라운드 하나입니다.
+ *
+ * @property kills 라운드에서 일어난 킬 전부입니다. 나와 무관한 킬도 들어갑니다. 트레이드와
+ * 퍼블을 가르려면 누가 먼저 죽었는지 알아야 합니다.
+ * @property myShots 내가 맞힌 부위별 횟수입니다. 킬 수가 아니라 적중 수입니다.
+ */
+data class Round(
+    val number: Int,
+    val won: Boolean,
+    val kills: List<KillEvent>,
+    val myDamage: Int,
+    val myShots: Shots,
+)
+
+/**
+ * @property atMillis 라운드 시작부터 잰 시각. 응답의 `timeSinceRoundStartMillis`입니다.
+ * @property weapon 킬을 낸 무기. `finishingDamage.damageItem`에서 옵니다.
+ * `economy.weapon`을 쓰면 주워 쓴 총이 안 잡힙니다. 스킬 킬이면 없습니다.
+ */
+data class KillEvent(
+    val atMillis: Long,
+    val killer: PlayerId,
+    val victim: PlayerId,
+    val assistants: Set<PlayerId>,
+    val weapon: WeaponId?,
+)
+
+data class Shots(
+    val head: Int,
+    val body: Int,
+    val leg: Int,
+) {
+    val total: Int get() = head + body + leg
+
+    operator fun plus(other: Shots) = Shots(
+        head = head + other.head,
+        body = body + other.body,
+        leg = leg + other.leg,
+    )
+
+    companion object {
+        val None = Shots(head = 0, body = 0, leg = 0)
+    }
+}

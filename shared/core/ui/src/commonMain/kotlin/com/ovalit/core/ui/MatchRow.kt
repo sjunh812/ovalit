@@ -103,9 +103,10 @@ fun MatchRow(
             )
         }
         Spacer(Modifier.width(OvalitSpacing.sm))
-        // 글자를 키우면 오른쪽 숫자가 폭을 다 가져가 맵 이름이 잘린다. 폭을 반씩 나눠 갖는다.
+        // 글자를 키우면 오른쪽 숫자가 폭을 다 가져가 맵 이름이 잘린다. 폭을 반씩 나눠 갖는다. 자기 몫을 다 채워야
+        // 숫자가 오른쪽 여백에 붙는다. 채우지 않으면 왼쪽 칸 바로 뒤에 붙어 줄 가운데에 뜬다.
         Column(
-            modifier = Modifier.weight(1f, fill = false),
+            modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 4.dp),
         ) {

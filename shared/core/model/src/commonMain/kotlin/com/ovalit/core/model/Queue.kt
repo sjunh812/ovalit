@@ -21,14 +21,4 @@ enum class Queue {
 
     /** 그 밖의 모드. 데스매치, 팀 데스매치, 에스컬레이션 등. */
     OTHER,
-    ;
-
-    /**
-     * 기본 집계에 들어가는 큐인지.
-     *
-     * 경쟁과 일반은 13라운드 선취에 이코노미 규칙이 같아 합산해도 통계가 깨지지 않습니다.
-     * 나머지는 규칙이 달라 섞으면 숫자가 의미를 잃습니다.
-     */
-    val countsTowardWeeklyReport: Boolean
-        get() = this == COMPETITIVE || this == UNRATED
 }

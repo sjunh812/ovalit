@@ -13,9 +13,15 @@ class MetricFormatTest {
 
     @Test
     fun `소수 지표는 둘째 자리까지 채워서 보여준다`() {
-        assertEquals("1.34", MetricFormat.DECIMAL.format(1.3409))
-        assertEquals("1.00", MetricFormat.DECIMAL.format(1.0))
-        assertEquals("0.05", MetricFormat.DECIMAL.format(0.05))
+        assertEquals("1.34", MetricFormat.TWO_DECIMALS.format(1.3409))
+        assertEquals("1.00", MetricFormat.TWO_DECIMALS.format(1.0))
+        assertEquals("0.05", MetricFormat.TWO_DECIMALS.format(0.05))
+    }
+
+    @Test
+    fun `판당 기록은 첫째 자리까지 보여준다`() {
+        assertEquals("16.2", MetricFormat.ONE_DECIMAL.format(16.24))
+        assertEquals("4.0", MetricFormat.ONE_DECIMAL.format(3.96))
     }
 
     @Test
@@ -31,7 +37,7 @@ class MetricFormatTest {
 
     @Test
     fun `내려가면 마이너스 기호를 붙인다`() {
-        assertEquals("−0.14", MetricFormat.DECIMAL.formatChange(current = 1.20, baseline = 1.34))
+        assertEquals("−0.14", MetricFormat.TWO_DECIMALS.formatChange(current = 1.20, baseline = 1.34))
     }
 
     @Test

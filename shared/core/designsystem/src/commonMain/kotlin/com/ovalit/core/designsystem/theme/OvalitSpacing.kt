@@ -9,4 +9,6 @@ object OvalitSpacing {
     val lg = 16.dp
     val xl = 24.dp
     val xxl = 32.dp
+
+    val gutter = 20.dp
 }

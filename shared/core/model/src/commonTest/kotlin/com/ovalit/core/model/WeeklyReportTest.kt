@@ -18,6 +18,7 @@ import kotlinx.datetime.toInstant
 
 private val Seoul = TimeZone.of("Asia/Seoul")
 private val ThisMonday = LocalDate(2026, 9, 21)
+private val LastMonday = LocalDate(2026, 9, 14)
 private val Now = LocalDateTime(2026, 9, 23, 12, 0).toInstant(Seoul)
 
 private val CurrentAct = ActId("current")
@@ -29,7 +30,7 @@ class WeeklyReportTest {
     fun `이번 주에 5경기를 채웠으면 이번 주만 집계한다`() {
         val report = ready(games(weeksAgo = 0, count = 5) + games(weeksAgo = 1, count = 3))
 
-        assertEquals(ReportPeriod(firstDay = ThisMonday, weeks = 1), report.period)
+        assertEquals(ReportPeriod(firstDay = ThisMonday, weeks = 1, includesThisWeek = true), report.period)
         assertEquals(5, report.metrics.matches)
     }
 
@@ -45,7 +46,7 @@ class WeeklyReportTest {
     fun `5경기를 채울 때까지 최대 4주까지 넓힌다`() {
         val report = ready(games(0, 1) + games(1, 1) + games(2, 1) + games(3, 2))
 
-        assertEquals(ReportPeriod(firstDay = LocalDate(2026, 8, 31), weeks = 4), report.period)
+        assertEquals(ReportPeriod(firstDay = LocalDate(2026, 8, 31), weeks = 4, includesThisWeek = true), report.period)
     }
 
     @Test
@@ -72,8 +73,8 @@ class WeeklyReportTest {
         val sundayNight = List(5) { gameAt(LocalDateTime(2026, 9, 20, 23, 59)) }
         val mondayMidnight = List(5) { gameAt(LocalDateTime(2026, 9, 21, 0, 0)) }
 
-        assertEquals(2, ready(sundayNight).period.weeks)
-        assertEquals(1, ready(mondayMidnight).period.weeks)
+        assertEquals(ReportPeriod(LastMonday, weeks = 1, includesThisWeek = false), ready(sundayNight).period)
+        assertEquals(ReportPeriod(ThisMonday, weeks = 1, includesThisWeek = true), ready(mondayMidnight).period)
     }
 
     // 서울의 월요일 0시 30분은 UTC로 아직 일요일이다
@@ -81,8 +82,33 @@ class WeeklyReportTest {
     fun `주 경계는 넘겨받은 시간대를 따른다`() {
         val matches = List(5) { gameAt(LocalDateTime(2026, 9, 21, 0, 30)) }
 
-        assertEquals(1, ready(matches, timeZone = Seoul).period.weeks)
-        assertEquals(2, ready(matches, timeZone = TimeZone.UTC).period.weeks)
+        assertEquals(ThisMonday, ready(matches, timeZone = Seoul).period.firstDay)
+        assertEquals(LastMonday, ready(matches, timeZone = TimeZone.UTC).period.firstDay)
+    }
+
+    @Test
+    fun `이번 주에 뛴 경기가 없으면 지난주를 집계한다`() {
+        val report = ready(games(weeksAgo = 1, count = 5) + games(weeksAgo = 2, count = 3))
+
+        assertEquals(ReportPeriod(LastMonday, weeks = 1, includesThisWeek = false), report.period)
+        assertEquals(5, report.metrics.matches)
+    }
+
+    @Test
+    fun `이번 주가 비고 지난주도 모자라면 지난주부터 거슬러 넓힌다`() {
+        val report = ready(games(weeksAgo = 1, count = 2) + games(weeksAgo = 2, count = 3))
+
+        assertEquals(ReportPeriod(LocalDate(2026, 9, 7), weeks = 2, includesThisWeek = false), report.period)
+        assertEquals(LocalDate(2026, 9, 20), report.period.lastDay)
+    }
+
+    // 이번 주에 한 판이라도 뛰었으면 이번 주가 기간에 들어간다. 지난주로 옮기면 방금 뛴 경기가 빠진다.
+    @Test
+    fun `이번 주에 한 판이라도 뛰었으면 이번 주부터 거슬러 넓힌다`() {
+        val report = ready(games(weeksAgo = 0, count = 1) + games(weeksAgo = 1, count = 5))
+
+        assertEquals(ReportPeriod(LastMonday, weeks = 2, includesThisWeek = true), report.period)
+        assertEquals(6, report.metrics.matches)
     }
 
     @Test
@@ -97,6 +123,29 @@ class WeeklyReportTest {
 
         assertEquals(1, report.period.weeks)
         assertEquals(5, report.metrics.matches)
+    }
+
+    @Test
+    fun `경쟁을 고르면 일반은 빼고 센다`() {
+        val matches = games(0, 5, queue = Queue.COMPETITIVE) + games(0, 3, queue = Queue.UNRATED)
+
+        val report = ready(matches, queueFilter = QueueFilter.COMPETITIVE)
+
+        assertEquals(5, report.metrics.matches)
+    }
+
+    @Test
+    fun `기타를 고르면 스파이크 돌격과 신속 플레이를 동적 칸 없이 센다`() {
+        val matches = games(0, 3, queue = Queue.SPIKE_RUSH) +
+            games(0, 1, queue = Queue.SWIFTPLAY) +
+            games(0, 1, queue = Queue.OTHER) +
+            games(0, 5, queue = Queue.COMPETITIVE)
+
+        val report = ready(matches, queueFilter = QueueFilter.OTHER)
+
+        assertEquals(5, report.metrics.matches)
+        assertEquals(emptyList(), report.dynamic)
+        assertEquals(listOf(FixedMetric.KD, FixedMetric.HEADSHOT_RATE), QueueFilter.OTHER.fixedMetrics)
     }
 
     @Test
@@ -248,8 +297,14 @@ private fun kastWeek(weeksAgo: Int, kastRounds: Int, rounds: Int = 40): List<Mat
         .map { gameAt(date.atTime(21, 0), rounds = it) }
 }
 
-private fun report(matches: List<Match>, timeZone: TimeZone = Seoul) =
-    matches.weeklyReport(now = Now, timeZone = timeZone)
+private fun report(
+    matches: List<Match>,
+    timeZone: TimeZone = Seoul,
+    queueFilter: QueueFilter = QueueFilter.COMPETITIVE_AND_UNRATED,
+) = matches.weeklyReport(now = Now, timeZone = timeZone, queueFilter = queueFilter)
 
-private fun ready(matches: List<Match>, timeZone: TimeZone = Seoul): WeeklyReport.Ready =
-    assertIs(report(matches, timeZone))
+private fun ready(
+    matches: List<Match>,
+    timeZone: TimeZone = Seoul,
+    queueFilter: QueueFilter = QueueFilter.COMPETITIVE_AND_UNRATED,
+): WeeklyReport.Ready = assertIs(report(matches, timeZone, queueFilter))

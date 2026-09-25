@@ -107,6 +107,7 @@ private fun TypeScale() {
         TypeRow("metricXl", type.metricXl, "24.7")
         TypeRow("metricL", type.metricL, "1.42")
         TypeRow("metricM", type.metricM, "188")
+        TypeRow("metricS", type.metricS, "+12")
         TypeRow("titleL", type.titleL, "이번 주 내 경기, 뭐가 달라졌을까")
         TypeRow("titleM", type.titleM, "이번 주 달라진 지표")
         TypeRow("body", type.body, "헤드샷 비율이 지난 4주보다 올랐어요")

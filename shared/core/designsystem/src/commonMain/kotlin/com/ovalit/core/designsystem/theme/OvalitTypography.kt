@@ -31,6 +31,7 @@ data class OvalitTypography(
     val metricXl: TextStyle,
     val metricL: TextStyle,
     val metricM: TextStyle,
+    val metricS: TextStyle,
     val titleL: TextStyle,
     val titleM: TextStyle,
     val body: TextStyle,
@@ -64,7 +65,8 @@ fun ovalitTypography(fontFamily: FontFamily = FontFamily.Default): OvalitTypogra
     return OvalitTypography(
         metricXl = metric(size = 44, lineHeight = 48, tracking = -1.4),
         metricL = metric(size = 30, lineHeight = 34, tracking = -0.8),
-        metricM = metric(size = 19, lineHeight = 24, tracking = -0.3),
+        metricM = metric(size = 24, lineHeight = 28, tracking = -0.6),
+        metricS = metric(size = 12, lineHeight = 16, tracking = 0.0),
         titleL = text(size = 24, lineHeight = 32, tracking = -0.6, weight = FontWeight.SemiBold),
         titleM = text(size = 17, lineHeight = 24, tracking = -0.3, weight = FontWeight.SemiBold),
         body = text(size = 15, lineHeight = 23, tracking = -0.1, weight = FontWeight.Normal),

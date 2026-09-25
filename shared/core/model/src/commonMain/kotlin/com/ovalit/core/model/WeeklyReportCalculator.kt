@@ -17,27 +17,35 @@ const val BASELINE_WEEKS = 4
 /**
  * 주는 [timeZone] 기준 월요일 0시에 바뀝니다. 이번 주는 [now]가 속한, 아직 끝나지 않은 주입니다.
  *
- * 이번 주가 [MIN_MATCHES_PER_REPORT]경기에 못 미치면 한 주씩 넓혀 [MAX_REPORT_WEEKS]주까지 봅니다.
+ * 이번 주에 뛴 경기가 없으면 지난주에서 끝나는 기간을 봅니다. 그 기간이
+ * [MIN_MATCHES_PER_REPORT]경기에 못 미치면 한 주씩 넓혀 [MAX_REPORT_WEEKS]주까지 봅니다.
  */
-fun Iterable<Match>.weeklyReport(now: Instant, timeZone: TimeZone): WeeklyReport {
-    val counted = filter { it.queue.countsTowardWeeklyReport }
+fun Iterable<Match>.weeklyReport(
+    now: Instant,
+    timeZone: TimeZone,
+    queueFilter: QueueFilter = QueueFilter.COMPETITIVE_AND_UNRATED,
+): WeeklyReport {
+    val counted = filter { it.queue in queueFilter.queues }
     val act = counted.maxByOrNull { it.startedAt }?.act
         ?: return WeeklyReport.NotEnoughMatches(played = 0)
     val matchesByWeek = counted
         .filter { it.act == act }
         .groupBy { it.startedAt.weekStart(timeZone) }
 
-    val nextWeek = now.weekStart(timeZone).plusWeeks(1)
+    // 월요일 아침에 "최근 2주"로 넓히면 전부 지난주 경기인데 이번 주가 섞인 것처럼 읽힌다.
+    val thisWeek = now.weekStart(timeZone)
+    val includesThisWeek = thisWeek in matchesByWeek
+    val end = if (includesThisWeek) thisWeek.plusWeeks(1) else thisWeek
     val periods = (1..MAX_REPORT_WEEKS).map { weeks ->
-        ReportPeriod(firstDay = nextWeek.minusWeeks(weeks), weeks = weeks)
+        ReportPeriod(firstDay = end.minusWeeks(weeks), weeks = weeks, includesThisWeek = includesThisWeek)
     }
     val period = periods.firstOrNull { period ->
-        matchesByWeek.between(period.firstDay, nextWeek).size >= MIN_MATCHES_PER_REPORT
+        matchesByWeek.between(period.firstDay, end).size >= MIN_MATCHES_PER_REPORT
     } ?: return WeeklyReport.NotEnoughMatches(
-        played = matchesByWeek.between(periods.last().firstDay, nextWeek).size,
+        played = matchesByWeek.between(periods.last().firstDay, end).size,
     )
 
-    val periodMatches = matchesByWeek.between(period.firstDay, nextWeek)
+    val periodMatches = matchesByWeek.between(period.firstDay, end)
     val metrics = periodMatches.totalMetrics()
     val baseline = matchesByWeek.baselineBefore(period.firstDay)
     val mainRole = periodMatches.mainRole()
@@ -51,7 +59,11 @@ fun Iterable<Match>.weeklyReport(now: Instant, timeZone: TimeZone): WeeklyReport
         metrics = metrics,
         baseline = baseline,
         mainRole = mainRole,
-        dynamic = selectDynamicMetrics(metrics, baseline?.metrics, history, mainRole),
+        dynamic = if (queueFilter.hasDynamicMetrics) {
+            selectDynamicMetrics(metrics, baseline?.metrics, history, mainRole)
+        } else {
+            emptyList()
+        },
     )
 }
 

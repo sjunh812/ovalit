@@ -11,7 +11,8 @@ import kotlin.math.roundToInt
  */
 internal enum class MetricFormat(private val scale: Int) {
     INTEGER(scale = 1),
-    DECIMAL(scale = 100),
+    ONE_DECIMAL(scale = 10),
+    TWO_DECIMALS(scale = 100),
     PERCENT(scale = 100),
     ;
 
@@ -33,6 +34,7 @@ internal enum class MetricFormat(private val scale: Int) {
 
     private fun digits(steps: Int): String = when (this) {
         INTEGER, PERCENT -> steps.toString()
-        DECIMAL -> "${steps / 100}.${(steps % 100).toString().padStart(2, '0')}"
+        ONE_DECIMAL -> "${steps / 10}.${steps % 10}"
+        TWO_DECIMALS -> "${steps / 100}.${(steps % 100).toString().padStart(2, '0')}"
     }
 }

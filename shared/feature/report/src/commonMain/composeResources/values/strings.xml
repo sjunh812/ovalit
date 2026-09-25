@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="report_period_this_week">이번 주</string>
-    <string name="report_period_recent_weeks">최근 %1$d주</string>
-    <string name="report_headline">%1$s %2$d경기</string>
-    <string name="report_since">%1$d월 %2$d일부터 · 경쟁전과 일반전</string>
-    <string name="report_main_role">주로 %1$s로 뛰었어요</string>
+    <string name="queue_competitive_and_unrated">경쟁 + 일반</string>
+    <string name="queue_competitive">경쟁</string>
+    <string name="queue_unrated">일반</string>
+    <string name="queue_other">기타</string>
+
+    <string name="period_this_week">이번 주</string>
+    <string name="period_recent_weeks">최근 %1$d주</string>
+    <string name="period_last_week">지난주</string>
+    <string name="period_past_weeks">지난 %1$d주</string>
+    <string name="period_date_range">%1$d/%2$d – %3$d/%4$d</string>
+    <string name="period_matches">%1$d경기</string>
+    <string name="period_no_matches_this_week">이번 주는 아직 경기가 없어요</string>
 
     <string name="role_duelist">타격대</string>
     <string name="role_initiator">척후대</string>
@@ -16,30 +23,32 @@
     <string name="metric_damage">피해량</string>
     <string name="metric_headshot">헤드샷</string>
     <string name="metric_kast">관여율</string>
-    <string name="metric_survival">라운드 생존율</string>
+    <string name="metric_survival">생존율</string>
     <string name="metric_first_kill_win">퍼블 승률</string>
     <string name="metric_first_duel_involvement">퍼블 관여율</string>
     <string name="metric_first_duel_win">첫 교전 승률</string>
     <string name="metric_assists_per_round">라운드당 어시스트</string>
 
     <string name="value_percent">%1$s%</string>
-    <string name="delta_percent_points">%1$s%p</string>
 
-    <string name="fixed_versus_baseline">지난 %1$d주 대비 %2$s</string>
-    <string name="fixed_same_as_baseline">지난 %1$d주와 같아요</string>
+    <string name="summary_per_match">판당 %1$s / %2$s / %3$s · %4$d경기 %5$d라운드</string>
+    <string name="baseline_average">%1$d주 평균 %2$s</string>
     <string name="baseline_missing">비교할 기록이 모자라요</string>
 
-    <string name="dynamic_title_moved">평소와 달랐던 지표</string>
+    <string name="dynamic_title_moved">달라진 점</string>
     <string name="dynamic_title_steady">%1$s는 큰 변화가 없어요</string>
     <string name="dynamic_title_unknown">아직 비교할 기록이 모자라요</string>
     <string name="dynamic_unknown_hint">몇 주 더 뛰면 평소와 달라진 점을 짚어 드려요</string>
-    <string name="dynamic_baseline">지난 %1$d주 평균 %2$s</string>
-    <string name="dynamic_baseline_with_sample">지난 %1$d주 평균 %2$s · %3$s</string>
-    <string name="dynamic_steady">비슷해요</string>
+    <string name="dynamic_caption">지난 %1$d주 대비</string>
+    <string name="dynamic_caption_with_role">%1$s 기준 · 지난 %2$d주 대비</string>
 
+    <string name="sample_rounds">라운드 %1$d</string>
     <string name="sample_first_kills">퍼블 %1$d번</string>
     <string name="sample_first_duels">첫 교전 %1$d번</string>
 
+    <string name="other_queue_hint">기타 모드는 K/D와 헤드샷만 봐요. 라운드 수와 크레드 규칙이 달라서 다른 지표는 맞지 않아요.</string>
+
     <string name="not_enough_title">리포트까지 %1$d경기 남았어요</string>
-    <string name="not_enough_body">경쟁전과 일반전을 합쳐 %1$d경기부터 리포트를 만들어 드려요</string>
+    <string name="not_enough_title_none">최근 4주 동안 뛴 경기가 없어요</string>
+    <string name="not_enough_body">%1$d경기를 뛰면 리포트를 만들어 드려요</string>
 </resources>

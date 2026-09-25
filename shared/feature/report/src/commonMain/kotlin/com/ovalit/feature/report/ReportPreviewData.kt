@@ -52,7 +52,7 @@ internal object ReportPreviewData {
 
     val moved = WeeklyReport.Ready(
         act = ActId("preview"),
-        period = ReportPeriod(firstDay = LocalDate(2026, 9, 21), weeks = 1),
+        period = ReportPeriod(firstDay = LocalDate(2026, 9, 21), weeks = 1, includesThisWeek = true),
         metrics = thisWeek,
         baseline = lastFourWeeks,
         mainRole = Role.DUELIST,
@@ -64,7 +64,7 @@ internal object ReportPreviewData {
     )
 
     val steady = moved.copy(
-        period = ReportPeriod(firstDay = LocalDate(2026, 9, 14), weeks = 2),
+        period = ReportPeriod(firstDay = LocalDate(2026, 9, 14), weeks = 2, includesThisWeek = true),
         dynamic = listOf(
             DynamicSlot(DynamicMetric.KAST, Movement.STEADY),
             DynamicSlot(DynamicMetric.SURVIVAL_RATE, Movement.STEADY),
@@ -82,5 +82,13 @@ internal object ReportPreviewData {
         ),
     )
 
+    val lastWeek = moved.copy(
+        period = ReportPeriod(firstDay = LocalDate(2026, 9, 14), weeks = 1, includesThisWeek = false),
+    )
+
+    val otherQueue = moved.copy(dynamic = emptyList())
+
     val notEnough = WeeklyReport.NotEnoughMatches(played = 3)
+
+    val nothingPlayed = WeeklyReport.NotEnoughMatches(played = 0)
 }

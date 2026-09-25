@@ -21,9 +21,11 @@ import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.theme.OvalitTheme
 
+/** @property selectedIcon 고른 탭에 쓰는 채운 아이콘입니다. */
 data class OvalitTab(
     val label: String,
     val icon: ImageVector,
+    val selectedIcon: ImageVector = icon,
 )
 
 /** 시스템 내비게이션 바 높이만큼 아래를 알아서 띄웁니다. 밖에서 여백을 더 주지 않습니다. */
@@ -63,7 +65,7 @@ fun OvalitTabBar(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     OvalitIcon(
-                        imageVector = tab.icon,
+                        imageVector = if (selected) tab.selectedIcon else tab.icon,
                         contentDescription = null,
                         tint = if (selected) colors.t1 else colors.t3,
                     )

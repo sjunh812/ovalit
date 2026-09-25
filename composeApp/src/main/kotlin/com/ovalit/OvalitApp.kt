@@ -202,10 +202,10 @@ fun OvalitApp(appVersion: String) {
         if (showTabBar) {
             OvalitTabBar(
                 tabs = listOf(
-                    OvalitTab(stringResource(R.string.tab_home), OvalitIcons.Home),
-                    OvalitTab(stringResource(R.string.tab_matches), OvalitIcons.Matches),
-                    OvalitTab(stringResource(R.string.tab_friends), OvalitIcons.Friends),
-                    OvalitTab(stringResource(R.string.tab_settings), OvalitIcons.Settings),
+                    OvalitTab(stringResource(R.string.tab_home), OvalitIcons.Home, OvalitIcons.HomeFilled),
+                    OvalitTab(stringResource(R.string.tab_matches), OvalitIcons.Matches, OvalitIcons.MatchesFilled),
+                    OvalitTab(stringResource(R.string.tab_friends), OvalitIcons.Friends, OvalitIcons.FriendsFilled),
+                    OvalitTab(stringResource(R.string.tab_settings), OvalitIcons.Settings, OvalitIcons.SettingsFilled),
                 ),
                 selectedIndex = selectedTab,
                 onSelect = { index -> backStack.selectTab(TopLevel[index]) },

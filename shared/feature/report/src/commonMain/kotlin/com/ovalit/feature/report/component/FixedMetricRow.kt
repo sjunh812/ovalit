@@ -2,6 +2,7 @@ package com.ovalit.feature.report.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -13,7 +14,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitRollingText
@@ -29,6 +32,7 @@ import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.SeparatedRow
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.label
+import com.ovalit.core.ui.rememberFittingStyle
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.report.format
@@ -42,7 +46,7 @@ import com.ovalit.feature.report.resources.summary_sample
 import org.jetbrains.compose.resources.stringResource
 
 private val CellGap = 10.dp
-
+private val ChevronSpace = 13.dp
 
 @Composable
 internal fun FixedMetricRow(
@@ -52,45 +56,73 @@ internal fun FixedMetricRow(
     onOpenMetric: (FixedMetric) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-            .padding(horizontal = OvalitSpacing.gutter),
-    ) {
-        // 간격은 구분선 양옆에만 준다. 칸 폭 안에 간격을 넣으면 가운데 칸만 좁아진다.
-        fixedMetrics.forEachIndexed { index, metric ->
-            if (index > 0) {
-                Spacer(Modifier.width(CellGap))
-                VerticalLine()
-                Spacer(Modifier.width(CellGap))
+    val typography = OvalitTheme.typography
+    val cells = fixedMetrics.map { metric ->
+        val current = metric.value(metrics)
+        val usual = baseline?.let { metric.value(it.metrics) }
+        FixedCell(
+            metric = metric,
+            label = stringResource(metric.label),
+            value = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
+            change = if (current != null && usual != null) metric.format.formatChange(current, usual) else null,
+            changeColor = if (current != null && usual != null) directionColor(metric.format, current, usual) else null,
+        )
+    }
+
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        // 네 칸의 이름, 숫자, 변화량을 줄마다 한 크기로 맞춘다. 칸마다 따로 줄이면 "전투점수"만 작아지고
+        // 그 칸 숫자만 위로 올라가 줄이 어긋난다.
+        val gaps = (CellGap * 2 + 1.dp) * (cells.size - 1)
+        val cellWidth = (maxWidth - OvalitSpacing.gutter * 2 - gaps) / cells.size
+        val styles = FixedCellStyles(
+            label = rememberFittingStyle(cells.map { it.label }, typography.caption, cellWidth - ChevronSpace),
+            value = rememberFittingStyle(cells.map { it.value }, typography.metricM, cellWidth, min = 14.sp),
+            change = rememberFittingStyle(cells.mapNotNull { it.change }, typography.metricS, cellWidth),
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min)
+                .padding(horizontal = OvalitSpacing.gutter),
+        ) {
+            // 간격은 구분선 양옆에만 준다. 칸 폭 안에 간격을 넣으면 가운데 칸만 좁아진다.
+            cells.forEachIndexed { index, cell ->
+                if (index > 0) {
+                    Spacer(Modifier.width(CellGap))
+                    VerticalLine()
+                    Spacer(Modifier.width(CellGap))
+                }
+                FixedMetricCell(
+                    cell = cell,
+                    styles = styles,
+                    onClick = { onOpenMetric(cell.metric) },
+                    modifier = Modifier.weight(1f),
+                )
             }
-            FixedMetricCell(
-                metric = metric,
-                metrics = metrics,
-                baseline = baseline,
-                onClick = { onOpenMetric(metric) },
-                modifier = Modifier.weight(1f),
-            )
         }
     }
 }
 
+private class FixedCell(
+    val metric: FixedMetric,
+    val label: String,
+    val value: String,
+    val change: String?,
+    val changeColor: Color?,
+)
+
+private class FixedCellStyles(val label: TextStyle, val value: TextStyle, val change: TextStyle)
+
 @Composable
 private fun FixedMetricCell(
-    metric: FixedMetric,
-    metrics: MatchMetrics,
-    baseline: Baseline?,
+    cell: FixedCell,
+    styles: FixedCellStyles,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val current = metric.value(metrics)
-    val usual = baseline?.let { metric.value(it.metrics) }
-    val label = stringResource(metric.label)
-
     Column(
         modifier = modifier.clickable(
-            onClickLabel = stringResource(Res.string.sheet_open, label),
+            onClickLabel = stringResource(Res.string.sheet_open, cell.label),
             role = Role.Button,
             onClick = onClick,
         ),
@@ -98,27 +130,28 @@ private fun FixedMetricCell(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             OvalitText(
-                text = label,
+                text = cell.label,
                 modifier = Modifier.weight(1f, fill = false),
-                style = OvalitTheme.typography.caption,
+                style = styles.label,
                 color = OvalitTheme.colors.t2,
                 maxLines = 1,
-                // 화살표까지 넣으면 작은 화면에서 글자를 키웠을 때 9sp로도 "전투점수"가 안 들어간다
-                autoSize = shrinkToFit(OvalitTheme.typography.caption.fontSize, min = 7.sp),
+                autoSize = shrinkToFit(styles.label.fontSize, min = 7.sp),
             )
             Spacer(Modifier.width(3.dp))
             OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = OvalitTheme.colors.t4, size = 10.dp)
         }
         OvalitRollingText(
-            text = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
-            style = OvalitTheme.typography.metricM,
-            autoSize = shrinkToFit(OvalitTheme.typography.metricM.fontSize),
+            text = cell.value,
+            style = styles.value,
+            autoSize = shrinkToFit(styles.value.fontSize),
         )
-        if (current != null && usual != null) {
+        if (cell.change != null && cell.changeColor != null) {
             OvalitText(
-                text = metric.format.formatChange(current, usual),
-                style = OvalitTheme.typography.metricS,
-                color = directionColor(metric.format, current, usual),
+                text = cell.change,
+                style = styles.change,
+                color = cell.changeColor,
+                maxLines = 1,
+                autoSize = shrinkToFit(styles.change.fontSize, min = 7.sp),
             )
         }
     }

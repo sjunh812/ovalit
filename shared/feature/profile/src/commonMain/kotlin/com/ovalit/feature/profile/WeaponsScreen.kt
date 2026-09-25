@@ -43,6 +43,7 @@ import com.ovalit.core.model.WeaponCategory
 import com.ovalit.core.model.WeaponHighlight
 import com.ovalit.core.model.WeaponReport
 import com.ovalit.core.model.WeaponStats
+import com.ovalit.core.ui.SeparatedRow
 import com.ovalit.feature.profile.resources.Res
 import com.ovalit.feature.profile.resources.act_matches
 import com.ovalit.feature.profile.resources.no_matches
@@ -56,7 +57,8 @@ import com.ovalit.feature.profile.resources.weapons_expand
 import com.ovalit.feature.profile.resources.weapons_kills
 import com.ovalit.feature.profile.resources.weapons_moved_down
 import com.ovalit.feature.profile.resources.weapons_moved_up
-import com.ovalit.feature.profile.resources.weapons_sample
+import com.ovalit.feature.profile.resources.weapons_sample_kills
+import com.ovalit.feature.profile.resources.weapons_sample_rounds
 import com.ovalit.feature.profile.resources.weapons_single_round_note
 import com.ovalit.feature.profile.resources.weapons_title
 import kotlin.math.abs
@@ -134,23 +136,40 @@ private fun Highlight(highlight: WeaponHighlight, catalog: ContentCatalog) {
     Row(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically) {
         WeaponThumb(highlight.act.weapon, name, width = 52.dp, height = 30.dp)
         Spacer(Modifier.width(OvalitSpacing.md))
+        // 좁은 화면에서 글자를 키우면 한 줄에 다 안 들어간다. 문구를 통째로 다음 줄에 내려서 "요즘 잘 / 맞아요"처럼
+        // 가운데서 갈리거나 점이 줄 끝에 남지 않게 한다.
+        val caption = OvalitTheme.typography.caption
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            Row(verticalAlignment = Alignment.Bottom) {
-                OvalitText(text = name, modifier = Modifier.alignByBaseline(), style = OvalitTheme.typography.bodyStrong)
-                if (moved) {
-                    Spacer(Modifier.width(7.dp))
-                    OvalitText(
-                        text = stringResource(if (direction > 0) Res.string.weapons_moved_up else Res.string.weapons_moved_down),
-                        modifier = Modifier.alignByBaseline(),
-                        style = OvalitTheme.typography.caption,
-                        color = changeColor,
-                    )
-                }
-            }
-            OvalitText(
-                text = stringResource(Res.string.weapons_sample, highlight.act.kills.withThousands(), highlight.act.singleWeaponRounds.withThousands()),
-                style = OvalitTheme.typography.caption,
-                color = colors.t3,
+            SeparatedRow(
+                items = listOfNotNull(
+                    { OvalitText(text = name, style = OvalitTheme.typography.bodyStrong) },
+                    if (moved) {
+                        {
+                            OvalitText(
+                                text = stringResource(if (direction > 0) Res.string.weapons_moved_up else Res.string.weapons_moved_down),
+                                style = caption,
+                                color = changeColor,
+                            )
+                        }
+                    } else {
+                        null
+                    },
+                ),
+                separator = { Spacer(Modifier.width(7.dp)) },
+                alignBaseline = true,
+            )
+            SeparatedRow(
+                items = listOf(
+                    { OvalitText(stringResource(Res.string.weapons_sample_kills, highlight.act.kills.withThousands()), style = caption, color = colors.t3) },
+                    {
+                        OvalitText(
+                            text = stringResource(Res.string.weapons_sample_rounds, highlight.act.singleWeaponRounds.withThousands()),
+                            style = caption,
+                            color = colors.t3,
+                        )
+                    },
+                ),
+                separator = { OvalitText(text = " · ", style = caption, color = colors.t3) },
             )
         }
         Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(3.dp)) {

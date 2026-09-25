@@ -86,7 +86,7 @@ internal fun RivalSection(
         )
         Spacer(Modifier.height(13.dp))
         Column(verticalArrangement = Arrangement.spacedBy(11.dp)) {
-            RivalMetrics.forEach { metric -> HeadToHeadRow(metric, mine, theirs) }
+            RivalMetrics.forEach { metric -> HeadToHeadRow(metric, mine, theirs, rowMetrics = RivalMetrics) }
         }
     }
 }

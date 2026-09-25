@@ -41,6 +41,7 @@ import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.Role
 import com.ovalit.core.ui.AgentImage
+import com.ovalit.core.ui.SeparatedRow
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.feature.profile.resources.Res
@@ -57,7 +58,6 @@ import com.ovalit.feature.profile.resources.agents_role_controller
 import com.ovalit.feature.profile.resources.agents_role_duelist
 import com.ovalit.feature.profile.resources.agents_role_initiator
 import com.ovalit.feature.profile.resources.agents_role_sentinel
-import com.ovalit.feature.profile.resources.agents_row_caption
 import com.ovalit.feature.profile.resources.agents_title
 import com.ovalit.feature.profile.resources.column_first_duel_involvement
 import com.ovalit.feature.profile.resources.column_first_duel_win
@@ -276,14 +276,14 @@ private fun AgentRow(agent: AgentStats, columns: List<MetricColumnSpec>, catalog
         Spacer(Modifier.width(OvalitSpacing.md))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             OvalitText(text = name, style = OvalitTheme.typography.bodyStrong, maxLines = 1)
-            OvalitText(
-                text = stringResource(
-                    Res.string.agents_row_caption,
-                    agent.role?.let { stringResource(it.label) } ?: NO_VALUE,
-                    agent.matches,
+            // 좁은 칸에서 판 수를 통째로 다음 줄에 내린다. 한 글줄로 두면 점이 줄 끝에 남는다.
+            val caption = OvalitTheme.typography.caption
+            SeparatedRow(
+                items = listOf(
+                    { OvalitText(agent.role?.let { stringResource(it.label) } ?: NO_VALUE, style = caption, color = OvalitTheme.colors.t3) },
+                    { OvalitText(stringResource(Res.string.agents_matches, agent.matches), style = caption, color = OvalitTheme.colors.t3) },
                 ),
-                style = OvalitTheme.typography.caption,
-                color = OvalitTheme.colors.t3,
+                separator = { OvalitText(text = " · ", style = caption, color = OvalitTheme.colors.t3) },
             )
         }
         if (!agent.isMeasurable) {

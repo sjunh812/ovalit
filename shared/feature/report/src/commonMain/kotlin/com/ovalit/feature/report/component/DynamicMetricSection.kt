@@ -1,5 +1,6 @@
 package com.ovalit.feature.report.component
 
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -12,17 +13,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitRollingText
@@ -36,6 +33,7 @@ import com.ovalit.core.model.Movement
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.periodLabel
+import com.ovalit.core.ui.rememberFittingStyle
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.report.format
@@ -59,34 +57,64 @@ private val ColumnGap = 14.dp
 
 @Composable
 internal fun DynamicMetricSection(report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
+    val typography = OvalitTheme.typography
+    val columns = report.dynamic.map { slot -> dynamicColumn(slot, report.metrics, report.baseline) }
+
     Column(modifier = modifier) {
         HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
         Spacer(Modifier.height(18.dp))
         DynamicSectionTitle(report)
         Spacer(Modifier.height(14.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min)
-                .padding(horizontal = OvalitSpacing.gutter),
-        ) {
-            report.dynamic.forEachIndexed { index, slot ->
-                if (index > 0) {
-                    Spacer(Modifier.width(ColumnGap))
-                    VerticalLine()
-                    Spacer(Modifier.width(ColumnGap))
-                }
-                // 큐를 바꾸면 칸의 지표가 아예 바뀌기도 한다. 그때 숫자를 굴리면 같은 지표가 변한 것처럼 보여서
-                // 지표마다 따로 그린다. 같은 지표일 때만 숫자가 구른다.
-                key(slot.metric) {
-                    DynamicMetricColumn(
-                        slot = slot,
-                        metrics = report.metrics,
-                        baseline = report.baseline,
-                        modifier = Modifier.weight(1f),
-                    )
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            // 세 칸의 이름, 숫자, 설명을 줄마다 한 크기로 맞춘다. 칸마다 따로 줄이면 긴 이름만 작아지고 그 칸의
+            // 숫자와 설명만 다른 높이에 놓인다.
+            val gaps = (ColumnGap * 2 + 1.dp) * (columns.size - 1)
+            val columnWidth = (maxWidth - OvalitSpacing.gutter * 2 - gaps) / columns.size
+            val valueStyle = rememberFittingStyle(columns.map { it.value }, typography.metricM, columnWidth, min = 14.sp)
+            val changeStyle = typography.metricS
+            val styles = DynamicColumnStyles(
+                label = rememberFittingStyle(columns.map { it.label }, typography.caption, columnWidth),
+                value = valueStyle,
+                change = changeStyle,
+                caption = rememberFittingStyle(columns.flatMap { it.lines }, typography.caption, columnWidth),
+                stacked = needsStacking(columns, valueStyle, changeStyle, columnWidth),
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min)
+                    .padding(horizontal = OvalitSpacing.gutter),
+            ) {
+                columns.forEachIndexed { index, column ->
+                    if (index > 0) {
+                        Spacer(Modifier.width(ColumnGap))
+                        VerticalLine()
+                        Spacer(Modifier.width(ColumnGap))
+                    }
+                    // 큐를 바꾸면 칸의 지표가 아예 바뀌기도 한다. 그때 숫자를 굴리면 같은 지표가 변한 것처럼 보여서
+                    // 지표마다 따로 그린다. 같은 지표일 때만 숫자가 구른다.
+                    key(column.slot.metric) {
+                        DynamicMetricColumn(column = column, styles = styles, modifier = Modifier.weight(1f))
+                    }
                 }
             }
+        }
+    }
+}
+
+// 숫자 옆에 변화량이 한 칸이라도 안 들어가면 세 칸 모두 변화량을 숫자 아래로 내린다
+@Composable
+private fun needsStacking(columns: List<DynamicColumn>, valueStyle: TextStyle, changeStyle: TextStyle, width: Dp): Boolean {
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    return remember(columns, valueStyle, changeStyle, width, density, measurer) {
+        val available = with(density) { width.toPx() }
+        val gap = with(density) { ValueChangeGap.toPx() }
+        columns.any { column ->
+            val change = column.change ?: return@any false
+            val valueWidth = measurer.measure(column.value, valueStyle, softWrap = false, maxLines = 1).size.width
+            val changeWidth = measurer.measure(change, changeStyle, softWrap = false, maxLines = 1).size.width
+            valueWidth + gap + changeWidth > available
         }
     }
 }
@@ -124,106 +152,95 @@ private fun DynamicSectionTitle(report: WeeklyReport.Ready) {
     }
 }
 
+private class DynamicColumn(
+    val slot: DynamicSlot,
+    val label: String,
+    val value: String,
+    val valueColor: Color,
+    val change: String?,
+    val changeColor: Color,
+    val lines: List<String>,
+)
+
+private class DynamicColumnStyles(
+    val label: TextStyle,
+    val value: TextStyle,
+    val change: TextStyle,
+    val caption: TextStyle,
+    val stacked: Boolean,
+)
+
 @Composable
-private fun DynamicMetricColumn(
-    slot: DynamicSlot,
-    metrics: MatchMetrics,
-    baseline: Baseline?,
-    modifier: Modifier = Modifier,
-) {
+private fun dynamicColumn(slot: DynamicSlot, metrics: MatchMetrics, baseline: Baseline?): DynamicColumn {
     val colors = OvalitTheme.colors
     val metric = slot.metric
     val current = metric.value(metrics)
     val usual = baseline?.let { metric.value(it.metrics) }
     val judged = slot.movement != Movement.UNKNOWN && baseline != null && current != null && usual != null
-
-    val caption = OvalitTheme.typography.caption
-    Column(modifier = modifier.semantics(mergeDescendants = true) {}) {
-        // 이름과 설명은 한 줄로 둔다. 좁은 칸에서 한 칸만 두 줄로 꺾이면 그 칸 숫자만 한 줄 아래로 내려간다.
-        OvalitText(
-            text = stringResource(metric.label),
-            style = caption,
-            color = colors.t2,
-            maxLines = 1,
-            autoSize = shrinkToFit(caption.fontSize, min = 7.sp),
-        )
-        Spacer(Modifier.height(6.dp))
-        ValueWithChange(
-            value = {
-                OvalitRollingText(
-                    text = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
-                    style = OvalitTheme.typography.metricM,
-                    color = if (judged) colors.t1 else colors.t2,
-                    autoSize = shrinkToFit(OvalitTheme.typography.metricM.fontSize, min = 14.sp),
-                )
-            },
-            change = if (judged) {
-                {
-                    OvalitText(
-                        text = metric.format.formatChange(current, usual),
-                        style = OvalitTheme.typography.metricS,
-                        color = changeColor(slot, current, usual),
-                        maxLines = 1,
-                    )
-                }
-            } else {
-                null
-            },
-        )
-        Spacer(Modifier.height(6.dp))
-        val lines = listOf(
+    return DynamicColumn(
+        slot = slot,
+        label = stringResource(metric.label),
+        value = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
+        valueColor = if (judged) colors.t1 else colors.t2,
+        change = if (judged) metric.format.formatChange(current, usual) else null,
+        changeColor = if (judged) changeColor(slot, current, usual) else colors.t3,
+        lines = listOf(
             if (judged) {
                 stringResource(Res.string.baseline_average, baseline.weeks, metric.format.valueText(usual))
             } else {
                 stringResource(Res.string.baseline_missing)
             },
             metric.sampleText(metrics),
-        )
-        // 두 줄을 따로 줄이면 한 칸 안에서 글자 크기가 달라진다. 더 긴 줄에 맞춰 둘을 같은 크기로 줄인다.
-        FittingLines(lines = lines, style = caption.merge(color = colors.t3))
-    }
+        ),
+    )
 }
 
-/**
- * 여러 줄을 한 크기로 그립니다. 가장 긴 줄이 칸에 안 들어가면 모든 줄을 같은 비율로 줄입니다.
- *
- * 칸 폭을 알아야 크기를 정할 수 있는데, 이 칸은 세로 구분선 높이를 맞추려고 크기를 미리 묻는 줄 안에 있습니다.
- * BoxWithConstraints는 그 질문을 받으면 앱이 죽어서, 글자를 직접 재고 그리는 레이아웃으로 짰습니다.
- */
 @Composable
-private fun FittingLines(lines: List<String>, style: TextStyle, modifier: Modifier = Modifier) {
-    val measurer = rememberTextMeasurer()
-    val drawn = remember { DrawnLines() }
-    Layout(
-        modifier = modifier
-            .semantics { this[SemanticsProperties.Text] = lines.map { AnnotatedString(it) } }
-            .drawBehind {
-                var top = 0f
-                drawn.layouts.forEach { line ->
-                    drawText(line, topLeft = Offset(0f, top))
-                    top += line.size.height
+private fun DynamicMetricColumn(column: DynamicColumn, styles: DynamicColumnStyles, modifier: Modifier = Modifier) {
+    val colors = OvalitTheme.colors
+    Column(modifier = modifier.semantics(mergeDescendants = true) {}) {
+        // 이름과 설명은 한 줄로 둔다. 좁은 칸에서 한 칸만 두 줄로 꺾이면 그 칸 숫자만 한 줄 아래로 내려간다.
+        OvalitText(
+            text = column.label,
+            style = styles.label,
+            color = colors.t2,
+            maxLines = 1,
+            autoSize = shrinkToFit(styles.label.fontSize, min = 7.sp),
+        )
+        Spacer(Modifier.height(6.dp))
+        ValueWithChange(
+            value = {
+                OvalitRollingText(
+                    text = column.value,
+                    style = styles.value,
+                    color = column.valueColor,
+                    autoSize = shrinkToFit(styles.value.fontSize, min = 14.sp),
+                )
+            },
+            change = column.change?.let { change ->
+                {
+                    OvalitText(
+                        text = change,
+                        style = styles.change,
+                        color = column.changeColor,
+                        maxLines = 1,
+                    )
                 }
             },
-    ) { _, constraints ->
-        fun measureAll(lineStyle: TextStyle) = lines.map { measurer.measure(it, lineStyle, maxLines = 1, softWrap = false) }
-        val natural = measureAll(style)
-        val widest = natural.maxOf { it.size.width }
-        val layouts = if (constraints.hasBoundedWidth && widest > constraints.maxWidth) {
-            val scale = (constraints.maxWidth.toFloat() / widest).coerceAtLeast(MIN_LINE_SCALE)
-            measureAll(style.copy(fontSize = style.fontSize * scale, lineHeight = style.lineHeight * scale))
-        } else {
-            natural
+            stacked = styles.stacked,
+        )
+        Spacer(Modifier.height(6.dp))
+        column.lines.forEach { line ->
+            OvalitText(
+                text = line,
+                style = styles.caption,
+                color = colors.t3,
+                maxLines = 1,
+                autoSize = shrinkToFit(styles.caption.fontSize, min = 7.sp),
+            )
         }
-        drawn.layouts = layouts
-        val width = layouts.maxOf { it.size.width }.coerceIn(constraints.minWidth, constraints.maxWidth)
-        layout(width, layouts.sumOf { it.size.height }) {}
     }
 }
-
-private class DrawnLines(var layouts: List<TextLayoutResult> = emptyList())
-
-// 이보다 작아지면 못 읽는다. 320dp 화면에 글꼴 1.5배에서도 여기까지 줄일 일은 없었다.
-private const val MIN_LINE_SCALE = 0.6f
 
 // 움직였다고 판단한 칸만 색을 칠한다. 평소 범위 안의 변화에 색을 칠하면 흔들림이 경고처럼 읽힌다.
 @Composable

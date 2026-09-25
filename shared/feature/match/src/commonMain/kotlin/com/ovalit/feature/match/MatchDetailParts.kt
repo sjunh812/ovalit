@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -344,18 +345,26 @@ internal fun EconomyList(uiState: MatchDetailUiState.Success) {
                     .padding(horizontal = OvalitSpacing.gutter, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                OvalitText(text = buyName(record.type), modifier = Modifier.weight(1f), style = OvalitTheme.typography.body)
+                // 좁은 화면에서 글자를 키우면 승률이 "65 / %"로 끊겼다. 이름과 승률은 한 줄로 제 폭을 쓰고,
+                // 남는 폭이 모자라면 가운데 라운드 수부터 줄인다.
+                OvalitText(text = buyName(record.type), style = OvalitTheme.typography.body, maxLines = 1)
+                Spacer(Modifier.width(OvalitSpacing.md))
                 OvalitText(
                     text = stringResource(Res.string.buy_record, record.rounds, record.wins),
+                    modifier = Modifier.weight(1f),
                     style = OvalitTheme.typography.caption,
                     color = colors.t3,
+                    textAlign = TextAlign.End,
+                    maxLines = 1,
+                    autoSize = shrinkToFit(OvalitTheme.typography.caption.fontSize),
                 )
                 Spacer(Modifier.width(OvalitSpacing.md))
                 OvalitText(
                     text = if (record.rounds > 0) MetricFormat.PERCENT.valueText(record.wins.toDouble() / record.rounds) else "–",
-                    modifier = Modifier.width(44.dp),
+                    modifier = Modifier.widthIn(min = 44.dp),
                     style = OvalitTheme.typography.bodyStrong,
                     textAlign = TextAlign.End,
+                    maxLines = 1,
                 )
             }
         }
@@ -388,11 +397,14 @@ internal fun EconomyList(uiState: MatchDetailUiState.Success) {
                     text = round.buyType?.let { buyName(it) }.orEmpty(),
                     modifier = Modifier.weight(1f),
                     style = OvalitTheme.typography.body,
+                    maxLines = 1,
+                    autoSize = shrinkToFit(OvalitTheme.typography.body.fontSize),
                 )
                 OvalitText(
                     text = stringResource(Res.string.economy_versus, economy.teamLoadout.withThousands(), economy.enemyLoadout.withThousands()),
                     style = OvalitTheme.typography.metricS,
                     color = colors.t2,
+                    maxLines = 1,
                 )
             }
         }

@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -50,6 +51,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ConsentScreen(onBack: () -> Unit, onContinue: () -> Unit, modifier: Modifier = Modifier) {
     val colors = OvalitTheme.colors
+    val scroll = rememberScrollState()
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -61,7 +63,7 @@ fun ConsentScreen(onBack: () -> Unit, onContinue: () -> Unit, modifier: Modifier
         Column(
             modifier = Modifier
                 .weight(1f)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scroll)
                 .padding(horizontal = OvalitSpacing.xl),
         ) {
             Spacer(Modifier.height(36.dp))
@@ -87,6 +89,10 @@ fun ConsentScreen(onBack: () -> Unit, onContinue: () -> Unit, modifier: Modifier
         }
 
         Column(modifier = Modifier.padding(start = OvalitSpacing.xl, end = OvalitSpacing.xl, bottom = OvalitSpacing.xl)) {
+            // 글자를 키우면 본문이 버튼 뒤로 이어진다. 선이 없으면 글자가 반쯤 잘린 채 끝난 것처럼 보여서, 더 내릴
+            // 게 있을 때만 선을 긋는다. 선 자리는 늘 비워 둬서 긋고 지울 때 버튼이 움직이지 않는다.
+            OvalitDivider(color = if (scroll.canScrollForward) colors.line else Color.Transparent)
+            Spacer(Modifier.height(OvalitSpacing.lg))
             OvalitPrimaryButton(
                 text = stringResource(Res.string.consent_continue),
                 onClick = onContinue,

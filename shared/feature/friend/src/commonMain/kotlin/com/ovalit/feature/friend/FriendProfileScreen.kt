@@ -3,6 +3,7 @@ package com.ovalit.feature.friend
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -24,8 +25,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBackTopBar
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
@@ -52,6 +55,7 @@ import com.ovalit.core.ui.format
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.recentMatchTimeLabel
+import com.ovalit.core.ui.rememberFittingStyle
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.friend.resources.Res
@@ -194,7 +198,9 @@ internal fun FriendProfileScreen(
                         }
                         Spacer(Modifier.height(13.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(11.dp)) {
-                            FixedMetric.entries.forEach { HeadToHeadRow(it, mine.metrics, uiState.theirMetricsInMyPeriod) }
+                            FixedMetric.entries.forEach {
+                                HeadToHeadRow(it, mine.metrics, uiState.theirMetricsInMyPeriod, rowMetrics = FixedMetric.entries)
+                            }
                         }
                     }
                 }
@@ -297,16 +303,7 @@ private fun TheirWeek(report: WeeklyReport?) {
                     caption = stringResource(Res.string.period_matches, report.metrics.matches),
                 )
                 Spacer(Modifier.height(14.dp))
-                Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
-                    FixedMetric.entries.forEachIndexed { index, metric ->
-                        if (index > 0) {
-                            Spacer(Modifier.width(CellGap))
-                            Box(Modifier.width(1.dp).fillMaxHeight().background(colors.line))
-                            Spacer(Modifier.width(CellGap))
-                        }
-                        MetricCell(metric, report.metrics, report.baseline?.metrics, Modifier.weight(1f))
-                    }
-                }
+                TheirMetrics(report)
             }
             is WeeklyReport.NotEnoughMatches -> OvalitText(
                 text = stringResource(Res.string.not_enough, report.played),
@@ -319,36 +316,74 @@ private fun TheirWeek(report: WeeklyReport?) {
 }
 
 
+// 네 칸의 이름, 숫자, 변화량을 줄마다 한 크기로 맞춘다. 칸마다 따로 줄이면 "전투점수"만 작아지고 그 칸
+// 숫자만 위로 올라가 줄이 어긋난다.
 @Composable
-private fun MetricCell(metric: FixedMetric, metrics: MatchMetrics, usual: MatchMetrics?, modifier: Modifier) {
+private fun TheirMetrics(report: WeeklyReport.Ready) {
     val colors = OvalitTheme.colors
-    val current = metric.value(metrics)
-    val before = usual?.let(metric.value)
-
-    Column(modifier = modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(5.dp)) {
-        OvalitText(
-            text = stringResource(metric.label),
-            style = OvalitTheme.typography.caption,
-            color = colors.t2,
-            maxLines = 1,
-            autoSize = shrinkToFit(OvalitTheme.typography.caption.fontSize),
-        )
-        OvalitText(
-            text = current?.let { metric.format.valueText(it) } ?: "–",
-            style = OvalitTheme.typography.metricM,
-            maxLines = 1,
-            autoSize = shrinkToFit(OvalitTheme.typography.metricM.fontSize),
-        )
-        if (current != null && before != null) {
-            OvalitText(
-                text = metric.format.formatChange(current, before),
-                style = OvalitTheme.typography.metricS,
-                color = when (metric.format.direction(current, before)) {
+    val typography = OvalitTheme.typography
+    val cells = FixedMetric.entries.map { metric ->
+        val current = metric.value(report.metrics)
+        val before = report.baseline?.metrics?.let(metric.value)
+        MetricCellText(
+            label = stringResource(metric.label),
+            value = current?.let { metric.format.valueText(it) } ?: "–",
+            change = if (current != null && before != null) metric.format.formatChange(current, before) else null,
+            changeColor = if (current != null && before != null) {
+                when (metric.format.direction(current, before)) {
                     1 -> colors.pos
                     -1 -> colors.neg
                     else -> colors.t3
-                },
-            )
+                }
+            } else {
+                colors.t3
+            },
+        )
+    }
+
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val gaps = (CellGap * 2 + 1.dp) * (cells.size - 1)
+        val cellWidth = (maxWidth - gaps) / cells.size
+        val labelStyle = rememberFittingStyle(cells.map { it.label }, typography.caption, cellWidth)
+        val valueStyle = rememberFittingStyle(cells.map { it.value }, typography.metricM, cellWidth, min = 14.sp)
+        val changeStyle = rememberFittingStyle(cells.mapNotNull { it.change }, typography.metricS, cellWidth)
+        Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
+            cells.forEachIndexed { index, cell ->
+                if (index > 0) {
+                    Spacer(Modifier.width(CellGap))
+                    Box(Modifier.width(1.dp).fillMaxHeight().background(colors.line))
+                    Spacer(Modifier.width(CellGap))
+                }
+                Column(
+                    modifier = Modifier.weight(1f).semantics(mergeDescendants = true) {},
+                    verticalArrangement = Arrangement.spacedBy(5.dp),
+                ) {
+                    OvalitText(
+                        text = cell.label,
+                        style = labelStyle,
+                        color = colors.t2,
+                        maxLines = 1,
+                        autoSize = shrinkToFit(labelStyle.fontSize, min = 7.sp),
+                    )
+                    OvalitText(
+                        text = cell.value,
+                        style = valueStyle,
+                        maxLines = 1,
+                        autoSize = shrinkToFit(valueStyle.fontSize),
+                    )
+                    if (cell.change != null) {
+                        OvalitText(
+                            text = cell.change,
+                            style = changeStyle,
+                            color = cell.changeColor,
+                            maxLines = 1,
+                            autoSize = shrinkToFit(changeStyle.fontSize, min = 7.sp),
+                        )
+                    }
+                }
+            }
         }
     }
 }
+
+private class MetricCellText(val label: String, val value: String, val change: String?, val changeColor: Color)

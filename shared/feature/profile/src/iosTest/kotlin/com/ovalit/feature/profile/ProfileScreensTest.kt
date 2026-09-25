@@ -36,7 +36,8 @@ class ProfileScreensTest {
         setContent { Themed { ProfileScreen(ProfilePreviewData.success, {}, {}, {}, {}, {}) } }
 
         onNodeWithText("플래티넘 2").assertExists()
-        onNodeWithText("경쟁 32판 · 18승 14패").assertExists()
+        onNodeWithText("경쟁 32판", useUnmergedTree = true).assertExists()
+        onNodeWithText("18승 14패", useUnmergedTree = true).assertExists()
         onNodeWithText("56%", useUnmergedTree = true).assertExists()
     }
 
@@ -45,7 +46,7 @@ class ProfileScreensTest {
     fun `경쟁전이 없으면 티어를 이름 줄에 둔다`() = runComposeUiTest {
         setContent { Themed { ProfileScreen(ProfilePreviewData.noCompetitive, {}, {}, {}, {}, {}) } }
 
-        onNodeWithText("경쟁 32판 · 18승 14패").assertDoesNotExist()
+        onNodeWithText("18승 14패", useUnmergedTree = true).assertDoesNotExist()
         onNodeWithText("플래티넘 2", useUnmergedTree = true).assertExists()
     }
 

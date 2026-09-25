@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -24,9 +25,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role as SemanticsRole
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitDivider
@@ -57,6 +62,8 @@ import com.ovalit.core.ui.TierEmblem
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.recentMatchTimeLabel
+import com.ovalit.core.ui.rememberFitsOnOneLine
+import com.ovalit.core.ui.rememberFittingStyle
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.profile.resources.Res
@@ -67,6 +74,7 @@ import com.ovalit.feature.profile.resources.duration_hours_minutes
 import com.ovalit.feature.profile.resources.duration_minutes
 import com.ovalit.feature.profile.resources.profile_agents
 import com.ovalit.feature.profile.resources.profile_competitive
+import com.ovalit.feature.profile.resources.profile_competitive_matches
 import com.ovalit.feature.profile.resources.profile_competitive_record
 import com.ovalit.feature.profile.resources.profile_most_kills
 import com.ovalit.feature.profile.resources.profile_per_match
@@ -122,10 +130,14 @@ internal fun TierCard(record: CompetitiveRecord, catalog: ContentCatalog, modifi
                 style = OvalitTheme.typography.titleM,
             )
             Spacer(Modifier.height(2.dp))
-            OvalitText(
-                text = stringResource(Res.string.profile_competitive_record, record.matches, record.wins, record.losses),
-                style = OvalitTheme.typography.caption,
-                color = colors.t2,
+            // 글자를 키워 한 줄에 안 들어가면 승패가 통째로 다음 줄로 내려간다. 점은 줄 끝에 두지 않는다.
+            val caption = OvalitTheme.typography.caption
+            SeparatedRow(
+                items = listOf(
+                    { OvalitText(stringResource(Res.string.profile_competitive_matches, record.matches), style = caption, color = colors.t2) },
+                    { OvalitText(stringResource(Res.string.profile_competitive_record, record.wins, record.losses), style = caption, color = colors.t2) },
+                ),
+                separator = { OvalitText(text = " · ", style = caption, color = colors.t2) },
             )
         }
         Spacer(Modifier.width(OvalitSpacing.md))
@@ -141,7 +153,10 @@ internal fun TierCard(record: CompetitiveRecord, catalog: ContentCatalog, modifi
     }
 }
 
-/** 이번 액트 합계입니다. 위 줄은 피해량, K/D, 전투점수이고 아래 줄은 최다 킬, 판당 K/D/A, 플레이 시간입니다. */
+/**
+ * 이번 액트 합계입니다. 위 줄은 피해량, K/D, 전투점수이고 아래 줄은 최다 킬, 판당 K/D/A, 플레이 시간입니다. 좁은 화면에서
+ * 글자를 키우면 같은 순서로 두 칸씩 놓습니다.
+ */
 @Composable
 internal fun StatsSection(summary: ProfileSummary, modifier: Modifier = Modifier) {
     val metrics = summary.metrics
@@ -157,11 +172,32 @@ internal fun StatsSection(summary: ProfileSummary, modifier: Modifier = Modifier
     Section(modifier = modifier, divider = false) {
         SectionTitle(title = stringResource(Res.string.profile_stats_title))
         Spacer(Modifier.height(14.dp))
-        StatRow(main)
-        Spacer(Modifier.height(16.dp))
-        StatRow(records)
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            // 여섯 칸의 이름과 숫자를 한 크기로 맞춘다. 칸마다 따로 줄이면 "판당 K/D/A"처럼 긴 칸만 작아진다.
+            // 세 칸에 가장 작게 줄여도 안 들어가면 두 칸씩 놓는다. 숫자가 잘리는 것보다 줄이 하나 느는 게 낫다.
+            val cells = main + records
+            val labels = cells.map { it.first }
+            val values = cells.map { it.second ?: NO_VALUE }
+            val valueStyle = StatValueStyle()
+            val threeWide = maxWidth / STAT_COLUMNS - OvalitSpacing.sm
+            val threeValue = rememberFittingStyle(values, valueStyle, threeWide, min = STAT_MIN_SIZE)
+            val columns = if (rememberFitsOnOneLine(values.map(::AnnotatedString), threeValue, threeWide)) STAT_COLUMNS else 2
+            val cellWidth = maxWidth / columns - OvalitSpacing.sm
+            val styles = StatStyles(
+                label = rememberFittingStyle(labels, OvalitTheme.typography.caption, cellWidth),
+                value = rememberFittingStyle(values, valueStyle, cellWidth, min = STAT_MIN_SIZE),
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                cells.chunked(columns).forEach { row -> StatRow(row, styles) }
+            }
+        }
     }
 }
+
+private const val STAT_COLUMNS = 3
+private val STAT_MIN_SIZE = 11.sp
+
+private class StatStyles(val label: TextStyle, val value: TextStyle)
 
 // 홈의 "판당 17.2 / 11.5 / 6.3"과 같은 자릿수다. 칸이 좁아서 빗금 양옆 공백만 뺐다.
 @Composable
@@ -173,27 +209,25 @@ private fun perMatchText(metrics: MatchMetrics): String? {
 }
 
 @Composable
-private fun StatRow(cells: List<Pair<String, String?>>) {
+private fun StatRow(cells: List<Pair<String, String?>>, styles: StatStyles) {
     val colors = OvalitTheme.colors
-    val typography = OvalitTheme.typography
     Row {
         cells.forEach { (label, value) ->
             Column(modifier = Modifier.weight(1f).padding(end = OvalitSpacing.sm).semantics(mergeDescendants = true) {}) {
                 OvalitText(
                     text = label,
-                    style = typography.caption,
+                    style = styles.label,
                     color = colors.t2,
                     maxLines = 1,
-                    autoSize = shrinkToFit(typography.caption.fontSize, min = 7.sp),
+                    autoSize = shrinkToFit(styles.label.fontSize, min = 7.sp),
                 )
                 Spacer(Modifier.height(4.dp))
-                val style = StatValueStyle()
                 OvalitText(
                     text = value ?: NO_VALUE,
-                    style = style,
+                    style = styles.value,
                     color = if (value != null) colors.t1 else colors.t3,
                     maxLines = 1,
-                    autoSize = shrinkToFit(style.fontSize, min = 11.sp),
+                    autoSize = shrinkToFit(styles.value.fontSize, min = STAT_MIN_SIZE),
                 )
             }
         }
@@ -246,16 +280,29 @@ internal fun ShotsSection(shots: Shots) {
             }
         }
         Spacer(Modifier.height(12.dp))
-        Row {
-            parts.forEach { part -> ShotLegend(part, shots.total, Modifier.weight(1f)) }
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            // 한 칸이라도 탄 수가 비율 옆에 안 들어가면 세 칸 모두 탄 수를 아래로 내린다. 한 칸만 내리면 그 칸만 높아진다.
+            val typography = OvalitTheme.typography
+            val lines = parts.map { part ->
+                buildAnnotatedString {
+                    withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) { append(percentText(part.count.toDouble() / shots.total)) }
+                    append(part.count.withThousands())
+                }
+            }
+            val stacked = !rememberFitsOnOneLine(lines, typography.label, maxWidth / parts.size, extra = ShotGap)
+            Row {
+                parts.forEach { part -> ShotLegend(part, shots.total, stacked, Modifier.weight(1f)) }
+            }
         }
     }
 }
 
+private val ShotGap = 4.dp
+
 private class ShotPart(val label: StringResource, val count: Int, val color: Color)
 
 @Composable
-private fun ShotLegend(part: ShotPart, total: Int, modifier: Modifier) {
+private fun ShotLegend(part: ShotPart, total: Int, stacked: Boolean, modifier: Modifier) {
     val colors = OvalitTheme.colors
     val typography = OvalitTheme.typography
     Column(modifier = modifier.semantics(mergeDescendants = true) {}) {
@@ -267,7 +314,8 @@ private fun ShotLegend(part: ShotPart, total: Int, modifier: Modifier) {
                 { OvalitText(text = percentText(part.count.toDouble() / total), style = typography.label.copy(fontWeight = FontWeight.SemiBold)) },
                 { OvalitText(text = part.count.withThousands(), style = typography.label, color = colors.t3) },
             ),
-            separator = { Spacer(Modifier.width(4.dp)) },
+            separator = { Spacer(Modifier.width(ShotGap)) },
+            stacked = stacked,
         )
     }
 }
@@ -286,15 +334,27 @@ internal fun AgentsSection(report: AgentReport, catalog: ContentCatalog, onOpen:
     Section(modifier = Modifier.clickable(role = SemanticsRole.Button, onClick = onOpen)) {
         SectionTitle(title = stringResource(Res.string.profile_agents), caption = share, chevron = true)
         Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            shown.forEach { AgentTile(it, catalog, Modifier.weight(1f)) }
-            repeat(SHOWN_AGENTS - shown.size) { Spacer(Modifier.weight(1f)) }
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            // 한 칸이라도 승률이 판 수 옆에 안 들어가면 모든 칸의 승률을 아래로 내린다
+            val lines = shown.map { agent ->
+                val matches = stringResource(Res.string.agents_matches, agent.matches)
+                AnnotatedString(if (agent.isMeasurable) matches + AGENT_SEPARATOR + percentText(agent.winRate) else matches)
+            }
+            val tileWidth = (maxWidth - AgentTileGap * (SHOWN_AGENTS - 1)) / SHOWN_AGENTS
+            val stacked = !rememberFitsOnOneLine(lines, OvalitTheme.typography.caption, tileWidth)
+            Row(horizontalArrangement = Arrangement.spacedBy(AgentTileGap)) {
+                shown.forEach { AgentTile(it, catalog, stacked, Modifier.weight(1f)) }
+                repeat(SHOWN_AGENTS - shown.size) { Spacer(Modifier.weight(1f)) }
+            }
         }
     }
 }
 
+private val AgentTileGap = 10.dp
+private const val AGENT_SEPARATOR = "\u00a0·\u00a0"
+
 @Composable
-private fun AgentTile(agent: AgentStats, catalog: ContentCatalog, modifier: Modifier) {
+private fun AgentTile(agent: AgentStats, catalog: ContentCatalog, stacked: Boolean, modifier: Modifier) {
     val colors = OvalitTheme.colors
     val name = catalog.agentName(agent.agent)
     val matches = stringResource(Res.string.agents_matches, agent.matches)
@@ -313,7 +373,8 @@ private fun AgentTile(agent: AgentStats, catalog: ContentCatalog, modifier: Modi
                 { OvalitText(text = matches, style = caption, color = colors.t3) },
                 winRate?.let { rate -> { OvalitText(text = rate, style = caption, color = winColor) } },
             ),
-            separator = { OvalitText(text = "\u00a0·\u00a0", style = caption, color = colors.t5) },
+            separator = { OvalitText(text = AGENT_SEPARATOR, style = caption, color = colors.t5) },
+            stacked = stacked,
         )
     }
 }

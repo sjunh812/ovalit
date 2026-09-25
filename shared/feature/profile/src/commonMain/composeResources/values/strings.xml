@@ -8,7 +8,8 @@
 
     <!-- 내 프로필 -->
     <string name="profile_competitive">경쟁전</string>
-    <string name="profile_competitive_record">경쟁 %1$d판 · %2$d승 %3$d패</string>
+    <string name="profile_competitive_matches">경쟁 %1$d판</string>
+    <string name="profile_competitive_record">%1$d승 %2$d패</string>
     <string name="profile_stats_title">통계</string>
     <string name="profile_most_kills">최다 킬</string>
     <string name="profile_per_match">판당 K/D/A</string>
@@ -46,7 +47,6 @@
     <string name="agents_by_agent">요원별</string>
     <!-- 좁은 화면에서 "타격대 / · 28판"처럼 가운뎃점이 줄 맨 앞에 오지 않게
          점 앞에 줄바꿈 없는 공백을 넣었다 -->
-    <string name="agents_row_caption">%1$s&#160;· %2$d판</string>
     <string name="column_win_rate">승률</string>
     <string name="column_kast">관여율</string>
     <string name="column_survival">생존</string>
@@ -58,7 +58,8 @@
     <string name="weapons_title">무기</string>
     <string name="weapons_moved_up">요즘 잘 맞아요</string>
     <string name="weapons_moved_down">최근 떨어졌어요</string>
-    <string name="weapons_sample">%1$s킬 · 단일 무기 %2$s라운드</string>
+    <string name="weapons_sample_kills">%1$s킬</string>
+    <string name="weapons_sample_rounds">단일 무기 %1$s라운드</string>
     <string name="weapons_baseline">%1$d주 평균 %2$s</string>
     <string name="weapons_act_value">이번 액트</string>
     <string name="weapons_single_round_note">헤드샷 비율은 그 무기만 쓴 라운드를 기준으로 계산해요.</string>

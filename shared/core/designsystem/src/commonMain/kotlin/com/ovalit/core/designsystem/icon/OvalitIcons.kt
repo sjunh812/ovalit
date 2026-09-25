@@ -30,6 +30,10 @@ object OvalitIcons {
 
     val ChevronRight: ImageVector by lazy { strokeIcon("M8 4l6 6-6 6", strokeWidth = 1.8f) }
 
+    val ChevronDown: ImageVector by lazy { strokeIcon("M4 8l6 6 6-6", strokeWidth = 2f) }
+
+    val Back: ImageVector by lazy { strokeIcon("M12 4l-6 6 6 6", strokeWidth = 1.8f) }
+
     val Check: ImageVector by lazy { strokeIcon("M4 10.5l4 4 8-9", strokeWidth = 2f) }
 }
 

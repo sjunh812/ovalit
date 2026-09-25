@@ -94,8 +94,15 @@ internal fun DynamicMetric.assess(
     val now = value(current) ?: return unknown
     val usual = value(baseline) ?: return unknown
 
-    val weekly = history.filter(::isMeasurable).mapNotNull(value)
-    if (weekly.size < MIN_VOLATILITY_WEEKS) return unknown
+    return assessMovement(now, usual, weekly = history.filter(::isMeasurable).mapNotNull(value))
+}
+
+/**
+ * 이번 기간 값이 평소 주간 변동폭보다 크게 움직였는지 봅니다. [weekly]에는 표본을 넘긴 주의
+ * 값만 넣습니다. 그런 주가 [MIN_VOLATILITY_WEEKS]주가 안 되면 판단하지 않습니다.
+ */
+internal fun assessMovement(now: Double, usual: Double, weekly: List<Double>): Assessment {
+    if (weekly.size < MIN_VOLATILITY_WEEKS) return Assessment(Movement.UNKNOWN)
 
     val change = abs(now - usual)
     val volatility = weekly.sampleStandardDeviation()

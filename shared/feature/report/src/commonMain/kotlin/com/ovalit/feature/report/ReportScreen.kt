@@ -45,12 +45,20 @@ import org.koin.compose.viewmodel.koinViewModel
 /** S1 홈입니다. 주간 리포트를 보여줍니다. */
 @Composable
 fun ReportRoute(
+    onOpenProfile: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ReportViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val riotId by viewModel.riotId.collectAsStateWithLifecycle()
 
-    ReportScreen(uiState = uiState, onSelectQueue = viewModel::selectQueue, modifier = modifier)
+    ReportScreen(
+        uiState = uiState,
+        onSelectQueue = viewModel::selectQueue,
+        riotId = riotId,
+        onOpenProfile = onOpenProfile,
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -58,6 +66,8 @@ internal fun ReportScreen(
     uiState: ReportUiState,
     onSelectQueue: (QueueFilter) -> Unit,
     modifier: Modifier = Modifier,
+    riotId: String? = null,
+    onOpenProfile: () -> Unit = {},
 ) {
     Box(
         modifier = modifier
@@ -75,7 +85,7 @@ internal fun ReportScreen(
                     .verticalScroll(rememberScrollState()),
             ) {
                 Spacer(Modifier.height(OvalitSpacing.gutter))
-                ReportTopBar()
+                ReportTopBar(riotId = riotId, onOpenProfile = onOpenProfile)
                 Spacer(Modifier.height(OvalitSpacing.md))
                 QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
                 Spacer(Modifier.height(OvalitSpacing.md))

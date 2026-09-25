@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="back">뒤로</string>
+    <string name="act_matches">이번 액트 %1$d경기</string>
+    <string name="main_role">주로 %1$s</string>
+    <string name="unknown_agent">알 수 없는 요원</string>
+    <string name="unknown_weapon">알 수 없는 무기</string>
+    <string name="not_enough_sample">표본 부족</string>
+    <string name="no_matches">이번 액트에 뛴 경기가 아직 없어요</string>
+
+    <string name="role_duelist">타격대</string>
+    <string name="role_initiator">척후대</string>
+    <string name="role_controller">전략가</string>
+    <string name="role_sentinel">감시자</string>
+
+    <!-- 내 프로필 -->
+    <string name="profile_agents">요원</string>
+    <string name="profile_weapons">무기</string>
+    <string name="profile_agents_value">%1$s %2$s · %3$s</string>
+
+    <!-- S7 요원 -->
+    <string name="agents_title">요원</string>
+    <string name="agents_main_role">주 역할</string>
+    <!-- %1$s 자리의 지표 이름은 굵게 칠한다 -->
+    <string name="agents_role_duelist">타격대는 %1$s로 봐요. 어시스트가 적은 건 역할상 자연스러워요.</string>
+    <string name="agents_role_initiator">척후대는 %1$s로 봐요. K/D가 낮은 건 역할상 자연스러워요.</string>
+    <string name="agents_role_controller">전략가는 %1$s로 봐요. 퍼블이 적은 건 역할상 자연스러워요.</string>
+    <string name="agents_role_sentinel">감시자는 %1$s로 봐요. 퍼블이 적은 건 역할상 자연스러워요.</string>
+    <string name="agents_focus_duelist">퍼블 관여율과 첫 교전 승률</string>
+    <string name="agents_focus_initiator">어시스트와 관여율</string>
+    <string name="agents_focus_controller">관여율과 생존율</string>
+    <string name="agents_focus_sentinel">생존율</string>
+    <string name="agents_matches">%1$d판</string>
+    <string name="agents_by_agent">요원별</string>
+    <!-- 좁은 화면에서 "타격대 / · 28판"처럼 가운뎃점이 줄 맨 앞에 오지 않게
+         점 앞에 줄바꿈 없는 공백을 넣었다 -->
+    <string name="agents_row_caption">%1$s&#160;· %2$d판</string>
+    <string name="column_win_rate">승률</string>
+    <string name="column_kast">관여율</string>
+    <string name="column_survival">생존</string>
+    <string name="column_first_duel_involvement">퍼블 관여</string>
+    <string name="column_first_duel_win">첫 교전</string>
+    <string name="agents_columns_note">지표 열은 주 역할에 맞춰 바뀌어요. 타격대가 주 역할이면 퍼블 관여율과 첫 교전 승률이 들어와요.</string>
+
+    <!-- S6 무기 -->
+    <string name="weapons_title">무기</string>
+    <string name="weapons_moved_up">요즘 잘 맞아요</string>
+    <string name="weapons_moved_down">최근 떨어졌어요</string>
+    <string name="weapons_sample">%1$s킬 · 단일 무기 %2$s라운드</string>
+    <string name="weapons_baseline">%1$d주 평균 %2$s</string>
+    <string name="weapons_act_value">이번 액트</string>
+    <string name="weapons_single_round_note">헤드샷 비율은 그 무기만 쓴 라운드를 기준으로 계산해요.</string>
+    <string name="weapons_by_category">계열별</string>
+    <string name="weapons_kills">%1$s킬</string>
+    <string name="weapons_category_rifle">소총</string>
+    <string name="weapons_category_pistol">권총</string>
+    <string name="weapons_category_smg">기관단총</string>
+    <string name="weapons_category_sniper">저격총</string>
+    <string name="weapons_category_shotgun">산탄총</string>
+    <string name="weapons_category_machine_gun">기관총</string>
+    <!-- 카탈로그에 계열이 없는 새 무기 -->
+    <string name="weapons_category_unknown">그 밖의 무기</string>
+    <string name="weapons_expand">%1$s 무기 펼치기</string>
+    <string name="weapons_collapse">%1$s 무기 접기</string>
+
+    <string name="value_percent">%1$s%</string>
+</resources>

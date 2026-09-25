@@ -17,16 +17,19 @@ internal fun match(
     act: ActId = ActId("act"),
     startedAt: Instant = Instant.fromEpochMilliseconds(0),
     role: Role? = null,
+    agent: AgentId = AgentId("agent"),
+    won: Boolean? = null,
 ) = Match(
     id = MatchId("match"),
     queue = queue,
     act = act,
     startedAt = startedAt,
     me = Me,
-    myAgent = AgentId("agent"),
+    myAgent = agent,
     myRole = role,
     allies = setOf(Ally, OtherAlly),
     myCombatScore = combatScore,
+    myTeamWon = won,
     rounds = rounds.toList(),
 )
 

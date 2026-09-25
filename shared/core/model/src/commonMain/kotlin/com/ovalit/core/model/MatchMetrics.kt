@@ -89,5 +89,5 @@ data class MatchMetrics(
 
 fun Iterable<MatchMetrics>.sum(): MatchMetrics = fold(MatchMetrics.Empty, MatchMetrics::plus)
 
-private infix fun Int.over(denominator: Int): Double? =
+internal infix fun Int.over(denominator: Int): Double? =
     if (denominator == 0) null else toDouble() / denominator

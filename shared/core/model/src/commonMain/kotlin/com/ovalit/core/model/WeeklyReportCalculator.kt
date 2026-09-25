@@ -119,3 +119,58 @@ private fun List<Match>.totalMetrics(): MatchMetrics = map { it.metrics() }.sum(
 private fun LocalDate.plusWeeks(weeks: Int) = plus(weeks, DateTimeUnit.WEEK)
 
 private fun LocalDate.minusWeeks(weeks: Int) = minus(weeks, DateTimeUnit.WEEK)
+
+/** 요원·무기 화면이 보는 경기입니다. 고른 큐에서 가장 최근 경기의 액트만 남깁니다. */
+fun Iterable<Match>.currentActMatches(queueFilter: QueueFilter): List<Match> {
+    val counted = filter { it.queue in queueFilter.queues }
+    val act = counted.maxByOrNull { it.startedAt }?.act ?: return emptyList()
+    return counted.filter { it.act == act }
+}
+
+/**
+ * S6 무기 화면에 쓰는 집계입니다. 목록은 이번 액트 전체를 보고, 위쪽 두 무기는 홈 리포트와 같은
+ * 기간을 그 앞 4주와 비교합니다.
+ */
+fun Iterable<Match>.weaponReport(
+    now: Instant,
+    timeZone: TimeZone,
+    queueFilter: QueueFilter = QueueFilter.COMPETITIVE_AND_UNRATED,
+): WeaponReport {
+    val matches = currentActMatches(queueFilter)
+    val weapons = matches.weaponStats()
+    val period = (weeklyReport(now, timeZone, queueFilter) as? WeeklyReport.Ready)?.period
+    val byWeek = matches.groupBy { it.startedAt.weekStart(timeZone) }
+
+    return WeaponReport(
+        matches = matches.size,
+        kills = weapons.sumOf { it.kills },
+        weapons = weapons,
+        highlights = weapons.take(HIGHLIGHTED_WEAPONS).map { byWeek.highlight(it, period) },
+    )
+}
+
+private fun Map<LocalDate, List<Match>>.highlight(act: WeaponStats, period: ReportPeriod?): WeaponHighlight {
+    if (period == null) return WeaponHighlight(act, null, null, baselineWeeks = 0, movement = Movement.UNKNOWN)
+    fun List<Match>.stats() = weaponStats().firstOrNull { it.weapon == act.weapon }
+
+    val end = period.firstDay.plusWeeks(period.weeks)
+    val current = between(period.firstDay, end).stats()
+    val start = maxOf(period.firstDay.minusWeeks(BASELINE_WEEKS), keys.min())
+    val baseline = between(start, period.firstDay).stats()
+    val weekly = (1..VOLATILITY_WEEKS)
+        .mapNotNull { weeksBefore -> this[period.firstDay.minusWeeks(weeksBefore)]?.stats() }
+        .filter { it.isMeasurable }
+        .mapNotNull { it.headshotRate }
+
+    val now = current?.takeIf { it.isMeasurable }?.headshotRate
+    val usual = baseline?.takeIf { it.isMeasurable }?.headshotRate
+    val movement = if (now != null && usual != null) assessMovement(now, usual, weekly).movement else Movement.UNKNOWN
+
+    return WeaponHighlight(
+        act = act,
+        current = current,
+        baseline = baseline,
+        baselineWeeks = start.daysUntil(period.firstDay) / 7,
+        movement = movement,
+    )
+}

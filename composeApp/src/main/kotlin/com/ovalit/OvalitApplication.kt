@@ -3,6 +3,7 @@ package com.ovalit
 import android.app.Application
 import com.ovalit.core.data.di.dataModule
 import com.ovalit.di.appModule
+import com.ovalit.feature.profile.di.profileModule
 import com.ovalit.feature.report.di.reportModule
 import com.ovalit.feature.settings.di.settingsModule
 import org.koin.android.ext.koin.androidContext
@@ -22,6 +23,7 @@ class OvalitApplication : Application() {
                 appModule,
                 dataModule(preferencesPath = { filesDir.resolve("ovalit.preferences_pb").absolutePath }),
                 reportModule,
+                profileModule,
                 settingsModule,
             )
         }

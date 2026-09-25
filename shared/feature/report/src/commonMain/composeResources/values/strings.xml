@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="open_profile">내 프로필 열기</string>
+
     <string name="queue_competitive_and_unrated">경쟁 + 일반</string>
     <string name="queue_competitive">경쟁</string>
     <string name="queue_unrated">일반</string>

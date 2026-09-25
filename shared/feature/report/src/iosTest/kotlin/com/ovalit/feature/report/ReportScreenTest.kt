@@ -61,6 +61,25 @@ class ReportScreenTest {
         assertTrue(widths.max() - widths.min() <= 1.dp, "$widths")
     }
 
+    @Test
+    fun `오른쪽 위 아바타를 누르면 내 프로필을 연다`() = runComposeUiTest {
+        var opened = false
+        setContent {
+            OvalitTheme {
+                ReportScreen(
+                    uiState = ReportUiState.Success(QueueFilter.COMPETITIVE_AND_UNRATED, ReportPreviewData.moved),
+                    onSelectQueue = {},
+                    riotId = "오발러#KR1",
+                    onOpenProfile = { opened = true },
+                )
+            }
+        }
+
+        onNodeWithText("오").performClick()
+
+        assertTrue(opened)
+    }
+
     // 역할만 적으면 그 기간에 그 역할만 한 것처럼 읽힌다
     @Test
     fun `기간 줄의 역할은 가장 많이 한 역할이라고 적는다`() = runComposeUiTest {

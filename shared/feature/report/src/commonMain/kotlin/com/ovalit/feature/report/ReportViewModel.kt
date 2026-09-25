@@ -2,6 +2,7 @@ package com.ovalit.feature.report
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ovalit.core.data.AccountRepository
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.QueueFilter
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.TimeZone
 
@@ -26,6 +28,7 @@ sealed interface ReportUiState {
 
 class ReportViewModel(
     matchRepository: MatchRepository,
+    accountRepository: AccountRepository,
     preferencesRepository: UserPreferencesRepository,
     clock: Clock,
     timeZone: TimeZone,
@@ -49,6 +52,11 @@ class ReportViewModel(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = ReportUiState.Loading,
     )
+
+    /** 오른쪽 위 아바타에 쓰는 Riot ID입니다. 연동을 해제했으면 `null`입니다. */
+    val riotId: StateFlow<String?> = accountRepository.account
+        .map { it?.riotId }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initialValue = null)
 
     fun selectQueue(filter: QueueFilter) {
         selectedQueue.value = filter

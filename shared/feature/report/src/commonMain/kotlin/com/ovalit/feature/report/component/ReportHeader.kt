@@ -1,6 +1,14 @@
 package com.ovalit.feature.report.component
 
 import androidx.compose.foundation.horizontalScroll
+import com.ovalit.feature.report.resources.open_profile
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,21 +47,53 @@ import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
 import com.ovalit.core.designsystem.resources.Res as DesignSystemRes
 
-// 글자 로고 18sp와 획 높이가 비슷해지는 폭
+// 목업의 글자 로고(18px)와 높이가 비슷해지는 폭
 private val TopBarLogoWidth = 46.dp
+private val AvatarSize = 30.dp
+private val ProfileTouchSize = 44.dp
 
 @Composable
-internal fun ReportTopBar(modifier: Modifier = Modifier) {
+internal fun ReportTopBar(riotId: String?, onOpenProfile: () -> Unit, modifier: Modifier = Modifier) {
     val appName = stringResource(DesignSystemRes.string.app_name)
-    OvalitLogo(
-        modifier = modifier
-            .padding(horizontal = OvalitSpacing.gutter)
-            .width(TopBarLogoWidth)
-            .semantics {
-                contentDescription = appName
-                role = Role.Image
-            },
-    )
+
+    Row(
+        modifier = modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OvalitLogo(
+            modifier = Modifier
+                .width(TopBarLogoWidth)
+                .semantics {
+                    contentDescription = appName
+                    role = Role.Image
+                },
+        )
+        Spacer(Modifier.weight(1f))
+        // 티어 배지는 데이터가 생기면 아바타 왼쪽에 붙인다
+        if (riotId != null) {
+            Box(
+                modifier = Modifier
+                    .size(ProfileTouchSize)
+                    .clickable(
+                        onClickLabel = stringResource(Res.string.open_profile),
+                        role = Role.Button,
+                        onClick = onOpenProfile,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    modifier = Modifier.size(AvatarSize).background(OvalitTheme.colors.fill, CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    OvalitText(
+                        text = riotId.take(1),
+                        style = OvalitTheme.typography.label,
+                        color = OvalitTheme.colors.t2,
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -109,8 +149,7 @@ private fun periodCaption(report: WeeklyReport.Ready): AnnotatedString {
     val roleText = role?.let { stringResource(Res.string.period_main_role, it) }
     val emphasis = SpanStyle(color = OvalitTheme.colors.t2, fontWeight = FontWeight.SemiBold)
 
-    // 역할 이름만 한 단계 밝고 굵게 둔다. 그 주 동적 칸과 개선 포인트가 이 역할에 맞춰 골라진다.
-    // 달라진 점 캡션의 "타격대 기준"까지 칠하면 한 화면에 강조가 두 번이라 강조로 안 읽힌다.
+    // 역할 이름만 한 단계 밝고 굵게 둔다. 홈에서 강조는 이 한 곳뿐이다(CLAUDE.md 화면).
     return buildAnnotatedString {
         if (role != null && roleText != null) {
             // 그 역할만 했다는 뜻으로 읽히지 않게 "주로"를 붙인다. 가장 많은 라운드를 뛴 역할이다.

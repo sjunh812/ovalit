@@ -23,6 +23,9 @@ import com.ovalit.core.designsystem.component.OvalitTabBar
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.feature.onboarding.intro.IntroScreen
+import com.ovalit.feature.profile.AgentsRoute
+import com.ovalit.feature.profile.ProfileRoute
+import com.ovalit.feature.profile.WeaponsRoute
 import com.ovalit.feature.report.ReportRoute
 import com.ovalit.feature.settings.SettingsRoute
 import kotlinx.serialization.Serializable
@@ -36,6 +39,15 @@ private data object Report : NavKey
 
 @Serializable
 private data object Settings : NavKey
+
+@Serializable
+private data object Profile : NavKey
+
+@Serializable
+private data object Agents : NavKey
+
+@Serializable
+private data object Weapons : NavKey
 
 // 경기와 친구 화면이 생기면 여기에 탭을 더한다. 갈 화면이 없는 탭은 미리 두지 않는다.
 private val TopLevel = listOf(Report, Settings)
@@ -75,7 +87,16 @@ fun OvalitApp(appVersion: String) {
                             },
                         )
                     }
-                    entry<Report> { ReportRoute() }
+                    entry<Report> { ReportRoute(onOpenProfile = { backStack.add(Profile) }) }
+                    entry<Profile> {
+                        ProfileRoute(
+                            onBack = { backStack.removeLastOrNull() },
+                            onOpenAgents = { backStack.add(Agents) },
+                            onOpenWeapons = { backStack.add(Weapons) },
+                        )
+                    }
+                    entry<Agents> { AgentsRoute(onBack = { backStack.removeLastOrNull() }) }
+                    entry<Weapons> { WeaponsRoute(onBack = { backStack.removeLastOrNull() }) }
                     entry<Settings> {
                         SettingsRoute(
                             appVersion = appVersion,
@@ -94,8 +115,8 @@ fun OvalitApp(appVersion: String) {
                 ),
                 selectedIndex = selectedTab,
                 onSelect = { index ->
-                    // 홈이 늘 바닥에 있다. 설정에서 뒤로 가면 홈으로, 홈에서 뒤로 가면 앱을 나간다.
-                    // 홈은 새로 만들지 않고 위에 쌓인 것만 걷어서 스크롤과 고른 칩을 그대로 둔다.
+                    // 홈은 늘 스택 맨 아래에 둔다. 그래야 설정에서 뒤로 가면 홈이 나오고 홈에서 뒤로 가면
+                    // 앱이 닫힌다. 홈 탭은 홈을 새로 띄우지 않고 위의 화면만 닫아서 스크롤과 칩을 살린다.
                     val tab = TopLevel[index]
                     when {
                         tab == Report -> while (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
@@ -107,7 +128,7 @@ fun OvalitApp(appVersion: String) {
     }
 }
 
-// 스택을 비우는 순간이 없게 새 키를 먼저 넣고 나머지를 뺀다. NavDisplay는 빈 스택을 받지 않는다.
+// NavDisplay에 빈 스택을 넘기면 예외가 난다. 그래서 새 화면을 먼저 넣고 나머지를 뺀다.
 private fun NavBackStack<NavKey>.replaceAllWith(vararg keys: NavKey) {
     addAll(keys)
     repeat(size - keys.size) { removeAt(0) }

@@ -1,8 +1,13 @@
 package com.ovalit.feature.report
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import com.ovalit.core.designsystem.preview.OvalitThemePreview
+import com.ovalit.feature.report.component.MetricSheetBody
+import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 
@@ -68,6 +73,39 @@ private fun ReportSmallPreview() {
 @Composable
 private fun ReportLargeFontPreview() {
     ReportPreview(ReportPreviewData.moved)
+}
+
+@Preview(widthDp = 390, heightDp = 700)
+@Composable
+private fun MetricSheetDarkPreview() {
+    OvalitThemePreview(darkTheme = true) {
+        MetricSheetBody(FixedMetric.DAMAGE, ReportPreviewData.moved, Modifier.padding(24.dp))
+    }
+}
+
+@Preview(widthDp = 390, heightDp = 700)
+@Composable
+private fun MetricSheetLightPreview() {
+    OvalitThemePreview(darkTheme = false) {
+        MetricSheetBody(FixedMetric.HEADSHOT_RATE, ReportPreviewData.moved, Modifier.padding(24.dp))
+    }
+}
+
+// 액트가 바뀐 주에 세로선이 서고 평소 범위를 말하지 않는다
+@Preview(widthDp = 390, heightDp = 700)
+@Composable
+private fun MetricSheetNewActPreview() {
+    OvalitThemePreview {
+        MetricSheetBody(FixedMetric.COMBAT_SCORE, ReportPreviewData.newAct, Modifier.padding(24.dp))
+    }
+}
+
+@Preview(widthDp = 320, heightDp = 800, fontScale = 1.5f)
+@Composable
+private fun MetricSheetSmallLargeFontPreview() {
+    OvalitThemePreview {
+        MetricSheetBody(FixedMetric.KD, ReportPreviewData.moved, Modifier.padding(24.dp))
+    }
 }
 
 @Composable

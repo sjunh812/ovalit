@@ -2,6 +2,7 @@ package com.ovalit.core.model
 
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.daysUntil
 import kotlinx.datetime.plus
 
 /**
@@ -17,6 +18,8 @@ sealed interface WeeklyReport {
      * @property mainRole 기간 중 라운드를 가장 많이 뛴 역할입니다. 역할을 아는 경기가 없으면 없습니다.
      * @property dynamic 동적 3칸입니다. 하나도 [Movement.MOVED]가 아닐 때만 "큰 변화 없음"을 띄웁니다.
      * [QueueFilter.OTHER]면 비어 있습니다.
+     * @property trend 지표 설명 시트의 주별 막대입니다. 기간 마지막 주에서 끝나는 [TREND_WEEKS]주이고
+     * 오래된 주가 앞에 옵니다.
      */
     data class Ready(
         val act: ActId,
@@ -25,6 +28,7 @@ sealed interface WeeklyReport {
         val baseline: Baseline?,
         val mainRole: Role?,
         val dynamic: List<DynamicSlot>,
+        val trend: List<TrendWeek>,
     ) : WeeklyReport
 
     /** 최대 기간까지 넓혀도 경기가 모자랍니다. [played]는 그 기간에 이번 액트에서 뛴 경기 수입니다. */
@@ -52,3 +56,51 @@ data class Baseline(
     val metrics: MatchMetrics,
     val weeks: Int,
 )
+
+/**
+ * 지표 설명 시트의 주별 막대 하나입니다.
+ *
+ * @property act 그 주에 뛴 가장 최근 액트입니다. 한 주에 액트가 둘이면 새 액트 경기만 셉니다.
+ * 액트 경계를 넘는 평균은 만들지 않습니다.
+ * @property metrics 그 주 합계입니다. 라운드가 [MIN_TREND_ROUNDS]에 못 미치면 없습니다. 한두 판짜리
+ * 주는 막대 하나가 추이를 흔듭니다.
+ * @property startsNewAct 앞선 주와 액트가 다릅니다. 막대 앞에 전환 표시를 합니다.
+ * @property inPeriod 리포트 기간에 든 주입니다.
+ */
+data class TrendWeek(
+    val firstDay: LocalDate,
+    val act: ActId?,
+    val metrics: MatchMetrics?,
+    val startsNewAct: Boolean,
+    val inPeriod: Boolean,
+)
+
+/**
+ * 지표 설명 시트의 "평소에는 어느 정도였나요?"입니다. 비교 대상은 본인의 과거뿐이라 남의 평균이나
+ * 기준값 대신 내 주간 값의 범위를 보여줍니다.
+ *
+ * @property weeks 가장 오래된 주부터 기간 직전까지의 주 수입니다. 화면에는 "지난 N주 동안"으로 띄웁니다.
+ */
+data class UsualRange(
+    val min: Double,
+    val max: Double,
+    val weeks: Int,
+)
+
+/**
+ * 기간 앞의 막대 중 이번 액트이고 값이 있는 주로 범위를 냅니다. 그런 주가 [MIN_VOLATILITY_WEEKS]주에
+ * 못 미치면 없습니다. 두세 주로 "평소"라고 하면 우연히 잘 된 주가 평소가 됩니다.
+ */
+fun WeeklyReport.Ready.usualRange(value: (MatchMetrics) -> Double?): UsualRange? {
+    val weeks = trend
+        .filter { !it.inPeriod && it.act == act }
+        .mapNotNull { week -> week.metrics?.let(value)?.let { week.firstDay to it } }
+    if (weeks.size < MIN_VOLATILITY_WEEKS) return null
+
+    val values = weeks.map { it.second }
+    return UsualRange(
+        min = values.min(),
+        max = values.max(),
+        weeks = weeks.first().first.daysUntil(period.firstDay) / 7,
+    )
+}

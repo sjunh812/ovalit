@@ -7,8 +7,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.feature.report.component.MetricSheetBody
+import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
+import androidx.compose.ui.unit.dp
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -31,6 +34,17 @@ class ReportScreenTest {
 
         assertTrue(bounds.all { it.top == bounds.first().top })
         assertEquals(bounds.sortedBy { it.left }, bounds)
+    }
+
+    // 칸 폭에 간격을 넣으면 가운데 칸만 좁아져 첫 칸이 넓어 보인다
+    @Test
+    fun `고정 칸은 네 칸 모두 폭이 같다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved) }
+
+        val widths = listOf("전투점수", "K/D", "피해량", "헤드샷").map { onNodeWithText(it).getBoundsInRoot().let { bounds -> bounds.right - bounds.left } }
+
+        // 남는 픽셀 하나는 어느 칸엔가 붙는다
+        assertTrue(widths.max() - widths.min() <= 1.dp, "$widths")
     }
 
     // 역할만 적으면 그 기간에 그 역할만 한 것처럼 읽힌다
@@ -106,9 +120,65 @@ class ReportScreenTest {
 
         onNodeWithText("최근 4주 동안 뛴 경기가 없어요").assertExists()
     }
+
+    @Test
+    fun `고정 칸을 누르면 그 지표 설명 시트가 뜬다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved) }
+
+        onNodeWithText("어떻게 계산하나요?").assertDoesNotExist()
+        onNodeWithText("피해량").performClick()
+
+        onNodeWithText("ADR").assertExists()
+        onNodeWithText("어떻게 계산하나요?").assertExists()
+    }
+
+    // CLAUDE.md: 총량을 더한 뒤 나눈다
+    @Test
+    fun `계산식에는 기간 합계를 그대로 적는다`() = runComposeUiTest {
+        setContent { Sheet(FixedMetric.DAMAGE, ReportPreviewData.moved) }
+
+        onNodeWithText("20,108 피해 ÷ 146라운드 = 138").assertExists()
+    }
+
+    @Test
+    fun `헤드샷 계산식은 맞힌 탄 기준이다`() = runComposeUiTest {
+        setContent { Sheet(FixedMetric.HEADSHOT_RATE, ReportPreviewData.moved) }
+
+        onNodeWithText("머리 92발 ÷ 맞힌 탄 429발 = 21%").assertExists()
+    }
+
+    // CLAUDE.md: 비교 대상은 본인의 과거뿐이다
+    @Test
+    fun `평소 범위는 내 지난 주간 값으로 말한다`() = runComposeUiTest {
+        setContent { Sheet(FixedMetric.DAMAGE, ReportPreviewData.moved) }
+
+        onNodeWithText("지난 7주 동안 주마다 126~135 사이였어요.").assertExists()
+    }
+
+    @Test
+    fun `액트가 바뀌어 앞선 주가 모자라면 평소 범위를 말하지 않는다`() = runComposeUiTest {
+        setContent { Sheet(FixedMetric.DAMAGE, ReportPreviewData.newAct) }
+
+        onNodeWithText("이번 액트 기록이 4주 이상 쌓이면 평소 범위를 알려 드려요.").assertExists()
+        onNodeWithText("세로선은 액트가 바뀐 곳이에요").assertExists()
+    }
+
+    @Test
+    fun `데스가 없으면 K_D 계산식 대신 비워 둔 이유를 적는다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved.let { it.copy(metrics = it.metrics.copy(deaths = 0)) }
+        setContent { Sheet(FixedMetric.KD, report) }
+
+        onNodeWithText("데스가 없어서", substring = true).assertExists()
+        onNodeWithText("킬 ÷", substring = true).assertDoesNotExist()
+    }
 }
 
 @Composable
 private fun Report(report: WeeklyReport, queueFilter: QueueFilter = QueueFilter.COMPETITIVE_AND_UNRATED) {
     OvalitTheme { ReportScreen(ReportUiState.Success(queueFilter, report), onSelectQueue = {}) }
+}
+
+@Composable
+private fun Sheet(metric: FixedMetric, report: WeeklyReport.Ready) {
+    OvalitTheme { MetricSheetBody(metric, report) }
 }

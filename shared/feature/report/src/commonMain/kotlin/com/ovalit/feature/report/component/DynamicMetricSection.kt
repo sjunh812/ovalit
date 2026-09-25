@@ -41,7 +41,8 @@ import com.ovalit.feature.report.valueText
 import org.jetbrains.compose.resources.stringResource
 
 // 세 칸을 한 화면에 다 넣지 않고 세 번째 칸이 살짝 잘리게 둔다. 옆으로 밀린다는 걸 보여 준다.
-private val ColumnWidth = 150.dp
+// 간격은 구분선 양옆에만 둔다. 칸 폭에 간격을 넣으면 첫 칸만 내용이 넓어진다.
+private val ColumnWidth = 124.dp
 private val ColumnGap = 18.dp
 
 @Composable
@@ -58,17 +59,16 @@ internal fun DynamicMetricSection(report: WeeklyReport.Ready, modifier: Modifier
                 .padding(horizontal = OvalitSpacing.gutter),
         ) {
             report.dynamic.forEachIndexed { index, slot ->
-                if (index > 0) VerticalLine()
+                if (index > 0) {
+                    Spacer(Modifier.width(ColumnGap))
+                    VerticalLine()
+                    Spacer(Modifier.width(ColumnGap))
+                }
                 DynamicMetricColumn(
                     slot = slot,
                     metrics = report.metrics,
                     baseline = report.baseline,
-                    modifier = Modifier
-                        .width(ColumnWidth)
-                        .padding(
-                            start = if (index > 0) ColumnGap else 0.dp,
-                            end = if (index < report.dynamic.lastIndex) ColumnGap else 0.dp,
-                        ),
+                    modifier = Modifier.width(ColumnWidth),
                 )
             }
         }

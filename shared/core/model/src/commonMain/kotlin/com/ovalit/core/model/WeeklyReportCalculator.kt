@@ -13,6 +13,8 @@ import kotlinx.datetime.toLocalDateTime
 const val MIN_MATCHES_PER_REPORT = 5
 const val MAX_REPORT_WEEKS = 4
 const val BASELINE_WEEKS = 4
+const val TREND_WEEKS = 8
+const val MIN_TREND_ROUNDS = 40
 
 /**
  * 주는 [timeZone] 기준 월요일 0시에 바뀝니다. 이번 주는 [now]가 속한, 아직 끝나지 않은 주입니다.
@@ -64,7 +66,28 @@ fun Iterable<Match>.weeklyReport(
         } else {
             emptyList()
         },
+        trend = counted.trendWeeks(end = end, period = period, timeZone = timeZone),
     )
+}
+
+// 첫 수집 범위가 8주라 막대도 8주다. 지난 액트 주도 그리되 경계에 전환 표시를 한다.
+private fun List<Match>.trendWeeks(end: LocalDate, period: ReportPeriod, timeZone: TimeZone): List<TrendWeek> {
+    val byWeek = groupBy { it.startedAt.weekStart(timeZone) }
+    var previousAct: ActId? = null
+
+    return (TREND_WEEKS downTo 1).map { weeksBefore ->
+        val firstDay = end.minusWeeks(weeksBefore)
+        val week = byWeek[firstDay].orEmpty()
+        val act = week.maxByOrNull { it.startedAt }?.act
+        val metrics = week.filter { it.act == act }.totalMetrics()
+        TrendWeek(
+            firstDay = firstDay,
+            act = act,
+            metrics = metrics.takeIf { it.rounds >= MIN_TREND_ROUNDS },
+            startsNewAct = act != null && previousAct != null && act != previousAct,
+            inPeriod = firstDay >= period.firstDay,
+        ).also { if (act != null) previousAct = act }
+    }
 }
 
 private fun List<Match>.mainRole(): Role? = this

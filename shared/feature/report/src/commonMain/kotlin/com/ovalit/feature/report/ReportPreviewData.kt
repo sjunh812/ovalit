@@ -9,8 +9,11 @@ import com.ovalit.core.model.Movement
 import com.ovalit.core.model.ReportPeriod
 import com.ovalit.core.model.Role
 import com.ovalit.core.model.Shots
+import com.ovalit.core.model.TrendWeek
 import com.ovalit.core.model.WeeklyReport
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
 
 // 프리뷰와 UI 테스트가 같이 쓴다. 숫자는 가짜 저장소가 목요일 밤에 내놓는 값에 맞췄다.
 internal object ReportPreviewData {
@@ -50,8 +53,40 @@ internal object ReportPreviewData {
         weeks = 4,
     )
 
+    private val act = ActId("preview")
+    private val previousAct = ActId("previous")
+
+    // 7주 전부터 이번 주까지. 셋째 주는 두 판만 뛰어 막대가 비어 있다.
+    private val weeklyDamagePerRound = listOf(128, 131, null, 126, 135, 129, 133)
+
+    private val trend = weeklyDamagePerRound.mapIndexed { index, adr ->
+        TrendWeek(
+            firstDay = LocalDate(2026, 8, 3).plus(index, DateTimeUnit.WEEK),
+            act = act,
+            metrics = adr?.let { lastWeekLike(damagePerRound = it, headshots = 80 + index * 3) },
+            startsNewAct = false,
+            inPeriod = false,
+        )
+    } + TrendWeek(LocalDate(2026, 9, 21), act, thisWeek, startsNewAct = false, inPeriod = true)
+
+    private fun lastWeekLike(damagePerRound: Int, headshots: Int) = MatchMetrics(
+        matches = 7,
+        rounds = 150,
+        kills = 115,
+        deaths = 90,
+        assists = 32,
+        combatScore = 25_800 + damagePerRound * 10,
+        damage = damagePerRound * 150,
+        shots = Shots(head = headshots, body = 320, leg = 30),
+        kastRounds = 128,
+        survivedRounds = 62,
+        firstKills = 26,
+        firstDeaths = 22,
+        firstKillRoundsWon = 17,
+    )
+
     val moved = WeeklyReport.Ready(
-        act = ActId("preview"),
+        act = act,
         period = ReportPeriod(firstDay = LocalDate(2026, 9, 21), weeks = 1, includesThisWeek = true),
         metrics = thisWeek,
         baseline = lastFourWeeks,
@@ -61,6 +96,18 @@ internal object ReportPreviewData {
             DynamicSlot(DynamicMetric.SURVIVAL_RATE, Movement.MOVED),
             DynamicSlot(DynamicMetric.KAST, Movement.STEADY),
         ),
+        trend = trend,
+    )
+
+    // 4주 전에 액트가 바뀌었다. 그 앞 주는 평소 범위에서 빠진다.
+    val newAct = moved.copy(
+        trend = trend.mapIndexed { index, week ->
+            when {
+                index < 4 -> week.copy(act = previousAct)
+                index == 4 -> week.copy(startsNewAct = true)
+                else -> week
+            }
+        },
     )
 
     val steady = moved.copy(

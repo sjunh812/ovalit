@@ -1,20 +1,26 @@
 package com.ovalit.feature.report.component
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.icon.OvalitIcon
+import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Baseline
@@ -26,6 +32,7 @@ import com.ovalit.feature.report.label
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.baseline_average
 import com.ovalit.feature.report.resources.baseline_missing
+import com.ovalit.feature.report.resources.sheet_open
 import com.ovalit.feature.report.resources.summary_per_match
 import com.ovalit.feature.report.valueText
 import org.jetbrains.compose.resources.stringResource
@@ -40,6 +47,7 @@ internal fun FixedMetricRow(
     metrics: MatchMetrics,
     baseline: Baseline?,
     fixedMetrics: List<FixedMetric>,
+    onOpenMetric: (FixedMetric) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -48,18 +56,19 @@ internal fun FixedMetricRow(
             .height(IntrinsicSize.Min)
             .padding(horizontal = OvalitSpacing.gutter),
     ) {
+        // 간격은 구분선 양옆에만 둔다. 칸 폭에 간격을 넣으면 가운데 칸만 좁아진다.
         fixedMetrics.forEachIndexed { index, metric ->
-            if (index > 0) VerticalLine()
+            if (index > 0) {
+                Spacer(Modifier.width(CellGap))
+                VerticalLine()
+                Spacer(Modifier.width(CellGap))
+            }
             FixedMetricCell(
                 metric = metric,
                 metrics = metrics,
                 baseline = baseline,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(
-                        start = if (index > 0) CellGap else 0.dp,
-                        end = if (index < fixedMetrics.lastIndex) CellGap else 0.dp,
-                    ),
+                onClick = { onOpenMetric(metric) },
+                modifier = Modifier.weight(1f),
             )
         }
     }
@@ -70,22 +79,33 @@ private fun FixedMetricCell(
     metric: FixedMetric,
     metrics: MatchMetrics,
     baseline: Baseline?,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val current = metric.value(metrics)
     val usual = baseline?.let { metric.value(it.metrics) }
+    val label = stringResource(metric.label)
 
     Column(
-        modifier = modifier.semantics(mergeDescendants = true) {},
+        modifier = modifier.clickable(
+            onClickLabel = stringResource(Res.string.sheet_open, label),
+            role = Role.Button,
+            onClick = onClick,
+        ),
         verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
-        OvalitText(
-            text = stringResource(metric.label),
-            style = OvalitTheme.typography.caption,
-            color = OvalitTheme.colors.t2,
-            maxLines = 1,
-            autoSize = shrinkToFit(OvalitTheme.typography.caption.fontSize),
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            OvalitText(
+                text = label,
+                modifier = Modifier.weight(1f, fill = false),
+                style = OvalitTheme.typography.caption,
+                color = OvalitTheme.colors.t2,
+                maxLines = 1,
+                autoSize = shrinkToFit(OvalitTheme.typography.caption.fontSize),
+            )
+            Spacer(Modifier.width(3.dp))
+            OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = OvalitTheme.colors.t4, size = 10.dp)
+        }
         OvalitText(
             text = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
             style = OvalitTheme.typography.metricM,

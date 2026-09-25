@@ -76,6 +76,7 @@ private fun ColorTokens() {
         SurfaceSwatch("bg", colors.bg)
         SurfaceSwatch("raised", colors.raised)
         SurfaceSwatch("fill", colors.fill)
+        SurfaceSwatch("bar", colors.bar)
         SurfaceSwatch("line", colors.line)
         SurfaceSwatch("lineWeak", colors.lineWeak)
 

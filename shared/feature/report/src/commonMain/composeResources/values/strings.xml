@@ -52,4 +52,32 @@
     <string name="not_enough_title">리포트까지 %1$d경기 남았어요</string>
     <string name="not_enough_title_none">최근 4주 동안 뛴 경기가 없어요</string>
     <string name="not_enough_body">%1$d경기를 뛰면 리포트를 만들어 드려요</string>
+    <!-- S1-a 지표 설명 시트. 화면 라벨은 한글이고 정식 명칭은 여기서 알려준다. -->
+    <string name="sheet_open">%1$s 설명 보기</string>
+    <string name="sheet_combat_score_name">ACS</string>
+    <string name="sheet_combat_score_body">킬, 피해, 어시스트로 쌓이는 전투 점수를 라운드마다 평균 낸 값이에요. 스코어보드에 뜨는 그 숫자예요.</string>
+    <string name="sheet_combat_score_method">경기마다 받은 전투 점수를 전부 더해 뛴 라운드 수로 나눠요.</string>
+    <string name="sheet_combat_score_formula">%1$s점 ÷ %2$s라운드 = %3$s</string>
+    <string name="sheet_kd_body">한 번 죽을 때마다 적을 몇 번 처치했는지예요.</string>
+    <string name="sheet_kd_method">킬을 전부 더해 데스 수로 나눠요. 스킬로 자기나 우리 팀을 죽인 건 킬로 세지 않고, 자기를 죽인 건 데스로 세요.</string>
+    <string name="sheet_kd_formula">%1$s킬 ÷ %2$s데스 = %3$s</string>
+    <string name="sheet_damage_name">ADR</string>
+    <string name="sheet_damage_body">한 라운드에 적에게 입힌 피해의 평균이에요. 킬로 이어지지 않은 피해도 들어가요.</string>
+    <string name="sheet_damage_method">경기에서 입힌 피해를 전부 더해 뛴 라운드 수로 나눠요.</string>
+    <string name="sheet_damage_formula">%1$s 피해 ÷ %2$s라운드 = %3$s</string>
+    <string name="sheet_headshot_name">HS%</string>
+    <string name="sheet_headshot_body">맞힌 탄 중 머리에 맞은 탄의 비율이에요. 킬 중 헤드샷 킬의 비율과는 달라요.</string>
+    <string name="sheet_headshot_method">머리에 맞은 탄을 머리, 몸, 다리에 맞힌 탄 전체로 나눠요. 경기마다 비율을 먼저 내지 않고 탄 수를 다 더한 뒤에 나눠요.</string>
+    <string name="sheet_headshot_formula">머리 %1$s발 ÷ 맞힌 탄 %2$s발 = %3$s</string>
+    <string name="sheet_sample_matches">%1$s %2$d경기</string>
+    <string name="sheet_sample_rounds">%1$d라운드</string>
+    <string name="sheet_trend_start">%1$d주 전</string>
+    <string name="sheet_trend_act_marker">세로선은 액트가 바뀐 곳이에요</string>
+    <string name="sheet_trend_description">주별 %1$s: %2$s</string>
+    <string name="sheet_usual_title">평소에는 어느 정도였나요?</string>
+    <string name="sheet_usual_range">지난 %1$d주 동안 주마다 %2$s~%3$s 사이였어요.</string>
+    <string name="sheet_usual_same">지난 %1$d주 동안 주마다 %2$s였어요.</string>
+    <string name="sheet_usual_missing">이번 액트 기록이 4주 이상 쌓이면 평소 범위를 알려 드려요.</string>
+    <string name="sheet_method_title">어떻게 계산하나요?</string>
+    <string name="sheet_kd_no_deaths">데스가 없어서 K/D를 비워 뒀어요. 킬 수를 그대로 보여주면 한 판짜리 기록이 과장돼요.</string>
 </resources>

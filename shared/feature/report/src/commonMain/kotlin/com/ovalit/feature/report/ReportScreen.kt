@@ -12,12 +12,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MIN_MATCHES_PER_REPORT
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
@@ -25,6 +29,7 @@ import com.ovalit.feature.report.component.DynamicMetricSection
 import com.ovalit.feature.report.component.FixedMetricRow
 import com.ovalit.feature.report.component.FixedMetricSummary
 import com.ovalit.feature.report.component.HorizontalLine
+import com.ovalit.feature.report.component.MetricSheet
 import com.ovalit.feature.report.component.PeriodHeader
 import com.ovalit.feature.report.component.QueueChips
 import com.ovalit.feature.report.component.ReportTopBar
@@ -87,9 +92,16 @@ internal fun ReportScreen(
 
 @Composable
 private fun ReportContent(report: WeeklyReport.Ready, queueFilter: QueueFilter) {
+    var openMetric by rememberSaveable { mutableStateOf<FixedMetric?>(null) }
+
     PeriodHeader(report)
     Spacer(Modifier.height(OvalitSpacing.lg))
-    FixedMetricRow(metrics = report.metrics, baseline = report.baseline, fixedMetrics = queueFilter.fixedMetrics)
+    FixedMetricRow(
+        metrics = report.metrics,
+        baseline = report.baseline,
+        fixedMetrics = queueFilter.fixedMetrics,
+        onOpenMetric = { openMetric = it },
+    )
     Spacer(Modifier.height(13.dp))
     FixedMetricSummary(metrics = report.metrics, baseline = report.baseline, fixedMetrics = queueFilter.fixedMetrics)
     Spacer(Modifier.height(22.dp))
@@ -105,6 +117,10 @@ private fun ReportContent(report: WeeklyReport.Ready, queueFilter: QueueFilter) 
             style = OvalitTheme.typography.caption,
             color = OvalitTheme.colors.t3,
         )
+    }
+
+    openMetric?.let { metric ->
+        MetricSheet(metric = metric, report = report, onDismiss = { openMetric = null })
     }
 }
 

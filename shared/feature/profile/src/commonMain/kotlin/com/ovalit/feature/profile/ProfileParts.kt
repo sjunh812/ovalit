@@ -77,13 +77,15 @@ internal fun Double.percentSteps(): Int = (this * 100).roundToInt()
 internal fun percentText(rate: Double?): String =
     rate?.let { stringResource(Res.string.value_percent, it.percentSteps().toString()) } ?: NO_VALUE
 
-// 기본 스킨 총은 짙은 회색이라 다크 테마 바탕에 묻힌다. 목업의 무기 칸처럼 옅은 면 위에 올린다.
+// 기본 스킨 총은 짙은 회색이라 다크 테마 바탕에 묻힌다. 목업의 무기 칸처럼 옅은 면 위에 올리고, 다크에서는
+// `--fill`로도 모양이 안 보여서 한 단계 밝은 `--t5`까지 올린다. 라이트에서는 `--fill`로 충분하다.
 @Composable
 internal fun WeaponThumb(weapon: WeaponId, name: String, width: Dp, height: Dp) {
+    val colors = OvalitTheme.colors
     Box(
         modifier = Modifier
             .size(width = width, height = height)
-            .background(OvalitTheme.colors.fill, RoundedCornerShape(4.dp))
+            .background(if (colors.isDark) colors.t5 else colors.fill, RoundedCornerShape(4.dp))
             .padding(horizontal = 4.dp, vertical = 3.dp),
     ) {
         WeaponImage(weapon, name, Modifier.fillMaxSize())

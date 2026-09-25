@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ovalit.core.designsystem.component.OvalitPullToRefresh
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
@@ -59,6 +60,7 @@ fun ReportRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val badge by viewModel.badge.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
 
     ReportScreen(
         uiState = uiState,
@@ -67,6 +69,8 @@ fun ReportRoute(
         onOpenProfile = onOpenProfile,
         onShareInvite = onShareInvite,
         onSelectRival = viewModel::selectRival,
+        isRefreshing = isRefreshing,
+        onRefresh = viewModel::refresh,
         modifier = modifier,
     )
 }
@@ -80,6 +84,8 @@ internal fun ReportScreen(
     onOpenProfile: () -> Unit = {},
     onShareInvite: () -> Unit = {},
     onSelectRival: (PlayerId) -> Unit = {},
+    isRefreshing: Boolean = false,
+    onRefresh: () -> Unit = {},
 ) {
     Box(
         modifier = modifier
@@ -94,31 +100,32 @@ internal fun ReportScreen(
                 Spacer(Modifier.height(OvalitSpacing.xs))
                 ReportSkeleton()
             }
-            is ReportUiState.Success -> Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .safeDrawingPadding()
-                    .verticalScroll(rememberScrollState()),
+            is ReportUiState.Success -> OvalitPullToRefresh(
+                isRefreshing = isRefreshing,
+                onRefresh = onRefresh,
+                modifier = Modifier.fillMaxSize().safeDrawingPadding(),
             ) {
-                ReportTopBar(badge = badge, onOpenProfile = onOpenProfile)
-                Spacer(Modifier.height(OvalitSpacing.xs))
-                QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
-                Spacer(Modifier.height(OvalitSpacing.md))
+                Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                    ReportTopBar(badge = badge, onOpenProfile = onOpenProfile)
+                    Spacer(Modifier.height(OvalitSpacing.xs))
+                    QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
+                    Spacer(Modifier.height(OvalitSpacing.md))
 
-                when (val report = uiState.report) {
-                    is WeeklyReport.Ready -> ReportContent(
-                        report = report,
-                        queueFilter = uiState.queueFilter,
-                        rival = uiState.rival,
-                        friends = uiState.friends,
-                        nudge = uiState.nudge,
-                        onShareInvite = onShareInvite,
-                        onSelectRival = onSelectRival,
-                    )
-                    is WeeklyReport.NotEnoughMatches -> NotEnoughMatches(played = report.played)
+                    when (val report = uiState.report) {
+                        is WeeklyReport.Ready -> ReportContent(
+                            report = report,
+                            queueFilter = uiState.queueFilter,
+                            rival = uiState.rival,
+                            friends = uiState.friends,
+                            nudge = uiState.nudge,
+                            onShareInvite = onShareInvite,
+                            onSelectRival = onSelectRival,
+                        )
+                        is WeeklyReport.NotEnoughMatches -> NotEnoughMatches(played = report.played)
+                    }
+
+                    Spacer(Modifier.height(OvalitSpacing.xxl))
                 }
-
-                Spacer(Modifier.height(OvalitSpacing.xxl))
             }
         }
     }

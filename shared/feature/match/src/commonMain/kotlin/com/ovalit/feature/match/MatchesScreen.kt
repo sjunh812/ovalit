@@ -34,6 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitChip
 import com.ovalit.core.designsystem.component.OvalitDivider
+import com.ovalit.core.designsystem.component.OvalitPullToRefresh
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTextButton
@@ -75,11 +76,14 @@ fun MatchesRoute(
     viewModel: MatchesViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     MatchesScreen(
         uiState = uiState,
         onSelectQueue = viewModel::selectQueue,
         onFilter = viewModel::setFilter,
         onOpenMatch = onOpenMatch,
+        isRefreshing = isRefreshing,
+        onRefresh = viewModel::refresh,
         modifier = modifier,
     )
 }
@@ -91,6 +95,8 @@ internal fun MatchesScreen(
     onFilter: (MatchFilter) -> Unit,
     onOpenMatch: (MatchId) -> Unit,
     modifier: Modifier = Modifier,
+    isRefreshing: Boolean = false,
+    onRefresh: () -> Unit = {},
 ) {
     val colors = OvalitTheme.colors
     var filtering by rememberSaveable { mutableStateOf(false) }
@@ -98,47 +104,53 @@ internal fun MatchesScreen(
     Box(modifier = modifier.fillMaxSize().background(colors.bg)) {
         if (uiState !is MatchesUiState.Success) return@Box
 
-        LazyColumn(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
-            item {
-                OvalitTabHeader(title = stringResource(Res.string.matches_title)) {
-                    FilterButton(active = uiState.filter.isActive, onClick = { filtering = true })
-                }
-                Spacer(Modifier.height(OvalitSpacing.xs))
-                QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
-                Spacer(Modifier.height(OvalitSpacing.md))
-            }
-
-            if (uiState.days.isEmpty()) {
+        OvalitPullToRefresh(
+            isRefreshing = isRefreshing,
+            onRefresh = onRefresh,
+            modifier = Modifier.fillMaxSize().safeDrawingPadding(),
+        ) {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
                 item {
-                    OvalitText(
-                        text = stringResource(if (uiState.filter.isActive) Res.string.empty_filter else Res.string.empty_queue),
-                        modifier = Modifier.padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.xl),
-                        style = OvalitTheme.typography.body,
-                        color = colors.t2,
-                    )
+                    OvalitTabHeader(title = stringResource(Res.string.matches_title)) {
+                        FilterButton(active = uiState.filter.isActive, onClick = { filtering = true })
+                    }
+                    Spacer(Modifier.height(OvalitSpacing.xs))
+                    QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
+                    Spacer(Modifier.height(OvalitSpacing.md))
                 }
-            }
 
-            uiState.days.forEach { day ->
-                item(key = "day-${day.date}") {
-                    DayHeader(day.date, today = uiState.now.toLocalDateTime(uiState.timeZone).date)
-                }
-                items(day.matches, key = { it.id.value }) { match ->
-                    Column {
-                        MatchRow(
-                            match = match,
-                            catalog = uiState.catalog,
-                            timeLabel = matchTimeLabel(match.startedAt, uiState.now, uiState.timeZone),
-                            style = MatchRowStyle.LIST,
-                            onClick = { onOpenMatch(match.id) },
+                if (uiState.days.isEmpty()) {
+                    item {
+                        OvalitText(
+                            text = stringResource(if (uiState.filter.isActive) Res.string.empty_filter else Res.string.empty_queue),
+                            modifier = Modifier.padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.xl),
+                            style = OvalitTheme.typography.body,
+                            color = colors.t2,
                         )
-                        if (match != day.matches.last()) {
-                            OvalitDivider(Modifier.padding(start = 87.dp), color = colors.lineWeak)
+                    }
+                }
+
+                uiState.days.forEach { day ->
+                    item(key = "day-${day.date}") {
+                        DayHeader(day.date, today = uiState.now.toLocalDateTime(uiState.timeZone).date)
+                    }
+                    items(day.matches, key = { it.id.value }) { match ->
+                        Column {
+                            MatchRow(
+                                match = match,
+                                catalog = uiState.catalog,
+                                timeLabel = matchTimeLabel(match.startedAt, uiState.now, uiState.timeZone),
+                                style = MatchRowStyle.LIST,
+                                onClick = { onOpenMatch(match.id) },
+                            )
+                            if (match != day.matches.last()) {
+                                OvalitDivider(Modifier.padding(start = 87.dp), color = colors.lineWeak)
+                            }
                         }
                     }
                 }
+                item { Spacer(Modifier.height(OvalitSpacing.xxl)) }
             }
-            item { Spacer(Modifier.height(OvalitSpacing.xxl)) }
         }
     }
 

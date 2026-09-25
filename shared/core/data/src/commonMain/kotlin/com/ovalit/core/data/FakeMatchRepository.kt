@@ -59,6 +59,22 @@ class FakeMatchRepository(
         }
     }
 
+    // 당길 때마다 방금 끝난 경기를 한 판 받은 것처럼 한다. 새로고침과 숫자가 바뀌는 모습을 가짜 데이터로도 본다.
+    override suspend fun refresh(): Int {
+        delay(REFRESH_DELAY)
+        refreshed++
+        val now = clock.now()
+        // 경쟁전으로 고른다. 기타 모드 경기를 받으면 홈 리포트 숫자가 그대로라 새로고침한 티가 안 난다.
+        val fresh = fakeMatches(now, seed = SEED + refreshed, withFriends = false)
+            .filter { it.queue == Queue.COMPETITIVE }
+            .maxBy { it.startedAt }
+            .copy(id = MatchId("fresh-$refreshed"), startedAt = now - JUST_FINISHED)
+        matches.update { it + fresh }
+        return 1
+    }
+
+    private var refreshed = 0
+
     override suspend fun deleteAll() {
         matches.value = emptyList()
     }
@@ -67,6 +83,8 @@ class FakeMatchRepository(
 }
 
 private const val SEED = 923
+private val REFRESH_DELAY = 700.milliseconds
+private val JUST_FINISHED = 3.minutes
 private const val DAYS = 70
 
 private const val USUAL_FIRST_DUEL_RATE = 0.28

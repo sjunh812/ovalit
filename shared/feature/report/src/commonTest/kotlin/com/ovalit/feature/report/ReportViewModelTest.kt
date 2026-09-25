@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -179,6 +180,21 @@ class ReportViewModelTest {
         assertEquals(null, assertIs<ReportUiState.Success>(viewModel.uiState.value).nudge)
     }
 
+    @Test
+    fun `홈을 당겨 새 경기를 받으면 리포트를 다시 만든다`() = runTest {
+        val matches = FakeMatchRepository(ThursdayClock)
+        val viewModel = ReportViewModel(matches, NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+        val before = assertIs<WeeklyReport.Ready>(assertIs<ReportUiState.Success>(viewModel.uiState.value).report).metrics.matches
+
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        val after = assertIs<WeeklyReport.Ready>(assertIs<ReportUiState.Success>(viewModel.uiState.value).report).metrics.matches
+        assertEquals(before + 1, after)
+        assertEquals(false, viewModel.isRefreshing.value)
+    }
+
     // 리포트를 만들 기록이 모자라면 그 안내가 먼저다. 친구가 없어도 초대를 권하지 않는다.
     @Test
     fun `리포트를 만들 기록이 없으면 아무것도 권하지 않는다`() {
@@ -275,6 +291,8 @@ private class StubRepository(
     override fun observeMatches(): Flow<List<Match>> = matches
 
     override suspend fun importRecent() = Unit
+
+    override suspend fun refresh() = 0
 
     override suspend fun deleteAll() = Unit
 }

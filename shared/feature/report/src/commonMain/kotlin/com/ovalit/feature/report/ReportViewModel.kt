@@ -76,7 +76,7 @@ data class FriendStanding(
 )
 
 class ReportViewModel(
-    matchRepository: MatchRepository,
+    private val matchRepository: MatchRepository,
     accountRepository: AccountRepository,
     preferencesRepository: UserPreferencesRepository,
     private val friendRepository: FriendRepository,
@@ -87,6 +87,11 @@ class ReportViewModel(
 
     // 칩으로 고르기 전까지는 설정의 기본 큐를 따른다. 고른 칩은 이 화면에 있는 동안만 유지한다.
     private val selectedQueue = MutableStateFlow<QueueFilter?>(null)
+
+    private val refreshing = MutableStateFlow(false)
+
+    /** 홈을 당겨 새 경기를 받는 중인지입니다. */
+    val isRefreshing: StateFlow<Boolean> = refreshing
 
     // 첫 수집이 끝나기 전에는 숫자를 띄우지 않는다. 헤드샷 24%가 잠시 뒤 19%로 바뀌면 그 뒤로 숫자를 믿지 않는다.
     private val importedMatches = combine(matchRepository.observeMatches(), matchRepository.importProgress) { matches, progress ->
@@ -135,6 +140,19 @@ class ReportViewModel(
 
     fun selectQueue(filter: QueueFilter) {
         selectedQueue.value = filter
+    }
+
+    /** 새로 끝난 경기를 받습니다. 받는 중에 또 당기면 무시합니다. 실패해도 저장해 둔 경기는 그대로 둡니다. */
+    fun refresh() {
+        if (refreshing.value) return
+        refreshing.value = true
+        viewModelScope.launch {
+            try {
+                runCatching { matchRepository.refresh() }
+            } finally {
+                refreshing.value = false
+            }
+        }
     }
 
     /** 홈의 유도 칸에서 고른 라이벌입니다. S5의 라이벌 지정과 같은 값을 바꿉니다. */

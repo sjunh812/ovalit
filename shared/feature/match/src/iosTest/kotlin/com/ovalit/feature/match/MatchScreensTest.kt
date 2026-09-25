@@ -6,7 +6,10 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
@@ -103,6 +106,17 @@ class MatchScreensTest {
         onShareInvite: () -> Unit = {},
     ) {
         MatchDetailScreen(MatchPreviewData.detail, {}, onOpenFriend, onSendRequest, {}, onShareInvite)
+    }
+
+    @Test
+    fun `목록을 끌어내리면 새 경기를 받는다`() = runComposeUiTest {
+        var refreshed = false
+        setContent { Themed { MatchesScreen(MatchPreviewData.matches, {}, {}, {}, onRefresh = { refreshed = true }) } }
+
+        onRoot().performTouchInput { swipeDown(startY = top + 40f, endY = bottom, durationMillis = 500) }
+        waitForIdle()
+
+        assertTrue(refreshed)
     }
 }
 

@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -48,7 +49,7 @@ data class MatchDay(val date: LocalDate, val matches: List<Match>)
 
 /** S2 경기 목록입니다. 경기는 값이 바뀌지 않고 늘어나기만 해서, 받는 대로 목록에 채웁니다. */
 class MatchesViewModel(
-    matchRepository: MatchRepository,
+    private val matchRepository: MatchRepository,
     preferencesRepository: UserPreferencesRepository,
     contentRepository: ContentRepository,
     private val clock: Clock,
@@ -58,6 +59,10 @@ class MatchesViewModel(
     // 홈과 마찬가지로 칩을 고르기 전까지는 설정의 기본 큐를 따른다
     private val selectedQueue = MutableStateFlow<QueueFilter?>(null)
     private val filter = MutableStateFlow(MatchFilter())
+    private val refreshing = MutableStateFlow(false)
+
+    /** 목록을 당겨 새 경기를 받는 중인지입니다. */
+    val isRefreshing: StateFlow<Boolean> = refreshing
 
     val uiState: StateFlow<MatchesUiState> = combine(
         matchRepository.observeMatches(),
@@ -88,6 +93,19 @@ class MatchesViewModel(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = MatchesUiState.Loading,
     )
+
+    /** 새로 끝난 경기를 받습니다. 받는 중에 또 당기면 무시합니다. 실패해도 저장해 둔 경기는 그대로 둡니다. */
+    fun refresh() {
+        if (refreshing.value) return
+        refreshing.value = true
+        viewModelScope.launch {
+            try {
+                runCatching { matchRepository.refresh() }
+            } finally {
+                refreshing.value = false
+            }
+        }
+    }
 
     fun selectQueue(queueFilter: QueueFilter) {
         selectedQueue.value = queueFilter

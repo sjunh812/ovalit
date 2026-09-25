@@ -12,6 +12,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlin.time.Clock
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -86,6 +88,34 @@ class MatchesViewModelTest {
         val counts = state.days.flatMap { it.matches }.groupingBy { it.myAgent }.eachCount()
 
         assertEquals(state.agents.map { counts.getValue(it) }, state.agents.map { counts.getValue(it) }.sortedDescending())
+    }
+
+    @Test
+    fun `당겨서 새로고침하면 방금 끝난 경기를 맨 위에 올린다`() = runTest {
+        val viewModel = viewModel()
+        val before = collect(viewModel).days.sumOf { it.matches.size }
+
+        viewModel.refresh()
+        assertTrue(viewModel.isRefreshing.value)
+        advanceUntilIdle()
+
+        val state = assertIs<MatchesUiState.Success>(viewModel.uiState.value)
+        assertFalse(viewModel.isRefreshing.value)
+        assertEquals(before + 1, state.days.sumOf { it.matches.size })
+        assertEquals("fresh-1", state.days.first().matches.first().id.value)
+    }
+
+    // 받는 중에 또 당기면 같은 경기를 두 번 받는다. 레이트 리밋도 두 배로 쓴다.
+    @Test
+    fun `받는 중에 또 당겨도 한 번만 받는다`() = runTest {
+        val viewModel = viewModel()
+        val before = collect(viewModel).days.sumOf { it.matches.size }
+
+        viewModel.refresh()
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        assertEquals(before + 1, assertIs<MatchesUiState.Success>(viewModel.uiState.value).days.sumOf { it.matches.size })
     }
 
     private fun viewModel(preferences: UserPreferences = UserPreferences.Default) = MatchesViewModel(

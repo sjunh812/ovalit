@@ -19,6 +19,14 @@ interface MatchRepository {
      */
     suspend fun importRecent()
 
+    /**
+     * 첫 수집 뒤에 새로 끝난 경기를 받습니다. 홈과 경기 탭을 당겨서 부릅니다. 끝난 경기는 결과가 바뀌지 않아
+     * 저장해 둔 경기는 다시 받지 않고 목록에 없는 경기만 받습니다.
+     *
+     * @return 새로 받은 경기 수입니다.
+     */
+    suspend fun refresh(): Int
+
     /** 기기에 저장한 경기를 모두 지웁니다. Riot 계정 연동은 그대로 둡니다. */
     suspend fun deleteAll()
 }

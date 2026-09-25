@@ -15,3 +15,6 @@ captures/
 # Kotlin/Native
 *.hprof
 xcuserdata/
+
+# 에이전트가 만드는 작업 공간
+.claude/worktrees/

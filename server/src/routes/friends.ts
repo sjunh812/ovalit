@@ -3,7 +3,7 @@ import type { AppEnv } from "../env";
 import { ApiError } from "../errors";
 import { redactMatch } from "../redact";
 import { type Relation, relationsTo } from "../relations";
-import { playersOf, rawJson, riotFor } from "../riot";
+import { playersIn, rawJson, riotFor } from "../riot";
 import { requireSession } from "../session";
 import * as validate from "../validate";
 
@@ -66,7 +66,7 @@ friends.post("/requests", async (c) => {
   if (target === me.puuid) throw new ApiError(400, "cannot_friend_self");
 
   // 경기부터 확인한다. 상대가 앱을 쓰는지는 같이 뛴 사람에게만 알려준다.
-  const players = playersOf((await riotFor(c).match(matchId)).data);
+  const players = await riotFor(c).participants(matchId);
   if (!players.has(me.puuid) || !players.has(target)) throw new ApiError(403, "not_played_together");
 
   const related = (await relationsTo(c.env.DB, me.id, [target])).get(target);
@@ -159,10 +159,9 @@ friends.get("/:puuid/matchlist", async (c) => {
 
 friends.get("/:puuid/matches/:matchId", async (c) => {
   const friend = await visibleFriend(c, validate.puuid(c.req.param("puuid")));
-  const match = await riotFor(c).match(validate.matchId(c.req.param("matchId")));
-  const players = playersOf(match.data);
-  if (!players.has(friend)) throw new ApiError(403, "friend_not_in_match");
+  const match = await riotFor(c).matchWith(validate.matchId(c.req.param("matchId")), friend);
+  if (!match) throw new ApiError(403, "friend_not_in_match");
   // 내가 같이 뛴 경기면 다른 사람 기록도 원래 볼 수 있다.
-  if (players.has(c.var.user.puuid)) return rawJson(c, match.raw);
+  if (playersIn(match.data).has(c.var.user.puuid)) return rawJson(c, match.raw);
   return c.json(redactMatch(match.data, new Set([friend, c.var.user.puuid])));
 });

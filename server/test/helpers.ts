@@ -2,6 +2,7 @@ import { env } from "cloudflare:workers";
 import { createApp } from "../src/app";
 import { base64url } from "../src/crypto";
 import type { Env } from "../src/env";
+import { cacheKey, clearMemoryCaches } from "../src/riot";
 
 // 실제 키는 쓰지 않는다. 테스트는 .dev.vars를 읽지 않도록 값을 여기서 덮어쓴다.
 const TEST_SECRETS = {
@@ -79,6 +80,27 @@ export const RIOT = "https://kr.api.riotgames.com";
 
 export function matchUrl(matchId: string): string {
   return `${RIOT}/val/match/v1/matches/${matchId}`;
+}
+
+/** isolate 메모리와 Cache API를 모두 비웁니다. 그 뒤에도 Riot을 안 부르면 D1에서 답한 것입니다. */
+export async function forgetCaches(...riotPaths: string[]): Promise<void> {
+  clearMemoryCaches();
+  for (const path of riotPaths) await caches.default.delete(cacheKey("http://localhost", path));
+}
+
+export function matchPath(matchId: string): string {
+  return `/val/match/v1/matches/${matchId}`;
+}
+
+export async function recordPlayers(matchId: string, puuids: string[]): Promise<void> {
+  await env.DB.batch(
+    puuids.map((puuid) => env.DB.prepare("INSERT INTO match_players (match_id, puuid) VALUES (?, ?)").bind(matchId, puuid)),
+  );
+}
+
+export async function recordedPlayers(matchId: string): Promise<string[]> {
+  const { results } = await env.DB.prepare("SELECT puuid FROM match_players WHERE match_id = ?").bind(matchId).all<{ puuid: string }>();
+  return results.map((row) => row.puuid);
 }
 
 export interface FixturePlayer {

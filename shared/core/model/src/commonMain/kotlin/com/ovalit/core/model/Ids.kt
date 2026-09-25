@@ -25,3 +25,14 @@ value class ActId(val value: String)
 /** `kills[].finishingDamage.damageItem`입니다. 총기 종류까지만 가리키고 스킨은 모릅니다. */
 @JvmInline
 value class WeaponId(val value: String)
+
+/**
+ * 경기 응답의 `matchInfo.mapId`입니다. UUID로 올지 `/Game/Maps/Ascent/Ascent` 같은 경로로 올지 아직
+ * 확인하지 못했습니다. 어느 쪽이든 VAL-CONTENT의 맵 목록으로 이름과 UUID를 찾을 수 있습니다.
+ */
+@JvmInline
+value class MapId(val value: String)
+
+/** 경기 응답의 `players[].playerCard`입니다. 아바타와 프로필 배너에 씁니다. */
+@JvmInline
+value class PlayerCardId(val value: String)

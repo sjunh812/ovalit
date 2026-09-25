@@ -19,18 +19,23 @@ internal fun match(
     role: Role? = null,
     agent: AgentId = AgentId("agent"),
     won: Boolean? = null,
+    players: List<Scoreline> = emptyList(),
 ) = Match(
     id = MatchId("match"),
     queue = queue,
     act = act,
+    map = MapId("map"),
     startedAt = startedAt,
+    lengthMillis = 0,
     me = Me,
     myAgent = agent,
     myRole = role,
     allies = setOf(Ally, OtherAlly),
     myCombatScore = combatScore,
     myTeamWon = won,
+    roundOutcomes = rounds.map { it.won },
     rounds = rounds.toList(),
+    players = players,
 )
 
 internal fun round(
@@ -39,13 +44,17 @@ internal fun round(
     shots: Shots = Shots.None,
     won: Boolean = true,
     side: Side? = null,
+    number: Int = 1,
+    teamLoadout: Int? = null,
 ) = Round(
-    number = 1,
+    number = number,
     won = won,
     kills = kills.toList(),
     myDamage = damage,
     myShots = shots,
     mySide = side,
+    ending = null,
+    economy = teamLoadout?.let { RoundEconomy(myLoadout = it, teamLoadout = it, enemyLoadout = it) },
 )
 
 /** 아무 일도 없이 끝난 라운드. 나는 살아남는다. */

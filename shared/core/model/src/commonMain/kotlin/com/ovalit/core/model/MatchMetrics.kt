@@ -23,6 +23,12 @@ data class MatchMetrics(
     val firstKills: Int,
     val firstDeaths: Int,
     val firstKillRoundsWon: Int,
+    val ecoRounds: Int,
+    val ecoRoundsWon: Int,
+    val forceBuyRounds: Int,
+    val forceBuyRoundsWon: Int,
+    val fullBuyRounds: Int,
+    val fullBuyRoundsWon: Int,
 ) {
     /** 전투점수(ACS). 라운드당 전투 점수입니다. */
     val acs: Double? get() = combatScore over rounds
@@ -52,6 +58,13 @@ data class MatchMetrics(
     /** 첫 교전 승률. 첫 교전에 들어갔을 때 내가 퍼블을 딴 비율입니다. 라운드 승패와는 무관합니다. */
     val firstDuelWinRate: Double? get() = firstKills over (firstKills + firstDeaths)
 
+    /** 이코·포스바이·풀바이 승률은 우리 팀 평균 장비 가치로 라운드를 가른 뒤 그중 이긴 비율입니다. 가르는 기준은 [buyType]에 있습니다. */
+    val ecoWinRate: Double? get() = ecoRoundsWon over ecoRounds
+
+    val forceBuyWinRate: Double? get() = forceBuyRoundsWon over forceBuyRounds
+
+    val fullBuyWinRate: Double? get() = fullBuyRoundsWon over fullBuyRounds
+
     operator fun plus(other: MatchMetrics) = MatchMetrics(
         matches = matches + other.matches,
         rounds = rounds + other.rounds,
@@ -66,6 +79,12 @@ data class MatchMetrics(
         firstKills = firstKills + other.firstKills,
         firstDeaths = firstDeaths + other.firstDeaths,
         firstKillRoundsWon = firstKillRoundsWon + other.firstKillRoundsWon,
+        ecoRounds = ecoRounds + other.ecoRounds,
+        ecoRoundsWon = ecoRoundsWon + other.ecoRoundsWon,
+        forceBuyRounds = forceBuyRounds + other.forceBuyRounds,
+        forceBuyRoundsWon = forceBuyRoundsWon + other.forceBuyRoundsWon,
+        fullBuyRounds = fullBuyRounds + other.fullBuyRounds,
+        fullBuyRoundsWon = fullBuyRoundsWon + other.fullBuyRoundsWon,
     )
 
     companion object {
@@ -83,6 +102,12 @@ data class MatchMetrics(
             firstKills = 0,
             firstDeaths = 0,
             firstKillRoundsWon = 0,
+            ecoRounds = 0,
+            ecoRoundsWon = 0,
+            forceBuyRounds = 0,
+            forceBuyRoundsWon = 0,
+            fullBuyRounds = 0,
+            fullBuyRoundsWon = 0,
         )
     }
 }

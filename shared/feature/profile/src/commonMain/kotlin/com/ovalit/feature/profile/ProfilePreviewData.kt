@@ -38,6 +38,8 @@ internal object ProfilePreviewData {
             vandal to WeaponInfo("밴달", WeaponCategory.RIFLE),
             ghost to WeaponInfo("고스트", WeaponCategory.PISTOL),
         ),
+        maps = emptyMap(),
+        tiers = emptyMap(),
     )
 
     private fun metrics(rounds: Int, kast: Int, survived: Int, firstKills: Int = 10, firstDeaths: Int = 10) =
@@ -55,6 +57,12 @@ internal object ProfilePreviewData {
             firstKills = firstKills,
             firstDeaths = firstDeaths,
             firstKillRoundsWon = 0,
+            ecoRounds = 0,
+            ecoRoundsWon = 0,
+            forceBuyRounds = 0,
+            forceBuyRoundsWon = 0,
+            fullBuyRounds = 0,
+            fullBuyRoundsWon = 0,
         )
 
     val agents = AgentReport(

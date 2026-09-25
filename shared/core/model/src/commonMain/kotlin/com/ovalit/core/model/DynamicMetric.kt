@@ -24,6 +24,9 @@ enum class DynamicMetric(
     FIRST_DUEL_INVOLVEMENT({ it.firstDuelInvolvement }, { it.rounds }, 40),
     FIRST_DUEL_WIN_RATE({ it.firstDuelWinRate }, { it.firstKills + it.firstDeaths }, 15),
     ASSISTS_PER_ROUND({ it.assistsPerRound }, { it.rounds }, 40),
+    ECO_WIN_RATE({ it.ecoWinRate }, { it.ecoRounds }, 15),
+    FORCE_BUY_WIN_RATE({ it.forceBuyWinRate }, { it.forceBuyRounds }, 15),
+    FULL_BUY_WIN_RATE({ it.fullBuyWinRate }, { it.fullBuyRounds }, 40),
     ;
 
     internal fun isMeasurable(metrics: MatchMetrics) = sample(metrics) >= minSample
@@ -49,8 +52,8 @@ private val Defaults = listOf(
 )
 
 /**
- * 움직인 지표를 역할의 우선 지표부터, 그다음 많이 움직인 순으로 놓습니다. 남은 칸은 기본 지표로
- * 채웁니다. 역할이 크게 띄우지 않는 지표는 어느 쪽에도 넣지 않습니다.
+ * 움직인 지표를 역할의 우선 지표, 관심사 지표, 많이 움직인 순으로 놓습니다. 남은 칸은 관심사 지표와
+ * 기본 지표로 채웁니다. 역할이 크게 띄우지 않는 지표는 어느 쪽에도 넣지 않습니다.
  *
  * @param history 집계 기간 앞 주들의 주간 지표입니다. 평소 변동폭을 여기서 잽니다.
  */
@@ -59,9 +62,11 @@ internal fun selectDynamicMetrics(
     baseline: MatchMetrics?,
     history: List<MatchMetrics>,
     role: Role?,
+    focus: Focus = Focus.NONE,
 ): List<DynamicSlot> {
     val muted = role?.muted.orEmpty()
     val priority = role?.priority.orEmpty()
+    fun List<DynamicMetric>.rank(metric: DynamicMetric) = indexOf(metric).takeIf { it >= 0 } ?: size
     val assessed = DynamicMetric.entries
         .filterNot { it in muted }
         .associateWith { it.assess(current, baseline, history) }
@@ -70,11 +75,12 @@ internal fun selectDynamicMetrics(
         .filterValues { it.movement == Movement.MOVED }
         .keys
         .sortedWith(
-            compareBy<DynamicMetric> { priority.indexOf(it).takeIf { rank -> rank >= 0 } ?: priority.size }
+            compareBy<DynamicMetric> { priority.rank(it) }
+                .thenBy { focus.metrics.rank(it) }
                 .thenByDescending { assessed.getValue(it).strength },
         )
         .take(DYNAMIC_SLOTS)
-    val fillers = (Defaults + DynamicMetric.entries)
+    val fillers = (focus.metrics + Defaults + DynamicMetric.entries)
         .distinct()
         .filter { it in assessed && it !in moved }
         .take(DYNAMIC_SLOTS - moved.size)

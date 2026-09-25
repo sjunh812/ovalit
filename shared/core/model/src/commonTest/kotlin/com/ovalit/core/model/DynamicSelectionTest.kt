@@ -4,6 +4,7 @@ import com.ovalit.core.model.DynamicMetric.ASSISTS_PER_ROUND
 import com.ovalit.core.model.DynamicMetric.FIRST_DUEL_INVOLVEMENT
 import com.ovalit.core.model.DynamicMetric.FIRST_DUEL_WIN_RATE
 import com.ovalit.core.model.DynamicMetric.FIRST_KILL_WIN_RATE
+import com.ovalit.core.model.DynamicMetric.FORCE_BUY_WIN_RATE
 import com.ovalit.core.model.DynamicMetric.KAST
 import com.ovalit.core.model.DynamicMetric.SURVIVAL_RATE
 import kotlin.test.Test
@@ -105,10 +106,38 @@ class DynamicSelectionTest {
             select(current, Role.SENTINEL),
         )
     }
+
+    // 어시(13배)가 포스바이 승률(7.9배)보다 크게 움직였지만 관심사가 앞에 온다. 역할 우선 지표는 그보다 앞이다.
+    @Test
+    fun `관심사 지표는 역할 우선 지표 다음이고 많이 움직인 지표보다 앞이다`() {
+        val current = stats(kast = 0.73, survival = 0.40, assistsPerRound = 0.60, forceBuyWins = 14)
+
+        assertEquals(
+            listOf(moved(KAST), moved(SURVIVAL_RATE), moved(FORCE_BUY_WIN_RATE)),
+            select(current, Role.CONTROLLER, focus = Focus.ROUND_PLAY),
+        )
+    }
+
+    @Test
+    fun `움직인 지표가 없으면 관심사 지표부터 채운다`() {
+        assertEquals(
+            listOf(steady(FIRST_DUEL_WIN_RATE), steady(KAST), steady(SURVIVAL_RATE)),
+            select(Usual, focus = Focus.AIM),
+        )
+    }
+
+    @Test
+    fun `관심사 지표라도 역할이 크게 띄우지 않는 지표면 넣지 않는다`() {
+        assertEquals(
+            listOf(steady(KAST), steady(SURVIVAL_RATE), steady(ASSISTS_PER_ROUND)),
+            select(Usual, Role.CONTROLLER, focus = Focus.AIM),
+        )
+    }
 }
 
 private fun select(
     current: MatchMetrics,
     role: Role? = null,
     baseline: MatchMetrics? = Usual,
-) = selectDynamicMetrics(current, baseline, UsualWeeks, role)
+    focus: Focus = Focus.NONE,
+) = selectDynamicMetrics(current, baseline, UsualWeeks, role, focus)

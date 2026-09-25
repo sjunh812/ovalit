@@ -26,6 +26,7 @@ fun Iterable<Match>.weeklyReport(
     now: Instant,
     timeZone: TimeZone,
     queueFilter: QueueFilter = QueueFilter.COMPETITIVE_AND_UNRATED,
+    focus: Focus = Focus.NONE,
 ): WeeklyReport {
     val counted = filter { it.queue in queueFilter.queues }
     val act = counted.maxByOrNull { it.startedAt }?.act
@@ -62,7 +63,7 @@ fun Iterable<Match>.weeklyReport(
         baseline = baseline,
         mainRole = mainRole,
         dynamic = if (queueFilter.hasDynamicMetrics) {
-            selectDynamicMetrics(metrics, baseline?.metrics, history, mainRole)
+            selectDynamicMetrics(metrics, baseline?.metrics, history, mainRole, focus)
         } else {
             emptyList()
         },

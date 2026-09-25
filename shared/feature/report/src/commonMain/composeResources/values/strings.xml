@@ -23,6 +23,9 @@
     <string name="metric_first_duel_involvement">퍼블 관여율</string>
     <string name="metric_first_duel_win">첫 교전 승률</string>
     <string name="metric_assists_per_round">라운드당 어시스트</string>
+    <string name="metric_eco_win">이코 승률</string>
+    <string name="metric_force_buy_win">포스바이 승률</string>
+    <string name="metric_full_buy_win">풀바이 승률</string>
 
 
     <string name="summary_per_match">판당 %1$s / %2$s / %3$s · %4$d경기 %5$d라운드</string>
@@ -39,6 +42,9 @@
     <string name="sample_rounds">라운드 %1$d</string>
     <string name="sample_first_kills">퍼블 %1$d번</string>
     <string name="sample_first_duels">첫 교전 %1$d번</string>
+    <string name="sample_eco_rounds">이코 %1$d라운드</string>
+    <string name="sample_force_buy_rounds">포스바이 %1$d라운드</string>
+    <string name="sample_full_buy_rounds">풀바이 %1$d라운드</string>
 
     <string name="other_queue_hint">기타 모드는 K/D와 헤드샷만 봐요. 라운드 수와 크레드 규칙이 달라서 다른 지표는 맞지 않아요.</string>
 

@@ -40,6 +40,7 @@ import com.ovalit.feature.profile.resources.unknown_agent
 import com.ovalit.feature.profile.resources.unknown_weapon
 import com.ovalit.feature.profile.resources.value_percent
 import com.ovalit.feature.profile.resources.weapons_category_machine_gun
+import com.ovalit.feature.profile.resources.weapons_category_melee
 import com.ovalit.feature.profile.resources.weapons_category_pistol
 import com.ovalit.feature.profile.resources.weapons_category_rifle
 import com.ovalit.feature.profile.resources.weapons_category_shotgun
@@ -128,6 +129,7 @@ internal val WeaponCategory.label: StringResource
         WeaponCategory.SNIPER -> Res.string.weapons_category_sniper
         WeaponCategory.SHOTGUN -> Res.string.weapons_category_shotgun
         WeaponCategory.MACHINE_GUN -> Res.string.weapons_category_machine_gun
+        WeaponCategory.MELEE -> Res.string.weapons_category_melee
     }
 
 @Composable

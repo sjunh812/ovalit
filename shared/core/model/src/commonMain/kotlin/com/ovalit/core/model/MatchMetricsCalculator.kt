@@ -14,6 +14,9 @@ const val TRADE_WINDOW_MILLIS: Long = 5_000
 fun Match.metrics(side: Side? = null): MatchMetrics {
     val rounds = if (side == null) rounds else rounds.filter { it.mySide == side }
     val perRound = rounds.map { it.analyze(me = me, allies = allies) }
+    val byBuy = rounds.groupBy { it.buyType(queue) }
+    fun played(buy: BuyType) = byBuy[buy].orEmpty().size
+    fun won(buy: BuyType) = byBuy[buy].orEmpty().count { it.won }
 
     return MatchMetrics(
         matches = 1,
@@ -29,6 +32,12 @@ fun Match.metrics(side: Side? = null): MatchMetrics {
         firstKills = perRound.count { it.firstKill },
         firstDeaths = perRound.count { it.firstDeath },
         firstKillRoundsWon = perRound.count { it.firstKill && it.won },
+        ecoRounds = played(BuyType.ECO),
+        ecoRoundsWon = won(BuyType.ECO),
+        forceBuyRounds = played(BuyType.FORCE_BUY),
+        forceBuyRoundsWon = won(BuyType.FORCE_BUY),
+        fullBuyRounds = played(BuyType.FULL_BUY),
+        fullBuyRoundsWon = won(BuyType.FULL_BUY),
     )
 }
 

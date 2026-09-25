@@ -13,6 +13,7 @@ import kotlinx.datetime.toLocalDateTime
 data class Friend(
     val id: PlayerId,
     val riotId: String,
+    val playerCard: PlayerCardId?,
     val statsPublic: Boolean,
     val matches: List<Match>,
 )
@@ -21,6 +22,7 @@ data class Friend(
 data class FriendRequest(
     val id: PlayerId,
     val riotId: String,
+    val playerCard: PlayerCardId?,
     val source: FriendRequestSource,
 )
 

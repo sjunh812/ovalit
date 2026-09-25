@@ -32,6 +32,12 @@ internal object FriendPreviewData {
             firstKills = rounds / 5,
             firstDeaths = rounds / 6,
             firstKillRoundsWon = rounds / 8,
+            ecoRounds = rounds / 10,
+            ecoRoundsWon = rounds / 40,
+            forceBuyRounds = rounds / 7,
+            forceBuyRoundsWon = rounds / 20,
+            fullBuyRounds = rounds * 2 / 3,
+            fullBuyRoundsWon = rounds / 3,
         )
 
     private val thisWeek = ReportPeriod(firstDay = LocalDate(2026, 9, 21), weeks = 1, includesThisWeek = true)
@@ -52,14 +58,14 @@ internal object FriendPreviewData {
     private val myWeek = metrics(11, 240, 210, 148, 57_840, 38_880, 24)
     private val myBefore = metrics(24, 520, 420, 320, 116_000, 78_000, 19)
 
-    val minseok = Friend(PlayerId("minseok"), "민석#KR3", statsPublic = true, matches = emptyList())
-    private val junho = Friend(PlayerId("junho"), "준호#KR1", statsPublic = true, matches = emptyList())
-    private val seoyeon = Friend(PlayerId("seoyeon"), "서연#KR7", statsPublic = false, matches = emptyList())
+    val minseok = Friend(PlayerId("minseok"), "민석#KR3", playerCard = null, statsPublic = true, matches = emptyList())
+    private val junho = Friend(PlayerId("junho"), "준호#KR1", playerCard = null, statsPublic = true, matches = emptyList())
+    private val seoyeon = Friend(PlayerId("seoyeon"), "서연#KR7", playerCard = null, statsPublic = false, matches = emptyList())
 
     val friends = FriendsUiState.Success(
         requests = listOf(
-            FriendRequest(PlayerId("jiwoo"), "지우#KR5", FriendRequestSource.SCOREBOARD),
-            FriendRequest(PlayerId("hyun"), "현#KR9", FriendRequestSource.INVITE_LINK),
+            FriendRequest(PlayerId("jiwoo"), "지우#KR5", null, FriendRequestSource.SCOREBOARD),
+            FriendRequest(PlayerId("hyun"), "현#KR9", null, FriendRequestSource.INVITE_LINK),
         ),
         friends = listOf(
             FriendRow(junho, WeeklyReport.NotEnoughMatches(played = 3)),

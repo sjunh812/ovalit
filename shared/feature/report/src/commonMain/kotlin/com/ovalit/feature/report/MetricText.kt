@@ -7,6 +7,9 @@ import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.Role
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.metric_assists_per_round
+import com.ovalit.feature.report.resources.metric_eco_win
+import com.ovalit.feature.report.resources.metric_force_buy_win
+import com.ovalit.feature.report.resources.metric_full_buy_win
 import com.ovalit.feature.report.resources.metric_first_duel_involvement
 import com.ovalit.feature.report.resources.metric_first_duel_win
 import com.ovalit.feature.report.resources.metric_first_kill_win
@@ -20,8 +23,11 @@ import com.ovalit.feature.report.resources.role_controller
 import com.ovalit.feature.report.resources.role_duelist
 import com.ovalit.feature.report.resources.role_initiator
 import com.ovalit.feature.report.resources.role_sentinel
+import com.ovalit.feature.report.resources.sample_eco_rounds
 import com.ovalit.feature.report.resources.sample_first_duels
 import com.ovalit.feature.report.resources.sample_first_kills
+import com.ovalit.feature.report.resources.sample_force_buy_rounds
+import com.ovalit.feature.report.resources.sample_full_buy_rounds
 import com.ovalit.feature.report.resources.sample_rounds
 import com.ovalit.core.ui.MetricFormat
 import org.jetbrains.compose.resources.StringResource
@@ -35,6 +41,9 @@ internal val DynamicMetric.label: StringResource
         DynamicMetric.FIRST_DUEL_INVOLVEMENT -> Res.string.metric_first_duel_involvement
         DynamicMetric.FIRST_DUEL_WIN_RATE -> Res.string.metric_first_duel_win
         DynamicMetric.ASSISTS_PER_ROUND -> Res.string.metric_assists_per_round
+        DynamicMetric.ECO_WIN_RATE -> Res.string.metric_eco_win
+        DynamicMetric.FORCE_BUY_WIN_RATE -> Res.string.metric_force_buy_win
+        DynamicMetric.FULL_BUY_WIN_RATE -> Res.string.metric_full_buy_win
     }
 
 internal val DynamicMetric.format: MetricFormat
@@ -69,5 +78,8 @@ internal fun DynamicMetric.sampleText(metrics: MatchMetrics): String = when (thi
     DynamicMetric.FIRST_KILL_WIN_RATE -> stringResource(Res.string.sample_first_kills, metrics.firstKills)
     DynamicMetric.FIRST_DUEL_WIN_RATE ->
         stringResource(Res.string.sample_first_duels, metrics.firstKills + metrics.firstDeaths)
+    DynamicMetric.ECO_WIN_RATE -> stringResource(Res.string.sample_eco_rounds, metrics.ecoRounds)
+    DynamicMetric.FORCE_BUY_WIN_RATE -> stringResource(Res.string.sample_force_buy_rounds, metrics.forceBuyRounds)
+    DynamicMetric.FULL_BUY_WIN_RATE -> stringResource(Res.string.sample_full_buy_rounds, metrics.fullBuyRounds)
     else -> stringResource(Res.string.sample_rounds, metrics.rounds)
 }

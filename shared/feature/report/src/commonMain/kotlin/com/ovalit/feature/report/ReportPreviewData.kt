@@ -34,6 +34,12 @@ internal object ReportPreviewData {
         firstKills = 37,
         firstDeaths = 26,
         firstKillRoundsWon = 24,
+        ecoRounds = 14,
+        ecoRoundsWon = 3,
+        forceBuyRounds = 22,
+        forceBuyRoundsWon = 7,
+        fullBuyRounds = 96,
+        fullBuyRoundsWon = 55,
     )
 
     private val lastFourWeeks = Baseline(
@@ -51,6 +57,12 @@ internal object ReportPreviewData {
             firstKills = 100,
             firstDeaths = 80,
             firstKillRoundsWon = 62,
+            ecoRounds = 60,
+            ecoRoundsWon = 15,
+            forceBuyRounds = 95,
+            forceBuyRoundsWon = 35,
+            fullBuyRounds = 420,
+            fullBuyRoundsWon = 230,
         ),
         weeks = 4,
     )
@@ -85,6 +97,12 @@ internal object ReportPreviewData {
         firstKills = 26,
         firstDeaths = 22,
         firstKillRoundsWon = 17,
+        ecoRounds = 15,
+        ecoRoundsWon = 4,
+        forceBuyRounds = 22,
+        forceBuyRoundsWon = 8,
+        fullBuyRounds = 100,
+        fullBuyRoundsWon = 55,
     )
 
     // 타격대가 수비에서 첫 교전을 자주 졌다. 공격 71%, 수비 45%.

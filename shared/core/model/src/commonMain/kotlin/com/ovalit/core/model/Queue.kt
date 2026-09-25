@@ -21,4 +21,18 @@ enum class Queue {
 
     /** 그 밖의 모드. 데스매치, 팀 데스매치, 에스컬레이션 등. */
     OTHER,
+    ;
+
+    /** 전반 라운드 수입니다. 공수가 바뀌는 시점이 모드마다 다릅니다. 라운드제가 아니면 `null`입니다. */
+    val halfRounds: Int?
+        get() = when (this) {
+            COMPETITIVE, UNRATED -> 12
+            SWIFTPLAY -> 4
+            SPIKE_RUSH -> 3
+            OTHER -> null
+        }
+
+    /** 크레드로 장비를 사는 규칙이 경쟁전과 같은지입니다. 아니면 이코·포스바이를 가르지 않습니다. */
+    val hasEconomy: Boolean
+        get() = this == COMPETITIVE || this == UNRATED
 }

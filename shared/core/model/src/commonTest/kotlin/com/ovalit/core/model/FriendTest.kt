@@ -73,7 +73,7 @@ class FriendTest {
 private fun myReport(): WeeklyReport.Ready =
     assertIs(games(weeksAgo = 0, count = 5).weeklyReport(now = Now, timeZone = Seoul))
 
-private fun friend(matches: List<Match>) = Friend(Junho, "준호#KR1", statsPublic = true, matches = matches)
+private fun friend(matches: List<Match>) = Friend(Junho, "준호#KR1", playerCard = null, statsPublic = true, matches = matches)
 
 private fun game(allies: Set<PlayerId>, won: Boolean?) =
     match(quietRound(), won = won).copy(allies = allies)

@@ -58,6 +58,7 @@
     <string name="weapons_category_sniper">저격총</string>
     <string name="weapons_category_shotgun">산탄총</string>
     <string name="weapons_category_machine_gun">기관총</string>
+    <string name="weapons_category_melee">근접 무기</string>
     <!-- 카탈로그에 계열이 없는 새 무기 -->
     <string name="weapons_category_unknown">그 밖의 무기</string>
     <string name="weapons_expand">%1$s 무기 펼치기</string>

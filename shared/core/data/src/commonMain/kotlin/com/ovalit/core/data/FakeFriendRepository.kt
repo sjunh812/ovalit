@@ -29,8 +29,14 @@ class FakeFriendRepository(
             friends + Friend(
                 id = request.id,
                 riotId = request.riotId,
+                playerCard = request.playerCard,
                 statsPublic = true,
-                matches = fakeMatches(clock.now(), seed = request.riotId.hashCode(), withFriends = false),
+                matches = fakeMatches(
+                    now = clock.now(),
+                    seed = request.riotId.hashCode(),
+                    withFriends = false,
+                    owner = Owner(request.id, request.riotId, request.playerCard ?: MyCard, tier = 14),
+                ),
             )
         }
     }
@@ -65,17 +71,21 @@ class FakeFriendRepository(
 
     private fun fakeFriends(): List<Friend> {
         val now = clock.now()
-        val (junho, minseok, jaehyun) = FakeFriendIds
-        return listOf(
-            Friend(junho, "준호#KR1", statsPublic = true, matches = fakeMatches(now, seed = 101, withFriends = false)),
-            Friend(minseok, "민석#KR3", statsPublic = true, matches = fakeMatches(now, seed = 202, withFriends = false)),
-            Friend(jaehyun, "재현#KR2", statsPublic = true, matches = fakeMatches(now, seed = 303, withFriends = false)),
-            Friend(PlayerId("fake-seoyeon"), "서연#KR7", statsPublic = false, matches = emptyList()),
-        )
+        // 목업 S5의 민석은 다이아몬드 2다
+        val seeds = listOf(101 to 17, 202 to 19, 303 to 14)
+        return FakeFriendPlayers.zip(seeds) { player, (seed, tier) ->
+            Friend(
+                id = player.id,
+                riotId = player.riotId,
+                playerCard = player.card,
+                statsPublic = true,
+                matches = fakeMatches(now, seed, withFriends = false, owner = Owner(player.id, player.riotId, player.card, tier)),
+            )
+        } + Friend(PlayerId("fake-seoyeon"), "서연#KR7", FakeCards[10], statsPublic = false, matches = emptyList())
     }
 
     private fun fakeRequests() = listOf(
-        FriendRequest(PlayerId("fake-jiwoo"), "지우#KR5", FriendRequestSource.SCOREBOARD),
-        FriendRequest(PlayerId("fake-hyun"), "현#KR9", FriendRequestSource.INVITE_LINK),
+        FriendRequest(PlayerId("fake-jiwoo"), "지우#KR5", FakeCards[6], FriendRequestSource.SCOREBOARD),
+        FriendRequest(PlayerId("fake-hyun"), "현#KR9", FakeCards[9], FriendRequestSource.INVITE_LINK),
     )
 }

@@ -21,7 +21,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -318,17 +317,6 @@ private fun AgentRow(agent: AgentStats, columns: List<MetricColumnSpec>, catalog
                 autoSize = shrinkToFit(OvalitTheme.typography.metricS.fontSize),
             )
         }
-    }
-}
-
-// 목업대로 50%를 넘으면 초록, 밑돌면 빨강이다. 색은 변화량에만 쓴다는 규칙의 예외로 CLAUDE.md에 적었다.
-@Composable
-private fun winRateColor(rate: Double?): Color {
-    val steps = rate?.percentSteps() ?: return OvalitTheme.colors.t3
-    return when {
-        steps > 50 -> OvalitTheme.colors.pos
-        steps < 50 -> OvalitTheme.colors.neg
-        else -> OvalitTheme.colors.t2
     }
 }
 

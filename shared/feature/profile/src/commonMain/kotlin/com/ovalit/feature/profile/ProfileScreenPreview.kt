@@ -4,16 +4,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.ovalit.core.designsystem.preview.OvalitThemePreview
 
-@Preview(widthDp = 390, heightDp = 844)
+@Preview(widthDp = 390, heightDp = 1500)
 @Composable
 private fun ProfileDarkPreview() {
-    OvalitThemePreview(darkTheme = true) { ProfileScreen(ProfilePreviewData.success, {}, {}, {}) }
+    OvalitThemePreview(darkTheme = true) { ProfileScreen(ProfilePreviewData.success, {}, {}, {}, {}, {}) }
 }
 
-@Preview(widthDp = 390, heightDp = 844)
+@Preview(widthDp = 390, heightDp = 1500)
 @Composable
 private fun ProfileLightPreview() {
-    OvalitThemePreview(darkTheme = false) { ProfileScreen(ProfilePreviewData.success, {}, {}, {}) }
+    OvalitThemePreview(darkTheme = false) { ProfileScreen(ProfilePreviewData.success, {}, {}, {}, {}, {}) }
+}
+
+// 통계 여섯 칸과 요원 세 칸이 가장 빡빡하다
+@Preview(widthDp = 320, heightDp = 1800, fontScale = 1.5f)
+@Composable
+private fun ProfileSmallLargeFontPreview() {
+    OvalitThemePreview { ProfileScreen(ProfilePreviewData.success, {}, {}, {}, {}, {}) }
+}
+
+@Preview(widthDp = 390, heightDp = 1200)
+@Composable
+private fun ProfileNoCompetitivePreview() {
+    OvalitThemePreview { ProfileScreen(ProfilePreviewData.noCompetitive, {}, {}, {}, {}, {}) }
 }
 
 @Preview(widthDp = 390, heightDp = 1000)

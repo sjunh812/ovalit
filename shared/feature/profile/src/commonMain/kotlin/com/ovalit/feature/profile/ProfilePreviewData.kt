@@ -1,14 +1,23 @@
 package com.ovalit.feature.profile
 
 import com.ovalit.core.model.Account
+import com.ovalit.core.model.ActId
 import com.ovalit.core.model.AgentId
 import com.ovalit.core.model.AgentReport
 import com.ovalit.core.model.AgentStats
+import com.ovalit.core.model.CompetitiveRecord
 import com.ovalit.core.model.ContentCatalog
+import com.ovalit.core.model.MapId
+import com.ovalit.core.model.Match
+import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.Movement
+import com.ovalit.core.model.PlayerId
+import com.ovalit.core.model.ProfileSummary
+import com.ovalit.core.model.Queue
 import com.ovalit.core.model.Role
 import com.ovalit.core.model.RoleShare
+import com.ovalit.core.model.Scoreline
 import com.ovalit.core.model.Shots
 import com.ovalit.core.model.WeaponCategory
 import com.ovalit.core.model.WeaponHighlight
@@ -17,7 +26,11 @@ import com.ovalit.core.model.WeaponInfo
 import com.ovalit.core.model.WeaponReport
 import com.ovalit.core.model.WeaponStats
 import com.ovalit.core.ui.PlayerBadge
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
 
 // 프리뷰와 UI 테스트가 같이 쓴다. 목업의 전략가 예시에 맞췄다. ID는 번들한 이미지가 붙도록 카탈로그의 UUID다.
 internal object ProfilePreviewData {
@@ -40,7 +53,7 @@ internal object ProfilePreviewData {
             ghost to WeaponInfo("고스트", WeaponCategory.PISTOL),
         ),
         maps = emptyMap(),
-        tiers = mapOf(16 to "플래티넘 2"),
+        tiers = mapOf(15 to "플래티넘 1", 16 to "플래티넘 2", 17 to "플래티넘 3"),
     )
 
     private fun metrics(rounds: Int, kast: Int, survived: Int, firstKills: Int = 10, firstDeaths: Int = 10) =
@@ -115,6 +128,61 @@ internal object ProfilePreviewData {
         ),
     )
 
+    val now: Instant = Instant.parse("2026-09-24T13:00:00Z")
+    private val seoul = TimeZone.of("Asia/Seoul")
+    private val me = PlayerId("me")
+    private val ascent = MapId("7eaecc1b-4337-bbf6-6ab9-04b8f06b3319")
+    private val haven = MapId("2bee0dc9-4ffe-519b-1cbd-7fbe763a6047")
+
+    // 경쟁 32판. 플래티넘 1에서 올라가 한 번 플래티넘 3을 찍고 플래티넘 2로 내려왔다.
+    private val tiers = List(8) { 15 } + List(10) { 16 } + List(4) { 17 } + List(10) { 16 }
+
+    val summary = ProfileSummary(
+        metrics = MatchMetrics.Empty.copy(
+            matches = 50,
+            rounds = 1_127,
+            kills = 860,
+            deaths = 768,
+            assists = 312,
+            combatScore = 188 * 1_127,
+            damage = 139 * 1_127,
+            shots = Shots(head = 442, body = 1_253, leg = 147),
+        ),
+        mostKills = 28,
+        playTimeMillis = (31.hours + 20.minutes).inWholeMilliseconds,
+        competitive = CompetitiveRecord(matches = tiers.size, wins = 18, losses = 14, tiers = tiers),
+    )
+
+    private fun recent(id: String, map: MapId, hoursAgo: Int, won: Int, lost: Int, k: Int, d: Int, a: Int): Match {
+        val rounds = won + lost
+        return Match(
+            id = MatchId(id),
+            queue = Queue.COMPETITIVE,
+            act = ActId("act"),
+            map = map,
+            startedAt = now - hoursAgo.hours,
+            lengthMillis = 38.minutes.inWholeMilliseconds,
+            me = me,
+            myAgent = omen,
+            myRole = Role.CONTROLLER,
+            allies = emptySet(),
+            myCombatScore = 0,
+            myTeamWon = won > lost,
+            roundOutcomes = List(won) { true } + List(lost) { false },
+            rounds = emptyList(),
+            players = listOf(
+                Scoreline(me, "오발러#KR1", omen, onMyTeam = true, tier = 16, playerCard = null, kills = k, deaths = d,
+                    assists = a, combatScore = 196 * rounds, damage = 141 * rounds, roundsPlayed = rounds),
+            ),
+        )
+    }
+
+    val recentMatches = listOf(
+        recent("ascent", ascent, hoursAgo = 2, won = 13, lost = 9, k = 18, d = 14, a = 7),
+        recent("haven", haven, hoursAgo = 3, won = 8, lost = 13, k = 12, d = 16, a = 5),
+        recent("ascent-2", ascent, hoursAgo = 26, won = 13, lost = 11, k = 20, d = 15, a = 6),
+    )
+
     val success = ProfileUiState.Success(
         account = Account(riotId = "오발러#KR1", linkedOn = LocalDate(2026, 9, 19)),
         badge = PlayerBadge(
@@ -122,8 +190,16 @@ internal object ProfilePreviewData {
             tier = 16,
             tierName = "플래티넘 2",
         ),
+        summary = summary,
         agents = agents,
         weapons = weapons,
+        recentMatches = recentMatches,
+        hasMoreMatches = true,
         catalog = catalog,
+        now = now,
+        timeZone = seoul,
     )
+
+    // 이번 액트에 경쟁전을 안 뛰었으면 티어 칸이 없고 티어는 이름 줄에 남는다
+    val noCompetitive = success.copy(summary = summary.copy(competitive = null))
 }

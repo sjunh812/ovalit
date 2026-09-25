@@ -151,6 +151,8 @@ fun OvalitApp(appVersion: String) {
                             onBack = { backStack.removeLastOrNull() },
                             onOpenAgents = { backStack.add(Agents) },
                             onOpenWeapons = { backStack.add(Weapons) },
+                            onOpenMatch = { backStack.add(MatchDetail(it.value)) },
+                            onOpenMatches = { backStack.selectTab(Matches) },
                         )
                     }
                     entry<Matches> {
@@ -201,18 +203,18 @@ fun OvalitApp(appVersion: String) {
                     OvalitTab(stringResource(R.string.tab_settings), OvalitIcons.Settings),
                 ),
                 selectedIndex = selectedTab,
-                onSelect = { index ->
-                    // 홈은 늘 스택 맨 아래에 두고 다른 탭은 그 위에 하나만 둔다. 그래야 어느 탭에서 뒤로 가도
-                    // 홈이 나오고 홈에서 뒤로 가면 앱이 닫힌다. 홈은 새로 띄우지 않아서 스크롤과 칩이 남는다.
-                    val tab = TopLevel[index]
-                    if (backStack.last() != tab) {
-                        while (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-                        if (tab != Report) backStack.add(tab)
-                    }
-                },
+                onSelect = { index -> backStack.selectTab(TopLevel[index]) },
             )
         }
     }
+}
+
+// 홈은 늘 스택 맨 아래에 두고 다른 탭은 그 위에 하나만 둔다. 그래야 어느 탭에서 뒤로 가도 홈이 나오고 홈에서
+// 뒤로 가면 앱이 닫힌다. 홈은 새로 띄우지 않아서 스크롤과 칩이 남는다.
+private fun NavBackStack<NavKey>.selectTab(tab: NavKey) {
+    if (last() == tab) return
+    while (size > 1) removeAt(lastIndex)
+    if (tab != Report) add(tab)
 }
 
 // NavDisplay에 빈 스택을 넘기면 예외가 난다. 그래서 새 화면을 먼저 넣고 나머지를 뺀다.

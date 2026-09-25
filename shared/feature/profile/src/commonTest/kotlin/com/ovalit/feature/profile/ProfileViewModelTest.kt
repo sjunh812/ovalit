@@ -12,6 +12,7 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -50,5 +51,25 @@ class ProfileViewModelTest {
         assertEquals(state.agents.matches, state.weapons.matches)
         assertTrue(state.weapons.weapons.all { it.weapon in state.catalog.weapons })
         assertTrue(state.agents.agents.all { it.agent in state.catalog.agents })
+    }
+
+    // 요원·무기·통계는 이번 액트만 보지만 최근 경기는 무엇을 뛰었든 가장 최근 판이다
+    @Test
+    fun `최근 경기는 큐를 가리지 않고 가장 최근 세 판이다`() = runTest {
+        val matches = FakeMatchRepository()
+        val viewModel = ProfileViewModel(
+            FakeAccountRepository(matches),
+            matches,
+            FakeContentRepository(),
+            Clock.System,
+            TimeZone.of("Asia/Seoul"),
+        )
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+
+        val state = assertIs<ProfileUiState.Success>(viewModel.uiState.value)
+        val all = matches.observeMatches().first().sortedByDescending { it.startedAt }
+        assertEquals(all.take(3), state.recentMatches)
+        assertTrue(state.hasMoreMatches)
+        assertEquals(state.agents.matches, state.summary.metrics.matches)
     }
 }

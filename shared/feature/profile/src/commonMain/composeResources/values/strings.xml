@@ -8,9 +8,32 @@
     <string name="no_matches">이번 액트에 뛴 경기가 아직 없어요</string>
 
     <!-- 내 프로필 -->
+    <string name="profile_competitive">경쟁전</string>
+    <string name="profile_competitive_record">경쟁 %1$d판 · %2$d승 %3$d패</string>
+    <string name="profile_tier_first">첫 경기 %1$s</string>
+    <string name="profile_tier_best">최고 %1$s</string>
+    <string name="profile_tier_flow_description">이번 액트 경쟁전 티어 흐름. 첫 경기 %1$s, 최고 %2$s, 지금 %3$s</string>
+    <string name="profile_stats_title">이번 액트</string>
+    <!-- %1$s는 "경쟁 + 일반" -->
+    <string name="profile_stats_caption">%1$s %2$d경기</string>
+    <string name="profile_most_kills">최다 킬</string>
+    <string name="profile_kills_per_match">판당 킬</string>
+    <string name="profile_play_time">플레이 시간</string>
+    <string name="duration_hours_minutes">%1$d시간 %2$d분</string>
+    <string name="duration_hours">%1$d시간</string>
+    <string name="duration_minutes">%1$d분</string>
+    <string name="profile_shots_title">맞힌 부위</string>
+    <string name="profile_shots_caption">맞힌 탄 %1$s발</string>
+    <string name="profile_shots_head">머리</string>
+    <string name="profile_shots_body">몸</string>
+    <string name="profile_shots_leg">다리</string>
     <string name="profile_agents">요원</string>
+    <!-- "타격대 78%". 이번 액트 라운드 중 주 역할로 뛴 비중 -->
+    <string name="profile_role_share">%1$s %2$s</string>
     <string name="profile_weapons">무기</string>
-    <string name="profile_agents_value">%1$s %2$s · %3$s</string>
+    <string name="profile_weapon_kill_share">킬 %1$s</string>
+    <string name="profile_recent">최근 경기</string>
+    <string name="profile_recent_all">전체 보기</string>
 
     <!-- S7 요원 -->
     <string name="agents_title">요원</string>

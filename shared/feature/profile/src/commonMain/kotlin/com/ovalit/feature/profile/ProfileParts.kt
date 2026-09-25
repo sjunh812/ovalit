@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,7 +17,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role as SemanticsRole
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.icon.OvalitIcon
@@ -27,6 +30,7 @@ import com.ovalit.core.model.AgentId
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.WeaponCategory
 import com.ovalit.core.model.WeaponId
+import com.ovalit.core.ui.WeaponImage
 import com.ovalit.feature.profile.resources.Res
 import com.ovalit.feature.profile.resources.back
 import com.ovalit.feature.profile.resources.unknown_agent
@@ -44,7 +48,6 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 internal const val NO_VALUE = "–"
-
 
 private val BackTouchSize = 44.dp
 
@@ -116,3 +119,27 @@ internal fun Double.percentSteps(): Int = (this * 100).roundToInt()
 @Composable
 internal fun percentText(rate: Double?): String =
     rate?.let { stringResource(Res.string.value_percent, it.percentSteps().toString()) } ?: NO_VALUE
+
+// 기본 스킨 총은 짙은 회색이라 다크 테마 바탕에 묻힌다. 목업의 무기 칸처럼 옅은 면 위에 올린다.
+@Composable
+internal fun WeaponThumb(weapon: WeaponId, name: String, width: Dp, height: Dp) {
+    Box(
+        modifier = Modifier
+            .size(width = width, height = height)
+            .background(OvalitTheme.colors.fill, RoundedCornerShape(4.dp))
+            .padding(horizontal = 4.dp, vertical = 3.dp),
+    ) {
+        WeaponImage(weapon, name, Modifier.fillMaxSize())
+    }
+}
+
+// 목업대로 50%를 넘으면 초록, 밑돌면 빨강이다. 색은 변화량에만 쓴다는 규칙의 예외로 CLAUDE.md에 적었다.
+@Composable
+internal fun winRateColor(rate: Double?): Color {
+    val steps = rate?.percentSteps() ?: return OvalitTheme.colors.t3
+    return when {
+        steps > 50 -> OvalitTheme.colors.pos
+        steps < 50 -> OvalitTheme.colors.neg
+        else -> OvalitTheme.colors.t2
+    }
+}

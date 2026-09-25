@@ -33,10 +33,11 @@ private val BannerHeight = 112.dp
 private val AvatarSize = 64.dp
 
 /**
- * 내 프로필과 S5 머리의 배너와 아바타입니다. 아바타는 가장 최근 경기에 고른 요원 얼굴입니다.
+ * 내 프로필과 S5 머리의 배너와 아바타입니다.
  *
- * 배너 자리에는 플레이어 카드가 들어갈 예정입니다. 카드는 앱에 넣지 않고 서버에서 받으므로, 그때까지는
- * 그라데이션 없이 면만 칠합니다. 카드를 깔 때 목업처럼 아래쪽을 바탕색으로 흐리게 잇습니다.
+ * 배너와 아바타 자리에는 플레이어 카드가 들어갈 예정입니다. 카드는 앱에 넣지 않고 서버에서 받으므로,
+ * 그때까지 배너는 면만 칠하고 아바타는 Riot ID 첫 글자를 띄웁니다. 카드를 깔 때 목업처럼 아래쪽을 바탕색으로
+ * 흐리게 잇습니다.
  */
 @Composable
 fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Composable BoxScope.() -> Unit) {
@@ -46,7 +47,6 @@ fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Co
             Box(Modifier.safeDrawingPadding(), content = topBar)
         }
         PlayerAvatar(
-            agent = badge.agent,
             riotId = badge.riotId,
             modifier = Modifier
                 .padding(start = OvalitSpacing.gutter, top = BannerHeight - AvatarSize / 2)

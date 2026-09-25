@@ -11,7 +11,6 @@ import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.SharedRecord
 import com.ovalit.core.model.WeeklyReport
-import com.ovalit.core.model.latestAgent
 import com.ovalit.core.model.latestTier
 import com.ovalit.core.model.metricsIn
 import com.ovalit.core.model.sharedWith
@@ -71,7 +70,7 @@ class FriendProfileViewModel(
         val tier = friend.matches.latestTier()
         FriendProfileUiState.Success(
             friend = friend,
-            badge = PlayerBadge(friend.riotId, friend.matches.latestAgent(), tier, tier?.let { catalog.tiers[it] }),
+            badge = PlayerBadge(friend.riotId, tier, tier?.let { catalog.tiers[it] }),
             catalog = catalog,
             isRival = rival == friendId,
             shared = myMatches.sharedWith(friendId),

@@ -21,13 +21,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitTheme
-import com.ovalit.core.model.AgentId
 import com.ovalit.core.ui.PlayerAvatar
 
-/** 가장 최근 경기에 고른 요원 얼굴로 그린 아바타입니다. 경기가 없으면 Riot ID 첫 글자가 뜹니다. */
 @Composable
-internal fun Avatar(agent: AgentId?, riotId: String, size: Dp, modifier: Modifier = Modifier) {
-    PlayerAvatar(agent = agent, riotId = riotId, modifier = modifier.size(size))
+internal fun Avatar(riotId: String, size: Dp, modifier: Modifier = Modifier) {
+    PlayerAvatar(riotId = riotId, modifier = modifier.size(size))
 }
 
 /**

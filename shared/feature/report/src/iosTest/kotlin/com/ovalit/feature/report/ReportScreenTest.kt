@@ -71,7 +71,7 @@ class ReportScreenTest {
                 ReportScreen(
                     uiState = ReportUiState.Success(QueueFilter.COMPETITIVE_AND_UNRATED, ReportPreviewData.moved),
                     onSelectQueue = {},
-                    badge = PlayerBadge("오발러#KR1", agent = null, tier = 16, tierName = "플래티넘 2"),
+                    badge = PlayerBadge("오발러#KR1", tier = 16, tierName = "플래티넘 2"),
                     onOpenProfile = { opened = true },
                 )
             }

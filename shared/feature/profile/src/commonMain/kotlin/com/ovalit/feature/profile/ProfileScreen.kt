@@ -71,7 +71,7 @@ internal fun ProfileScreen(
     Box(modifier = modifier.fillMaxSize().background(colors.bg)) {
         if (uiState !is ProfileUiState.Success) return@Box
         val agents = uiState.agents
-        val badge = uiState.badge ?: PlayerBadge(riotId = "", agent = null, tier = null, tierName = null)
+        val badge = uiState.badge ?: PlayerBadge(riotId = "", tier = null, tierName = null)
 
         Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             ProfileBanner(badge) {

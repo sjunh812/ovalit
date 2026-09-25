@@ -11,10 +11,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitText
-import com.ovalit.core.model.AgentId
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Match
-import com.ovalit.core.model.latestAgent
 import com.ovalit.core.model.latestTier
 
 /**
@@ -24,7 +22,6 @@ import com.ovalit.core.model.latestTier
  */
 data class PlayerBadge(
     val riotId: String,
-    val agent: AgentId?,
     val tier: Int?,
     val tierName: String?,
 )
@@ -33,7 +30,6 @@ fun playerBadge(riotId: String, matches: List<Match>, catalog: ContentCatalog): 
     val tier = matches.latestTier()
     return PlayerBadge(
         riotId = riotId,
-        agent = matches.latestAgent(),
         tier = tier,
         tierName = tier?.let { catalog.tiers[it] },
     )

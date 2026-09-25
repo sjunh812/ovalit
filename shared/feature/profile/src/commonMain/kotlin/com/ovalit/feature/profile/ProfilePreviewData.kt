@@ -119,7 +119,6 @@ internal object ProfilePreviewData {
         account = Account(riotId = "오발러#KR1", linkedOn = LocalDate(2026, 9, 19)),
         badge = PlayerBadge(
             riotId = "오발러#KR1",
-            agent = omen,
             tier = 16,
             tierName = "플래티넘 2",
         ),

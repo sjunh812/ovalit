@@ -61,9 +61,6 @@ val Match.halfScores: List<Score>
             .map { part -> Score(myTeam = part.count { it.value }, enemyTeam = part.count { !it.value }) }
     }
 
-/** 가장 최근 경기에 고른 요원입니다. op.gg처럼 아바타를 이 요원 얼굴로 그립니다. */
-fun Iterable<Match>.latestAgent(): AgentId? = maxByOrNull { it.startedAt }?.myAgent
-
 /** 가장 최근 경쟁전의 내 티어 번호입니다. 응답은 경기 당시 티어만 줘서 이걸 지금 티어로 씁니다. */
 fun Iterable<Match>.latestTier(): Int? = this
     .filter { it.queue == Queue.COMPETITIVE }

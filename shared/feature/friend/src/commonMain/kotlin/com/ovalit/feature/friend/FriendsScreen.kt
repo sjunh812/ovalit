@@ -44,7 +44,6 @@ import com.ovalit.core.model.FriendRequest
 import com.ovalit.core.model.FriendRequestSource
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.WeeklyReport
-import com.ovalit.core.model.latestAgent
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.feature.friend.resources.Res
 import com.ovalit.feature.friend.resources.accept
@@ -195,7 +194,7 @@ private fun RequestRow(request: FriendRequest, onAccept: () -> Unit, onDecline: 
             .padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Avatar(agent = null, riotId = request.riotId, size = AvatarSize)
+        Avatar(riotId = request.riotId, size = AvatarSize)
         Spacer(Modifier.width(OvalitSpacing.md))
         // 글자를 키워 한 줄에 안 들어가면 버튼이 설명 아래로 내려간다. 설명을 세 줄로 꺾지 않는다.
         FlowRow(
@@ -246,7 +245,7 @@ private fun FriendRowItem(row: FriendRow, isRival: Boolean, onClick: () -> Unit)
             .padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Avatar(agent = friend.matches.latestAgent(), riotId = friend.riotId, size = AvatarSize)
+        Avatar(riotId = friend.riotId, size = AvatarSize)
         Spacer(Modifier.width(OvalitSpacing.md))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             Row(verticalAlignment = Alignment.Bottom) {

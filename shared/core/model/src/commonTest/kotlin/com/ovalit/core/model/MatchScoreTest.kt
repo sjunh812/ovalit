@@ -48,21 +48,9 @@ class MatchScoreTest {
 
         assertEquals(16, matches.latestTier())
     }
-
-    // 마지막 경기가 일반전이어도 그때 고른 요원으로 아바타를 그린다
-    @Test
-    fun `아바타 요원은 큐와 상관없이 가장 최근 경기에서 읽는다`() {
-        val matches = listOf(
-            game(Queue.COMPETITIVE, startedAt = 1, tier = 15, agent = "old"),
-            game(Queue.UNRATED, startedAt = 2, tier = 15, agent = "new"),
-        )
-
-        assertEquals(AgentId("new"), matches.latestAgent())
-    }
 }
 
-private fun game(queue: Queue, startedAt: Long, tier: Int?, agent: String = "agent") = match(
-    agent = AgentId(agent),
+private fun game(queue: Queue, startedAt: Long, tier: Int?) = match(
     queue = queue,
     startedAt = Instant.fromEpochMilliseconds(startedAt),
     players = listOf(

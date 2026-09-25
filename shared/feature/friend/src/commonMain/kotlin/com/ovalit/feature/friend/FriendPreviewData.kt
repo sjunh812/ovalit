@@ -128,7 +128,7 @@ internal object FriendPreviewData {
 
     val profile = FriendProfileUiState.Success(
         friend = minseok,
-        badge = PlayerBadge(minseok.riotId, jett, tier = 19, tierName = "다이아몬드 2"),
+        badge = PlayerBadge(minseok.riotId, tier = 19, tierName = "다이아몬드 2"),
         catalog = catalog,
         isRival = false,
         shared = SharedRecord(matches = 12, wins = 8, losses = 4),
@@ -141,7 +141,7 @@ internal object FriendPreviewData {
 
     val privateProfile = profile.copy(
         friend = seoyeon,
-        badge = PlayerBadge(seoyeon.riotId, agent = null, tier = null, tierName = null),
+        badge = PlayerBadge(seoyeon.riotId, tier = null, tierName = null),
         theirReport = null,
         theirMetricsInMyPeriod = null,
         shared = SharedRecord(matches = 3, wins = 1, losses = 2),

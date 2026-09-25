@@ -3,6 +3,7 @@ package com.ovalit.core.ui
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,6 +15,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.AgentId
@@ -40,12 +43,28 @@ fun AgentImage(agent: AgentId?, name: String, modifier: Modifier = Modifier) {
 }
 
 /**
- * 사람을 나타내는 동그란 아바타입니다. op.gg처럼 가장 최근 경기에 고른 요원 얼굴로 그립니다. 플레이어
- * 카드는 서버에서 받게 되면 프로필 배너에만 씁니다.
+ * 사람을 나타내는 동그란 아바타입니다. 플레이어 카드 자리인데 카드는 서버에서 받으므로, 그때까지는 Riot ID
+ * 첫 글자를 띄웁니다. 요원 얼굴은 경기 기록에만 씁니다. 그 판에 고른 요원이지 그 사람 얼굴이 아닙니다.
  */
 @Composable
-fun PlayerAvatar(agent: AgentId?, riotId: String, modifier: Modifier = Modifier) {
-    AgentImage(agent, riotId, modifier.clip(CircleShape))
+fun PlayerAvatar(riotId: String, modifier: Modifier = Modifier) {
+    val colors = OvalitTheme.colors
+    BoxWithConstraints(
+        modifier = modifier.clip(CircleShape).background(colors.fill),
+        contentAlignment = Alignment.Center,
+    ) {
+        // 글자를 아바타 크기에 맞춘다. 글꼴 배율을 따라 커지면 원 밖으로 넘친다.
+        val fontSize = with(LocalDensity.current) { (maxHeight * 0.42f).toSp() }
+        OvalitText(
+            text = riotId.take(1).uppercase(),
+            style = OvalitTheme.typography.label.copy(
+                fontSize = fontSize,
+                lineHeight = fontSize * 1.2f,
+                fontWeight = FontWeight.SemiBold,
+            ),
+            color = colors.t2,
+        )
+    }
 }
 
 /** [map]은 UUID여야 합니다. 경기 응답이 경로로 오면 VAL-CONTENT에서 UUID를 찾아 담습니다. */

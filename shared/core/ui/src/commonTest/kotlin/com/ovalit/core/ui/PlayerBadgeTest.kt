@@ -25,7 +25,6 @@ class PlayerBadgeTest {
 
         assertEquals(16, badge.tier)
         assertEquals("플래티넘 2", badge.tierName)
-        assertEquals(AgentId("agent"), badge.agent)
     }
 
     // 이름을 모르는 번호를 숫자 그대로 띄우지 않는다

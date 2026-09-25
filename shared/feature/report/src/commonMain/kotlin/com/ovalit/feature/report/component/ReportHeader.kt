@@ -95,7 +95,7 @@ internal fun ReportTopBar(badge: PlayerBadge?, onOpenProfile: () -> Unit, modifi
                     emblemSize = TierEmblemSize,
                     modifier = Modifier.padding(end = 10.dp),
                 )
-                PlayerAvatar(agent = badge.agent, riotId = badge.riotId, modifier = Modifier.size(AvatarSize))
+                PlayerAvatar(riotId = badge.riotId, modifier = Modifier.size(AvatarSize))
             }
         }
     }

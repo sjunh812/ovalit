@@ -18,7 +18,8 @@
     <string name="metric_full_buy_win">풀바이 승률</string>
 
 
-    <string name="summary_per_match">판당 %1$s / %2$s / %3$s · %4$d경기 %5$d라운드</string>
+    <!-- 큰 글꼴에서 가운뎃점이 줄 맨 앞에 오지 않게 점 앞과 "경기 라운드" 사이에 줄바꿈 없는 공백을 넣었다 -->
+    <string name="summary_per_match">판당 %1$s / %2$s / %3$s&#160;· %4$d경기&#160;%5$d라운드</string>
     <string name="baseline_average">%1$d주 평균 %2$s</string>
     <string name="baseline_missing">비교할 기록이 모자라요</string>
 

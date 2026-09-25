@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import type { AppEnv } from "./env";
 import { ApiError } from "./errors";
+import { auth } from "./routes/auth";
+import { me } from "./routes/me";
 
 export interface Deps {
   /** 비워 두면 전역 `fetch`로 Riot을 부릅니다. */
@@ -17,6 +19,8 @@ export function createApp(deps: Deps = {}) {
   });
 
   app.get("/health", (c) => c.json({ ok: true }));
+  app.route("/auth", auth);
+  app.route("/me", me);
 
   app.notFound((c) => c.json({ error: "not_found" }, 404));
 

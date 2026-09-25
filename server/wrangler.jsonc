@@ -3,6 +3,8 @@
   "name": "ovalit",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-25",
+  // 사용자 설정과 상관없이 이 프로젝트의 wrangler 명령은 사용 통계를 보내지 않는다.
+  "send_metrics": false,
   // 카드 이미지는 Worker를 거치지 않고 바로 나간다. 정적 에셋 요청은 무료 한도에 세지 않는다.
   "assets": {
     "directory": "./public"

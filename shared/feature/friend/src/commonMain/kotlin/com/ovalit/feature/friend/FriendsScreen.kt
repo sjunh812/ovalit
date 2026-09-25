@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitExpandable
 import com.ovalit.core.designsystem.component.OvalitOutlinedButton
+import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
@@ -104,13 +105,8 @@ internal fun FriendsScreen(
         if (uiState !is FriendsUiState.Success) return@Box
 
         Column(modifier = Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState())) {
-            Spacer(Modifier.height(OvalitSpacing.gutter))
-            OvalitText(
-                text = stringResource(Res.string.friends_title),
-                modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
-                style = OvalitTheme.typography.titleL,
-            )
-            Spacer(Modifier.height(OvalitSpacing.lg))
+            OvalitTabHeader(title = stringResource(Res.string.friends_title))
+            Spacer(Modifier.height(OvalitSpacing.xs))
             Column(modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
                 OvalitOutlinedButton(text = stringResource(Res.string.invite), onClick = onInvite)
                 Spacer(Modifier.height(OvalitSpacing.sm))

@@ -34,6 +34,7 @@ import com.ovalit.core.designsystem.component.OvalitDisclaimer
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitOutlinedButton
 import com.ovalit.core.designsystem.component.OvalitSwitch
+import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
@@ -139,13 +140,8 @@ internal fun SettingsScreen(
                 .safeDrawingPadding()
                 .verticalScroll(rememberScrollState()),
         ) {
-            Spacer(Modifier.height(OvalitSpacing.gutter))
-            OvalitText(
-                text = stringResource(Res.string.settings_title),
-                modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
-                style = OvalitTheme.typography.titleL,
-            )
-            Spacer(Modifier.height(OvalitSpacing.lg))
+            OvalitTabHeader(title = stringResource(Res.string.settings_title))
+            Spacer(Modifier.height(OvalitSpacing.xs))
             AccountHeader(uiState.account)
 
             SectionHeader(stringResource(Res.string.section_public))

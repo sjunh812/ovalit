@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -35,6 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitChip
 import com.ovalit.core.designsystem.component.OvalitDivider
+import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTextButton
 import com.ovalit.core.designsystem.icon.OvalitIcon
@@ -100,19 +100,10 @@ internal fun MatchesScreen(
 
         LazyColumn(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
             item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.sm, top = OvalitSpacing.sm),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    OvalitText(
-                        text = stringResource(Res.string.matches_title),
-                        modifier = Modifier.weight(1f).semantics { heading() },
-                        style = OvalitTheme.typography.titleL,
-                    )
+                OvalitTabHeader(title = stringResource(Res.string.matches_title)) {
                     FilterButton(active = uiState.filter.isActive, onClick = { filtering = true })
                 }
+                Spacer(Modifier.height(OvalitSpacing.xs))
                 QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
                 Spacer(Modifier.height(OvalitSpacing.md))
             }

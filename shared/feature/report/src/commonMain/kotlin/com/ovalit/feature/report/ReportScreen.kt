@@ -87,9 +87,8 @@ internal fun ReportScreen(
                     .safeDrawingPadding()
                     .verticalScroll(rememberScrollState()),
             ) {
-                Spacer(Modifier.height(OvalitSpacing.gutter))
                 ReportTopBar(badge = badge, onOpenProfile = onOpenProfile)
-                Spacer(Modifier.height(OvalitSpacing.md))
+                Spacer(Modifier.height(OvalitSpacing.xs))
                 QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
                 Spacer(Modifier.height(OvalitSpacing.md))
 

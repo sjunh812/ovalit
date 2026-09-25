@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -29,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitChip
 import com.ovalit.core.designsystem.component.OvalitLogo
+import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.resources.Res as DesignSystemRes
 import com.ovalit.core.designsystem.resources.app_name
@@ -62,9 +62,33 @@ private val ProfileTouchSize = 44.dp
 internal fun ReportTopBar(badge: PlayerBadge?, onOpenProfile: () -> Unit, modifier: Modifier = Modifier) {
     val appName = stringResource(DesignSystemRes.string.app_name)
 
-    Row(
-        modifier = modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.sm),
-        verticalAlignment = Alignment.CenterVertically,
+    OvalitTabHeader(
+        modifier = modifier,
+        actions = {
+            if (badge != null) {
+                Row(
+                    modifier = Modifier
+                        .heightIn(min = ProfileTouchSize)
+                        .clip(RoundedCornerShape(ProfileTouchSize / 2))
+                        .clickable(
+                            onClickLabel = stringResource(Res.string.open_profile),
+                            role = Role.Button,
+                            onClick = onOpenProfile,
+                        )
+                        .padding(horizontal = 7.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TierLabel(
+                        badge = badge,
+                        style = OvalitTheme.typography.caption,
+                        color = OvalitTheme.colors.t2,
+                        emblemSize = TierEmblemSize,
+                        modifier = Modifier.padding(end = 10.dp),
+                    )
+                    PlayerAvatar(riotId = badge.riotId, modifier = Modifier.size(AvatarSize))
+                }
+            }
+        },
     ) {
         OvalitLogo(
             modifier = Modifier
@@ -74,30 +98,6 @@ internal fun ReportTopBar(badge: PlayerBadge?, onOpenProfile: () -> Unit, modifi
                     role = Role.Image
                 },
         )
-        Spacer(Modifier.weight(1f))
-        if (badge != null) {
-            Row(
-                modifier = Modifier
-                    .heightIn(min = ProfileTouchSize)
-                    .clip(RoundedCornerShape(ProfileTouchSize / 2))
-                    .clickable(
-                        onClickLabel = stringResource(Res.string.open_profile),
-                        role = Role.Button,
-                        onClick = onOpenProfile,
-                    )
-                    .padding(horizontal = 7.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                TierLabel(
-                    badge = badge,
-                    style = OvalitTheme.typography.caption,
-                    color = OvalitTheme.colors.t2,
-                    emblemSize = TierEmblemSize,
-                    modifier = Modifier.padding(end = 10.dp),
-                )
-                PlayerAvatar(riotId = badge.riotId, modifier = Modifier.size(AvatarSize))
-            }
-        }
     }
 }
 

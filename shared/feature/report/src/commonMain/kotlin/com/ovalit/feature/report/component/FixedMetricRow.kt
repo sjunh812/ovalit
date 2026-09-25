@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ovalit.core.designsystem.component.OvalitRollingText
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
@@ -106,14 +107,13 @@ private fun FixedMetricCell(
             Spacer(Modifier.width(3.dp))
             OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = OvalitTheme.colors.t4, size = 10.dp)
         }
-        OvalitText(
+        OvalitRollingText(
             text = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
             style = OvalitTheme.typography.metricM,
-            maxLines = 1,
             autoSize = shrinkToFit(OvalitTheme.typography.metricM.fontSize),
         )
         if (current != null && usual != null) {
-            OvalitText(
+            OvalitRollingText(
                 text = metric.format.formatChange(current, usual),
                 style = OvalitTheme.typography.metricS,
                 color = directionColor(metric.format, current, usual),

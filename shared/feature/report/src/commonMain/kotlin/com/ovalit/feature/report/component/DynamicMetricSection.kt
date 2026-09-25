@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import com.ovalit.core.designsystem.component.OvalitRollingText
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
@@ -131,7 +132,7 @@ private fun DynamicMetricColumn(
         )
         Spacer(Modifier.height(6.dp))
         Row(verticalAlignment = Alignment.Bottom) {
-            OvalitText(
+            OvalitRollingText(
                 text = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
                 modifier = Modifier.alignByBaseline(),
                 style = OvalitTheme.typography.metricM,
@@ -139,7 +140,7 @@ private fun DynamicMetricColumn(
             )
             if (judged) {
                 Spacer(Modifier.width(6.dp))
-                OvalitText(
+                OvalitRollingText(
                     text = metric.format.formatChange(current, usual),
                     modifier = Modifier.alignByBaseline(),
                     style = OvalitTheme.typography.metricS,

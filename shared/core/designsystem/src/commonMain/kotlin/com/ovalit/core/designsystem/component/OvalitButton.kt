@@ -4,8 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,9 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 
@@ -32,8 +36,10 @@ fun OvalitPrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    trailingIcon: ImageVector? = null,
 ) {
     val colors = OvalitTheme.colors
+    val content = if (enabled) colors.onAccent else colors.t4
 
     OvalitButtonSurface(
         onClick = onClick,
@@ -42,11 +48,10 @@ fun OvalitPrimaryButton(
         background = if (enabled) colors.accent else colors.fill,
         rippleColor = colors.onAccent,
     ) {
-        OvalitText(
-            text = text,
-            style = OvalitTheme.typography.titleM,
-            color = if (enabled) colors.onAccent else colors.t4,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.sm)) {
+            OvalitText(text = text, style = OvalitTheme.typography.titleM, color = content)
+            if (trailingIcon != null) OvalitIcon(trailingIcon, contentDescription = null, tint = content, size = 16.dp)
+        }
     }
 }
 

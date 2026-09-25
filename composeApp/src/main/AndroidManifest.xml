@@ -11,6 +11,8 @@
     </queries>
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 첫 수집을 마치면 알려 준다. 안드로이드 13부터는 따로 허락을 받는다. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".OvalitApplication"

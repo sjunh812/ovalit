@@ -3,6 +3,7 @@ package com.ovalit.feature.match
 import com.ovalit.core.data.FakeContentRepository
 import com.ovalit.core.data.FakeMatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
+import com.ovalit.core.model.Focus
 import com.ovalit.core.model.Queue
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
@@ -113,4 +114,6 @@ internal class StubPreferences(initial: UserPreferences = UserPreferences.Defaul
     override suspend fun setNotifyAnalysisDone(enabled: Boolean) = Unit
 
     override suspend fun setNotifyWeeklyReport(enabled: Boolean) = Unit
+
+    override suspend fun setFocus(focus: Focus) = Unit
 }

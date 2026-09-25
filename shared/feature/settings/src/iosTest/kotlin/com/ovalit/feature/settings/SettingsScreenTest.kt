@@ -8,8 +8,10 @@ import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.core.model.Focus
 import com.ovalit.core.model.ThemePreference
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -84,12 +86,24 @@ class SettingsScreenTest {
         onNodeWithText("라이트").assertDoesNotExist()
     }
 
+    // S0-4가 "나중에 설정에서 바꿔도 돼요"라고 약속한다
+    @Test
+    fun `관심사는 설정에서 다시 고를 수 있다`() = runComposeUiTest {
+        var focus: Focus? = null
+        setContent { Settings(actions = SettingsActions(onFocusChange = { focus = it })) }
+
+        onNodeWithText("관심사").performClick()
+        onNodeWithText("기복 줄이기").performClick()
+
+        assertEquals(Focus.CONSISTENCY, focus)
+    }
+
     @Test
     fun `연동 해제는 확인을 받은 뒤에 한다`() = runComposeUiTest {
         var unlinked = false
         setContent { Settings(actions = SettingsActions(onUnlink = { unlinked = true })) }
 
-        onNodeWithText("Riot 계정 연동 해제").performClick()
+        onNodeWithText("Riot 계정 연동 해제").performScrollTo().performClick()
 
         assertFalse(unlinked)
         onNodeWithText("Riot 계정 연동을 해제할까요?").assertExists()

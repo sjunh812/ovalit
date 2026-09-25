@@ -55,4 +55,14 @@
     <string name="match_score">%1$d – %2$d</string>
     <string name="match_kda">%1$d/%2$d/%3$d</string>
     <string name="match_adr">ADR %1$s</string>
+
+    <!-- S0-4 관심사. 설정에서도 같은 이름으로 바꾼다 -->
+    <string name="focus_aim">에임 올리기</string>
+    <string name="focus_aim_description">헤드샷 비율, 첫 교전 승률, 무기별 성적</string>
+    <string name="focus_round_play">라운드 운영 다듬기</string>
+    <string name="focus_round_play_description">이코·포스바이·풀바이 승률</string>
+    <string name="focus_consistency">기복 줄이기</string>
+    <string name="focus_consistency_description">관여율, 생존율</string>
+    <string name="focus_none">특별히 없어요</string>
+    <string name="focus_none_description">그 주에 제일 많이 움직인 것부터 보여드릴게요</string>
 </resources>

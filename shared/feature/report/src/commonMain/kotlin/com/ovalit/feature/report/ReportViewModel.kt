@@ -58,15 +58,21 @@ class ReportViewModel(
     // 칩으로 고르기 전까지는 설정의 기본 큐를 따른다. 고른 칩은 이 화면에 있는 동안만 유지한다.
     private val selectedQueue = MutableStateFlow<QueueFilter?>(null)
 
+    // 첫 수집이 끝나기 전에는 숫자를 띄우지 않는다. 헤드샷 24%가 잠시 뒤 19%로 바뀌면 그 뒤로 숫자를 믿지 않는다.
+    private val importedMatches = combine(matchRepository.observeMatches(), matchRepository.importProgress) { matches, progress ->
+        matches.takeIf { progress == null || progress.isDone }
+    }
+
     val uiState: StateFlow<ReportUiState> = combine(
-        matchRepository.observeMatches(),
+        importedMatches,
         preferencesRepository.preferences,
         selectedQueue,
         friendRepository.friends,
         friendRepository.rival,
     ) { matches, preferences, selected, friends, rivalId ->
+        if (matches == null) return@combine ReportUiState.Loading
         val filter = selected ?: preferences.defaultQueue
-        val report = matches.weeklyReport(now = clock.now(), timeZone = timeZone, queueFilter = filter)
+        val report = matches.weeklyReport(now = clock.now(), timeZone = timeZone, queueFilter = filter, focus = preferences.focus)
         val standings = if (report is WeeklyReport.Ready) {
             friends
                 .filter { it.statsPublic }

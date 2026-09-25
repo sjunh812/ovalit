@@ -8,14 +8,17 @@ import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.Account
+import com.ovalit.core.model.Focus
 import com.ovalit.core.model.Friend
 import com.ovalit.core.model.FriendRequest
+import com.ovalit.core.model.ImportProgress
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.model.UserPreferences
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.model.weeklyReport
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -137,6 +140,33 @@ class ReportViewModelTest {
 
         assertEquals("민석#KR3", assertIs<ReportUiState.Success>(viewModel.uiState.value).rival?.riotId)
     }
+    @Test
+    fun `첫 수집이 끝나기 전에는 리포트를 띄우지 않는다`() = runTest {
+        val matches = FakeMatchRepository(ThursdayClock).observeMatches().first()
+        val progress = MutableStateFlow<ImportProgress?>(ImportProgress(total = matches.size, results = listOf(true)))
+        val repository = StubRepository(MutableStateFlow(matches.take(1)), importProgress = progress)
+        val viewModel = ReportViewModel(repository, NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+
+        assertEquals(ReportUiState.Loading, viewModel.uiState.value)
+
+        progress.value = ImportProgress(total = 1, results = listOf(true))
+
+        assertIs<ReportUiState.Success>(viewModel.uiState.value)
+    }
+
+    @Test
+    fun `고른 관심사로 달라진 점 순서를 정한다`() = runTest {
+        val preferences = StubPreferences(UserPreferences.Default.copy(focus = Focus.ROUND_PLAY))
+        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, preferences, NoFriends, FakeContentRepository(), ThursdayClock, Seoul)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+
+        val report = assertIs<WeeklyReport.Ready>(assertIs<ReportUiState.Success>(viewModel.uiState.value).report)
+        val expected = FakeMatchRepository(ThursdayClock).observeMatches().first()
+            .weeklyReport(ThursdayClock.now(), Seoul, focus = Focus.ROUND_PLAY)
+
+        assertEquals(assertIs<WeeklyReport.Ready>(expected).dynamic, report.dynamic)
+    }
 }
 
 private object NoFriends : FriendRepository {
@@ -166,8 +196,13 @@ private object NoAccount : AccountRepository {
     override suspend fun unlink() = Unit
 }
 
-private class StubRepository(private val matches: Flow<List<Match>>) : MatchRepository {
+private class StubRepository(
+    private val matches: Flow<List<Match>>,
+    override val importProgress: Flow<ImportProgress?> = flowOf(null),
+) : MatchRepository {
     override fun observeMatches(): Flow<List<Match>> = matches
+
+    override suspend fun importRecent() = Unit
 
     override suspend fun deleteAll() = Unit
 }
@@ -184,4 +219,6 @@ private class StubPreferences(initial: UserPreferences = UserPreferences.Default
     override suspend fun setNotifyAnalysisDone(enabled: Boolean) = Unit
 
     override suspend fun setNotifyWeeklyReport(enabled: Boolean) = Unit
+
+    override suspend fun setFocus(focus: Focus) = Unit
 }

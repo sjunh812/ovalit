@@ -6,6 +6,7 @@ import com.ovalit.core.data.AccountRepository
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.Account
+import com.ovalit.core.model.Focus
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.model.UserPreferences
@@ -51,6 +52,8 @@ class SettingsViewModel(
     fun setNotifyWeeklyReport(enabled: Boolean) = launch { preferencesRepository.setNotifyWeeklyReport(enabled) }
 
     fun setTheme(theme: ThemePreference) = launch { preferencesRepository.setTheme(theme) }
+
+    fun setFocus(focus: Focus) = launch { preferencesRepository.setFocus(focus) }
 
     fun setDefaultQueue(queue: QueueFilter) = launch { preferencesRepository.setDefaultQueue(queue) }
 

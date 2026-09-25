@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 
-/** RSO가 붙기 전까지 쓰는 가짜 계정입니다. 인트로에서 시작하면 연동된 것으로 칩니다. */
+/** RSO가 붙기 전까지 쓰는 가짜 계정입니다. S0-2에서 계속하면 연동된 것으로 칩니다. */
 class FakeAccountRepository(
     private val matchRepository: FakeMatchRepository,
     private val clock: Clock = Clock.System,
@@ -18,9 +18,10 @@ class FakeAccountRepository(
 
     override val account: Flow<Account?> = linked
 
-    fun link() {
+    /** 경기는 비워 두고 첫 수집([MatchRepository.importRecent])이 채웁니다. */
+    suspend fun link() {
         linked.value = fakeAccount()
-        matchRepository.refill()
+        matchRepository.deleteAll()
         friendRepository?.refill()
     }
 

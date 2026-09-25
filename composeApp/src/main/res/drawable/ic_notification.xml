@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  알림 작은 아이콘입니다. 시스템이 모양만 쓰고 색은 덮어써서 흰색 한 가지로 그립니다.
+  24dp 캔버스에 마크 폭 22dp. scale = 22 / 160 = 0.1375, translate = (1, (24 - 74*0.1375)/2)
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <group
+        android:scaleX="0.1375"
+        android:scaleY="0.1375"
+        android:translateX="1"
+        android:translateY="6.91">
+
+        <path
+            android:pathData="M9.5,32.5a17.5,17.5 0 1,0 35,0a17.5,17.5 0 1,0 -35,0"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="11" />
+
+        <path
+            android:pathData="M61.5,23v28a8,8 0 0 0 8,8h21a8,8 0 0 0 8,-8V23"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="11" />
+
+        <path
+            android:pathData="M61.5,37.5h37"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="11" />
+
+        <path
+            android:pathData="M115.5,32.5a17.5,17.5 0 1,0 35,0a17.5,17.5 0 1,0 -35,0"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:strokeWidth="11" />
+    </group>
+</vector>

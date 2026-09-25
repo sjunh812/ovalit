@@ -1,5 +1,6 @@
 package com.ovalit.core.data
 
+import com.ovalit.core.model.Focus
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.model.UserPreferences
@@ -37,6 +38,7 @@ class DataStoreUserPreferencesRepositoryTest {
         repository.setStatsPublic(false)
         repository.setNotifyAnalysisDone(false)
         repository.setNotifyWeeklyReport(false)
+        repository.setFocus(Focus.ROUND_PLAY)
 
         assertEquals(
             UserPreferences(
@@ -45,6 +47,7 @@ class DataStoreUserPreferencesRepositoryTest {
                 statsPublic = false,
                 notifyAnalysisDone = false,
                 notifyWeeklyReport = false,
+                focus = Focus.ROUND_PLAY,
             ),
             repository.preferences.first(),
         )

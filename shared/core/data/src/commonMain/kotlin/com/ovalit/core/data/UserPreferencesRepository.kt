@@ -1,5 +1,6 @@
 package com.ovalit.core.data
 
+import com.ovalit.core.model.Focus
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.model.UserPreferences
@@ -18,4 +19,6 @@ interface UserPreferencesRepository {
     suspend fun setNotifyAnalysisDone(enabled: Boolean)
 
     suspend fun setNotifyWeeklyReport(enabled: Boolean)
+
+    suspend fun setFocus(focus: Focus)
 }

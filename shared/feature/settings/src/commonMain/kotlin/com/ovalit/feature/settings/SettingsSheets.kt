@@ -20,6 +20,7 @@ import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.core.model.Focus
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.ui.label
@@ -30,6 +31,8 @@ import com.ovalit.feature.settings.resources.default_queue_description
 import com.ovalit.feature.settings.resources.delete_body
 import com.ovalit.feature.settings.resources.delete_confirm
 import com.ovalit.feature.settings.resources.delete_title
+import com.ovalit.feature.settings.resources.focus
+import com.ovalit.feature.settings.resources.focus_description
 import com.ovalit.feature.settings.resources.theme
 import com.ovalit.feature.settings.resources.theme_dark
 import com.ovalit.feature.settings.resources.theme_light
@@ -40,7 +43,7 @@ import com.ovalit.feature.settings.resources.unlink_title
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-internal enum class SettingsSheet { THEME, DEFAULT_QUEUE, DELETE_DATA, UNLINK }
+internal enum class SettingsSheet { THEME, DEFAULT_QUEUE, FOCUS, DELETE_DATA, UNLINK }
 
 internal val ThemePreference.label: StringResource
     get() = when (this) {
@@ -72,6 +75,15 @@ internal fun SettingsSheetContent(
             selected = uiState.preferences.defaultQueue,
             label = { it.label },
             onSelect = actions.onDefaultQueueChange,
+            onDismiss = onDismiss,
+        )
+        SettingsSheet.FOCUS -> OptionSheet(
+            title = stringResource(Res.string.focus),
+            body = stringResource(Res.string.focus_description),
+            options = Focus.entries,
+            selected = uiState.preferences.focus,
+            label = { it.label },
+            onSelect = actions.onFocusChange,
             onDismiss = onDismiss,
         )
         SettingsSheet.DELETE_DATA -> ConfirmSheet(

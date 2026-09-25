@@ -51,6 +51,19 @@ object OvalitIcons {
     val Matches: ImageVector by lazy { strokeIcon("M4 5.5h12M4 10h12M4 14.5h12") }
 
     val Filter: ImageVector by lazy { strokeIcon("M3 5.5h14M6 10h8M8.5 14.5h3", strokeWidth = 1.7f) }
+
+    val Chart: ImageVector by lazy { strokeIcon("M3 15.5V9M7.3 15.5V5M11.7 15.5v-4M16 15.5V7") }
+
+    val Restore: ImageVector by lazy { strokeIcon("M7.5 3.2A7.2 7.2 0 1 1 3.4 12", "M3 4.2v3.6h3.6") }
+
+    val Lock: ImageVector by lazy {
+        strokeIcon(
+            "M5.6 8.6h8.8a1.6 1.6 0 0 1 1.6 1.6v4.8a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 15v-4.8a1.6 1.6 0 0 1 1.6-1.6z",
+            "M7 8.6V6.2a3 3 0 0 1 6 0v2.4",
+        )
+    }
+
+    val ArrowRight: ImageVector by lazy { strokeIcon("M4 10h11M11 5.5l4.5 4.5L11 14.5", strokeWidth = 2f) }
 }
 
 /** @param contentDescription 옆에 같은 뜻의 글자가 있으면 `null`로 둡니다. 낭독기가 두 번 읽습니다. */

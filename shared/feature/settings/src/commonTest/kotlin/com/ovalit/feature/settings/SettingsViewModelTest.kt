@@ -4,6 +4,7 @@ import com.ovalit.core.data.AccountRepository
 import com.ovalit.core.data.FakeAccountRepository
 import com.ovalit.core.data.FakeMatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
+import com.ovalit.core.model.Focus
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.model.UserPreferences
@@ -71,6 +72,7 @@ class SettingsViewModelTest {
         viewModel.setNotifyWeeklyReport(false)
         viewModel.setTheme(ThemePreference.LIGHT)
         viewModel.setDefaultQueue(QueueFilter.COMPETITIVE)
+        viewModel.setFocus(Focus.AIM)
 
         assertEquals(
             UserPreferences(
@@ -79,6 +81,7 @@ class SettingsViewModelTest {
                 statsPublic = false,
                 notifyAnalysisDone = false,
                 notifyWeeklyReport = false,
+                focus = Focus.AIM,
             ),
             success().preferences,
         )
@@ -138,4 +141,6 @@ private class InMemoryPreferences : UserPreferencesRepository {
 
     override suspend fun setNotifyWeeklyReport(enabled: Boolean) =
         preferences.update { it.copy(notifyWeeklyReport = enabled) }
+
+    override suspend fun setFocus(focus: Focus) = preferences.update { it.copy(focus = focus) }
 }

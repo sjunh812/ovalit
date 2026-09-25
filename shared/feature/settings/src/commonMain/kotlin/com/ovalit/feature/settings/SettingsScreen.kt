@@ -40,6 +40,7 @@ import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Account
+import com.ovalit.core.model.Focus
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.ui.label
@@ -48,6 +49,7 @@ import com.ovalit.feature.settings.resources.account_linked
 import com.ovalit.feature.settings.resources.account_unlinked
 import com.ovalit.feature.settings.resources.default_queue
 import com.ovalit.feature.settings.resources.delete_data
+import com.ovalit.feature.settings.resources.focus
 import com.ovalit.feature.settings.resources.notify_analysis_done
 import com.ovalit.feature.settings.resources.notify_weekly_report
 import com.ovalit.feature.settings.resources.notify_weekly_report_time
@@ -95,6 +97,7 @@ fun SettingsRoute(
             onNotifyWeeklyReportChange = viewModel::setNotifyWeeklyReport,
             onThemeChange = viewModel::setTheme,
             onDefaultQueueChange = viewModel::setDefaultQueue,
+            onFocusChange = viewModel::setFocus,
             onDeleteData = viewModel::deleteData,
             onUnlink = { viewModel.unlink(onUnlinked) },
         ),
@@ -108,6 +111,7 @@ internal class SettingsActions(
     val onNotifyWeeklyReportChange: (Boolean) -> Unit = {},
     val onThemeChange: (ThemePreference) -> Unit = {},
     val onDefaultQueueChange: (QueueFilter) -> Unit = {},
+    val onFocusChange: (Focus) -> Unit = {},
     val onDeleteData: () -> Unit = {},
     val onUnlink: () -> Unit = {},
 )
@@ -177,6 +181,12 @@ internal fun SettingsScreen(
                 title = stringResource(Res.string.default_queue),
                 value = stringResource(preferences.defaultQueue.label),
                 onClick = { openSheet = SettingsSheet.DEFAULT_QUEUE },
+            )
+            RowDivider()
+            ValueRow(
+                title = stringResource(Res.string.focus),
+                value = stringResource(preferences.focus.label),
+                onClick = { openSheet = SettingsSheet.FOCUS },
             )
 
             SectionHeader(stringResource(Res.string.section_data))

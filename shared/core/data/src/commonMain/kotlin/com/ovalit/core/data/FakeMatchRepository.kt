@@ -1,6 +1,7 @@
 package com.ovalit.core.data
 
 import com.ovalit.core.model.ActId
+import com.ovalit.core.model.ImportProgress
 import com.ovalit.core.model.KillEvent
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.MatchId
@@ -13,15 +14,20 @@ import com.ovalit.core.model.RoundEnding
 import com.ovalit.core.model.Scoreline
 import com.ovalit.core.model.Shots
 import com.ovalit.core.model.Side
+import com.ovalit.core.model.forFirstImport
 import com.ovalit.core.model.metrics
 import kotlin.math.abs
 import kotlin.random.Random
 import kotlin.time.Clock
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 
 /**
  * 프로덕션 키가 나오기 전까지 화면을 붙여 보는 데 쓰는 가짜 경기입니다.
@@ -31,20 +37,33 @@ import kotlinx.coroutines.flow.MutableStateFlow
  */
 class FakeMatchRepository(
     private val clock: Clock = Clock.System,
+    private val importDelay: Duration = 70.milliseconds,
 ) : MatchRepository {
 
-    private val matches = MutableStateFlow(fakeMatches(clock.now()))
+    private val matches = MutableStateFlow(imported())
+    private val progress = MutableStateFlow<ImportProgress?>(null)
 
     override fun observeMatches(): Flow<List<Match>> = matches
+
+    override val importProgress: Flow<ImportProgress?> = progress
+
+    // S0-4 막대가 차오르는 걸 볼 수 있게 한 판씩 틈을 두고 받는다
+    override suspend fun importRecent() {
+        val picked = imported()
+        matches.value = emptyList()
+        progress.value = ImportProgress(total = picked.size, results = emptyList())
+        for (match in picked) {
+            delay(importDelay)
+            matches.update { it + match }
+            progress.update { it?.copy(results = it.results + match.myTeamWon) }
+        }
+    }
 
     override suspend fun deleteAll() {
         matches.value = emptyList()
     }
 
-    /** 다시 연동한 것처럼 가짜 경기를 새로 채웁니다. */
-    fun refill() {
-        matches.value = fakeMatches(clock.now())
-    }
+    private fun imported(): List<Match> = fakeMatches(clock.now()).forFirstImport(clock.now()) { it.startedAt }
 }
 
 private const val SEED = 923

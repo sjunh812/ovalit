@@ -6,4 +6,7 @@
     <string name="tab_friends">친구</string>
     <string name="tab_settings">설정</string>
     <string name="share_invite">초대 링크 보내기</string>
+    <string name="notification_channel_analysis">분석 완료</string>
+    <string name="notification_analysis_title">분석을 마쳤어요</string>
+    <string name="notification_analysis_body">최근 %1$d경기로 리포트를 만들었어요.</string>
 </resources>

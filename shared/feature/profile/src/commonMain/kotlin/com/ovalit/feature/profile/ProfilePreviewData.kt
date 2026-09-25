@@ -98,17 +98,26 @@ internal object ProfilePreviewData {
 
     val duelistAgents = agents.copy(mainRole = Role.DUELIST, roles = agents.roles.sortedByDescending { it.role == Role.DUELIST })
 
-    private fun weapon(id: WeaponId, kills: Int, rounds: Int, head: Int, total: Int = 100) =
-        WeaponStats(id, kills, rounds, Shots(head = head, body = total - head, leg = 0))
+    private fun weapon(id: WeaponId, kills: Int, rounds: Int, head: Int, total: Int = 100, carried: Int = 0, deaths: Int = 0, adr: Int = 0) =
+        WeaponStats(
+            weapon = id,
+            kills = kills,
+            singleWeaponRounds = rounds,
+            shots = Shots(head = head, body = total - head, leg = 0),
+            carriedRounds = carried,
+            deaths = deaths,
+            assists = carried / 2,
+            damage = adr * carried,
+        )
 
     val weapons = WeaponReport(
         matches = 50,
         kills = 520,
         weapons = listOf(
-            weapon(phantom, kills = 254, rounds = 118, head = 27),
-            weapon(vandal, kills = 198, rounds = 94, head = 15),
-            weapon(ghost, kills = 46, rounds = 12, head = 30),
-            weapon(newWeapon, kills = 22, rounds = 21, head = 20),
+            weapon(phantom, kills = 254, rounds = 118, head = 27, carried = 140, deaths = 180, adr = 142),
+            weapon(vandal, kills = 198, rounds = 94, head = 15, carried = 110, deaths = 150, adr = 135),
+            weapon(ghost, kills = 46, rounds = 12, head = 30, carried = 36, deaths = 30, adr = 88),
+            weapon(newWeapon, kills = 22, rounds = 21, head = 20, carried = 6, deaths = 4, adr = 120),
         ),
         highlights = listOf(
             WeaponHighlight(
@@ -124,6 +133,13 @@ internal object ProfilePreviewData {
                 baseline = weapon(vandal, kills = 90, rounds = 44, head = 17),
                 baselineWeeks = 4,
                 movement = Movement.STEADY,
+            ),
+            WeaponHighlight(
+                act = weapon(ghost, kills = 46, rounds = 12, head = 30),
+                current = null,
+                baseline = null,
+                baselineWeeks = 4,
+                movement = Movement.UNKNOWN,
             ),
         ),
     )

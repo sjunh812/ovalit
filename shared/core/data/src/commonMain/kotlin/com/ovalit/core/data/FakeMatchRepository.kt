@@ -347,7 +347,7 @@ private fun Random.fakeRound(
         myShots = Shots(head = head, body = hits - head - leg, leg = leg),
         mySide = side,
         ending = ending(won = won, attacking = side == Side.ATTACK),
-        economy = economy,
+        economy = economy.copy(myWeapon = weapon.id),
     )
 }
 

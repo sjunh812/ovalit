@@ -373,7 +373,7 @@ private fun AgentTile(agent: AgentStats, catalog: ContentCatalog, stacked: Boole
     }
 }
 
-/** S6 위쪽 두 줄과 같은 무기입니다. 이번 액트 킬 중 그 무기로 낸 비중을 붙입니다. 누르면 S6으로 갑니다. */
+/** S6 위쪽 세 줄과 같은 무기입니다. 이번 액트 킬 중 그 무기로 낸 비중을 붙입니다. 누르면 S6으로 갑니다. */
 @Composable
 internal fun WeaponsSection(report: WeaponReport, catalog: ContentCatalog, onOpen: () -> Unit) {
     val shown = report.highlights.map { it.act }
@@ -382,7 +382,7 @@ internal fun WeaponsSection(report: WeaponReport, catalog: ContentCatalog, onOpe
     Section(modifier = Modifier.clickable(role = SemanticsRole.Button, onClick = onOpen)) {
         SectionTitle(title = stringResource(Res.string.profile_weapons), chevron = true)
         Spacer(Modifier.height(12.dp))
-        // 무기는 둘뿐이지만 위 요원 칸과 같은 세 칸 격자에 놓는다. 반씩 나누면 요원과 줄이 안 맞고 가운데가 빈다.
+        // 위 요원 칸과 같은 세 칸 격자에 놓는다. 무기가 셋이 안 되면 빈칸을 남겨 요원과 줄을 맞춘다.
         Row(horizontalArrangement = Arrangement.spacedBy(AgentTileGap)) {
             shown.forEach { WeaponTile(it, report.kills, catalog, Modifier.weight(1f)) }
             repeat(SHOWN_AGENTS - shown.size) { Spacer(Modifier.weight(1f)) }

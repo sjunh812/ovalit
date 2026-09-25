@@ -121,6 +121,24 @@ class ProfileScreensTest {
         onNodeWithText("K/D · 피해량").assertExists()
     }
 
+    // 무기를 잘 쓰는지 보려면 킬과 헤드샷만으로는 모자란다
+    @Test
+    fun `무기 표는 킬 데스 어시스트와 라운드당 피해량과 헤드샷을 둔다`() = runComposeUiTest {
+        setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
+
+        onNodeWithText("K/D/A", useUnmergedTree = true).assertExists()
+        onNodeWithText("254/180/70", useUnmergedTree = true).assertExists()
+        onNodeWithText("142", useUnmergedTree = true).assertExists()
+        onNodeWithText("피해량", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun `위쪽 주력 무기는 셋이다`() = runComposeUiTest {
+        setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
+
+        onNodeWithText("단일 무기 12라운드", useUnmergedTree = true).assertExists()
+    }
+
     @Test
     fun `5판에 못 미친 요원은 숫자 대신 표본 부족이라고 적는다`() = runComposeUiTest {
         setContent { Themed { AgentsScreen(ProfilePreviewData.success, onBack = {}) } }
@@ -148,10 +166,11 @@ class ProfileScreensTest {
     fun `가장 킬이 많은 계열만 펼쳐 두고 누르면 다른 계열을 펼친다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
 
-        onNodeWithText("고스트").assertDoesNotExist()
+        // 고스트는 위쪽 주력 무기에도 있어서 이름 대신 표 줄의 K/D/A로 본다
+        onNodeWithText("46/30/18", useUnmergedTree = true).assertDoesNotExist()
         onNodeWithText("권총").performClick()
 
-        onNodeWithText("고스트").assertExists()
+        onNodeWithText("46/30/18", useUnmergedTree = true).assertExists()
         onNodeWithText("그 밖의 무기").assertExists()
     }
 

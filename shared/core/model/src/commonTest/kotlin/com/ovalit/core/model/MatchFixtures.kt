@@ -46,6 +46,7 @@ internal fun round(
     side: Side? = null,
     number: Int = 1,
     teamLoadout: Int? = null,
+    carried: WeaponId? = null,
 ) = Round(
     number = number,
     won = won,
@@ -54,7 +55,11 @@ internal fun round(
     myShots = shots,
     mySide = side,
     ending = null,
-    economy = teamLoadout?.let { RoundEconomy(myLoadout = it, teamLoadout = it, enemyLoadout = it) },
+    economy = if (teamLoadout != null || carried != null) {
+        RoundEconomy(myLoadout = teamLoadout ?: 0, teamLoadout = teamLoadout ?: 0, enemyLoadout = teamLoadout ?: 0, myWeapon = carried)
+    } else {
+        null
+    },
 )
 
 /** 아무 일도 없이 끝난 라운드. 나는 살아남는다. */

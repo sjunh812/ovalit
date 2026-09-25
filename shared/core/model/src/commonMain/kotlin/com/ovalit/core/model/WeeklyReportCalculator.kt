@@ -131,7 +131,7 @@ fun Iterable<Match>.currentActMatches(queueFilter: QueueFilter): List<Match> {
 }
 
 /**
- * S6 무기 화면에 쓰는 집계입니다. 목록은 이번 액트 전체를 보고, 위쪽 두 무기는 홈 리포트와 같은
+ * S6 무기 화면에 쓰는 집계입니다. 목록은 이번 액트 전체를 보고, 위쪽 세 무기는 홈 리포트와 같은
  * 기간을 그 앞 4주와 비교합니다.
  */
 fun Iterable<Match>.weaponReport(

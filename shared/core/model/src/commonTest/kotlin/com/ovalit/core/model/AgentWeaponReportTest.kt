@@ -2,6 +2,8 @@ package com.ovalit.core.model
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import kotlin.test.assertFalse
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -77,6 +79,34 @@ class AgentWeaponReportTest {
         assertEquals(2, phantom.kills)
         assertEquals(1, phantom.singleWeaponRounds)
         assertEquals(0.3, phantom.headshotRate)
+    }
+
+    // 죽을 때 든 무기와 피해를 준 무기는 응답에 없다. 라운드를 시작할 때 든 무기로 나눈다.
+    @Test
+    fun `데스와 어시스트와 피해량은 그 무기를 들고 시작한 라운드에서 센다`() {
+        val died = round(myKill(Vandal), kill(20.0, Enemy, Me), damage = 150, carried = Phantom)
+        val assisted = round(kill(10.0, Ally, Enemy, assistedBy = setOf(Me)), damage = 90, carried = Phantom)
+        val other = round(kill(10.0, Enemy, Me), damage = 40, carried = Vandal)
+
+        val stats = listOf(match(died, assisted, other)).weaponStats()
+        val phantom = stats.single { it.weapon == Phantom }
+
+        assertEquals(0, phantom.kills)
+        assertEquals(2, phantom.carriedRounds)
+        assertEquals(1, phantom.deaths)
+        assertEquals(1, phantom.assists)
+        assertEquals(120.0, phantom.damagePerRound)
+        assertEquals(1, stats.single { it.weapon == Vandal }.kills)
+    }
+
+    @Test
+    fun `들고 시작한 라운드가 20에 못 미치면 피해량은 표본 부족이다`() {
+        val rounds = List(19) { round(myKill(Phantom), damage = 100, carried = Phantom) }
+
+        val phantom = listOf(match(*rounds.toTypedArray())).weaponStats().single()
+
+        assertFalse(phantom.isDamageMeasurable)
+        assertTrue(listOf(match(*(rounds + rounds.first()).toTypedArray())).weaponStats().single().isDamageMeasurable)
     }
 
     @Test

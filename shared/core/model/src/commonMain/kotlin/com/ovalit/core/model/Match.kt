@@ -127,11 +127,15 @@ enum class RoundEnding {
 /**
  * 라운드를 시작할 때 들고 있던 장비 가치(`economy.loadoutValue`)입니다. 팀 값은 한 사람당 평균이라
  * 누가 튕겨 네 명이 뛴 라운드도 같은 기준으로 가를 수 있습니다.
+ *
+ * @property myWeapon 라운드를 시작할 때 내가 든 주무기(`economy.weapon`)입니다. 킬을 무기별로 셀 때는 쓰지 않습니다.
+ * 주워 쓴 총이 안 잡혀서입니다. 무기별 데스와 라운드당 피해량처럼 킬로는 무기를 알 수 없는 숫자의 기준으로만 씁니다.
  */
 data class RoundEconomy(
     val myLoadout: Int,
     val teamLoadout: Int,
     val enemyLoadout: Int,
+    val myWeapon: WeaponId? = null,
 )
 
 /**

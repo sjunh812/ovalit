@@ -7,20 +7,32 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
@@ -85,21 +97,38 @@ fun ProfileIdentity(badge: PlayerBadge, mainRole: Role?, modifier: Modifier = Mo
     }
 }
 
+// 아이콘은 역할에 딸린 것이라 "주로" 뒤, 역할 이름 바로 앞에 둔다. 글자 안에 넣어야 줄이 넘어가도
+// 아이콘과 이름이 떨어지지 않는다.
 @Composable
 private fun MainRole(role: Role) {
     val colors = OvalitTheme.colors
     val name = stringResource(role.label)
     val text = stringResource(Res.string.main_role, name)
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-        RoleIcon(role, tint = colors.t3, modifier = Modifier.size(14.dp))
-        OvalitText(
-            text = buildAnnotatedString {
+    val start = text.indexOf(name)
+    val icon = mapOf(
+        RoleIconId to InlineTextContent(Placeholder(1.55.em, 1.2.em, PlaceholderVerticalAlign.TextCenter)) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
+                RoleIcon(role, tint = colors.t3, modifier = Modifier.fillMaxHeight().aspectRatio(1f))
+            }
+        },
+    )
+    OvalitText(
+        text = buildAnnotatedString {
+            if (start < 0) {
                 append(text)
-                val start = text.indexOf(name)
-                if (start >= 0) addStyle(SpanStyle(color = colors.t2, fontWeight = FontWeight.SemiBold), start, start + name.length)
-            },
-            style = OvalitTheme.typography.caption,
-            color = colors.t3,
-        )
-    }
+                return@buildAnnotatedString
+            }
+            append(text.substring(0, start))
+            appendInlineContent(RoleIconId)
+            withStyle(SpanStyle(color = colors.t2, fontWeight = FontWeight.SemiBold)) { append(name) }
+            append(text.substring(start + name.length))
+        },
+        // 아이콘 자리에 든 대체 글자를 읽지 않게 글자만 따로 알린다
+        modifier = Modifier.clearAndSetSemantics { this.text = AnnotatedString(text) },
+        style = OvalitTheme.typography.caption,
+        color = colors.t3,
+        inlineContent = icon,
+    )
 }
+
+private const val RoleIconId = "role"

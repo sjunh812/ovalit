@@ -1,6 +1,7 @@
 package com.ovalit.core.designsystem.component
 
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -38,7 +39,7 @@ fun OvalitText(
 
 /**
  * 한 문장 안에서 일부 글자만 다르게 보여야 할 때 씁니다. [color]는 스타일을 따로 주지 않은
- * 구간의 색입니다.
+ * 구간의 색입니다. 글자 사이에 아이콘을 넣으려면 [inlineContent]를 씁니다.
  */
 @Composable
 fun OvalitText(
@@ -49,6 +50,7 @@ fun OvalitText(
     textAlign: TextAlign? = null,
     maxLines: Int = Int.MAX_VALUE,
     overflow: TextOverflow = TextOverflow.Clip,
+    inlineContent: Map<String, InlineTextContent> = emptyMap(),
 ) {
     BasicText(
         text = text,
@@ -56,5 +58,6 @@ fun OvalitText(
         style = style.merge(color = color, textAlign = textAlign ?: TextAlign.Unspecified),
         maxLines = maxLines,
         overflow = overflow,
+        inlineContent = inlineContent,
     )
 }

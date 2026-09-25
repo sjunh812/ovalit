@@ -8,7 +8,11 @@ package com.ovalit.core.model
  */
 const val TRADE_WINDOW_MILLIS: Long = 5_000
 
-fun Match.metrics(): MatchMetrics {
+/**
+ * [side]를 주면 그 진영 라운드만 셉니다. 전투 점수는 경기 합계로만 내려와서 진영별로는 0입니다.
+ */
+fun Match.metrics(side: Side? = null): MatchMetrics {
+    val rounds = if (side == null) rounds else rounds.filter { it.mySide == side }
     val perRound = rounds.map { it.analyze(me = me, allies = allies) }
 
     return MatchMetrics(
@@ -17,7 +21,7 @@ fun Match.metrics(): MatchMetrics {
         kills = perRound.sumOf { it.kills },
         deaths = perRound.count { it.died },
         assists = perRound.sumOf { it.assists },
-        combatScore = myCombatScore,
+        combatScore = if (side == null) myCombatScore else 0,
         damage = rounds.sumOf { it.myDamage },
         shots = rounds.fold(Shots.None) { acc, round -> acc + round.myShots },
         kastRounds = perRound.count { it.kast },

@@ -35,12 +35,14 @@ internal fun round(
     damage: Int = 0,
     shots: Shots = Shots.None,
     won: Boolean = true,
+    side: Side? = null,
 ) = Round(
     number = 1,
     won = won,
     kills = kills.toList(),
     myDamage = damage,
     myShots = shots,
+    mySide = side,
 )
 
 /** 아무 일도 없이 끝난 라운드. 나는 살아남는다. */

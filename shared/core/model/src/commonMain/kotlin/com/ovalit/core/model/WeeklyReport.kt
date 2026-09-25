@@ -18,6 +18,7 @@ sealed interface WeeklyReport {
      * @property mainRole 기간 중 라운드를 가장 많이 뛴 역할입니다. 역할을 아는 경기가 없으면 없습니다.
      * @property dynamic 동적 3칸입니다. 하나도 [Movement.MOVED]가 아닐 때만 "큰 변화 없음"을 띄웁니다.
      * [QueueFilter.OTHER]면 비어 있습니다.
+     * @property insight 개선 포인트 문장입니다. 공수 격차가 기준을 넘지 않거나 [QueueFilter.OTHER]면 없습니다.
      * @property trend 지표 설명 시트의 주별 막대입니다. 기간 마지막 주에서 끝나는 [TREND_WEEKS]주이고
      * 오래된 주가 앞에 옵니다.
      */
@@ -28,6 +29,7 @@ sealed interface WeeklyReport {
         val baseline: Baseline?,
         val mainRole: Role?,
         val dynamic: List<DynamicSlot>,
+        val insight: SideInsight?,
         val trend: List<TrendWeek>,
     ) : WeeklyReport
 

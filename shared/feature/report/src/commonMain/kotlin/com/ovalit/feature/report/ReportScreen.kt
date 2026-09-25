@@ -29,6 +29,7 @@ import com.ovalit.feature.report.component.DynamicMetricSection
 import com.ovalit.feature.report.component.FixedMetricRow
 import com.ovalit.feature.report.component.FixedMetricSummary
 import com.ovalit.feature.report.component.HorizontalLine
+import com.ovalit.feature.report.component.InsightSection
 import com.ovalit.feature.report.component.MetricSheet
 import com.ovalit.feature.report.component.PeriodHeader
 import com.ovalit.feature.report.component.QueueChips
@@ -108,6 +109,12 @@ private fun ReportContent(report: WeeklyReport.Ready, queueFilter: QueueFilter) 
 
     if (queueFilter.hasDynamicMetrics) {
         DynamicMetricSection(report)
+        report.insight?.let { insight ->
+            Spacer(Modifier.height(20.dp))
+            HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
+            Spacer(Modifier.height(18.dp))
+            InsightSection(insight = insight, role = report.mainRole)
+        }
     } else {
         HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
         Spacer(Modifier.height(18.dp))

@@ -171,6 +171,47 @@ class ReportScreenTest {
         onNodeWithText("데스가 없어서", substring = true).assertExists()
         onNodeWithText("킬 ÷", substring = true).assertDoesNotExist()
     }
+
+    @Test
+    fun `개선 포인트는 낮은 쪽 진영부터 사실만 적는다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved) }
+
+        onNodeWithText("수비 라운드 첫 교전 승률이 공격보다 26%p 낮아요.").assertExists()
+        onNodeWithText("공격 71%, 수비 45%예요. 타격대에게 첫 교전 승률은 먼저 보는 지표예요.").assertExists()
+    }
+
+    @Test
+    fun `우선 지표가 아니면 역할 문장을 붙이지 않는다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved.let { it.copy(insight = it.insight?.copy(isRolePriority = false)) }
+        setContent { Report(report) }
+
+        onNodeWithText("공격 71%, 수비 45%예요.").assertExists()
+    }
+
+    @Test
+    fun `공격이 더 낮으면 공격 라운드부터 적는다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved.let { base ->
+            val insight = base.insight!!
+            base.copy(insight = insight.copy(attack = insight.defense, defense = insight.attack))
+        }
+        setContent { Report(report) }
+
+        onNodeWithText("공격 라운드 첫 교전 승률이 수비보다 26%p 낮아요.").assertExists()
+    }
+
+    @Test
+    fun `공수 격차가 없으면 개선 포인트를 비운다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved.copy(insight = null)) }
+
+        onNodeWithText("낮아요.", substring = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun `기타 모드에는 개선 포인트가 없다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.otherQueue, QueueFilter.OTHER) }
+
+        onNodeWithText("낮아요.", substring = true).assertDoesNotExist()
+    }
 }
 
 @Composable

@@ -80,4 +80,11 @@
     <string name="sheet_usual_missing">이번 액트 기록이 4주 이상 쌓이면 평소 범위를 알려 드려요.</string>
     <string name="sheet_method_title">어떻게 계산하나요?</string>
     <string name="sheet_kd_no_deaths">데스가 없어서 K/D를 비워 뒀어요. 킬 수를 그대로 보여주면 한 판짜리 기록이 과장돼요.</string>
+    <!-- 개선 포인트 문장. 지표 이름이 모두 받침으로 끝나서 조사를 "이", "은"으로 고정했다. 받침 없는 지표를 넣으면 문장을 나눠야 한다. -->
+    <string name="insight_side_attack">공격</string>
+    <string name="insight_side_defense">수비</string>
+    <string name="insight_headline">%1$s 라운드 %2$s이 %3$s보다 %4$s 낮아요.</string>
+    <string name="insight_gap_percent">%1$d%p</string>
+    <string name="insight_values">%1$s %2$s, %3$s %4$s예요.</string>
+    <string name="insight_values_with_role">%1$s %2$s, %3$s %4$s예요. %5$s에게 %6$s은 먼저 보는 지표예요.</string>
 </resources>

@@ -9,6 +9,8 @@ import com.ovalit.core.model.Movement
 import com.ovalit.core.model.ReportPeriod
 import com.ovalit.core.model.Role
 import com.ovalit.core.model.Shots
+import com.ovalit.core.model.SideInsight
+import com.ovalit.core.model.SideMetric
 import com.ovalit.core.model.TrendWeek
 import com.ovalit.core.model.WeeklyReport
 import kotlinx.datetime.DateTimeUnit
@@ -85,6 +87,14 @@ internal object ReportPreviewData {
         firstKillRoundsWon = 17,
     )
 
+    // 타격대가 수비에서 첫 교전을 자주 졌다. 공격 71%, 수비 45%.
+    private val firstDuelBySide = SideInsight(
+        metric = SideMetric.FIRST_DUEL_WIN_RATE,
+        attack = thisWeek.copy(rounds = 74, firstKills = 22, firstDeaths = 9),
+        defense = thisWeek.copy(rounds = 72, firstKills = 15, firstDeaths = 18),
+        isRolePriority = true,
+    )
+
     val moved = WeeklyReport.Ready(
         act = act,
         period = ReportPeriod(firstDay = LocalDate(2026, 9, 21), weeks = 1, includesThisWeek = true),
@@ -96,6 +106,7 @@ internal object ReportPreviewData {
             DynamicSlot(DynamicMetric.SURVIVAL_RATE, Movement.MOVED),
             DynamicSlot(DynamicMetric.KAST, Movement.STEADY),
         ),
+        insight = firstDuelBySide,
         trend = trend,
     )
 

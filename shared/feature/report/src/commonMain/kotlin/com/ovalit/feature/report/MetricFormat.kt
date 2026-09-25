@@ -30,7 +30,7 @@ internal enum class MetricFormat(private val scale: Int) {
 
     fun direction(current: Double, baseline: Double): Int = (steps(current) - steps(baseline)).coerceIn(-1, 1)
 
-    private fun steps(value: Double): Int = (value * scale).roundToInt()
+    fun steps(value: Double): Int = (value * scale).roundToInt()
 
     private fun digits(steps: Int): String = when (this) {
         INTEGER, PERCENT -> steps.toString()

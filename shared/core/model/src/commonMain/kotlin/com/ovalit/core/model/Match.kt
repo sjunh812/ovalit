@@ -33,6 +33,8 @@ data class Match(
  * @property kills 라운드에서 일어난 킬 전부입니다. 나와 무관한 킬도 들어갑니다. 트레이드와
  * 퍼블을 가르려면 누가 먼저 죽었는지 알아야 합니다.
  * @property myShots 내가 맞힌 부위별 횟수입니다. 킬 수가 아니라 적중 수입니다.
+ * @property mySide 그 라운드에 내가 공격이었는지 수비였는지입니다. 모르면 없고, 공수로 나눠 볼 때 어느
+ * 쪽에도 넣지 않습니다.
  */
 data class Round(
     val number: Int,
@@ -40,6 +42,7 @@ data class Round(
     val kills: List<KillEvent>,
     val myDamage: Int,
     val myShots: Shots,
+    val mySide: Side?,
 )
 
 /**

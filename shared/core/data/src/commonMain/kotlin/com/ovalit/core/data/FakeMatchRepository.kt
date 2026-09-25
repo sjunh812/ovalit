@@ -10,6 +10,7 @@ import com.ovalit.core.model.Queue
 import com.ovalit.core.model.Role
 import com.ovalit.core.model.Round
 import com.ovalit.core.model.Shots
+import com.ovalit.core.model.Side
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
@@ -47,7 +48,10 @@ private const val DAYS = 70
 
 private const val USUAL_FIRST_DUEL_RATE = 0.28
 private const val RECENT_FIRST_DUEL_RATE = 0.42
-private const val FIRST_DUEL_WIN_RATE = 0.55
+// 수비에서 첫 교전을 더 자주 져서 홈에 개선 포인트 문장이 뜬다. 평균은 0.55다.
+private const val ATTACK_FIRST_DUEL_WIN_RATE = 0.66
+private const val DEFENSE_FIRST_DUEL_WIN_RATE = 0.44
+private const val HALF_ROUNDS = 12
 private const val EXTRA_KILL_RATE = 0.35
 private const val LATE_DEATH_RATE = 0.5
 private const val TRADE_RATE = 0.4
@@ -75,7 +79,12 @@ internal fun fakeMatches(now: Instant): List<Match> {
 }
 
 private fun Random.fakeMatch(id: MatchId, startedAt: Instant, firstDuelRate: Double): Match {
-    val rounds = List(nextInt(18, 25)) { fakeRound(number = it + 1, firstDuelRate = firstDuelRate) }
+    val startsOnAttack = nextBoolean()
+    val rounds = List(nextInt(18, 25)) { index ->
+        val firstHalf = index < HALF_ROUNDS
+        val side = if (firstHalf == startsOnAttack) Side.ATTACK else Side.DEFENSE
+        fakeRound(number = index + 1, side = side, firstDuelRate = firstDuelRate)
+    }
 
     return Match(
         id = id,
@@ -93,7 +102,7 @@ private fun Random.fakeMatch(id: MatchId, startedAt: Instant, firstDuelRate: Dou
     )
 }
 
-private fun Random.fakeRound(number: Int, firstDuelRate: Double): Round {
+private fun Random.fakeRound(number: Int, side: Side, firstDuelRate: Double): Round {
     val aliveEnemies = Enemies.shuffled(this).toMutableList()
     val kills = mutableListOf<KillEvent>()
     var myDeath: KillEvent? = null
@@ -110,7 +119,8 @@ private fun Random.fakeRound(number: Int, firstDuelRate: Double): Round {
         } else {
             kills += KillEvent(15_000, opener, Allies.random(this), emptySet(), weapon = null)
         }
-        nextDouble() < FIRST_DUEL_WIN_RATE -> killEnemy(15_000, killer = Me)
+        nextDouble() < if (side == Side.ATTACK) ATTACK_FIRST_DUEL_WIN_RATE else DEFENSE_FIRST_DUEL_WIN_RATE ->
+            killEnemy(15_000, killer = Me)
         else -> myDeath = KillEvent(15_000, opener, Me, emptySet(), weapon = null)
     }
 
@@ -141,5 +151,6 @@ private fun Random.fakeRound(number: Int, firstDuelRate: Double): Round {
         kills = kills.sortedBy { it.atMillis },
         myDamage = myKills * nextInt(110, 150) + nextInt(0, 70),
         myShots = Shots(head = head, body = hits - head - leg, leg = leg),
+        mySide = side,
     )
 }

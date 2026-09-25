@@ -33,6 +33,14 @@ class ReportScreenTest {
         assertEquals(bounds.sortedBy { it.left }, bounds)
     }
 
+    // 역할만 적으면 그 기간에 그 역할만 한 것처럼 읽힌다
+    @Test
+    fun `기간 줄의 역할은 가장 많이 한 역할이라고 적는다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved) }
+
+        onNodeWithText("주로 타격대 · ", substring = true).assertExists()
+    }
+
     @Test
     fun `움직인 지표가 없으면 큰 변화가 없다고 알려준다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.steady) }

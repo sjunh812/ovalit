@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">설정</string>
+
+    <string name="account_linked">Riot 계정 연동됨 · %1$d월 %2$d일</string>
+    <string name="account_unlinked">Riot 계정이 연동되지 않았어요</string>
+
+    <string name="section_public">공개</string>
+    <string name="stats_public">전적 공개</string>
+    <string name="stats_public_description">끄면 친구도 내 리포트와 경기를 볼 수 없어요. 친구 비교에서도 빠져요.</string>
+
+    <string name="section_notifications">알림</string>
+    <string name="notify_analysis_done">분석 완료</string>
+    <string name="notify_weekly_report">주간 리포트</string>
+    <string name="notify_weekly_report_time">월요일 오전</string>
+
+    <string name="section_display">표시</string>
+    <string name="theme">테마</string>
+    <string name="theme_system">시스템 설정</string>
+    <string name="theme_dark">다크</string>
+    <string name="theme_light">라이트</string>
+    <string name="default_queue">기본 큐</string>
+    <string name="default_queue_description">홈을 열 때 먼저 보여 드릴 큐예요</string>
+    <!-- 홈(feature/report)의 큐 칩과 같은 이름이어야 한다. 한쪽만 바꾸면 둘이 갈라진다. -->
+    <string name="queue_competitive_and_unrated">경쟁 + 일반</string>
+    <string name="queue_competitive">경쟁</string>
+    <string name="queue_unrated">일반</string>
+    <string name="queue_other">기타</string>
+
+    <string name="section_data">데이터</string>
+    <string name="stored_matches">저장된 경기</string>
+    <string name="stored_matches_count">%1$d경기</string>
+    <string name="delete_data">저장된 데이터 삭제</string>
+    <string name="delete_title">저장된 경기를 지울까요?</string>
+    <string name="delete_body">%1$d경기와 리포트가 지워져요. Riot 계정 연동은 그대로예요.</string>
+    <string name="delete_confirm">지우기</string>
+
+    <string name="unlink">Riot 계정 연동 해제</string>
+    <string name="unlink_note">연동을 해제하면 저장된 경기와 리포트가 모두 지워져요.</string>
+    <string name="unlink_title">Riot 계정 연동을 해제할까요?</string>
+    <string name="unlink_body">저장된 경기와 리포트가 모두 지워지고 처음 화면으로 돌아가요.</string>
+    <string name="unlink_confirm">연동 해제</string>
+
+    <string name="cancel">취소</string>
+    <string name="version">버전 %1$s</string>
+</resources>

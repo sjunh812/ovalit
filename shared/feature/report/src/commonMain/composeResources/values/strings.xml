@@ -10,6 +10,7 @@
     <string name="period_last_week">지난주</string>
     <string name="period_past_weeks">지난 %1$d주</string>
     <string name="period_date_range">%1$d/%2$d – %3$d/%4$d</string>
+    <string name="period_main_role">주로 %1$s</string>
     <string name="period_matches">%1$d경기</string>
     <string name="period_no_matches_this_week">이번 주는 아직 경기가 없어요</string>
 

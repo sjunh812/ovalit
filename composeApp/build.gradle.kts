@@ -36,6 +36,7 @@ dependencies {
     implementation(projects.shared.core.designsystem)
     implementation(projects.shared.feature.onboarding)
     implementation(projects.shared.feature.report)
+    implementation(projects.shared.feature.settings)
 
     implementation(libs.compose.runtime)
     implementation(libs.compose.foundation)
@@ -47,10 +48,12 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
+    implementation(libs.jb.lifecycle.runtime.compose)
     implementation(libs.kotlinx.serialization.core)
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.android)
+    implementation(libs.koin.compose)
 
     debugImplementation(libs.compose.ui.tooling)
 }

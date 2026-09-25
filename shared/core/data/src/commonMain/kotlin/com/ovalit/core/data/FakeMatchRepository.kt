@@ -16,7 +16,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * 프로덕션 키가 나오기 전까지 화면을 붙여 보는 데 쓰는 가짜 경기입니다.
@@ -28,7 +28,18 @@ class FakeMatchRepository(
     private val clock: Clock = Clock.System,
 ) : MatchRepository {
 
-    override fun observeMatches(): Flow<List<Match>> = flow { emit(fakeMatches(clock.now())) }
+    private val matches = MutableStateFlow(fakeMatches(clock.now()))
+
+    override fun observeMatches(): Flow<List<Match>> = matches
+
+    override suspend fun deleteAll() {
+        matches.value = emptyList()
+    }
+
+    /** 다시 연동한 것처럼 가짜 경기를 새로 채웁니다. */
+    fun refill() {
+        matches.value = fakeMatches(clock.now())
+    }
 }
 
 private const val SEED = 923

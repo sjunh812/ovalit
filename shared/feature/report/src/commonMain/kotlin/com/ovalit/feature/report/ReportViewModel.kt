@@ -3,6 +3,7 @@ package com.ovalit.feature.report
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ovalit.core.data.MatchRepository
+import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.model.weeklyReport
@@ -25,13 +26,20 @@ sealed interface ReportUiState {
 
 class ReportViewModel(
     matchRepository: MatchRepository,
+    preferencesRepository: UserPreferencesRepository,
     clock: Clock,
     timeZone: TimeZone,
 ) : ViewModel() {
 
-    private val queueFilter = MutableStateFlow(QueueFilter.COMPETITIVE_AND_UNRATED)
+    // 칩으로 고르기 전까지는 설정의 기본 큐를 따른다. 고른 칩은 이 화면에 있는 동안만 유지한다.
+    private val selectedQueue = MutableStateFlow<QueueFilter?>(null)
 
-    val uiState: StateFlow<ReportUiState> = combine(matchRepository.observeMatches(), queueFilter) { matches, filter ->
+    val uiState: StateFlow<ReportUiState> = combine(
+        matchRepository.observeMatches(),
+        preferencesRepository.preferences,
+        selectedQueue,
+    ) { matches, preferences, selected ->
+        val filter = selected ?: preferences.defaultQueue
         ReportUiState.Success(
             queueFilter = filter,
             report = matches.weeklyReport(now = clock.now(), timeZone = timeZone, queueFilter = filter),
@@ -43,6 +51,6 @@ class ReportViewModel(
     )
 
     fun selectQueue(filter: QueueFilter) {
-        queueFilter.value = filter
+        selectedQueue.value = filter
     }
 }

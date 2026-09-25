@@ -70,7 +70,7 @@ internal fun ReportScreen(
             ) {
                 Spacer(Modifier.height(OvalitSpacing.gutter))
                 ReportTopBar()
-                Spacer(Modifier.height(OvalitSpacing.xs))
+                Spacer(Modifier.height(OvalitSpacing.md))
                 QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
                 Spacer(Modifier.height(OvalitSpacing.md))
 

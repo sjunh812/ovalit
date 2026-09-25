@@ -7,11 +7,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitChip
+import com.ovalit.core.designsystem.component.OvalitLogo
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.resources.app_name
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -22,18 +28,27 @@ import com.ovalit.feature.report.label
 import com.ovalit.feature.report.periodLabel
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.period_date_range
+import com.ovalit.feature.report.resources.period_main_role
 import com.ovalit.feature.report.resources.period_matches
 import com.ovalit.feature.report.resources.period_no_matches_this_week
 import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
 import com.ovalit.core.designsystem.resources.Res as DesignSystemRes
 
+// 글자 로고 18sp와 획 높이가 비슷해지는 폭
+private val TopBarLogoWidth = 46.dp
+
 @Composable
 internal fun ReportTopBar(modifier: Modifier = Modifier) {
-    OvalitText(
-        text = stringResource(DesignSystemRes.string.app_name),
-        modifier = modifier.padding(horizontal = OvalitSpacing.gutter),
-        style = OvalitTheme.typography.titleM,
+    val appName = stringResource(DesignSystemRes.string.app_name)
+    OvalitLogo(
+        modifier = modifier
+            .padding(horizontal = OvalitSpacing.gutter)
+            .width(TopBarLogoWidth)
+            .semantics {
+                contentDescription = appName
+                role = Role.Image
+            },
     )
 }
 
@@ -85,7 +100,8 @@ private fun periodCaption(report: WeeklyReport.Ready): String {
     val first = report.period.firstDay
     val last = report.period.lastDay
     val parts = listOfNotNull(
-        report.mainRole?.let { stringResource(it.label) },
+        // 그 역할만 했다는 뜻으로 읽히지 않게 "주로"를 붙인다. 가장 많은 라운드를 뛴 역할이다.
+        report.mainRole?.let { stringResource(Res.string.period_main_role, stringResource(it.label)) },
         stringResource(Res.string.period_date_range, first.month.number, first.day, last.month.number, last.day),
         stringResource(Res.string.period_matches, report.metrics.matches),
     )

@@ -75,8 +75,105 @@ export function setup(overrides: Partial<Env> = {}) {
   return { upstream, app, env: testEnv, call, login };
 }
 
+export const RIOT = "https://kr.api.riotgames.com";
+
+export function matchUrl(matchId: string): string {
+  return `${RIOT}/val/match/v1/matches/${matchId}`;
+}
+
+export interface FixturePlayer {
+  puuid: string;
+  gameName: string;
+  tagLine?: string;
+  partyId?: string;
+}
+
+/**
+ * VAL-MATCH-V1 모양을 흉내 낸 경기입니다. 앞 절반이 Blue, 뒤 절반이 Red이고 라운드마다 i번째가
+ * 맞은편 i번째를 잡습니다. 가리기 테스트가 킬, 피해량, 라운드 기록 안의 PUUID까지 보게 합니다.
+ */
+export function matchFixture(matchId: string, players: FixturePlayer[], rounds = 2) {
+  const half = Math.ceil(players.length / 2);
+  const team = (i: number) => (i < half ? "Blue" : "Red");
+  const opponent = (i: number) => players[(i + half) % players.length]!.puuid;
+  const kills = (round: number) =>
+    players.slice(0, half).map((killer, i) => ({
+      timeSinceGameStartMillis: round * 100_000 + i * 1000,
+      timeSinceRoundStartMillis: i * 1000,
+      killer: killer.puuid,
+      victim: opponent(i),
+      victimLocation: { x: i, y: i },
+      assistants: [players[(i + 1) % half]!.puuid],
+      playerLocations: players.map((p, j) => ({ puuid: p.puuid, viewRadians: 0, location: { x: j, y: j } })),
+      finishingDamage: { damageType: "Weapon", damageItem: "9C82E19D-4575-0200-1A81-3EACF00CF872", isSecondaryFireMode: false },
+    }));
+  return {
+    matchInfo: {
+      matchId,
+      mapId: "/Game/Maps/Ascent/Ascent",
+      gameLengthMillis: 1_800_000,
+      gameStartMillis: 1_790_000_000_000,
+      provisioningFlowId: "Matchmaking",
+      isCompleted: true,
+      customGameName: "",
+      queueId: "competitive",
+      gameMode: "/Game/GameModes/Bomb/BombGameMode.BombGameMode_C",
+      isRanked: true,
+      seasonId: "4c4b8cff-43eb-13d3-8f14-96b783c90cd2",
+    },
+    players: players.map((p, i) => ({
+      puuid: p.puuid,
+      gameName: p.gameName,
+      tagLine: p.tagLine ?? "KR1",
+      teamId: team(i),
+      partyId: p.partyId ?? crypto.randomUUID(),
+      characterId: "add6443a-41bd-e414-f6ad-e58d267f4e95",
+      stats: { score: 4000, roundsPlayed: rounds, kills: rounds, deaths: rounds, assists: rounds, playtimeMillis: 1_800_000 },
+      competitiveTier: 12,
+      playerCard: "9fb348bc-41a0-91ad-8a3e-818035c4e561",
+      playerTitle: "d13e579c-435e-44d4-cec2-6eae5a3c5ed4",
+      accountLevel: 120,
+    })),
+    coaches: [],
+    teams: [
+      { teamId: "Blue", won: true, roundsPlayed: rounds, roundsWon: rounds, numPoints: rounds },
+      { teamId: "Red", won: false, roundsPlayed: rounds, roundsWon: 0, numPoints: 0 },
+    ],
+    roundResults: Array.from({ length: rounds }, (_, round) => ({
+      roundNum: round,
+      roundResult: "Eliminated",
+      winningTeam: "Blue",
+      bombPlanter: players[0]!.puuid,
+      playerStats: players.map((p, i) => ({
+        puuid: p.puuid,
+        kills: i < half ? [kills(round)[i]] : [],
+        damage: [{ receiver: opponent(i), damage: 150, legshots: 0, bodyshots: 2, headshots: 1 }],
+        score: 200,
+        economy: { loadoutValue: 3900, weapon: "9C82E19D-4575-0200-1A81-3EACF00CF872", armor: "", remaining: 800, spent: 3900 },
+        ability: {},
+      })),
+    })),
+  };
+}
+
 export async function userId(puuid: string): Promise<number> {
   const row = await env.DB.prepare("SELECT id FROM users WHERE puuid = ?").bind(puuid).first<{ id: number }>();
   if (!row) throw new Error("no such user");
   return row.id;
+}
+
+export function strangers(n: number): FixturePlayer[] {
+  return Array.from({ length: n }, (_, i) => ({ puuid: makePuuid(), gameName: `stranger${i}`, tagLine: `S${i}` }));
+}
+
+/** 요청과 수락을 거치지 않고 바로 친구로 맺습니다. 친구가 된 뒤의 동작만 볼 때 씁니다. */
+export async function makeFriends(a: TestUser, b: TestUser): Promise<void> {
+  const [x, y] = [await userId(a.puuid), await userId(b.puuid)].sort((m, n) => m - n);
+  await env.DB.prepare("INSERT INTO friendships (user_a, user_b, created_at) VALUES (?, ?, ?)").bind(x, y, Date.now()).run();
+}
+
+export async function sendRequestRow(from: TestUser, to: TestUser, source = "scoreboard"): Promise<void> {
+  await env.DB.prepare("INSERT INTO friend_requests (from_user, to_user, source, created_at) VALUES (?, ?, ?, ?)")
+    .bind(await userId(from.puuid), await userId(to.puuid), source, Date.now())
+    .run();
 }

@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { AppEnv } from "./env";
 import { ApiError } from "./errors";
 import { auth } from "./routes/auth";
+import { content } from "./routes/content";
 import { friends } from "./routes/friends";
 import { invites } from "./routes/invites";
 import { me } from "./routes/me";
@@ -23,6 +24,7 @@ export function createApp(deps: Deps = {}) {
   });
 
   app.route("/", publicRoutes);
+  app.route("/", content);
   app.route("/auth", auth);
   app.route("/me", me);
   app.route("/riot", riot);

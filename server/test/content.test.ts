@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { RIOT, setup } from "./helpers";
+import { cacheKey } from "../src/riot";
+import { forgetCaches, RIOT, setup } from "./helpers";
 
-const CONTENT_URL = `${RIOT}/val/content/v1/contents?locale=ko-KR`;
-const STATUS_URL = `${RIOT}/val/status/v1/platform-data`;
+const CONTENT_PATH = "/val/content/v1/contents?locale=ko-KR";
+const STATUS_PATH = "/val/status/v1/platform-data";
+const CONTENT_URL = `${RIOT}${CONTENT_PATH}`;
+const STATUS_URL = `${RIOT}${STATUS_PATH}`;
 
 describe("콘텐츠", () => {
   it("티어 표는 번호에서 한글 이름으로 가고 쓰지 않는 번호는 없다", async () => {
@@ -25,22 +28,47 @@ describe("콘텐츠", () => {
     expect(new Set(Object.values(roles))).toEqual(new Set(["duelist", "initiator", "controller", "sentinel"]));
   });
 
-  it("VAL-CONTENT는 세션 없이 받고 담아 둔다", async () => {
-    // 캐시는 테스트 파일끼리도 이어질 수 있어서 이 파일에서만 부른다.
+  it("VAL-CONTENT와 점검 안내는 세션이 없으면 Riot을 부르지 않고 401이다", async () => {
     const t = setup();
+    for (const path of ["/content", "/status"]) {
+      const res = await t.call("GET", path);
+      expect(res.status).toBe(401);
+    }
+    expect(t.upstream.calls).toHaveLength(0);
+  });
+
+  // 캐시는 테스트 파일끼리도 이어질 수 있어서 VAL-CONTENT는 이 파일에서만 부른다.
+  it("VAL-CONTENT는 한 번 받으면 담아 둔다", async () => {
+    await forgetCaches(CONTENT_PATH);
+    const t = setup();
+    const me = await t.login();
     t.upstream.json(CONTENT_URL, { version: "13.06", characters: [] });
-    const first = await t.call("GET", "/content");
+    const first = await t.call("GET", "/content", me.token);
     expect(first.status).toBe(200);
     expect(await first.json()).toEqual({ version: "13.06", characters: [] });
-    await t.call("GET", "/content");
+    await t.call("GET", "/content", me.token);
     expect(t.upstream.callsTo(CONTENT_URL)).toHaveLength(1);
   });
 
-  it("서버 점검 안내도 담아 둔다", async () => {
+  it("Cache API가 담지 못해도 isolate 메모리에서 꺼낸다", async () => {
+    await forgetCaches(CONTENT_PATH);
     const t = setup();
+    const me = await t.login();
+    t.upstream.json(CONTENT_URL, { version: "13.06" });
+    await t.call("GET", "/content", me.token);
+    // workers.dev처럼 Cache API에 아무것도 남지 않은 상태를 만든다.
+    await caches.default.delete(cacheKey("http://localhost", CONTENT_PATH));
+    await t.call("GET", "/content", me.token);
+    expect(t.upstream.callsTo(CONTENT_URL)).toHaveLength(1);
+  });
+
+  it("점검 안내도 담아 둔다", async () => {
+    await forgetCaches(STATUS_PATH);
+    const t = setup();
+    const me = await t.login();
     t.upstream.json(STATUS_URL, { id: "KR", maintenances: [], incidents: [] });
-    await t.call("GET", "/status");
-    await t.call("GET", "/status");
+    await t.call("GET", "/status", me.token);
+    await t.call("GET", "/status", me.token);
     expect(t.upstream.callsTo(STATUS_URL)).toHaveLength(1);
   });
 });

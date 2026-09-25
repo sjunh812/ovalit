@@ -1,24 +1,12 @@
 import { Hono } from "hono";
 import { html } from "hono/html";
 import { INVITE_CODE } from "../crypto";
-import roles from "../data/roles.json";
-import tiers from "../data/tiers.json";
 import type { AppEnv } from "../env";
-import { rawJson, riotFor } from "../riot";
 
-/** 전적이 아닌 것만 둡니다. 경기와 사람에 닿는 경로는 모두 세션을 요구합니다. */
+/** 전적에도 Riot에도 닿지 않는 것만 둡니다. */
 export const publicRoutes = new Hono<AppEnv>();
 
 publicRoutes.get("/health", (c) => c.json({ ok: true }));
-
-publicRoutes.get("/content", async (c) => rawJson(c, await riotFor(c).content(), "public, max-age=21600"));
-
-publicRoutes.get("/status", async (c) => rawJson(c, await riotFor(c).status(), "public, max-age=60"));
-
-// VAL-CONTENT에는 티어 이름도 요원 역할도 없다. valorant-api.com에서 받아 scripts/build-tables.mjs로 만든 표다.
-publicRoutes.get("/content/tiers", (c) => c.json(tiers, 200, { "Cache-Control": "public, max-age=86400" }));
-
-publicRoutes.get("/content/roles", (c) => c.json(roles, 200, { "Cache-Control": "public, max-age=86400" }));
 
 /**
  * 앱이 없는 곳에서 초대 링크를 열었을 때 보이는 쪽입니다. DB를 읽지 않아서 코드가 살아 있는지 알려주지

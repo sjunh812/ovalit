@@ -4,8 +4,6 @@ import { makePuuid, setup } from "./helpers";
 // 세션 없이 열리는 경로는 이것뿐이다. 늘리려면 전적에 닿지 않는지 먼저 따지고 여기를 고친다.
 const PUBLIC = new Set([
   "GET /health",
-  "GET /content",
-  "GET /status",
   "GET /content/tiers",
   "GET /content/roles",
   "GET /i/:code",

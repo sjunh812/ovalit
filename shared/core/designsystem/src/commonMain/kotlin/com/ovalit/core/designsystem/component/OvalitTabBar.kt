@@ -10,13 +10,20 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.center
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.theme.OvalitTheme
@@ -56,7 +63,7 @@ fun OvalitTabBar(
                         .selectable(
                             selected = selected,
                             interactionSource = null,
-                            indication = ripple(bounded = false, radius = 36.dp, color = colors.t2),
+                            indication = pressIndication(TabPressShape),
                             role = Role.Tab,
                             onClick = { onSelect(index) },
                         )
@@ -83,3 +90,11 @@ fun OvalitTabBar(
 }
 
 private val TabBarHeight = 60.dp
+
+// 누른 면은 칸 전체가 아니라 아이콘과 이름을 감싸는 원이다. 칸이 가로로 길어 칸째로 깔면 막대처럼 보인다.
+private val TabPressShape = object : Shape {
+    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
+        val radius = with(density) { 28.dp.toPx() }
+        return Outline.Generic(Path().apply { addOval(Rect(center = size.center, radius = radius)) })
+    }
+}

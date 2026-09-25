@@ -16,7 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -30,6 +29,7 @@ import com.ovalit.core.designsystem.component.OvalitChip
 import com.ovalit.core.designsystem.component.OvalitLogo
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.pressIndication
 import com.ovalit.core.designsystem.resources.Res as DesignSystemRes
 import com.ovalit.core.designsystem.resources.app_name
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -69,8 +69,9 @@ internal fun ReportTopBar(badge: PlayerBadge?, onOpenProfile: () -> Unit, modifi
                 Row(
                     modifier = Modifier
                         .heightIn(min = ProfileTouchSize)
-                        .clip(RoundedCornerShape(ProfileTouchSize / 2))
                         .clickable(
+                            interactionSource = null,
+                            indication = pressIndication(RoundedCornerShape(ProfileTouchSize / 2)),
                             onClickLabel = stringResource(Res.string.open_profile),
                             role = Role.Button,
                             onClick = onOpenProfile,

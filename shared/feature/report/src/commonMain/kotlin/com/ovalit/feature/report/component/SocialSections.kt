@@ -22,7 +22,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
@@ -31,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.pressIndication
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -128,8 +128,9 @@ internal fun FriendRankingSection(mine: MatchMetrics, friends: List<FriendStandi
             Row(
                 modifier = Modifier
                     .heightIn(min = 44.dp)
-                    .clip(RoundedCornerShape(8.dp))
                     .clickable(
+                        interactionSource = null,
+                        indication = pressIndication(RoundedCornerShape(8.dp)),
                         onClickLabel = stringResource(Res.string.friends_metric_button, metricLabel),
                         role = Role.Button,
                         onClick = { choosing = true },

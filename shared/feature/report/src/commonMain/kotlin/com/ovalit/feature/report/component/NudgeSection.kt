@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.pressIndication
 import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
@@ -49,6 +50,7 @@ import com.ovalit.feature.report.resources.rival_pick_title
 import org.jetbrains.compose.resources.stringResource
 
 private val LeadingSize = 40.dp
+private val NudgeShape = RoundedCornerShape(14.dp)
 private val StackedAvatarSize = 32.dp
 private val StackedAvatarOverlap = 8.dp
 private const val STACKED_AVATARS = 2
@@ -74,9 +76,15 @@ internal fun NudgeBanner(
         modifier = modifier
             .padding(horizontal = OvalitSpacing.gutter)
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
+            // 누르면 칸 면까지 같이 줄어야 해서 면을 칠하기 전에 단다
+            .clickable(
+                interactionSource = null,
+                indication = pressIndication(NudgeShape),
+                role = Role.Button,
+                onClick = onClick,
+            )
+            .clip(NudgeShape)
             .background(colors.raised)
-            .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = OvalitSpacing.lg, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

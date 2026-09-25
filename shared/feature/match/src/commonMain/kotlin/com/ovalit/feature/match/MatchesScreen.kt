@@ -25,7 +25,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -38,6 +37,7 @@ import com.ovalit.core.designsystem.component.OvalitPullToRefresh
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTextButton
+import com.ovalit.core.designsystem.component.pressIndication
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -163,7 +163,9 @@ internal fun MatchesScreen(
 private fun FilterButton(active: Boolean, onClick: () -> Unit) {
     val description = stringResource(if (active) Res.string.filter_active else Res.string.filter)
     Box(
-        modifier = Modifier.size(TouchSize).clip(CircleShape).clickable(role = Role.Button, onClick = onClick),
+        modifier = Modifier
+            .size(TouchSize)
+            .clickable(interactionSource = null, indication = pressIndication(CircleShape), role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         OvalitIcon(OvalitIcons.Filter, contentDescription = description, tint = if (active) OvalitTheme.colors.t1 else OvalitTheme.colors.t2)

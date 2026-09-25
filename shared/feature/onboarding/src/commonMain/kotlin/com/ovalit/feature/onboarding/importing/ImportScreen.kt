@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitPrimaryButton
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.pressIndication
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -120,10 +121,17 @@ private fun FocusOption(focus: Focus, selected: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            // 누르면 칸 면과 테두리까지 같이 줄어야 해서 칠하기 전에 단다
+            .selectable(
+                selected = selected,
+                interactionSource = null,
+                indication = pressIndication(shape),
+                role = Role.RadioButton,
+                onClick = onClick,
+            )
             .clip(shape)
             .background(if (selected) colors.fill else colors.bg)
             .border(1.dp, border, shape)
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
             .padding(horizontal = OvalitSpacing.lg, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

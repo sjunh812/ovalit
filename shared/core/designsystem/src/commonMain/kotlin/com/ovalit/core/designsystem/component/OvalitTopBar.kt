@@ -14,7 +14,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
@@ -114,11 +113,13 @@ fun OvalitBackTopBar(
     }
 }
 
-/** 머리 줄에 두는 아이콘 버튼입니다. 누름 영역은 44dp이고 물결은 원 안에서만 퍼집니다. */
+/** 머리 줄에 두는 아이콘 버튼입니다. 누름 영역은 44dp이고 누르면 원 모양으로 면을 깝니다. */
 @Composable
 fun OvalitIconButton(icon: ImageVector, contentDescription: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier.size(IconTouchSize).clip(CircleShape).clickable(role = Role.Button, onClick = onClick),
+        modifier = modifier
+            .size(IconTouchSize)
+            .clickable(interactionSource = null, indication = pressIndication(CircleShape), role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         OvalitIcon(icon, contentDescription = contentDescription, tint = OvalitTheme.colors.t1)

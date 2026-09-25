@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -52,9 +51,9 @@ fun OvalitChip(
     ) {
         Box(
             modifier = Modifier
+                .indication(interactionSource, pressIndication(ChipShape))
                 .clip(ChipShape)
                 .background(if (selected) colors.fill else Color.Transparent)
-                .indication(interactionSource, ripple(color = colors.t2))
                 .padding(horizontal = OvalitSpacing.md, vertical = 6.dp),
         ) {
             OvalitText(

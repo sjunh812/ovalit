@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -46,7 +45,7 @@ fun OvalitPrimaryButton(
         modifier = modifier.fillMaxWidth(),
         enabled = enabled,
         background = if (enabled) colors.accent else colors.fill,
-        rippleColor = colors.onAccent,
+        pressColor = colors.onAccent,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.sm)) {
             OvalitText(text = text, style = OvalitTheme.typography.titleM, color = content)
@@ -69,7 +68,7 @@ fun OvalitTextButton(
         modifier = modifier,
         enabled = enabled,
         background = Color.Transparent,
-        rippleColor = colors.t2,
+        pressColor = colors.t2,
     ) {
         OvalitText(
             text = text,
@@ -94,7 +93,7 @@ fun OvalitOutlinedButton(
             .border(1.dp, OvalitTheme.colors.line, ButtonShape),
         enabled = true,
         background = Color.Transparent,
-        rippleColor = contentColor,
+        pressColor = contentColor,
     ) {
         OvalitText(text = text, style = OvalitTheme.typography.bodyStrong, color = contentColor)
     }
@@ -113,7 +112,7 @@ private fun OvalitButtonSurface(
     modifier: Modifier,
     enabled: Boolean,
     background: Color,
-    rippleColor: Color,
+    pressColor: Color,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -121,16 +120,17 @@ private fun OvalitButtonSurface(
     Box(
         modifier = modifier
             .defaultMinSize(minHeight = ButtonMinHeight)
-            .clip(ButtonShape)
-            .background(background)
             .semantics(mergeDescendants = true) {}
+            // 누르면 버튼 면까지 같이 줄어야 해서 면을 칠하기 전에 단다
             .clickable(
                 interactionSource = interactionSource,
-                indication = ripple(color = rippleColor),
+                indication = pressIndication(ButtonShape, pressColor),
                 enabled = enabled,
                 role = Role.Button,
                 onClick = onClick,
             )
+            .clip(ButtonShape)
+            .background(background)
             .padding(horizontal = OvalitSpacing.lg, vertical = OvalitSpacing.md),
         contentAlignment = Alignment.Center,
         content = content,

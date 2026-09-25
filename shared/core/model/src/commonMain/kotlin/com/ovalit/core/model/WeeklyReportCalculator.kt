@@ -1,0 +1,69 @@
+package com.ovalit.core.model
+
+import kotlin.time.Instant
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.daysUntil
+import kotlinx.datetime.isoDayNumber
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
+
+const val MIN_MATCHES_PER_REPORT = 5
+const val MAX_REPORT_WEEKS = 4
+const val BASELINE_WEEKS = 4
+
+/**
+ * 주는 [timeZone] 기준 월요일 0시에 바뀝니다. 이번 주는 [now]가 속한, 아직 끝나지 않은 주입니다.
+ *
+ * 이번 주가 [MIN_MATCHES_PER_REPORT]경기에 못 미치면 한 주씩 넓혀 [MAX_REPORT_WEEKS]주까지 봅니다.
+ */
+fun Iterable<Match>.weeklyReport(now: Instant, timeZone: TimeZone): WeeklyReport {
+    val counted = filter { it.queue.countsTowardWeeklyReport }
+    val act = counted.maxByOrNull { it.startedAt }?.act
+        ?: return WeeklyReport.NotEnoughMatches(played = 0)
+    val matchesByWeek = counted
+        .filter { it.act == act }
+        .groupBy { it.startedAt.weekStart(timeZone) }
+
+    val nextWeek = now.weekStart(timeZone).plusWeeks(1)
+    val periods = (1..MAX_REPORT_WEEKS).map { weeks ->
+        ReportPeriod(firstDay = nextWeek.minusWeeks(weeks), weeks = weeks)
+    }
+    val period = periods.firstOrNull { period ->
+        matchesByWeek.between(period.firstDay, nextWeek).size >= MIN_MATCHES_PER_REPORT
+    } ?: return WeeklyReport.NotEnoughMatches(
+        played = matchesByWeek.between(periods.last().firstDay, nextWeek).size,
+    )
+
+    return WeeklyReport.Ready(
+        act = act,
+        period = period,
+        metrics = matchesByWeek.between(period.firstDay, nextWeek).totalMetrics(),
+        baseline = matchesByWeek.baselineBefore(period.firstDay),
+    )
+}
+
+private fun Map<LocalDate, List<Match>>.baselineBefore(periodStart: LocalDate): Baseline? {
+    // 이번 액트 첫 경기가 4주 안쪽이면 거기서부터 센다. 안 그러면 2주치 경기에 "지난 4주 평균"이 붙는다.
+    val start = maxOf(periodStart.minusWeeks(BASELINE_WEEKS), keys.min())
+    val matches = between(start, periodStart)
+    if (matches.size < MIN_MATCHES_PER_REPORT) return null
+
+    return Baseline(metrics = matches.totalMetrics(), weeks = start.daysUntil(periodStart) / 7)
+}
+
+private fun Instant.weekStart(timeZone: TimeZone): LocalDate {
+    val date = toLocalDateTime(timeZone).date
+    return date.minus(date.dayOfWeek.isoDayNumber - 1, DateTimeUnit.DAY)
+}
+
+private fun Map<LocalDate, List<Match>>.between(from: LocalDate, until: LocalDate): List<Match> =
+    filterKeys { it >= from && it < until }.values.flatten()
+
+private fun List<Match>.totalMetrics(): MatchMetrics = map { it.metrics() }.sum()
+
+private fun LocalDate.plusWeeks(weeks: Int) = plus(weeks, DateTimeUnit.WEEK)
+
+private fun LocalDate.minusWeeks(weeks: Int) = minus(weeks, DateTimeUnit.WEEK)

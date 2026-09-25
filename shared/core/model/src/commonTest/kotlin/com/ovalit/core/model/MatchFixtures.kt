@@ -13,11 +13,14 @@ internal val OtherEnemy = PlayerId("other-enemy")
 internal fun match(
     vararg rounds: Round,
     combatScore: Int = 0,
+    queue: Queue = Queue.COMPETITIVE,
+    act: ActId = ActId("act"),
+    startedAt: Instant = Instant.fromEpochMilliseconds(0),
 ) = Match(
     id = MatchId("match"),
-    queue = Queue.COMPETITIVE,
-    act = ActId("act"),
-    startedAt = Instant.fromEpochMilliseconds(0),
+    queue = queue,
+    act = act,
+    startedAt = startedAt,
     me = Me,
     myAgent = AgentId("agent"),
     allies = setOf(Ally, OtherAlly),

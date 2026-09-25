@@ -3,9 +3,14 @@
 발로란트 전적 진단 앱. 최근 경기에서 지표가 어떻게 움직였는지 보여주고, 그 주에 무엇이
 달라졌는지 짚어준다.
 
-기획 전문과 화면 목업은 따로 있다. 이 파일에는 코드를 쓸 때 매번 필요한 것만 둔다.
-화면 목업은 claude.ai 아티팩트 [발로란트 전적 진단 앱 — 화면](https://claude.ai/artifact/8bAN3dfUBywjmw43Y1euVv)이고,
-프로덕션 키 심사에 낸 것과 같은 화면이다(https://ovalit.netlify.app/). 화면을 만들거나 고치기
+기획 전문과 화면 목업은 저장소 밖 claude.ai 아티팩트에 있다. 이 파일에는 코드를 쓸 때 매번 필요한 것만 둔다.
+
+- 화면 목업: [발로란트 전적 진단 앱 — 화면](https://claude.ai/artifact/8bAN3dfUBywjmw43Y1euVv). 프로덕션 키 심사에 낸
+  것과 같은 화면이다(https://ovalit.netlify.app/).
+- 기획 정리: https://claude.ai/artifact/9uEr7ynVcSTSDLBZFH5LKW
+- 프로덕션 키 신청서: https://claude.ai/artifact/RVCJYCfD4BF4W6Q2seXKF8 (2026-09-19 제출)
+
+세 문서는 심사에 낸 원본이라 고치지 않는다. 달라진 결정은 이 저장소에만 적는다. 화면을 만들거나 고치기
 전에 목업의 그 화면부터 본다. 심사자는 신청서와 목업을 나란히 놓고 보므로 앱이 목업에서
 벗어나면 안 된다. 벗어나야 하면 먼저 묻고 `docs/DECISIONS.md`에 남긴다.
 글과 커밋 규칙은 `docs/CONVENTIONS.md`에 있다.

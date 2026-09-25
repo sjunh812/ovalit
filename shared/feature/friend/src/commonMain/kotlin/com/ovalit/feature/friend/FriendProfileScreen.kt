@@ -50,6 +50,7 @@ import com.ovalit.core.ui.MatchRow
 import com.ovalit.core.ui.MatchRowStyle
 import com.ovalit.core.ui.ProfileBanner
 import com.ovalit.core.ui.ProfileIdentity
+import com.ovalit.core.ui.ProfileStatusBarScrim
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.periodLabel
@@ -124,7 +125,8 @@ internal fun FriendProfileScreen(
         val friend = uiState.friend
         val name = friend.riotId.substringBefore('#')
 
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        val scrollState = rememberScrollState()
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
             ProfileBanner(uiState.badge) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.sm, vertical = OvalitSpacing.sm),
@@ -205,6 +207,7 @@ internal fun FriendProfileScreen(
             }
             Spacer(Modifier.height(OvalitSpacing.xxl))
         }
+        ProfileStatusBarScrim(scrollState)
     }
 
     if (confirmUnfriend && uiState is FriendProfileUiState.Success) {

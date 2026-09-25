@@ -1,5 +1,6 @@
 package com.ovalit.core.ui
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,12 +17,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.text
@@ -64,6 +72,28 @@ fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Co
                 .padding(start = OvalitSpacing.gutter, top = BannerHeight - AvatarSize / 2)
                 .size(AvatarSize)
                 .border(3.dp, colors.bg, CircleShape),
+        )
+    }
+}
+
+/**
+ * 배너가 상태 표시줄 밑을 벗어나면 그 자리를 바탕색으로 덮습니다. 머리가 화면 맨 위까지 깔려 있어서, 안 덮으면
+ * 내린 글자가 시계와 겹칩니다. 배너가 아직 그 자리에 있을 때는 배너 색이 보이게 비워 둡니다.
+ */
+@Composable
+fun BoxScope.ProfileStatusBarScrim(scrollState: ScrollState) {
+    val density = LocalDensity.current
+    val statusBar = WindowInsets.statusBars.getTop(density)
+    val covered by remember(scrollState, statusBar) {
+        derivedStateOf { scrollState.value > with(density) { BannerHeight.roundToPx() } - statusBar }
+    }
+    if (covered) {
+        Box(
+            Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .windowInsetsTopHeight(WindowInsets.statusBars)
+                .background(OvalitTheme.colors.bg),
         )
     }
 }

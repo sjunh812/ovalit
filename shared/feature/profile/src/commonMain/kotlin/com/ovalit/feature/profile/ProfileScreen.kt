@@ -21,6 +21,7 @@ import com.ovalit.core.model.MatchId
 import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.core.ui.ProfileBanner
 import com.ovalit.core.ui.ProfileIdentity
+import com.ovalit.core.ui.ProfileStatusBarScrim
 import com.ovalit.feature.profile.resources.Res
 import com.ovalit.feature.profile.resources.no_matches
 import org.jetbrains.compose.resources.stringResource
@@ -61,8 +62,9 @@ internal fun ProfileScreen(
         if (uiState !is ProfileUiState.Success) return@Box
         val badge = uiState.badge ?: PlayerBadge(riotId = "", tier = null, tierName = null)
         val competitive = uiState.summary.competitive
+        val scrollState = rememberScrollState()
 
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
             ProfileBanner(badge) {
                 SubScreenTopBar(title = null, caption = null, onBack = onBack)
             }
@@ -94,5 +96,6 @@ internal fun ProfileScreen(
             RecentMatchesSection(uiState, onOpenMatch, onOpenMatches)
             Spacer(Modifier.height(OvalitSpacing.xxl))
         }
+        ProfileStatusBarScrim(scrollState)
     }
 }

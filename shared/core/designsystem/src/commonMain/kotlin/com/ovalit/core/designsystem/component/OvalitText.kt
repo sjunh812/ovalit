@@ -12,8 +12,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.ovalit.core.designsystem.theme.OvalitTheme
 
 /**
- * @param autoSize 칸 폭이 정해진 숫자에 씁니다. 글자를 키운 사용자에게 `1.29`가 `1.`로 잘리는 대신
- * 글자가 작아집니다. [maxLines]를 1로 같이 줘야 줄을 바꾸지 않고 줄입니다.
+ * @param autoSize 폭이 정해진 칸에 씁니다. 글자를 키운 사용자에게 `1.29`가 `1.`로 잘리지 않고
+ * 글자가 작아집니다. [maxLines]를 1로 같이 줘야 줄을 바꾸지 않고 줄어듭니다.
  */
 @Composable
 fun OvalitText(

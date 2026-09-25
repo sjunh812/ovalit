@@ -31,7 +31,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * 개선 포인트 문장입니다. 공격과 수비로 나눠 가장 벌어진 지표 하나를 사실로만 적습니다.
+ * 개선 포인트 문장입니다. 공격과 수비로 나눠 가장 크게 벌어진 지표를 사실로만 적습니다.
  * "수비에서 더 버티세요"처럼 게임 결정을 대신하는 말은 쓰지 않습니다.
  */
 @Composable

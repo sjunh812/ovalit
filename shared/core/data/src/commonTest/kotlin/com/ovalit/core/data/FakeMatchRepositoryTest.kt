@@ -17,7 +17,7 @@ private val Thursday = LocalDateTime(2026, 9, 24, 22, 0).toInstant(Seoul)
 
 class FakeMatchRepositoryTest {
 
-    // 화면을 붙여 볼 때 세 가지 상태가 다 보여야 한다. 움직인 칸이 없으면 가짜 데이터가 쓸모없다.
+    // 가짜 데이터로 화면을 볼 때 세 상태가 다 나와야 한다. 움직인 칸이 없으면 동적 칸을 확인할 수 없다.
     @Test
     fun `가짜 경기로 리포트를 만들면 움직인 지표와 그대로인 지표가 함께 나온다`() {
         val report = assertIs<WeeklyReport.Ready>(fakeMatches(Thursday).weeklyReport(Thursday, Seoul))

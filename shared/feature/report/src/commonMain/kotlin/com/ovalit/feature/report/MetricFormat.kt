@@ -39,5 +39,4 @@ internal enum class MetricFormat(private val scale: Int) {
     }
 }
 
-/** 계산식에 쓰는 큰 수입니다. `80352`보다 `80,352`가 한눈에 읽힙니다. */
 internal fun Int.withThousands(): String = toString().reversed().chunked(3).joinToString(",").reversed()

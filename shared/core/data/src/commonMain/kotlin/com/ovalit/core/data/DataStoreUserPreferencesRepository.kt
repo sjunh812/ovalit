@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import okio.Path.Companion.toPath
 
-/** @param path 확장자가 `.preferences_pb`여야 합니다. DataStore가 다른 이름을 받지 않습니다. */
+/** @param path `.preferences_pb`로 끝나야 합니다. 다른 확장자면 DataStore가 예외를 냅니다. */
 fun createPreferencesDataStore(path: String): DataStore<Preferences> =
     PreferenceDataStoreFactory.createWithPath(produceFile = { path.toPath() })
 
@@ -46,7 +46,7 @@ class DataStoreUserPreferencesRepository(
         dataStore.edit { it[key] = value }
     }
 
-    // 이름으로 저장하므로 enum 이름을 바꾸면 저장된 값을 못 읽고 기본값으로 돌아간다.
+    // enum을 이름으로 저장한다. 이름을 바꾸면 전에 저장한 값을 못 읽고 기본값으로 돌아간다.
     private object Keys {
         val theme = stringPreferencesKey("theme")
         val defaultQueue = stringPreferencesKey("default_queue")

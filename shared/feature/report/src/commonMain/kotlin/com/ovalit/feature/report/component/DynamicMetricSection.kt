@@ -41,8 +41,8 @@ import com.ovalit.feature.report.sampleText
 import com.ovalit.feature.report.valueText
 import org.jetbrains.compose.resources.stringResource
 
-// 세 칸을 한 화면에 다 넣지 않고 세 번째 칸이 살짝 잘리게 둔다. 옆으로 밀린다는 걸 보여 준다.
-// 간격은 구분선 양옆에만 둔다. 칸 폭에 간격을 넣으면 첫 칸만 내용이 넓어진다.
+// 세 번째 칸이 화면 끝에서 살짝 잘리게 둔다. 옆으로 밀어 볼 수 있다는 표시다.
+// 간격은 구분선 양옆에만 준다. 칸 폭 안에 간격을 넣으면 첫 칸만 내용이 넓어진다.
 private val ColumnWidth = 124.dp
 private val ColumnGap = 18.dp
 

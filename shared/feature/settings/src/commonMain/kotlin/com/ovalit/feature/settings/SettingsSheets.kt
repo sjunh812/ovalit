@@ -102,7 +102,6 @@ internal fun SettingsSheetContent(
     }
 }
 
-// 고르는 즉시 닫는다. 확인 버튼을 한 번 더 누르게 하면 고른 게 반영됐는지 헷갈린다.
 @Composable
 private fun <T> OptionSheet(
     title: String,

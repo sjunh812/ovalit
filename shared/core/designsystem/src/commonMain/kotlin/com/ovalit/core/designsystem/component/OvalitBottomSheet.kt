@@ -26,10 +26,6 @@ import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 
-/**
- * 아래에서 올라오는 시트입니다. 고르기와 되묻기를 다 여기서 합니다. 화면 가운데 뜨는 대화상자보다
- * 손가락이 닿기 쉽고, 무엇을 고르는지 제목이 위에 크게 남습니다.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OvalitBottomSheet(

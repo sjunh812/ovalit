@@ -309,7 +309,7 @@ private fun ToggleRow(
     }
 }
 
-/** 오른쪽에 값을 보여주는 줄입니다. [onClick]이 있을 때만 화살표를 그립니다. 누를 곳이 없는 화살표는 두지 않습니다. */
+// 누를 곳이 없는 화살표는 두지 않는다. [onClick]이 있을 때만 그린다.
 @Composable
 private fun ValueRow(
     title: String,

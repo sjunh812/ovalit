@@ -64,9 +64,9 @@ data class Baseline(
  *
  * @property act 그 주에 뛴 가장 최근 액트입니다. 한 주에 액트가 둘이면 새 액트 경기만 셉니다.
  * 액트 경계를 넘는 평균은 만들지 않습니다.
- * @property metrics 그 주 합계입니다. 라운드가 [MIN_TREND_ROUNDS]에 못 미치면 없습니다. 한두 판짜리
- * 주는 막대 하나가 추이를 흔듭니다.
- * @property startsNewAct 앞선 주와 액트가 다릅니다. 막대 앞에 전환 표시를 합니다.
+ * @property metrics 그 주 합계입니다. 라운드가 [MIN_TREND_ROUNDS]에 못 미치면 없습니다. 한두 판만
+ * 뛴 주가 섞이면 막대 하나 때문에 추이가 흔들립니다.
+ * @property startsNewAct 앞 주와 액트가 다르면 `true`입니다. 화면은 이 막대 앞에 세로선을 긋습니다.
  * @property inPeriod 리포트 기간에 든 주입니다.
  */
 data class TrendWeek(
@@ -78,8 +78,8 @@ data class TrendWeek(
 )
 
 /**
- * 지표 설명 시트의 "평소에는 어느 정도였나요?"입니다. 비교 대상은 본인의 과거뿐이라 남의 평균이나
- * 기준값 대신 내 주간 값의 범위를 보여줍니다.
+ * 지표 설명 시트의 "평소에는 어느 정도였나요?"에 쓰는 범위입니다. 비교 대상은 본인의 과거뿐이라
+ * 남의 평균 대신 내 주간 값의 범위를 보여줍니다.
  *
  * @property weeks 가장 오래된 주부터 기간 직전까지의 주 수입니다. 화면에는 "지난 N주 동안"으로 띄웁니다.
  */
@@ -90,8 +90,8 @@ data class UsualRange(
 )
 
 /**
- * 기간 앞의 막대 중 이번 액트이고 값이 있는 주로 범위를 냅니다. 그런 주가 [MIN_VOLATILITY_WEEKS]주에
- * 못 미치면 없습니다. 두세 주로 "평소"라고 하면 우연히 잘 된 주가 평소가 됩니다.
+ * 기간 앞 막대 가운데 이번 액트이면서 값이 있는 주만 씁니다. 그런 주가 [MIN_VOLATILITY_WEEKS]주가
+ * 안 되면 `null`입니다. 두세 주만 보고 평소라고 하면 어쩌다 잘 풀린 주가 평소가 됩니다.
  */
 fun WeeklyReport.Ready.usualRange(value: (MatchMetrics) -> Double?): UsualRange? {
     val weeks = trend

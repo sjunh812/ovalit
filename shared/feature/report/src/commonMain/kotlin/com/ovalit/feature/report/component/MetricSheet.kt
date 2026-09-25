@@ -91,7 +91,7 @@ internal fun MetricSheet(
     }
 }
 
-/** 시트 제목 아래 본문입니다. 시트는 별도 창에 떠서 프리뷰에 안 잡히니 본문만 따로 봅니다. */
+// 시트는 따로 창을 띄워서 프리뷰에 안 나온다. 프리뷰와 테스트는 이 본문만 그린다.
 @Composable
 internal fun MetricSheetBody(metric: FixedMetric, report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {

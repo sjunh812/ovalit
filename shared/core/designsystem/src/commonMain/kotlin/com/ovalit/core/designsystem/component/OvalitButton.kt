@@ -74,7 +74,7 @@ fun OvalitTextButton(
     }
 }
 
-/** 테두리만 있는 버튼입니다. 연동 해제처럼 한 번 더 생각하고 누를 동작에 씁니다. */
+/** 연동 해제처럼 되돌릴 수 없는 동작에 씁니다. */
 @Composable
 fun OvalitOutlinedButton(
     text: String,

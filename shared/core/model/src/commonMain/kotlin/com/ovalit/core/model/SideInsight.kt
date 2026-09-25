@@ -11,9 +11,9 @@ enum class Side {
 /**
  * 개선 포인트 문장에서 공격과 수비로 나눠 보는 지표입니다.
  *
- * 비율 지표는 화면에 보이는 %끼리 [MIN_PERCENT_GAP]%p 이상, 피해량은 기간 평균의
- * [MIN_DAMAGE_GAP_RATIO]만큼 벌어져야 문장을 만듭니다. 공격과 수비가 각각 최소 표본을 넘겨야 합니다.
- * 셋 다 시작 기준선이고 실데이터를 보고 조정합니다.
+ * 비율 지표는 화면에 보이는 %끼리 [MIN_PERCENT_GAP]%p 넘게, 피해량은 기간 평균의
+ * [MIN_DAMAGE_GAP_RATIO]만큼 벌어져야 문장을 만듭니다. 공격과 수비가 각각 최소 표본도 넘겨야 합니다.
+ * 기준과 표본 모두 실데이터를 보고 조정할 시작값입니다.
  */
 enum class SideMetric(
     val value: (MatchMetrics) -> Double?,
@@ -33,7 +33,7 @@ const val MIN_PERCENT_GAP = 10
 const val MIN_DAMAGE_GAP_RATIO = 0.15
 
 /**
- * @property isRolePriority 고른 지표가 역할의 우선 지표입니다. 화면에는 그때만 "전략가에게 생존율은
+ * @property isRolePriority 고른 지표가 역할의 우선 지표인지입니다. 화면은 이때만 "전략가에게 생존율은
  * 먼저 보는 지표예요"를 붙입니다.
  */
 data class SideInsight(
@@ -44,9 +44,9 @@ data class SideInsight(
 )
 
 /**
- * 기간 경기를 공격과 수비로 나눠 가장 벌어진 지표 하나를 고릅니다. 역할의 우선 지표가 기준을 넘으면
- * 그것부터, 아니면 나머지 중 기준 대비 가장 많이 벌어진 것입니다. 역할에서 크게 띄우지 않는 지표는
- * 뺍니다. 넘는 게 없으면 없습니다.
+ * 기간 경기를 공격과 수비로 나눠서 가장 크게 벌어진 지표 하나를 고릅니다. 역할의 우선 지표가 기준을
+ * 넘으면 그걸 고르고, 아니면 나머지 가운데 기준보다 가장 많이 벌어진 걸 고릅니다. 역할에서 크게
+ * 띄우지 않는 지표는 처음부터 뺍니다. 기준을 넘는 지표가 없으면 `null`입니다.
  */
 internal fun List<Match>.sideInsight(role: Role?): SideInsight? {
     val attack = map { it.metrics(Side.ATTACK) }.sum()
@@ -64,7 +64,7 @@ internal fun List<Match>.sideInsight(role: Role?): SideInsight? {
     return SideInsight(chosen, attack, defense, isRolePriority = chosen == priority)
 }
 
-/** 기준 대비 얼마나 벌어졌는지입니다. 1 미만이거나 표본이 모자라면 없습니다. */
+/** 격차를 기준으로 나눈 값입니다. 1보다 작거나 표본이 모자라면 `null`입니다. */
 private fun SideMetric.gapRatio(attack: MatchMetrics, defense: MatchMetrics, overall: MatchMetrics): Double? {
     if (!isMeasurable(attack) || !isMeasurable(defense)) return null
     val a = value(attack) ?: return null
@@ -80,7 +80,7 @@ private fun SideMetric.gapRatio(attack: MatchMetrics, defense: MatchMetrics, ove
     return ratio.takeIf { it >= 1.0 }
 }
 
-// CLAUDE.md 역할군 표의 우선 지표 중 공수로 나눠 볼 만한 것
+// CLAUDE.md 역할군 표의 우선 지표 가운데 공수로 나눠 셀 수 있는 것
 private val Role.prioritySideMetric: SideMetric
     get() = when (this) {
         Role.DUELIST -> SideMetric.FIRST_DUEL_WIN_RATE

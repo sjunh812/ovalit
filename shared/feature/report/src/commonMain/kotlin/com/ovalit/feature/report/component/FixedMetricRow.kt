@@ -56,7 +56,7 @@ internal fun FixedMetricRow(
             .height(IntrinsicSize.Min)
             .padding(horizontal = OvalitSpacing.gutter),
     ) {
-        // 간격은 구분선 양옆에만 둔다. 칸 폭에 간격을 넣으면 가운데 칸만 좁아진다.
+        // 간격은 구분선 양옆에만 준다. 칸 폭 안에 간격을 넣으면 가운데 칸만 좁아진다.
         fixedMetrics.forEachIndexed { index, metric ->
             if (index > 0) {
                 Spacer(Modifier.width(CellGap))

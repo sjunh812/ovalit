@@ -26,7 +26,7 @@ data class OvalitTab(
     val icon: ImageVector,
 )
 
-/** 화면 맨 아래 탭바입니다. 시스템 내비게이션 바 높이만큼 스스로 비웁니다. */
+/** 시스템 내비게이션 바 높이만큼 아래를 알아서 띄웁니다. 밖에서 여백을 더 주지 않습니다. */
 @Composable
 fun OvalitTabBar(
     tabs: List<OvalitTab>,

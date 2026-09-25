@@ -27,7 +27,6 @@ private val ChipShape = RoundedCornerShape(8.dp)
 // 칩 자체는 28dp 남짓이라 손가락으로 누르기엔 작다. 눌리는 영역만 위아래로 늘린다.
 private val ChipTouchHeight = 44.dp
 
-/** 여러 개 중 하나를 고르는 칩입니다. 고른 칩만 바탕을 깔고 나머지는 글자만 둡니다. */
 @Composable
 fun OvalitChip(
     text: String,

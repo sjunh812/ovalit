@@ -9,7 +9,7 @@ package com.ovalit.core.model
 const val TRADE_WINDOW_MILLIS: Long = 5_000
 
 /**
- * [side]를 주면 그 진영 라운드만 셉니다. 전투 점수는 경기 합계로만 내려와서 진영별로는 0입니다.
+ * [side]를 주면 그 진영 라운드만 셉니다. 전투 점수는 응답에 경기 합계로만 있어서 진영별로는 0입니다.
  */
 fun Match.metrics(side: Side? = null): MatchMetrics {
     val rounds = if (side == null) rounds else rounds.filter { it.mySide == side }

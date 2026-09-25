@@ -79,13 +79,21 @@ fun MapImage(map: MapId, style: MapImageStyle, modifier: Modifier = Modifier) {
 
 /** 무기는 기본 스킨 그림입니다. 카탈로그의 무기 그림은 흰 선화라 밝은 바탕에서 안 보입니다. */
 @Composable
-fun WeaponImage(weapon: WeaponId, name: String, modifier: Modifier = Modifier) {
+fun WeaponImage(
+    weapon: WeaponId,
+    name: String,
+    modifier: Modifier = Modifier,
+    tint: Color? = null,
+    alignment: Alignment = Alignment.Center,
+) {
     BundledImage(
         path = GameAssetIndex.weapons[weapon.value.uppercase()]?.let { "weapons/$it.png" },
         modifier = modifier,
         contentScale = ContentScale.Fit,
         background = Color.Transparent,
+        colorFilter = tint?.let { ColorFilter.tint(it) },
         fallbackText = name,
+        alignment = alignment,
     )
 }
 
@@ -127,6 +135,7 @@ private fun BundledImage(
     background: Color = OvalitTheme.colors.fill,
     colorFilter: ColorFilter? = null,
     fallbackText: String? = null,
+    alignment: Alignment = Alignment.Center,
 ) {
     val state by produceState(ImageCache[path], path) {
         if (path == null || value != LoadState.Pending) return@produceState
@@ -144,6 +153,7 @@ private fun BundledImage(
                 contentDescription = null,
                 contentScale = contentScale,
                 colorFilter = colorFilter,
+                alignment = alignment,
                 modifier = Modifier.matchParentSize(),
             )
             LoadState.Missing -> if (fallbackText != null) {

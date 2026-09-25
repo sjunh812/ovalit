@@ -2,14 +2,13 @@ package com.ovalit.feature.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -77,19 +76,18 @@ internal fun Double.percentSteps(): Int = (this * 100).roundToInt()
 internal fun percentText(rate: Double?): String =
     rate?.let { stringResource(Res.string.value_percent, it.percentSteps().toString()) } ?: NO_VALUE
 
-// 기본 스킨 총은 짙은 회색이라 다크 테마 바탕에 묻힌다. 목업의 무기 칸처럼 옅은 면 위에 올리고, 다크에서는
-// `--fill`로도 모양이 안 보여서 한 단계 밝은 `--t5`까지 올린다. 라이트에서는 `--fill`로 충분하다.
+// 기본 스킨 그림을 글자색 한 가지로 칠한 실루엣이다. 그림 그대로면 짙은 회색 총이 다크 바탕에 묻혀서 면을 깔아야
+// 했는데, 그 면이 칸마다 상자처럼 떠 보였다. 모양만 남기면 두 테마 모두 면 없이 보인다. 총마다 길이가 달라서
+// 가운데에 두면 들쭉날쭉해 보여 왼쪽 끝을 아래 글자와 맞춘다.
 @Composable
 internal fun WeaponThumb(weapon: WeaponId, name: String, width: Dp, height: Dp) {
-    val colors = OvalitTheme.colors
-    Box(
-        modifier = Modifier
-            .size(width = width, height = height)
-            .background(if (colors.isDark) colors.t5 else colors.fill, RoundedCornerShape(4.dp))
-            .padding(horizontal = 4.dp, vertical = 3.dp),
-    ) {
-        WeaponImage(weapon, name, Modifier.fillMaxSize())
-    }
+    WeaponImage(
+        weapon = weapon,
+        name = name,
+        modifier = Modifier.size(width = width, height = height),
+        tint = OvalitTheme.colors.t2,
+        alignment = Alignment.CenterStart,
+    )
 }
 
 // 목업대로 50%를 넘으면 초록, 밑돌면 빨강이다. 색은 변화량에만 쓴다는 규칙의 예외로 CLAUDE.md에 적었다.

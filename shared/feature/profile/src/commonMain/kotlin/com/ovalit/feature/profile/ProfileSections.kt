@@ -46,7 +46,6 @@ import com.ovalit.core.model.AgentStats
 import com.ovalit.core.model.CompetitiveRecord
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.FixedMetric
-import com.ovalit.core.model.HIGHLIGHTED_WEAPONS
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.ProfileSummary
@@ -383,9 +382,10 @@ internal fun WeaponsSection(report: WeaponReport, catalog: ContentCatalog, onOpe
     Section(modifier = Modifier.clickable(role = SemanticsRole.Button, onClick = onOpen)) {
         SectionTitle(title = stringResource(Res.string.profile_weapons), chevron = true)
         Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        // 무기는 둘뿐이지만 위 요원 칸과 같은 세 칸 격자에 놓는다. 반씩 나누면 요원과 줄이 안 맞고 가운데가 빈다.
+        Row(horizontalArrangement = Arrangement.spacedBy(AgentTileGap)) {
             shown.forEach { WeaponTile(it, report.kills, catalog, Modifier.weight(1f)) }
-            repeat(HIGHLIGHTED_WEAPONS - shown.size) { Spacer(Modifier.weight(1f)) }
+            repeat(SHOWN_AGENTS - shown.size) { Spacer(Modifier.weight(1f)) }
         }
     }
 }
@@ -396,7 +396,7 @@ private fun WeaponTile(weapon: WeaponStats, totalKills: Int, catalog: ContentCat
     val share = if (totalKills > 0) weapon.kills.toDouble() / totalKills else null
 
     Column(modifier = modifier.semantics(mergeDescendants = true) {}) {
-        WeaponThumb(weapon.weapon, name, width = 76.dp, height = 42.dp)
+        WeaponThumb(weapon.weapon, name, width = 76.dp, height = 30.dp)
         Spacer(Modifier.height(8.dp))
         OvalitText(text = name, style = OvalitTheme.typography.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(2.dp))

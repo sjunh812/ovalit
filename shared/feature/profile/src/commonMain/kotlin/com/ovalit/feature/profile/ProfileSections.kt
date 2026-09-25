@@ -1,6 +1,5 @@
 package com.ovalit.feature.profile
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,22 +15,16 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.Role as SemanticsRole
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -50,8 +43,8 @@ import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.HIGHLIGHTED_WEAPONS
 import com.ovalit.core.model.MatchId
+import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.ProfileSummary
-import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.Shots
 import com.ovalit.core.model.WeaponReport
 import com.ovalit.core.model.WeaponStats
@@ -75,8 +68,9 @@ import com.ovalit.feature.profile.resources.duration_minutes
 import com.ovalit.feature.profile.resources.profile_agents
 import com.ovalit.feature.profile.resources.profile_competitive
 import com.ovalit.feature.profile.resources.profile_competitive_record
-import com.ovalit.feature.profile.resources.profile_kills_per_match
 import com.ovalit.feature.profile.resources.profile_most_kills
+import com.ovalit.feature.profile.resources.profile_per_match
+import com.ovalit.feature.profile.resources.profile_per_match_value
 import com.ovalit.feature.profile.resources.profile_play_time
 import com.ovalit.feature.profile.resources.profile_recent
 import com.ovalit.feature.profile.resources.profile_recent_all
@@ -86,153 +80,96 @@ import com.ovalit.feature.profile.resources.profile_shots_caption
 import com.ovalit.feature.profile.resources.profile_shots_head
 import com.ovalit.feature.profile.resources.profile_shots_leg
 import com.ovalit.feature.profile.resources.profile_shots_title
-import com.ovalit.feature.profile.resources.profile_stats_caption
 import com.ovalit.feature.profile.resources.profile_stats_title
-import com.ovalit.feature.profile.resources.profile_tier_best
-import com.ovalit.feature.profile.resources.profile_tier_first
-import com.ovalit.feature.profile.resources.profile_tier_flow_description
 import com.ovalit.feature.profile.resources.profile_weapon_kill_share
 import com.ovalit.feature.profile.resources.profile_weapons
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-private val TierEmblemSize = 52.dp
-private val TierFlowHeight = 56.dp
+private val TierEmblemBoxSize = 56.dp
+private val TierEmblemSize = 42.dp
 private val AgentFaceSize = 48.dp
 private const val SHOWN_AGENTS = 3
 
 /**
- * 이번 액트 경쟁전의 지금 티어와 승패, 판마다의 티어 흐름입니다. 보여줄 수 없는 건 앱을 안 쓰는 사람의 티어
- * 추이이고, 내 티어 추이는 보여줘도 됩니다.
+ * 이번 액트 경쟁전의 지금 티어와 승패입니다. 목업처럼 한 단계 밝은 면에 올려 화면의 첫 덩어리로 둡니다. 이 화면에서
+ * 면을 까는 곳은 여기뿐입니다.
  */
 @Composable
-internal fun TierSection(record: CompetitiveRecord, catalog: ContentCatalog) {
+internal fun TierCard(record: CompetitiveRecord, catalog: ContentCatalog, modifier: Modifier = Modifier) {
     val colors = OvalitTheme.colors
     val tier = record.currentTier
 
-    Section {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (tier != null) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(colors.raised, RoundedCornerShape(14.dp))
+            .padding(OvalitSpacing.lg),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (tier != null) {
+            Box(
+                modifier = Modifier.size(TierEmblemBoxSize).background(colors.fill, RoundedCornerShape(14.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
                 TierEmblem(tier, Modifier.size(TierEmblemSize))
-                Spacer(Modifier.width(14.dp))
             }
-            Column(modifier = Modifier.weight(1f)) {
-                OvalitText(
-                    text = tier?.let { catalog.tiers[it] } ?: stringResource(Res.string.profile_competitive),
-                    style = OvalitTheme.typography.titleM,
-                )
-                Spacer(Modifier.height(2.dp))
-                OvalitText(
-                    text = stringResource(Res.string.profile_competitive_record, record.matches, record.wins, record.losses),
-                    style = OvalitTheme.typography.caption,
-                    color = colors.t2,
-                )
-            }
-            Spacer(Modifier.width(OvalitSpacing.md))
-            Column(horizontalAlignment = Alignment.End, modifier = Modifier.semantics(mergeDescendants = true) {}) {
-                OvalitText(text = stringResource(Res.string.column_win_rate), style = OvalitTheme.typography.caption, color = colors.t3)
-                // 티어 이름보다 크면 칸의 주인공이 승률로 바뀐다. 같은 크기에 숫자 폭만 고정한다.
-                OvalitText(
-                    text = percentText(record.winRate),
-                    style = OvalitTheme.typography.metricM.copy(fontSize = OvalitTheme.typography.titleM.fontSize),
-                    color = winRateColor(record.winRate),
-                )
-            }
+            Spacer(Modifier.width(OvalitSpacing.lg))
         }
-        if (record.tiers.distinct().size > 1) {
-            Spacer(Modifier.height(18.dp))
-            TierFlow(record.tiers, catalog)
+        Column(modifier = Modifier.weight(1f)) {
+            OvalitText(
+                text = tier?.let { catalog.tiers[it] } ?: stringResource(Res.string.profile_competitive),
+                style = OvalitTheme.typography.titleM,
+            )
+            Spacer(Modifier.height(2.dp))
+            OvalitText(
+                text = stringResource(Res.string.profile_competitive_record, record.matches, record.wins, record.losses),
+                style = OvalitTheme.typography.caption,
+                color = colors.t2,
+            )
+        }
+        Spacer(Modifier.width(OvalitSpacing.md))
+        Column(horizontalAlignment = Alignment.End, modifier = Modifier.semantics(mergeDescendants = true) {}) {
+            OvalitText(text = stringResource(Res.string.column_win_rate), style = OvalitTheme.typography.caption, color = colors.t3)
+            // 티어 이름보다 크면 칸의 주인공이 승률로 바뀐다. 같은 크기에 숫자 폭만 고정한다.
+            OvalitText(
+                text = percentText(record.winRate),
+                style = StatValueStyle(),
+                color = winRateColor(record.winRate),
+            )
         }
     }
 }
 
-// RR은 API에 없어서 티어가 바뀐 판에서만 선이 꺾인다. 그래서 막대가 아니라 계단으로 긋는다.
+/** 이번 액트 합계입니다. 위 줄은 피해량, K/D, 전투점수이고 아래 줄은 최다 킬, 판당 K/D/A, 플레이 시간입니다. */
 @Composable
-private fun TierFlow(tiers: List<Int>, catalog: ContentCatalog) {
-    val colors = OvalitTheme.colors
-    val first = catalog.tiers[tiers.first()]
-    val best = catalog.tiers[tiers.max()]
-    val current = catalog.tiers[tiers.last()]
-    val description = if (first != null && best != null && current != null) {
-        stringResource(Res.string.profile_tier_flow_description, first, best, current)
-    } else {
-        null
-    }
-    val guide = colors.lineWeak
-    val line = colors.t1
-
-    Column(modifier = Modifier.clearAndSetSemantics { description?.let { contentDescription = it } }) {
-        Canvas(modifier = Modifier.fillMaxWidth().height(TierFlowHeight)) {
-            val dot = 3.5.dp.toPx()
-            val low = tiers.min()
-            val high = tiers.max()
-            val top = dot
-            val bottom = size.height - dot
-            val left = dot
-            val right = size.width - dot
-            fun x(index: Int) = left + (right - left) * index / tiers.lastIndex
-            fun y(tier: Int) = bottom - (bottom - top) * (tier - low) / (high - low)
-
-            tiers.distinct().forEach { level ->
-                drawLine(guide, Offset(0f, y(level)), Offset(size.width, y(level)), strokeWidth = 1.dp.toPx())
-            }
-            val path = Path().apply {
-                moveTo(x(0), y(tiers.first()))
-                for (index in 1..tiers.lastIndex) {
-                    lineTo(x(index), y(tiers[index - 1]))
-                    lineTo(x(index), y(tiers[index]))
-                }
-            }
-            drawPath(path, line, style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
-            drawCircle(line, radius = dot, center = Offset(x(tiers.lastIndex), y(tiers.last())))
-        }
-        if (first != null) {
-            Spacer(Modifier.height(8.dp))
-            Row {
-                OvalitText(
-                    text = stringResource(Res.string.profile_tier_first, first),
-                    modifier = Modifier.weight(1f),
-                    style = OvalitTheme.typography.caption,
-                    color = colors.t3,
-                )
-                // 지금이 가장 높으면 위 칸의 티어 이름과 같은 말이라 적지 않는다
-                if (best != null && tiers.max() != tiers.last()) {
-                    OvalitText(
-                        text = stringResource(Res.string.profile_tier_best, best),
-                        style = OvalitTheme.typography.caption,
-                        color = colors.t3,
-                    )
-                }
-            }
-        }
-    }
-}
-
-/** 홈 고정 칸과 같은 순서로 전투점수, K/D, 피해량을 두고 아래 줄에 경기 기록을 둡니다. */
-@Composable
-internal fun StatsSection(summary: ProfileSummary, matches: Int) {
+internal fun StatsSection(summary: ProfileSummary, modifier: Modifier = Modifier) {
     val metrics = summary.metrics
-    val fixed = listOf(FixedMetric.COMBAT_SCORE, FixedMetric.KD, FixedMetric.DAMAGE).map { metric ->
+    val main = listOf(FixedMetric.DAMAGE, FixedMetric.KD, FixedMetric.COMBAT_SCORE).map { metric ->
         stringResource(metric.label) to metric.value(metrics)?.let { metric.format.valueText(it) }
     }
-    val killsPerMatch = if (metrics.matches > 0) metrics.kills.toDouble() / metrics.matches else null
     val records = listOf(
         stringResource(Res.string.profile_most_kills) to summary.mostKills?.toString(),
-        stringResource(Res.string.profile_kills_per_match) to killsPerMatch?.let { MetricFormat.ONE_DECIMAL.format(it) },
+        stringResource(Res.string.profile_per_match) to perMatchText(metrics),
         stringResource(Res.string.profile_play_time) to playTimeText(summary.playTimeMillis),
     )
-    val queue = stringResource(QueueFilter.COMPETITIVE_AND_UNRATED.label)
 
-    Section {
-        SectionTitle(
-            title = stringResource(Res.string.profile_stats_title),
-            caption = stringResource(Res.string.profile_stats_caption, queue, matches),
-        )
+    Section(modifier = modifier, divider = false) {
+        SectionTitle(title = stringResource(Res.string.profile_stats_title))
         Spacer(Modifier.height(14.dp))
-        StatRow(fixed)
+        StatRow(main)
         Spacer(Modifier.height(16.dp))
         StatRow(records)
     }
+}
+
+// 홈의 "판당 17.2 / 11.5 / 6.3"과 같은 자릿수다. 칸이 좁아서 빗금 양옆 공백만 뺐다.
+@Composable
+private fun perMatchText(metrics: MatchMetrics): String? {
+    if (metrics.matches == 0) return null
+    val (kills, deaths, assists) = listOf(metrics.kills, metrics.deaths, metrics.assists)
+        .map { MetricFormat.ONE_DECIMAL.format(it.toDouble() / metrics.matches) }
+    return stringResource(Res.string.profile_per_match_value, kills, deaths, assists)
 }
 
 @Composable
@@ -250,17 +187,23 @@ private fun StatRow(cells: List<Pair<String, String?>>) {
                     autoSize = shrinkToFit(typography.caption.fontSize, min = 7.sp),
                 )
                 Spacer(Modifier.height(4.dp))
+                val style = StatValueStyle()
                 OvalitText(
                     text = value ?: NO_VALUE,
-                    style = typography.metricM,
+                    style = style,
                     color = if (value != null) colors.t1 else colors.t3,
                     maxLines = 1,
-                    autoSize = shrinkToFit(typography.metricM.fontSize, min = 12.sp),
+                    autoSize = shrinkToFit(style.fontSize, min = 11.sp),
                 )
             }
         }
     }
 }
+
+// 목업처럼 티어 이름과 같은 크기다. 홈의 큰 지표 숫자를 그대로 쓰면 여섯 칸이 한꺼번에 소리친다.
+@Composable
+private fun StatValueStyle(): TextStyle =
+    OvalitTheme.typography.metricM.copy(fontSize = OvalitTheme.typography.titleM.fontSize, lineHeight = 24.sp)
 
 // 열 시간이 넘으면 분은 버린다. 칸이 좁고, 그만큼 뛰었으면 분까지 볼 일이 없다.
 @Composable
@@ -314,25 +257,17 @@ private class ShotPart(val label: StringResource, val count: Int, val color: Col
 @Composable
 private fun ShotLegend(part: ShotPart, total: Int, modifier: Modifier) {
     val colors = OvalitTheme.colors
-    val percent = percentText(part.count.toDouble() / total)
+    val typography = OvalitTheme.typography
     Column(modifier = modifier.semantics(mergeDescendants = true) {}) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(8.dp).clip(CircleShape).background(part.color))
-            Spacer(Modifier.width(6.dp))
-            OvalitText(text = stringResource(part.label), style = OvalitTheme.typography.caption, color = colors.t2)
-        }
+        OvalitText(text = stringResource(part.label), style = typography.caption, color = colors.t2)
         Spacer(Modifier.height(3.dp))
-        // 비율과 탄 수를 한 줄에 두면 좁은 칸에서 "3,737"이 쉼표에서 갈라진다. 그래서 줄을 나눈다.
-        OvalitText(
-            text = percent,
-            style = OvalitTheme.typography.label.copy(fontWeight = FontWeight.SemiBold),
-        )
-        OvalitText(
-            text = part.count.withThousands(),
-            style = OvalitTheme.typography.caption,
-            color = colors.t3,
-            maxLines = 1,
-            autoSize = shrinkToFit(OvalitTheme.typography.caption.fontSize),
+        // 비율과 탄 수는 따로 두고 칸이 좁으면 탄 수를 통째로 다음 줄에 내린다. 한 글줄로 두면 "3,737"이 쉼표에서 갈라진다.
+        SeparatedRow(
+            items = listOf(
+                { OvalitText(text = percentText(part.count.toDouble() / total), style = typography.label.copy(fontWeight = FontWeight.SemiBold)) },
+                { OvalitText(text = part.count.withThousands(), style = typography.label, color = colors.t3) },
+            ),
+            separator = { Spacer(Modifier.width(4.dp)) },
         )
     }
 }
@@ -455,9 +390,10 @@ internal fun RecentMatchesSection(
 }
 
 // 섹션마다 위에 선을 긋는다. 누를 수 있는 섹션은 [modifier]로 clickable을 넘긴다. 그러면 선 아래 전체가 눌린다.
+// 티어 카드 바로 아래 통계는 카드가 경계를 대신해서 선을 긋지 않는다.
 @Composable
-private fun Section(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))
+private fun Section(modifier: Modifier = Modifier, divider: Boolean = true, content: @Composable ColumnScope.() -> Unit) {
+    if (divider) OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))
     Column(
         modifier = modifier
             .fillMaxWidth()

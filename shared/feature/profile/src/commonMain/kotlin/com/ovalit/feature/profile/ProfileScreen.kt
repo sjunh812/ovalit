@@ -23,6 +23,7 @@ import com.ovalit.core.ui.ProfileBanner
 import com.ovalit.core.ui.ProfileIdentity
 import com.ovalit.core.ui.ProfileStatusBarScrim
 import com.ovalit.feature.profile.resources.Res
+import com.ovalit.feature.profile.resources.act_matches
 import com.ovalit.feature.profile.resources.no_matches
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -43,7 +44,7 @@ fun ProfileRoute(
 }
 
 /**
- * 위에서부터 티어, 이번 액트 통계, 맞힌 부위, 요원과 무기, 최근 경기 순서입니다. 최근 경기 말고는 모두 이번
+ * 위에서부터 티어 카드, 통계, 맞힌 부위, 요원과 무기, 최근 경기 순서입니다. 최근 경기 말고는 모두 이번
  * 액트의 내 경기끼리만 셉니다.
  */
 @Composable
@@ -69,16 +70,16 @@ internal fun ProfileScreen(
                 SubScreenTopBar(title = null, caption = null, onBack = onBack)
             }
             Spacer(Modifier.height(10.dp))
-            // 티어는 바로 아래 티어 칸에 크게 두니 이름 줄에서는 뺀다. 이번 액트에 경쟁전이 없으면 이름 줄에 남긴다.
+            // 티어는 바로 아래 티어 카드에 크게 두니 이름 줄에서는 뺀다. 이번 액트에 경쟁전이 없으면 이름 줄에 남긴다.
             ProfileIdentity(
                 badge = if (competitive != null) badge.copy(tier = null, tierName = null) else badge,
                 mainRole = uiState.agents.mainRole,
+                trailing = stringResource(Res.string.act_matches, uiState.agents.matches),
                 modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
             )
 
-            Spacer(Modifier.height(20.dp))
-
             if (uiState.agents.matches == 0) {
+                Spacer(Modifier.height(20.dp))
                 OvalitText(
                     text = stringResource(Res.string.no_matches),
                     modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
@@ -87,8 +88,11 @@ internal fun ProfileScreen(
                 )
                 Spacer(Modifier.height(20.dp))
             } else {
-                competitive?.let { TierSection(it, uiState.catalog) }
-                StatsSection(uiState.summary, uiState.agents.matches)
+                if (competitive != null) {
+                    Spacer(Modifier.height(20.dp))
+                    TierCard(competitive, uiState.catalog, Modifier.padding(horizontal = OvalitSpacing.gutter))
+                }
+                StatsSection(uiState.summary, Modifier.padding(top = 6.dp))
                 ShotsSection(uiState.summary.metrics.shots)
                 AgentsSection(uiState.agents, uiState.catalog, onOpenAgents)
                 WeaponsSection(uiState.weapons, uiState.catalog, onOpenWeapons)

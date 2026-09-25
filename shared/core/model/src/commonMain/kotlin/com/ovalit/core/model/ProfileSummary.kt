@@ -16,19 +16,16 @@ data class ProfileSummary(
 )
 
 /**
- * @property tiers 경쟁전마다 응답에 실려 온 내 티어를 치른 순서대로 담았습니다. 티어가 빠진 판은 건너뜁니다.
- * RR은 API에 없어서 티어가 바뀐 판에서만 흐름이 꺾입니다.
+ * @property currentTier 가장 최근 경쟁전에 실려 온 내 티어입니다. 그 판에 티어가 빠져 있으면 그 앞 판을 봅니다.
  */
 data class CompetitiveRecord(
     val matches: Int,
     val wins: Int,
     val losses: Int,
-    val tiers: List<Int>,
+    val currentTier: Int?,
 ) {
     /** 비긴 판은 분모에 넣지 않습니다. */
     val winRate: Double? get() = wins over (wins + losses)
-
-    val currentTier: Int? get() = tiers.lastOrNull()
 }
 
 fun List<Match>.profileSummary(): ProfileSummary {
@@ -43,7 +40,7 @@ fun List<Match>.profileSummary(): ProfileSummary {
                 matches = games.size,
                 wins = games.count { it.myTeamWon == true },
                 losses = games.count { it.myTeamWon == false },
-                tiers = games.mapNotNull { it.myScoreline?.tier },
+                currentTier = games.lastOrNull { it.myScoreline?.tier != null }?.myScoreline?.tier,
             )
         },
     )

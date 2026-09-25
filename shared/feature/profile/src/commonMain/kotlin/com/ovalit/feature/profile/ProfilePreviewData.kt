@@ -53,7 +53,7 @@ internal object ProfilePreviewData {
             ghost to WeaponInfo("고스트", WeaponCategory.PISTOL),
         ),
         maps = emptyMap(),
-        tiers = mapOf(15 to "플래티넘 1", 16 to "플래티넘 2", 17 to "플래티넘 3"),
+        tiers = mapOf(16 to "플래티넘 2"),
     )
 
     private fun metrics(rounds: Int, kast: Int, survived: Int, firstKills: Int = 10, firstDeaths: Int = 10) =
@@ -134,9 +134,6 @@ internal object ProfilePreviewData {
     private val ascent = MapId("7eaecc1b-4337-bbf6-6ab9-04b8f06b3319")
     private val haven = MapId("2bee0dc9-4ffe-519b-1cbd-7fbe763a6047")
 
-    // 경쟁 32판. 플래티넘 1에서 올라가 한 번 플래티넘 3을 찍고 플래티넘 2로 내려왔다.
-    private val tiers = List(8) { 15 } + List(10) { 16 } + List(4) { 17 } + List(10) { 16 }
-
     val summary = ProfileSummary(
         metrics = MatchMetrics.Empty.copy(
             matches = 50,
@@ -150,7 +147,7 @@ internal object ProfilePreviewData {
         ),
         mostKills = 28,
         playTimeMillis = (31.hours + 20.minutes).inWholeMilliseconds,
-        competitive = CompetitiveRecord(matches = tiers.size, wins = 18, losses = 14, tiers = tiers),
+        competitive = CompetitiveRecord(matches = 32, wins = 18, losses = 14, currentTier = 16),
     )
 
     private fun recent(id: String, map: MapId, hoursAgo: Int, won: Int, lost: Int, k: Int, d: Int, a: Int): Match {

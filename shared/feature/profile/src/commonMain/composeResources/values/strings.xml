@@ -10,14 +10,10 @@
     <!-- 내 프로필 -->
     <string name="profile_competitive">경쟁전</string>
     <string name="profile_competitive_record">경쟁 %1$d판 · %2$d승 %3$d패</string>
-    <string name="profile_tier_first">첫 경기 %1$s</string>
-    <string name="profile_tier_best">최고 %1$s</string>
-    <string name="profile_tier_flow_description">이번 액트 경쟁전 티어 흐름. 첫 경기 %1$s, 최고 %2$s, 지금 %3$s</string>
-    <string name="profile_stats_title">이번 액트</string>
-    <!-- %1$s는 "경쟁 + 일반" -->
-    <string name="profile_stats_caption">%1$s %2$d경기</string>
+    <string name="profile_stats_title">통계</string>
     <string name="profile_most_kills">최다 킬</string>
-    <string name="profile_kills_per_match">판당 킬</string>
+    <string name="profile_per_match">판당 K/D/A</string>
+    <string name="profile_per_match_value">%1$s/%2$s/%3$s</string>
     <string name="profile_play_time">플레이 시간</string>
     <string name="duration_hours_minutes">%1$d시간 %2$d분</string>
     <string name="duration_hours">%1$d시간</string>

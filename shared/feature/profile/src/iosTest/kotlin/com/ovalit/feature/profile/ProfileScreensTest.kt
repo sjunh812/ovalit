@@ -3,7 +3,6 @@ package com.ovalit.feature.profile
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -33,14 +32,12 @@ class ProfileScreensTest {
     }
 
     @Test
-    fun `티어 칸에는 경쟁전 승패와 티어 흐름을 둔다`() = runComposeUiTest {
+    fun `티어 카드에는 지금 티어와 경쟁전 승패를 둔다`() = runComposeUiTest {
         setContent { Themed { ProfileScreen(ProfilePreviewData.success, {}, {}, {}, {}, {}) } }
 
         onNodeWithText("플래티넘 2").assertExists()
         onNodeWithText("경쟁 32판 · 18승 14패").assertExists()
         onNodeWithText("56%", useUnmergedTree = true).assertExists()
-        onNodeWithContentDescription("이번 액트 경쟁전 티어 흐름. 첫 경기 플래티넘 1, 최고 플래티넘 3, 지금 플래티넘 2")
-            .assertExists()
     }
 
     // 티어 칸에 크게 두니 이름 줄에서는 뺀다. 경쟁전이 없으면 티어 칸이 없어 이름 줄에 남긴다.
@@ -56,10 +53,10 @@ class ProfileScreensTest {
     fun `통계와 맞힌 부위는 이번 액트 합계로 보여준다`() = runComposeUiTest {
         setContent { Themed { ProfileScreen(ProfilePreviewData.success, {}, {}, {}, {}, {}) } }
 
-        onNodeWithText("경쟁 + 일반 50경기").assertExists()
+        onNodeWithText("이번 액트 50경기", useUnmergedTree = true).assertExists()
         onNodeWithText("188", useUnmergedTree = true).assertExists()
         onNodeWithText("1.12", useUnmergedTree = true).assertExists()
-        onNodeWithText("17.2", useUnmergedTree = true).assertExists()
+        onNodeWithText("17.2/15.4/6.2", useUnmergedTree = true).assertExists()
         onNodeWithText("31시간", useUnmergedTree = true).assertExists()
         onNodeWithText("맞힌 탄 1,842발").assertExists()
         onNodeWithText("24%", useUnmergedTree = true).assertExists()

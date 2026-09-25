@@ -9,26 +9,25 @@ class ProfileSummaryTest {
 
     // 일반전에도 티어가 실려 오지만 오르내리는 건 경쟁전뿐이다
     @Test
-    fun `티어 흐름은 경쟁전만 치른 순서대로 잇는다`() {
+    fun `지금 티어는 가장 최근 경쟁전에서 읽는다`() {
         val summary = listOf(
-            game(Queue.COMPETITIVE, startedAt = 3, tier = 17),
-            game(Queue.UNRATED, startedAt = 2, tier = 20),
-            game(Queue.COMPETITIVE, startedAt = 1, tier = 15),
             game(Queue.COMPETITIVE, startedAt = 4, tier = 16),
+            game(Queue.UNRATED, startedAt = 5, tier = 20),
+            game(Queue.COMPETITIVE, startedAt = 1, tier = 15),
+            game(Queue.COMPETITIVE, startedAt = 3, tier = 17),
         ).profileSummary()
 
-        assertEquals(listOf(15, 17, 16), summary.competitive?.tiers)
         assertEquals(16, summary.competitive?.currentTier)
     }
 
     @Test
-    fun `티어가 빠진 판은 흐름에서 건너뛴다`() {
+    fun `가장 최근 경쟁전에 티어가 빠져 있으면 그 앞 판을 본다`() {
         val summary = listOf(
             game(Queue.COMPETITIVE, startedAt = 1, tier = 15),
             game(Queue.COMPETITIVE, startedAt = 2, tier = null),
         ).profileSummary()
 
-        assertEquals(listOf(15), summary.competitive?.tiers)
+        assertEquals(15, summary.competitive?.currentTier)
         assertEquals(2, summary.competitive?.matches)
     }
 

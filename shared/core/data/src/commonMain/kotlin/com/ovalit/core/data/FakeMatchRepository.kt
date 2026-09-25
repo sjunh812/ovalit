@@ -133,16 +133,9 @@ internal fun fakeMatches(
                 allies = allies.map { it.id },
                 firstDuelRate = if (daysAgo < 7) RECENT_FIRST_DUEL_RATE else USUAL_FIRST_DUEL_RATE,
                 recent = daysAgo < 7,
-            ).withScoreboard(board, owner, allies, enemies, tier = fakeTier(owner.tier, daysAgo))
+            ).withScoreboard(board, owner, allies, enemies, tier = owner.tier - if (daysAgo > 30) 1 else 0)
         }
     }
-}
-
-// 한 달 전쯤 한 단계 오르고, 2주 전쯤 잠깐 내려갔다 돌아온다. 프로필의 티어 흐름이 가짜 데이터로도 꺾인다.
-private fun fakeTier(tier: Int, daysAgo: Int): Int = tier - when {
-    daysAgo > 30 -> 1
-    daysAgo in 12..16 -> 1
-    else -> 0
 }
 
 private fun Random.allies(withFriends: Boolean): List<FakePlayer> {

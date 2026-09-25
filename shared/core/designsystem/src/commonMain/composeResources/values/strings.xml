@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">오발있</string>
+    <string name="back">뒤로</string>
 
     <!--
       Riot 개발자 포털 General Policies의 Core Policies가 지정한 문구다. 원문 그대로 두고

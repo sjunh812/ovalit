@@ -29,10 +29,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ovalit.core.designsystem.component.OvalitBackTopBar
 import com.ovalit.core.designsystem.component.OvalitDisclosureIcon
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitExpandable
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.OvalitTopBarCaption
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ContentCatalog
@@ -79,11 +81,9 @@ internal fun WeaponsScreen(uiState: ProfileUiState, onBack: () -> Unit, modifier
         val report = uiState.weapons
 
         Column(modifier = Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState())) {
-            SubScreenTopBar(
-                title = stringResource(Res.string.weapons_title),
-                caption = stringResource(Res.string.act_matches, report.matches),
-                onBack = onBack,
-            )
+            OvalitBackTopBar(onBack = onBack, title = stringResource(Res.string.weapons_title)) {
+                OvalitTopBarCaption(stringResource(Res.string.act_matches, report.matches))
+            }
             if (report.weapons.isEmpty()) {
                 OvalitText(
                     text = stringResource(Res.string.no_matches),

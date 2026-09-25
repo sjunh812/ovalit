@@ -29,8 +29,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ovalit.core.designsystem.component.OvalitBackTopBar
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.OvalitTopBarCaption
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.AgentReport
@@ -92,11 +94,9 @@ internal fun AgentsScreen(uiState: ProfileUiState, onBack: () -> Unit, modifier:
         val report = uiState.agents
 
         Column(modifier = Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState())) {
-            SubScreenTopBar(
-                title = stringResource(Res.string.agents_title),
-                caption = stringResource(Res.string.act_matches, report.matches),
-                onBack = onBack,
-            )
+            OvalitBackTopBar(onBack = onBack, title = stringResource(Res.string.agents_title)) {
+                OvalitTopBarCaption(stringResource(Res.string.act_matches, report.matches))
+            }
             val mainRole = report.mainRole
             if (mainRole == null) {
                 OvalitText(

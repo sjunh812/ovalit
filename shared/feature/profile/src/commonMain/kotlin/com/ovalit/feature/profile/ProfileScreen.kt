@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ovalit.core.designsystem.component.OvalitBackTopBar
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
@@ -67,7 +68,7 @@ internal fun ProfileScreen(
 
         Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
             ProfileBanner(badge) {
-                SubScreenTopBar(title = null, caption = null, onBack = onBack)
+                OvalitBackTopBar(onBack = onBack)
             }
             Spacer(Modifier.height(10.dp))
             // 티어는 바로 아래 티어 카드에 크게 두니 이름 줄에서는 뺀다. 이번 액트에 경쟁전이 없으면 이름 줄에 남긴다.

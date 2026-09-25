@@ -1,7 +1,6 @@
 package com.ovalit.feature.friend
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,18 +24,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.Role as SemanticsRole
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ovalit.core.designsystem.component.OvalitBackTopBar
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitDivider
+import com.ovalit.core.designsystem.component.OvalitIconButton
 import com.ovalit.core.designsystem.component.OvalitPrimaryButton
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTextButton
-import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
@@ -58,7 +54,6 @@ import com.ovalit.core.ui.recentMatchTimeLabel
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.friend.resources.Res
-import com.ovalit.feature.friend.resources.back
 import com.ovalit.feature.friend.resources.cancel
 import com.ovalit.feature.friend.resources.compare_caption
 import com.ovalit.feature.friend.resources.compare_no_matches
@@ -128,13 +123,8 @@ internal fun FriendProfileScreen(
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
             ProfileBanner(uiState.badge) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.sm, vertical = OvalitSpacing.sm),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    IconButton(OvalitIcons.Back, stringResource(Res.string.back), onBack)
-                    Spacer(Modifier.weight(1f))
-                    IconButton(OvalitIcons.More, stringResource(Res.string.more)) { confirmUnfriend = true }
+                OvalitBackTopBar(onBack = onBack) {
+                    OvalitIconButton(OvalitIcons.More, stringResource(Res.string.more), onClick = { confirmUnfriend = true })
                 }
             }
             Spacer(Modifier.height(10.dp))
@@ -231,16 +221,6 @@ internal fun FriendProfileScreen(
                 OvalitTextButton(text = stringResource(Res.string.cancel), onClick = { confirmUnfriend = false })
             }
         }
-    }
-}
-
-@Composable
-private fun IconButton(icon: ImageVector, description: String, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier.size(TouchSize).clip(CircleShape).clickable(role = SemanticsRole.Button, onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        OvalitIcon(icon, contentDescription = description, tint = OvalitTheme.colors.t1)
     }
 }
 

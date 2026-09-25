@@ -1,36 +1,26 @@
 package com.ovalit.feature.friend
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ovalit.core.designsystem.component.OvalitBackTopBar
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitText
-import com.ovalit.core.designsystem.icon.OvalitIcon
-import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.PlayerId
@@ -39,7 +29,6 @@ import com.ovalit.core.ui.MatchRowStyle
 import com.ovalit.core.ui.dayLabel
 import com.ovalit.core.ui.matchTimeLabel
 import com.ovalit.feature.friend.resources.Res
-import com.ovalit.feature.friend.resources.back
 import com.ovalit.feature.friend.resources.matches_title
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
@@ -74,23 +63,7 @@ internal fun FriendMatchesScreen(uiState: FriendProfileUiState, onBack: () -> Un
 
         LazyColumn(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(start = OvalitSpacing.sm, end = OvalitSpacing.gutter, top = OvalitSpacing.sm),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(
-                        modifier = Modifier.size(44.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onBack),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        OvalitIcon(OvalitIcons.Back, contentDescription = stringResource(Res.string.back), tint = colors.t2)
-                    }
-                    Spacer(Modifier.width(OvalitSpacing.xs))
-                    OvalitText(
-                        text = stringResource(Res.string.matches_title, name),
-                        modifier = Modifier.semantics { heading() },
-                        style = OvalitTheme.typography.titleL,
-                    )
-                }
+                OvalitBackTopBar(onBack = onBack, title = stringResource(Res.string.matches_title, name))
             }
             days.forEach { (date, matches) ->
                 item(key = "day-$date") {

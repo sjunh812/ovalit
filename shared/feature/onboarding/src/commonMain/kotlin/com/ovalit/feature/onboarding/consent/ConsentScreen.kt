@@ -1,9 +1,7 @@
 package com.ovalit.feature.onboarding.consent
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,18 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.ovalit.core.designsystem.component.OvalitBackTopBar
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitPrimaryButton
 import com.ovalit.core.designsystem.component.OvalitText
@@ -34,7 +29,6 @@ import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.feature.onboarding.resources.Res
-import com.ovalit.feature.onboarding.resources.back
 import com.ovalit.feature.onboarding.resources.consent_continue
 import com.ovalit.feature.onboarding.resources.consent_matches_body
 import com.ovalit.feature.onboarding.resources.consent_matches_title
@@ -62,16 +56,7 @@ fun ConsentScreen(onBack: () -> Unit, onContinue: () -> Unit, modifier: Modifier
             .background(colors.bg)
             .safeDrawingPadding(),
     ) {
-        Box(
-            modifier = Modifier
-                .padding(start = OvalitSpacing.sm, top = OvalitSpacing.sm)
-                .size(44.dp)
-                .clip(CircleShape)
-                .clickable(role = Role.Button, onClick = onBack),
-            contentAlignment = Alignment.Center,
-        ) {
-            OvalitIcon(OvalitIcons.Back, contentDescription = stringResource(Res.string.back), tint = colors.t2)
-        }
+        OvalitBackTopBar(onBack = onBack)
 
         Column(
             modifier = Modifier

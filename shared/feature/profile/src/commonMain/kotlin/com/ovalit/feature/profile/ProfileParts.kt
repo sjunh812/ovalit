@@ -1,30 +1,19 @@
 package com.ovalit.feature.profile
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.Role as SemanticsRole
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.ovalit.core.designsystem.component.OvalitText
-import com.ovalit.core.designsystem.icon.OvalitIcon
-import com.ovalit.core.designsystem.icon.OvalitIcons
-import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.AgentId
 import com.ovalit.core.model.ContentCatalog
@@ -32,7 +21,6 @@ import com.ovalit.core.model.WeaponCategory
 import com.ovalit.core.model.WeaponId
 import com.ovalit.core.ui.WeaponImage
 import com.ovalit.feature.profile.resources.Res
-import com.ovalit.feature.profile.resources.back
 import com.ovalit.feature.profile.resources.unknown_agent
 import com.ovalit.feature.profile.resources.unknown_weapon
 import com.ovalit.feature.profile.resources.value_percent
@@ -48,37 +36,6 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 internal const val NO_VALUE = "–"
-
-private val BackTouchSize = 44.dp
-
-@Composable
-internal fun SubScreenTopBar(title: String?, caption: String?, onBack: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = OvalitSpacing.sm, end = OvalitSpacing.gutter, top = OvalitSpacing.sm),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(BackTouchSize)
-                .clip(CircleShape)
-                .clickable(role = SemanticsRole.Button, onClick = onBack),
-            contentAlignment = Alignment.Center,
-        ) {
-            OvalitIcon(OvalitIcons.Back, contentDescription = stringResource(Res.string.back), tint = OvalitTheme.colors.t2)
-        }
-        Spacer(Modifier.width(OvalitSpacing.xs))
-        OvalitText(
-            text = title.orEmpty(),
-            modifier = Modifier.weight(1f),
-            style = OvalitTheme.typography.titleL,
-        )
-        if (caption != null) {
-            OvalitText(text = caption, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t3)
-        }
-    }
-}
 
 // 목업대로 강조할 한 줄만 금색이고 나머지는 흐리게 칠한다
 @Composable

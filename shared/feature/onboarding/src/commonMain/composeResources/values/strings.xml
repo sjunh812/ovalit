@@ -6,7 +6,6 @@
     <string name="intro_start">Riot 계정으로 시작하기</string>
 
     <!-- S0-2 연동 동의. 목업 문구 그대로다. 심사자가 목업과 나란히 놓고 본다 -->
-    <string name="back">뒤로</string>
     <string name="consent_title">Riot 계정을 연동할게요.</string>
     <string name="consent_matches_title">최근 50경기를 불러와요</string>
     <string name="consent_matches_body">경쟁과 일반 경기를 라운드 단위로 분석해요. 처음 한 번만 1분 정도 걸려요.</string>

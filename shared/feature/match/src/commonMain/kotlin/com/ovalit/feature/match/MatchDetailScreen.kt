@@ -3,7 +3,6 @@ package com.ovalit.feature.match
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,7 +28,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
@@ -40,10 +37,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ovalit.core.designsystem.component.OvalitBackTopBar
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitText
-import com.ovalit.core.designsystem.icon.OvalitIcon
-import com.ovalit.core.designsystem.icon.OvalitIcons
+import com.ovalit.core.designsystem.component.OvalitTopBarCaption
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
@@ -55,7 +52,6 @@ import com.ovalit.core.ui.label
 import com.ovalit.core.ui.mapName
 import com.ovalit.core.ui.resultColor
 import com.ovalit.feature.match.resources.Res
-import com.ovalit.feature.match.resources.back
 import com.ovalit.feature.match.resources.detail_caption
 import com.ovalit.feature.match.resources.detail_date
 import com.ovalit.feature.match.resources.half_first
@@ -196,21 +192,8 @@ private fun Banner(uiState: MatchDetailUiState.Success, onBack: () -> Unit) {
                 .height(140.dp)
                 .background(Brush.verticalGradient(listOf(Color.Transparent, colors.bg))),
         )
-        Row(
-            modifier = Modifier
-                .safeDrawingPadding()
-                .fillMaxWidth()
-                .padding(start = OvalitSpacing.sm, end = OvalitSpacing.gutter, top = OvalitSpacing.sm),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(
-                modifier = Modifier.size(TouchSize).clip(CircleShape).clickable(role = Role.Button, onClick = onBack),
-                contentAlignment = Alignment.Center,
-            ) {
-                OvalitIcon(OvalitIcons.Back, contentDescription = stringResource(Res.string.back), tint = colors.t1)
-            }
-            Spacer(Modifier.weight(1f))
-            OvalitText(text = caption, style = OvalitTheme.typography.caption, color = colors.t1, maxLines = 1)
+        OvalitBackTopBar(onBack = onBack, modifier = Modifier.safeDrawingPadding()) {
+            OvalitTopBarCaption(caption, color = colors.t1)
         }
         ScoreHeadline(uiState, Modifier.align(Alignment.BottomStart))
     }

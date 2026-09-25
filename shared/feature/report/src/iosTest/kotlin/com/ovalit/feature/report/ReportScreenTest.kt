@@ -6,6 +6,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -291,6 +292,33 @@ class ReportScreenTest {
         onNodeWithText("친구 비교").assertDoesNotExist()
         onNodeWithText("라이벌", substring = true).assertDoesNotExist()
     }
+
+    @Test
+    fun `친구가 없으면 초대 칸을 누르면 초대 링크를 보낸다`() = runComposeUiTest {
+        var shared = false
+        setContent { Social(nudge = HomeNudge.INVITE_FRIEND, onShareInvite = { shared = true }) }
+
+        onNodeWithText("같이 뛰는 친구를 불러 보세요").performScrollTo().performClick()
+
+        assertTrue(shared)
+    }
+
+    @Test
+    fun `라이벌 칸을 누르면 시트에서 친구를 골라 라이벌로 정한다`() = runComposeUiTest {
+        var picked: PlayerId? = null
+        val friends = listOf(
+            FriendStanding(PlayerId("junho"), "준호#KR1", ReportPreviewData.moved.metrics),
+            FriendStanding(PlayerId("minseok"), "민석#KR3", null),
+        )
+        setContent { Social(friends = friends, nudge = HomeNudge.PICK_RIVAL, onSelectRival = { picked = it }) }
+
+        onNodeWithText("라이벌을 골라 보세요").performScrollTo().performClick()
+        onNodeWithText("라이벌 고르기").assertExists()
+        onNodeWithText("민석#KR3", substring = true).assertExists()
+        onNodeWithText("준호#KR1", substring = true).performClick()
+
+        assertEquals(PlayerId("junho"), picked)
+    }
 }
 
 @Composable
@@ -308,12 +336,17 @@ private fun Social(
     rival: FriendStanding? = null,
     friends: List<FriendStanding> = emptyList(),
     queueFilter: QueueFilter = QueueFilter.COMPETITIVE_AND_UNRATED,
+    nudge: HomeNudge? = null,
+    onShareInvite: () -> Unit = {},
+    onSelectRival: (PlayerId) -> Unit = {},
 ) {
     val report = if (queueFilter == QueueFilter.OTHER) ReportPreviewData.otherQueue else ReportPreviewData.moved
     OvalitTheme {
         ReportScreen(
-            uiState = ReportUiState.Success(queueFilter, report, rival = rival, friends = friends),
+            uiState = ReportUiState.Success(queueFilter, report, rival = rival, friends = friends, nudge = nudge),
             onSelectQueue = {},
+            onShareInvite = onShareInvite,
+            onSelectRival = onSelectRival,
         )
     }
 }

@@ -145,7 +145,12 @@ fun OvalitApp(appVersion: String) {
                         RequestNotificationPermission()
                         ImportRoute(onOpenReport = { backStack.replaceAllWith(Report) })
                     }
-                    entry<Report> { ReportRoute(onOpenProfile = { backStack.add(Profile) }) }
+                    entry<Report> {
+                        ReportRoute(
+                            onOpenProfile = { backStack.add(Profile) },
+                            onShareInvite = { context.shareInvite(friends.inviteLink()) },
+                        )
+                    }
                     entry<Profile> {
                         ProfileRoute(
                             onBack = { backStack.removeLastOrNull() },

@@ -8,6 +8,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.ovalit.core.designsystem.preview.OvalitThemePreview
 import com.ovalit.feature.report.component.MetricSheetBody
 import com.ovalit.core.model.FixedMetric
+import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 
@@ -108,13 +109,38 @@ private fun MetricSheetSmallLargeFontPreview() {
     }
 }
 
+// 친구가 없으면 초대를, 친구만 있으면 라이벌 고르기를 권한다
+@Preview(widthDp = 390, heightDp = 1200)
+@Composable
+private fun ReportInviteNudgeDarkPreview() {
+    ReportPreview(ReportPreviewData.moved, nudge = HomeNudge.INVITE_FRIEND)
+}
+
+@Preview(widthDp = 390, heightDp = 1200)
+@Composable
+private fun ReportRivalNudgeLightPreview() {
+    ReportPreview(ReportPreviewData.moved, darkTheme = false, nudge = HomeNudge.PICK_RIVAL)
+}
+
+@Preview(widthDp = 320, heightDp = 1600, fontScale = 1.5f)
+@Composable
+private fun ReportRivalNudgeSmallLargeFontPreview() {
+    ReportPreview(ReportPreviewData.moved, nudge = HomeNudge.PICK_RIVAL)
+}
+
 @Composable
 private fun ReportPreview(
     report: WeeklyReport,
     darkTheme: Boolean = true,
     queueFilter: QueueFilter = QueueFilter.COMPETITIVE_AND_UNRATED,
+    nudge: HomeNudge? = null,
 ) {
+    val friends = listOf(
+        FriendStanding(PlayerId("junho"), "준호#KR1", null),
+        FriendStanding(PlayerId("minseok"), "민석#KR3", null),
+        FriendStanding(PlayerId("jaehyun"), "재현#KR2", null),
+    ).takeIf { nudge == HomeNudge.PICK_RIVAL }.orEmpty()
     OvalitThemePreview(darkTheme = darkTheme) {
-        ReportScreen(uiState = ReportUiState.Success(queueFilter, report), onSelectQueue = {})
+        ReportScreen(uiState = ReportUiState.Success(queueFilter, report, friends = friends, nudge = nudge), onSelectQueue = {})
     }
 }

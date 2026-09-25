@@ -23,6 +23,7 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MIN_MATCHES_PER_REPORT
+import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.PlayerBadge
@@ -33,9 +34,11 @@ import com.ovalit.feature.report.component.FriendRankingSection
 import com.ovalit.feature.report.component.HorizontalLine
 import com.ovalit.feature.report.component.InsightSection
 import com.ovalit.feature.report.component.MetricSheet
+import com.ovalit.feature.report.component.NudgeBanner
 import com.ovalit.feature.report.component.PeriodHeader
 import com.ovalit.feature.report.component.QueueChips
 import com.ovalit.feature.report.component.ReportTopBar
+import com.ovalit.feature.report.component.RivalPickerSheet
 import com.ovalit.feature.report.component.RivalSection
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.not_enough_body
@@ -49,6 +52,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ReportRoute(
     onOpenProfile: () -> Unit,
+    onShareInvite: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ReportViewModel = koinViewModel(),
 ) {
@@ -60,6 +64,8 @@ fun ReportRoute(
         onSelectQueue = viewModel::selectQueue,
         badge = badge,
         onOpenProfile = onOpenProfile,
+        onShareInvite = onShareInvite,
+        onSelectRival = viewModel::selectRival,
         modifier = modifier,
     )
 }
@@ -71,6 +77,8 @@ internal fun ReportScreen(
     modifier: Modifier = Modifier,
     badge: PlayerBadge? = null,
     onOpenProfile: () -> Unit = {},
+    onShareInvite: () -> Unit = {},
+    onSelectRival: (PlayerId) -> Unit = {},
 ) {
     Box(
         modifier = modifier
@@ -93,7 +101,15 @@ internal fun ReportScreen(
                 Spacer(Modifier.height(OvalitSpacing.md))
 
                 when (val report = uiState.report) {
-                    is WeeklyReport.Ready -> ReportContent(report, uiState.queueFilter, uiState.rival, uiState.friends)
+                    is WeeklyReport.Ready -> ReportContent(
+                        report = report,
+                        queueFilter = uiState.queueFilter,
+                        rival = uiState.rival,
+                        friends = uiState.friends,
+                        nudge = uiState.nudge,
+                        onShareInvite = onShareInvite,
+                        onSelectRival = onSelectRival,
+                    )
                     is WeeklyReport.NotEnoughMatches -> NotEnoughMatches(played = report.played)
                 }
 
@@ -109,8 +125,12 @@ private fun ReportContent(
     queueFilter: QueueFilter,
     rival: FriendStanding?,
     friends: List<FriendStanding>,
+    nudge: HomeNudge?,
+    onShareInvite: () -> Unit,
+    onSelectRival: (PlayerId) -> Unit,
 ) {
     var openMetric by rememberSaveable { mutableStateOf<FixedMetric?>(null) }
+    var pickingRival by rememberSaveable { mutableStateOf(false) }
 
     PeriodHeader(report)
     Spacer(Modifier.height(OvalitSpacing.lg))
@@ -138,6 +158,19 @@ private fun ReportContent(
             Spacer(Modifier.height(18.dp))
             RivalSection(report = report, mine = report.metrics, rival = it)
         }
+        nudge?.let {
+            Spacer(Modifier.height(24.dp))
+            NudgeBanner(
+                nudge = it,
+                candidates = friends,
+                onClick = {
+                    when (it) {
+                        HomeNudge.INVITE_FRIEND -> onShareInvite()
+                        HomeNudge.PICK_RIVAL -> pickingRival = true
+                    }
+                },
+            )
+        }
         if (friends.any { it.metrics != null }) {
             Spacer(Modifier.height(20.dp))
             HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
@@ -155,6 +188,17 @@ private fun ReportContent(
         )
     }
 
+    if (pickingRival) {
+        RivalPickerSheet(
+            report = report,
+            candidates = friends,
+            onPick = { id ->
+                onSelectRival(id)
+                pickingRival = false
+            },
+            onDismiss = { pickingRival = false },
+        )
+    }
     openMetric?.let { metric ->
         MetricSheet(metric = metric, report = report, onDismiss = { openMetric = null })
     }

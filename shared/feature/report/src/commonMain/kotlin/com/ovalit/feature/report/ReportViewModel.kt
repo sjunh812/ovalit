@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 
 sealed interface ReportUiState {
@@ -28,14 +29,43 @@ sealed interface ReportUiState {
 
     /**
      * @property rival 고른 라이벌입니다. 고르지 않았거나 전적을 공개하지 않았으면 `null`입니다.
-     * @property friends 전적을 공개한 친구 전부입니다. 리포트 기간에 경기가 없는 친구도 들어 있습니다.
+     * @property friends 전적을 공개한 친구 전부입니다. 리포트 기간에 경기가 없는 친구도 들어 있습니다. 라이벌은
+     * 이 안에서만 고릅니다.
+     * @property nudge 라이벌 칸 자리에 두는 유도 칸입니다. [homeNudge]가 정합니다.
      */
     data class Success(
         val queueFilter: QueueFilter,
         val report: WeeklyReport,
         val rival: FriendStanding? = null,
         val friends: List<FriendStanding> = emptyList(),
+        val nudge: HomeNudge? = null,
     ) : ReportUiState
+}
+
+/** 친구나 라이벌이 없을 때 빈자리 대신 두는 칸입니다. 한 번에 하나만 둡니다. */
+enum class HomeNudge {
+    INVITE_FRIEND,
+    PICK_RIVAL,
+}
+
+/**
+ * 리포트, 친구, 라이벌 순서로 봅니다. 리포트를 만들 기록이 없으면 그 안내가 먼저라 아무것도 권하지 않고, 친구가
+ * 없으면 라이벌을 고를 수 없으니 초대부터 권합니다. 기타 모드에는 친구 칸이 없어서 권하지 않습니다.
+ *
+ * @param hasFriends 전적 공개와 상관없이 친구가 한 명이라도 있는지입니다.
+ * @param rivalCandidates 라이벌로 고를 수 있는 친구입니다. 전적을 공개한 친구뿐이라, 친구가 모두 비공개면 권하지 않습니다.
+ */
+internal fun homeNudge(
+    report: WeeklyReport,
+    queueFilter: QueueFilter,
+    hasFriends: Boolean,
+    rivalCandidates: List<FriendStanding>,
+    rival: FriendStanding?,
+): HomeNudge? = when {
+    report !is WeeklyReport.Ready || !queueFilter.hasDynamicMetrics -> null
+    !hasFriends -> HomeNudge.INVITE_FRIEND
+    rival == null && rivalCandidates.isNotEmpty() -> HomeNudge.PICK_RIVAL
+    else -> null
 }
 
 /** @property metrics 내 리포트와 같은 기간의 합계입니다. 그 기간에 경기가 없으면 `null`입니다. */
@@ -49,7 +79,7 @@ class ReportViewModel(
     matchRepository: MatchRepository,
     accountRepository: AccountRepository,
     preferencesRepository: UserPreferencesRepository,
-    friendRepository: FriendRepository,
+    private val friendRepository: FriendRepository,
     contentRepository: ContentRepository,
     clock: Clock,
     timeZone: TimeZone,
@@ -80,11 +110,13 @@ class ReportViewModel(
         } else {
             emptyList()
         }
+        val rival = standings.firstOrNull { it.id == rivalId }
         ReportUiState.Success(
             queueFilter = filter,
             report = report,
-            rival = standings.firstOrNull { it.id == rivalId },
+            rival = rival,
             friends = standings,
+            nudge = homeNudge(report, filter, hasFriends = friends.isNotEmpty(), rivalCandidates = standings, rival = rival),
         )
     }.stateIn(
         scope = viewModelScope,
@@ -103,5 +135,10 @@ class ReportViewModel(
 
     fun selectQueue(filter: QueueFilter) {
         selectedQueue.value = filter
+    }
+
+    /** 홈의 유도 칸에서 고른 라이벌입니다. S5의 라이벌 지정과 같은 값을 바꿉니다. */
+    fun selectRival(id: PlayerId) {
+        viewModelScope.launch { friendRepository.setRival(id) }
     }
 }

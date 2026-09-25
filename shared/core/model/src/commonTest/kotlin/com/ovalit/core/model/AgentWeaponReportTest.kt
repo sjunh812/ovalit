@@ -20,6 +20,7 @@ private val Jett = AgentId("jett")
 private val Omen = AgentId("omen")
 private val Phantom = WeaponId("phantom")
 private val Vandal = WeaponId("vandal")
+private val Classic = WeaponId("classic")
 
 class AgentWeaponReportTest {
 
@@ -105,8 +106,9 @@ class AgentWeaponReportTest {
 
         val phantom = listOf(match(*rounds.toTypedArray())).weaponStats().single()
 
-        assertFalse(phantom.isDamageMeasurable)
-        assertTrue(listOf(match(*(rounds + rounds.first()).toTypedArray())).weaponStats().single().isDamageMeasurable)
+        assertFalse(phantom.isCarriedMeasurable)
+        assertEquals(null, phantom.value(WeaponMetric.DAMAGE_PER_ROUND))
+        assertTrue(listOf(match(*(rounds + rounds.first()).toTypedArray())).weaponStats().single().isCarriedMeasurable)
     }
 
     @Test
@@ -119,7 +121,7 @@ class AgentWeaponReportTest {
     }
 
     @Test
-    fun `무기는 킬이 많은 순서이고 위 두 개를 따로 본다`() {
+    fun `무기 목록은 킬이 많은 순서다`() {
         val matches = List(5) {
             game(rounds = 0, extra = listOf(round(myKill(Vandal)), round(myKill(Phantom)), round(myKill(Phantom))))
         }
@@ -127,22 +129,41 @@ class AgentWeaponReportTest {
         val report = matches.weaponReport(now = Now, timeZone = Seoul)
 
         assertEquals(listOf(Phantom, Vandal), report.weapons.map { it.weapon })
-        assertEquals(listOf(Phantom, Vandal), report.highlights.map { it.act.weapon })
         assertEquals(15, report.kills)
     }
 
     @Test
+    fun `위쪽 무기도 킬이 많은 순서다`() {
+        val matches = List(5) {
+            game(
+                rounds = 0,
+                extra = listOf(
+                    round(myKill(Phantom), myKill(Phantom, at = 20.0), carried = Phantom),
+                    round(myKill(Vandal), carried = Vandal),
+                    round(carried = Vandal),
+                    round(carried = Classic),
+                ),
+            )
+        }
+
+        val report = matches.weaponReport(now = Now, timeZone = Seoul)
+
+        assertEquals(listOf(Phantom, Vandal, Classic), report.highlights.map { it.act.weapon })
+    }
+
+    @Test
     fun `평소보다 크게 오른 무기만 움직였다고 본다`() {
-        // 앞 8주는 헤드샷 20% 안팎, 이번 주는 40%
+        // 앞 8주는 헤드샷 20% 안팎, 이번 주는 40%. 피해량은 늘 140 안팎이다.
         val usual = (1..8).flatMap { weeksAgo ->
-            val head = if (weeksAgo % 2 == 0) 19 else 21
-            phantomWeek(weeksAgo, head = head)
+            val even = weeksAgo % 2 == 0
+            phantomWeek(weeksAgo, head = if (even) 19 else 21, damage = if (even) 138 else 142)
         }
         val matches = phantomWeek(weeksAgo = 0, head = 40) + usual
 
         val phantom = matches.weaponReport(now = Now, timeZone = Seoul).highlights.single()
 
-        assertEquals(Movement.MOVED, phantom.movement)
+        assertEquals(Movement.MOVED, phantom.movement(WeaponMetric.HEADSHOT_RATE))
+        assertEquals(Movement.STEADY, phantom.movement(WeaponMetric.DAMAGE_PER_ROUND))
         assertEquals(4, phantom.baselineWeeks)
     }
 
@@ -153,7 +174,7 @@ class AgentWeaponReportTest {
         val thin = (5..8).flatMap { phantomWeek(it, head = if (it % 2 == 0) 0 else 40, rounds = 10) }
         val matches = phantomWeek(weeksAgo = 0, head = 40) + usual + thin
 
-        assertEquals(Movement.MOVED, matches.weaponReport(now = Now, timeZone = Seoul).highlights.single().movement)
+        assertEquals(Movement.MOVED, matches.weaponReport(now = Now, timeZone = Seoul).highlights.single().movement(WeaponMetric.HEADSHOT_RATE))
     }
 
     @Test
@@ -161,7 +182,42 @@ class AgentWeaponReportTest {
         val usual = (1..3).flatMap { phantomWeek(it, head = 20) }
         val matches = phantomWeek(weeksAgo = 0, head = 40) + usual
 
-        assertEquals(Movement.UNKNOWN, matches.weaponReport(now = Now, timeZone = Seoul).highlights.single().movement)
+        assertEquals(Movement.UNKNOWN, matches.weaponReport(now = Now, timeZone = Seoul).highlights.single().movement(WeaponMetric.HEADSHOT_RATE))
+    }
+
+    @Test
+    fun `무기의 킬데스 비율은 그 무기로 낸 킬을 그 무기를 들고 시작한 라운드의 데스로 나눈다`() {
+        val died = round(myKill(Phantom), myKill(Phantom, at = 15.0), kill(20.0, Enemy, Me), carried = Phantom)
+        val survived = round(myKill(Phantom), carried = Phantom)
+
+        assertEquals(3.0, listOf(match(died, survived)).weaponStats().single().kd)
+        assertEquals(null, listOf(match(survived)).weaponStats().single().kd)
+    }
+
+    // 한 줄에 이번 기간 헤드샷과 이번 액트 K/D가 섞이면 어느 숫자가 언제 것인지 모른다
+    @Test
+    fun `기간에 들고 시작한 라운드가 모자라면 줄 전체를 이번 액트로 띄운다`() {
+        val thisWeek = phantomWeek(weeksAgo = 0, head = 40, carried = 15)
+
+        val phantom = thisWeek.weaponReport(now = Now, timeZone = Seoul).highlights.single()
+
+        assertEquals(null, phantom.current)
+        assertEquals(Movement.UNKNOWN, phantom.movement(WeaponMetric.HEADSHOT_RATE))
+    }
+
+    @Test
+    fun `피해량은 헤드샷과 따로 평소보다 크게 움직였는지 본다`() {
+        // 헤드샷은 늘 20% 안팎이고 피해량만 이번 주에 크게 오른다
+        val usual = (1..8).flatMap { weeksAgo ->
+            phantomWeek(weeksAgo, head = if (weeksAgo % 2 == 0) 19 else 21, damage = if (weeksAgo % 2 == 0) 138 else 142)
+        }
+        val matches = phantomWeek(weeksAgo = 0, head = 20, damage = 200) + usual
+
+        val phantom = matches.weaponReport(now = Now, timeZone = Seoul).highlights.single()
+
+        assertEquals(Movement.MOVED, phantom.movement(WeaponMetric.DAMAGE_PER_ROUND))
+        assertEquals(Movement.STEADY, phantom.movement(WeaponMetric.HEADSHOT_RATE))
+        assertEquals(200.0, phantom.current?.damagePerRound)
     }
 }
 
@@ -189,11 +245,19 @@ private fun game(
     )
 }
 
-/** 팬텀만 쓴 [rounds]라운드를 5경기에 나눠 담는다. 라운드마다 4발을 맞히고 모두 합쳐 [head]발이 머리다. */
-private fun phantomWeek(weeksAgo: Int, head: Int, rounds: Int = 25): List<Match> {
+/**
+ * 팬텀만 쓴 [rounds]라운드를 5경기에 나눠 담는다. 라운드마다 4발을 맞히고 모두 합쳐 [head]발이 머리다. 앞의 [carried]라운드는
+ * 팬텀을 들고 시작해 라운드마다 [damage]를 넣는다.
+ */
+private fun phantomWeek(weeksAgo: Int, head: Int, rounds: Int = 25, carried: Int = rounds, damage: Int = 140): List<Match> {
     val all = List(rounds) { index ->
         val heads = if (index < head / 4) 4 else if (index == head / 4) head % 4 else 0
-        round(myKill(Phantom), shots = Shots(head = heads, body = 4 - heads, leg = 0))
+        round(
+            myKill(Phantom),
+            shots = Shots(head = heads, body = 4 - heads, leg = 0),
+            damage = damage,
+            carried = Phantom.takeIf { index < carried },
+        )
     }
     return all.chunked(rounds / 5).map { game(rounds = 0, weeksAgo = weeksAgo, extra = it) }
 }

@@ -69,8 +69,9 @@
     <string name="weapons_moved_up">요즘 잘 맞아요</string>
     <string name="weapons_moved_down">최근 떨어졌어요</string>
     <string name="weapons_sample_kills">%1$s킬</string>
-    <string name="weapons_sample_rounds">단일 무기 %1$s라운드</string>
-    <string name="weapons_baseline">%1$d주 평균 %2$s</string>
+    <string name="weapons_act_kills">이번 액트 %1$s킬</string>
+    <string name="weapons_act_basis">이번 액트 기준</string>
+    <string name="weapons_compared">%1$d주 평균과 비교</string>
     <string name="weapons_act_value">이번 액트</string>
     <string name="weapons_single_round_note">킬은 그 무기로 낸 킬이에요. 헤드샷은 그 무기만 쓴 라운드, 데스·어시스트·피해량은 그 무기를 들고 시작한 라운드를 기준으로 세요.</string>
     <string name="weapons_kda">%1$s/%2$s/%3$s</string>

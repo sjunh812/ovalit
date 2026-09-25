@@ -1,8 +1,8 @@
 package com.ovalit.core.model
 
 /**
- * 한 무기만 쓴 라운드가 이만큼은 있어야 그 무기의 헤드샷 비율을 보여줍니다. 실데이터를 보고
- * 조정할 시작값입니다.
+ * 한 무기만 쓴 라운드가 이만큼은 있어야 그 무기의 헤드샷 비율을, 들고 시작한 라운드가 이만큼은 있어야 K/D와
+ * 피해량을 보여줍니다. 실데이터를 보고 조정할 시작값입니다.
  */
 const val MIN_WEAPON_ROUNDS = 20
 
@@ -29,38 +29,56 @@ data class WeaponStats(
 
     val isMeasurable: Boolean get() = singleWeaponRounds >= MIN_WEAPON_ROUNDS
 
+    /** 이 무기로 낸 킬 ÷ 이 무기를 들고 시작한 라운드의 데스입니다. 데스가 없으면 비웁니다. */
+    val kd: Double? get() = kills over deaths
+
     /** 이 무기를 들고 시작한 라운드의 라운드당 피해량입니다. */
     val damagePerRound: Double? get() = damage over carriedRounds
 
-    /** 라운드당 피해량을 보여줄 만큼 이 무기를 들고 시작했는지입니다. 헤드샷과 같은 최소 라운드를 씁니다. */
-    val isDamageMeasurable: Boolean get() = carriedRounds >= MIN_WEAPON_ROUNDS
+    /** K/D와 라운드당 피해량을 보여줄 만큼 이 무기를 들고 시작했는지입니다. 헤드샷과 같은 최소 라운드를 씁니다. */
+    val isCarriedMeasurable: Boolean get() = carriedRounds >= MIN_WEAPON_ROUNDS
+
+    /** 표본을 넘긴 값만 돌려줍니다. */
+    fun value(metric: WeaponMetric): Double? = when (metric) {
+        WeaponMetric.KD -> kd.takeIf { isCarriedMeasurable }
+        WeaponMetric.DAMAGE_PER_ROUND -> damagePerRound.takeIf { isCarriedMeasurable }
+        WeaponMetric.HEADSHOT_RATE -> headshotRate.takeIf { isMeasurable }
+    }
 }
 
+/** S6 무기 화면 위쪽 표에 나란히 두는 지표입니다. 순서가 곧 열 순서입니다. */
+enum class WeaponMetric { KD, DAMAGE_PER_ROUND, HEADSHOT_RATE }
+
 /**
- * S6 무기 화면 위쪽에 크게 보여주는 무기입니다.
+ * S6 무기 화면 위쪽 표의 한 줄입니다.
  *
- * @property current 홈 리포트와 같은 기간의 성적입니다. 리포트를 만들 만큼 경기가 없으면 `null`입니다.
+ * @property current 홈 리포트와 같은 기간의 성적입니다. 세 지표 중 하나라도 표본이 모자라면 `null`이고 화면은 [act]를
+ * 띄웁니다. 한 줄 안에서 기간이 섞이면 어느 숫자가 언제 것인지 알 수 없습니다. 리포트를 만들 만큼 경기가 없어도
+ * `null`입니다.
  * @property baseline 기간 바로 앞 4주입니다.
- * @property movement 동적 칸과 같은 규칙으로 봅니다. 화면은 [Movement.MOVED]일 때만 문구를 붙이고
- * 색을 칠합니다.
+ * @property movements 지표마다 동적 칸과 같은 규칙으로 봅니다. 화면은 [Movement.MOVED]인 변화량만 칠합니다.
  */
 data class WeaponHighlight(
     val act: WeaponStats,
     val current: WeaponStats?,
     val baseline: WeaponStats?,
     val baselineWeeks: Int,
-    val movement: Movement,
-)
+    val movements: Map<WeaponMetric, Movement>,
+) {
+    fun movement(metric: WeaponMetric): Movement = movements[metric] ?: Movement.UNKNOWN
+}
 
 /**
  * @property weapons 이번 액트에서 킬을 많이 낸 순서입니다.
- * @property highlights 그중 앞의 [HIGHLIGHTED_WEAPONS]개입니다.
+ * @property highlights 그중 앞의 [HIGHLIGHTED_WEAPONS]개입니다. 많이 들고 시작한 순서가 아니라 킬 순서입니다.
+ * @property period [highlights]가 보는 홈 리포트 기간입니다. 리포트를 만들 만큼 경기가 없으면 `null`입니다.
  */
 data class WeaponReport(
     val matches: Int,
     val kills: Int,
     val weapons: List<WeaponStats>,
     val highlights: List<WeaponHighlight>,
+    val period: ReportPeriod? = null,
 )
 
 const val HIGHLIGHTED_WEAPONS = 3

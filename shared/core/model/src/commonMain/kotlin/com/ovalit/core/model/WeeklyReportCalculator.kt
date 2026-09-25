@@ -149,31 +149,36 @@ fun Iterable<Match>.weaponReport(
         kills = weapons.sumOf { it.kills },
         weapons = weapons,
         highlights = weapons.take(HIGHLIGHTED_WEAPONS).map { byWeek.highlight(it, period) },
+        period = period,
     )
 }
 
 private fun Map<LocalDate, List<Match>>.highlight(act: WeaponStats, period: ReportPeriod?): WeaponHighlight {
-    if (period == null) return WeaponHighlight(act, null, null, baselineWeeks = 0, movement = Movement.UNKNOWN)
+    if (period == null) return WeaponHighlight(act, null, null, baselineWeeks = 0, movements = emptyMap())
     fun List<Match>.stats() = weaponStats().firstOrNull { it.weapon == act.weapon }
 
     val end = period.firstDay.plusWeeks(period.weeks)
-    val current = between(period.firstDay, end).stats()
+    // 헤드샷과 K/D·피해량은 표본이 다르다. 하나라도 모자라면 줄 전체를 이번 액트로 띄운다.
+    val current = between(period.firstDay, end).stats()?.takeIf { it.isMeasurable && it.isCarriedMeasurable }
     val start = maxOf(period.firstDay.minusWeeks(BASELINE_WEEKS), keys.min())
     val baseline = between(start, period.firstDay).stats()
-    val weekly = (1..VOLATILITY_WEEKS)
-        .mapNotNull { weeksBefore -> this[period.firstDay.minusWeeks(weeksBefore)]?.stats() }
-        .filter { it.isMeasurable }
-        .mapNotNull { it.headshotRate }
+    val weeks = (1..VOLATILITY_WEEKS).mapNotNull { weeksBefore -> this[period.firstDay.minusWeeks(weeksBefore)]?.stats() }
 
-    val now = current?.takeIf { it.isMeasurable }?.headshotRate
-    val usual = baseline?.takeIf { it.isMeasurable }?.headshotRate
-    val movement = if (now != null && usual != null) assessMovement(now, usual, weekly).movement else Movement.UNKNOWN
+    val movements = WeaponMetric.entries.associateWith { metric ->
+        val now = current?.value(metric)
+        val usual = baseline?.value(metric)
+        if (now != null && usual != null) {
+            assessMovement(now, usual, weekly = weeks.mapNotNull { it.value(metric) }).movement
+        } else {
+            Movement.UNKNOWN
+        }
+    }
 
     return WeaponHighlight(
         act = act,
         current = current,
         baseline = baseline,
         baselineWeeks = start.daysUntil(period.firstDay) / 7,
-        movement = movement,
+        movements = movements,
     )
 }

@@ -2,6 +2,7 @@ package com.ovalit.feature.profile
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -138,14 +139,40 @@ class ProfileScreensTest {
         onNodeWithText("K/D/A", useUnmergedTree = true).assertExists()
         onNodeWithText("254/180/70", useUnmergedTree = true).assertExists()
         onNodeWithText("142", useUnmergedTree = true).assertExists()
-        onNodeWithText("피해량", useUnmergedTree = true).assertExists()
+        // 위쪽 세 무기 표와 계열 표에 한 번씩 있다
+        onAllNodesWithText("피해량", useUnmergedTree = true).assertCountEquals(2)
     }
 
     @Test
-    fun `위쪽 주력 무기는 셋이다`() = runComposeUiTest {
+    fun `위쪽 세 무기는 킬데스와 피해량과 헤드샷을 이번 기간과 그 앞 4주 평균으로 견준다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
 
-        onNodeWithText("단일 무기 12라운드", useUnmergedTree = true).assertExists()
+        onNodeWithText("이번 주", useUnmergedTree = true).assertExists()
+        onNodeWithText("4주 평균과 비교", useUnmergedTree = true).assertExists()
+        onNodeWithText("1.50", useUnmergedTree = true).assertExists()
+        onNodeWithText("+0.28", useUnmergedTree = true).assertExists()
+        onNodeWithText("151", useUnmergedTree = true).assertExists()
+        onNodeWithText("+12", useUnmergedTree = true).assertExists()
+        onNodeWithText("+6", useUnmergedTree = true).assertExists()
+    }
+
+    // 한 줄 안에서 이번 주 헤드샷과 이번 액트 K/D가 섞이면 어느 숫자가 언제 것인지 모른다
+    @Test
+    fun `이번 기간 표본이 모자란 셋째 무기는 줄 전체를 이번 액트 값으로 띄운다`() = runComposeUiTest {
+        setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
+
+        onNodeWithText("이번 액트 기준", useUnmergedTree = true).assertExists()
+        onNodeWithText("1.53", useUnmergedTree = true).assertExists()
+    }
+
+    // 순서는 이번 액트 킬이다. 이번 주를 띄운 줄에 이번 주 킬을 적으면 킬이 적은 무기가 위에 있는 것처럼 보인다.
+    @Test
+    fun `위쪽 세 무기에는 순서를 정한 이번 액트 킬을 적는다`() = runComposeUiTest {
+        setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
+
+        onNodeWithText("이번 액트 254킬", useUnmergedTree = true).assertExists()
+        onNodeWithText("이번 액트 198킬", useUnmergedTree = true).assertExists()
+        onNodeWithText("60킬", useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test
@@ -184,7 +211,7 @@ class ProfileScreensTest {
     }
 
     @Test
-    fun `한 무기만 쓴 라운드가 모자라면 헤드샷 대신 표본 부족이다`() = runComposeUiTest {
+    fun `두 표본이 모두 모자란 무기는 숫자 대신 표본 부족이라고 적는다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
         onNodeWithText("권총").performClick()
 

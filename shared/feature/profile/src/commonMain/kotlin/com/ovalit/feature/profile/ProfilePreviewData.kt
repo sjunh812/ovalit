@@ -15,6 +15,7 @@ import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.ProfileSummary
+import com.ovalit.core.model.ReportPeriod
 import com.ovalit.core.model.Queue
 import com.ovalit.core.model.Role
 import com.ovalit.core.model.RoleShare
@@ -24,6 +25,7 @@ import com.ovalit.core.model.WeaponCategory
 import com.ovalit.core.model.WeaponHighlight
 import com.ovalit.core.model.WeaponId
 import com.ovalit.core.model.WeaponInfo
+import com.ovalit.core.model.WeaponMetric
 import com.ovalit.core.model.WeaponReport
 import com.ovalit.core.model.WeaponStats
 import com.ovalit.core.ui.PlayerBadge
@@ -44,6 +46,7 @@ internal object ProfilePreviewData {
     private val phantom = WeaponId("EE8E8D15-496B-07AC-E5F6-8FAE5D4C7B1A")
     private val vandal = WeaponId("9C82E19D-4575-0200-1A81-3EACF00CF872")
     private val ghost = WeaponId("1BAA85B4-4C70-1284-64BB-6481DFC3BB4E")
+    private val classic = WeaponId("29A0CFAB-485B-F5D5-779A-B59F85E204A8")
     private val newWeapon = WeaponId("new-weapon")
 
     val catalog = ContentCatalog(
@@ -52,6 +55,7 @@ internal object ProfilePreviewData {
             phantom to WeaponInfo("팬텀", WeaponCategory.RIFLE),
             vandal to WeaponInfo("밴달", WeaponCategory.RIFLE),
             ghost to WeaponInfo("고스트", WeaponCategory.PISTOL),
+            classic to WeaponInfo("클래식", WeaponCategory.PISTOL),
         ),
         maps = emptyMap(),
         tiers = mapOf(16 to "플래티넘 2"),
@@ -119,30 +123,38 @@ internal object ProfilePreviewData {
             weapon(vandal, kills = 198, rounds = 94, head = 15, carried = 110, deaths = 150, adr = 135),
             weapon(ghost, kills = 46, rounds = 12, head = 30, carried = 36, deaths = 30, adr = 88),
             weapon(newWeapon, kills = 22, rounds = 21, head = 20, carried = 6, deaths = 4, adr = 120),
+            // 한 무기만 쓴 라운드도, 들고 시작한 라운드도 모자라다
+            weapon(classic, kills = 5, rounds = 3, head = 20, carried = 8, deaths = 7, adr = 60),
         ),
         highlights = listOf(
             WeaponHighlight(
-                act = weapon(phantom, kills = 254, rounds = 118, head = 27),
-                current = weapon(phantom, kills = 60, rounds = 30, head = 27),
-                baseline = weapon(phantom, kills = 110, rounds = 50, head = 21),
+                act = weapon(phantom, kills = 254, rounds = 118, head = 27, carried = 140, deaths = 180, adr = 142),
+                current = weapon(phantom, kills = 60, rounds = 30, head = 27, carried = 34, deaths = 40, adr = 151),
+                baseline = weapon(phantom, kills = 110, rounds = 50, head = 21, carried = 70, deaths = 90, adr = 139),
                 baselineWeeks = 4,
-                movement = Movement.MOVED,
+                movements = mapOf(
+                    WeaponMetric.KD to Movement.STEADY,
+                    WeaponMetric.DAMAGE_PER_ROUND to Movement.STEADY,
+                    WeaponMetric.HEADSHOT_RATE to Movement.MOVED,
+                ),
             ),
             WeaponHighlight(
-                act = weapon(vandal, kills = 198, rounds = 94, head = 15),
-                current = weapon(vandal, kills = 40, rounds = 22, head = 15),
-                baseline = weapon(vandal, kills = 90, rounds = 44, head = 17),
+                act = weapon(vandal, kills = 198, rounds = 94, head = 15, carried = 110, deaths = 150, adr = 135),
+                current = weapon(vandal, kills = 40, rounds = 22, head = 15, carried = 26, deaths = 32, adr = 130),
+                baseline = weapon(vandal, kills = 90, rounds = 44, head = 17, carried = 60, deaths = 70, adr = 136),
                 baselineWeeks = 4,
-                movement = Movement.STEADY,
+                movements = WeaponMetric.entries.associateWith { Movement.STEADY },
             ),
+            // 이번 주에 들고 시작한 라운드가 모자라서 이번 액트 값을 띄운다
             WeaponHighlight(
-                act = weapon(ghost, kills = 46, rounds = 12, head = 30),
+                act = weapon(ghost, kills = 46, rounds = 12, head = 30, carried = 36, deaths = 30, adr = 88),
                 current = null,
                 baseline = null,
                 baselineWeeks = 4,
-                movement = Movement.UNKNOWN,
+                movements = emptyMap(),
             ),
         ),
+        period = ReportPeriod(firstDay = LocalDate(2026, 9, 21), weeks = 1, includesThisWeek = true),
     )
 
     val now: Instant = Instant.parse("2026-09-24T13:00:00Z")

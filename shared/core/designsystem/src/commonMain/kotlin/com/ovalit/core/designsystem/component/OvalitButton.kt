@@ -1,6 +1,7 @@
 package com.ovalit.core.designsystem.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -70,6 +71,27 @@ fun OvalitTextButton(
             style = OvalitTheme.typography.label,
             color = if (enabled) colors.t2 else colors.t4,
         )
+    }
+}
+
+/** 테두리만 있는 버튼입니다. 연동 해제처럼 한 번 더 생각하고 누를 동작에 씁니다. */
+@Composable
+fun OvalitOutlinedButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    contentColor: Color = OvalitTheme.colors.t1,
+) {
+    OvalitButtonSurface(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .border(1.dp, OvalitTheme.colors.line, ButtonShape),
+        enabled = true,
+        background = Color.Transparent,
+        rippleColor = contentColor,
+    ) {
+        OvalitText(text = text, style = OvalitTheme.typography.bodyStrong, color = contentColor)
     }
 }
 

@@ -9,15 +9,19 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.InlineTextContent
@@ -49,11 +53,15 @@ import com.ovalit.core.ui.resources.Res
 import com.ovalit.core.ui.resources.main_role
 import org.jetbrains.compose.resources.stringResource
 
-private val BannerHeight = 112.dp
+// 상태 표시줄 밑의 배너 높이다. 머리 줄이 64dp라 아바타는 그보다 8dp 아래에서 시작한다.
+private val BannerHeight = 104.dp
 private val AvatarSize = 64.dp
 
 /**
  * 내 프로필과 S5 머리의 배너와 아바타입니다.
+ *
+ * 배너는 상태 표시줄 밑까지 깔리고, 그 높이만큼 길어집니다. 배너 높이를 고정하면 상태 표시줄이 높은 기기에서
+ * 머리 줄이 내려오면서 아바타가 뒤로 가기 버튼을 덮습니다.
  *
  * 배너와 아바타 자리에는 플레이어 카드가 들어갈 예정입니다. 카드는 앱에 넣지 않고 서버에서 받으므로,
  * 그때까지 배너는 면만 칠하고 아바타는 Riot ID 첫 글자를 띄웁니다. 카드를 깔 때 목업처럼 아래쪽을 바탕색으로
@@ -62,14 +70,15 @@ private val AvatarSize = 64.dp
 @Composable
 fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Composable BoxScope.() -> Unit) {
     val colors = OvalitTheme.colors
+    val top = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding()
     Box(modifier = modifier.fillMaxWidth()) {
-        Box(modifier = Modifier.fillMaxWidth().height(BannerHeight).background(colors.raised)) {
-            Box(Modifier.safeDrawingPadding(), content = topBar)
+        Box(modifier = Modifier.fillMaxWidth().height(top + BannerHeight).background(colors.raised)) {
+            Box(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)), content = topBar)
         }
         PlayerAvatar(
             riotId = badge.riotId,
             modifier = Modifier
-                .padding(start = OvalitSpacing.gutter, top = BannerHeight - AvatarSize / 2)
+                .padding(start = OvalitSpacing.gutter, top = top + BannerHeight - AvatarSize / 2)
                 .size(AvatarSize)
                 .border(3.dp, colors.bg, CircleShape),
         )
@@ -84,8 +93,9 @@ fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Co
 fun BoxScope.ProfileStatusBarScrim(scrollState: ScrollState) {
     val density = LocalDensity.current
     val statusBar = WindowInsets.statusBars.getTop(density)
-    val covered by remember(scrollState, statusBar) {
-        derivedStateOf { scrollState.value > with(density) { BannerHeight.roundToPx() } - statusBar }
+    val banner = WindowInsets.safeDrawing.getTop(density) + with(density) { BannerHeight.roundToPx() }
+    val covered by remember(scrollState, statusBar, banner) {
+        derivedStateOf { scrollState.value > banner - statusBar }
     }
     if (covered) {
         Box(

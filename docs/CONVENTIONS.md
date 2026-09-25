@@ -215,6 +215,15 @@ UI 테스트를 `commonTest`에 두면 안드로이드 JVM에서 전부 터집�
 도구는 `kotlin.test` + Turbine(Flow) + Compose UI Test입니다. 컨벤션 플러그인이 다
 걸어주니 모듈에서 따로 적을 게 없습니다.
 
+ViewModel 테스트는 `commonTest`에 둡니다. `stateIn(WhileSubscribed(...))`으로 만든 상태는
+누군가 구독해야 흐르기 시작합니다. 구독자 없이 `uiState.value`를 읽으면 계속 초기값입니다.
+그리고 구독자를 `runTest` 기본 디스패처에 띄우면 아직 안 돌아서 역시 초기값이 나옵니다.
+바로 도는 디스패처에 띄웁니다.
+
+```kotlin
+backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+```
+
 이름은 백틱으로 감싼 한글 문장입니다. 무엇을 검증하는지가 리포트에 그대로 보입니다.
 
 ```kotlin

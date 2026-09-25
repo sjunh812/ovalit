@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.ovalit.android.application)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -31,8 +32,10 @@ android {
 }
 
 dependencies {
+    implementation(projects.shared.core.data)
     implementation(projects.shared.core.designsystem)
     implementation(projects.shared.feature.onboarding)
+    implementation(projects.shared.feature.report)
 
     implementation(libs.compose.runtime)
     implementation(libs.compose.foundation)
@@ -41,6 +44,10 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.kotlinx.serialization.core)
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.android)

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="report_period_this_week">이번 주</string>
+    <string name="report_period_recent_weeks">최근 %1$d주</string>
+    <string name="report_headline">%1$s %2$d경기</string>
+    <string name="report_since">%1$d월 %2$d일부터 · 경쟁전과 일반전</string>
+    <string name="report_main_role">주로 %1$s로 뛰었어요</string>
+
+    <string name="role_duelist">타격대</string>
+    <string name="role_initiator">척후대</string>
+    <string name="role_controller">전략가</string>
+    <string name="role_sentinel">감시자</string>
+
+    <string name="metric_combat_score">전투점수</string>
+    <string name="metric_kd">K/D</string>
+    <string name="metric_damage">피해량</string>
+    <string name="metric_headshot">헤드샷</string>
+    <string name="metric_kast">관여율</string>
+    <string name="metric_survival">라운드 생존율</string>
+    <string name="metric_first_kill_win">퍼블 승률</string>
+    <string name="metric_first_duel_involvement">퍼블 관여율</string>
+    <string name="metric_first_duel_win">첫 교전 승률</string>
+    <string name="metric_assists_per_round">라운드당 어시스트</string>
+
+    <string name="value_percent">%1$s%</string>
+    <string name="delta_percent_points">%1$s%p</string>
+
+    <string name="fixed_versus_baseline">지난 %1$d주 대비 %2$s</string>
+    <string name="fixed_same_as_baseline">지난 %1$d주와 같아요</string>
+    <string name="baseline_missing">비교할 기록이 모자라요</string>
+
+    <string name="dynamic_title_moved">평소와 달랐던 지표</string>
+    <string name="dynamic_title_steady">%1$s는 큰 변화가 없어요</string>
+    <string name="dynamic_title_unknown">아직 비교할 기록이 모자라요</string>
+    <string name="dynamic_unknown_hint">몇 주 더 뛰면 평소와 달라진 점을 짚어 드려요</string>
+    <string name="dynamic_baseline">지난 %1$d주 평균 %2$s</string>
+    <string name="dynamic_baseline_with_sample">지난 %1$d주 평균 %2$s · %3$s</string>
+    <string name="dynamic_steady">비슷해요</string>
+
+    <string name="sample_first_kills">퍼블 %1$d번</string>
+    <string name="sample_first_duels">첫 교전 %1$d번</string>
+
+    <string name="not_enough_title">리포트까지 %1$d경기 남았어요</string>
+    <string name="not_enough_body">경쟁전과 일반전을 합쳐 %1$d경기부터 리포트를 만들어 드려요</string>
+</resources>

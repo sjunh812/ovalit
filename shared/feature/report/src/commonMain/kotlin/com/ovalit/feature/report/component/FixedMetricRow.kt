@@ -26,6 +26,7 @@ import com.ovalit.core.model.Baseline
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.ui.MetricFormat
+import com.ovalit.core.ui.SeparatedRow
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.shrinkToFit
@@ -36,7 +37,8 @@ import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.baseline_average
 import com.ovalit.feature.report.resources.baseline_missing
 import com.ovalit.feature.report.resources.sheet_open
-import com.ovalit.feature.report.resources.summary_per_match
+import com.ovalit.feature.report.resources.summary_kda
+import com.ovalit.feature.report.resources.summary_sample
 import org.jetbrains.compose.resources.stringResource
 
 private val CellGap = 10.dp
@@ -113,7 +115,7 @@ private fun FixedMetricCell(
             autoSize = shrinkToFit(OvalitTheme.typography.metricM.fontSize),
         )
         if (current != null && usual != null) {
-            OvalitRollingText(
+            OvalitText(
                 text = metric.format.formatChange(current, usual),
                 style = OvalitTheme.typography.metricS,
                 color = directionColor(metric.format, current, usual),
@@ -137,17 +139,21 @@ internal fun FixedMetricSummary(
         modifier = modifier.padding(horizontal = OvalitSpacing.gutter),
         verticalArrangement = Arrangement.spacedBy(OvalitSpacing.xs),
     ) {
-        OvalitText(
-            text = stringResource(
-                Res.string.summary_per_match,
-                perMatch.format(metrics.kills / matches),
-                perMatch.format(metrics.deaths / matches),
-                perMatch.format(metrics.assists / matches),
-                metrics.matches,
-                metrics.rounds,
+        // 글자를 키워 한 줄에 안 들어가면 표본이 통째로 다음 줄로 내려간다. 점은 줄 끝이나 맨 앞에 두지 않는다.
+        val caption = OvalitTheme.typography.caption
+        val kda = stringResource(
+            Res.string.summary_kda,
+            perMatch.format(metrics.kills / matches),
+            perMatch.format(metrics.deaths / matches),
+            perMatch.format(metrics.assists / matches),
+        )
+        val sample = stringResource(Res.string.summary_sample, metrics.matches, metrics.rounds)
+        SeparatedRow(
+            items = listOf(
+                { OvalitText(text = kda, style = caption, color = OvalitTheme.colors.t3) },
+                { OvalitText(text = sample, style = caption, color = OvalitTheme.colors.t3) },
             ),
-            style = OvalitTheme.typography.caption,
-            color = OvalitTheme.colors.t3,
+            separator = { OvalitText(text = SEPARATOR, style = caption, color = OvalitTheme.colors.t3) },
         )
         OvalitText(
             text = if (baseline != null) {

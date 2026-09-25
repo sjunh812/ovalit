@@ -1,7 +1,6 @@
 package com.ovalit.feature.report.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,12 +8,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,17 +18,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
+import com.ovalit.core.designsystem.component.OvalitPickerButton
+import com.ovalit.core.designsystem.component.OvalitSheetOption
 import com.ovalit.core.designsystem.component.OvalitText
-import com.ovalit.core.designsystem.component.pressIndication
-import com.ovalit.core.designsystem.icon.OvalitIcon
-import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.FixedMetric
@@ -125,23 +119,11 @@ internal fun FriendRankingSection(mine: MatchMetrics, friends: List<FriendStandi
                 style = OvalitTheme.typography.bodyStrong,
             )
             val metricLabel = stringResource(metric.label)
-            Row(
-                modifier = Modifier
-                    .heightIn(min = 44.dp)
-                    .clickable(
-                        interactionSource = null,
-                        indication = pressIndication(RoundedCornerShape(8.dp)),
-                        onClickLabel = stringResource(Res.string.friends_metric_button, metricLabel),
-                        role = Role.Button,
-                        onClick = { choosing = true },
-                    )
-                    .padding(start = OvalitSpacing.sm),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                OvalitText(text = metricLabel, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t2)
-                Spacer(Modifier.width(2.dp))
-                OvalitIcon(OvalitIcons.ChevronDown, contentDescription = null, tint = OvalitTheme.colors.t3, size = 12.dp)
-            }
+            OvalitPickerButton(
+                text = metricLabel,
+                onClickLabel = stringResource(Res.string.friends_metric_button, metricLabel),
+                onClick = { choosing = true },
+            )
         }
         Spacer(Modifier.height(OvalitSpacing.xs))
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -153,29 +135,14 @@ internal fun FriendRankingSection(mine: MatchMetrics, friends: List<FriendStandi
         OvalitBottomSheet(title = stringResource(Res.string.friends_choose_metric), onDismiss = { choosing = false }) {
             Column(modifier = Modifier.selectableGroup()) {
                 RankableMetrics.forEach { option ->
-                    val selected = option == metric
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 52.dp)
-                            .selectable(
-                                selected = selected,
-                                role = Role.RadioButton,
-                                onClick = {
-                                    metricName = option.name
-                                    choosing = false
-                                },
-                            ),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        OvalitText(
-                            text = stringResource(option.label),
-                            modifier = Modifier.weight(1f),
-                            style = if (selected) OvalitTheme.typography.bodyStrong else OvalitTheme.typography.body,
-                            color = if (selected) OvalitTheme.colors.t1 else OvalitTheme.colors.t2,
-                        )
-                        if (selected) OvalitIcon(OvalitIcons.Check, contentDescription = null, tint = OvalitTheme.colors.t1)
-                    }
+                    OvalitSheetOption(
+                        text = stringResource(option.label),
+                        selected = option == metric,
+                        onClick = {
+                            metricName = option.name
+                            choosing = false
+                        },
+                    )
                 }
             }
         }

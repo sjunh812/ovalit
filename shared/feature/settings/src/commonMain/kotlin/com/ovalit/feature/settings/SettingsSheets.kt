@@ -2,24 +2,16 @@ package com.ovalit.feature.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitPrimaryButton
-import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.OvalitSheetOption
 import com.ovalit.core.designsystem.component.OvalitTextButton
-import com.ovalit.core.designsystem.icon.OvalitIcon
-import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
-import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Focus
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
@@ -116,31 +108,14 @@ private fun <T> OptionSheet(
     OvalitBottomSheet(title = title, body = body, onDismiss = onDismiss) {
         Column(modifier = Modifier.selectableGroup()) {
             options.forEach { option ->
-                val isSelected = option == selected
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 52.dp)
-                        .selectable(
-                            selected = isSelected,
-                            role = Role.RadioButton,
-                            onClick = {
-                                onSelect(option)
-                                onDismiss()
-                            },
-                        ),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    OvalitText(
-                        text = stringResource(label(option)),
-                        modifier = Modifier.weight(1f),
-                        style = if (isSelected) OvalitTheme.typography.bodyStrong else OvalitTheme.typography.body,
-                        color = if (isSelected) OvalitTheme.colors.t1 else OvalitTheme.colors.t2,
-                    )
-                    if (isSelected) {
-                        OvalitIcon(OvalitIcons.Check, contentDescription = null, tint = OvalitTheme.colors.t1)
-                    }
-                }
+                OvalitSheetOption(
+                    text = stringResource(label(option)),
+                    selected = option == selected,
+                    onClick = {
+                        onSelect(option)
+                        onDismiss()
+                    },
+                )
             }
         }
     }

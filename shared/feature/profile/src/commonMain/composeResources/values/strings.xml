@@ -51,7 +51,14 @@
     <string name="column_survival">생존</string>
     <string name="column_first_duel_involvement">퍼블 관여</string>
     <string name="column_first_duel_win">첫 교전</string>
-    <string name="agents_columns_note">지표 열은 주 역할에 맞춰 바뀌어요. 타격대가 주 역할이면 퍼블 관여율과 첫 교전 승률이 들어와요.</string>
+    <string name="agents_columns_note">처음에는 주 역할에 맞춘 두 지표를 보여 줘요. 표 위 버튼으로 다른 지표를 볼 수 있어요.</string>
+    <string name="agents_columns_first_duel">퍼블 관여율 · 첫 교전 승률</string>
+    <string name="agents_columns_kast">관여율 · 생존율</string>
+    <string name="agents_columns_fight">K/D · 피해량</string>
+    <string name="agents_columns_score">전투점수 · 헤드샷</string>
+    <string name="agents_columns_sheet_title">표에 보여 줄 지표</string>
+    <string name="agents_columns_button">표 지표 바꾸기, 지금 %1$s</string>
+    <string name="agents_columns_role_default">%1$s 기준</string>
 
     <!-- S6 무기 -->
     <string name="weapons_title">무기</string>

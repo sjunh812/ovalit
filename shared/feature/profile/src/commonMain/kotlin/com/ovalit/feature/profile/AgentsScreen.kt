@@ -14,23 +14,33 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBackTopBar
+import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitDivider
+import com.ovalit.core.designsystem.component.OvalitPickerButton
+import com.ovalit.core.designsystem.component.OvalitSheetOption
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTopBarCaption
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -38,16 +48,28 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.AgentReport
 import com.ovalit.core.model.AgentStats
 import com.ovalit.core.model.ContentCatalog
+import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.Role
 import com.ovalit.core.ui.AgentImage
+import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.SeparatedRow
+import com.ovalit.core.ui.format
 import com.ovalit.core.ui.label
+import com.ovalit.core.ui.rememberFittingStyle
 import com.ovalit.core.ui.shrinkToFit
+import com.ovalit.core.ui.valueText
 import com.ovalit.feature.profile.resources.Res
 import com.ovalit.feature.profile.resources.act_matches
 import com.ovalit.feature.profile.resources.agents_by_agent
+import com.ovalit.feature.profile.resources.agents_columns_button
+import com.ovalit.feature.profile.resources.agents_columns_fight
+import com.ovalit.feature.profile.resources.agents_columns_first_duel
+import com.ovalit.feature.profile.resources.agents_columns_kast
 import com.ovalit.feature.profile.resources.agents_columns_note
+import com.ovalit.feature.profile.resources.agents_columns_role_default
+import com.ovalit.feature.profile.resources.agents_columns_score
+import com.ovalit.feature.profile.resources.agents_columns_sheet_title
 import com.ovalit.feature.profile.resources.agents_focus_controller
 import com.ovalit.feature.profile.resources.agents_focus_duelist
 import com.ovalit.feature.profile.resources.agents_focus_initiator
@@ -116,7 +138,21 @@ internal fun AgentsScreen(uiState: ProfileUiState, onBack: () -> Unit, modifier:
             Spacer(Modifier.height(22.dp))
             OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))
             Spacer(Modifier.height(18.dp))
-            AgentTable(report.agents, mainRole, uiState.catalog)
+            // 처음에는 주 역할에 맞춘 묶음이다. 고른 건 화면을 떠나기 전까지 기억한다.
+            var chosen by rememberSaveable { mutableStateOf<String?>(null) }
+            var choosing by remember { mutableStateOf(false) }
+            val roleDefault = AgentColumns.defaultFor(mainRole)
+            val shown = chosen?.let(AgentColumns::valueOf) ?: roleDefault
+            AgentTable(report.agents, shown, onChoose = { choosing = true }, uiState.catalog)
+            if (choosing) {
+                AgentColumnsSheet(
+                    selected = shown,
+                    roleDefault = roleDefault,
+                    mainRole = mainRole,
+                    onSelect = { chosen = it.name },
+                    onDismiss = { choosing = false },
+                )
+            }
             Spacer(Modifier.height(OvalitSpacing.lg))
             OvalitText(
                 text = stringResource(Res.string.agents_columns_note),
@@ -209,35 +245,101 @@ private fun RoleShares(report: AgentReport, mainRole: Role) {
     }
 }
 
-/** 요원별 표의 오른쪽 두 열입니다. 타격대가 주 역할이면 퍼블 쪽 지표로 바뀝니다. */
-private class MetricColumnSpec(val title: StringResource, val value: (MatchMetrics) -> Double?)
+private class MetricColumnSpec(val title: StringResource, val format: MetricFormat, val value: (MatchMetrics) -> Double?)
 
-private fun columnsFor(role: Role): List<MetricColumnSpec> = when (role) {
-    Role.DUELIST -> listOf(
-        MetricColumnSpec(Res.string.column_first_duel_involvement) { it.firstDuelInvolvement },
-        MetricColumnSpec(Res.string.column_first_duel_win) { it.firstDuelWinRate },
-    )
-    else -> listOf(
-        MetricColumnSpec(Res.string.column_kast) { it.kast },
-        MetricColumnSpec(Res.string.column_survival) { it.survivalRate },
-    )
+/**
+ * 요원별 표의 오른쪽 두 열입니다. 처음에는 주 역할에 맞춘 묶음을 보여 주고([defaultFor]), 표 위 버튼으로 바꿉니다.
+ * 두 열씩 묶어 두면 무엇을 골라도 표 모양이 그대로입니다.
+ */
+private enum class AgentColumns(val label: StringResource, private val specs: () -> List<MetricColumnSpec>) {
+    FIRST_DUEL(
+        Res.string.agents_columns_first_duel,
+        {
+            listOf(
+                MetricColumnSpec(Res.string.column_first_duel_involvement, MetricFormat.PERCENT) { it.firstDuelInvolvement },
+                MetricColumnSpec(Res.string.column_first_duel_win, MetricFormat.PERCENT) { it.firstDuelWinRate },
+            )
+        },
+    ),
+    KAST(
+        Res.string.agents_columns_kast,
+        {
+            listOf(
+                MetricColumnSpec(Res.string.column_kast, MetricFormat.PERCENT) { it.kast },
+                MetricColumnSpec(Res.string.column_survival, MetricFormat.PERCENT) { it.survivalRate },
+            )
+        },
+    ),
+    FIGHT(Res.string.agents_columns_fight, { listOf(FixedMetric.KD.column(), FixedMetric.DAMAGE.column()) }),
+    SCORE(Res.string.agents_columns_score, { listOf(FixedMetric.COMBAT_SCORE.column(), FixedMetric.HEADSHOT_RATE.column()) }),
+    ;
+
+    val columns: List<MetricColumnSpec> get() = specs()
+
+    companion object {
+        // 타격대는 퍼블 쪽으로 보고 나머지 역할은 관여율과 생존율로 본다
+        fun defaultFor(role: Role): AgentColumns = if (role == Role.DUELIST) FIRST_DUEL else KAST
+    }
+}
+
+private fun FixedMetric.column() = MetricColumnSpec(label, format) { value(it) }
+
+@Composable
+private fun AgentColumnsSheet(
+    selected: AgentColumns,
+    roleDefault: AgentColumns,
+    mainRole: Role,
+    onSelect: (AgentColumns) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    OvalitBottomSheet(title = stringResource(Res.string.agents_columns_sheet_title), onDismiss = onDismiss) {
+        Column(modifier = Modifier.selectableGroup()) {
+            AgentColumns.entries.forEach { option ->
+                OvalitSheetOption(
+                    text = stringResource(option.label),
+                    selected = option == selected,
+                    caption = if (option == roleDefault) {
+                        stringResource(Res.string.agents_columns_role_default, stringResource(mainRole.label))
+                    } else {
+                        null
+                    },
+                    onClick = {
+                        onSelect(option)
+                        onDismiss()
+                    },
+                )
+            }
+        }
+    }
 }
 
 @Composable
-private fun AgentTable(agents: List<AgentStats>, mainRole: Role, catalog: ContentCatalog) {
-    val columns = columnsFor(mainRole)
+private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: () -> Unit, catalog: ContentCatalog) {
+    val columns = shown.columns
+    val shownLabel = stringResource(shown.label)
 
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter),
-        verticalAlignment = Alignment.Bottom,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         OvalitText(
             text = stringResource(Res.string.agents_by_agent),
             modifier = Modifier.weight(1f),
             style = OvalitTheme.typography.bodyStrong,
         )
-        HeaderCell(stringResource(Res.string.column_win_rate), WinColumn)
-        columns.forEach { HeaderCell(stringResource(it.title), MetricColumn) }
+        OvalitPickerButton(
+            text = shownLabel,
+            onClickLabel = stringResource(Res.string.agents_columns_button, shownLabel),
+            onClick = onChoose,
+        )
+    }
+    // 열 제목을 칸마다 따로 줄이면 "전투점수"만 작아진다. 가장 긴 제목에 맞춘 크기를 셋에 같이 쓴다.
+    val titles = listOf(stringResource(Res.string.column_win_rate)) + columns.map { stringResource(it.title) }
+    val headerStyle = rememberFittingStyle(titles, OvalitTheme.typography.caption, MetricColumn - ColumnGap)
+    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter)) {
+        Spacer(Modifier.weight(1f))
+        HeaderCell(titles[0], WinColumn, headerStyle)
+        titles.drop(1).forEach { HeaderCell(it, MetricColumn, headerStyle) }
     }
     Spacer(Modifier.height(OvalitSpacing.sm))
     agents.forEachIndexed { index, agent ->
@@ -249,15 +351,15 @@ private fun AgentTable(agents: List<AgentStats>, mainRole: Role, catalog: Conten
 }
 
 @Composable
-private fun HeaderCell(text: String, width: Dp) {
+private fun HeaderCell(text: String, width: Dp, style: TextStyle) {
     OvalitText(
         text = text,
         modifier = Modifier.width(width).padding(start = ColumnGap),
-        style = OvalitTheme.typography.caption,
+        style = style,
         color = OvalitTheme.colors.t3,
         textAlign = TextAlign.End,
         maxLines = 1,
-        autoSize = shrinkToFit(OvalitTheme.typography.caption.fontSize),
+        autoSize = shrinkToFit(style.fontSize, min = 7.sp),
     )
 }
 
@@ -308,7 +410,7 @@ private fun AgentRow(agent: AgentStats, columns: List<MetricColumnSpec>, catalog
         )
         columns.forEachIndexed { index, column ->
             OvalitText(
-                text = percentText(column.value(agent.metrics)),
+                text = column.value(agent.metrics)?.let { column.format.valueText(it) } ?: NO_VALUE,
                 modifier = Modifier.width(MetricColumn).padding(start = ColumnGap),
                 style = OvalitTheme.typography.metricS,
                 color = if (index == 0) OvalitTheme.colors.t1 else OvalitTheme.colors.t2,

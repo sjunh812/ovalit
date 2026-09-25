@@ -106,6 +106,21 @@ class ProfileScreensTest {
         onNodeWithText("생존").assertDoesNotExist()
     }
 
+    // 주 역할에 맞춘 열 말고 다른 지표도 볼 수 있어야 한다. 시트에서 고르면 표의 두 열이 바뀐다.
+    @Test
+    fun `요원 표의 지표는 표 위 버튼으로 바꾼다`() = runComposeUiTest {
+        setContent { Themed { AgentsScreen(ProfilePreviewData.success, onBack = {}) } }
+
+        onNodeWithText("관여율 · 생존율").performScrollTo().performClick()
+        onNodeWithText("전략가 기준").assertExists()
+        onNodeWithText("K/D · 피해량").performClick()
+
+        onNodeWithText("K/D").assertExists()
+        onNodeWithText("피해량").assertExists()
+        onNodeWithText("생존").assertDoesNotExist()
+        onNodeWithText("K/D · 피해량").assertExists()
+    }
+
     @Test
     fun `5판에 못 미친 요원은 숫자 대신 표본 부족이라고 적는다`() = runComposeUiTest {
         setContent { Themed { AgentsScreen(ProfilePreviewData.success, onBack = {}) } }

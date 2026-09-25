@@ -41,6 +41,8 @@ data class MatchMetrics(
 
     val survivalRate: Double? get() = survivedRounds over rounds
 
+    val assistsPerRound: Double? get() = assists over rounds
+
     /** 퍼블 승률. 내가 퍼블을 딴 라운드 중 이긴 비율입니다. 우리 팀 누군가의 퍼블은 세지 않습니다. */
     val firstKillWinRate: Double? get() = firstKillRoundsWon over firstKills
 

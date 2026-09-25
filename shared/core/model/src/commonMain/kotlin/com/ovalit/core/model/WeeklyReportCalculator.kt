@@ -37,13 +37,29 @@ fun Iterable<Match>.weeklyReport(now: Instant, timeZone: TimeZone): WeeklyReport
         played = matchesByWeek.between(periods.last().firstDay, nextWeek).size,
     )
 
+    val periodMatches = matchesByWeek.between(period.firstDay, nextWeek)
+    val metrics = periodMatches.totalMetrics()
+    val baseline = matchesByWeek.baselineBefore(period.firstDay)
+    val mainRole = periodMatches.mainRole()
+    val history = (1..VOLATILITY_WEEKS).mapNotNull { weeksBefore ->
+        matchesByWeek[period.firstDay.minusWeeks(weeksBefore)]?.totalMetrics()
+    }
+
     return WeeklyReport.Ready(
         act = act,
         period = period,
-        metrics = matchesByWeek.between(period.firstDay, nextWeek).totalMetrics(),
-        baseline = matchesByWeek.baselineBefore(period.firstDay),
+        metrics = metrics,
+        baseline = baseline,
+        mainRole = mainRole,
+        dynamic = selectDynamicMetrics(metrics, baseline?.metrics, history, mainRole),
     )
 }
+
+private fun List<Match>.mainRole(): Role? = this
+    .mapNotNull { match -> match.myRole?.let { it to match.rounds.size } }
+    .groupBy({ it.first }, { it.second })
+    .maxByOrNull { (_, rounds) -> rounds.sum() }
+    ?.key
 
 private fun Map<LocalDate, List<Match>>.baselineBefore(periodStart: LocalDate): Baseline? {
     // 이번 액트 첫 경기가 4주 안쪽이면 거기서부터 센다. 안 그러면 2주치 경기에 "지난 4주 평균"이 붙는다.

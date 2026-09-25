@@ -8,6 +8,7 @@ import kotlin.time.Instant
  * API 응답을 그대로 옮긴 모양이 아닙니다. 응답에는 아직 확인 못 한 부분이 남아 있어서,
  * 계산에 필요한 것만 도메인 모양으로 정해 두고 네트워크 계층이 여기로 옮겨 담게 합니다.
  *
+ * @property myRole 콘텐츠 카탈로그에 아직 안 올라온 새 요원이면 없습니다.
  * @property allies 나를 뺀 우리 팀. 내가 죽은 뒤 누가 복수했는지(트레이드) 가를 때 씁니다.
  * @property myCombatScore `players[].stats.score`. 라운드별이 아니라 경기 전체 합입니다.
  * @property rounds 내가 뛴 라운드만 담습니다. 중간에 튕겼다 들어온 경기에서 전체 라운드를
@@ -20,6 +21,7 @@ data class Match(
     val startedAt: Instant,
     val me: PlayerId,
     val myAgent: AgentId,
+    val myRole: Role?,
     val allies: Set<PlayerId>,
     val myCombatScore: Int,
     val rounds: List<Round>,

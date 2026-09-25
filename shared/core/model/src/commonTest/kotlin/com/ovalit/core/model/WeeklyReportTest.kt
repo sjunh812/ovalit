@@ -165,6 +165,58 @@ class WeeklyReportTest {
         assertEquals(2, baseline.weeks)
         assertEquals(6, baseline.metrics.matches)
     }
+
+    @Test
+    fun `주로 뛴 역할은 경기 수가 아니라 라운드 수로 정한다`() {
+        val tuesday = LocalDateTime(2026, 9, 22, 21, 0)
+        val longDuelist = List(2) { gameAt(tuesday, role = Role.DUELIST, rounds = List(3) { quietRound() }) }
+        val shortController = List(3) { gameAt(tuesday, role = Role.CONTROLLER) }
+
+        assertEquals(Role.DUELIST, ready(longDuelist + shortController).mainRole)
+    }
+
+    @Test
+    fun `역할을 모르는 경기는 역할을 정할 때 뺀다`() {
+        val tuesday = LocalDateTime(2026, 9, 22, 21, 0)
+        val newAgent = List(3) { gameAt(tuesday, role = null, rounds = List(5) { quietRound() }) }
+        val sentinel = List(2) { gameAt(tuesday, role = Role.SENTINEL) }
+
+        assertEquals(Role.SENTINEL, ready(newAgent + sentinel).mainRole)
+    }
+
+    // 역할을 모르면 빈칸이 기본 3개(관여율, 생존율, 퍼블 승률)로 채워진다
+    @Test
+    fun `동적 칸은 주로 뛴 역할에 맞춰 고른다`() {
+        val report = ready(List(5) { gameAt(LocalDateTime(2026, 9, 22, 21, 0), role = Role.CONTROLLER) })
+
+        assertEquals(
+            listOf(DynamicMetric.KAST, DynamicMetric.SURVIVAL_RATE, DynamicMetric.ASSISTS_PER_ROUND),
+            report.dynamic.map { it.metric },
+        )
+    }
+
+    // 8주 동안 관여율이 0.675와 0.725를 오갔고, 9주 전에 한 번 크게 무너졌다.
+    // 9주 전까지 넣으면 변동폭이 커져서 이번 주 0.10 상승이 묻힌다.
+    @Test
+    fun `평소 변동폭은 집계 기간 앞 8주로 잰다`() {
+        val usual = (1..8).flatMap { kastWeek(weeksAgo = it, kastRounds = if (it % 2 == 0) 27 else 29) }
+        val matches = kastWeek(weeksAgo = 0, kastRounds = 32) + usual + kastWeek(weeksAgo = 9, kastRounds = 0)
+
+        val kast = ready(matches).dynamic.first { it.metric == DynamicMetric.KAST }
+
+        assertEquals(Movement.MOVED, kast.movement)
+    }
+
+    // 이번 주 0.747까지 변동폭에 넣으면 기준선이 0.0433에서 0.0490으로 올라가 0.047 상승을 놓친다
+    @Test
+    fun `평소 변동폭에 이번 기간은 넣지 않는다`() {
+        val usual = (1..4).flatMap { kastWeek(weeksAgo = it, kastRounds = if (it % 2 == 0) 27 else 29) }
+        val matches = kastWeek(weeksAgo = 0, kastRounds = 747, rounds = 1000) + usual
+
+        val kast = ready(matches).dynamic.first { it.metric == DynamicMetric.KAST }
+
+        assertEquals(Movement.MOVED, kast.movement)
+    }
 }
 
 private fun games(
@@ -184,7 +236,17 @@ private fun gameAt(
     time: LocalDateTime,
     act: ActId = CurrentAct,
     queue: Queue = Queue.COMPETITIVE,
-) = match(quietRound(), queue = queue, act = act, startedAt = time.toInstant(Seoul))
+    role: Role? = null,
+    rounds: List<Round> = listOf(quietRound()),
+) = match(*rounds.toTypedArray(), queue = queue, act = act, startedAt = time.toInstant(Seoul), role = role)
+
+/** [rounds]라운드를 5경기로 나눠 담는다. 앞의 [kastRounds]라운드는 살아남고 나머지는 죽는다. */
+private fun kastWeek(weeksAgo: Int, kastRounds: Int, rounds: Int = 40): List<Match> {
+    val date = ThisMonday.minus(weeksAgo, DateTimeUnit.WEEK).plus(1, DateTimeUnit.DAY)
+    return List(rounds) { if (it < kastRounds) quietRound() else round(kill(10.0, Enemy, Me)) }
+        .chunked(rounds / 5)
+        .map { gameAt(date.atTime(21, 0), rounds = it) }
+}
 
 private fun report(matches: List<Match>, timeZone: TimeZone = Seoul) =
     matches.weeklyReport(now = Now, timeZone = timeZone)

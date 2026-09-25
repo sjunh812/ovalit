@@ -16,6 +16,7 @@ internal fun match(
     queue: Queue = Queue.COMPETITIVE,
     act: ActId = ActId("act"),
     startedAt: Instant = Instant.fromEpochMilliseconds(0),
+    role: Role? = null,
 ) = Match(
     id = MatchId("match"),
     queue = queue,
@@ -23,6 +24,7 @@ internal fun match(
     startedAt = startedAt,
     me = Me,
     myAgent = AgentId("agent"),
+    myRole = role,
     allies = setOf(Ally, OtherAlly),
     myCombatScore = combatScore,
     rounds = rounds.toList(),

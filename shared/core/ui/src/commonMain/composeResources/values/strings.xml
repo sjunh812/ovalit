@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="period_this_week">이번 주</string>
+    <string name="period_recent_weeks">최근 %1$d주</string>
+    <string name="period_last_week">지난주</string>
+    <string name="period_past_weeks">지난 %1$d주</string>
+
+    <string name="metric_combat_score">전투점수</string>
+    <string name="metric_kd">K/D</string>
+    <string name="metric_damage">피해량</string>
+    <string name="metric_headshot">헤드샷</string>
+
+    <string name="value_percent">%1$s%</string>
+</resources>

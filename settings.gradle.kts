@@ -40,6 +40,7 @@ include(":shared:core:model")
 include(":shared:core:network")
 include(":shared:core:data")
 include(":shared:core:designsystem")
+include(":shared:core:ui")
 
 include(":shared:feature:onboarding")
 include(":shared:feature:report")

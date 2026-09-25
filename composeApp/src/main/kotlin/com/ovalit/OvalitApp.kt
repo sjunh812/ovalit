@@ -1,5 +1,7 @@
 package com.ovalit
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
@@ -22,6 +25,9 @@ import com.ovalit.core.designsystem.component.OvalitTab
 import com.ovalit.core.designsystem.component.OvalitTabBar
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.core.model.PlayerId
+import com.ovalit.feature.friend.FriendProfileRoute
+import com.ovalit.feature.friend.FriendsRoute
 import com.ovalit.feature.onboarding.intro.IntroScreen
 import com.ovalit.feature.profile.AgentsRoute
 import com.ovalit.feature.profile.ProfileRoute
@@ -41,6 +47,12 @@ private data object Report : NavKey
 private data object Settings : NavKey
 
 @Serializable
+private data object Friends : NavKey
+
+@Serializable
+private data class FriendProfile(val id: String) : NavKey
+
+@Serializable
 private data object Profile : NavKey
 
 @Serializable
@@ -49,14 +61,15 @@ private data object Agents : NavKey
 @Serializable
 private data object Weapons : NavKey
 
-// 경기와 친구 화면이 생기면 여기에 탭을 더한다. 갈 화면이 없는 탭은 미리 두지 않는다.
-private val TopLevel = listOf(Report, Settings)
+// 경기 화면이 생기면 여기에 탭을 더한다. 갈 화면이 없는 탭은 미리 두지 않는다.
+private val TopLevel = listOf(Report, Friends, Settings)
 
 @Composable
 fun OvalitApp(appVersion: String) {
     val backStack = rememberNavBackStack(Intro)
     // RSO가 붙기 전까지는 가짜 계정이다. 시작 버튼이 연동을 대신한다.
     val account = koinInject<FakeAccountRepository>()
+    val context = LocalContext.current
     val selectedTab = TopLevel.indexOf(backStack.lastOrNull())
     val showTabBar = selectedTab >= 0
 
@@ -95,6 +108,15 @@ fun OvalitApp(appVersion: String) {
                             onOpenWeapons = { backStack.add(Weapons) },
                         )
                     }
+                    entry<Friends> {
+                        FriendsRoute(
+                            onOpenFriend = { backStack.add(FriendProfile(it.value)) },
+                            onShareInvite = { link -> context.shareInvite(link) },
+                        )
+                    }
+                    entry<FriendProfile> { key ->
+                        FriendProfileRoute(friendId = PlayerId(key.id), onBack = { backStack.removeLastOrNull() })
+                    }
                     entry<Agents> { AgentsRoute(onBack = { backStack.removeLastOrNull() }) }
                     entry<Weapons> { WeaponsRoute(onBack = { backStack.removeLastOrNull() }) }
                     entry<Settings> {
@@ -111,16 +133,17 @@ fun OvalitApp(appVersion: String) {
             OvalitTabBar(
                 tabs = listOf(
                     OvalitTab(stringResource(R.string.tab_home), OvalitIcons.Home),
+                    OvalitTab(stringResource(R.string.tab_friends), OvalitIcons.Friends),
                     OvalitTab(stringResource(R.string.tab_settings), OvalitIcons.Settings),
                 ),
                 selectedIndex = selectedTab,
                 onSelect = { index ->
-                    // 홈은 늘 스택 맨 아래에 둔다. 그래야 설정에서 뒤로 가면 홈이 나오고 홈에서 뒤로 가면
-                    // 앱이 닫힌다. 홈 탭은 홈을 새로 띄우지 않고 위의 화면만 닫아서 스크롤과 칩을 살린다.
+                    // 홈은 늘 스택 맨 아래에 두고 다른 탭은 그 위에 하나만 둔다. 그래야 어느 탭에서 뒤로 가도
+                    // 홈이 나오고 홈에서 뒤로 가면 앱이 닫힌다. 홈은 새로 띄우지 않아서 스크롤과 칩이 남는다.
                     val tab = TopLevel[index]
-                    when {
-                        tab == Report -> while (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
-                        backStack.last() != tab -> backStack.add(tab)
+                    if (backStack.last() != tab) {
+                        while (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
+                        if (tab != Report) backStack.add(tab)
                     }
                 },
             )
@@ -132,4 +155,12 @@ fun OvalitApp(appVersion: String) {
 private fun NavBackStack<NavKey>.replaceAllWith(vararg keys: NavKey) {
     addAll(keys)
     repeat(size - keys.size) { removeAt(0) }
+}
+
+private fun Context.shareInvite(link: String) {
+    val send = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, link)
+    }
+    startActivity(Intent.createChooser(send, getString(R.string.share_invite)))
 }

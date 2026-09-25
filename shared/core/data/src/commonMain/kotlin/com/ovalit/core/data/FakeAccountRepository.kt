@@ -11,6 +11,7 @@ import kotlinx.datetime.todayIn
 class FakeAccountRepository(
     private val matchRepository: FakeMatchRepository,
     private val clock: Clock = Clock.System,
+    private val friendRepository: FakeFriendRepository? = null,
 ) : AccountRepository {
 
     private val linked = MutableStateFlow<Account?>(fakeAccount())
@@ -20,11 +21,13 @@ class FakeAccountRepository(
     fun link() {
         linked.value = fakeAccount()
         matchRepository.refill()
+        friendRepository?.refill()
     }
 
     override suspend fun unlink() {
         linked.value = null
         matchRepository.deleteAll()
+        friendRepository?.clear()
     }
 
     private fun fakeAccount() = Account(

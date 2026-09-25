@@ -27,7 +27,7 @@ import com.ovalit.core.model.WeeklyReport
 import com.ovalit.feature.report.format
 import com.ovalit.feature.report.hasGoodDirection
 import com.ovalit.feature.report.label
-import com.ovalit.feature.report.periodLabel
+import com.ovalit.core.ui.periodLabel
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.baseline_average
 import com.ovalit.feature.report.resources.baseline_missing
@@ -38,7 +38,7 @@ import com.ovalit.feature.report.resources.dynamic_title_steady
 import com.ovalit.feature.report.resources.dynamic_title_unknown
 import com.ovalit.feature.report.resources.dynamic_unknown_hint
 import com.ovalit.feature.report.sampleText
-import com.ovalit.feature.report.valueText
+import com.ovalit.core.ui.valueText
 import org.jetbrains.compose.resources.stringResource
 
 // 세 번째 칸이 화면 끝에서 살짝 잘리게 둔다. 옆으로 밀어 볼 수 있다는 표시다.

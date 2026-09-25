@@ -3,8 +3,10 @@ package com.ovalit.core.data.di
 import com.ovalit.core.data.AccountRepository
 import com.ovalit.core.data.ContentRepository
 import com.ovalit.core.data.DataStoreUserPreferencesRepository
+import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.FakeAccountRepository
 import com.ovalit.core.data.FakeContentRepository
+import com.ovalit.core.data.FakeFriendRepository
 import com.ovalit.core.data.FakeMatchRepository
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
@@ -16,7 +18,8 @@ import org.koin.dsl.module
 fun dataModule(preferencesPath: () -> String) = module {
     // 프로덕션 키가 나오면 Fake로 시작하는 저장소를 실제 구현으로 바꾼다.
     single { FakeMatchRepository() } bind MatchRepository::class
-    single { FakeAccountRepository(get()) } bind AccountRepository::class
+    single { FakeFriendRepository() } bind FriendRepository::class
+    single { FakeAccountRepository(get(), friendRepository = get()) } bind AccountRepository::class
     single<ContentRepository> { FakeContentRepository() }
     single<UserPreferencesRepository> {
         DataStoreUserPreferencesRepository(createPreferencesDataStore(preferencesPath()))

@@ -2,5 +2,7 @@
 <resources>
     <string name="app_name">오발있</string>
     <string name="tab_home">홈</string>
+    <string name="tab_friends">친구</string>
     <string name="tab_settings">설정</string>
+    <string name="share_invite">초대 링크 보내기</string>
 </resources>

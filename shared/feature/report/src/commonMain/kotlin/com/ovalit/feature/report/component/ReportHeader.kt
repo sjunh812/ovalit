@@ -37,7 +37,7 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.feature.report.label
-import com.ovalit.feature.report.periodLabel
+import com.ovalit.core.ui.periodLabel
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.period_date_range
 import com.ovalit.feature.report.resources.period_main_role

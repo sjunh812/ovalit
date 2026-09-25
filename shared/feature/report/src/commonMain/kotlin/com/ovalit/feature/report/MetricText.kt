@@ -2,26 +2,16 @@ package com.ovalit.feature.report
 
 import androidx.compose.runtime.Composable
 import com.ovalit.core.model.DynamicMetric
-import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.QueueFilter
-import com.ovalit.core.model.ReportPeriod
 import com.ovalit.core.model.Role
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.metric_assists_per_round
-import com.ovalit.feature.report.resources.metric_combat_score
-import com.ovalit.feature.report.resources.metric_damage
 import com.ovalit.feature.report.resources.metric_first_duel_involvement
 import com.ovalit.feature.report.resources.metric_first_duel_win
 import com.ovalit.feature.report.resources.metric_first_kill_win
-import com.ovalit.feature.report.resources.metric_headshot
 import com.ovalit.feature.report.resources.metric_kast
-import com.ovalit.feature.report.resources.metric_kd
 import com.ovalit.feature.report.resources.metric_survival
-import com.ovalit.feature.report.resources.period_last_week
-import com.ovalit.feature.report.resources.period_past_weeks
-import com.ovalit.feature.report.resources.period_recent_weeks
-import com.ovalit.feature.report.resources.period_this_week
 import com.ovalit.feature.report.resources.queue_competitive
 import com.ovalit.feature.report.resources.queue_competitive_and_unrated
 import com.ovalit.feature.report.resources.queue_other
@@ -33,24 +23,9 @@ import com.ovalit.feature.report.resources.role_sentinel
 import com.ovalit.feature.report.resources.sample_first_duels
 import com.ovalit.feature.report.resources.sample_first_kills
 import com.ovalit.feature.report.resources.sample_rounds
-import com.ovalit.feature.report.resources.value_percent
+import com.ovalit.core.ui.MetricFormat
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-
-internal val FixedMetric.label: StringResource
-    get() = when (this) {
-        FixedMetric.COMBAT_SCORE -> Res.string.metric_combat_score
-        FixedMetric.KD -> Res.string.metric_kd
-        FixedMetric.DAMAGE -> Res.string.metric_damage
-        FixedMetric.HEADSHOT_RATE -> Res.string.metric_headshot
-    }
-
-internal val FixedMetric.format: MetricFormat
-    get() = when (this) {
-        FixedMetric.COMBAT_SCORE, FixedMetric.DAMAGE -> MetricFormat.INTEGER
-        FixedMetric.KD -> MetricFormat.TWO_DECIMALS
-        FixedMetric.HEADSHOT_RATE -> MetricFormat.PERCENT
-    }
 
 internal val DynamicMetric.label: StringResource
     get() = when (this) {
@@ -87,18 +62,6 @@ internal val QueueFilter.label: StringResource
         QueueFilter.UNRATED -> Res.string.queue_unrated
         QueueFilter.OTHER -> Res.string.queue_other
     }
-
-@Composable
-internal fun periodLabel(period: ReportPeriod): String = when {
-    period.includesThisWeek && period.weeks == 1 -> stringResource(Res.string.period_this_week)
-    period.includesThisWeek -> stringResource(Res.string.period_recent_weeks, period.weeks)
-    period.weeks == 1 -> stringResource(Res.string.period_last_week)
-    else -> stringResource(Res.string.period_past_weeks, period.weeks)
-}
-
-@Composable
-internal fun MetricFormat.valueText(value: Double): String =
-    if (this == MetricFormat.PERCENT) stringResource(Res.string.value_percent, format(value)) else format(value)
 
 /** 카드 근거에 붙는 표본입니다. 비율의 분모를 보여줍니다. */
 @Composable

@@ -1,4 +1,4 @@
-package com.ovalit.feature.report
+package com.ovalit.core.ui
 
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -9,7 +9,7 @@ import kotlin.math.roundToInt
  * 변화량은 원래 값이 아니라 화면에 보이는 자릿수로 반올림한 값끼리 뺍니다. 74%와 69%를
  * 나란히 띄워 놓고 변화량에 +6을 쓰면 틀려 보입니다.
  */
-internal enum class MetricFormat(private val scale: Int) {
+enum class MetricFormat(private val scale: Int) {
     INTEGER(scale = 1),
     ONE_DECIMAL(scale = 10),
     TWO_DECIMALS(scale = 100),
@@ -39,4 +39,4 @@ internal enum class MetricFormat(private val scale: Int) {
     }
 }
 
-internal fun Int.withThousands(): String = toString().reversed().chunked(3).joinToString(",").reversed()
+fun Int.withThousands(): String = toString().reversed().chunked(3).joinToString(",").reversed()

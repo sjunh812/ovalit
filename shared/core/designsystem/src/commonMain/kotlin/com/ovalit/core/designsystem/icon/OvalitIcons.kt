@@ -30,6 +30,18 @@ object OvalitIcons {
 
     val ChevronRight: ImageVector by lazy { strokeIcon("M8 4l6 6-6 6", strokeWidth = 1.8f) }
 
+    val Friends: ImageVector by lazy {
+        strokeIcon(
+            "M10.2 7a2.6 2.6 0 1 1-5.2 0a2.6 2.6 0 1 1 5.2 0",
+            "M2.8 16.2c0-2.6 2.1-4.3 4.8-4.3s4.8 1.7 4.8 4.3",
+            "M13.4 5.2a2.6 2.6 0 0 1 0 5",
+            "M14.6 12.3c1.7.5 2.8 1.9 2.8 3.9",
+        )
+    }
+
+    // 목업은 채운 점 세 개다. 길이가 0인 선을 둥근 끝으로 그리면 같은 점이 된다.
+    val More: ImageVector by lazy { strokeIcon("M10 4.5h0", "M10 10h0", "M10 15.5h0", strokeWidth = 3f) }
+
     val ChevronDown: ImageVector by lazy { strokeIcon("M4 8l6 6 6-6", strokeWidth = 2f) }
 
     val Back: ImageVector by lazy { strokeIcon("M12 4l-6 6 6 6", strokeWidth = 1.8f) }

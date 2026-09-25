@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
-import com.ovalit.feature.report.MetricFormat
+import com.ovalit.core.ui.MetricFormat
 
 internal const val NO_VALUE = "–"
 

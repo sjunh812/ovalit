@@ -26,15 +26,17 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Baseline
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchMetrics
-import com.ovalit.feature.report.MetricFormat
+import com.ovalit.core.ui.MetricFormat
+import com.ovalit.core.ui.format
 import com.ovalit.feature.report.format
+import com.ovalit.core.ui.label
 import com.ovalit.feature.report.label
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.baseline_average
 import com.ovalit.feature.report.resources.baseline_missing
 import com.ovalit.feature.report.resources.sheet_open
 import com.ovalit.feature.report.resources.summary_per_match
-import com.ovalit.feature.report.valueText
+import com.ovalit.core.ui.valueText
 import org.jetbrains.compose.resources.stringResource
 
 private val CellGap = 10.dp

@@ -3,10 +3,14 @@ package com.ovalit.feature.report
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ovalit.core.data.AccountRepository
+import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
+import com.ovalit.core.model.MatchMetrics
+import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.model.metricsIn
 import com.ovalit.core.model.weeklyReport
 import kotlin.time.Clock
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,16 +24,30 @@ import kotlinx.datetime.TimeZone
 sealed interface ReportUiState {
     data object Loading : ReportUiState
 
+    /**
+     * @property rival 고른 라이벌입니다. 고르지 않았거나 전적을 공개하지 않았으면 `null`입니다.
+     * @property friends 전적을 공개한 친구 전부입니다. 리포트 기간에 경기가 없는 친구도 들어 있습니다.
+     */
     data class Success(
         val queueFilter: QueueFilter,
         val report: WeeklyReport,
+        val rival: FriendStanding? = null,
+        val friends: List<FriendStanding> = emptyList(),
     ) : ReportUiState
 }
+
+/** @property metrics 내 리포트와 같은 기간의 합계입니다. 그 기간에 경기가 없으면 `null`입니다. */
+data class FriendStanding(
+    val id: PlayerId,
+    val riotId: String,
+    val metrics: MatchMetrics?,
+)
 
 class ReportViewModel(
     matchRepository: MatchRepository,
     accountRepository: AccountRepository,
     preferencesRepository: UserPreferencesRepository,
+    friendRepository: FriendRepository,
     clock: Clock,
     timeZone: TimeZone,
 ) : ViewModel() {
@@ -41,11 +59,23 @@ class ReportViewModel(
         matchRepository.observeMatches(),
         preferencesRepository.preferences,
         selectedQueue,
-    ) { matches, preferences, selected ->
+        friendRepository.friends,
+        friendRepository.rival,
+    ) { matches, preferences, selected, friends, rivalId ->
         val filter = selected ?: preferences.defaultQueue
+        val report = matches.weeklyReport(now = clock.now(), timeZone = timeZone, queueFilter = filter)
+        val standings = if (report is WeeklyReport.Ready) {
+            friends
+                .filter { it.statsPublic }
+                .map { FriendStanding(it.id, it.riotId, it.metricsIn(report, filter, timeZone)) }
+        } else {
+            emptyList()
+        }
         ReportUiState.Success(
             queueFilter = filter,
-            report = matches.weeklyReport(now = clock.now(), timeZone = timeZone, queueFilter = filter),
+            report = report,
+            rival = standings.firstOrNull { it.id == rivalId },
+            friends = standings,
         )
     }.stateIn(
         scope = viewModelScope,

@@ -62,7 +62,12 @@ private const val LEGSHOT_RATE = 0.08
 private const val KILL_SCORE = 60
 
 private val Me = PlayerId("me")
-private val Allies = List(4) { PlayerId("ally-$it") }
+private val Strangers = List(4) { PlayerId("ally-$it") }
+
+internal val FakeFriendIds = listOf("fake-junho", "fake-minseok", "fake-jaehyun").map(::PlayerId)
+
+// 친구가 내 편으로 끼는 비율. S5의 "같이 한 경기"가 전체 경기 수가 되지 않게 한다.
+private const val FRIEND_IN_MATCH_RATE = 0.2
 private val Enemies = List(5) { PlayerId("enemy-$it") }
 private val FakeAct = ActId("fake-act")
 
@@ -114,13 +119,19 @@ private fun <T> Random.pick(items: List<T>, weight: (T) -> Double): T {
     return items.last()
 }
 
-internal fun fakeMatches(now: Instant): List<Match> {
-    val random = Random(SEED)
+/**
+ * @param withFriends 내 경기일 때만 켠다. 친구 경기에 다른 친구를 끼우면 같이 한 경기가 꼬인다.
+ */
+internal fun fakeMatches(now: Instant, seed: Int = SEED, withFriends: Boolean = true): List<Match> {
+    val random = Random(seed)
+    // 팀 구성은 난수를 따로 쓴다. 같은 난수에서 뽑으면 친구를 넣는 순간 내 경기 숫자가 다 바뀐다.
+    val party = Random(seed + 1)
     return (0 until DAYS).flatMap { daysAgo ->
         List(random.nextInt(0, 3)) { index ->
             random.fakeMatch(
-                id = MatchId("fake-$daysAgo-$index"),
+                id = MatchId("fake-$seed-$daysAgo-$index"),
                 startedAt = now - daysAgo.days - 50.minutes * (index + 1),
+                allies = if (withFriends) party.allies() else Strangers,
                 firstDuelRate = if (daysAgo < 7) RECENT_FIRST_DUEL_RATE else USUAL_FIRST_DUEL_RATE,
                 recent = daysAgo < 7,
             )
@@ -128,14 +139,31 @@ internal fun fakeMatches(now: Instant): List<Match> {
     }
 }
 
-private fun Random.fakeMatch(id: MatchId, startedAt: Instant, firstDuelRate: Double, recent: Boolean): Match {
+private fun Random.allies(): List<PlayerId> = Strangers.mapIndexed { index, stranger ->
+    FakeFriendIds.getOrNull(index)?.takeIf { nextDouble() < FRIEND_IN_MATCH_RATE } ?: stranger
+}
+
+private fun Random.fakeMatch(
+    id: MatchId,
+    startedAt: Instant,
+    allies: List<PlayerId>,
+    firstDuelRate: Double,
+    recent: Boolean,
+): Match {
     val agent = pick(FakeAgents) { it.weight }
     val startsOnAttack = nextBoolean()
     val rounds = List(nextInt(18, 25)) { index ->
         val firstHalf = index < HALF_ROUNDS
         val side = if (firstHalf == startsOnAttack) Side.ATTACK else Side.DEFENSE
         val pool = if (index + 1 in PistolRounds) FakePistols else FakeRifles
-        fakeRound(number = index + 1, side = side, firstDuelRate = firstDuelRate, weapon = pick(pool) { it.weight }, recent = recent)
+        fakeRound(
+            number = index + 1,
+            side = side,
+            allies = allies,
+            firstDuelRate = firstDuelRate,
+            weapon = pick(pool) { it.weight },
+            recent = recent,
+        )
     }
 
     return Match(
@@ -146,7 +174,7 @@ private fun Random.fakeMatch(id: MatchId, startedAt: Instant, firstDuelRate: Dou
         me = Me,
         myAgent = agent.id,
         myRole = agent.role,
-        allies = Allies.toSet(),
+        allies = allies.toSet(),
         myCombatScore = rounds.sumOf { round ->
             round.myDamage + KILL_SCORE * round.kills.count { it.killer == Me }
         },
@@ -164,6 +192,7 @@ private fun Random.fakeMatch(id: MatchId, startedAt: Instant, firstDuelRate: Dou
 private fun Random.fakeRound(
     number: Int,
     side: Side,
+    allies: List<PlayerId>,
     firstDuelRate: Double,
     weapon: FakeWeapon,
     recent: Boolean,
@@ -181,9 +210,9 @@ private fun Random.fakeRound(
     val opener = aliveEnemies.first()
     when {
         nextDouble() >= firstDuelRate -> if (nextBoolean()) {
-            killEnemy(15_000, killer = Allies.random(this))
+            killEnemy(15_000, killer = allies.random(this))
         } else {
-            kills += KillEvent(15_000, opener, Allies.random(this), emptySet(), weapon = null)
+            kills += KillEvent(15_000, opener, allies.random(this), emptySet(), weapon = null)
         }
         nextDouble() < if (side == Side.ATTACK) ATTACK_FIRST_DUEL_WIN_RATE else DEFENSE_FIRST_DUEL_WIN_RATE ->
             killEnemy(15_000, killer = Me)
@@ -199,10 +228,10 @@ private fun Random.fakeRound(
     myDeath?.let { death ->
         kills += death
         if (nextDouble() < TRADE_RATE && aliveEnemies.remove(death.killer)) {
-            kills += KillEvent(death.atMillis + 2_000, Allies.random(this), death.killer, emptySet(), weapon = null)
+            kills += KillEvent(death.atMillis + 2_000, allies.random(this), death.killer, emptySet(), weapon = null)
         }
     }
-    if (nextDouble() < ASSIST_RATE) killEnemy(45_000, killer = Allies.random(this), assistants = setOf(Me))
+    if (nextDouble() < ASSIST_RATE) killEnemy(45_000, killer = allies.random(this), assistants = setOf(Me))
 
     val myKills = kills.count { it.killer == Me }
     val hits = myKills * 3 + nextInt(0, 6)

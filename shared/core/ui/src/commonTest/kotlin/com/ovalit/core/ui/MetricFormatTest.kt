@@ -1,4 +1,4 @@
-package com.ovalit.feature.report
+package com.ovalit.core.ui
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

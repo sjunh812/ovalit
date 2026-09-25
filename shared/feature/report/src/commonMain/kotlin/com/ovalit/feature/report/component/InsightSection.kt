@@ -13,7 +13,7 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Role
 import com.ovalit.core.model.SideInsight
 import com.ovalit.core.model.SideMetric
-import com.ovalit.feature.report.MetricFormat
+import com.ovalit.core.ui.MetricFormat
 import com.ovalit.feature.report.label
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.insight_gap_percent
@@ -22,13 +22,14 @@ import com.ovalit.feature.report.resources.insight_side_attack
 import com.ovalit.feature.report.resources.insight_side_defense
 import com.ovalit.feature.report.resources.insight_values
 import com.ovalit.feature.report.resources.insight_values_with_role
-import com.ovalit.feature.report.resources.metric_damage
+import com.ovalit.core.ui.resources.metric_damage
 import com.ovalit.feature.report.resources.metric_first_duel_win
 import com.ovalit.feature.report.resources.metric_kast
 import com.ovalit.feature.report.resources.metric_survival
-import com.ovalit.feature.report.valueText
+import com.ovalit.core.ui.valueText
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import com.ovalit.core.ui.resources.Res as CoreUiRes
 
 /**
  * 개선 포인트 문장입니다. 공격과 수비로 나눠 가장 크게 벌어진 지표를 사실로만 적습니다.
@@ -83,7 +84,7 @@ private val SideMetric.label: StringResource
         SideMetric.SURVIVAL_RATE -> Res.string.metric_survival
         SideMetric.KAST -> Res.string.metric_kast
         SideMetric.FIRST_DUEL_WIN_RATE -> Res.string.metric_first_duel_win
-        SideMetric.DAMAGE -> Res.string.metric_damage
+        SideMetric.DAMAGE -> CoreUiRes.string.metric_damage
     }
 
 private val SideMetric.format: MetricFormat

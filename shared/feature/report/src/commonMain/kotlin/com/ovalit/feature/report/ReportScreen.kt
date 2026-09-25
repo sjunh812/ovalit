@@ -27,6 +27,7 @@ import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.feature.report.component.DynamicMetricSection
 import com.ovalit.feature.report.component.FixedMetricRow
+import com.ovalit.feature.report.component.FriendRankingSection
 import com.ovalit.feature.report.component.FixedMetricSummary
 import com.ovalit.feature.report.component.HorizontalLine
 import com.ovalit.feature.report.component.InsightSection
@@ -34,6 +35,7 @@ import com.ovalit.feature.report.component.MetricSheet
 import com.ovalit.feature.report.component.PeriodHeader
 import com.ovalit.feature.report.component.QueueChips
 import com.ovalit.feature.report.component.ReportTopBar
+import com.ovalit.feature.report.component.RivalSection
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.not_enough_body
 import com.ovalit.feature.report.resources.not_enough_title
@@ -91,7 +93,7 @@ internal fun ReportScreen(
                 Spacer(Modifier.height(OvalitSpacing.md))
 
                 when (val report = uiState.report) {
-                    is WeeklyReport.Ready -> ReportContent(report, uiState.queueFilter)
+                    is WeeklyReport.Ready -> ReportContent(report, uiState.queueFilter, uiState.rival, uiState.friends)
                     is WeeklyReport.NotEnoughMatches -> NotEnoughMatches(played = report.played)
                 }
 
@@ -102,7 +104,12 @@ internal fun ReportScreen(
 }
 
 @Composable
-private fun ReportContent(report: WeeklyReport.Ready, queueFilter: QueueFilter) {
+private fun ReportContent(
+    report: WeeklyReport.Ready,
+    queueFilter: QueueFilter,
+    rival: FriendStanding?,
+    friends: List<FriendStanding>,
+) {
     var openMetric by rememberSaveable { mutableStateOf<FixedMetric?>(null) }
 
     PeriodHeader(report)
@@ -124,6 +131,18 @@ private fun ReportContent(report: WeeklyReport.Ready, queueFilter: QueueFilter) 
             HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
             Spacer(Modifier.height(18.dp))
             InsightSection(insight = insight, role = report.mainRole)
+        }
+        rival?.let {
+            Spacer(Modifier.height(20.dp))
+            HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
+            Spacer(Modifier.height(18.dp))
+            RivalSection(report = report, mine = report.metrics, rival = it)
+        }
+        if (friends.any { it.metrics != null }) {
+            Spacer(Modifier.height(20.dp))
+            HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
+            Spacer(Modifier.height(18.dp))
+            FriendRankingSection(mine = report.metrics, friends = friends)
         }
     } else {
         HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))

@@ -7,10 +7,6 @@
     <string name="queue_unrated">일반</string>
     <string name="queue_other">기타</string>
 
-    <string name="period_this_week">이번 주</string>
-    <string name="period_recent_weeks">최근 %1$d주</string>
-    <string name="period_last_week">지난주</string>
-    <string name="period_past_weeks">지난 %1$d주</string>
     <string name="period_date_range">%1$d/%2$d – %3$d/%4$d</string>
     <string name="period_main_role">주로 %1$s</string>
     <string name="period_matches">%1$d경기</string>
@@ -21,10 +17,6 @@
     <string name="role_controller">전략가</string>
     <string name="role_sentinel">감시자</string>
 
-    <string name="metric_combat_score">전투점수</string>
-    <string name="metric_kd">K/D</string>
-    <string name="metric_damage">피해량</string>
-    <string name="metric_headshot">헤드샷</string>
     <string name="metric_kast">관여율</string>
     <string name="metric_survival">생존율</string>
     <string name="metric_first_kill_win">퍼블 승률</string>
@@ -32,7 +24,6 @@
     <string name="metric_first_duel_win">첫 교전 승률</string>
     <string name="metric_assists_per_round">라운드당 어시스트</string>
 
-    <string name="value_percent">%1$s%</string>
 
     <string name="summary_per_match">판당 %1$s / %2$s / %3$s · %4$d경기 %5$d라운드</string>
     <string name="baseline_average">%1$d주 평균 %2$s</string>
@@ -89,4 +80,12 @@
     <string name="insight_gap_percent">%1$d%p</string>
     <string name="insight_values">%1$s %2$s, %3$s %4$s예요.</string>
     <string name="insight_values_with_role">%1$s %2$s, %3$s %4$s예요. %5$s에게 %6$s은 먼저 보는 지표예요.</string>
+    <!-- 라이벌과 친구 비교 -->
+    <string name="rival_title">라이벌 · %1$s</string>
+    <string name="rival_lead">%1$d개 중 %2$d개 앞섬</string>
+    <string name="rival_no_matches">%1$s 경기가 없어요</string>
+    <string name="friends_title">친구 비교</string>
+    <string name="friends_me">나</string>
+    <string name="friends_choose_metric">비교할 지표</string>
+    <string name="friends_metric_button">%1$s, 비교할 지표 바꾸기</string>
 </resources>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="back">뒤로</string>
+    <string name="more">더보기</string>
+    <string name="main_role">주로 %1$s</string>
+    <string name="role_duelist">타격대</string>
+    <string name="role_initiator">척후대</string>
+    <string name="role_controller">전략가</string>
+    <string name="role_sentinel">감시자</string>
+
+    <!-- 친구 탭 -->
+    <string name="friends_title">친구</string>
+    <string name="invite">초대 링크 보내기</string>
+    <string name="invite_note">친구는 서로 수락해야 맺어져요. 닉네임으로는 찾을 수 없어요.</string>
+    <string name="requests_title">받은 요청 %1$d</string>
+    <string name="request_from_scoreboard">같이 뛴 경기에서 보냈어요</string>
+    <string name="request_from_invite">초대 링크로 보냈어요</string>
+    <string name="accept">수락</string>
+    <string name="decline">거절</string>
+    <string name="friends_count">친구 %1$d명</string>
+    <string name="friend_caption">%1$s %2$d경기</string>
+    <string name="friend_caption_resting">최근 4주 동안 뛴 경기가 없어요</string>
+    <string name="friend_caption_few">최근 4주 %1$d경기</string>
+    <string name="friend_private">전적 비공개</string>
+    <string name="rival">라이벌</string>
+    <string name="empty_title">아직 친구가 없어요</string>
+    <string name="empty_body">같이 뛴 경기의 스코어보드에서 친구를 추가하거나 초대 링크를 보내 보세요.</string>
+
+    <!-- S5 친구 프로필 -->
+    <string name="set_rival">라이벌 지정</string>
+    <string name="unset_rival">라이벌 해제</string>
+    <string name="shared_matches">같이 한 경기</string>
+    <string name="shared_count">%1$d경기</string>
+    <string name="shared_record">%1$d승 %2$d패</string>
+    <string name="private_body">전적을 공개하지 않은 친구예요. 같이 한 경기만 볼 수 있어요.</string>
+    <string name="period_matches">%1$d경기</string>
+    <string name="not_enough">최근 4주 동안 %1$d경기를 뛰어서 아직 리포트가 없어요</string>
+    <string name="compare_title">나와 비교</string>
+    <!-- 친구 칸은 친구의 기간이고 비교는 내 리포트 기간이라 기간을 같이 적는다 -->
+    <string name="compare_caption">%1$s · 나 · %2$s</string>
+    <string name="compare_no_matches">%1$s 경기가 없어요</string>
+    <string name="unfriend">친구 끊기</string>
+    <string name="unfriend_title">%1$s님과 친구를 끊을까요?</string>
+    <string name="unfriend_body">서로의 전적을 더 볼 수 없고 라이벌에서도 빠져요.</string>
+    <string name="cancel">취소</string>
+</resources>

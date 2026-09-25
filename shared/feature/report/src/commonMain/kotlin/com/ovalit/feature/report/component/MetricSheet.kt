@@ -29,12 +29,14 @@ import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.TREND_WEEKS
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.model.usualRange
+import com.ovalit.core.ui.format
 import com.ovalit.feature.report.format
+import com.ovalit.core.ui.label
 import com.ovalit.feature.report.label
-import com.ovalit.feature.report.periodLabel
+import com.ovalit.core.ui.periodLabel
 import com.ovalit.feature.report.resources.Res
-import com.ovalit.feature.report.resources.period_last_week
-import com.ovalit.feature.report.resources.period_this_week
+import com.ovalit.core.ui.resources.period_last_week
+import com.ovalit.core.ui.resources.period_this_week
 import com.ovalit.feature.report.resources.sheet_combat_score_body
 import com.ovalit.feature.report.resources.sheet_combat_score_formula
 import com.ovalit.feature.report.resources.sheet_combat_score_method
@@ -61,10 +63,11 @@ import com.ovalit.feature.report.resources.sheet_usual_missing
 import com.ovalit.feature.report.resources.sheet_usual_range
 import com.ovalit.feature.report.resources.sheet_usual_same
 import com.ovalit.feature.report.resources.sheet_usual_title
-import com.ovalit.feature.report.valueText
-import com.ovalit.feature.report.withThousands
+import com.ovalit.core.ui.valueText
+import com.ovalit.core.ui.withThousands
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
+import com.ovalit.core.ui.resources.Res as CoreUiRes
 
 private val TrendHeight = 62.dp
 private val BarGap = 5.dp
@@ -228,7 +231,7 @@ private fun TrendBars(metric: FixedMetric, report: WeeklyReport.Ready) {
             )
             OvalitText(
                 text = stringResource(
-                    if (report.period.includesThisWeek) Res.string.period_this_week else Res.string.period_last_week,
+                    if (report.period.includesThisWeek) CoreUiRes.string.period_this_week else CoreUiRes.string.period_last_week,
                 ),
                 style = OvalitTheme.typography.caption,
                 color = colors.t3,

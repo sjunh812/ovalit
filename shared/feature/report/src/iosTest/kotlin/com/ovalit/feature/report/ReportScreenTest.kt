@@ -11,6 +11,7 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.feature.report.component.MetricSheetBody
 import com.ovalit.core.model.FixedMetric
+import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 import androidx.compose.ui.unit.dp
@@ -245,6 +246,50 @@ class ReportScreenTest {
 
         onNodeWithText("낮아요.", substring = true).assertDoesNotExist()
     }
+
+    // 화면에 보이는 자릿수로 겨룬다. 나는 K/D 1.34, 피해량 138, 헤드샷 21%다.
+    @Test
+    fun `라이벌 칸은 세 지표 중 앞선 개수를 센다`() = runComposeUiTest {
+        val rival = ReportPreviewData.moved.metrics.let { it.copy(kills = 100, damage = 21_000, shots = it.shots.copy(head = 60)) }
+        setContent { Social(rival = FriendStanding(PlayerId("junho"), "준호#KR1", rival)) }
+
+        onNodeWithText("라이벌 · 준호#KR1").assertExists()
+        onNodeWithText("3개 중 2개 앞섬").assertExists()
+    }
+
+    @Test
+    fun `라이벌을 고르지 않았으면 라이벌 칸이 없다`() = runComposeUiTest {
+        setContent { Social(rival = null) }
+
+        onNodeWithText("라이벌", substring = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun `친구 비교는 나를 넣어 값이 큰 순서로 세우고 경기가 없는 친구는 뺀다`() = runComposeUiTest {
+        val strong = ReportPreviewData.moved.metrics.copy(damage = 30_000)
+        setContent {
+            Social(
+                friends = listOf(
+                    FriendStanding(PlayerId("junho"), "준호#KR1", strong),
+                    FriendStanding(PlayerId("minseok"), "민석#KR3", null),
+                ),
+            )
+        }
+
+        val junho = onNodeWithText("준호", substring = true).getBoundsInRoot().top
+        val me = onNodeWithText("나", substring = true).getBoundsInRoot().top
+        assertTrue(junho < me)
+        onNodeWithText("민석", substring = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun `기타 모드에는 라이벌과 친구 비교가 없다`() = runComposeUiTest {
+        val friend = FriendStanding(PlayerId("junho"), "준호#KR1", ReportPreviewData.moved.metrics)
+        setContent { Social(rival = friend, friends = listOf(friend), queueFilter = QueueFilter.OTHER) }
+
+        onNodeWithText("친구 비교").assertDoesNotExist()
+        onNodeWithText("라이벌", substring = true).assertDoesNotExist()
+    }
 }
 
 @Composable
@@ -255,4 +300,19 @@ private fun Report(report: WeeklyReport, queueFilter: QueueFilter = QueueFilter.
 @Composable
 private fun Sheet(metric: FixedMetric, report: WeeklyReport.Ready) {
     OvalitTheme { MetricSheetBody(metric, report) }
+}
+
+@Composable
+private fun Social(
+    rival: FriendStanding? = null,
+    friends: List<FriendStanding> = emptyList(),
+    queueFilter: QueueFilter = QueueFilter.COMPETITIVE_AND_UNRATED,
+) {
+    val report = if (queueFilter == QueueFilter.OTHER) ReportPreviewData.otherQueue else ReportPreviewData.moved
+    OvalitTheme {
+        ReportScreen(
+            uiState = ReportUiState.Success(queueFilter, report, rival = rival, friends = friends),
+            onSelectQueue = {},
+        )
+    }
 }

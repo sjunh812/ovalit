@@ -1,0 +1,8 @@
+node_modules/
+.wrangler/
+# 로컬 비밀값. 예시 파일만 저장소에 둔다.
+.dev.vars*
+!.dev.vars.example
+.env*
+# scripts/prepare-assets.mjs가 카탈로그에서 채운다.
+public/cards/

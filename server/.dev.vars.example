@@ -1,0 +1,6 @@
+# .dev.vars로 복사해서 씁니다. .dev.vars는 저장소에 올리지 않습니다.
+RIOT_API_KEY=
+RSO_CLIENT_ID=
+RSO_CLIENT_SECRET=
+# 로컬에서 RSO 없이 친구 흐름을 돌려 보려고 둡니다. 배포 환경에는 넣지 않습니다.
+DEV_LOGIN=true

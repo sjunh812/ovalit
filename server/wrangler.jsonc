@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ovalit",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-25",
+  // 카드 이미지는 Worker를 거치지 않고 바로 나간다. 정적 에셋 요청은 무료 한도에 세지 않는다.
+  "assets": {
+    "directory": "./public"
+  },
+  // database_id는 계정이 생기면 `wrangler d1 create`가 준 값을 넣는다. 로컬에서는 없어도 돈다.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ovalit",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

@@ -15,6 +15,10 @@
     <string name="profile_per_match">판당 K/D/A</string>
     <string name="profile_per_match_value">%1$s/%2$s/%3$s</string>
     <string name="profile_play_time">플레이 시간</string>
+    <string name="profile_aces">에이스</string>
+    <string name="profile_clutches">클러치</string>
+    <string name="profile_count">%1$d번</string>
+    <string name="profile_clutch_value">%1$d번 중 %2$d번</string>
     <string name="duration_hours_minutes">%1$d시간 %2$d분</string>
     <string name="duration_hours">%1$d시간</string>
     <string name="duration_minutes">%1$d분</string>

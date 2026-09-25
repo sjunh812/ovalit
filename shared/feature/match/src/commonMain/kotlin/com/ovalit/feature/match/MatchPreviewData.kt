@@ -77,7 +77,26 @@ internal object MatchPreviewData {
             line(PlayerId("e4"), "하늘#KR1", killjoy, false, 12, 18, 5, 118),
             line(PlayerId("e5"), "pixel#KR1", jett, false, 10, 19, 3, 102),
         ),
-    )
+    ).withScenes()
+
+    // 1라운드는 에이스, 2라운드는 준호가 퍼블을 따고 쓰러진 뒤 혼자 넷을 상대한 클러치다
+    private fun Match.withScenes(): Match {
+        val enemies = players.filterNot { it.onMyTeam }.map { it.player }
+        val ace = enemies.mapIndexed { index, enemy -> KillEvent(12_000L + 8_000L * index, me, enemy, emptySet(), weapon = null) }
+        val clutch = listOf(
+            KillEvent(8_000, junho, enemies[0], emptySet(), weapon = null),
+            KillEvent(14_000, enemies[1], junho, emptySet(), weapon = null),
+        ) + enemies.drop(1).mapIndexed { index, enemy -> KillEvent(30_000L + 6_000L * index, me, enemy, emptySet(), weapon = null) }
+        return copy(
+            rounds = rounds.map { round ->
+                when (round.number) {
+                    1 -> round.copy(kills = ace)
+                    2 -> round.copy(kills = clutch)
+                    else -> round
+                }
+            },
+        )
+    }
 
     val detail = MatchDetailUiState.Success(
         match = detailMatch,

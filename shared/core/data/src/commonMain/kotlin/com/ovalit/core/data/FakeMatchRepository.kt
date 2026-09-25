@@ -14,6 +14,7 @@ import com.ovalit.core.model.RoundEnding
 import com.ovalit.core.model.Scoreline
 import com.ovalit.core.model.Shots
 import com.ovalit.core.model.Side
+import com.ovalit.core.model.WeaponId
 import com.ovalit.core.model.forFirstImport
 import com.ovalit.core.model.metrics
 import kotlin.math.abs
@@ -100,6 +101,8 @@ private const val TRADE_RATE = 0.4
 private const val ASSIST_RATE = 0.3
 private const val LEGSHOT_RATE = 0.08
 private const val KILL_SCORE = 60
+private const val ACE_RATE = 0.02
+private const val CLUTCH_RATE = 0.06
 
 internal val Me = PlayerId("me")
 internal const val MY_RIOT_ID = "오발러#KR1"
@@ -140,6 +143,7 @@ internal fun fakeMatches(
     // 팀 구성과 스코어보드는 난수를 따로 쓴다. 같은 난수에서 뽑으면 친구를 넣는 순간 내 경기 숫자가 다 바뀐다.
     val party = Random(seed + 1)
     val board = Random(seed + 2)
+    val scenes = Random(seed + 3)
     return (0 until DAYS).flatMap { daysAgo ->
         List(random.nextInt(0, 3)) { index ->
             val allies = party.allies(withFriends)
@@ -151,7 +155,7 @@ internal fun fakeMatches(
                 allies = allies.map { it.id },
                 firstDuelRate = if (daysAgo < 7) RECENT_FIRST_DUEL_RATE else USUAL_FIRST_DUEL_RATE,
                 recent = daysAgo < 7,
-            ).withScoreboard(board, owner, allies, enemies, tier = owner.tier - if (daysAgo > 30) 1 else 0)
+            ).withHighlights(scenes).withScoreboard(board, owner, allies, enemies, tier = owner.tier - if (daysAgo > 30) 1 else 0)
         }
     }
 }
@@ -350,6 +354,75 @@ private fun Random.fakeRound(
         economy = economy.copy(myWeapon = weapon.id),
     )
 }
+
+/**
+ * 가끔 에이스와 클러치가 나오게 킬 기록을 바꿉니다. 승패는 그대로 둬서 스코어가 바뀌지 않습니다. 난수를 따로 써서
+ * 나머지 가짜 숫자가 흔들리지 않게 합니다.
+ *
+ * 관여율, 생존율, 퍼블 쪽 지표가 그대로인 라운드만 고릅니다. 홈 동적 칸이 이 장면 때문에 움직이면 가짜 데이터로
+ * "움직인 칸과 그대로인 칸"을 같이 보여줄 수 없습니다. 이긴 장면은 내가 퍼블을 따고 살아남은 라운드에, 진 장면은
+ * 킬도 어시스트도 트레이드도 없이 죽은 라운드에만 넣습니다. 피해량과 맞힌 탄은 그대로라 그 라운드만 조금 어긋납니다.
+ */
+private fun Match.withHighlights(random: Random): Match {
+    if (allies.size != 4) return this
+    val team = allies.toList()
+    return copy(
+        rounds = rounds.map { round ->
+            val roll = random.nextDouble()
+            val weapon = round.economy?.myWeapon ?: return@map round
+            when {
+                roll < ACE_RATE && round.wonWithMyOpener(me) -> round.copy(kills = aceKills(weapon))
+                roll >= ACE_RATE + CLUTCH_RATE -> round
+                round.wonWithMyOpener(me) -> round.copy(kills = wonClutchKills(random, team, weapon))
+                round.lostQuietly(me, allies) -> round.copy(kills = lostClutchKills(random, team))
+                else -> round
+            }
+        },
+    )
+}
+
+private fun Round.wonWithMyOpener(me: PlayerId): Boolean =
+    won && kills.none { it.victim == me } && kills.minByOrNull { it.atMillis }?.killer == me
+
+private fun Round.lostQuietly(me: PlayerId, allies: Set<PlayerId>): Boolean {
+    val death = kills.firstOrNull { it.victim == me } ?: return false
+    val traded = kills.any { it.victim == death.killer && it.killer in allies && it.atMillis - death.atMillis in 0..5_000 }
+    return !won && kills.minByOrNull { it.atMillis } != death && kills.none { it.killer == me || me in it.assistants } && !traded
+}
+
+private fun Match.aceKills(weapon: WeaponId): List<KillEvent> =
+    EnemySlots.mapIndexed { index, enemy -> KillEvent(12_000L + 9_000L * index, me, enemy, emptySet(), weapon) }
+
+// 내가 퍼블을 딴 뒤 우리 팀 넷이 차례로 쓰러지고, 나 혼자 남은 1~3명을 모두 잡는다
+private fun Match.wonClutchKills(random: Random, team: List<PlayerId>, weapon: WeaponId): List<KillEvent> {
+    val enemies = EnemySlots.shuffled(random)
+    val left = random.nextInt(1, 4)
+    val survivors = enemies.takeLast(left)
+    val kills = mutableListOf(KillEvent(8_000L, me, enemies.first(), emptySet(), weapon))
+    kills += teamFalls(random, team, downed = enemies.drop(1).dropLast(left), survivors = survivors)
+    survivors.forEachIndexed { index, enemy -> kills += KillEvent(42_000L + 5_000L * index, me, enemy, emptySet(), weapon) }
+    return kills.sortedBy { it.atMillis }
+}
+
+// 우리 팀 넷이 먼저 쓰러지고 나는 아무도 못 잡고 죽는다
+private fun Match.lostClutchKills(random: Random, team: List<PlayerId>): List<KillEvent> {
+    val enemies = EnemySlots.shuffled(random)
+    val left = random.nextInt(1, 4)
+    val survivors = enemies.takeLast(left)
+    val kills = teamFalls(random, team, downed = enemies.dropLast(left), survivors = survivors).toMutableList()
+    kills += KillEvent(55_000L, survivors.random(random), me, emptySet(), weapon = null)
+    return kills.sortedBy { it.atMillis }
+}
+
+// 우리 팀이 한 명씩 [downed]를 잡고 쓰러진다. 잡는 건 끝까지 살아남는 상대다.
+private fun teamFalls(random: Random, team: List<PlayerId>, downed: List<PlayerId>, survivors: List<PlayerId>): List<KillEvent> =
+    team.flatMapIndexed { index, ally ->
+        val at = 10_000L + 6_000L * index
+        listOfNotNull(
+            downed.getOrNull(index)?.let { KillEvent(at, ally, it, emptySet(), weapon = null) },
+            KillEvent(at + 3_000L, survivors.random(random), ally, emptySet(), weapon = null),
+        )
+    }
 
 // 라운드를 만들 때는 적을 이 다섯 자리로만 구분한다. 실제 상대 ID는 스코어보드를 붙이면서 바꿔 넣는다.
 private val EnemySlots = List(5) { PlayerId("enemy-$it") }

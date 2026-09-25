@@ -71,10 +71,14 @@ import com.ovalit.feature.profile.resources.column_win_rate
 import com.ovalit.feature.profile.resources.duration_hours
 import com.ovalit.feature.profile.resources.duration_hours_minutes
 import com.ovalit.feature.profile.resources.duration_minutes
+import com.ovalit.feature.profile.resources.profile_aces
 import com.ovalit.feature.profile.resources.profile_agents
+import com.ovalit.feature.profile.resources.profile_clutch_value
+import com.ovalit.feature.profile.resources.profile_clutches
 import com.ovalit.feature.profile.resources.profile_competitive
 import com.ovalit.feature.profile.resources.profile_competitive_matches
 import com.ovalit.feature.profile.resources.profile_competitive_record
+import com.ovalit.feature.profile.resources.profile_count
 import com.ovalit.feature.profile.resources.profile_most_kills
 import com.ovalit.feature.profile.resources.profile_per_match
 import com.ovalit.feature.profile.resources.profile_per_match_value
@@ -152,8 +156,8 @@ internal fun TierCard(record: CompetitiveRecord, catalog: ContentCatalog, modifi
 }
 
 /**
- * 이번 액트 합계입니다. 위 줄은 피해량, K/D, 전투점수이고 아래 줄은 최다 킬, 판당 K/D/A, 플레이 시간입니다. 좁은 화면에서
- * 글자를 키우면 같은 순서로 두 칸씩 놓습니다.
+ * 이번 액트 합계입니다. 피해량, K/D, 전투점수, 최다 킬, 판당 K/D/A, 플레이 시간, 에이스, 클러치 순서로 한 줄에 세 칸씩
+ * 놓습니다. 좁은 화면에서 글자를 키우면 같은 순서로 두 칸씩 놓습니다.
  */
 @Composable
 internal fun StatsSection(summary: ProfileSummary, modifier: Modifier = Modifier) {
@@ -166,6 +170,14 @@ internal fun StatsSection(summary: ProfileSummary, modifier: Modifier = Modifier
         stringResource(Res.string.profile_per_match) to perMatchText(metrics),
         stringResource(Res.string.profile_play_time) to playTimeText(summary.playTimeMillis),
     )
+    val highlights = summary.highlights
+    val scenes = listOf(
+        stringResource(Res.string.profile_aces) to stringResource(Res.string.profile_count, highlights.aces),
+        // 나만 남은 라운드가 한 번도 없었으면 0번 중 0번이 아니라 비워 둔다
+        stringResource(Res.string.profile_clutches) to highlights.clutchAttempts.takeIf { it > 0 }?.let {
+            stringResource(Res.string.profile_clutch_value, it, highlights.clutches)
+        },
+    )
 
     Section(modifier = modifier, divider = false) {
         SectionTitle(title = stringResource(Res.string.profile_stats_title))
@@ -173,7 +185,7 @@ internal fun StatsSection(summary: ProfileSummary, modifier: Modifier = Modifier
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             // 여섯 칸의 이름과 숫자를 한 크기로 맞춘다. 칸마다 따로 줄이면 "판당 K/D/A"처럼 긴 칸만 작아진다.
             // 세 칸에 가장 작게 줄여도 안 들어가면 두 칸씩 놓는다. 숫자가 잘리는 것보다 줄이 하나 느는 게 낫다.
-            val cells = main + records
+            val cells = main + records + scenes
             val labels = cells.map { it.first }
             val values = cells.map { it.second ?: NO_VALUE }
             val valueStyle = StatValueStyle()
@@ -186,7 +198,7 @@ internal fun StatsSection(summary: ProfileSummary, modifier: Modifier = Modifier
                 value = rememberFittingStyle(values, valueStyle, cellWidth, min = STAT_MIN_SIZE),
             )
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                cells.chunked(columns).forEach { row -> StatRow(row, styles) }
+                cells.chunked(columns).forEach { row -> StatRow(row, columns, styles) }
             }
         }
     }
@@ -207,7 +219,7 @@ private fun perMatchText(metrics: MatchMetrics): String? {
 }
 
 @Composable
-private fun StatRow(cells: List<Pair<String, String?>>, styles: StatStyles) {
+private fun StatRow(cells: List<Pair<String, String?>>, columns: Int, styles: StatStyles) {
     val colors = OvalitTheme.colors
     Row {
         cells.forEach { (label, value) ->
@@ -229,6 +241,8 @@ private fun StatRow(cells: List<Pair<String, String?>>, styles: StatStyles) {
                 )
             }
         }
+        // 마지막 줄이 덜 차도 칸 폭은 위 줄과 같아야 세로로 줄이 맞는다
+        repeat(columns - cells.size) { Spacer(Modifier.weight(1f)) }
     }
 }
 

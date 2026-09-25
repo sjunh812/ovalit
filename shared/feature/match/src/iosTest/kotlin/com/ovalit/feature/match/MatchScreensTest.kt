@@ -89,6 +89,17 @@ class MatchScreensTest {
         onNodeWithText("후반").assertExists()
     }
 
+    // 진 클러치는 적지 않는다. 적으면 진 라운드마다 꼬리표가 붙는다.
+    @Test
+    fun `라운드 탭에 에이스와 이긴 클러치를 적는다`() = runComposeUiTest {
+        setContent { Themed { Detail() } }
+
+        onNodeWithText("라운드").performClick()
+
+        onNodeWithText("에이스", useUnmergedTree = true).assertExists()
+        onNodeWithText("1대4 클러치", useUnmergedTree = true).assertExists()
+    }
+
     @Test
     fun `이코노미 탭은 유형마다 몇 라운드 이겼는지와 라운드별 장비를 보여준다`() = runComposeUiTest {
         setContent { Themed { Detail() } }

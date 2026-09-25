@@ -121,6 +121,15 @@ class ProfileScreensTest {
         onNodeWithText("K/D · 피해량").assertExists()
     }
 
+    @Test
+    fun `통계에 에이스 횟수와 클러치 성공을 둔다`() = runComposeUiTest {
+        setContent { Themed { ProfileScreen(ProfilePreviewData.success, {}, {}, {}, {}, {}) } }
+
+        onNodeWithText("에이스", useUnmergedTree = true).performScrollTo().assertExists()
+        onNodeWithText("2번", useUnmergedTree = true).assertExists()
+        onNodeWithText("7번 중 3번", useUnmergedTree = true).assertExists()
+    }
+
     // 무기를 잘 쓰는지 보려면 킬과 헤드샷만으로는 모자란다
     @Test
     fun `무기 표는 킬 데스 어시스트와 라운드당 피해량과 헤드샷을 둔다`() = runComposeUiTest {

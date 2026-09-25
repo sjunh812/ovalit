@@ -7,6 +7,7 @@ import com.ovalit.core.model.AgentReport
 import com.ovalit.core.model.AgentStats
 import com.ovalit.core.model.CompetitiveRecord
 import com.ovalit.core.model.ContentCatalog
+import com.ovalit.core.model.HighlightCount
 import com.ovalit.core.model.MapId
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.MatchId
@@ -164,6 +165,7 @@ internal object ProfilePreviewData {
         mostKills = 28,
         playTimeMillis = (31.hours + 20.minutes).inWholeMilliseconds,
         competitive = CompetitiveRecord(matches = 32, wins = 18, losses = 14, currentTier = 16),
+        highlights = HighlightCount(aces = 2, clutches = 3, clutchAttempts = 7),
     )
 
     private fun recent(id: String, map: MapId, hoursAgo: Int, won: Int, lost: Int, k: Int, d: Int, a: Int): Match {

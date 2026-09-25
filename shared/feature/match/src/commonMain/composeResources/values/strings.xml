@@ -42,6 +42,8 @@
     <string name="round_kills">%1$d킬</string>
     <string name="round_first_kill">퍼블</string>
     <string name="round_first_death">퍼데</string>
+    <string name="round_ace">에이스</string>
+    <string name="round_clutch">1대%1$d 클러치</string>
     <string name="round_not_played">튕겨서 못 뛴 라운드</string>
     <string name="round_won">승</string>
     <string name="round_lost">패</string>

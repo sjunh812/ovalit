@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -81,6 +82,8 @@ import com.ovalit.feature.match.resources.player_not_app_user
 import com.ovalit.feature.match.resources.player_request_sent
 import com.ovalit.feature.match.resources.player_requested_me
 import com.ovalit.feature.match.resources.player_send_request
+import com.ovalit.feature.match.resources.round_ace
+import com.ovalit.feature.match.resources.round_clutch
 import com.ovalit.feature.match.resources.round_first_death
 import com.ovalit.feature.match.resources.round_first_kill
 import com.ovalit.feature.match.resources.round_kills
@@ -266,7 +269,16 @@ private fun RoundRow(round: RoundSummary) {
     } else {
         ""
     }
-    val description = listOf("${round.number}", result, detail, mine).filter { it.isNotEmpty() }.joinToString(", ")
+    // 이긴 클러치만 적는다. 나만 남았다가 진 라운드까지 적으면 진 라운드마다 꼬리표가 붙는다.
+    val highlight = round.highlight?.let { scene ->
+        val clutch = scene.clutch
+        when {
+            scene.ace -> stringResource(Res.string.round_ace)
+            clutch != null && clutch.won -> stringResource(Res.string.round_clutch, clutch.against)
+            else -> null
+        }
+    }
+    val description = listOfNotNull("${round.number}", result, detail, highlight, mine).filter { it.isNotEmpty() }.joinToString(", ")
 
     Row(
         modifier = Modifier
@@ -284,14 +296,63 @@ private fun RoundRow(round: RoundSummary) {
         )
         ResultMark(round.won)
         Spacer(Modifier.width(OvalitSpacing.md))
-        OvalitText(
-            text = detail,
+        DetailWithTrailing(
+            detail = {
+                OvalitText(
+                    text = detail,
+                    style = OvalitTheme.typography.body,
+                    color = if (round.played) colors.t1 else colors.t3,
+                    maxLines = 1,
+                )
+            },
+            trailing = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // 에이스와 클러치는 그 라운드에서 가장 눈에 띄는 일이라 한 단계 밝고 굵게 둔다
+                    if (highlight != null) {
+                        OvalitText(
+                            text = highlight,
+                            style = OvalitTheme.typography.caption.copy(fontWeight = FontWeight.SemiBold),
+                            color = colors.t1,
+                            maxLines = 1,
+                        )
+                        if (mine.isNotEmpty()) Spacer(Modifier.width(OvalitSpacing.sm))
+                    }
+                    OvalitText(text = mine, style = OvalitTheme.typography.caption, color = colors.t2, maxLines = 1)
+                }
+            },
             modifier = Modifier.weight(1f),
-            style = OvalitTheme.typography.body,
-            color = if (round.played) colors.t1 else colors.t3,
-            maxLines = 1,
         )
-        OvalitText(text = mine, style = OvalitTheme.typography.caption, color = colors.t2, maxLines = 1)
+    }
+}
+
+/**
+ * 라운드 줄의 설명과 오른쪽 끝 꼬리(에이스, 킬, 퍼블)입니다. 한 줄에 들어가면 꼬리를 오른쪽 끝에 두고, 안 들어가면
+ * 꼬리를 설명 밑 오른쪽에 내립니다. 한 줄에 억지로 넣으면 "공격 · 스파이크 폭발"이 "공격 ·"에서 잘립니다.
+ */
+@Composable
+private fun DetailWithTrailing(detail: @Composable () -> Unit, trailing: @Composable () -> Unit, modifier: Modifier = Modifier) {
+    Layout(contents = listOf(detail, trailing), modifier = modifier) { (detailMeasurables, trailingMeasurables), constraints ->
+        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+        val gap = OvalitSpacing.sm.roundToPx()
+        val trailingPlaceable = trailingMeasurables.first().measure(loose)
+        val detailMeasurable = detailMeasurables.first()
+        val beside = trailingPlaceable.width == 0 ||
+            detailMeasurable.maxIntrinsicWidth(constraints.maxHeight) + gap + trailingPlaceable.width <= constraints.maxWidth
+        if (beside) {
+            val besideWidth = if (trailingPlaceable.width == 0) 0 else trailingPlaceable.width + gap
+            val detailPlaceable = detailMeasurable.measure(loose.copy(maxWidth = (constraints.maxWidth - besideWidth).coerceAtLeast(0)))
+            val height = maxOf(detailPlaceable.height, trailingPlaceable.height)
+            layout(constraints.maxWidth, height) {
+                detailPlaceable.place(0, (height - detailPlaceable.height) / 2)
+                trailingPlaceable.place(constraints.maxWidth - trailingPlaceable.width, (height - trailingPlaceable.height) / 2)
+            }
+        } else {
+            val detailPlaceable = detailMeasurable.measure(loose)
+            layout(constraints.maxWidth, detailPlaceable.height + trailingPlaceable.height) {
+                detailPlaceable.place(0, 0)
+                trailingPlaceable.place(constraints.maxWidth - trailingPlaceable.width, detailPlaceable.height)
+            }
+        }
     }
 }
 

@@ -37,6 +37,7 @@ import com.ovalit.feature.report.component.MetricSheet
 import com.ovalit.feature.report.component.NudgeBanner
 import com.ovalit.feature.report.component.PeriodHeader
 import com.ovalit.feature.report.component.QueueChips
+import com.ovalit.feature.report.component.ReportSkeleton
 import com.ovalit.feature.report.component.ReportTopBar
 import com.ovalit.feature.report.component.RivalPickerSheet
 import com.ovalit.feature.report.component.RivalSection
@@ -87,8 +88,12 @@ internal fun ReportScreen(
     ) {
         when (uiState) {
             // 수집이 끝나기 전에는 숫자를 띄우지 않는다. 헤드샷 24%가 잠시 뒤 19%로 바뀌면
-            // 유저는 그 뒤로 숫자를 믿지 않는다.
-            ReportUiState.Loading -> Unit
+            // 유저는 그 뒤로 숫자를 믿지 않는다. 빈 화면 대신 홈 모양대로 자리만 잡아 둔다.
+            ReportUiState.Loading -> Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+                ReportTopBar(badge = badge, onOpenProfile = onOpenProfile)
+                Spacer(Modifier.height(OvalitSpacing.xs))
+                ReportSkeleton()
+            }
             is ReportUiState.Success -> Column(
                 modifier = Modifier
                     .fillMaxSize()

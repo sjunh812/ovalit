@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -318,6 +319,15 @@ class ReportScreenTest {
         onNodeWithText("준호#KR1", substring = true).performClick()
 
         assertEquals(PlayerId("junho"), picked)
+    }
+
+    // 수집 중에는 숫자를 띄우지 않고 자리만 잡는다. 낭독기에는 칸마다가 아니라 한 줄로 알린다.
+    @Test
+    fun `리포트를 만들기 전에는 자리만 잡고 숫자를 띄우지 않는다`() = runComposeUiTest {
+        setContent { OvalitTheme { ReportScreen(ReportUiState.Loading, onSelectQueue = {}) } }
+
+        onNodeWithContentDescription("리포트를 불러오고 있어요").assertExists()
+        onNodeWithText("전투점수").assertDoesNotExist()
     }
 }
 

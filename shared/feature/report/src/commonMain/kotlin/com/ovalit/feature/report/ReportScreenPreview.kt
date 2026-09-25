@@ -109,6 +109,18 @@ private fun MetricSheetSmallLargeFontPreview() {
     }
 }
 
+@Preview(widthDp = 390, heightDp = 844)
+@Composable
+private fun ReportLoadingDarkPreview() {
+    OvalitThemePreview(darkTheme = true) { ReportScreen(uiState = ReportUiState.Loading, onSelectQueue = {}) }
+}
+
+@Preview(widthDp = 320, heightDp = 568, fontScale = 1.5f)
+@Composable
+private fun ReportLoadingLightSmallPreview() {
+    OvalitThemePreview(darkTheme = false) { ReportScreen(uiState = ReportUiState.Loading, onSelectQueue = {}) }
+}
+
 // 친구가 없으면 초대를, 친구만 있으면 라이벌 고르기를 권한다
 @Preview(widthDp = 390, heightDp = 1200)
 @Composable

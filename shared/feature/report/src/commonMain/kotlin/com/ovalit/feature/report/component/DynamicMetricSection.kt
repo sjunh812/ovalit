@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -92,7 +93,11 @@ private fun DynamicSectionTitle(report: WeeklyReport.Ready) {
     }
 
     Column(modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
-        TitleWithCaption(title = title, titleStyle = OvalitTheme.typography.bodyStrong, caption = caption)
+        TitleWithCaption(
+            title = title,
+            titleStyle = OvalitTheme.typography.bodyStrong,
+            caption = caption?.let(::AnnotatedString),
+        )
         if (movements.all { it == Movement.UNKNOWN }) {
             Spacer(Modifier.height(OvalitSpacing.xs))
             OvalitText(

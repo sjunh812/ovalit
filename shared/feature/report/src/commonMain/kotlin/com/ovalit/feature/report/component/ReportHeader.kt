@@ -11,6 +11,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -96,14 +100,27 @@ internal fun PeriodHeader(report: WeeklyReport.Ready, modifier: Modifier = Modif
 }
 
 @Composable
-private fun periodCaption(report: WeeklyReport.Ready): String {
+private fun periodCaption(report: WeeklyReport.Ready): AnnotatedString {
     val first = report.period.firstDay
     val last = report.period.lastDay
-    val parts = listOfNotNull(
-        // 그 역할만 했다는 뜻으로 읽히지 않게 "주로"를 붙인다. 가장 많은 라운드를 뛴 역할이다.
-        report.mainRole?.let { stringResource(Res.string.period_main_role, stringResource(it.label)) },
-        stringResource(Res.string.period_date_range, first.month.number, first.day, last.month.number, last.day),
-        stringResource(Res.string.period_matches, report.metrics.matches),
-    )
-    return parts.joinToString(SEPARATOR)
+    val range = stringResource(Res.string.period_date_range, first.month.number, first.day, last.month.number, last.day)
+    val matches = stringResource(Res.string.period_matches, report.metrics.matches)
+    val role = report.mainRole?.let { stringResource(it.label) }
+    val roleText = role?.let { stringResource(Res.string.period_main_role, it) }
+    val emphasis = SpanStyle(color = OvalitTheme.colors.t2, fontWeight = FontWeight.SemiBold)
+
+    // 역할 이름만 한 단계 밝고 굵게 둔다. 그 주 동적 칸과 개선 포인트가 이 역할에 맞춰 골라진다.
+    // 달라진 점 캡션의 "타격대 기준"까지 칠하면 한 화면에 강조가 두 번이라 강조로 안 읽힌다.
+    return buildAnnotatedString {
+        if (role != null && roleText != null) {
+            // 그 역할만 했다는 뜻으로 읽히지 않게 "주로"를 붙인다. 가장 많은 라운드를 뛴 역할이다.
+            val start = roleText.indexOf(role)
+            append(roleText)
+            if (start >= 0) addStyle(emphasis, start, start + role.length)
+            append(SEPARATOR)
+        }
+        append(range)
+        append(SEPARATOR)
+        append(matches)
+    }
 }

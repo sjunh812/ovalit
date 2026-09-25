@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitText
@@ -63,7 +64,7 @@ internal fun directionColor(format: MetricFormat, current: Double, baseline: Dou
 internal fun TitleWithCaption(
     title: String,
     titleStyle: TextStyle,
-    caption: String?,
+    caption: AnnotatedString?,
     modifier: Modifier = Modifier,
 ) {
     FlowRow(

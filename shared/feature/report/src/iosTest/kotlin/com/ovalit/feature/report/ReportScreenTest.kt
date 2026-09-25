@@ -1,7 +1,9 @@
 package com.ovalit.feature.report
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -34,6 +36,18 @@ class ReportScreenTest {
 
         assertTrue(bounds.all { it.top == bounds.first().top })
         assertEquals(bounds.sortedBy { it.left }, bounds)
+    }
+
+    // 동적 칸과 개선 포인트가 이 역할에 맞춰 골라지니 한눈에 들어와야 한다
+    @Test
+    fun `기간 줄에서 역할 이름만 굵게 둔다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved) }
+
+        val caption = onNodeWithText("주로 타격대 · ", substring = true)
+            .fetchSemanticsNode().config[SemanticsProperties.Text].first()
+        val bold = caption.spanStyles.filter { it.item.fontWeight == FontWeight.SemiBold }
+
+        assertEquals(listOf("타격대"), bold.map { caption.text.substring(it.start, it.end) })
     }
 
     // 칸 폭에 간격을 넣으면 가운데 칸만 좁아져 첫 칸이 넓어 보인다

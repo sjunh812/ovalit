@@ -1,5 +1,6 @@
 package com.ovalit.core.data
 
+import com.ovalit.core.model.PlayerId
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -40,6 +41,26 @@ class FakeFriendRepositoryTest {
         repository.unfriend(rival)
 
         assertNull(repository.rival.first())
+    }
+
+    @Test
+    fun `앱을 쓰는 사람만 골라낸다`() = runTest {
+        val repository = FakeFriendRepository()
+        val friend = repository.friends.first().first().id
+        val stranger = PlayerId("not-using-app")
+
+        assertEquals(setOf(friend), repository.appUsersAmong(listOf(friend, stranger)))
+    }
+
+    @Test
+    fun `보낸 요청은 연동을 해제하면 지운다`() = runTest {
+        val friends = FakeFriendRepository()
+        val account = FakeAccountRepository(FakeMatchRepository(), friendRepository = friends)
+        friends.sendRequest(PlayerId("someone"))
+
+        account.unlink()
+
+        assertEquals(emptySet(), friends.sentRequests.first())
     }
 
     // 연동을 해제하면 Riot 계정과 이어진 관계도 남기지 않는다

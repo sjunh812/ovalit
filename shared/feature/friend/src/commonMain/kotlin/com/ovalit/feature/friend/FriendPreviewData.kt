@@ -7,16 +7,24 @@ import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Friend
 import com.ovalit.core.model.FriendRequest
 import com.ovalit.core.model.FriendRequestSource
+import com.ovalit.core.model.MapId
+import com.ovalit.core.model.Match
+import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.PlayerCardId
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.model.Queue
 import com.ovalit.core.model.ReportPeriod
 import com.ovalit.core.model.Role
+import com.ovalit.core.model.Scoreline
 import com.ovalit.core.model.SharedRecord
 import com.ovalit.core.model.Shots
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.PlayerBadge
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
 
 // 프리뷰와 UI 테스트가 같이 쓴다. 목업 S5의 민석 예시에 맞췄다.
 internal object FriendPreviewData {
@@ -62,7 +70,44 @@ internal object FriendPreviewData {
     private val myWeek = metrics(11, 240, 210, 148, 57_840, 38_880, 24)
     private val myBefore = metrics(24, 520, 420, 320, 116_000, 78_000, 19)
 
-    val minseok = Friend(PlayerId("minseok"), "민석#KR3", playerCard = PlayerCardId("BFBC000C-4121-3227-E7F5-A3ABA576FA3C"), statsPublic = true, matches = emptyList())
+    private val now = Instant.parse("2026-09-24T13:00:00Z")
+    private val jett = AgentId("add6443a-41bd-e414-f6ad-e58d267f4e95")
+    private val ascent = MapId("7eaecc1b-4337-bbf6-6ab9-04b8f06b3319")
+    private val lotus = MapId("2fe4ed3a-450a-948b-6d6b-e89a78e680a9")
+    private val pearl = MapId("fd267378-4d1d-484f-ff52-77821ed10dc2")
+    private val catalog = ContentCatalog.Empty.copy(
+        agents = mapOf(jett to "제트"),
+        maps = mapOf(ascent to "어센트", lotus to "로터스", pearl to "펄"),
+    )
+
+    // 목업 S5 "민석의 최근 경기"의 세 판에 한 판을 더 얹었다. 넘치는 판이 있어야 "전체 보기"가 뜬다.
+    private fun game(id: String, map: MapId, hoursAgo: Int, mine: Int, theirs: Int, k: Int, d: Int, a: Int, adr: Int): Match {
+        val outcomes = List(mine) { true } + List(theirs) { false }
+        val rounds = outcomes.size
+        val player = PlayerId("minseok")
+        return Match(
+            id = MatchId(id), queue = Queue.COMPETITIVE, act = ActId("preview"), map = map,
+            startedAt = now - hoursAgo.hours, lengthMillis = 0, me = player, myAgent = jett, myRole = Role.DUELIST,
+            allies = emptySet(), myCombatScore = 0, myTeamWon = mine > theirs, roundOutcomes = outcomes, rounds = emptyList(),
+            players = listOf(
+                Scoreline(player, "민석#KR3", jett, onMyTeam = true, tier = 19, playerCard = null,
+                    kills = k, deaths = d, assists = a, combatScore = 0, damage = adr * rounds, roundsPlayed = rounds),
+            ),
+        )
+    }
+
+    val minseok = Friend(
+        PlayerId("minseok"),
+        "민석#KR3",
+        playerCard = PlayerCardId("BFBC000C-4121-3227-E7F5-A3ABA576FA3C"),
+        statsPublic = true,
+        matches = listOf(
+            game("m1", ascent, hoursAgo = 2, mine = 9, theirs = 13, k = 19, d = 15, a = 4, adr = 163),
+            game("m2", lotus, hoursAgo = 26, mine = 13, theirs = 10, k = 17, d = 12, a = 6, adr = 151),
+            game("m3", pearl, hoursAgo = 28, mine = 11, theirs = 13, k = 12, d = 16, a = 9, adr = 128),
+            game("m4", ascent, hoursAgo = 50, mine = 13, theirs = 7, k = 21, d = 9, a = 5, adr = 180),
+        ),
+    )
     private val junho = Friend(PlayerId("junho"), "준호#KR1", playerCard = PlayerCardId("89FDD50E-439B-EBEB-0EF2-AF8271550943"), statsPublic = true, matches = emptyList())
     private val seoyeon = Friend(PlayerId("seoyeon"), "서연#KR7", playerCard = null, statsPublic = false, matches = emptyList())
 
@@ -83,13 +128,15 @@ internal object FriendPreviewData {
 
     val profile = FriendProfileUiState.Success(
         friend = minseok,
-        badge = PlayerBadge(minseok.riotId, AgentId("add6443a-41bd-e414-f6ad-e58d267f4e95"), tier = 19, tierName = "다이아몬드 2"),
-        catalog = ContentCatalog.Empty,
+        badge = PlayerBadge(minseok.riotId, jett, tier = 19, tierName = "다이아몬드 2"),
+        catalog = catalog,
         isRival = false,
         shared = SharedRecord(matches = 12, wins = 8, losses = 4),
         theirReport = ready(minseokWeek, minseokBefore, Role.DUELIST),
         myReport = ready(myWeek, myBefore, Role.CONTROLLER),
         theirMetricsInMyPeriod = minseokWeek,
+        now = now,
+        timeZone = TimeZone.of("Asia/Seoul"),
     )
 
     val privateProfile = profile.copy(

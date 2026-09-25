@@ -47,6 +47,10 @@ object OvalitIcons {
     val Back: ImageVector by lazy { strokeIcon("M12 4l-6 6 6 6", strokeWidth = 1.8f) }
 
     val Check: ImageVector by lazy { strokeIcon("M4 10.5l4 4 8-9", strokeWidth = 2f) }
+
+    val Matches: ImageVector by lazy { strokeIcon("M4 5.5h12M4 10h12M4 14.5h12") }
+
+    val Filter: ImageVector by lazy { strokeIcon("M3 5.5h14M6 10h8M8.5 14.5h3", strokeWidth = 1.7f) }
 }
 
 /** @param contentDescription 옆에 같은 뜻의 글자가 있으면 `null`로 둡니다. 낭독기가 두 번 읽습니다. */

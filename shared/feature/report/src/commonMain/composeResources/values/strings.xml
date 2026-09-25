@@ -2,10 +2,6 @@
 <resources>
     <string name="open_profile">내 프로필 열기</string>
 
-    <string name="queue_competitive_and_unrated">경쟁 + 일반</string>
-    <string name="queue_competitive">경쟁</string>
-    <string name="queue_unrated">일반</string>
-    <string name="queue_other">기타</string>
 
     <string name="period_date_range">%1$d/%2$d – %3$d/%4$d</string>
     <string name="period_matches">%1$d경기</string>

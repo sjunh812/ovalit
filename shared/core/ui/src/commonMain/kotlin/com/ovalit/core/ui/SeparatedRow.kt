@@ -17,6 +17,7 @@ fun SeparatedRow(
     separator: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     lineSpacing: Dp = 2.dp,
+    alignEnd: Boolean = false,
 ) {
     Layout(
         contents = listOf({ items.forEach { it() } }, { repeat((items.size - 1).coerceAtLeast(0)) { separator() } }),
@@ -49,7 +50,9 @@ fun SeparatedRow(
         layout(width.coerceIn(constraints.minWidth, constraints.maxWidth), height.coerceIn(constraints.minHeight, constraints.maxHeight)) {
             var top = 0
             lines.forEachIndexed { index, line ->
-                line.forEach { (placeable, left) -> placeable.place(left, top + (heights[index] - placeable.height) / 2) }
+                val lineWidth = line.maxOfOrNull { (p, left) -> left + p.width } ?: 0
+                val shift = if (alignEnd) width - lineWidth else 0
+                line.forEach { (placeable, left) -> placeable.place(shift + left, top + (heights[index] - placeable.height) / 2) }
                 top += heights[index] + gap
             }
         }

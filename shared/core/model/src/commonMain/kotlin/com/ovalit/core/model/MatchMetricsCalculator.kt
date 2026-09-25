@@ -41,7 +41,7 @@ fun Match.metrics(side: Side? = null): MatchMetrics {
     )
 }
 
-private class RoundResult(
+internal class RoundResult(
     val won: Boolean,
     val kills: Int,
     val assists: Int,
@@ -51,7 +51,7 @@ private class RoundResult(
     val firstDeath: Boolean,
 )
 
-private fun Round.analyze(me: PlayerId, allies: Set<PlayerId>): RoundResult {
+internal fun Round.analyze(me: PlayerId, allies: Set<PlayerId>): RoundResult {
     val myTeam = allies + me
     // 스킬로 자기를 죽이거나 같은 팀을 죽인 건 킬로 세지 않는다. 응답에는 둘 다 킬로 들어온다.
     val enemyKills = kills.filter { (it.killer in myTeam) != (it.victim in myTeam) }

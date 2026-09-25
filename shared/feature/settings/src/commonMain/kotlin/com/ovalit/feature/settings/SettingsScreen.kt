@@ -42,6 +42,7 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Account
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
+import com.ovalit.core.ui.label
 import com.ovalit.feature.settings.resources.Res
 import com.ovalit.feature.settings.resources.account_linked
 import com.ovalit.feature.settings.resources.account_unlinked

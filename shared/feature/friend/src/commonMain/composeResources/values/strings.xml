@@ -34,6 +34,9 @@
     <!-- 친구 칸은 친구의 기간이고 비교는 내 리포트 기간이라 기간을 같이 적는다 -->
     <string name="compare_caption">%1$s · 나 · %2$s</string>
     <string name="compare_no_matches">%1$s 경기가 없어요</string>
+    <string name="recent_title">%1$s의 최근 경기</string>
+    <string name="recent_all">전체 보기</string>
+    <string name="matches_title">%1$s의 경기</string>
     <string name="unfriend">친구 끊기</string>
     <string name="unfriend_title">%1$s님과 친구를 끊을까요?</string>
     <string name="unfriend_body">서로의 전적을 더 볼 수 없고 라이벌에서도 빠져요.</string>

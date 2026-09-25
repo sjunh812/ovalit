@@ -2,6 +2,7 @@ package com.ovalit.feature.friend
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -99,6 +100,28 @@ class FriendScreensTest {
         onNodeWithText("친구 끊기").performClick()
 
         assertTrue(unfriended)
+    }
+
+    // 친구 경기에는 내가 안 뛴 경기의 다른 사람 기록이 섞여 있어서 줄을 눌러도 열지 않는다
+    @Test
+    fun `친구의 최근 경기는 세 판만 보여주고 전체 보기로 넘어간다`() = runComposeUiTest {
+        var openedAll = false
+        setContent { Themed { FriendProfileScreen(FriendPreviewData.profile, {}, {}, {}, onOpenMatches = { openedAll = true }) } }
+
+        onNodeWithText("민석의 최근 경기").assertExists()
+        onNodeWithText("로터스").assertExists()
+        onAllNodesWithText("어제").assertCountEquals(2)
+        onAllNodesWithText("어센트").assertCountEquals(1)
+        onNodeWithText("전체 보기").performClick()
+
+        assertTrue(openedAll)
+    }
+
+    @Test
+    fun `전적을 공개하지 않은 친구는 최근 경기를 보여주지 않는다`() = runComposeUiTest {
+        setContent { Themed { FriendProfileScreen(FriendPreviewData.privateProfile, {}, {}, {}) } }
+
+        onNodeWithText("최근 경기", substring = true).assertDoesNotExist()
     }
 }
 

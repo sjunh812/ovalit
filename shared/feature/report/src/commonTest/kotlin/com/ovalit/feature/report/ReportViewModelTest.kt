@@ -143,6 +143,11 @@ private object NoFriends : FriendRepository {
     override val friends: Flow<List<Friend>> = flowOf(emptyList())
     override val requests: Flow<List<FriendRequest>> = flowOf(emptyList())
     override val rival: Flow<PlayerId?> = flowOf(null)
+    override val sentRequests: Flow<Set<PlayerId>> = flowOf(emptySet())
+
+    override suspend fun appUsersAmong(players: Collection<PlayerId>) = emptySet<PlayerId>()
+
+    override suspend fun sendRequest(id: PlayerId) = Unit
 
     override suspend fun accept(id: PlayerId) = Unit
 

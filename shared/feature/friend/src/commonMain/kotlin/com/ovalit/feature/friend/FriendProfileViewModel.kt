@@ -18,6 +18,7 @@ import com.ovalit.core.model.sharedWith
 import com.ovalit.core.model.weeklyReport
 import com.ovalit.core.ui.PlayerBadge
 import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -45,6 +46,8 @@ sealed interface FriendProfileUiState {
         val theirReport: WeeklyReport?,
         val myReport: WeeklyReport,
         val theirMetricsInMyPeriod: MatchMetrics?,
+        val now: Instant,
+        val timeZone: TimeZone,
     ) : FriendProfileUiState
 }
 
@@ -76,6 +79,8 @@ class FriendProfileViewModel(
                 ?.weeklyReport(now = clock.now(), timeZone = timeZone, queueFilter = QUEUE),
             myReport = myReport,
             theirMetricsInMyPeriod = (myReport as? WeeklyReport.Ready)?.let { friend.metricsIn(it, QUEUE, timeZone) },
+            now = clock.now(),
+            timeZone = timeZone,
         )
     }.stateIn(
         scope = viewModelScope,

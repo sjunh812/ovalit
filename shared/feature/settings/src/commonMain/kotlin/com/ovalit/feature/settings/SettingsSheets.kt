@@ -22,6 +22,7 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
+import com.ovalit.core.ui.label
 import com.ovalit.feature.settings.resources.Res
 import com.ovalit.feature.settings.resources.cancel
 import com.ovalit.feature.settings.resources.default_queue
@@ -29,10 +30,6 @@ import com.ovalit.feature.settings.resources.default_queue_description
 import com.ovalit.feature.settings.resources.delete_body
 import com.ovalit.feature.settings.resources.delete_confirm
 import com.ovalit.feature.settings.resources.delete_title
-import com.ovalit.feature.settings.resources.queue_competitive
-import com.ovalit.feature.settings.resources.queue_competitive_and_unrated
-import com.ovalit.feature.settings.resources.queue_other
-import com.ovalit.feature.settings.resources.queue_unrated
 import com.ovalit.feature.settings.resources.theme
 import com.ovalit.feature.settings.resources.theme_dark
 import com.ovalit.feature.settings.resources.theme_light
@@ -50,14 +47,6 @@ internal val ThemePreference.label: StringResource
         ThemePreference.SYSTEM -> Res.string.theme_system
         ThemePreference.DARK -> Res.string.theme_dark
         ThemePreference.LIGHT -> Res.string.theme_light
-    }
-
-internal val QueueFilter.label: StringResource
-    get() = when (this) {
-        QueueFilter.COMPETITIVE_AND_UNRATED -> Res.string.queue_competitive_and_unrated
-        QueueFilter.COMPETITIVE -> Res.string.queue_competitive
-        QueueFilter.UNRATED -> Res.string.queue_unrated
-        QueueFilter.OTHER -> Res.string.queue_other
     }
 
 @Composable

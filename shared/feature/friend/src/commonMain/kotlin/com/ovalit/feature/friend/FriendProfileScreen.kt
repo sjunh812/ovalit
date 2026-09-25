@@ -46,11 +46,14 @@ import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.HeadToHeadRow
+import com.ovalit.core.ui.MatchRow
+import com.ovalit.core.ui.MatchRowStyle
 import com.ovalit.core.ui.ProfileBanner
 import com.ovalit.core.ui.ProfileIdentity
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.periodLabel
+import com.ovalit.core.ui.recentMatchTimeLabel
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.friend.resources.Res
@@ -63,6 +66,8 @@ import com.ovalit.feature.friend.resources.more
 import com.ovalit.feature.friend.resources.not_enough
 import com.ovalit.feature.friend.resources.period_matches
 import com.ovalit.feature.friend.resources.private_body
+import com.ovalit.feature.friend.resources.recent_all
+import com.ovalit.feature.friend.resources.recent_title
 import com.ovalit.feature.friend.resources.set_rival
 import com.ovalit.feature.friend.resources.shared_count
 import com.ovalit.feature.friend.resources.shared_matches
@@ -77,12 +82,14 @@ import org.koin.core.parameter.parametersOf
 
 private val TouchSize = 44.dp
 private val CellGap = 10.dp
+private const val RECENT_MATCHES = 3
 
 /** S5 친구 프로필입니다. 전적 페이지가 아니라 나와의 관계 페이지라 같이 한 경기가 맨 위에 옵니다. */
 @Composable
 fun FriendProfileRoute(
     friendId: PlayerId,
     onBack: () -> Unit,
+    onOpenMatches: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: FriendProfileViewModel = koinViewModel(key = friendId.value) { parametersOf(friendId.value) },
 ) {
@@ -95,6 +102,7 @@ fun FriendProfileRoute(
         onBack = onBack,
         onToggleRival = viewModel::toggleRival,
         onUnfriend = { viewModel.unfriend(onBack) },
+        onOpenMatches = onOpenMatches,
         modifier = modifier,
     )
 }
@@ -106,6 +114,7 @@ internal fun FriendProfileScreen(
     onToggleRival: () -> Unit,
     onUnfriend: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenMatches: () -> Unit = {},
 ) {
     val colors = OvalitTheme.colors
     var confirmUnfriend by rememberSaveable { mutableStateOf(false) }
@@ -192,6 +201,7 @@ internal fun FriendProfileScreen(
                         }
                     }
                 }
+                RecentMatches(uiState, name, onOpenMatches)
             }
             Spacer(Modifier.height(OvalitSpacing.xxl))
         }
@@ -228,6 +238,38 @@ private fun IconButton(icon: ImageVector, description: String, onClick: () -> Un
         contentAlignment = Alignment.Center,
     ) {
         OvalitIcon(icon, contentDescription = description, tint = OvalitTheme.colors.t1)
+    }
+}
+
+// 친구 경기에는 내가 안 뛴 경기의 다른 사람 기록이 섞여 있다. 앱을 안 쓰는 사람의 기록은 내가 뛴 경기
+// 안에서만 보여줄 수 있어서 줄을 눌러도 열지 않는다.
+@Composable
+private fun RecentMatches(uiState: FriendProfileUiState.Success, name: String, onOpenMatches: () -> Unit) {
+    val matches = uiState.friend.matches.sortedByDescending { it.startedAt }
+    if (matches.isEmpty()) return
+    Spacer(Modifier.height(20.dp))
+    OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.sm, top = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OvalitText(
+            text = stringResource(Res.string.recent_title, name),
+            modifier = Modifier.weight(1f),
+            style = OvalitTheme.typography.bodyStrong,
+        )
+        if (matches.size > RECENT_MATCHES) {
+            OvalitTextButton(text = stringResource(Res.string.recent_all), onClick = onOpenMatches)
+        }
+    }
+    matches.take(RECENT_MATCHES).forEachIndexed { index, match ->
+        if (index > 0) OvalitDivider(Modifier.padding(start = 67.dp), color = OvalitTheme.colors.lineWeak)
+        MatchRow(
+            match = match,
+            catalog = uiState.catalog,
+            timeLabel = recentMatchTimeLabel(match.startedAt, uiState.now, uiState.timeZone),
+            style = MatchRowStyle.COMPACT,
+        )
     }
 }
 

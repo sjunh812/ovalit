@@ -3,7 +3,6 @@ package com.ovalit.feature.report
 import androidx.compose.runtime.Composable
 import com.ovalit.core.model.DynamicMetric
 import com.ovalit.core.model.MatchMetrics
-import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.metric_assists_per_round
@@ -15,10 +14,6 @@ import com.ovalit.feature.report.resources.metric_force_buy_win
 import com.ovalit.feature.report.resources.metric_full_buy_win
 import com.ovalit.feature.report.resources.metric_kast
 import com.ovalit.feature.report.resources.metric_survival
-import com.ovalit.feature.report.resources.queue_competitive
-import com.ovalit.feature.report.resources.queue_competitive_and_unrated
-import com.ovalit.feature.report.resources.queue_other
-import com.ovalit.feature.report.resources.queue_unrated
 import com.ovalit.feature.report.resources.sample_eco_rounds
 import com.ovalit.feature.report.resources.sample_first_duels
 import com.ovalit.feature.report.resources.sample_first_kills
@@ -50,14 +45,6 @@ internal val DynamicMetric.format: MetricFormat
 // 퍼블 관여율은 역할에 따라 오르는 게 좋기도 나쁘기도 하다. 올랐다고 초록으로 칠하지 않는다.
 internal val DynamicMetric.hasGoodDirection: Boolean
     get() = this != DynamicMetric.FIRST_DUEL_INVOLVEMENT
-
-internal val QueueFilter.label: StringResource
-    get() = when (this) {
-        QueueFilter.COMPETITIVE_AND_UNRATED -> Res.string.queue_competitive_and_unrated
-        QueueFilter.COMPETITIVE -> Res.string.queue_competitive
-        QueueFilter.UNRATED -> Res.string.queue_unrated
-        QueueFilter.OTHER -> Res.string.queue_other
-    }
 
 /** 카드 근거에 붙는 표본입니다. 비율의 분모를 보여줍니다. */
 @Composable

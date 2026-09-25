@@ -137,6 +137,9 @@ internal val FakeFriendIds = FakeFriendPlayers.map { it.id }
 
 internal val FakeFriendProfiles = FakeFriendPlayers.associateBy { it.id }
 
+/** 친구는 아니지만 앱을 쓰는 사람들입니다. 스코어보드에서 누르면 친구 요청을 보낼 수 있습니다. */
+internal val StrangersUsingApp = setOf(Strangers[1].id, Strangers[3].id, Strangers[5].id)
+
 /** 서버가 내려줄 티어 이름을 대신합니다. 번호는 경기 응답의 `competitiveTier`입니다. */
 internal val FakeTiers: Map<Int, String> = buildMap {
     val ranks = listOf("아이언", "브론즈", "실버", "골드", "플래티넘", "다이아몬드", "초월자", "불멸")

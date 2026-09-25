@@ -21,13 +21,18 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.ovalit.core.data.FakeAccountRepository
+import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.designsystem.component.OvalitTab
 import com.ovalit.core.designsystem.component.OvalitTabBar
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.PlayerId
+import com.ovalit.feature.friend.FriendMatchesRoute
 import com.ovalit.feature.friend.FriendProfileRoute
 import com.ovalit.feature.friend.FriendsRoute
+import com.ovalit.feature.match.MatchDetailRoute
+import com.ovalit.feature.match.MatchesRoute
 import com.ovalit.feature.onboarding.intro.IntroScreen
 import com.ovalit.feature.profile.AgentsRoute
 import com.ovalit.feature.profile.ProfileRoute
@@ -47,10 +52,19 @@ private data object Report : NavKey
 private data object Settings : NavKey
 
 @Serializable
+private data object Matches : NavKey
+
+@Serializable
+private data class MatchDetail(val id: String) : NavKey
+
+@Serializable
 private data object Friends : NavKey
 
 @Serializable
 private data class FriendProfile(val id: String) : NavKey
+
+@Serializable
+private data class FriendMatches(val id: String) : NavKey
 
 @Serializable
 private data object Profile : NavKey
@@ -61,14 +75,14 @@ private data object Agents : NavKey
 @Serializable
 private data object Weapons : NavKey
 
-// 경기 화면이 생기면 여기에 탭을 더한다. 갈 화면이 없는 탭은 미리 두지 않는다.
-private val TopLevel = listOf(Report, Friends, Settings)
+private val TopLevel = listOf(Report, Matches, Friends, Settings)
 
 @Composable
 fun OvalitApp(appVersion: String) {
     val backStack = rememberNavBackStack(Intro)
     // RSO가 붙기 전까지는 가짜 계정이다. 시작 버튼이 연동을 대신한다.
     val account = koinInject<FakeAccountRepository>()
+    val friends = koinInject<FriendRepository>()
     val context = LocalContext.current
     val selectedTab = TopLevel.indexOf(backStack.lastOrNull())
     val showTabBar = selectedTab >= 0
@@ -108,6 +122,17 @@ fun OvalitApp(appVersion: String) {
                             onOpenWeapons = { backStack.add(Weapons) },
                         )
                     }
+                    entry<Matches> {
+                        MatchesRoute(onOpenMatch = { backStack.add(MatchDetail(it.value)) })
+                    }
+                    entry<MatchDetail> { key ->
+                        MatchDetailRoute(
+                            matchId = MatchId(key.id),
+                            onBack = { backStack.removeLastOrNull() },
+                            onOpenFriend = { backStack.add(FriendProfile(it.value)) },
+                            onShareInvite = { context.shareInvite(friends.inviteLink()) },
+                        )
+                    }
                     entry<Friends> {
                         FriendsRoute(
                             onOpenFriend = { backStack.add(FriendProfile(it.value)) },
@@ -115,7 +140,14 @@ fun OvalitApp(appVersion: String) {
                         )
                     }
                     entry<FriendProfile> { key ->
-                        FriendProfileRoute(friendId = PlayerId(key.id), onBack = { backStack.removeLastOrNull() })
+                        FriendProfileRoute(
+                            friendId = PlayerId(key.id),
+                            onBack = { backStack.removeLastOrNull() },
+                            onOpenMatches = { backStack.add(FriendMatches(key.id)) },
+                        )
+                    }
+                    entry<FriendMatches> { key ->
+                        FriendMatchesRoute(friendId = PlayerId(key.id), onBack = { backStack.removeLastOrNull() })
                     }
                     entry<Agents> { AgentsRoute(onBack = { backStack.removeLastOrNull() }) }
                     entry<Weapons> { WeaponsRoute(onBack = { backStack.removeLastOrNull() }) }
@@ -133,6 +165,7 @@ fun OvalitApp(appVersion: String) {
             OvalitTabBar(
                 tabs = listOf(
                     OvalitTab(stringResource(R.string.tab_home), OvalitIcons.Home),
+                    OvalitTab(stringResource(R.string.tab_matches), OvalitIcons.Matches),
                     OvalitTab(stringResource(R.string.tab_friends), OvalitIcons.Friends),
                     OvalitTab(stringResource(R.string.tab_settings), OvalitIcons.Settings),
                 ),

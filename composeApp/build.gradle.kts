@@ -36,6 +36,7 @@ dependencies {
     implementation(projects.shared.core.designsystem)
     implementation(projects.shared.feature.onboarding)
     implementation(projects.shared.feature.report)
+    implementation(projects.shared.feature.match)
     implementation(projects.shared.feature.friend)
     implementation(projects.shared.feature.profile)
     implementation(projects.shared.feature.settings)

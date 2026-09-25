@@ -17,10 +17,21 @@ class FakeFriendRepository(
     private val friendList = MutableStateFlow(fakeFriends())
     private val requestList = MutableStateFlow(fakeRequests())
     private val rivalId = MutableStateFlow<PlayerId?>(null)
+    private val sent = MutableStateFlow<Set<PlayerId>>(emptySet())
 
     override val friends: Flow<List<Friend>> = friendList
     override val requests: Flow<List<FriendRequest>> = requestList
     override val rival: Flow<PlayerId?> = rivalId
+    override val sentRequests: Flow<Set<PlayerId>> = sent
+
+    override suspend fun appUsersAmong(players: Collection<PlayerId>): Set<PlayerId> {
+        val known = StrangersUsingApp + friendList.value.map { it.id } + requestList.value.map { it.id }
+        return players.filterTo(mutableSetOf()) { it in known }
+    }
+
+    override suspend fun sendRequest(id: PlayerId) {
+        sent.update { it + id }
+    }
 
     override suspend fun accept(id: PlayerId) {
         val request = requestList.value.firstOrNull { it.id == id } ?: return
@@ -61,12 +72,14 @@ class FakeFriendRepository(
         friendList.value = emptyList()
         requestList.value = emptyList()
         rivalId.value = null
+        sent.value = emptySet()
     }
 
     fun refill() {
         friendList.value = fakeFriends()
         requestList.value = fakeRequests()
         rivalId.value = null
+        sent.value = emptySet()
     }
 
     private fun fakeFriends(): List<Friend> {

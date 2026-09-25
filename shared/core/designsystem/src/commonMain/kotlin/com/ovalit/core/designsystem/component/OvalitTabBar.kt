@@ -13,11 +13,12 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
@@ -91,10 +92,17 @@ fun OvalitTabBar(
 
 private val TabBarHeight = 60.dp
 
-// 누른 면은 칸 전체가 아니라 아이콘과 이름을 감싸는 원이다. 칸이 가로로 길어 칸째로 깔면 막대처럼 보인다.
+// 누른 면은 칸 전체가 아니라 아이콘과 이름을 감싸는 둥근 사각형이다. 칸이 가로로 길어 칸째로 깔면 막대처럼 보인다.
 private val TabPressShape = object : Shape {
-    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
-        val radius = with(density) { 28.dp.toPx() }
-        return Outline.Generic(Path().apply { addOval(Rect(center = size.center, radius = radius)) })
+    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline = with(density) {
+        val width = minOf(size.width, TabPressWidth.toPx())
+        val height = minOf(size.height, TabPressHeight.toPx())
+        val corner = CornerRadius(TabPressCorner.toPx())
+        val rect = Rect(size.center.x - width / 2, size.center.y - height / 2, size.center.x + width / 2, size.center.y + height / 2)
+        Outline.Rounded(RoundRect(rect, corner))
     }
 }
+
+private val TabPressWidth = 64.dp
+private val TabPressHeight = 52.dp
+private val TabPressCorner = 14.dp

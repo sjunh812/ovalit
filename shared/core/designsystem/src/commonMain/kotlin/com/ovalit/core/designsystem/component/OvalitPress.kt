@@ -6,12 +6,12 @@ import androidx.compose.foundation.Indication
 import androidx.compose.foundation.IndicationNodeFactory
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
@@ -36,15 +36,21 @@ private const val MAX_SHRINK_RATIO = 0.04f
 private val MaxShrink = 8.dp
 
 /**
+ * 누른 면의 기본 모양입니다. 네모 그대로나 원은 쓰지 않고 모서리를 적당히 둥글린 사각형으로 깝니다. 화면 폭만 한 줄도
+ * 누르면 양옆이 들어오면서 이 모양이 됩니다.
+ */
+val OvalitPressShape: Shape = RoundedCornerShape(12.dp)
+
+/**
  * 누르는 즉시 옅은 면을 깔고 누른 것을 살짝 줄입니다. 손을 떼면 제 크기로 돌아옵니다.
  *
  * 물결은 쓰지 않습니다. 누른 뒤에 천천히 퍼져서 앱이 늦게 반응하는 것처럼 느껴집니다.
- * 면은 [shape] 모양으로 깝니다. 눌리는 영역보다 보이는 모양이 작으면 보이는 쪽에 답니다.
+ * 면은 [shape] 모양으로 깝니다. 기본은 [OvalitPressShape]이고, 눌리는 영역보다 보이는 모양이 작으면 보이는 쪽에 답니다.
  */
 @Stable
 class OvalitPressIndication(
     private val color: Color,
-    private val shape: Shape = RectangleShape,
+    private val shape: Shape = OvalitPressShape,
 ) : IndicationNodeFactory {
     override fun create(interactionSource: InteractionSource): DelegatableNode =
         PressNode(interactionSource, color, shape)
@@ -55,9 +61,9 @@ class OvalitPressIndication(
     override fun hashCode(): Int = 31 * color.hashCode() + shape.hashCode()
 }
 
-/** 모양이 둥근 버튼처럼 기본 사각형이 아닌 곳에 씁니다. 이때는 `clip`보다 앞에 둡니다. */
+/** 버튼처럼 제 모양이 따로 있는 곳에 씁니다. 이때는 `clip`보다 앞에 둡니다. */
 @Composable
-fun pressIndication(shape: Shape = RectangleShape, color: Color = OvalitTheme.colors.t2): Indication =
+fun pressIndication(shape: Shape = OvalitPressShape, color: Color = OvalitTheme.colors.t2): Indication =
     remember(shape, color) { OvalitPressIndication(color, shape) }
 
 private class PressNode(

@@ -37,7 +37,6 @@ import com.ovalit.core.designsystem.component.OvalitPullToRefresh
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTextButton
-import com.ovalit.core.designsystem.component.pressIndication
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -165,7 +164,7 @@ private fun FilterButton(active: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .size(TouchSize)
-            .clickable(interactionSource = null, indication = pressIndication(CircleShape), role = Role.Button, onClick = onClick),
+            .clickable(role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         OvalitIcon(OvalitIcons.Filter, contentDescription = description, tint = if (active) OvalitTheme.colors.t1 else OvalitTheme.colors.t2)

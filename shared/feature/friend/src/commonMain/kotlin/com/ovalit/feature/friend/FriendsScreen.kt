@@ -37,6 +37,7 @@ import com.ovalit.core.designsystem.component.OvalitExpandable
 import com.ovalit.core.designsystem.component.OvalitOutlinedButton
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -184,6 +185,7 @@ private fun RowDivider() {
 
 @Composable
 private fun RequestRow(request: FriendRequest, onAccept: () -> Unit, onDecline: () -> Unit) {
+    val haptics = rememberOvalitHaptics()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -200,9 +202,23 @@ private fun RequestRow(request: FriendRequest, onAccept: () -> Unit, onDecline: 
         ) {
             RequestText(request, Modifier.widthIn(min = RequestTextMinWidth).weight(1f))
             Row {
-                SmallButton(text = stringResource(Res.string.decline), filled = false, onClick = onDecline)
+                SmallButton(
+                    text = stringResource(Res.string.decline),
+                    filled = false,
+                    onClick = {
+                        haptics.reject()
+                        onDecline()
+                    },
+                )
                 Spacer(Modifier.width(OvalitSpacing.xs))
-                SmallButton(text = stringResource(Res.string.accept), filled = true, onClick = onAccept)
+                SmallButton(
+                    text = stringResource(Res.string.accept),
+                    filled = true,
+                    onClick = {
+                        haptics.confirm()
+                        onAccept()
+                    },
+                )
             }
         }
     }

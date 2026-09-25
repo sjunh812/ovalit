@@ -19,11 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -33,6 +33,7 @@ import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitPrimaryButton
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTextButton
+import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -406,6 +407,7 @@ internal fun PlayerSheet(
     onShareInvite: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val haptics = rememberOvalitHaptics()
     val body = stringResource(
         when (row.relation) {
             PlayerRelation.APP_USER -> Res.string.player_app_user
@@ -418,12 +420,16 @@ internal fun PlayerSheet(
         when (row.relation) {
             PlayerRelation.APP_USER -> OvalitPrimaryButton(
                 text = stringResource(Res.string.player_send_request),
-                onClick = onSendRequest,
+                onClick = {
+                    haptics.confirm()
+                    onSendRequest()
+                },
                 modifier = Modifier.fillMaxWidth(),
             )
             PlayerRelation.REQUESTED_ME -> OvalitPrimaryButton(
                 text = stringResource(Res.string.player_accept),
                 onClick = {
+                    haptics.confirm()
                     onAccept()
                     onDismiss()
                 },

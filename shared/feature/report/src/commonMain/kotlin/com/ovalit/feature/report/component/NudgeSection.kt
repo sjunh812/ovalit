@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -128,6 +129,7 @@ internal fun RivalPickerSheet(
     onDismiss: () -> Unit,
 ) {
     val colors = OvalitTheme.colors
+    val haptics = rememberOvalitHaptics()
     val period = periodLabel(report.period)
 
     OvalitBottomSheet(
@@ -143,7 +145,10 @@ internal fun RivalPickerSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 60.dp)
-                    .clickable(role = Role.Button) { onPick(friend.id) }
+                    .clickable(role = Role.Button) {
+                        haptics.confirm()
+                        onPick(friend.id)
+                    }
                     .semantics(mergeDescendants = true) {}
                     .padding(vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,

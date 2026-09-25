@@ -36,6 +36,7 @@ import com.ovalit.core.designsystem.component.OvalitOutlinedButton
 import com.ovalit.core.designsystem.component.OvalitSwitch
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -289,11 +290,19 @@ private fun ToggleRow(
     description: String? = null,
     trailingLabel: String? = null,
 ) {
+    val haptics = rememberOvalitHaptics()
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = RowMinHeight)
-            .toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange)
+            .toggleable(
+                value = checked,
+                role = Role.Switch,
+                onValueChange = { on ->
+                    haptics.toggle(on)
+                    onCheckedChange(on)
+                },
+            )
             .padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {

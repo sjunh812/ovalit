@@ -34,6 +34,7 @@ import com.ovalit.core.designsystem.component.OvalitIconButton
 import com.ovalit.core.designsystem.component.OvalitPrimaryButton
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTextButton
+import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
@@ -113,6 +114,7 @@ internal fun FriendProfileScreen(
     onOpenMatches: () -> Unit = {},
 ) {
     val colors = OvalitTheme.colors
+    val haptics = rememberOvalitHaptics()
     var confirmUnfriend by rememberSaveable { mutableStateOf(false) }
 
     Box(modifier = modifier.fillMaxSize().background(colors.bg)) {
@@ -141,7 +143,10 @@ internal fun FriendProfileScreen(
                     SmallButton(
                         text = stringResource(if (uiState.isRival) Res.string.unset_rival else Res.string.set_rival),
                         filled = false,
-                        onClick = onToggleRival,
+                        onClick = {
+                            if (!uiState.isRival) haptics.confirm()
+                            onToggleRival()
+                        },
                     )
                 }
             }

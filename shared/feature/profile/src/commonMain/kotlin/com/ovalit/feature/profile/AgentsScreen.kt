@@ -11,13 +11,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
@@ -36,6 +39,9 @@ import com.ovalit.core.model.AgentStats
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.Role
+import com.ovalit.core.ui.AgentImage
+import com.ovalit.core.ui.label
+import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.feature.profile.resources.Res
 import com.ovalit.feature.profile.resources.act_matches
 import com.ovalit.feature.profile.resources.agents_by_agent
@@ -267,7 +273,7 @@ private fun AgentRow(agent: AgentStats, columns: List<MetricColumnSpec>, catalog
             .padding(horizontal = OvalitSpacing.gutter, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Thumbnail(name = name, width = ThumbnailSize)
+        AgentImage(agent.agent, name, Modifier.size(ThumbnailSize).clip(RoundedCornerShape(9.dp)))
         Spacer(Modifier.width(OvalitSpacing.md))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             OvalitText(text = name, style = OvalitTheme.typography.bodyStrong, maxLines = 1)

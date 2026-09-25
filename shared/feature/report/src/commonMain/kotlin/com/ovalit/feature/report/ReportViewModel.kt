@@ -3,6 +3,7 @@ package com.ovalit.feature.report
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ovalit.core.data.AccountRepository
+import com.ovalit.core.data.ContentRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
@@ -12,12 +13,13 @@ import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.model.metricsIn
 import com.ovalit.core.model.weeklyReport
+import com.ovalit.core.ui.PlayerBadge
+import com.ovalit.core.ui.playerBadge
 import kotlin.time.Clock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.TimeZone
 
@@ -48,6 +50,7 @@ class ReportViewModel(
     accountRepository: AccountRepository,
     preferencesRepository: UserPreferencesRepository,
     friendRepository: FriendRepository,
+    contentRepository: ContentRepository,
     clock: Clock,
     timeZone: TimeZone,
 ) : ViewModel() {
@@ -83,10 +86,14 @@ class ReportViewModel(
         initialValue = ReportUiState.Loading,
     )
 
-    /** 오른쪽 위 아바타에 쓰는 Riot ID입니다. 연동을 해제했으면 `null`입니다. */
-    val riotId: StateFlow<String?> = accountRepository.account
-        .map { it?.riotId }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initialValue = null)
+    /** 오른쪽 위 티어와 아바타입니다. 연동을 해제했으면 `null`입니다. */
+    val badge: StateFlow<PlayerBadge?> = combine(
+        accountRepository.account,
+        matchRepository.observeMatches(),
+        contentRepository.catalog,
+    ) { account, matches, catalog ->
+        account?.let { playerBadge(it.riotId, matches, catalog) }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initialValue = null)
 
     fun selectQueue(filter: QueueFilter) {
         selectedQueue.value = filter

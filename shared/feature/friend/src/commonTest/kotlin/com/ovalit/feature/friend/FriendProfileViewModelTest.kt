@@ -1,5 +1,6 @@
 package com.ovalit.feature.friend
 
+import com.ovalit.core.data.FakeContentRepository
 import com.ovalit.core.data.FakeFriendRepository
 import com.ovalit.core.data.FakeMatchRepository
 import com.ovalit.core.data.FriendRepository
@@ -65,7 +66,7 @@ class FriendProfileViewModelTest {
 
     private suspend fun viewModel(): FriendProfileViewModel {
         val id = friends.friends.first().first().id
-        return FriendProfileViewModel(id, friends, FakeMatchRepository(), Clock.System, TimeZone.of("Asia/Seoul"))
+        return FriendProfileViewModel(id, friends, FakeMatchRepository(), FakeContentRepository(), Clock.System, TimeZone.of("Asia/Seoul"))
     }
 
     private fun TestScope.collect(viewModel: FriendProfileViewModel) {

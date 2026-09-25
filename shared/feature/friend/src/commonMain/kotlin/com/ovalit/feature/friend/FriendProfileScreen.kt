@@ -13,11 +13,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,15 +26,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role as SemanticsRole
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitDivider
@@ -51,9 +46,12 @@ import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.HeadToHeadRow
+import com.ovalit.core.ui.ProfileBanner
+import com.ovalit.core.ui.ProfileIdentity
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.periodLabel
+import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.friend.resources.Res
 import com.ovalit.feature.friend.resources.back
@@ -61,7 +59,6 @@ import com.ovalit.feature.friend.resources.cancel
 import com.ovalit.feature.friend.resources.compare_caption
 import com.ovalit.feature.friend.resources.compare_no_matches
 import com.ovalit.feature.friend.resources.compare_title
-import com.ovalit.feature.friend.resources.main_role
 import com.ovalit.feature.friend.resources.more
 import com.ovalit.feature.friend.resources.not_enough
 import com.ovalit.feature.friend.resources.period_matches
@@ -78,8 +75,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-private val BannerHeight = 112.dp
-private val AvatarSize = 64.dp
 private val TouchSize = 44.dp
 private val CellGap = 10.dp
 
@@ -121,51 +116,26 @@ internal fun FriendProfileScreen(
         val name = friend.riotId.substringBefore('#')
 
         Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-            // 목업의 배너 자리다. 플레이어 카드가 붙기 전까지 배경색만 칠하고 그라데이션은 쓰지 않는다.
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Box(modifier = Modifier.fillMaxWidth().height(BannerHeight).background(colors.raised)) {
-                    Row(
-                        modifier = Modifier
-                            .safeDrawingPadding()
-                            .fillMaxWidth()
-                            .padding(horizontal = OvalitSpacing.sm, vertical = OvalitSpacing.sm),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        IconButton(OvalitIcons.Back, stringResource(Res.string.back), onBack)
-                        Spacer(Modifier.weight(1f))
-                        IconButton(OvalitIcons.More, stringResource(Res.string.more)) { confirmUnfriend = true }
-                    }
+            ProfileBanner(uiState.badge) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.sm, vertical = OvalitSpacing.sm),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(OvalitIcons.Back, stringResource(Res.string.back), onBack)
+                    Spacer(Modifier.weight(1f))
+                    IconButton(OvalitIcons.More, stringResource(Res.string.more)) { confirmUnfriend = true }
                 }
-                Avatar(
-                    riotId = friend.riotId,
-                    size = AvatarSize,
-                    ring = true,
-                    modifier = Modifier.padding(start = OvalitSpacing.gutter, top = BannerHeight - AvatarSize / 2),
-                )
             }
             Spacer(Modifier.height(10.dp))
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter),
                 verticalAlignment = Alignment.Top,
             ) {
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                    OvalitText(text = friend.riotId, style = OvalitTheme.typography.titleL)
-                    (uiState.theirReport as? WeeklyReport.Ready)?.mainRole?.let { role ->
-                        val roleName = stringResource(role.label)
-                        val text = stringResource(Res.string.main_role, roleName)
-                        OvalitText(
-                            text = buildAnnotatedString {
-                                append(text)
-                                val start = text.indexOf(roleName)
-                                if (start >= 0) {
-                                    addStyle(SpanStyle(color = colors.t2, fontWeight = FontWeight.SemiBold), start, start + roleName.length)
-                                }
-                            },
-                            style = OvalitTheme.typography.caption,
-                            color = colors.t3,
-                        )
-                    }
-                }
+                ProfileIdentity(
+                    badge = uiState.badge,
+                    mainRole = (uiState.theirReport as? WeeklyReport.Ready)?.mainRole,
+                    modifier = Modifier.weight(1f),
+                )
                 if (friend.statsPublic) {
                     SmallButton(
                         text = stringResource(if (uiState.isRival) Res.string.unset_rival else Res.string.set_rival),
@@ -254,7 +224,7 @@ internal fun FriendProfileScreen(
 @Composable
 private fun IconButton(icon: ImageVector, description: String, onClick: () -> Unit) {
     Box(
-        modifier = Modifier.size(TouchSize).clickable(role = SemanticsRole.Button, onClick = onClick),
+        modifier = Modifier.size(TouchSize).clip(CircleShape).clickable(role = SemanticsRole.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         OvalitIcon(icon, contentDescription = description, tint = OvalitTheme.colors.t1)
@@ -318,7 +288,6 @@ private fun TheirWeek(report: WeeklyReport?) {
     }
 }
 
-private fun shrinkToFit(size: TextUnit) = TextAutoSize.StepBased(minFontSize = 9.sp, maxFontSize = size)
 
 @Composable
 private fun MetricCell(metric: FixedMetric, metrics: MatchMetrics, usual: MatchMetrics?, modifier: Modifier) {

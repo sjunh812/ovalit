@@ -4,32 +4,27 @@ import androidx.compose.runtime.Composable
 import com.ovalit.core.model.DynamicMetric
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.QueueFilter
-import com.ovalit.core.model.Role
+import com.ovalit.core.ui.MetricFormat
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.metric_assists_per_round
 import com.ovalit.feature.report.resources.metric_eco_win
-import com.ovalit.feature.report.resources.metric_force_buy_win
-import com.ovalit.feature.report.resources.metric_full_buy_win
 import com.ovalit.feature.report.resources.metric_first_duel_involvement
 import com.ovalit.feature.report.resources.metric_first_duel_win
 import com.ovalit.feature.report.resources.metric_first_kill_win
+import com.ovalit.feature.report.resources.metric_force_buy_win
+import com.ovalit.feature.report.resources.metric_full_buy_win
 import com.ovalit.feature.report.resources.metric_kast
 import com.ovalit.feature.report.resources.metric_survival
 import com.ovalit.feature.report.resources.queue_competitive
 import com.ovalit.feature.report.resources.queue_competitive_and_unrated
 import com.ovalit.feature.report.resources.queue_other
 import com.ovalit.feature.report.resources.queue_unrated
-import com.ovalit.feature.report.resources.role_controller
-import com.ovalit.feature.report.resources.role_duelist
-import com.ovalit.feature.report.resources.role_initiator
-import com.ovalit.feature.report.resources.role_sentinel
 import com.ovalit.feature.report.resources.sample_eco_rounds
 import com.ovalit.feature.report.resources.sample_first_duels
 import com.ovalit.feature.report.resources.sample_first_kills
 import com.ovalit.feature.report.resources.sample_force_buy_rounds
 import com.ovalit.feature.report.resources.sample_full_buy_rounds
 import com.ovalit.feature.report.resources.sample_rounds
-import com.ovalit.core.ui.MetricFormat
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -55,14 +50,6 @@ internal val DynamicMetric.format: MetricFormat
 // 퍼블 관여율은 역할에 따라 오르는 게 좋기도 나쁘기도 하다. 올랐다고 초록으로 칠하지 않는다.
 internal val DynamicMetric.hasGoodDirection: Boolean
     get() = this != DynamicMetric.FIRST_DUEL_INVOLVEMENT
-
-internal val Role.label: StringResource
-    get() = when (this) {
-        Role.DUELIST -> Res.string.role_duelist
-        Role.INITIATOR -> Res.string.role_initiator
-        Role.CONTROLLER -> Res.string.role_controller
-        Role.SENTINEL -> Res.string.role_sentinel
-    }
 
 internal val QueueFilter.label: StringResource
     get() = when (this) {

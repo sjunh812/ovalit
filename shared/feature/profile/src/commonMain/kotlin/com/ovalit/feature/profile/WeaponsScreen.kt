@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,20 +29,23 @@ import androidx.compose.ui.semantics.Role as SemanticsRole
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ovalit.core.designsystem.component.OvalitDisclosureIcon
 import com.ovalit.core.designsystem.component.OvalitDivider
+import com.ovalit.core.designsystem.component.OvalitExpandable
 import com.ovalit.core.designsystem.component.OvalitText
-import com.ovalit.core.designsystem.icon.OvalitIcon
-import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.WeaponCategory
 import com.ovalit.core.model.WeaponHighlight
+import com.ovalit.core.model.WeaponId
 import com.ovalit.core.model.WeaponReport
 import com.ovalit.core.model.WeaponStats
+import com.ovalit.core.ui.WeaponImage
 import com.ovalit.feature.profile.resources.Res
 import com.ovalit.feature.profile.resources.act_matches
 import com.ovalit.feature.profile.resources.no_matches
@@ -132,7 +137,7 @@ private fun Highlight(highlight: WeaponHighlight, catalog: ContentCatalog) {
     }
 
     Row(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically) {
-        Thumbnail(name = name, width = 40.dp, height = 24.dp)
+        WeaponThumb(highlight.act.weapon, name, width = 52.dp, height = 30.dp)
         Spacer(Modifier.width(OvalitSpacing.md))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             Row(verticalAlignment = Alignment.Bottom) {
@@ -230,7 +235,7 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
             expanded = expanded == key,
             onToggle = { expanded = if (expanded == key) null else key },
         )
-        if (expanded == key) {
+        OvalitExpandable(visible = expanded == key) {
             Column(
                 modifier = Modifier.padding(start = OvalitSpacing.gutter + OvalitSpacing.md, end = OvalitSpacing.gutter, bottom = 10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -276,12 +281,7 @@ private fun CategoryRow(
             textAlign = TextAlign.End,
         )
         Spacer(Modifier.width(OvalitSpacing.sm))
-        OvalitIcon(
-            imageVector = if (expanded) OvalitIcons.ChevronDown else OvalitIcons.ChevronRight,
-            contentDescription = null,
-            tint = OvalitTheme.colors.t3,
-            size = 14.dp,
-        )
+        OvalitDisclosureIcon(expanded = expanded)
     }
 }
 
@@ -289,7 +289,7 @@ private fun CategoryRow(
 private fun WeaponRow(weapon: WeaponStats, catalog: ContentCatalog) {
     val name = catalog.weaponName(weapon.weapon)
     Row(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically) {
-        Thumbnail(name = name, width = 32.dp, height = 19.dp)
+        WeaponThumb(weapon.weapon, name, width = 44.dp, height = 24.dp)
         Spacer(Modifier.width(OvalitSpacing.md))
         OvalitText(text = name, modifier = Modifier.weight(1f), style = OvalitTheme.typography.body)
         OvalitText(
@@ -306,5 +306,18 @@ private fun WeaponRow(weapon: WeaponStats, catalog: ContentCatalog) {
             color = if (weapon.isMeasurable) OvalitTheme.colors.t1 else OvalitTheme.colors.t3,
             textAlign = TextAlign.End,
         )
+    }
+}
+
+// 기본 스킨 총은 짙은 회색이라 다크 테마 바탕에 묻힌다. 목업의 무기 칸처럼 옅은 면 위에 올린다.
+@Composable
+private fun WeaponThumb(weapon: WeaponId, name: String, width: Dp, height: Dp) {
+    Box(
+        modifier = Modifier
+            .size(width = width, height = height)
+            .background(OvalitTheme.colors.fill, RoundedCornerShape(4.dp))
+            .padding(horizontal = 4.dp, vertical = 3.dp),
+    ) {
+        WeaponImage(weapon, name, Modifier.fillMaxSize())
     }
 }

@@ -2,16 +2,21 @@ package com.ovalit.feature.friend
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ovalit.core.data.ContentRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.MatchRepository
+import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Friend
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.SharedRecord
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.model.latestAgent
+import com.ovalit.core.model.latestTier
 import com.ovalit.core.model.metricsIn
 import com.ovalit.core.model.sharedWith
 import com.ovalit.core.model.weeklyReport
+import com.ovalit.core.ui.PlayerBadge
 import kotlin.time.Clock
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -33,6 +38,8 @@ sealed interface FriendProfileUiState {
      */
     data class Success(
         val friend: Friend,
+        val badge: PlayerBadge,
+        val catalog: ContentCatalog,
         val isRival: Boolean,
         val shared: SharedRecord,
         val theirReport: WeeklyReport?,
@@ -45,6 +52,7 @@ class FriendProfileViewModel(
     private val friendId: PlayerId,
     private val friendRepository: FriendRepository,
     matchRepository: MatchRepository,
+    contentRepository: ContentRepository,
     clock: Clock,
     timeZone: TimeZone,
 ) : ViewModel() {
@@ -53,11 +61,15 @@ class FriendProfileViewModel(
         friendRepository.friends,
         friendRepository.rival,
         matchRepository.observeMatches(),
-    ) { friends, rival, myMatches ->
+        contentRepository.catalog,
+    ) { friends, rival, myMatches, catalog ->
         val friend = friends.firstOrNull { it.id == friendId } ?: return@combine FriendProfileUiState.Gone
         val myReport = myMatches.weeklyReport(now = clock.now(), timeZone = timeZone, queueFilter = QUEUE)
+        val tier = friend.matches.latestTier()
         FriendProfileUiState.Success(
             friend = friend,
+            badge = PlayerBadge(friend.riotId, friend.matches.latestAgent(), tier, tier?.let { catalog.tiers[it] }),
+            catalog = catalog,
             isRival = rival == friendId,
             shared = myMatches.sharedWith(friendId),
             theirReport = friend.takeIf { it.statsPublic }?.matches

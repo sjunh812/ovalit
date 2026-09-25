@@ -12,9 +12,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -24,10 +24,12 @@ import com.ovalit.core.model.DynamicSlot
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.ui.label
+import com.ovalit.core.ui.periodLabel
+import com.ovalit.core.ui.valueText
 import com.ovalit.feature.report.format
 import com.ovalit.feature.report.hasGoodDirection
 import com.ovalit.feature.report.label
-import com.ovalit.core.ui.periodLabel
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.baseline_average
 import com.ovalit.feature.report.resources.baseline_missing
@@ -38,7 +40,6 @@ import com.ovalit.feature.report.resources.dynamic_title_steady
 import com.ovalit.feature.report.resources.dynamic_title_unknown
 import com.ovalit.feature.report.resources.dynamic_unknown_hint
 import com.ovalit.feature.report.sampleText
-import com.ovalit.core.ui.valueText
 import org.jetbrains.compose.resources.stringResource
 
 // 세 번째 칸이 화면 끝에서 살짝 잘리게 둔다. 옆으로 밀어 볼 수 있다는 표시다.

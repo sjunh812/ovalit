@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlin.math.abs
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
@@ -14,6 +13,10 @@ import com.ovalit.core.model.Role
 import com.ovalit.core.model.SideInsight
 import com.ovalit.core.model.SideMetric
 import com.ovalit.core.ui.MetricFormat
+import com.ovalit.core.ui.label
+import com.ovalit.core.ui.resources.Res as CoreUiRes
+import com.ovalit.core.ui.resources.metric_damage
+import com.ovalit.core.ui.valueText
 import com.ovalit.feature.report.label
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.insight_gap_percent
@@ -22,14 +25,12 @@ import com.ovalit.feature.report.resources.insight_side_attack
 import com.ovalit.feature.report.resources.insight_side_defense
 import com.ovalit.feature.report.resources.insight_values
 import com.ovalit.feature.report.resources.insight_values_with_role
-import com.ovalit.core.ui.resources.metric_damage
 import com.ovalit.feature.report.resources.metric_first_duel_win
 import com.ovalit.feature.report.resources.metric_kast
 import com.ovalit.feature.report.resources.metric_survival
-import com.ovalit.core.ui.valueText
+import kotlin.math.abs
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import com.ovalit.core.ui.resources.Res as CoreUiRes
 
 /**
  * 개선 포인트 문장입니다. 공격과 수비로 나눠 가장 크게 벌어진 지표를 사실로만 적습니다.

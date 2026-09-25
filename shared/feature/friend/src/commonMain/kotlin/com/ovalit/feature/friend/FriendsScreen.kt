@@ -1,5 +1,6 @@
 package com.ovalit.feature.friend
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +20,12 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role as SemanticsRole
@@ -27,6 +33,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitDivider
+import com.ovalit.core.designsystem.component.OvalitExpandable
 import com.ovalit.core.designsystem.component.OvalitOutlinedButton
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.icon.OvalitIcon
@@ -37,6 +44,7 @@ import com.ovalit.core.model.FriendRequest
 import com.ovalit.core.model.FriendRequestSource
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.model.latestAgent
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.feature.friend.resources.Res
 import com.ovalit.feature.friend.resources.accept
@@ -51,9 +59,9 @@ import com.ovalit.feature.friend.resources.friends_count
 import com.ovalit.feature.friend.resources.friends_title
 import com.ovalit.feature.friend.resources.invite
 import com.ovalit.feature.friend.resources.invite_note
-import com.ovalit.feature.friend.resources.requests_title
 import com.ovalit.feature.friend.resources.request_from_invite
 import com.ovalit.feature.friend.resources.request_from_scoreboard
+import com.ovalit.feature.friend.resources.requests_title
 import com.ovalit.feature.friend.resources.rival
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -114,11 +122,20 @@ internal fun FriendsScreen(
                 )
             }
 
-            if (uiState.requests.isNotEmpty()) {
-                SectionHeader(stringResource(Res.string.requests_title, uiState.requests.size))
-                uiState.requests.forEachIndexed { index, request ->
-                    if (index > 0) RowDivider()
-                    RequestRow(request, onAccept = { onAccept(request.id) }, onDecline = { onDecline(request.id) })
+            // 수락하거나 거절하면 그 줄이 빠지면서 아래 목록이 끌려 올라온다. 한 번에 튀어 오르지 않게 높이가 천천히 줄게 한다.
+            // 마지막 요청을 처리하면 구역이 접히는 동안에도 그 줄을 보여 준다. 빈 목록을 그리면 "받은 요청 0"이 잠깐 뜬다.
+            var lastRequests by remember { mutableStateOf(uiState.requests) }
+            SideEffect { if (uiState.requests.isNotEmpty()) lastRequests = uiState.requests }
+            val shownRequests = uiState.requests.ifEmpty { lastRequests }
+            OvalitExpandable(visible = uiState.requests.isNotEmpty()) {
+                Column(modifier = Modifier.animateContentSize()) {
+                    SectionHeader(stringResource(Res.string.requests_title, shownRequests.size))
+                    shownRequests.forEachIndexed { index, request ->
+                        key(request.id.value) {
+                            if (index > 0) RowDivider()
+                            RequestRow(request, onAccept = { onAccept(request.id) }, onDecline = { onDecline(request.id) })
+                        }
+                    }
                 }
             }
 
@@ -178,7 +195,7 @@ private fun RequestRow(request: FriendRequest, onAccept: () -> Unit, onDecline: 
             .padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Avatar(request.riotId, AvatarSize)
+        Avatar(agent = null, riotId = request.riotId, size = AvatarSize)
         Spacer(Modifier.width(OvalitSpacing.md))
         // 글자를 키워 한 줄에 안 들어가면 버튼이 설명 아래로 내려간다. 설명을 세 줄로 꺾지 않는다.
         FlowRow(
@@ -229,7 +246,7 @@ private fun FriendRowItem(row: FriendRow, isRival: Boolean, onClick: () -> Unit)
             .padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Avatar(friend.riotId, AvatarSize)
+        Avatar(agent = friend.matches.latestAgent(), riotId = friend.riotId, size = AvatarSize)
         Spacer(Modifier.width(OvalitSpacing.md))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             Row(verticalAlignment = Alignment.Bottom) {

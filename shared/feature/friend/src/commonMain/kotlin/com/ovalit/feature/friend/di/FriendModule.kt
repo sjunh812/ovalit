@@ -11,6 +11,6 @@ import org.koin.dsl.module
 val friendModule = module {
     viewModel { FriendsViewModel(get(), Clock.System, TimeZone.currentSystemDefault()) }
     viewModel { (id: String) ->
-        FriendProfileViewModel(PlayerId(id), get(), get(), Clock.System, TimeZone.currentSystemDefault())
+        FriendProfileViewModel(PlayerId(id), get(), get(), get(), Clock.System, TimeZone.currentSystemDefault())
     }
 }

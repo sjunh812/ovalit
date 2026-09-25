@@ -3,18 +3,19 @@ package com.ovalit.feature.report
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitTheme
-import com.ovalit.feature.report.component.MetricSheetBody
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
-import androidx.compose.ui.unit.dp
+import com.ovalit.core.ui.PlayerBadge
+import com.ovalit.feature.report.component.MetricSheetBody
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -70,13 +71,13 @@ class ReportScreenTest {
                 ReportScreen(
                     uiState = ReportUiState.Success(QueueFilter.COMPETITIVE_AND_UNRATED, ReportPreviewData.moved),
                     onSelectQueue = {},
-                    riotId = "오발러#KR1",
+                    badge = PlayerBadge("오발러#KR1", agent = null, tier = 16, tierName = "플래티넘 2"),
                     onOpenProfile = { opened = true },
                 )
             }
         }
 
-        onNodeWithText("오").performClick()
+        onNodeWithText("플래티넘 2").performClick()
 
         assertTrue(opened)
     }

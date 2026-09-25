@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +22,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
@@ -36,14 +38,15 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.WeeklyReport
-import com.ovalit.feature.report.FriendStanding
 import com.ovalit.core.ui.HeadToHeadRow
 import com.ovalit.core.ui.compare
 import com.ovalit.core.ui.format
-import com.ovalit.feature.report.format
 import com.ovalit.core.ui.label
-import com.ovalit.feature.report.label
 import com.ovalit.core.ui.periodLabel
+import com.ovalit.core.ui.valueText
+import com.ovalit.feature.report.FriendStanding
+import com.ovalit.feature.report.format
+import com.ovalit.feature.report.label
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.friends_choose_metric
 import com.ovalit.feature.report.resources.friends_me
@@ -52,7 +55,6 @@ import com.ovalit.feature.report.resources.friends_title
 import com.ovalit.feature.report.resources.rival_lead
 import com.ovalit.feature.report.resources.rival_no_matches
 import com.ovalit.feature.report.resources.rival_title
-import com.ovalit.core.ui.valueText
 import org.jetbrains.compose.resources.stringResource
 
 // 목업대로 역할이 달라도 나란히 놓을 수 있는 세 지표만 겨룬다
@@ -126,6 +128,7 @@ internal fun FriendRankingSection(mine: MatchMetrics, friends: List<FriendStandi
             Row(
                 modifier = Modifier
                     .heightIn(min = 44.dp)
+                    .clip(RoundedCornerShape(8.dp))
                     .clickable(
                         onClickLabel = stringResource(Res.string.friends_metric_button, metricLabel),
                         role = Role.Button,

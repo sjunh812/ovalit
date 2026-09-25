@@ -7,16 +7,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
@@ -28,8 +25,6 @@ private const val NO_VALUE = "–"
 private val LabelWidth = 48.dp
 private val ValueWidth = 40.dp
 
-// 글자를 키우면 "전투점수"가 "전투"로 잘리고 숫자에 붙는다. 줄을 바꾸지 않고 글자를 줄인다.
-private fun shrinkToFit(size: TextUnit) = TextAutoSize.StepBased(minFontSize = 9.sp, maxFontSize = size)
 
 /**
  * 라이벌 대결과 S5 "나와 비교"의 한 줄입니다. 앞선 쪽이 차지하는 몫만큼 그쪽 끝에서부터 막대를

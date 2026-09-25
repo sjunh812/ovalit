@@ -11,4 +11,11 @@
     <string name="metric_headshot">헤드샷</string>
 
     <string name="value_percent">%1$s%</string>
+
+    <string name="role_duelist">타격대</string>
+    <string name="role_initiator">척후대</string>
+    <string name="role_controller">전략가</string>
+    <string name="role_sentinel">감시자</string>
+    <!-- 역할만 적으면 그 기간에 그 역할만 한 것처럼 읽힌다 -->
+    <string name="main_role">주로 %1$s</string>
 </resources>

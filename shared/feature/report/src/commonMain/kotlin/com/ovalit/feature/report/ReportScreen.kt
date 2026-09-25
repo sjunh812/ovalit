@@ -25,10 +25,11 @@ import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MIN_MATCHES_PER_REPORT
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.feature.report.component.DynamicMetricSection
 import com.ovalit.feature.report.component.FixedMetricRow
-import com.ovalit.feature.report.component.FriendRankingSection
 import com.ovalit.feature.report.component.FixedMetricSummary
+import com.ovalit.feature.report.component.FriendRankingSection
 import com.ovalit.feature.report.component.HorizontalLine
 import com.ovalit.feature.report.component.InsightSection
 import com.ovalit.feature.report.component.MetricSheet
@@ -52,12 +53,12 @@ fun ReportRoute(
     viewModel: ReportViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val riotId by viewModel.riotId.collectAsStateWithLifecycle()
+    val badge by viewModel.badge.collectAsStateWithLifecycle()
 
     ReportScreen(
         uiState = uiState,
         onSelectQueue = viewModel::selectQueue,
-        riotId = riotId,
+        badge = badge,
         onOpenProfile = onOpenProfile,
         modifier = modifier,
     )
@@ -68,7 +69,7 @@ internal fun ReportScreen(
     uiState: ReportUiState,
     onSelectQueue: (QueueFilter) -> Unit,
     modifier: Modifier = Modifier,
-    riotId: String? = null,
+    badge: PlayerBadge? = null,
     onOpenProfile: () -> Unit = {},
 ) {
     Box(
@@ -87,7 +88,7 @@ internal fun ReportScreen(
                     .verticalScroll(rememberScrollState()),
             ) {
                 Spacer(Modifier.height(OvalitSpacing.gutter))
-                ReportTopBar(riotId = riotId, onOpenProfile = onOpenProfile)
+                ReportTopBar(badge = badge, onOpenProfile = onOpenProfile)
                 Spacer(Modifier.height(OvalitSpacing.md))
                 QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
                 Spacer(Modifier.height(OvalitSpacing.md))

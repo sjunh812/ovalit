@@ -10,12 +10,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitText
@@ -28,21 +26,20 @@ import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.format
-import com.ovalit.feature.report.format
 import com.ovalit.core.ui.label
+import com.ovalit.core.ui.shrinkToFit
+import com.ovalit.core.ui.valueText
+import com.ovalit.feature.report.format
 import com.ovalit.feature.report.label
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.baseline_average
 import com.ovalit.feature.report.resources.baseline_missing
 import com.ovalit.feature.report.resources.sheet_open
 import com.ovalit.feature.report.resources.summary_per_match
-import com.ovalit.core.ui.valueText
 import org.jetbrains.compose.resources.stringResource
 
 private val CellGap = 10.dp
 
-// 한 줄에 네 칸이라 글자를 키운 사용자에게는 좁다. 줄을 바꾸거나 자르지 않고 글자를 줄인다.
-private fun shrinkToFit(size: TextUnit) = TextAutoSize.StepBased(minFontSize = 9.sp, maxFontSize = size)
 
 @Composable
 internal fun FixedMetricRow(
@@ -103,7 +100,8 @@ private fun FixedMetricCell(
                 style = OvalitTheme.typography.caption,
                 color = OvalitTheme.colors.t2,
                 maxLines = 1,
-                autoSize = shrinkToFit(OvalitTheme.typography.caption.fontSize),
+                // 화살표까지 넣으면 작은 화면에서 글자를 키웠을 때 9sp로도 "전투점수"가 안 들어간다
+                autoSize = shrinkToFit(OvalitTheme.typography.caption.fontSize, min = 7.sp),
             )
             Spacer(Modifier.width(3.dp))
             OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = OvalitTheme.colors.t4, size = 10.dp)

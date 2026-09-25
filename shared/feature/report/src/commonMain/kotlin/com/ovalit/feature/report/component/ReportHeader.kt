@@ -1,59 +1,65 @@
 package com.ovalit.feature.report.component
 
-import androidx.compose.foundation.horizontalScroll
-import com.ovalit.feature.report.resources.open_profile
-import androidx.compose.ui.Alignment
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitChip
 import com.ovalit.core.designsystem.component.OvalitLogo
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.resources.Res as DesignSystemRes
 import com.ovalit.core.designsystem.resources.app_name
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
-import com.ovalit.feature.report.label
+import com.ovalit.core.ui.PlayerAvatar
+import com.ovalit.core.ui.PlayerBadge
+import com.ovalit.core.ui.TierLabel
+import com.ovalit.core.ui.label
 import com.ovalit.core.ui.periodLabel
+import com.ovalit.core.ui.resources.Res as CoreUiRes
+import com.ovalit.core.ui.resources.main_role
+import com.ovalit.feature.report.label
 import com.ovalit.feature.report.resources.Res
+import com.ovalit.feature.report.resources.open_profile
 import com.ovalit.feature.report.resources.period_date_range
-import com.ovalit.feature.report.resources.period_main_role
 import com.ovalit.feature.report.resources.period_matches
 import com.ovalit.feature.report.resources.period_no_matches_this_week
 import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
-import com.ovalit.core.designsystem.resources.Res as DesignSystemRes
 
 // 목업의 글자 로고(18px)와 높이가 비슷해지는 폭
 private val TopBarLogoWidth = 46.dp
 private val AvatarSize = 30.dp
+private val TierEmblemSize = 16.dp
 private val ProfileTouchSize = 44.dp
 
 @Composable
-internal fun ReportTopBar(riotId: String?, onOpenProfile: () -> Unit, modifier: Modifier = Modifier) {
+internal fun ReportTopBar(badge: PlayerBadge?, onOpenProfile: () -> Unit, modifier: Modifier = Modifier) {
     val appName = stringResource(DesignSystemRes.string.app_name)
 
     Row(
@@ -69,28 +75,27 @@ internal fun ReportTopBar(riotId: String?, onOpenProfile: () -> Unit, modifier: 
                 },
         )
         Spacer(Modifier.weight(1f))
-        // 티어 배지는 데이터가 생기면 아바타 왼쪽에 붙인다
-        if (riotId != null) {
-            Box(
+        if (badge != null) {
+            Row(
                 modifier = Modifier
-                    .size(ProfileTouchSize)
+                    .heightIn(min = ProfileTouchSize)
+                    .clip(RoundedCornerShape(ProfileTouchSize / 2))
                     .clickable(
                         onClickLabel = stringResource(Res.string.open_profile),
                         role = Role.Button,
                         onClick = onOpenProfile,
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                Box(
-                    modifier = Modifier.size(AvatarSize).background(OvalitTheme.colors.fill, CircleShape),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    OvalitText(
-                        text = riotId.take(1),
-                        style = OvalitTheme.typography.label,
-                        color = OvalitTheme.colors.t2,
                     )
-                }
+                    .padding(horizontal = 7.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TierLabel(
+                    badge = badge,
+                    style = OvalitTheme.typography.caption,
+                    color = OvalitTheme.colors.t2,
+                    emblemSize = TierEmblemSize,
+                    modifier = Modifier.padding(end = 10.dp),
+                )
+                PlayerAvatar(agent = badge.agent, riotId = badge.riotId, modifier = Modifier.size(AvatarSize))
             }
         }
     }
@@ -146,7 +151,7 @@ private fun periodCaption(report: WeeklyReport.Ready): AnnotatedString {
     val range = stringResource(Res.string.period_date_range, first.month.number, first.day, last.month.number, last.day)
     val matches = stringResource(Res.string.period_matches, report.metrics.matches)
     val role = report.mainRole?.let { stringResource(it.label) }
-    val roleText = role?.let { stringResource(Res.string.period_main_role, it) }
+    val roleText = role?.let { stringResource(CoreUiRes.string.main_role, it) }
     val emphasis = SpanStyle(color = OvalitTheme.colors.t2, fontWeight = FontWeight.SemiBold)
 
     // 역할 이름만 한 단계 밝고 굵게 둔다. 홈에서 강조는 이 한 곳뿐이다(CLAUDE.md 화면).

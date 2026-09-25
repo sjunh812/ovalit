@@ -16,19 +16,20 @@ import com.ovalit.core.model.WeaponId
 import com.ovalit.core.model.WeaponInfo
 import com.ovalit.core.model.WeaponReport
 import com.ovalit.core.model.WeaponStats
+import com.ovalit.core.ui.PlayerBadge
 import kotlinx.datetime.LocalDate
 
-// 프리뷰와 UI 테스트가 같이 쓴다. 목업의 전략가 예시에 맞췄다.
+// 프리뷰와 UI 테스트가 같이 쓴다. 목업의 전략가 예시에 맞췄다. ID는 번들한 이미지가 붙도록 카탈로그의 UUID다.
 internal object ProfilePreviewData {
 
-    private val omen = AgentId("omen")
-    private val viper = AgentId("viper")
-    private val jett = AgentId("jett")
-    private val killjoy = AgentId("killjoy")
+    private val omen = AgentId("8e253930-4c05-31dd-1b6c-968525494517")
+    private val viper = AgentId("707eab51-4836-f488-046a-cda6bf494859")
+    private val jett = AgentId("add6443a-41bd-e414-f6ad-e58d267f4e95")
+    private val killjoy = AgentId("1e58de9c-4950-5125-93e9-a0aee9f98746")
     private val newAgent = AgentId("new-agent")
-    private val phantom = WeaponId("phantom")
-    private val vandal = WeaponId("vandal")
-    private val ghost = WeaponId("ghost")
+    private val phantom = WeaponId("EE8E8D15-496B-07AC-E5F6-8FAE5D4C7B1A")
+    private val vandal = WeaponId("9C82E19D-4575-0200-1A81-3EACF00CF872")
+    private val ghost = WeaponId("1BAA85B4-4C70-1284-64BB-6481DFC3BB4E")
     private val newWeapon = WeaponId("new-weapon")
 
     val catalog = ContentCatalog(
@@ -39,7 +40,7 @@ internal object ProfilePreviewData {
             ghost to WeaponInfo("고스트", WeaponCategory.PISTOL),
         ),
         maps = emptyMap(),
-        tiers = emptyMap(),
+        tiers = mapOf(16 to "플래티넘 2"),
     )
 
     private fun metrics(rounds: Int, kast: Int, survived: Int, firstKills: Int = 10, firstDeaths: Int = 10) =
@@ -116,6 +117,12 @@ internal object ProfilePreviewData {
 
     val success = ProfileUiState.Success(
         account = Account(riotId = "오발러#KR1", linkedOn = LocalDate(2026, 9, 19)),
+        badge = PlayerBadge(
+            riotId = "오발러#KR1",
+            agent = omen,
+            tier = 16,
+            tierName = "플래티넘 2",
+        ),
         agents = agents,
         weapons = weapons,
         catalog = catalog,

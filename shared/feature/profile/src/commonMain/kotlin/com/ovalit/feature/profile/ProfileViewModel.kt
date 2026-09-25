@@ -13,6 +13,8 @@ import com.ovalit.core.model.WeaponReport
 import com.ovalit.core.model.agentReport
 import com.ovalit.core.model.currentActMatches
 import com.ovalit.core.model.weaponReport
+import com.ovalit.core.ui.PlayerBadge
+import com.ovalit.core.ui.playerBadge
 import kotlin.time.Clock
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +27,7 @@ sealed interface ProfileUiState {
 
     data class Success(
         val account: Account?,
+        val badge: PlayerBadge?,
         val agents: AgentReport,
         val weapons: WeaponReport,
         val catalog: ContentCatalog,
@@ -50,6 +53,7 @@ class ProfileViewModel(
     ) { account, matches, catalog ->
         ProfileUiState.Success(
             account = account,
+            badge = account?.let { playerBadge(it.riotId, matches, catalog) },
             agents = matches.currentActMatches(QUEUE).agentReport(),
             weapons = matches.weaponReport(now = clock.now(), timeZone = timeZone, queueFilter = QUEUE),
             catalog = catalog,

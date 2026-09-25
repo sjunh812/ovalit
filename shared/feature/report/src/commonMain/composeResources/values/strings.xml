@@ -8,14 +8,8 @@
     <string name="queue_other">기타</string>
 
     <string name="period_date_range">%1$d/%2$d – %3$d/%4$d</string>
-    <string name="period_main_role">주로 %1$s</string>
     <string name="period_matches">%1$d경기</string>
     <string name="period_no_matches_this_week">이번 주는 아직 경기가 없어요</string>
-
-    <string name="role_duelist">타격대</string>
-    <string name="role_initiator">척후대</string>
-    <string name="role_controller">전략가</string>
-    <string name="role_sentinel">감시자</string>
 
     <string name="metric_kast">관여율</string>
     <string name="metric_survival">생존율</string>

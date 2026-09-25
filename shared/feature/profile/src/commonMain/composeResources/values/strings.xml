@@ -2,16 +2,10 @@
 <resources>
     <string name="back">뒤로</string>
     <string name="act_matches">이번 액트 %1$d경기</string>
-    <string name="main_role">주로 %1$s</string>
     <string name="unknown_agent">알 수 없는 요원</string>
     <string name="unknown_weapon">알 수 없는 무기</string>
     <string name="not_enough_sample">표본 부족</string>
     <string name="no_matches">이번 액트에 뛴 경기가 아직 없어요</string>
-
-    <string name="role_duelist">타격대</string>
-    <string name="role_initiator">척후대</string>
-    <string name="role_controller">전략가</string>
-    <string name="role_sentinel">감시자</string>
 
     <!-- 내 프로필 -->
     <string name="profile_agents">요원</string>

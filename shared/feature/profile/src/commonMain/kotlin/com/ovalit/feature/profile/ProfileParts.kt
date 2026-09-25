@@ -10,15 +10,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role as SemanticsRole
-import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.icon.OvalitIcon
@@ -27,15 +25,10 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.AgentId
 import com.ovalit.core.model.ContentCatalog
-import com.ovalit.core.model.Role
 import com.ovalit.core.model.WeaponCategory
 import com.ovalit.core.model.WeaponId
 import com.ovalit.feature.profile.resources.Res
 import com.ovalit.feature.profile.resources.back
-import com.ovalit.feature.profile.resources.role_controller
-import com.ovalit.feature.profile.resources.role_duelist
-import com.ovalit.feature.profile.resources.role_initiator
-import com.ovalit.feature.profile.resources.role_sentinel
 import com.ovalit.feature.profile.resources.unknown_agent
 import com.ovalit.feature.profile.resources.unknown_weapon
 import com.ovalit.feature.profile.resources.value_percent
@@ -52,8 +45,6 @@ import org.jetbrains.compose.resources.stringResource
 
 internal const val NO_VALUE = "–"
 
-// 폭이 정해진 칸은 글자를 키운 사용자에게 좁다. 줄을 바꾸거나 자르지 않고 글자를 줄인다.
-internal fun shrinkToFit(size: TextUnit) = TextAutoSize.StepBased(minFontSize = 9.sp, maxFontSize = size)
 
 private val BackTouchSize = 44.dp
 
@@ -68,6 +59,7 @@ internal fun SubScreenTopBar(title: String?, caption: String?, onBack: () -> Uni
         Box(
             modifier = Modifier
                 .size(BackTouchSize)
+                .clip(CircleShape)
                 .clickable(role = SemanticsRole.Button, onClick = onBack),
             contentAlignment = Alignment.Center,
         ) {
@@ -85,20 +77,6 @@ internal fun SubScreenTopBar(title: String?, caption: String?, onBack: () -> Uni
     }
 }
 
-// 요원 초상과 무기 이미지가 붙기 전까지 이름 첫 글자로 자리를 잡는다.
-// 목업처럼 그라데이션으로 채우지 않는다.
-@Composable
-internal fun Thumbnail(name: String, width: Dp, height: Dp = width, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .size(width = width, height = height)
-            .background(OvalitTheme.colors.fill, RoundedCornerShape(9.dp)),
-        contentAlignment = Alignment.Center,
-    ) {
-        OvalitText(text = name.take(1), style = OvalitTheme.typography.label, color = OvalitTheme.colors.t3)
-    }
-}
-
 // 목업대로 강조할 한 줄만 금색이고 나머지는 흐리게 칠한다
 @Composable
 internal fun ShareBar(fraction: Float, highlighted: Boolean, modifier: Modifier = Modifier) {
@@ -112,14 +90,6 @@ internal fun ShareBar(fraction: Float, highlighted: Boolean, modifier: Modifier 
         )
     }
 }
-
-internal val Role.label: StringResource
-    get() = when (this) {
-        Role.DUELIST -> Res.string.role_duelist
-        Role.INITIATOR -> Res.string.role_initiator
-        Role.CONTROLLER -> Res.string.role_controller
-        Role.SENTINEL -> Res.string.role_sentinel
-    }
 
 internal val WeaponCategory.label: StringResource
     get() = when (this) {

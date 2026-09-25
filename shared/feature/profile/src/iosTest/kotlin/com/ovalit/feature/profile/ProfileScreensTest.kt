@@ -20,7 +20,9 @@ class ProfileScreensTest {
             Themed { ProfileScreen(ProfilePreviewData.success, {}, { agentsOpened = true }, { weaponsOpened = true }) }
         }
 
-        onNodeWithText("주로 전략가 · 이번 액트 50경기").assertExists()
+        onNodeWithText("플래티넘 2", useUnmergedTree = true).assertExists()
+        onNodeWithText("주로 전략가", useUnmergedTree = true).assertExists()
+        onNodeWithText("이번 액트 50경기", useUnmergedTree = true).assertExists()
         onNodeWithText("전략가 65% · 오멘, 바이퍼").performClick()
         onNodeWithText("팬텀 · 밴달").performClick()
 

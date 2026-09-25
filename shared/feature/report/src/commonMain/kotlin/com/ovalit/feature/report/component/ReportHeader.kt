@@ -40,9 +40,8 @@ import com.ovalit.core.ui.PlayerAvatar
 import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.core.ui.TierLabel
 import com.ovalit.core.ui.label
+import com.ovalit.core.ui.mainRoleText
 import com.ovalit.core.ui.periodLabel
-import com.ovalit.core.ui.resources.Res as CoreUiRes
-import com.ovalit.core.ui.resources.main_role
 import com.ovalit.feature.report.label
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.open_profile
@@ -152,13 +151,13 @@ private fun periodCaption(report: WeeklyReport.Ready): AnnotatedString {
     val range = stringResource(Res.string.period_date_range, first.month.number, first.day, last.month.number, last.day)
     val matches = stringResource(Res.string.period_matches, report.metrics.matches)
     val role = report.mainRole?.let { stringResource(it.label) }
-    val roleText = role?.let { stringResource(CoreUiRes.string.main_role, it) }
+    val roleText = report.mainRole?.let { mainRoleText(it, report.mainRoleShare) }
     val emphasis = SpanStyle(color = OvalitTheme.colors.t2, fontWeight = FontWeight.SemiBold)
 
     // 역할 이름만 한 단계 밝고 굵게 둔다. 홈에서 강조는 이 한 곳뿐이다(CLAUDE.md 화면).
     return buildAnnotatedString {
         if (role != null && roleText != null) {
-            // 그 역할만 했다는 뜻으로 읽히지 않게 "주로"를 붙인다. 가장 많은 라운드를 뛴 역할이다.
+            // 그 역할만 했다는 뜻으로 읽히지 않게 비중을 붙인다. 가장 많은 라운드를 뛴 역할이다.
             val start = roleText.indexOf(role)
             append(roleText)
             if (start >= 0) addStyle(emphasis, start, start + role.length)

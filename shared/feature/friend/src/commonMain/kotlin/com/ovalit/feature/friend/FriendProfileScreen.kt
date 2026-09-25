@@ -141,6 +141,7 @@ internal fun FriendProfileScreen(
                 ProfileIdentity(
                     badge = uiState.badge,
                     mainRole = (uiState.theirReport as? WeeklyReport.Ready)?.mainRole,
+                    mainRoleShare = (uiState.theirReport as? WeeklyReport.Ready)?.mainRoleShare,
                     modifier = Modifier.weight(1f),
                 )
                 if (friend.statsPublic) {

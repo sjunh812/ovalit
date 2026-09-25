@@ -99,16 +99,24 @@ fun BoxScope.ProfileStatusBarScrim(scrollState: ScrollState) {
 }
 
 /**
- * Riot ID와 티어, 주로 하는 역할입니다. 목업 S5처럼 이름 옆에 엠블럼을 두고, 아래 줄에 "다이아몬드 2 ·
- * 주로 타격대"를 씁니다. 역할 이름만 한 단계 밝고 굵게 올립니다. [trailing]은 그 뒤에 붙는 말입니다.
+ * Riot ID와 티어, 가장 많이 뛴 역할입니다. 목업 S5처럼 이름 옆에 엠블럼을 두고, 아래 줄에 "다이아몬드 2 ·
+ * 타격대 78%"를 씁니다. 역할 이름만 한 단계 밝고 굵게 올립니다. [trailing]은 그 뒤에 붙는 말입니다.
+ *
+ * @param mainRoleShare 역할을 아는 라운드 중 [mainRole]로 뛴 비중입니다. 역할만 적으면 그 역할만 한 것처럼 읽힙니다.
  */
 @Composable
-fun ProfileIdentity(badge: PlayerBadge, mainRole: Role?, modifier: Modifier = Modifier, trailing: String? = null) {
+fun ProfileIdentity(
+    badge: PlayerBadge,
+    mainRole: Role?,
+    mainRoleShare: Double?,
+    modifier: Modifier = Modifier,
+    trailing: String? = null,
+) {
     val colors = OvalitTheme.colors
     val caption = OvalitTheme.typography.caption
     val parts = buildList<@Composable () -> Unit> {
         badge.tierName?.let { add { OvalitText(text = it, style = caption, color = colors.t3) } }
-        mainRole?.let { role -> add { MainRole(role) } }
+        mainRole?.let { role -> add { MainRole(role, mainRoleShare) } }
         trailing?.let { add { OvalitText(text = it, style = caption, color = colors.t3) } }
     }
 
@@ -127,13 +135,20 @@ fun ProfileIdentity(badge: PlayerBadge, mainRole: Role?, modifier: Modifier = Mo
     }
 }
 
-// 아이콘은 역할에 딸린 것이라 "주로" 뒤, 역할 이름 바로 앞에 둔다. 글자 안에 넣어야 줄이 넘어가도
-// 아이콘과 이름이 떨어지지 않는다.
+/** 홈 기간 줄과 프로필 머리에 쓰는 "타격대 78%"입니다. 비중을 모르면 역할 이름만 둡니다. */
 @Composable
-private fun MainRole(role: Role) {
+fun mainRoleText(role: Role, share: Double?): String {
+    val name = stringResource(role.label)
+    return share?.let { stringResource(Res.string.main_role, name, MetricFormat.PERCENT.valueText(it)) } ?: name
+}
+
+// 아이콘은 역할에 딸린 것이라 역할 이름 바로 앞에 둔다. 글자 안에 넣어야 줄이 넘어가도 아이콘과 이름이
+// 떨어지지 않는다.
+@Composable
+private fun MainRole(role: Role, share: Double?) {
     val colors = OvalitTheme.colors
     val name = stringResource(role.label)
-    val text = stringResource(Res.string.main_role, name)
+    val text = mainRoleText(role, share)
     val start = text.indexOf(name)
     val icon = mapOf(
         RoleIconId to InlineTextContent(Placeholder(1.55.em, 1.2.em, PlaceholderVerticalAlign.TextCenter)) {

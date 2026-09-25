@@ -47,7 +47,7 @@ class ReportScreenTest {
     fun `기간 줄에서 역할 이름만 굵게 둔다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        val caption = onNodeWithText("주로 타격대 · ", substring = true)
+        val caption = onNodeWithText("타격대 78% · ", substring = true)
             .fetchSemanticsNode().config[SemanticsProperties.Text].first()
         val bold = caption.spanStyles.filter { it.item.fontWeight == FontWeight.SemiBold }
 
@@ -86,10 +86,10 @@ class ReportScreenTest {
 
     // 역할만 적으면 그 기간에 그 역할만 한 것처럼 읽힌다
     @Test
-    fun `기간 줄의 역할은 가장 많이 한 역할이라고 적는다`() = runComposeUiTest {
+    fun `기간 줄의 역할에는 그 역할로 뛴 비중을 붙인다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        onNodeWithText("주로 타격대 · ", substring = true).assertExists()
+        onNodeWithText("타격대 78% · ", substring = true).assertExists()
     }
 
     @Test

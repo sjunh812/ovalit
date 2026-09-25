@@ -75,6 +75,7 @@ internal fun ProfileScreen(
             ProfileIdentity(
                 badge = if (competitive != null) badge.copy(tier = null, tierName = null) else badge,
                 mainRole = uiState.agents.mainRole,
+                mainRoleShare = uiState.agents.mainRoleShare,
                 trailing = stringResource(Res.string.act_matches, uiState.agents.matches),
                 modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
             )

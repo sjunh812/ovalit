@@ -82,7 +82,6 @@ import com.ovalit.feature.profile.resources.profile_per_match_value
 import com.ovalit.feature.profile.resources.profile_play_time
 import com.ovalit.feature.profile.resources.profile_recent
 import com.ovalit.feature.profile.resources.profile_recent_all
-import com.ovalit.feature.profile.resources.profile_role_share
 import com.ovalit.feature.profile.resources.profile_shots_body
 import com.ovalit.feature.profile.resources.profile_shots_caption
 import com.ovalit.feature.profile.resources.profile_shots_head
@@ -325,14 +324,10 @@ private fun ShotLegend(part: ShotPart, total: Int, stacked: Boolean, modifier: M
 internal fun AgentsSection(report: AgentReport, catalog: ContentCatalog, onOpen: () -> Unit) {
     val shown = report.agents.take(SHOWN_AGENTS)
     if (shown.isEmpty()) return
-    val main = report.roles.firstOrNull()
-    val share = main?.let {
-        val rate = it.rounds.toDouble() / report.roles.sumOf { role -> role.rounds }
-        stringResource(Res.string.profile_role_share, stringResource(it.role.label), percentText(rate))
-    }
 
+    // 역할 비중("타격대 78%")은 바로 위 머리에 있어서 여기 다시 적지 않는다
     Section(modifier = Modifier.clickable(role = SemanticsRole.Button, onClick = onOpen)) {
-        SectionTitle(title = stringResource(Res.string.profile_agents), caption = share, chevron = true)
+        SectionTitle(title = stringResource(Res.string.profile_agents), chevron = true)
         Spacer(Modifier.height(12.dp))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             // 한 칸이라도 승률이 판 수 옆에 안 들어가면 모든 칸의 승률을 아래로 내린다

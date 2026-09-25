@@ -51,7 +51,8 @@ fun Iterable<Match>.weeklyReport(
     val periodMatches = matchesByWeek.between(period.firstDay, end)
     val metrics = periodMatches.totalMetrics()
     val baseline = matchesByWeek.baselineBefore(period.firstDay)
-    val mainRole = periodMatches.mainRole()
+    val roleRounds = periodMatches.roleRounds()
+    val mainRole = roleRounds.maxByOrNull { it.value }?.key
     val history = (1..VOLATILITY_WEEKS).mapNotNull { weeksBefore ->
         matchesByWeek[period.firstDay.minusWeeks(weeksBefore)]?.totalMetrics()
     }
@@ -62,6 +63,7 @@ fun Iterable<Match>.weeklyReport(
         metrics = metrics,
         baseline = baseline,
         mainRole = mainRole,
+        mainRoleShare = mainRole?.let { roleRounds.getValue(it) over roleRounds.values.sum() },
         dynamic = if (queueFilter.hasDynamicMetrics) {
             selectDynamicMetrics(metrics, baseline?.metrics, history, mainRole, focus)
         } else {
@@ -92,11 +94,11 @@ private fun List<Match>.trendWeeks(end: LocalDate, period: ReportPeriod, timeZon
     }
 }
 
-private fun List<Match>.mainRole(): Role? = this
+// 역할마다 뛴 라운드 수다. 역할을 모르는 경기는 뺀다.
+private fun List<Match>.roleRounds(): Map<Role, Int> = this
     .mapNotNull { match -> match.myRole?.let { it to match.rounds.size } }
     .groupBy({ it.first }, { it.second })
-    .maxByOrNull { (_, rounds) -> rounds.sum() }
-    ?.key
+    .mapValues { (_, rounds) -> rounds.sum() }
 
 private fun Map<LocalDate, List<Match>>.baselineBefore(periodStart: LocalDate): Baseline? {
     // 이번 액트 첫 경기가 4주 안쪽이면 거기서부터 센다. 안 그러면 2주치 경기에 "지난 4주 평균"이 붙는다.

@@ -60,6 +60,7 @@ internal object FriendPreviewData {
         metrics = metrics,
         baseline = Baseline(baseline, weeks = 4),
         mainRole = role,
+        mainRoleShare = 0.72,
         dynamic = emptyList(),
         insight = null,
         trend = emptyList(),

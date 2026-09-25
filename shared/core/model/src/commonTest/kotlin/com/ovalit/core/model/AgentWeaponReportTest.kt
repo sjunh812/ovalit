@@ -41,6 +41,15 @@ class AgentWeaponReportTest {
     }
 
     @Test
+    fun `주 역할 비중은 역할을 모르는 경기를 빼고 나눈다`() {
+        val matches = List(2) { game(agent = Omen, role = Role.CONTROLLER, rounds = 24) } +
+            game(agent = Jett, role = Role.DUELIST, rounds = 16) +
+            game(role = null, rounds = 20)
+
+        assertRate(48.0 / 64, matches.agentReport().mainRoleShare)
+    }
+
+    @Test
     fun `비긴 경기는 승률 분모에서 뺀다`() {
         val matches = listOf(game(won = true), game(won = true), game(won = false), game(won = null))
 

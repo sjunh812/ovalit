@@ -119,6 +119,7 @@ internal object ReportPreviewData {
         metrics = thisWeek,
         baseline = lastFourWeeks,
         mainRole = Role.DUELIST,
+        mainRoleShare = 0.78,
         dynamic = listOf(
             DynamicSlot(DynamicMetric.FIRST_DUEL_INVOLVEMENT, Movement.MOVED),
             DynamicSlot(DynamicMetric.SURVIVAL_RATE, Movement.MOVED),
@@ -151,6 +152,7 @@ internal object ReportPreviewData {
     val unknown = moved.copy(
         baseline = null,
         mainRole = null,
+        mainRoleShare = null,
         dynamic = listOf(
             DynamicSlot(DynamicMetric.KAST, Movement.UNKNOWN),
             DynamicSlot(DynamicMetric.SURVIVAL_RATE, Movement.UNKNOWN),

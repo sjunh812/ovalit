@@ -16,6 +16,8 @@ sealed interface WeeklyReport {
     /**
      * @property baseline "지난 4주 평균"에 쓰는 비교 기준입니다. 그 기간 경기가 모자라면 없습니다.
      * @property mainRole 기간 중 라운드를 가장 많이 뛴 역할입니다. 역할을 아는 경기가 없으면 없습니다.
+     * @property mainRoleShare 역할을 아는 라운드 중 [mainRole]로 뛴 라운드의 비중입니다. 화면에는 "타격대 78%"로
+     * 띄웁니다. 역할만 적으면 그 기간에 그 역할만 한 것처럼 읽힙니다.
      * @property dynamic 동적 3칸입니다. 하나도 [Movement.MOVED]가 아닐 때만 "큰 변화 없음"을 띄웁니다.
      * [QueueFilter.OTHER]면 비어 있습니다.
      * @property insight 개선 포인트 문장입니다. 공수 격차가 기준을 넘지 않거나 [QueueFilter.OTHER]면 없습니다.
@@ -28,6 +30,7 @@ sealed interface WeeklyReport {
         val metrics: MatchMetrics,
         val baseline: Baseline?,
         val mainRole: Role?,
+        val mainRoleShare: Double?,
         val dynamic: List<DynamicSlot>,
         val insight: SideInsight?,
         val trend: List<TrendWeek>,

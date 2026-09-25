@@ -7,7 +7,7 @@ const val MIN_AGENT_MATCHES = 5
  * S7 요원 화면에 쓰는 집계입니다. 액트 경계를 넘는 평균은 만들지 않으니 [currentActMatches]로
  * 이번 액트 경기만 추려서 넘깁니다.
  *
- * @property mainRole 라운드를 가장 많이 뛴 역할입니다. 홈의 "주로 타격대"와 같은 규칙입니다.
+ * @property mainRole 라운드를 가장 많이 뛴 역할입니다. 홈의 "타격대 78%"와 같은 규칙입니다.
  * @property roles 라운드를 많이 뛴 역할 순서입니다.
  * @property agents 많이 뛴 요원 순서입니다.
  */
@@ -16,7 +16,11 @@ data class AgentReport(
     val mainRole: Role?,
     val roles: List<RoleShare>,
     val agents: List<AgentStats>,
-)
+) {
+    /** 역할을 아는 라운드 중 [mainRole]로 뛴 라운드의 비중입니다. */
+    val mainRoleShare: Double?
+        get() = roles.firstOrNull()?.let { main -> main.rounds over roles.sumOf { it.rounds } }
+}
 
 data class RoleShare(
     val role: Role,

@@ -24,8 +24,8 @@ class ProfileScreensTest {
             Themed { ProfileScreen(ProfilePreviewData.success, {}, { agentsOpened = true }, { weaponsOpened = true }, {}, {}) }
         }
 
-        onNodeWithText("주로 전략가", useUnmergedTree = true).assertExists()
-        onNodeWithText("전략가 65%").performScrollTo().performClick()
+        onNodeWithText("전략가 65%", useUnmergedTree = true).assertExists()
+        onNodeWithText("요원").performScrollTo().performClick()
         onNodeWithText("무기").performScrollTo().performClick()
 
         assertTrue(agentsOpened && weaponsOpened)

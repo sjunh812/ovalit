@@ -233,6 +233,25 @@ class WeeklyReportTest {
         assertEquals(Role.SENTINEL, ready(newAgent + sentinel).mainRole)
     }
 
+    // 역할만 적으면 그 역할만 한 것처럼 읽혀서 "타격대 67%"처럼 비중을 붙인다
+    @Test
+    fun `주 역할 비중은 역할을 아는 라운드 중 그 역할로 뛴 라운드다`() {
+        val tuesday = LocalDateTime(2026, 9, 22, 21, 0)
+        val duelist = List(2) { gameAt(tuesday, role = Role.DUELIST, rounds = List(3) { quietRound() }) }
+        val controller = List(3) { gameAt(tuesday, role = Role.CONTROLLER) }
+        val newAgent = gameAt(tuesday, role = null, rounds = List(5) { quietRound() })
+
+        assertRate(6.0 / 9, ready(duelist + controller + newAgent).mainRoleShare)
+    }
+
+    @Test
+    fun `역할을 아는 경기가 없으면 비중도 없다`() {
+        val report = ready(List(5) { gameAt(LocalDateTime(2026, 9, 22, 21, 0), role = null) })
+
+        assertNull(report.mainRole)
+        assertNull(report.mainRoleShare)
+    }
+
     // 역할을 모르면 빈칸이 기본 3개(관여율, 생존율, 퍼블 승률)로 채워진다
     @Test
     fun `동적 칸은 주로 뛴 역할에 맞춰 고른다`() {

@@ -17,7 +17,7 @@
     <string name="role_controller">전략가</string>
     <string name="role_sentinel">감시자</string>
     <!-- 역할만 적으면 그 기간에 그 역할만 한 것처럼 읽힌다 -->
-    <string name="main_role">주로 %1$s</string>
+    <string name="main_role">%1$s %2$s</string>
 
     <!-- 큐 칩. 홈, 경기 목록, 설정이 같이 쓴다 -->
     <string name="queue_filter_competitive_and_unrated">경쟁 + 일반</string>

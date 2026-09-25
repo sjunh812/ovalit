@@ -8,7 +8,11 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit && tsc --noEmit -p test",
     "db:migrate:local": "wrangler d1 migrations apply ovalit --local",
-    "build:tables": "node scripts/build-tables.mjs"
+    "build:tables": "node scripts/build-tables.mjs",
+    "prepare:assets": "node scripts/prepare-assets.mjs"
+  },
+  "engines": {
+    "node": ">=22"
   },
   "dependencies": {
     "hono": "^4.13.9"

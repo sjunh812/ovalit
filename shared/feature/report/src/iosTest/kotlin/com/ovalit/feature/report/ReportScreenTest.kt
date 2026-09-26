@@ -262,7 +262,7 @@ class ReportScreenTest {
     fun `액트가 바뀌어 앞선 주가 모자라면 평소 범위를 말하지 않는다`() = runComposeUiTest {
         setContent { Sheet(FixedMetric.DAMAGE, ReportPreviewData.newAct) }
 
-        onNodeWithText("이번 액트 기록이 4주 이상 쌓이면 평소 범위를 알려 드려요.").assertExists()
+        onNodeWithText("이번 액트 기록이 4주 이상 쌓이면 평소 범위를 알려드려요.").assertExists()
         onNodeWithText("세로선은 액트가 바뀐 곳이에요").assertExists()
     }
 

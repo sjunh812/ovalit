@@ -27,7 +27,8 @@ import com.ovalit.feature.onboarding.resources.Res
 import com.ovalit.feature.onboarding.resources.intro_headline
 import com.ovalit.feature.onboarding.resources.intro_hook
 import com.ovalit.feature.onboarding.resources.intro_start
-import com.ovalit.feature.onboarding.resources.intro_subtitle
+import com.ovalit.feature.onboarding.resources.intro_subtitle_what
+import com.ovalit.feature.onboarding.resources.intro_subtitle_when
 import org.jetbrains.compose.resources.stringResource
 
 private val LogoWidth = 104.dp
@@ -106,8 +107,15 @@ fun IntroScreen(
 
         Spacer(Modifier.height(OvalitSpacing.md))
 
+        // "움직였는지"에서 줄을 나눈다. 한 줄로 두면 기기 폭에 따라 "드려요"만 다음 줄에 떨어진다. 줄바꿈을 글자에
+        // 박지 않고 두 줄로 두어서, 좁은 화면에서는 줄마다 알아서 꺾인다.
         OvalitText(
-            text = stringResource(Res.string.intro_subtitle),
+            text = stringResource(Res.string.intro_subtitle_what),
+            style = OvalitTheme.typography.body,
+            color = OvalitTheme.colors.t2,
+        )
+        OvalitText(
+            text = stringResource(Res.string.intro_subtitle_when),
             style = OvalitTheme.typography.body,
             color = OvalitTheme.colors.t2,
         )

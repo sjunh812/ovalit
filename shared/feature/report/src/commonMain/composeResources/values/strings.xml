@@ -27,7 +27,7 @@
     <string name="dynamic_title_moved">달라진 점</string>
     <string name="dynamic_title_steady">%1$s는 큰 변화가 없어요</string>
     <string name="dynamic_title_unknown">아직 비교할 기록이 모자라요</string>
-    <string name="dynamic_unknown_hint">몇 주 더 뛰면 평소와 달라진 점을 짚어 드려요</string>
+    <string name="dynamic_unknown_hint">몇 주 더 뛰면 평소와 달라진 점을 짚어드려요.</string>
     <string name="dynamic_caption">지난 %1$d주 대비</string>
     <string name="dynamic_caption_with_role">%1$s 기준 · 지난 %2$d주 대비</string>
 
@@ -42,7 +42,7 @@
 
     <string name="not_enough_title">리포트까지 %1$d경기 남았어요</string>
     <string name="not_enough_title_none">최근 4주 동안 뛴 경기가 없어요</string>
-    <string name="not_enough_body">%1$d경기를 뛰면 리포트를 만들어 드려요</string>
+    <string name="not_enough_body">%1$d경기를 뛰면 리포트를 만들어드려요.</string>
     <!-- S1-a 지표 설명 시트. 화면 라벨은 한글이고 정식 명칭은 여기서 알려준다. -->
     <string name="sheet_open">%1$s 설명 보기</string>
     <string name="sheet_combat_score_name">ACS</string>
@@ -68,7 +68,7 @@
     <string name="sheet_usual_title">평소에는 어느 정도였나요?</string>
     <string name="sheet_usual_range">지난 %1$d주 동안 주마다 %2$s~%3$s 사이였어요.</string>
     <string name="sheet_usual_same">지난 %1$d주 동안 주마다 %2$s였어요.</string>
-    <string name="sheet_usual_missing">이번 액트 기록이 4주 이상 쌓이면 평소 범위를 알려 드려요.</string>
+    <string name="sheet_usual_missing">이번 액트 기록이 4주 이상 쌓이면 평소 범위를 알려드려요.</string>
     <string name="sheet_method_title">어떻게 계산하나요?</string>
     <string name="sheet_kd_no_deaths">데스가 없어서 K/D를 비워 뒀어요. 킬 수를 그대로 보여주면 한 판짜리 기록이 과장돼요.</string>
     <!-- 개선 포인트 문장. 지표 이름이 모두 받침으로 끝나서 조사를 "이", "은"으로 고정했다. 받침 없는 지표를 넣으면 문장을 나눠야 한다. -->

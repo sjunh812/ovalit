@@ -20,9 +20,9 @@
     <string name="theme_dark">다크</string>
     <string name="theme_light">라이트</string>
     <string name="default_queue">기본 큐</string>
-    <string name="default_queue_description">홈을 열 때 먼저 보여 드릴 큐예요</string>
+    <string name="default_queue_description">홈을 열 때 먼저 보여드릴 큐예요</string>
     <string name="focus">관심사</string>
-    <string name="focus_description">고르신 쪽 지표를 달라진 점 앞에 올려 드려요</string>
+    <string name="focus_description">고르신 쪽 지표를 달라진 점 앞에 올려드려요</string>
 
     <string name="section_data">데이터</string>
     <string name="stored_matches">저장된 경기</string>

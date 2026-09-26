@@ -1,6 +1,9 @@
 package com.ovalit.feature.profile
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.getBoundsInRoot
@@ -9,8 +12,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
+import com.ovalit.core.model.WeaponId
+import com.ovalit.core.ui.WeaponThumb
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -144,6 +150,19 @@ class ProfileScreensTest {
         setContent { Themed { ProfileScreen(ProfilePreviewData.success, {}, {}, {}, {}, {}) } }
 
         onAllNodesWithText("KDA ", substring = true, useUnmergedTree = true).assertCountEquals(3)
+    }
+
+    // 같은 칸에 다른 무기가 오면 그림도 바뀌어야 한다. 예전에는 앞 무기 그림이 남았다.
+    @Test
+    fun `칸의 무기가 바뀌면 그림도 새로 그린다`() = runComposeUiTest {
+        var weapon by mutableStateOf(WeaponId("29A0CFAB-485B-F5D5-779A-B59F85E204A8"))
+        setContent { Themed { WeaponThumb(weapon, if (weapon.value == "new") "신무기" else "클래식", width = 76.dp, height = 30.dp) } }
+        waitForIdle()
+
+        // 그림이 없는 무기는 이름 첫 글자를 띄운다
+        weapon = WeaponId("new")
+
+        onNodeWithText("신").assertExists()
     }
 
     @Test

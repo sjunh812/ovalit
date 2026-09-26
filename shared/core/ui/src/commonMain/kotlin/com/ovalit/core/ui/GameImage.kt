@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -137,14 +139,18 @@ private fun BundledImage(
     fallbackText: String? = null,
     alignment: Alignment = Alignment.Center,
 ) {
-    val state by produceState(ImageCache[path], path) {
-        if (path == null || value != LoadState.Pending) return@produceState
+    // 같은 자리에 다른 요원이나 무기가 오면 상태를 새로 만든다. produceState는 키가 바뀌어도 값을 그대로 두어서, 칸의
+    // 무기가 오퍼레이터에서 클래식으로 바뀌었는데 오퍼레이터 그림이 남았다.
+    val holder = remember(path) { mutableStateOf(ImageCache[path]) }
+    LaunchedEffect(path) {
+        if (path == null || holder.value != LoadState.Pending) return@LaunchedEffect
         val loaded = withContext(Dispatchers.Default) {
             runCatching { Res.readBytes("files/$path").decodeToImageBitmap() }.getOrNull()
         }
-        value = if (loaded != null) LoadState.Ready(loaded) else LoadState.Missing
-        ImageCache[path] = value
+        holder.value = if (loaded != null) LoadState.Ready(loaded) else LoadState.Missing
+        ImageCache[path] = holder.value
     }
+    val state by holder
 
     Box(modifier = modifier.background(background), contentAlignment = Alignment.Center) {
         when (val current = state) {

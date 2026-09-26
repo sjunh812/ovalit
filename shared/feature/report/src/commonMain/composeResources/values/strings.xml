@@ -99,6 +99,10 @@
     <string name="friends_metric_button">%1$s, 비교할 지표 바꾸기</string>
     <string name="record_value">%1$d승 %2$d패</string>
     <string name="record_recent">최근 %1$d경기</string>
+    <string name="record_cells_description">최근 경기부터 %1$s</string>
+    <string name="record_win">승</string>
+    <string name="record_loss">패</string>
+    <string name="record_draw">무</string>
     <string name="picks_agents">%1$s 요원</string>
     <string name="picks_weapons">%1$s 무기</string>
 </resources>

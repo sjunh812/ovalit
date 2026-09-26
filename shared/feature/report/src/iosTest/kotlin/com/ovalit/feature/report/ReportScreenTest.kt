@@ -63,6 +63,15 @@ class ReportScreenTest {
         onNodeWithText("20승 10패", useUnmergedTree = true).assertExists()
     }
 
+    // 리포트는 오래된 경기부터 담지만 칸은 op.gg와 경기 탭처럼 최근 경기가 왼쪽이다
+    @Test
+    fun `승패 칸은 가장 최근 경기부터 왼쪽에 둔다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved.copy(results = listOf(false, false, true, null, true))
+        setContent { Report(report) }
+
+        onNodeWithContentDescription("최근 경기부터 승, 무, 승, 패, 패", useUnmergedTree = true).assertExists()
+    }
+
     @Test
     fun `기간 경기가 20 이하면 최근 몇 경기라고 적지 않는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }

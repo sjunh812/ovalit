@@ -53,6 +53,23 @@ class ReportScreenTest {
         onNodeWithText("71%", useUnmergedTree = true).assertExists()
     }
 
+    // 한 주에 수십 판을 뛰면 칸이 바코드처럼 줄어서 가장 최근 20경기만 칸으로 둔다. 승패 글자는 기간 전체다.
+    @Test
+    fun `기간 경기가 20을 넘으면 최근 20경기만 칸으로 두고 승패는 전부 센다`() = runComposeUiTest {
+        val many = ReportPreviewData.moved.copy(results = List(30) { it % 3 != 0 })
+        setContent { Report(many) }
+
+        onNodeWithText("최근 20경기", useUnmergedTree = true).assertExists()
+        onNodeWithText("20승 10패", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun `기간 경기가 20 이하면 최근 몇 경기라고 적지 않는다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved) }
+
+        onNodeWithText("최근", substring = true, useUnmergedTree = true).assertDoesNotExist()
+    }
+
     // 요원은 판 수가 적어 승패로 적고, 5판을 못 넘겨도 그 기간 KDA는 적는다. (70 + 18) ÷ 48
     @Test
     fun `기간 요원과 무기 칸을 누르면 요원과 무기 화면을 연다`() = runComposeUiTest {

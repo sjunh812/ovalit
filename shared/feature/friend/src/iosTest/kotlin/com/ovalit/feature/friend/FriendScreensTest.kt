@@ -3,10 +3,13 @@ package com.ovalit.feature.friend
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertHasNoClickAction
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.PlayerId
@@ -69,6 +72,31 @@ class FriendScreensTest {
         onNodeWithText("이번 주 · 나 · 민석").assertExists()
     }
 
+    // 사용자 요청: 같이 한 경기 다음에 내 프로필과 같은 칸을 두고, 나와 비교는 통계 다음이다
+    @Test
+    fun `전적을 공개한 친구는 내 프로필과 같은 칸을 정한 순서로 보여준다`() = runComposeUiTest {
+        setContent { Themed { FriendProfileScreen(FriendPreviewData.profile, {}, {}, {}) } }
+
+        val order = listOf("같이 한 경기", "다이아몬드 2", "통계", "나와 비교", "맞힌 부위", "요원", "무기", "민석의 최근 경기")
+            // 화면 밖으로 내려간 칸도 잘리기 전 자리로 본다
+            .map { onNodeWithText(it, useUnmergedTree = true).getUnclippedBoundsInRoot().top }
+        assertEquals(order.sorted(), order)
+    }
+
+    // 요원과 무기 칸은 내 프로필과 같다. 친구에게는 요원·무기 상세 화면이 없어 누르지 않는다.
+    @Test
+    fun `친구의 요원과 무기 칸에는 KDA와 킬 수와 헤드샷을 적는다`() = runComposeUiTest {
+        setContent { Themed { FriendProfileScreen(FriendPreviewData.profile, {}, {}, {}) } }
+
+        // 제트는 (330 + 72) ÷ 260이다. 요원 칸에는 합계 없이 KDA만 둔다.
+        onNodeWithText("KDA 1.55", useUnmergedTree = true).assertExists()
+        onNodeWithText("330/260/72", substring = true, useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("260킬", useUnmergedTree = true).assertExists()
+        onNodeWithText("헤드샷 28%", useUnmergedTree = true).assertExists()
+        // 눌리는 섹션이면 제목이 그 섹션 노드에 합쳐져 눌림 동작이 잡힌다
+        onNodeWithText("요원").assertHasNoClickAction()
+    }
+
     @Test
     fun `라이벌 지정 버튼을 누르면 라이벌로 고른다`() = runComposeUiTest {
         var toggled = false
@@ -112,7 +140,7 @@ class FriendScreensTest {
         onNodeWithText("로터스").assertExists()
         onAllNodesWithText("어제").assertCountEquals(2)
         onAllNodesWithText("어센트").assertCountEquals(1)
-        onNodeWithText("전체 보기").performClick()
+        onNodeWithText("전체 보기").performScrollTo().performClick()
 
         assertTrue(openedAll)
     }

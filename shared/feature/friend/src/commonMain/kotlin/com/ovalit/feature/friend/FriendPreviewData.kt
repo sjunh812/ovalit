@@ -2,23 +2,35 @@ package com.ovalit.feature.friend
 
 import com.ovalit.core.model.ActId
 import com.ovalit.core.model.AgentId
+import com.ovalit.core.model.AgentReport
+import com.ovalit.core.model.AgentStats
 import com.ovalit.core.model.Baseline
+import com.ovalit.core.model.CompetitiveRecord
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Friend
 import com.ovalit.core.model.FriendRequest
 import com.ovalit.core.model.FriendRequestSource
+import com.ovalit.core.model.HighlightCount
 import com.ovalit.core.model.MapId
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.PlayerCardId
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.model.ProfileSummary
 import com.ovalit.core.model.Queue
 import com.ovalit.core.model.ReportPeriod
 import com.ovalit.core.model.Role
+import com.ovalit.core.model.RoleShare
 import com.ovalit.core.model.Scoreline
 import com.ovalit.core.model.SharedRecord
 import com.ovalit.core.model.Shots
+import com.ovalit.core.model.WeaponCategory
+import com.ovalit.core.model.WeaponHighlight
+import com.ovalit.core.model.WeaponId
+import com.ovalit.core.model.WeaponInfo
+import com.ovalit.core.model.WeaponReport
+import com.ovalit.core.model.WeaponStats
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.PlayerBadge
 import kotlin.time.Duration.Companion.hours
@@ -76,9 +88,54 @@ internal object FriendPreviewData {
     private val ascent = MapId("7eaecc1b-4337-bbf6-6ab9-04b8f06b3319")
     private val lotus = MapId("2fe4ed3a-450a-948b-6d6b-e89a78e680a9")
     private val pearl = MapId("fd267378-4d1d-484f-ff52-77821ed10dc2")
+    private val raze = AgentId("f94c3b30-42be-e959-889c-5aa313dba261")
+    private val vandal = WeaponId("9C82E19D-4575-0200-1A81-3EACF00CF872")
+    private val phantom = WeaponId("EE8E8D15-496B-07AC-E5F6-8FAE5D4C7B1A")
     private val catalog = ContentCatalog.Empty.copy(
-        agents = mapOf(jett to "제트"),
+        agents = mapOf(jett to "제트", raze to "레이즈"),
         maps = mapOf(ascent to "어센트", lotus to "로터스", pearl to "펄"),
+        weapons = mapOf(vandal to WeaponInfo("밴달", WeaponCategory.RIFLE), phantom to WeaponInfo("팬텀", WeaponCategory.RIFLE)),
+        tiers = mapOf(19 to "다이아몬드 2"),
+    )
+
+    private fun weapon(id: WeaponId, kills: Int, deaths: Int, assists: Int, head: Int, rounds: Int) = WeaponStats(
+        weapon = id,
+        kills = kills,
+        singleWeaponRounds = rounds,
+        shots = Shots(head = head, body = 100 - head, leg = 0),
+        carriedRounds = rounds,
+        deaths = deaths,
+        assists = assists,
+        damage = rounds * 150,
+    )
+
+    // 민석의 이번 액트. 목업 S5의 "다이아몬드 2 · 타격대"에 맞췄다.
+    private val minseokProfile = FriendProfile(
+        summary = ProfileSummary(
+            metrics = metrics(29, 640, 510, 426, 135_600, 92_800, 26),
+            mostKills = 29,
+            playTimeMillis = 17 * 3_600_000L,
+            competitive = CompetitiveRecord(matches = 22, wins = 13, losses = 9, currentTier = 19),
+            highlights = HighlightCount(aces = 1, clutches = 2, clutchAttempts = 5),
+        ),
+        agents = AgentReport(
+            matches = 29,
+            mainRole = Role.DUELIST,
+            roles = listOf(RoleShare(Role.DUELIST, matches = 29, rounds = 640)),
+            agents = listOf(
+                AgentStats(jett, Role.DUELIST, matches = 18, wins = 11, decided = 18, metrics = metrics(18, 400, 330, 260, 86_000, 60_000, 27)),
+                AgentStats(raze, Role.DUELIST, matches = 11, wins = 5, decided = 11, metrics = metrics(11, 240, 180, 166, 49_600, 32_800, 24)),
+            ),
+        ),
+        weapons = WeaponReport(
+            matches = 29,
+            kills = 510,
+            weapons = emptyList(),
+            highlights = listOf(
+                WeaponHighlight(weapon(vandal, 260, 190, 70, head = 28, rounds = 210), null, null, baselineWeeks = 4, movements = emptyMap()),
+                WeaponHighlight(weapon(phantom, 150, 120, 44, head = 22, rounds = 130), null, null, baselineWeeks = 4, movements = emptyMap()),
+            ),
+        ),
     )
 
     // 목업 S5 "민석의 최근 경기"의 세 판에 한 판을 더 얹었다. 넘치는 판이 있어야 "전체 보기"가 뜬다.
@@ -133,7 +190,7 @@ internal object FriendPreviewData {
         catalog = catalog,
         isRival = false,
         shared = SharedRecord(matches = 12, wins = 8, losses = 4),
-        theirReport = ready(minseokWeek, minseokBefore, Role.DUELIST),
+        theirProfile = minseokProfile,
         myReport = ready(myWeek, myBefore, Role.CONTROLLER),
         theirMetricsInMyPeriod = minseokWeek,
         now = now,
@@ -143,7 +200,7 @@ internal object FriendPreviewData {
     val privateProfile = profile.copy(
         friend = seoyeon,
         badge = PlayerBadge(seoyeon.riotId, tier = null, tierName = null),
-        theirReport = null,
+        theirProfile = null,
         theirMetricsInMyPeriod = null,
         shared = SharedRecord(matches = 3, wins = 1, losses = 2),
     )

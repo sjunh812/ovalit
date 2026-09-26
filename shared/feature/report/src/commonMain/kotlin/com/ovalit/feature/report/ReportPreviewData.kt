@@ -164,6 +164,17 @@ internal object ReportPreviewData {
         period = ReportPeriod(firstDay = LocalDate(2026, 9, 14), weeks = 1, includesThisWeek = false),
     )
 
+    // 라운드 운영을 관심사로 골랐다. 관심사 셋이 앞에 늘 있고 그 뒤에 움직인 지표가 붙어 다섯 칸이 된다.
+    val focused = moved.copy(
+        dynamic = listOf(
+            DynamicSlot(DynamicMetric.FORCE_BUY_WIN_RATE, Movement.MOVED),
+            DynamicSlot(DynamicMetric.ECO_WIN_RATE, Movement.STEADY),
+            DynamicSlot(DynamicMetric.FULL_BUY_WIN_RATE, Movement.UNKNOWN),
+            DynamicSlot(DynamicMetric.FIRST_DUEL_INVOLVEMENT, Movement.MOVED),
+            DynamicSlot(DynamicMetric.SURVIVAL_RATE, Movement.MOVED),
+        ),
+    )
+
     val otherQueue = moved.copy(dynamic = emptyList())
 
     val notEnough = WeeklyReport.NotEnoughMatches(played = 3)

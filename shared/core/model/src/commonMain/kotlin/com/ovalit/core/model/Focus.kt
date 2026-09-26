@@ -1,8 +1,8 @@
 package com.ovalit.core.model
 
 /**
- * S0-4와 설정에서 고르는 관심사입니다. 달라진 점을 고를 때 역할의 우선 지표 다음으로 이 지표들을 앞에
- * 둡니다. 빈칸을 채울 때도 기본 지표보다 먼저 씁니다.
+ * S0-4와 설정에서 고르는 관심사입니다. 달라진 점의 맨 앞에 이 지표들을 늘 둡니다. 움직이지 않았어도, 역할이
+ * 크게 띄우지 않는 지표여도 넣습니다.
  */
 enum class Focus(internal val metrics: List<DynamicMetric>) {
     AIM(listOf(DynamicMetric.FIRST_DUEL_WIN_RATE)),

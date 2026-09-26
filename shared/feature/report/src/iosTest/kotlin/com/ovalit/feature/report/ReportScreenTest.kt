@@ -108,6 +108,22 @@ class ReportScreenTest {
         onNodeWithText("아직 비교할 기록이 모자라요").assertExists()
     }
 
+    // 관심사 지표가 늘 앞에 있어서 움직인 지표까지 합치면 셋을 넘는다. 한 줄에 셋씩 놓고 나머지는 다음 줄로 넘긴다.
+    @Test
+    fun `동적 칸은 다섯 개까지 한 줄에 셋씩 놓는다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.focused) }
+
+        val first = onNodeWithText("포스바이 승률", useUnmergedTree = true).getBoundsInRoot()
+        val third = onNodeWithText("풀바이 승률", useUnmergedTree = true).getBoundsInRoot()
+        val fourth = onNodeWithText("퍼블 관여율", useUnmergedTree = true).getBoundsInRoot()
+        val fifth = onNodeWithText("생존율", useUnmergedTree = true).getBoundsInRoot()
+
+        assertEquals(first.top, third.top)
+        assertEquals(first.left, fourth.left)
+        assertTrue(fourth.top > first.top)
+        assertEquals(fourth.top, fifth.top)
+    }
+
     @Test
     fun `이번 주에 뛴 경기가 없으면 지난주 리포트라고 알려준다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.lastWeek) }

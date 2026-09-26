@@ -3,7 +3,11 @@ package com.ovalit.core.model
 import kotlin.math.abs
 import kotlin.math.sqrt
 
-const val DYNAMIC_SLOTS = 3
+/** 동적 칸은 적어도 이만큼 둡니다. 움직인 지표가 모자라면 관심사 지표와 기본 지표로 채웁니다. */
+const val MIN_DYNAMIC_SLOTS = 3
+
+/** 관심사 지표와 움직인 지표가 많아도 이만큼까지만 둡니다. */
+const val MAX_DYNAMIC_SLOTS = 5
 const val VOLATILITY_WEEKS = 8
 const val MIN_VOLATILITY_WEEKS = 4
 const val MOVEMENT_THRESHOLD = 1.5
@@ -52,8 +56,10 @@ private val Defaults = listOf(
 )
 
 /**
- * 움직인 지표를 역할의 우선 지표, 관심사 지표, 많이 움직인 순으로 놓습니다. 남은 칸은 관심사 지표와
- * 기본 지표로 채웁니다. 역할이 크게 띄우지 않는 지표는 어느 쪽에도 넣지 않습니다.
+ * 관심사 지표를 맨 앞에 늘 둡니다. 사용자가 보겠다고 고른 지표라 움직이지 않았어도, 역할이 크게 띄우지 않는 지표여도
+ * 넣고, 관심사에 적힌 순서 그대로 둡니다. 그 뒤에 움직인 지표를 역할의 우선 지표, 많이 움직인 순으로 놓고
+ * [MAX_DYNAMIC_SLOTS]개에서 자릅니다. [MIN_DYNAMIC_SLOTS]개가 안 되면 기본 지표로 채웁니다. 관심사가 아닌 지표는 역할이
+ * 크게 띄우지 않으면 넣지 않습니다.
  *
  * @param history 집계 기간 앞 주들의 주간 지표입니다. 평소 변동폭을 여기서 잽니다.
  */
@@ -68,24 +74,23 @@ internal fun selectDynamicMetrics(
     val priority = role?.priority.orEmpty()
     fun List<DynamicMetric>.rank(metric: DynamicMetric) = indexOf(metric).takeIf { it >= 0 } ?: size
     val assessed = DynamicMetric.entries
-        .filterNot { it in muted }
+        .filter { it in focus.metrics || it !in muted }
         .associateWith { it.assess(current, baseline, history) }
 
     val moved = assessed
-        .filterValues { it.movement == Movement.MOVED }
+        .filter { (metric, assessment) -> assessment.movement == Movement.MOVED && metric !in focus.metrics }
         .keys
         .sortedWith(
             compareBy<DynamicMetric> { priority.rank(it) }
-                .thenBy { focus.metrics.rank(it) }
                 .thenByDescending { assessed.getValue(it).strength },
         )
-        .take(DYNAMIC_SLOTS)
-    val fillers = (focus.metrics + Defaults + DynamicMetric.entries)
+    val chosen = (focus.metrics + moved).take(MAX_DYNAMIC_SLOTS)
+    val fillers = (Defaults + DynamicMetric.entries)
         .distinct()
-        .filter { it in assessed && it !in moved }
-        .take(DYNAMIC_SLOTS - moved.size)
+        .filter { it in assessed && it !in chosen }
+        .take((MIN_DYNAMIC_SLOTS - chosen.size).coerceAtLeast(0))
 
-    return (moved + fillers).map { DynamicSlot(it, assessed.getValue(it).movement) }
+    return (chosen + fillers).map { DynamicSlot(it, assessed.getValue(it).movement) }
 }
 
 internal class Assessment(val movement: Movement, val strength: Double = 0.0)

@@ -1,5 +1,6 @@
 package com.ovalit.feature.report.component
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -51,9 +52,12 @@ import com.ovalit.feature.report.resources.dynamic_unknown_hint
 import com.ovalit.feature.report.sampleText
 import org.jetbrains.compose.resources.stringResource
 
-// 칸이 셋뿐이라 옆으로 밀지 않고 화면 폭을 나눠 갖는다. 목업처럼 세 번째 칸을 화면 끝에서 자르면 숫자가 끊겨
-// 버그처럼 보였다. 간격은 구분선 양옆에만 준다. 칸 폭 안에 간격을 넣으면 첫 칸만 내용이 넓어진다.
+// 한 줄에 세 칸씩 화면 폭을 나눠 갖고, 넷이나 다섯이면 다음 줄로 넘긴다. 목업처럼 옆으로 밀면 세 번째 칸이 화면
+// 끝에서 잘려 숫자가 끊겨 버그처럼 보였다. 간격은 구분선 양옆에만 준다. 칸 폭 안에 간격을 넣으면 첫 칸만 내용이
+// 넓어진다.
+private const val COLUMNS_PER_ROW = 3
 private val ColumnGap = 14.dp
+private val RowGap = 20.dp
 
 @Composable
 internal fun DynamicMetricSection(report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
@@ -66,10 +70,11 @@ internal fun DynamicMetricSection(report: WeeklyReport.Ready, modifier: Modifier
         DynamicSectionTitle(report)
         Spacer(Modifier.height(14.dp))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            // 세 칸의 이름, 숫자, 설명을 줄마다 한 크기로 맞춘다. 칸마다 따로 줄이면 긴 이름만 작아지고 그 칸의
-            // 숫자와 설명만 다른 높이에 놓인다.
-            val gaps = (ColumnGap * 2 + 1.dp) * (columns.size - 1)
-            val columnWidth = (maxWidth - OvalitSpacing.gutter * 2 - gaps) / columns.size
+            // 모든 칸의 이름, 숫자, 설명을 줄마다 한 크기로 맞춘다. 칸마다 따로 줄이면 긴 이름만 작아지고 그 칸의
+            // 숫자와 설명만 다른 높이에 놓인다. 둘째 줄도 첫 줄과 칸 폭이 같다.
+            val perRow = columns.size.coerceAtMost(COLUMNS_PER_ROW)
+            val gaps = (ColumnGap * 2 + 1.dp) * (perRow - 1)
+            val columnWidth = (maxWidth - OvalitSpacing.gutter * 2 - gaps) / perRow
             val valueStyle = rememberFittingStyle(columns.map { it.value }, typography.metricM, columnWidth, min = 14.sp)
             val changeStyle = typography.metricS
             val styles = DynamicColumnStyles(
@@ -79,22 +84,32 @@ internal fun DynamicMetricSection(report: WeeklyReport.Ready, modifier: Modifier
                 caption = rememberFittingStyle(columns.flatMap { it.lines }, typography.caption, columnWidth),
                 stacked = needsStacking(columns, valueStyle, changeStyle, columnWidth),
             )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Min)
-                    .padding(horizontal = OvalitSpacing.gutter),
-            ) {
-                columns.forEachIndexed { index, column ->
-                    if (index > 0) {
-                        Spacer(Modifier.width(ColumnGap))
-                        VerticalLine()
-                        Spacer(Modifier.width(ColumnGap))
-                    }
-                    // 큐를 바꾸면 칸의 지표가 아예 바뀌기도 한다. 그때 숫자를 굴리면 같은 지표가 변한 것처럼 보여서
-                    // 지표마다 따로 그린다. 같은 지표일 때만 숫자가 구른다.
-                    key(column.slot.metric) {
-                        DynamicMetricColumn(column = column, styles = styles, modifier = Modifier.weight(1f))
+            Column(verticalArrangement = Arrangement.spacedBy(RowGap)) {
+                columns.chunked(perRow).forEach { row ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min)
+                            .padding(horizontal = OvalitSpacing.gutter),
+                    ) {
+                        repeat(perRow) { index ->
+                            val column = row.getOrNull(index)
+                            if (index > 0) {
+                                Spacer(Modifier.width(ColumnGap))
+                                // 덜 찬 줄의 빈자리에는 구분선을 긋지 않는다
+                                if (column != null) VerticalLine() else Spacer(Modifier.width(1.dp))
+                                Spacer(Modifier.width(ColumnGap))
+                            }
+                            if (column == null) {
+                                Spacer(Modifier.weight(1f))
+                            } else {
+                                // 큐를 바꾸면 칸의 지표가 아예 바뀌기도 한다. 그때 숫자를 굴리면 같은 지표가 변한 것처럼
+                                // 보여서 지표마다 따로 그린다. 같은 지표일 때만 숫자가 구른다.
+                                key(column.slot.metric) {
+                                    DynamicMetricColumn(column = column, styles = styles, modifier = Modifier.weight(1f))
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -102,7 +117,7 @@ internal fun DynamicMetricSection(report: WeeklyReport.Ready, modifier: Modifier
     }
 }
 
-// 숫자 옆에 변화량이 한 칸이라도 안 들어가면 세 칸 모두 변화량을 숫자 아래로 내린다
+// 숫자 옆에 변화량이 한 칸이라도 안 들어가면 모든 칸의 변화량을 숫자 아래로 내린다
 @Composable
 private fun needsStacking(columns: List<DynamicColumn>, valueStyle: TextStyle, changeStyle: TextStyle, width: Dp): Boolean {
     val measurer = rememberTextMeasurer()

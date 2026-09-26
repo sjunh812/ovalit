@@ -1,6 +1,8 @@
 package com.ovalit.feature.report
 
 import com.ovalit.core.model.ActId
+import com.ovalit.core.model.AgentId
+import com.ovalit.core.model.AgentStats
 import com.ovalit.core.model.Baseline
 import com.ovalit.core.model.DynamicMetric
 import com.ovalit.core.model.DynamicSlot
@@ -12,6 +14,8 @@ import com.ovalit.core.model.Shots
 import com.ovalit.core.model.SideInsight
 import com.ovalit.core.model.SideMetric
 import com.ovalit.core.model.TrendWeek
+import com.ovalit.core.model.WeaponId
+import com.ovalit.core.model.WeaponStats
 import com.ovalit.core.model.WeeklyReport
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -113,6 +117,23 @@ internal object ReportPreviewData {
         isRolePriority = true,
     )
 
+    private fun agentWeek(kills: Int, deaths: Int, assists: Int, matches: Int) =
+        thisWeek.copy(matches = matches, kills = kills, deaths = deaths, assists = assists)
+
+    // 이번 주 일곱 판이다. 요원 칸은 판 수가 적어 승패로 적고, 무기는 한 무기만 쓴 라운드가 20을 넘긴 것만 헤드샷을 띄운다.
+    private val periodAgents = listOf(
+        AgentStats(AgentId("add6443a-41bd-e414-f6ad-e58d267f4e95"), Role.DUELIST, matches = 4, wins = 3, decided = 4,
+            metrics = agentWeek(kills = 70, deaths = 48, assists = 18, matches = 4)),
+        AgentStats(AgentId("f94c3b30-42be-e959-889c-5aa313dba261"), Role.DUELIST, matches = 3, wins = 2, decided = 3,
+            metrics = agentWeek(kills = 48, deaths = 40, assists = 12, matches = 3)),
+    )
+    private val periodWeapons = listOf(
+        WeaponStats(WeaponId("9C82E19D-4575-0200-1A81-3EACF00CF872"), kills = 64, singleWeaponRounds = 42,
+            shots = Shots(head = 60, body = 180, leg = 12), carriedRounds = 70, deaths = 40, assists = 15, damage = 9_800),
+        WeaponStats(WeaponId("E336C6B8-418D-9340-D77F-7A9E4CFE0702"), kills = 21, singleWeaponRounds = 12,
+            shots = Shots(head = 10, body = 40, leg = 5), carriedRounds = 18, deaths = 12, assists = 4, damage = 2_200),
+    )
+
     val moved = WeeklyReport.Ready(
         act = act,
         period = ReportPeriod(firstDay = LocalDate(2026, 9, 21), weeks = 1, includesThisWeek = true),
@@ -127,6 +148,9 @@ internal object ReportPreviewData {
         ),
         insight = firstDuelBySide,
         trend = trend,
+        results = listOf(true, false, true, true, false, true, true),
+        agents = periodAgents,
+        weapons = periodWeapons,
     )
 
     // 4주 전에 액트가 바뀌었다. 그 앞 주는 평소 범위에서 빠진다.

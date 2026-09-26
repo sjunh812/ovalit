@@ -285,6 +285,41 @@ class WeeklyReportTest {
 
         assertEquals(Movement.MOVED, kast.movement)
     }
+
+    @Test
+    fun `리포트에는 기간 경기의 승패를 오래된 경기부터 담고 비긴 경기는 승률에서 뺀다`() {
+        val results = listOf(true, false, null, true, true)
+        val matches = results.mapIndexed { index, won ->
+            match(quietRound(), won = won, startedAt = ThisMonday.atTime(10 + index, 0).toInstant(Seoul))
+        }.reversed()
+
+        val report = ready(matches)
+
+        assertEquals(results, report.results)
+        assertEquals(3, report.wins)
+        assertEquals(1, report.losses)
+        assertEquals(0.75, report.winRate)
+    }
+
+    // 홈의 요원·무기 칸은 이번 액트 전체가 아니라 리포트 기간만 본다
+    @Test
+    fun `리포트의 요원과 무기는 기간 경기만 센다`() {
+        val phantom = WeaponId("phantom")
+        val vandal = WeaponId("vandal")
+        fun week(weeksAgo: Int, agent: AgentId, weapon: WeaponId) = List(5) {
+            match(
+                round(KillEvent(10_000, Me, Enemy, emptySet(), weapon)),
+                agent = agent,
+                startedAt = ThisMonday.minus(weeksAgo, DateTimeUnit.WEEK).atTime(21, 0).toInstant(Seoul),
+            )
+        }
+        val matches = week(0, AgentId("jett"), phantom) + week(1, AgentId("omen"), vandal)
+
+        val report = ready(matches)
+
+        assertEquals(listOf(AgentId("jett")), report.agents.map { it.agent })
+        assertEquals(listOf(phantom), report.weapons.map { it.weapon })
+    }
 }
 
 private fun games(

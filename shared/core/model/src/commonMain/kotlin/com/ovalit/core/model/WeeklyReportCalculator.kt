@@ -71,6 +71,9 @@ fun Iterable<Match>.weeklyReport(
         },
         insight = if (queueFilter.hasDynamicMetrics) periodMatches.sideInsight(mainRole, focus) else null,
         trend = counted.trendWeeks(end = end, period = period, timeZone = timeZone),
+        results = periodMatches.sortedBy { it.startedAt }.map { it.myTeamWon },
+        agents = periodMatches.agentReport().agents,
+        weapons = periodMatches.weaponStats(),
     )
 }
 

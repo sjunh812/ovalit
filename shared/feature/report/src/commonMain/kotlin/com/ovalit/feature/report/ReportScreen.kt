@@ -22,6 +22,7 @@ import com.ovalit.core.designsystem.component.OvalitPullToRefresh
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MIN_MATCHES_PER_REPORT
 import com.ovalit.core.model.PlayerId
@@ -37,7 +38,9 @@ import com.ovalit.feature.report.component.InsightSection
 import com.ovalit.feature.report.component.MetricSheet
 import com.ovalit.feature.report.component.NudgeBanner
 import com.ovalit.feature.report.component.PeriodHeader
+import com.ovalit.feature.report.component.PeriodPicksSection
 import com.ovalit.feature.report.component.QueueChips
+import com.ovalit.feature.report.component.RecordStrip
 import com.ovalit.feature.report.component.ReportSkeleton
 import com.ovalit.feature.report.component.ReportTopBar
 import com.ovalit.feature.report.component.RivalPickerSheet
@@ -55,12 +58,15 @@ import org.koin.compose.viewmodel.koinViewModel
 fun ReportRoute(
     onOpenProfile: () -> Unit,
     onShareInvite: () -> Unit,
+    onOpenAgents: () -> Unit,
+    onOpenWeapons: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ReportViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val badge by viewModel.badge.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val catalog by viewModel.catalog.collectAsStateWithLifecycle()
 
     ReportScreen(
         uiState = uiState,
@@ -71,6 +77,9 @@ fun ReportRoute(
         onSelectRival = viewModel::selectRival,
         isRefreshing = isRefreshing,
         onRefresh = viewModel::refresh,
+        catalog = catalog,
+        onOpenAgents = onOpenAgents,
+        onOpenWeapons = onOpenWeapons,
         modifier = modifier,
     )
 }
@@ -86,6 +95,9 @@ internal fun ReportScreen(
     onSelectRival: (PlayerId) -> Unit = {},
     isRefreshing: Boolean = false,
     onRefresh: () -> Unit = {},
+    catalog: ContentCatalog = ContentCatalog.Empty,
+    onOpenAgents: () -> Unit = {},
+    onOpenWeapons: () -> Unit = {},
 ) {
     Box(
         modifier = modifier
@@ -120,6 +132,9 @@ internal fun ReportScreen(
                             nudge = uiState.nudge,
                             onShareInvite = onShareInvite,
                             onSelectRival = onSelectRival,
+                            catalog = catalog,
+                            onOpenAgents = onOpenAgents,
+                            onOpenWeapons = onOpenWeapons,
                         )
                         is WeeklyReport.NotEnoughMatches -> NotEnoughMatches(played = report.played)
                     }
@@ -140,11 +155,16 @@ private fun ReportContent(
     nudge: HomeNudge?,
     onShareInvite: () -> Unit,
     onSelectRival: (PlayerId) -> Unit,
+    catalog: ContentCatalog,
+    onOpenAgents: () -> Unit,
+    onOpenWeapons: () -> Unit,
 ) {
     var openMetric by rememberSaveable { mutableStateOf<FixedMetric?>(null) }
     var pickingRival by rememberSaveable { mutableStateOf(false) }
 
     PeriodHeader(report)
+    Spacer(Modifier.height(OvalitSpacing.md))
+    RecordStrip(report)
     Spacer(Modifier.height(OvalitSpacing.lg))
     FixedMetricRow(
         metrics = report.metrics,
@@ -164,6 +184,8 @@ private fun ReportContent(
             Spacer(Modifier.height(18.dp))
             InsightSection(insight = insight, role = report.mainRole)
         }
+        // S6과 S7이 경쟁 + 일반만 보니 기타 모드에는 두지 않는다
+        PeriodPicksSection(report, catalog, onOpenAgents = onOpenAgents, onOpenWeapons = onOpenWeapons)
         rival?.let {
             Spacer(Modifier.height(20.dp))
             HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))

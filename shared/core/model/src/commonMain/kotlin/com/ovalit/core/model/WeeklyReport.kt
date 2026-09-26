@@ -18,11 +18,14 @@ sealed interface WeeklyReport {
      * @property mainRole 기간 중 라운드를 가장 많이 뛴 역할입니다. 역할을 아는 경기가 없으면 없습니다.
      * @property mainRoleShare 역할을 아는 라운드 중 [mainRole]로 뛴 라운드의 비중입니다. 화면에는 "타격대 78%"로
      * 띄웁니다. 역할만 적으면 그 기간에 그 역할만 한 것처럼 읽힙니다.
-     * @property dynamic 동적 3칸입니다. 하나도 [Movement.MOVED]가 아닐 때만 "큰 변화 없음"을 띄웁니다.
+     * @property dynamic 동적 칸(3~5개)입니다. 하나도 [Movement.MOVED]가 아닐 때만 "큰 변화 없음"을 띄웁니다.
      * [QueueFilter.OTHER]면 비어 있습니다.
      * @property insight 개선 포인트 문장입니다. 공수 격차가 기준을 넘지 않거나 [QueueFilter.OTHER]면 없습니다.
      * @property trend 지표 설명 시트의 주별 막대입니다. 기간 마지막 주에서 끝나는 [TREND_WEEKS]주이고
      * 오래된 주가 앞에 옵니다.
+     * @property results 기간 경기의 승패입니다. 오래된 경기가 앞에 오고, 비겼거나 결과를 모르면 `null`입니다.
+     * @property agents 기간에 많이 뛴 요원 순서입니다. 홈의 요원 칸에 씁니다.
+     * @property weapons 기간에 킬을 많이 낸 무기 순서입니다. 홈의 무기 칸에 씁니다.
      */
     data class Ready(
         val act: ActId,
@@ -34,7 +37,16 @@ sealed interface WeeklyReport {
         val dynamic: List<DynamicSlot>,
         val insight: SideInsight?,
         val trend: List<TrendWeek>,
-    ) : WeeklyReport
+        val results: List<Boolean?> = emptyList(),
+        val agents: List<AgentStats> = emptyList(),
+        val weapons: List<WeaponStats> = emptyList(),
+    ) : WeeklyReport {
+        val wins: Int get() = results.count { it == true }
+        val losses: Int get() = results.count { it == false }
+
+        /** 비긴 경기는 분모에서 뺍니다. */
+        val winRate: Double? get() = wins over (wins + losses)
+    }
 
     /** 최대 기간까지 넓혀도 경기가 모자랍니다. [played]는 그 기간에 이번 액트에서 뛴 경기 수입니다. */
     data class NotEnoughMatches(val played: Int) : WeeklyReport

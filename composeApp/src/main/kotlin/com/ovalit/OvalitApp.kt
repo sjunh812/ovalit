@@ -149,6 +149,8 @@ fun OvalitApp(appVersion: String) {
                         ReportRoute(
                             onOpenProfile = { backStack.add(Profile) },
                             onShareInvite = { context.shareInvite(friends.inviteLink()) },
+                            onOpenAgents = { backStack.add(Agents) },
+                            onOpenWeapons = { backStack.add(Weapons) },
                         )
                     }
                     entry<Profile> {

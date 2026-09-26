@@ -50,6 +50,7 @@ import com.ovalit.core.model.WeaponReport
 import com.ovalit.core.model.WeaponStats
 import com.ovalit.core.ui.resources.Res
 import com.ovalit.core.ui.resources.agents_matches
+import com.ovalit.core.ui.resources.agents_record
 import com.ovalit.core.ui.resources.column_win_rate
 import com.ovalit.core.ui.resources.duration_hours
 import com.ovalit.core.ui.resources.duration_hours_minutes
@@ -352,31 +353,50 @@ fun ProfileAgentsSection(report: AgentReport, catalog: ContentCatalog, onOpen: (
     ProfileSection(modifier = Modifier.openable(onOpen)) {
         ProfileSectionTitle(title = stringResource(Res.string.profile_agents), chevron = onOpen != null)
         Spacer(Modifier.height(12.dp))
-        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            val caption = OvalitTheme.typography.caption
-            val tileWidth = (maxWidth - TileGap * (SHOWN_TILES - 1)) / SHOWN_TILES
-            // 한 칸이라도 승률이 판 수 옆에 안 들어가면 모든 칸의 승률을 아래로 내린다
-            val records = shown.map { agent ->
-                val matches = stringResource(Res.string.agents_matches, agent.matches)
-                AnnotatedString(if (agent.isMeasurable) matches + TILE_SEPARATOR + percentText(agent.winRate) else matches)
-            }
-            val stacked = !rememberFitsOnOneLine(records, caption, tileWidth)
-            Row(horizontalArrangement = Arrangement.spacedBy(TileGap)) {
-                shown.forEach { agent -> AgentTile(agent, catalog, stacked, Modifier.weight(1f)) }
-                repeat(SHOWN_TILES - shown.size) { Spacer(Modifier.weight(1f)) }
-            }
+        AgentTileRow(shown, catalog)
+    }
+}
+
+/**
+ * 요원 세 칸입니다. 내 프로필, S5, 홈이 같이 씁니다.
+ *
+ * @param showRecord 판 수 대신 "2승 1패"를 적습니다. 홈처럼 기간이 짧아 5판을 못 넘기는 요원이 많은 곳에 씁니다. 그때는
+ * KDA도 판 수와 상관없이 적습니다. 그 기간의 합계라서입니다. 승률은 어디서나 5판을 넘길 때만 붙입니다.
+ */
+@Composable
+fun AgentTileRow(agents: List<AgentStats>, catalog: ContentCatalog, showRecord: Boolean = false) {
+    val shown = agents.take(SHOWN_TILES)
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val caption = OvalitTheme.typography.caption
+        val tileWidth = (maxWidth - TileGap * (SHOWN_TILES - 1)) / SHOWN_TILES
+        // 한 칸이라도 승률이 판 수 옆에 안 들어가면 모든 칸의 승률을 아래로 내린다
+        val lines = shown.map { agent ->
+            val first = agentFirstLine(agent, showRecord)
+            AnnotatedString(if (agent.isMeasurable) first + TILE_SEPARATOR + percentText(agent.winRate) else first)
+        }
+        val stacked = !rememberFitsOnOneLine(lines, caption, tileWidth)
+        Row(horizontalArrangement = Arrangement.spacedBy(TileGap)) {
+            shown.forEach { agent -> AgentTile(agent, catalog, stacked, showRecord, Modifier.weight(1f)) }
+            repeat(SHOWN_TILES - shown.size) { Spacer(Modifier.weight(1f)) }
         }
     }
+}
+
+@Composable
+private fun agentFirstLine(agent: AgentStats, showRecord: Boolean): String = if (showRecord) {
+    stringResource(Res.string.agents_record, agent.wins, agent.decided - agent.wins)
+} else {
+    stringResource(Res.string.agents_matches, agent.matches)
 }
 
 private val TileGap = 10.dp
 private const val TILE_SEPARATOR = "\u00a0·\u00a0"
 
 @Composable
-private fun AgentTile(agent: AgentStats, catalog: ContentCatalog, stacked: Boolean, modifier: Modifier) {
+private fun AgentTile(agent: AgentStats, catalog: ContentCatalog, stacked: Boolean, showRecord: Boolean, modifier: Modifier) {
     val colors = OvalitTheme.colors
     val name = catalog.agentName(agent.agent)
-    val matches = stringResource(Res.string.agents_matches, agent.matches)
+    val matches = agentFirstLine(agent, showRecord)
     val winRate = if (agent.isMeasurable) percentText(agent.winRate) else null
     val winColor = winRateColor(agent.winRate)
 
@@ -396,7 +416,7 @@ private fun AgentTile(agent: AgentStats, catalog: ContentCatalog, stacked: Boole
             stacked = stacked,
         )
         // 합계까지 적으면 칸이 무거워서 KDA만 둔다(사용자 결정)
-        agent.metrics.kda?.takeIf { agent.isMeasurable }?.let { kda ->
+        agent.metrics.kda?.takeIf { showRecord || agent.isMeasurable }?.let { kda ->
             OvalitText(text = kdaRatioText(kda), style = caption, color = colors.t3, maxLines = 1)
         }
     }
@@ -414,20 +434,27 @@ fun ProfileWeaponsSection(report: WeaponReport, catalog: ContentCatalog, onOpen:
     ProfileSection(modifier = Modifier.openable(onOpen)) {
         ProfileSectionTitle(title = stringResource(Res.string.profile_weapons), chevron = onOpen != null)
         Spacer(Modifier.height(12.dp))
-        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            val tileWidth = (maxWidth - TileGap * (SHOWN_TILES - 1)) / SHOWN_TILES
-            val lines = shown.map { weaponLine(it) }
-            // 한 칸이라도 헤드샷과 피해량이 한 줄에 안 들어가면 모든 칸에서 피해량을 아래로 내린다
-            val stacked = !rememberFitsOnOneLine(
-                lines.map { AnnotatedString(it.headshot + TILE_SEPARATOR + it.damage) },
-                OvalitTheme.typography.caption,
-                tileWidth,
-            )
-            // 위 요원 칸과 같은 세 칸 격자에 놓는다. 무기가 셋이 안 되면 빈칸을 남겨 요원과 줄을 맞춘다.
-            Row(horizontalArrangement = Arrangement.spacedBy(TileGap)) {
-                shown.forEachIndexed { index, weapon -> WeaponTile(weapon, lines[index], stacked, catalog, Modifier.weight(1f)) }
-                repeat(SHOWN_TILES - shown.size) { Spacer(Modifier.weight(1f)) }
-            }
+        WeaponTileRow(shown, catalog)
+    }
+}
+
+/** 무기 세 칸입니다. 내 프로필, S5, 홈이 같이 씁니다. 킬 수, 헤드샷, 라운드당 피해량을 적습니다. */
+@Composable
+fun WeaponTileRow(weapons: List<WeaponStats>, catalog: ContentCatalog) {
+    val shown = weapons.take(SHOWN_TILES)
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val tileWidth = (maxWidth - TileGap * (SHOWN_TILES - 1)) / SHOWN_TILES
+        val lines = shown.map { weaponLine(it) }
+        // 한 칸이라도 헤드샷과 피해량이 한 줄에 안 들어가면 모든 칸에서 피해량을 아래로 내린다
+        val stacked = !rememberFitsOnOneLine(
+            lines.map { AnnotatedString(it.headshot + TILE_SEPARATOR + it.damage) },
+            OvalitTheme.typography.caption,
+            tileWidth,
+        )
+        // 요원 칸과 같은 세 칸 격자에 놓는다. 무기가 셋이 안 되면 빈칸을 남겨 요원과 줄을 맞춘다.
+        Row(horizontalArrangement = Arrangement.spacedBy(TileGap)) {
+            shown.forEachIndexed { index, weapon -> WeaponTile(weapon, lines[index], stacked, catalog, Modifier.weight(1f)) }
+            repeat(SHOWN_TILES - shown.size) { Spacer(Modifier.weight(1f)) }
         }
     }
 }

@@ -92,6 +92,7 @@
     <string name="profile_agents">요원</string>
     <string name="profile_weapons">무기</string>
     <string name="agents_matches">%1$d판</string>
+    <string name="agents_record">%1$d승 %2$d패</string>
     <string name="column_win_rate">승률</string>
     <string name="profile_weapon_kills">%1$s킬</string>
     <string name="profile_weapon_headshot">헤드샷 %1$s</string>

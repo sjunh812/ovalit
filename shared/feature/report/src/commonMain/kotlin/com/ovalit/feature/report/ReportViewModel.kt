@@ -7,6 +7,7 @@ import com.ovalit.core.data.ContentRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
+import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
@@ -128,6 +129,10 @@ class ReportViewModel(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = ReportUiState.Loading,
     )
+
+    /** 요원 얼굴과 무기 이름을 찾는 카탈로그입니다. 받기 전에는 비어 있어 이름 첫 글자와 "알 수 없는 무기"가 뜹니다. */
+    val catalog: StateFlow<ContentCatalog> =
+        contentRepository.catalog.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initialValue = ContentCatalog.Empty)
 
     /** 오른쪽 위 티어와 아바타입니다. 연동을 해제했으면 `null`입니다. */
     val badge: StateFlow<PlayerBadge?> = combine(

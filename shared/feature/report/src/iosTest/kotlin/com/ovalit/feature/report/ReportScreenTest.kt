@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -44,6 +45,46 @@ class ReportScreenTest {
     }
 
     // 동적 칸과 개선 포인트가 이 역할에 맞춰 골라지니 한눈에 들어와야 한다
+    @Test
+    fun `기간 경기의 승패를 적고 승률을 붙인다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved) }
+
+        onNodeWithText("5승 2패", useUnmergedTree = true).assertExists()
+        onNodeWithText("71%", useUnmergedTree = true).assertExists()
+    }
+
+    // 요원은 판 수가 적어 승패로 적고, 5판을 못 넘겨도 그 기간 KDA는 적는다. (70 + 18) ÷ 48
+    @Test
+    fun `기간 요원과 무기 칸을 누르면 요원과 무기 화면을 연다`() = runComposeUiTest {
+        var opened = ""
+        setContent {
+            OvalitTheme {
+                ReportScreen(
+                    uiState = ReportUiState.Success(QueueFilter.COMPETITIVE_AND_UNRATED, ReportPreviewData.moved),
+                    onSelectQueue = {},
+                    onOpenAgents = { opened += "agents" },
+                    onOpenWeapons = { opened += "weapons" },
+                )
+            }
+        }
+
+        onNodeWithText("3승 1패", useUnmergedTree = true).assertExists()
+        onNodeWithText("KDA 1.83", useUnmergedTree = true).assertExists()
+        onNodeWithText("64킬", useUnmergedTree = true).assertExists()
+        onNodeWithText("이번 주 요원").performScrollTo().performClick()
+        onNodeWithText("이번 주 무기").performScrollTo().performClick()
+
+        assertEquals("agentsweapons", opened)
+    }
+
+    @Test
+    fun `기타 모드에는 기간 요원과 무기 칸이 없다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved, queueFilter = QueueFilter.OTHER) }
+
+        onNodeWithText("이번 주 요원").assertDoesNotExist()
+        onNodeWithText("이번 주 무기").assertDoesNotExist()
+    }
+
     // (118 + 30) ÷ 88
     @Test
     fun `판당 K와 D와 A 옆에 KDA를 적는다`() = runComposeUiTest {
@@ -313,8 +354,9 @@ class ReportScreenTest {
             )
         }
 
-        val junho = onNodeWithText("준호", substring = true).getBoundsInRoot().top
-        val me = onNodeWithText("나", substring = true).getBoundsInRoot().top
+        // 친구 비교는 화면 아래에 있어서 잘리기 전 자리로 본다
+        val junho = onNodeWithText("준호", substring = true).getUnclippedBoundsInRoot().top
+        val me = onNodeWithText("나", substring = true).getUnclippedBoundsInRoot().top
         assertTrue(junho < me)
         onNodeWithText("민석", substring = true).assertDoesNotExist()
     }

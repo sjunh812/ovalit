@@ -400,6 +400,10 @@ MaterialTheme은 `OvalitTheme` 안에 우리 토큰을 옮겨 담아 같이 깐�
 서체는 Pretendard Variable 한 벌이다. SIL OFL이라 상업 번들이 자유롭고, 가변 폰트라 파일
 하나로 9굵기를 다 쓴다(`FontVariation`은 API 26+라 minSdk와 맞는다).
 
+한글 획이 얇아서 굵기 이름보다 한 단계 굵게 그린다. SemiBold는 `wght` 700, Bold는 800이고 Normal과 Medium은
+400, 500 그대로다. 600으로는 제목과 숫자가 본문과 덜 갈렸다. Bold도 꼭 등록한다. 빠지면 "굵게"를 달라고 한
+자리(스코어, 앞선 값)가 가장 가까운 SemiBold로 그려져 구분이 안 된다.
+
 숫자도 같은 서체로 간다. 지표 숫자는 `FontFeatureSetting`의 `tnum`으로 폭을 고정한다.
 자릿수가 바뀌어도 칸이 흔들리지 않아야 추이가 읽힌다.
 

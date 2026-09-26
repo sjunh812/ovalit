@@ -420,7 +420,7 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
                     .padding(start = OvalitSpacing.gutter + OvalitSpacing.md, end = OvalitSpacing.gutter, bottom = 10.dp),
             ) {
                 // 줄마다 K/D/A를 따로 줄이면 킬이 많은 총만 작아진다. 계열 안의 줄이 같은 크기를 쓴다.
-                val kdaWidth = maxWidth - WeaponThumbWidth - OvalitSpacing.md - DamageColumn - HeadshotColumn
+                val kdaWidth = maxWidth - WeaponThumbWidth - OvalitSpacing.md - KdColumn - DamageColumn - HeadshotColumn
                 val kdaStyle = rememberFittingStyle(weapons.map { kdaText(it) }, OvalitTheme.typography.caption, kdaWidth)
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     WeaponColumns()
@@ -470,8 +470,9 @@ private fun CategoryRow(
     }
 }
 
-private val DamageColumn = 56.dp
-private val HeadshotColumn = 60.dp
+private val KdColumn = 48.dp
+private val DamageColumn = 52.dp
+private val HeadshotColumn = 56.dp
 private val WeaponThumbWidth = 44.dp
 
 @Composable
@@ -482,7 +483,8 @@ private fun kdaText(weapon: WeaponStats): String = stringResource(
     weapon.assists.withThousands(),
 )
 
-// 펼친 계열 맨 위에 두는 열 제목이다. 숫자만 있으면 무엇인지 모른다. K/D/A는 이름 밑 줄의 제목이라 이름 쪽에 둔다.
+// 펼친 계열 맨 위에 두는 열 제목이다. 숫자만 있으면 무엇인지 모른다. K/D/A는 이름 밑 줄의 제목이라 이름 쪽에 두고,
+// 그 비율인 K/D는 위쪽 세 무기 표처럼 오른쪽 첫 열에 둔다.
 @Composable
 private fun WeaponColumns() {
     val style = OvalitTheme.typography.caption
@@ -495,7 +497,11 @@ private fun WeaponColumns() {
             color = OvalitTheme.colors.t3,
             maxLines = 1,
         )
-        listOf(stringResource(Res.string.column_damage) to DamageColumn, stringResource(Res.string.column_headshot) to HeadshotColumn)
+        listOf(
+            stringResource(FixedMetric.KD.label) to KdColumn,
+            stringResource(Res.string.column_damage) to DamageColumn,
+            stringResource(Res.string.column_headshot) to HeadshotColumn,
+        )
             .forEach { (title, width) ->
                 OvalitText(
                     text = title,
@@ -511,8 +517,9 @@ private fun WeaponColumns() {
 }
 
 /**
- * 무기 한 줄입니다. 이름 밑에 K/D/A 합계를 두고 오른쪽에 라운드당 피해량과 헤드샷을 둡니다. 둘 다 표본이 모자라면 칸을 합쳐
- * "표본 부족"이라고 한 번만 적고, 하나만 모자라면 그 칸만 비웁니다.
+ * 무기 한 줄입니다. 이름 밑에 K/D/A 합계를 두고 오른쪽에 K/D, 라운드당 피해량, 헤드샷을 둡니다. K/D와 피해량은 들고 시작한
+ * 라운드, 헤드샷은 한 무기만 쓴 라운드가 표본입니다. 둘 다 모자라면 칸을 합쳐 "표본 부족"이라고 한 번만 적고, 하나만
+ * 모자라면 그 칸만 비웁니다.
  */
 @Composable
 private fun WeaponRow(weapon: WeaponStats, catalog: ContentCatalog, kdaStyle: TextStyle) {
@@ -535,13 +542,21 @@ private fun WeaponRow(weapon: WeaponStats, catalog: ContentCatalog, kdaStyle: Te
         if (!weapon.isCarriedMeasurable && !weapon.isMeasurable) {
             OvalitText(
                 text = stringResource(Res.string.not_enough_sample),
-                modifier = Modifier.width(DamageColumn + HeadshotColumn),
+                modifier = Modifier.width(KdColumn + DamageColumn + HeadshotColumn),
                 style = OvalitTheme.typography.caption,
                 color = colors.t3,
                 textAlign = TextAlign.End,
             )
             return@Row
         }
+        OvalitText(
+            text = weapon.value(WeaponMetric.KD)?.let { MetricFormat.TWO_DECIMALS.format(it) } ?: NO_VALUE,
+            modifier = Modifier.width(KdColumn),
+            style = metric,
+            color = colors.t2,
+            textAlign = TextAlign.End,
+            maxLines = 1,
+        )
         OvalitText(
             text = weapon.damagePerRound?.takeIf { weapon.isCarriedMeasurable }?.let { MetricFormat.INTEGER.format(it) } ?: NO_VALUE,
             modifier = Modifier.width(DamageColumn),

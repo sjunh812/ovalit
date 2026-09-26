@@ -3,6 +3,7 @@ package com.ovalit.feature.profile
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -58,8 +59,12 @@ class ProfileScreensTest {
         onNodeWithText("이번 액트 50경기", useUnmergedTree = true).assertExists()
         onNodeWithText("188", useUnmergedTree = true).assertExists()
         onNodeWithText("1.12", useUnmergedTree = true).assertExists()
-        onNodeWithText("17.2/15.4/6.2", useUnmergedTree = true).assertExists()
-        onNodeWithText("31시간", useUnmergedTree = true).assertExists()
+        onNodeWithText("플레이 31시간", useUnmergedTree = true).assertExists()
+        // 판당 K/D/A는 따로 칸을 두지 않고 K/D 숫자 밑에 붙인다
+        val kd = onNodeWithText("1.12", useUnmergedTree = true).getBoundsInRoot()
+        val perMatch = onNodeWithText("판당 17.2/15.4/6.2", useUnmergedTree = true).getBoundsInRoot()
+        assertEquals(kd.left, perMatch.left)
+        assertTrue(perMatch.top >= kd.bottom)
         onNodeWithText("맞힌 탄 1,842발").assertExists()
         onNodeWithText("24%", useUnmergedTree = true).assertExists()
         onNodeWithText("442", useUnmergedTree = true).assertExists()
@@ -133,11 +138,13 @@ class ProfileScreensTest {
 
     // 무기를 잘 쓰는지 보려면 킬과 헤드샷만으로는 모자란다
     @Test
-    fun `무기 표는 킬 데스 어시스트와 라운드당 피해량과 헤드샷을 둔다`() = runComposeUiTest {
+    fun `무기 표는 킬 데스 어시스트와 그 비율과 라운드당 피해량과 헤드샷을 둔다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
 
         onNodeWithText("K/D/A", useUnmergedTree = true).assertExists()
         onNodeWithText("254/180/70", useUnmergedTree = true).assertExists()
+        onNodeWithText("1.41", useUnmergedTree = true).assertExists()
+        onAllNodesWithText("K/D", useUnmergedTree = true).assertCountEquals(2)
         onNodeWithText("142", useUnmergedTree = true).assertExists()
         // 위쪽 세 무기 표와 계열 표에 한 번씩 있다
         onAllNodesWithText("피해량", useUnmergedTree = true).assertCountEquals(2)

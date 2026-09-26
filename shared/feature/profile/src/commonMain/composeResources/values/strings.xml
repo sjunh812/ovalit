@@ -12,9 +12,9 @@
     <string name="profile_competitive_record">%1$d승 %2$d패</string>
     <string name="profile_stats_title">통계</string>
     <string name="profile_most_kills">최다 킬</string>
-    <string name="profile_per_match">판당 K/D/A</string>
+    <string name="profile_per_match">판당 %1$s</string>
     <string name="profile_per_match_value">%1$s/%2$s/%3$s</string>
-    <string name="profile_play_time">플레이 시간</string>
+    <string name="profile_play_time">플레이 %1$s</string>
     <string name="profile_aces">에이스</string>
     <string name="profile_clutches">클러치</string>
     <string name="profile_count">%1$d번</string>

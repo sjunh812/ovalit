@@ -221,6 +221,16 @@ class ProfileScreensTest {
         onNodeWithText("60킬", useUnmergedTree = true).assertDoesNotExist()
     }
 
+    // 5판을 넘긴 네 요원만 KDA를 적는다. 미리보기 요원은 킬·데스·어시가 라운드에 비례해서 모두 1.77이다.
+    @Test
+    fun `요원 표의 줄마다 5판을 넘긴 요원에게 KDA를 적는다`() = runComposeUiTest {
+        setContent { Themed { AgentsScreen(ProfilePreviewData.success, onBack = {}) } }
+
+        onAllNodesWithText("KDA 1.77", useUnmergedTree = true).assertCountEquals(4)
+        // 3판뿐인 킬조이에게는 적지 않는다
+        onAllNodesWithText("KDA ", substring = true, useUnmergedTree = true).assertCountEquals(4)
+    }
+
     @Test
     fun `5판에 못 미친 요원은 숫자 대신 표본 부족이라고 적는다`() = runComposeUiTest {
         setContent { Themed { AgentsScreen(ProfilePreviewData.success, onBack = {}) } }

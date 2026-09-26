@@ -3,6 +3,7 @@ package com.ovalit.feature.profile
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -57,8 +59,10 @@ import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.SeparatedRow
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.format
+import com.ovalit.core.ui.kdaRatioText
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.percentText
+import com.ovalit.core.ui.rememberFitsOnOneLine
 import com.ovalit.core.ui.rememberFittingStyle
 import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.act_matches
@@ -347,13 +351,31 @@ private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: 
         titles.drop(1).forEach { HeaderCell(it, MetricColumn, headerStyle) }
     }
     Spacer(Modifier.height(OvalitSpacing.sm))
-    agents.forEachIndexed { index, agent ->
-        if (index > 0) {
-            OvalitDivider(Modifier.padding(start = OvalitSpacing.gutter + ThumbnailSize + OvalitSpacing.md), color = OvalitTheme.colors.lineWeak)
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        // 한 줄이라도 "타격대 · 20판 · KDA 1.88"이 이름 밑에 안 들어가면 모든 줄에서 KDA를 한 줄 내린다. 줄마다 따로
+        // 꺾으면 줄 높이가 제각각이다.
+        val nameWidth = maxWidth - OvalitSpacing.gutter * 2 - ThumbnailSize - OvalitSpacing.md - WinColumn - MetricColumn * columns.size
+        val captions = agents.map { agent ->
+            AnnotatedString(listOfNotNull(roleText(agent), stringResource(CoreUiRes.string.agents_matches, agent.matches), rowKda(agent)?.text).joinToString(" · "))
         }
-        AgentRow(agent, columns, catalog)
+        val stackKda = !rememberFitsOnOneLine(captions, OvalitTheme.typography.caption, nameWidth)
+        Column {
+            agents.forEachIndexed { index, agent ->
+                if (index > 0) {
+                    OvalitDivider(Modifier.padding(start = OvalitSpacing.gutter + ThumbnailSize + OvalitSpacing.md), color = OvalitTheme.colors.lineWeak)
+                }
+                AgentRow(agent, columns, catalog, stackKda)
+            }
+        }
     }
 }
+
+@Composable
+private fun roleText(agent: AgentStats): String = agent.role?.let { stringResource(it.label) } ?: NO_VALUE
+
+// 승률처럼 5판을 넘긴 요원만 KDA를 적는다
+@Composable
+private fun rowKda(agent: AgentStats): AnnotatedString? = agent.metrics.kda?.takeIf { agent.isMeasurable }?.let { kdaRatioText(it) }
 
 @Composable
 private fun HeaderCell(text: String, width: Dp, style: TextStyle) {
@@ -369,8 +391,9 @@ private fun HeaderCell(text: String, width: Dp, style: TextStyle) {
 }
 
 @Composable
-private fun AgentRow(agent: AgentStats, columns: List<MetricColumnSpec>, catalog: ContentCatalog) {
+private fun AgentRow(agent: AgentStats, columns: List<MetricColumnSpec>, catalog: ContentCatalog, stackKda: Boolean) {
     val name = catalog.agentName(agent.agent)
+    val kda = rowKda(agent)
 
     Row(
         modifier = Modifier
@@ -386,12 +409,16 @@ private fun AgentRow(agent: AgentStats, columns: List<MetricColumnSpec>, catalog
             // 좁은 칸에서 판 수를 통째로 다음 줄에 내린다. 한 글줄로 두면 점이 줄 끝에 남는다.
             val caption = OvalitTheme.typography.caption
             SeparatedRow(
-                items = listOf(
-                    { OvalitText(agent.role?.let { stringResource(it.label) } ?: NO_VALUE, style = caption, color = OvalitTheme.colors.t3) },
+                items = listOfNotNull<@Composable () -> Unit>(
+                    { OvalitText(roleText(agent), style = caption, color = OvalitTheme.colors.t3) },
                     { OvalitText(stringResource(CoreUiRes.string.agents_matches, agent.matches), style = caption, color = OvalitTheme.colors.t3) },
+                    kda?.takeIf { !stackKda }?.let { { OvalitText(text = it, style = caption, color = OvalitTheme.colors.t3) } },
                 ),
                 separator = { OvalitText(text = " · ", style = caption, color = OvalitTheme.colors.t3) },
             )
+            if (stackKda && kda != null) {
+                OvalitText(text = kda, style = caption, color = OvalitTheme.colors.t3, maxLines = 1)
+            }
         }
         if (!agent.isMeasurable) {
             OvalitText(

@@ -27,7 +27,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role as SemanticsRole
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -75,6 +78,7 @@ import com.ovalit.feature.profile.resources.weapons_category_unknown
 import com.ovalit.feature.profile.resources.weapons_collapse
 import com.ovalit.feature.profile.resources.weapons_expand
 import com.ovalit.feature.profile.resources.weapons_kda
+import com.ovalit.feature.profile.resources.weapons_kda_with_counts
 import com.ovalit.feature.profile.resources.weapons_kills
 import com.ovalit.feature.profile.resources.weapons_moved_down
 import com.ovalit.feature.profile.resources.weapons_moved_up
@@ -419,12 +423,19 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
                     .fillMaxWidth()
                     .padding(start = OvalitSpacing.gutter + OvalitSpacing.md, end = OvalitSpacing.gutter, bottom = 10.dp),
             ) {
-                // 줄마다 K/D/A를 따로 줄이면 킬이 많은 총만 작아진다. 계열 안의 줄이 같은 크기를 쓴다.
-                val kdaWidth = maxWidth - WeaponThumbWidth - OvalitSpacing.md - KdColumn - DamageColumn - HeadshotColumn
-                val kdaStyle = rememberFittingStyle(weapons.map { kdaText(it) }, OvalitTheme.typography.caption, kdaWidth)
+                // 줄마다 KDA 줄을 따로 줄이면 킬이 많은 총만 작아진다. 계열 안의 줄이 같은 크기를 쓴다.
+                val caption = OvalitTheme.typography.caption
+                val lines = weapons.map { kdaLine(it) }
+                val nameWidth = maxWidth - WeaponThumbWidth - OvalitSpacing.md
+                val beside = rememberFittingStyle(lines.map { it.text }, caption, nameWidth - KdColumn - DamageColumn - HeadshotColumn)
+                val below = rememberFittingStyle(lines.map { it.text }, caption, nameWidth)
+                // 숫자 세 칸 옆에서 KDA 줄을 한참 줄여야 들어가면 계열 안의 모든 줄에서 세 칸을 이름 밑으로 내린다
+                val stacked = beside.fontSize.value < caption.fontSize.value * MIN_KDA_SCALE
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     WeaponColumns()
-                    weapons.forEach { WeaponRow(it, catalog, kdaStyle) }
+                    weapons.forEachIndexed { index, weapon ->
+                        WeaponRow(weapon, catalog, lines[index], if (stacked) below else beside, stacked)
+                    }
                 }
             }
         }
@@ -475,16 +486,32 @@ private val DamageColumn = 52.dp
 private val HeadshotColumn = 56.dp
 private val WeaponThumbWidth = 44.dp
 
-@Composable
-private fun kdaText(weapon: WeaponStats): String = stringResource(
-    Res.string.weapons_kda,
-    weapon.kills.withThousands(),
-    weapon.deaths.withThousands(),
-    weapon.assists.withThousands(),
-)
+private const val MIN_KDA_SCALE = 0.8f
 
-// 펼친 계열 맨 위에 두는 열 제목이다. 숫자만 있으면 무엇인지 모른다. K/D/A는 이름 밑 줄의 제목이라 이름 쪽에 두고,
-// 그 비율인 K/D는 위쪽 세 무기 표처럼 오른쪽 첫 열에 둔다.
+/**
+ * "1.87 (369/267/131)"처럼 KDA 뒤에 K/D/A 합계를 붙인 줄입니다. KDA만 한 단계 밝고 굵게 둡니다. 들고 시작한 라운드가
+ * 모자라 데스와 어시가 믿을 만하지 않으면 KDA를 빼고 합계만 둡니다.
+ */
+@Composable
+private fun kdaLine(weapon: WeaponStats): AnnotatedString {
+    val counts = stringResource(
+        Res.string.weapons_kda,
+        weapon.kills.withThousands(),
+        weapon.deaths.withThousands(),
+        weapon.assists.withThousands(),
+    )
+    val kda = weapon.kda?.takeIf { weapon.isCarriedMeasurable } ?: return AnnotatedString(counts)
+    val ratio = MetricFormat.TWO_DECIMALS.format(kda)
+    val text = stringResource(Res.string.weapons_kda_with_counts, ratio, counts)
+    val colors = OvalitTheme.colors
+    return buildAnnotatedString {
+        append(text)
+        addStyle(SpanStyle(color = colors.t2, fontWeight = FontWeight.SemiBold), 0, ratio.length)
+    }
+}
+
+// 펼친 계열 맨 위에 두는 열 제목이다. 숫자만 있으면 무엇인지 모른다. KDA는 이름 밑 줄의 제목이라 이름 쪽에 두고,
+// K/D는 위쪽 세 무기 표처럼 오른쪽 첫 열에 둔다.
 @Composable
 private fun WeaponColumns() {
     val style = OvalitTheme.typography.caption
@@ -517,38 +544,59 @@ private fun WeaponColumns() {
 }
 
 /**
- * 무기 한 줄입니다. 이름 밑에 K/D/A 합계를 두고 오른쪽에 K/D, 라운드당 피해량, 헤드샷을 둡니다. K/D와 피해량은 들고 시작한
- * 라운드, 헤드샷은 한 무기만 쓴 라운드가 표본입니다. 둘 다 모자라면 칸을 합쳐 "표본 부족"이라고 한 번만 적고, 하나만
- * 모자라면 그 칸만 비웁니다.
+ * 무기 한 줄입니다. 이름 밑에 KDA와 K/D/A 합계를 두고 오른쪽에 K/D, 라운드당 피해량, 헤드샷을 둡니다. K/D와 피해량은
+ * 들고 시작한 라운드, 헤드샷은 한 무기만 쓴 라운드가 표본입니다. 둘 다 모자라면 칸을 합쳐 "표본 부족"이라고 한 번만
+ * 적고, 하나만 모자라면 그 칸만 비웁니다. [stacked]면 세 칸을 이름 밑 오른쪽에 둡니다.
  */
 @Composable
-private fun WeaponRow(weapon: WeaponStats, catalog: ContentCatalog, kdaStyle: TextStyle) {
-    val colors = OvalitTheme.colors
+private fun WeaponRow(weapon: WeaponStats, catalog: ContentCatalog, line: AnnotatedString, lineStyle: TextStyle, stacked: Boolean) {
     val name = catalog.weaponName(weapon.weapon)
-    val metric = OvalitTheme.typography.metricS
-    Row(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically) {
-        WeaponThumb(weapon.weapon, name, width = WeaponThumbWidth, height = 24.dp)
-        Spacer(Modifier.width(OvalitSpacing.md))
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    val nameAndKda: @Composable (Modifier) -> Unit = { modifier ->
+        Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
             OvalitText(text = name, style = OvalitTheme.typography.body, maxLines = 1, overflow = TextOverflow.Ellipsis)
             OvalitText(
-                text = kdaText(weapon),
-                style = kdaStyle,
-                color = colors.t3,
+                text = line,
+                style = lineStyle,
+                color = OvalitTheme.colors.t3,
                 maxLines = 1,
-                autoSize = shrinkToFit(kdaStyle.fontSize, min = 7.sp),
+                autoSize = shrinkToFit(lineStyle.fontSize, min = 7.sp),
             )
         }
-        if (!weapon.isCarriedMeasurable && !weapon.isMeasurable) {
-            OvalitText(
-                text = stringResource(Res.string.not_enough_sample),
-                modifier = Modifier.width(KdColumn + DamageColumn + HeadshotColumn),
-                style = OvalitTheme.typography.caption,
-                color = colors.t3,
-                textAlign = TextAlign.End,
-            )
-            return@Row
+    }
+    if (stacked) {
+        Column(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                WeaponThumb(weapon.weapon, name, width = WeaponThumbWidth, height = 24.dp)
+                Spacer(Modifier.width(OvalitSpacing.md))
+                nameAndKda(Modifier.weight(1f))
+            }
+            WeaponCells(weapon, Modifier.align(Alignment.End))
         }
+    } else {
+        Row(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically) {
+            WeaponThumb(weapon.weapon, name, width = WeaponThumbWidth, height = 24.dp)
+            Spacer(Modifier.width(OvalitSpacing.md))
+            nameAndKda(Modifier.weight(1f))
+            WeaponCells(weapon)
+        }
+    }
+}
+
+@Composable
+private fun WeaponCells(weapon: WeaponStats, modifier: Modifier = Modifier) {
+    val colors = OvalitTheme.colors
+    val metric = OvalitTheme.typography.metricS
+    if (!weapon.isCarriedMeasurable && !weapon.isMeasurable) {
+        OvalitText(
+            text = stringResource(Res.string.not_enough_sample),
+            modifier = modifier.width(KdColumn + DamageColumn + HeadshotColumn),
+            style = OvalitTheme.typography.caption,
+            color = colors.t3,
+            textAlign = TextAlign.End,
+        )
+        return
+    }
+    Row(modifier = modifier) {
         OvalitText(
             text = weapon.value(WeaponMetric.KD)?.let { MetricFormat.TWO_DECIMALS.format(it) } ?: NO_VALUE,
             modifier = Modifier.width(KdColumn),
@@ -575,3 +623,4 @@ private fun WeaponRow(weapon: WeaponStats, catalog: ContentCatalog, kdaStyle: Te
         )
     }
 }
+

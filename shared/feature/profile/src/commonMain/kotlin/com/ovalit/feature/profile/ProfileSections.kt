@@ -79,6 +79,7 @@ import com.ovalit.feature.profile.resources.profile_competitive
 import com.ovalit.feature.profile.resources.profile_competitive_matches
 import com.ovalit.feature.profile.resources.profile_competitive_record
 import com.ovalit.feature.profile.resources.profile_count
+import com.ovalit.feature.profile.resources.profile_kda
 import com.ovalit.feature.profile.resources.profile_most_kills
 import com.ovalit.feature.profile.resources.profile_per_match
 import com.ovalit.feature.profile.resources.profile_per_match_value
@@ -163,16 +164,20 @@ internal fun TierCard(record: CompetitiveRecord, catalog: ContentCatalog, modifi
 internal fun StatsSection(summary: ProfileSummary, modifier: Modifier = Modifier) {
     val metrics = summary.metrics
     val main = listOf(FixedMetric.DAMAGE, FixedMetric.KD, FixedMetric.COMBAT_SCORE).map { metric ->
-        StatCell(
-            label = stringResource(metric.label),
-            value = metric.value(metrics)?.let { metric.format.valueText(it) },
-            // K/D 숫자만으로는 몇 킬 몇 데스인지 모른다. 판당 K/D/A는 칸을 따로 두지 않고 그 밑에 붙인다.
-            detail = if (metric == FixedMetric.KD) perMatchText(metrics)?.let { stringResource(Res.string.profile_per_match, it) } else null,
-        )
+        StatCell(stringResource(metric.label), metric.value(metrics)?.let { metric.format.valueText(it) })
     }
-    val highlights = summary.highlights
     val records = listOf(
         StatCell(stringResource(Res.string.profile_most_kills), summary.mostKills?.toString()),
+        // KDA 숫자만으로는 몇 킬 몇 데스인지 모른다. 판당 K/D/A를 그 밑에 붙인다.
+        StatCell(
+            label = stringResource(Res.string.profile_kda),
+            value = metrics.kda?.let { MetricFormat.TWO_DECIMALS.format(it) },
+            detail = perMatchText(metrics)?.let { stringResource(Res.string.profile_per_match, it) },
+        ),
+        StatCell(stringResource(Res.string.profile_play_time), playTimeText(summary.playTimeMillis)),
+    )
+    val highlights = summary.highlights
+    val scenes = listOf(
         StatCell(stringResource(Res.string.profile_aces), stringResource(Res.string.profile_count, highlights.aces)),
         // 나만 남은 라운드가 한 번도 없었으면 0번 중 0번이 아니라 비워 둔다
         StatCell(
@@ -182,16 +187,12 @@ internal fun StatsSection(summary: ProfileSummary, modifier: Modifier = Modifier
     )
 
     Section(modifier = modifier, divider = false) {
-        // 플레이 시간은 칸 대신 제목 옆에 둔다. 그래야 여섯 칸이 세 칸씩 두 줄로 맞는다.
-        SectionTitle(
-            title = stringResource(Res.string.profile_stats_title),
-            caption = stringResource(Res.string.profile_play_time, playTimeText(summary.playTimeMillis)),
-        )
+        SectionTitle(title = stringResource(Res.string.profile_stats_title))
         Spacer(Modifier.height(14.dp))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            // 여섯 칸의 이름과 숫자를 한 크기로 맞춘다. 칸마다 따로 줄이면 "4번 중 2번"처럼 긴 칸만 작아진다.
+            // 모든 칸의 이름과 숫자를 한 크기로 맞춘다. 칸마다 따로 줄이면 "4번 중 2번"처럼 긴 칸만 작아진다.
             // 세 칸에 가장 작게 줄여도 안 들어가면 두 칸씩 놓는다. 숫자가 잘리는 것보다 줄이 하나 느는 게 낫다.
-            val cells = main + records
+            val cells = main + records + scenes
             val labels = cells.map { it.label }
             val values = cells.map { it.value ?: NO_VALUE }
             val valueStyle = StatValueStyle()
@@ -216,7 +217,7 @@ private val STAT_MIN_SIZE = 11.sp
 
 private class StatStyles(val label: TextStyle, val value: TextStyle, val detail: TextStyle)
 
-/** @property detail 숫자 밑에 작게 붙이는 풀이입니다. K/D 밑의 판당 K/D/A가 그렇습니다. */
+/** @property detail 숫자 밑에 작게 붙이는 풀이입니다. KDA 밑의 판당 K/D/A가 그렇습니다. */
 private class StatCell(val label: String, val value: String?, val detail: String? = null)
 
 // 홈의 "판당 17.2 / 11.5 / 6.3"과 같은 자릿수다. 칸이 좁아서 빗금 양옆 공백만 뺐다.

@@ -55,6 +55,18 @@ class MatchMetricsTest {
     }
 
     @Test
+    fun `KDA는 킬과 어시스트를 더해 데스로 나눈다`() {
+        val metrics = match(
+            round(kill(10.0, Me, Enemy), kill(20.0, Ally, OtherEnemy, assistedBy = setOf(Me))),
+            round(kill(15.0, Enemy, Me)),
+        ).metrics()
+
+        assertEquals(1, metrics.assists)
+        assertRate(2.0, metrics.kda)
+        assertNull(match(round(kill(10.0, Me, Enemy))).metrics().kda)
+    }
+
+    @Test
     fun `라운드가 없으면 비율은 전부 비워 둔다`() {
         val metrics = match(combatScore = 0).metrics()
 

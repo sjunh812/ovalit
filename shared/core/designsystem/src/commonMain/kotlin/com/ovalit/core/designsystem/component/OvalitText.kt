@@ -39,7 +39,7 @@ fun OvalitText(
 
 /**
  * 한 문장 안에서 일부 글자만 다르게 보여야 할 때 씁니다. [color]는 스타일을 따로 주지 않은
- * 구간의 색입니다. 글자 사이에 아이콘을 넣으려면 [inlineContent]를 씁니다.
+ * 구간의 색입니다. 글자 사이에 아이콘을 넣으려면 [inlineContent]를 씁니다. [autoSize]는 위 함수와 같습니다.
  */
 @Composable
 fun OvalitText(
@@ -51,6 +51,7 @@ fun OvalitText(
     maxLines: Int = Int.MAX_VALUE,
     overflow: TextOverflow = TextOverflow.Clip,
     inlineContent: Map<String, InlineTextContent> = emptyMap(),
+    autoSize: TextAutoSize? = null,
 ) {
     BasicText(
         text = text,
@@ -59,5 +60,6 @@ fun OvalitText(
         maxLines = maxLines,
         overflow = overflow,
         inlineContent = inlineContent,
+        autoSize = autoSize,
     )
 }

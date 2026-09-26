@@ -12,9 +12,10 @@
     <string name="profile_competitive_record">%1$d승 %2$d패</string>
     <string name="profile_stats_title">통계</string>
     <string name="profile_most_kills">최다 킬</string>
+    <string name="profile_kda">KDA</string>
     <string name="profile_per_match">판당 %1$s</string>
     <string name="profile_per_match_value">%1$s/%2$s/%3$s</string>
-    <string name="profile_play_time">플레이 %1$s</string>
+    <string name="profile_play_time">플레이 시간</string>
     <string name="profile_aces">에이스</string>
     <string name="profile_clutches">클러치</string>
     <string name="profile_count">%1$d번</string>
@@ -75,7 +76,8 @@
     <string name="weapons_act_value">이번 액트</string>
     <string name="weapons_single_round_note">킬은 그 무기로 낸 킬이에요. 헤드샷은 그 무기만 쓴 라운드, 데스·어시스트·피해량은 그 무기를 들고 시작한 라운드를 기준으로 세요.</string>
     <string name="weapons_kda">%1$s/%2$s/%3$s</string>
-    <string name="column_kda">K/D/A</string>
+    <string name="weapons_kda_with_counts">%1$s (%2$s)</string>
+    <string name="column_kda">KDA</string>
     <string name="column_damage">피해량</string>
     <string name="column_headshot">헤드샷</string>
     <string name="weapons_by_category">계열별</string>

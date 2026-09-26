@@ -32,6 +32,9 @@ data class WeaponStats(
     /** 이 무기로 낸 킬 ÷ 이 무기를 들고 시작한 라운드의 데스입니다. 데스가 없으면 비웁니다. */
     val kd: Double? get() = kills over deaths
 
+    /** (이 무기로 낸 킬 + 이 무기를 들고 시작한 라운드의 어시스트) ÷ 그 라운드의 데스입니다. [MatchMetrics.kda]와 같은 쓰임입니다. */
+    val kda: Double? get() = (kills + assists) over deaths
+
     /** 이 무기를 들고 시작한 라운드의 라운드당 피해량입니다. */
     val damagePerRound: Double? get() = damage over carriedRounds
 

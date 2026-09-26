@@ -39,6 +39,14 @@ data class MatchMetrics(
     /** 데스가 없으면 `null`입니다. 킬 수를 그대로 보여주면 한 판짜리 기록이 과장됩니다. */
     val kd: Double? get() = kills over deaths
 
+    /**
+     * KDA. (킬 + 어시스트) ÷ 데스입니다. 데스가 없으면 `null`입니다.
+     *
+     * 킬과 어시를 더한 값이라 K/D/A 옆에 "KDA"라는 이름으로만 씁니다. "평점"이라 부르거나 줄을 세우는 데 쓰지
+     * 않습니다. 신청서에 지표를 하나씩 따로 보여준다고 적었습니다.
+     */
+    val kda: Double? get() = (kills + assists) over deaths
+
     /** 맞힌 탄 중 머리에 맞은 비율입니다. 킬 중 헤드샷 킬 비율이 아닙니다. */
     val headshotRate: Double? get() = shots.head over shots.total
 

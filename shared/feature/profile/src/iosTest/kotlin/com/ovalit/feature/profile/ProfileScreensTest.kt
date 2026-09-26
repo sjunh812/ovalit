@@ -59,12 +59,13 @@ class ProfileScreensTest {
         onNodeWithText("이번 액트 50경기", useUnmergedTree = true).assertExists()
         onNodeWithText("188", useUnmergedTree = true).assertExists()
         onNodeWithText("1.12", useUnmergedTree = true).assertExists()
-        onNodeWithText("플레이 31시간", useUnmergedTree = true).assertExists()
-        // 판당 K/D/A는 따로 칸을 두지 않고 K/D 숫자 밑에 붙인다
-        val kd = onNodeWithText("1.12", useUnmergedTree = true).getBoundsInRoot()
+        onNodeWithText("31시간", useUnmergedTree = true).assertExists()
+        // K/D와 KDA는 칸이 따로이고, 판당 K/D/A는 KDA 숫자 밑에 붙인다. KDA는 (860 + 312) ÷ 768이다.
+        onNodeWithText("1.12", useUnmergedTree = true).assertExists()
+        val kda = onNodeWithText("1.53", useUnmergedTree = true).getBoundsInRoot()
         val perMatch = onNodeWithText("판당 17.2/15.4/6.2", useUnmergedTree = true).getBoundsInRoot()
-        assertEquals(kd.left, perMatch.left)
-        assertTrue(perMatch.top >= kd.bottom)
+        assertEquals(kda.left, perMatch.left)
+        assertTrue(perMatch.top >= kda.bottom)
         onNodeWithText("맞힌 탄 1,842발").assertExists()
         onNodeWithText("24%", useUnmergedTree = true).assertExists()
         onNodeWithText("442", useUnmergedTree = true).assertExists()
@@ -141,8 +142,9 @@ class ProfileScreensTest {
     fun `무기 표는 킬 데스 어시스트와 그 비율과 라운드당 피해량과 헤드샷을 둔다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
 
-        onNodeWithText("K/D/A", useUnmergedTree = true).assertExists()
-        onNodeWithText("254/180/70", useUnmergedTree = true).assertExists()
+        onNodeWithText("KDA", useUnmergedTree = true).assertExists()
+        // (254 + 70) ÷ 180
+        onNodeWithText("1.80 (254/180/70)", useUnmergedTree = true).assertExists()
         onNodeWithText("1.41", useUnmergedTree = true).assertExists()
         onAllNodesWithText("K/D", useUnmergedTree = true).assertCountEquals(2)
         onNodeWithText("142", useUnmergedTree = true).assertExists()
@@ -209,12 +211,21 @@ class ProfileScreensTest {
     fun `가장 킬이 많은 계열만 펼쳐 두고 누르면 다른 계열을 펼친다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
 
-        // 고스트는 위쪽 주력 무기에도 있어서 이름 대신 표 줄의 K/D/A로 본다
-        onNodeWithText("46/30/18", useUnmergedTree = true).assertDoesNotExist()
+        // 고스트는 위쪽 주력 무기에도 있어서 이름 대신 표 줄의 KDA로 본다
+        onNodeWithText("2.13 (46/30/18)", useUnmergedTree = true).assertDoesNotExist()
         onNodeWithText("권총").performClick()
 
-        onNodeWithText("46/30/18", useUnmergedTree = true).assertExists()
+        onNodeWithText("2.13 (46/30/18)", useUnmergedTree = true).assertExists()
         onNodeWithText("그 밖의 무기").assertExists()
+    }
+
+    // 들고 시작한 라운드가 모자라면 데스와 어시가 그 무기 몫이라고 보기 어렵다
+    @Test
+    fun `들고 시작한 라운드가 모자란 무기는 KDA 없이 합계만 적는다`() = runComposeUiTest {
+        setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
+        onNodeWithText("권총").performClick()
+
+        onNodeWithText("5/7/4", useUnmergedTree = true).assertExists()
     }
 
     @Test

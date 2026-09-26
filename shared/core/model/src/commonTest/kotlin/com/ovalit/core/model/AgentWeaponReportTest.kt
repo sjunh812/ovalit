@@ -194,6 +194,13 @@ class AgentWeaponReportTest {
         assertEquals(null, listOf(match(survived)).weaponStats().single().kd)
     }
 
+    @Test
+    fun `무기 KDA는 그 무기의 킬과 들고 시작한 라운드의 어시스트를 더해 데스로 나눈다`() {
+        val died = round(myKill(Phantom), kill(15.0, Ally, Enemy, assistedBy = setOf(Me)), kill(20.0, Enemy, Me), carried = Phantom)
+
+        assertEquals(2.0, listOf(match(died)).weaponStats().single().kda)
+    }
+
     // 한 줄에 이번 기간 헤드샷과 이번 액트 K/D가 섞이면 어느 숫자가 언제 것인지 모른다
     @Test
     fun `기간에 들고 시작한 라운드가 모자라면 줄 전체를 이번 액트로 띄운다`() {

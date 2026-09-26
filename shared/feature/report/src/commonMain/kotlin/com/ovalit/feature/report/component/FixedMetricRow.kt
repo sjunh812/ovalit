@@ -31,6 +31,7 @@ import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.SeparatedRow
 import com.ovalit.core.ui.format
+import com.ovalit.core.ui.kdaRatioText
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.rememberFittingStyle
 import com.ovalit.core.ui.shrinkToFit
@@ -181,9 +182,12 @@ internal fun FixedMetricSummary(
             perMatch.format(metrics.assists / matches),
         )
         val sample = stringResource(Res.string.summary_sample, metrics.matches, metrics.rounds)
+        // 판당 K/D/A 옆에 KDA를 붙인다. 색이나 변화량은 붙이지 않는다(CLAUDE.md 지켜야 할 선).
+        val ratio = metrics.kda?.let { kdaRatioText(it) }
         SeparatedRow(
-            items = listOf(
+            items = listOfNotNull<@Composable () -> Unit>(
                 { OvalitText(text = kda, style = caption, color = OvalitTheme.colors.t3) },
+                ratio?.let { { OvalitText(text = it, style = caption, color = OvalitTheme.colors.t3) } },
                 { OvalitText(text = sample, style = caption, color = OvalitTheme.colors.t3) },
             ),
             separator = { OvalitText(text = SEPARATOR, style = caption, color = OvalitTheme.colors.t3) },

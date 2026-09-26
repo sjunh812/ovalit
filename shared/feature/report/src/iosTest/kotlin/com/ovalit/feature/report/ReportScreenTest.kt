@@ -44,6 +44,14 @@ class ReportScreenTest {
     }
 
     // 동적 칸과 개선 포인트가 이 역할에 맞춰 골라지니 한눈에 들어와야 한다
+    // (118 + 30) ÷ 88
+    @Test
+    fun `판당 K와 D와 A 옆에 KDA를 적는다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved) }
+
+        onNodeWithText("KDA 1.68", useUnmergedTree = true).assertExists()
+    }
+
     @Test
     fun `기간 줄에서 역할 이름만 굵게 둔다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }

@@ -128,6 +128,24 @@ class ProfileScreensTest {
         onNodeWithText("K/D · 피해량").assertExists()
     }
 
+    // 승률처럼 5판에 못 미친 요원은 KDA도 띄우지 않는다
+    @Test
+    fun `5판에 못 미친 요원 칸에는 KDA를 적지 않는다`() = runComposeUiTest {
+        val base = ProfilePreviewData.success
+        val thin = base.copy(agents = base.agents.copy(agents = base.agents.agents.filterNot { it.isMeasurable }))
+        setContent { Themed { ProfileScreen(thin, {}, {}, {}, {}, {}) } }
+
+        onNodeWithText("3판", useUnmergedTree = true).performScrollTo().assertExists()
+        onAllNodesWithText("KDA ", substring = true, useUnmergedTree = true).assertCountEquals(0)
+    }
+
+    @Test
+    fun `요원 칸에는 승률 밑에 KDA를 적는다`() = runComposeUiTest {
+        setContent { Themed { ProfileScreen(ProfilePreviewData.success, {}, {}, {}, {}, {}) } }
+
+        onAllNodesWithText("KDA ", substring = true, useUnmergedTree = true).assertCountEquals(3)
+    }
+
     @Test
     fun `통계에 에이스 횟수와 클러치 성공을 둔다`() = runComposeUiTest {
         setContent { Themed { ProfileScreen(ProfilePreviewData.success, {}, {}, {}, {}, {}) } }

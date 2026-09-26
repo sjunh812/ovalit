@@ -28,9 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role as SemanticsRole
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -54,16 +52,24 @@ import com.ovalit.core.model.WeaponMetric
 import com.ovalit.core.model.WeaponReport
 import com.ovalit.core.model.WeaponStats
 import com.ovalit.core.ui.MetricFormat
-import com.ovalit.core.ui.format
-import com.ovalit.core.ui.label
-import com.ovalit.core.ui.periodLabel
-import com.ovalit.core.ui.valueText
+import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.SeparatedRow
+import com.ovalit.core.ui.WeaponThumb
+import com.ovalit.core.ui.annotated
+import com.ovalit.core.ui.format
+import com.ovalit.core.ui.kdaText
+import com.ovalit.core.ui.label
+import com.ovalit.core.ui.percentText
+import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.rememberFittingStyle
 import com.ovalit.core.ui.rememberWidestWidth
+import com.ovalit.core.ui.resources.Res as CoreUiRes
+import com.ovalit.core.ui.resources.act_matches
 import com.ovalit.core.ui.shrinkToFit
+import com.ovalit.core.ui.valueText
+import com.ovalit.core.ui.weaponName
+import com.ovalit.core.ui.withThousands
 import com.ovalit.feature.profile.resources.Res
-import com.ovalit.feature.profile.resources.act_matches
 import com.ovalit.feature.profile.resources.column_damage
 import com.ovalit.feature.profile.resources.column_headshot
 import com.ovalit.feature.profile.resources.column_kda
@@ -73,12 +79,10 @@ import com.ovalit.feature.profile.resources.weapons_act_basis
 import com.ovalit.feature.profile.resources.weapons_act_kills
 import com.ovalit.feature.profile.resources.weapons_act_value
 import com.ovalit.feature.profile.resources.weapons_by_category
-import com.ovalit.feature.profile.resources.weapons_compared
 import com.ovalit.feature.profile.resources.weapons_category_unknown
 import com.ovalit.feature.profile.resources.weapons_collapse
+import com.ovalit.feature.profile.resources.weapons_compared
 import com.ovalit.feature.profile.resources.weapons_expand
-import com.ovalit.feature.profile.resources.weapons_kda
-import com.ovalit.feature.profile.resources.weapons_kda_with_counts
 import com.ovalit.feature.profile.resources.weapons_kills
 import com.ovalit.feature.profile.resources.weapons_moved_down
 import com.ovalit.feature.profile.resources.weapons_moved_up
@@ -107,7 +111,7 @@ internal fun WeaponsScreen(uiState: ProfileUiState, onBack: () -> Unit, modifier
 
         Column(modifier = Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState())) {
             OvalitBackTopBar(onBack = onBack, title = stringResource(Res.string.weapons_title)) {
-                OvalitTopBarCaption(stringResource(Res.string.act_matches, report.matches))
+                OvalitTopBarCaption(stringResource(CoreUiRes.string.act_matches, report.matches))
             }
             if (report.weapons.isEmpty()) {
                 OvalitText(
@@ -425,7 +429,7 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
             ) {
                 // 줄마다 KDA 줄을 따로 줄이면 킬이 많은 총만 작아진다. 계열 안의 줄이 같은 크기를 쓴다.
                 val caption = OvalitTheme.typography.caption
-                val lines = weapons.map { kdaLine(it) }
+                val lines = weapons.map { weapon -> kdaText(weapon.kda?.takeIf { weapon.isCarriedMeasurable }, weapon.kills, weapon.deaths, weapon.assists).annotated() }
                 val nameWidth = maxWidth - WeaponThumbWidth - OvalitSpacing.md
                 val beside = rememberFittingStyle(lines.map { it.text }, caption, nameWidth - KdColumn - DamageColumn - HeadshotColumn)
                 val below = rememberFittingStyle(lines.map { it.text }, caption, nameWidth)
@@ -487,28 +491,6 @@ private val HeadshotColumn = 56.dp
 private val WeaponThumbWidth = 44.dp
 
 private const val MIN_KDA_SCALE = 0.8f
-
-/**
- * "1.87 (369/267/131)"처럼 KDA 뒤에 K/D/A 합계를 붙인 줄입니다. KDA만 한 단계 밝고 굵게 둡니다. 들고 시작한 라운드가
- * 모자라 데스와 어시가 믿을 만하지 않으면 KDA를 빼고 합계만 둡니다.
- */
-@Composable
-private fun kdaLine(weapon: WeaponStats): AnnotatedString {
-    val counts = stringResource(
-        Res.string.weapons_kda,
-        weapon.kills.withThousands(),
-        weapon.deaths.withThousands(),
-        weapon.assists.withThousands(),
-    )
-    val kda = weapon.kda?.takeIf { weapon.isCarriedMeasurable } ?: return AnnotatedString(counts)
-    val ratio = MetricFormat.TWO_DECIMALS.format(kda)
-    val text = stringResource(Res.string.weapons_kda_with_counts, ratio, counts)
-    val colors = OvalitTheme.colors
-    return buildAnnotatedString {
-        append(text)
-        addStyle(SpanStyle(color = colors.t2, fontWeight = FontWeight.SemiBold), 0, ratio.length)
-    }
-}
 
 // 펼친 계열 맨 위에 두는 열 제목이다. 숫자만 있으면 무엇인지 모른다. KDA는 이름 밑 줄의 제목이라 이름 쪽에 두고,
 // K/D는 위쪽 세 무기 표처럼 오른쪽 첫 열에 둔다.

@@ -23,7 +23,6 @@ import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchMetrics
 import org.jetbrains.compose.resources.stringResource
 
-private const val NO_VALUE = "–"
 private val LabelWidth = 48.dp
 private val MaxLabelWidth = 76.dp
 private val ValueWidth = 40.dp

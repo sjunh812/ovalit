@@ -1,37 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="act_matches">이번 액트 %1$d경기</string>
-    <string name="unknown_agent">알 수 없는 요원</string>
-    <string name="unknown_weapon">알 수 없는 무기</string>
     <string name="not_enough_sample">표본 부족</string>
     <string name="no_matches">이번 액트에 뛴 경기가 아직 없어요</string>
 
     <!-- 내 프로필 -->
-    <string name="profile_competitive">경쟁전</string>
-    <string name="profile_competitive_matches">경쟁 %1$d판</string>
-    <string name="profile_competitive_record">%1$d승 %2$d패</string>
-    <string name="profile_stats_title">통계</string>
-    <string name="profile_most_kills">최다 킬</string>
-    <string name="profile_kda">KDA</string>
-    <string name="profile_per_match">판당 %1$s</string>
-    <string name="profile_per_match_value">%1$s/%2$s/%3$s</string>
-    <string name="profile_play_time">플레이 시간</string>
-    <string name="profile_aces">에이스</string>
-    <string name="profile_clutches">클러치</string>
-    <string name="profile_count">%1$d번</string>
-    <string name="profile_clutch_value">%1$d번 중 %2$d번</string>
-    <string name="duration_hours_minutes">%1$d시간 %2$d분</string>
-    <string name="duration_hours">%1$d시간</string>
-    <string name="duration_minutes">%1$d분</string>
-    <string name="profile_shots_title">맞힌 부위</string>
-    <string name="profile_shots_caption">맞힌 탄 %1$s발</string>
-    <string name="profile_shots_head">머리</string>
-    <string name="profile_shots_body">몸</string>
-    <string name="profile_shots_leg">다리</string>
-    <string name="profile_agents">요원</string>
-    <!-- "타격대 78%". 이번 액트 라운드 중 주 역할로 뛴 비중 -->
-    <string name="profile_weapons">무기</string>
-    <string name="profile_weapon_kill_share">킬 %1$s</string>
     <string name="profile_recent">최근 경기</string>
     <string name="profile_recent_all">전체 보기</string>
 
@@ -47,11 +19,9 @@
     <string name="agents_focus_initiator">어시스트와 관여율</string>
     <string name="agents_focus_controller">관여율과 생존율</string>
     <string name="agents_focus_sentinel">생존율</string>
-    <string name="agents_matches">%1$d판</string>
     <string name="agents_by_agent">요원별</string>
     <!-- 좁은 화면에서 "타격대 / · 28판"처럼 가운뎃점이 줄 맨 앞에 오지 않게
          점 앞에 줄바꿈 없는 공백을 넣었다 -->
-    <string name="column_win_rate">승률</string>
     <string name="column_kast">관여율</string>
     <string name="column_survival">생존</string>
     <string name="column_first_duel_involvement">퍼블 관여</string>
@@ -75,8 +45,6 @@
     <string name="weapons_compared">%1$d주 평균과 비교</string>
     <string name="weapons_act_value">이번 액트</string>
     <string name="weapons_single_round_note">킬은 그 무기로 낸 킬이에요. 헤드샷은 그 무기만 쓴 라운드, 데스·어시스트·피해량은 그 무기를 들고 시작한 라운드를 기준으로 세요.</string>
-    <string name="weapons_kda">%1$s/%2$s/%3$s</string>
-    <string name="weapons_kda_with_counts">%1$s (%2$s)</string>
     <string name="column_kda">KDA</string>
     <string name="column_damage">피해량</string>
     <string name="column_headshot">헤드샷</string>
@@ -94,5 +62,4 @@
     <string name="weapons_expand">%1$s 무기 펼치기</string>
     <string name="weapons_collapse">%1$s 무기 접기</string>
 
-    <string name="value_percent">%1$s%</string>
 </resources>

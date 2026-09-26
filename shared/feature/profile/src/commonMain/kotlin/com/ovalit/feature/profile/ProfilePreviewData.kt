@@ -61,13 +61,14 @@ internal object ProfilePreviewData {
         tiers = mapOf(16 to "플래티넘 2"),
     )
 
+    // 킬, 데스, 어시는 라운드당 0.85, 0.65, 0.3으로 둔다. 요원 칸의 KDA가 비지 않게 한다.
     private fun metrics(rounds: Int, kast: Int, survived: Int, firstKills: Int = 10, firstDeaths: Int = 10) =
         MatchMetrics(
             matches = 1,
             rounds = rounds,
-            kills = 0,
-            deaths = 0,
-            assists = 0,
+            kills = rounds * 17 / 20,
+            deaths = rounds * 13 / 20,
+            assists = rounds * 6 / 20,
             combatScore = 0,
             damage = 0,
             shots = Shots.None,

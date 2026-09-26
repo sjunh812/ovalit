@@ -53,14 +53,21 @@ import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.Role
 import com.ovalit.core.ui.AgentImage
 import com.ovalit.core.ui.MetricFormat
+import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.SeparatedRow
+import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.label
+import com.ovalit.core.ui.percentText
 import com.ovalit.core.ui.rememberFittingStyle
+import com.ovalit.core.ui.resources.Res as CoreUiRes
+import com.ovalit.core.ui.resources.act_matches
+import com.ovalit.core.ui.resources.agents_matches
+import com.ovalit.core.ui.resources.column_win_rate
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
+import com.ovalit.core.ui.winRateColor
 import com.ovalit.feature.profile.resources.Res
-import com.ovalit.feature.profile.resources.act_matches
 import com.ovalit.feature.profile.resources.agents_by_agent
 import com.ovalit.feature.profile.resources.agents_columns_button
 import com.ovalit.feature.profile.resources.agents_columns_fight
@@ -75,7 +82,6 @@ import com.ovalit.feature.profile.resources.agents_focus_duelist
 import com.ovalit.feature.profile.resources.agents_focus_initiator
 import com.ovalit.feature.profile.resources.agents_focus_sentinel
 import com.ovalit.feature.profile.resources.agents_main_role
-import com.ovalit.feature.profile.resources.agents_matches
 import com.ovalit.feature.profile.resources.agents_role_controller
 import com.ovalit.feature.profile.resources.agents_role_duelist
 import com.ovalit.feature.profile.resources.agents_role_initiator
@@ -85,7 +91,6 @@ import com.ovalit.feature.profile.resources.column_first_duel_involvement
 import com.ovalit.feature.profile.resources.column_first_duel_win
 import com.ovalit.feature.profile.resources.column_kast
 import com.ovalit.feature.profile.resources.column_survival
-import com.ovalit.feature.profile.resources.column_win_rate
 import com.ovalit.feature.profile.resources.no_matches
 import com.ovalit.feature.profile.resources.not_enough_sample
 import org.jetbrains.compose.resources.StringResource
@@ -117,7 +122,7 @@ internal fun AgentsScreen(uiState: ProfileUiState, onBack: () -> Unit, modifier:
 
         Column(modifier = Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState())) {
             OvalitBackTopBar(onBack = onBack, title = stringResource(Res.string.agents_title)) {
-                OvalitTopBarCaption(stringResource(Res.string.act_matches, report.matches))
+                OvalitTopBarCaption(stringResource(CoreUiRes.string.act_matches, report.matches))
             }
             val mainRole = report.mainRole
             if (mainRole == null) {
@@ -234,7 +239,7 @@ private fun RoleShares(report: AgentReport, mainRole: Role) {
                     modifier = Modifier.weight(1f),
                 )
                 OvalitText(
-                    text = stringResource(Res.string.agents_matches, share.matches),
+                    text = stringResource(CoreUiRes.string.agents_matches, share.matches),
                     modifier = Modifier.width(48.dp),
                     style = OvalitTheme.typography.metricS,
                     color = if (isMain) OvalitTheme.colors.t1 else OvalitTheme.colors.t2,
@@ -334,7 +339,7 @@ private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: 
         )
     }
     // 열 제목을 칸마다 따로 줄이면 "전투점수"만 작아진다. 가장 긴 제목에 맞춘 크기를 셋에 같이 쓴다.
-    val titles = listOf(stringResource(Res.string.column_win_rate)) + columns.map { stringResource(it.title) }
+    val titles = listOf(stringResource(CoreUiRes.string.column_win_rate)) + columns.map { stringResource(it.title) }
     val headerStyle = rememberFittingStyle(titles, OvalitTheme.typography.caption, MetricColumn - ColumnGap)
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter)) {
         Spacer(Modifier.weight(1f))
@@ -383,7 +388,7 @@ private fun AgentRow(agent: AgentStats, columns: List<MetricColumnSpec>, catalog
             SeparatedRow(
                 items = listOf(
                     { OvalitText(agent.role?.let { stringResource(it.label) } ?: NO_VALUE, style = caption, color = OvalitTheme.colors.t3) },
-                    { OvalitText(stringResource(Res.string.agents_matches, agent.matches), style = caption, color = OvalitTheme.colors.t3) },
+                    { OvalitText(stringResource(CoreUiRes.string.agents_matches, agent.matches), style = caption, color = OvalitTheme.colors.t3) },
                 ),
                 separator = { OvalitText(text = " · ", style = caption, color = OvalitTheme.colors.t3) },
             )

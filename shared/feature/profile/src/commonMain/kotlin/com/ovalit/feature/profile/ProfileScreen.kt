@@ -20,11 +20,17 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.ui.PlayerBadge
+import com.ovalit.core.ui.ProfileAgentsSection
 import com.ovalit.core.ui.ProfileBanner
 import com.ovalit.core.ui.ProfileIdentity
+import com.ovalit.core.ui.ProfileShotsSection
+import com.ovalit.core.ui.ProfileStatsSection
 import com.ovalit.core.ui.ProfileStatusBarScrim
+import com.ovalit.core.ui.ProfileTierCard
+import com.ovalit.core.ui.ProfileWeaponsSection
+import com.ovalit.core.ui.resources.Res as CoreUiRes
+import com.ovalit.core.ui.resources.act_matches
 import com.ovalit.feature.profile.resources.Res
-import com.ovalit.feature.profile.resources.act_matches
 import com.ovalit.feature.profile.resources.no_matches
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -76,7 +82,7 @@ internal fun ProfileScreen(
                 badge = if (competitive != null) badge.copy(tier = null, tierName = null) else badge,
                 mainRole = uiState.agents.mainRole,
                 mainRoleShare = uiState.agents.mainRoleShare,
-                trailing = stringResource(Res.string.act_matches, uiState.agents.matches),
+                trailing = stringResource(CoreUiRes.string.act_matches, uiState.agents.matches),
                 modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
             )
 
@@ -92,12 +98,12 @@ internal fun ProfileScreen(
             } else {
                 if (competitive != null) {
                     Spacer(Modifier.height(20.dp))
-                    TierCard(competitive, uiState.catalog, Modifier.padding(horizontal = OvalitSpacing.gutter))
+                    ProfileTierCard(competitive, uiState.catalog, Modifier.padding(horizontal = OvalitSpacing.gutter))
                 }
-                StatsSection(uiState.summary, Modifier.padding(top = 6.dp))
-                ShotsSection(uiState.summary.metrics.shots)
-                AgentsSection(uiState.agents, uiState.catalog, onOpenAgents)
-                WeaponsSection(uiState.weapons, uiState.catalog, onOpenWeapons)
+                ProfileStatsSection(uiState.summary, Modifier.padding(top = 6.dp))
+                ProfileShotsSection(uiState.summary.metrics.shots)
+                ProfileAgentsSection(uiState.agents, uiState.catalog, onOpenAgents)
+                ProfileWeaponsSection(uiState.weapons, uiState.catalog, onOpenWeapons)
             }
             RecentMatchesSection(uiState, onOpenMatch, onOpenMatches)
             Spacer(Modifier.height(OvalitSpacing.xxl))

@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -56,6 +57,7 @@ import com.ovalit.core.model.Role
 import com.ovalit.core.ui.AgentImage
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.NO_VALUE
+import com.ovalit.core.ui.RoleIcon
 import com.ovalit.core.ui.SeparatedRow
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.format
@@ -186,7 +188,14 @@ private fun MainRole(report: AgentReport, role: Role, catalog: ContentCatalog) {
         OvalitText(text = stringResource(Res.string.agents_main_role), style = OvalitTheme.typography.label, color = colors.t3)
         Spacer(Modifier.height(9.dp))
         Row(verticalAlignment = Alignment.Bottom) {
-            OvalitText(text = stringResource(role.label), modifier = Modifier.alignByBaseline(), style = OvalitTheme.typography.titleL)
+            // 프로필 머리처럼 역할 아이콘을 이름 바로 앞에 둔다. 글자 크기에 맞춰 키워서 글씨를 키운 사용자에게도 같은 비율이다.
+            val titleStyle = OvalitTheme.typography.titleL
+            val iconSize = with(LocalDensity.current) { titleStyle.fontSize.toDp() }
+            Row(modifier = Modifier.alignByBaseline(), verticalAlignment = Alignment.CenterVertically) {
+                RoleIcon(role, tint = colors.t1, modifier = Modifier.size(iconSize))
+                Spacer(Modifier.width(OvalitSpacing.sm))
+                OvalitText(text = stringResource(role.label), style = titleStyle)
+            }
             Spacer(Modifier.width(9.dp))
             OvalitText(
                 text = percentText(share),

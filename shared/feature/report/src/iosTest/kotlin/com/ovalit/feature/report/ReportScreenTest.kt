@@ -13,6 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.FixedMetric
+import com.ovalit.core.model.Focus
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
@@ -239,6 +240,15 @@ class ReportScreenTest {
         setContent { Report(report) }
 
         onNodeWithText("공격 71%, 수비 45%예요.").assertExists()
+    }
+
+    // 관심사로 골라 앞에 둔 지표면 역할이 아니라 관심사로 까닭을 말한다
+    @Test
+    fun `관심사 지표로 고른 문장은 관심사를 까닭으로 적는다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved.let { it.copy(insight = it.insight?.copy(isRolePriority = false, focus = Focus.AIM)) }
+        setContent { Report(report) }
+
+        onNodeWithText("공격 71%, 수비 45%예요. 에임 올리기를 고르셔서 먼저 봤어요.").assertExists()
     }
 
     @Test

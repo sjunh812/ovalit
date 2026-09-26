@@ -69,7 +69,7 @@ fun Iterable<Match>.weeklyReport(
         } else {
             emptyList()
         },
-        insight = if (queueFilter.hasDynamicMetrics) periodMatches.sideInsight(mainRole) else null,
+        insight = if (queueFilter.hasDynamicMetrics) periodMatches.sideInsight(mainRole, focus) else null,
         trend = counted.trendWeeks(end = end, period = period, timeZone = timeZone),
     )
 }

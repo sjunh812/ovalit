@@ -24,8 +24,12 @@ import com.ovalit.feature.report.resources.insight_headline
 import com.ovalit.feature.report.resources.insight_side_attack
 import com.ovalit.feature.report.resources.insight_side_defense
 import com.ovalit.feature.report.resources.insight_values
+import com.ovalit.feature.report.resources.insight_values_with_focus
 import com.ovalit.feature.report.resources.insight_values_with_role
+import com.ovalit.feature.report.resources.metric_eco_win
 import com.ovalit.feature.report.resources.metric_first_duel_win
+import com.ovalit.feature.report.resources.metric_force_buy_win
+import com.ovalit.feature.report.resources.metric_full_buy_win
 import com.ovalit.feature.report.resources.metric_kast
 import com.ovalit.feature.report.resources.metric_survival
 import kotlin.math.abs
@@ -57,8 +61,18 @@ internal fun InsightSection(insight: SideInsight, role: Role?, modifier: Modifie
     )
     val attackValue = format.valueText(attack)
     val defenseValue = format.valueText(defense)
-    val body = if (insight.isRolePriority && role != null) {
-        stringResource(
+    val focus = insight.focus
+    val body = when {
+        // 관심사로 고른 지표면 왜 이 지표인지를 관심사로 말한다
+        focus != null -> stringResource(
+            Res.string.insight_values_with_focus,
+            attackLabel,
+            attackValue,
+            defenseLabel,
+            defenseValue,
+            stringResource(focus.label),
+        )
+        insight.isRolePriority && role != null -> stringResource(
             Res.string.insight_values_with_role,
             attackLabel,
             attackValue,
@@ -67,8 +81,7 @@ internal fun InsightSection(insight: SideInsight, role: Role?, modifier: Modifie
             stringResource(role.label),
             metricLabel,
         )
-    } else {
-        stringResource(Res.string.insight_values, attackLabel, attackValue, defenseLabel, defenseValue)
+        else -> stringResource(Res.string.insight_values, attackLabel, attackValue, defenseLabel, defenseValue)
     }
 
     Column(
@@ -86,6 +99,9 @@ private val SideMetric.label: StringResource
         SideMetric.KAST -> Res.string.metric_kast
         SideMetric.FIRST_DUEL_WIN_RATE -> Res.string.metric_first_duel_win
         SideMetric.DAMAGE -> CoreUiRes.string.metric_damage
+        SideMetric.FORCE_BUY_WIN_RATE -> Res.string.metric_force_buy_win
+        SideMetric.ECO_WIN_RATE -> Res.string.metric_eco_win
+        SideMetric.FULL_BUY_WIN_RATE -> Res.string.metric_full_buy_win
     }
 
 private val SideMetric.format: MetricFormat

@@ -103,6 +103,52 @@ class SideInsightTest {
         assertNull(insight(Queue.SPIKE_RUSH, QueueFilter.OTHER))
     }
 
+    // 감시자는 퍼블 쪽을 크게 띄우지 않지만, 에임 올리기를 골랐으면 첫 교전 승률부터 본다
+    @Test
+    fun `관심사 지표가 기준을 넘으면 역할 기준보다 먼저 고른다`() {
+        val insight = assertNotNull(aimGap().sideInsight(Role.SENTINEL, Focus.AIM))
+
+        assertEquals(SideMetric.FIRST_DUEL_WIN_RATE, insight.metric)
+        assertEquals(Focus.AIM, insight.focus)
+        assertEquals(false, insight.isRolePriority)
+        assertEquals(SideMetric.KAST, aimGap().sideInsight(Role.SENTINEL)?.metric)
+    }
+
+    @Test
+    fun `라운드 운영을 고르면 공수별 포스바이 승률도 본다`() {
+        val matches = buys(Side.ATTACK, won = 15, lost = 5) + buys(Side.DEFENSE, won = 5, lost = 15)
+
+        val insight = assertNotNull(matches.sideInsight(Role.CONTROLLER, Focus.ROUND_PLAY))
+
+        assertEquals(SideMetric.FORCE_BUY_WIN_RATE, insight.metric)
+        assertEquals(Focus.ROUND_PLAY, insight.focus)
+        // 관심사가 아니면 이코·포스바이·풀바이 승률은 후보가 아니다
+        assertNull(matches.sideInsight(Role.CONTROLLER))
+    }
+
+    @Test
+    fun `관심사 지표가 표본이나 기준에 못 미치면 역할 기준으로 돌아간다`() {
+        val matches = buys(Side.ATTACK, won = 8, lost = 2) + buys(Side.DEFENSE, won = 2, lost = 8) +
+            side(Side.ATTACK, survived = 30, died = 10) + side(Side.DEFENSE, survived = 20, died = 20)
+
+        val insight = assertNotNull(matches.sideInsight(Role.SENTINEL, Focus.ROUND_PLAY))
+
+        assertEquals(SideMetric.SURVIVAL_RATE, insight.metric)
+        assertEquals(null, insight.focus)
+        assertEquals(true, insight.isRolePriority)
+    }
+
+    // 역할을 모르는 경기라 관심사가 없으면 가장 벌어진 첫 교전 승률이 뽑힌다
+    @Test
+    fun `홈 리포트의 개선 포인트도 관심사를 따른다`() {
+        val matches = List(3) { aimGap() }.flatten()
+        fun insight(focus: Focus) =
+            (matches.weeklyReport(now = OneDayLater, timeZone = TimeZone.UTC, focus = focus) as WeeklyReport.Ready).insight
+
+        assertEquals(SideMetric.FIRST_DUEL_WIN_RATE, insight(Focus.NONE)?.metric)
+        assertEquals(SideMetric.KAST, insight(Focus.CONSISTENCY)?.metric)
+    }
+
     @Test
     fun `역할을 모르면 가장 벌어진 지표를 고르고 우선 지표라고 하지 않는다`() {
         val matches = side(Side.ATTACK, survived = 30, died = 10) + side(Side.DEFENSE, survived = 20, died = 20)
@@ -111,6 +157,19 @@ class SideInsightTest {
 
         assertEquals(false, insight.isRolePriority)
     }
+}
+
+/**
+ * 공격에서는 퍼블 20번에 퍼데 10번, 수비에서는 퍼블 5번에 퍼데 25번이다. 첫 교전 승률이 67%와 17%로 벌어지고, 관여율도
+ * 75%와 38%로 벌어진다. 생존율은 두 진영 모두 25%다.
+ */
+private fun aimGap() = side(Side.ATTACK, survived = 10, died = 30, openedByMe = 20) +
+    side(Side.DEFENSE, survived = 10, died = 30, openedByMe = 5)
+
+/** 한 진영의 포스바이 라운드를 경기 하나에 담는다. 피스톨 라운드가 아니게 번호를 5로 둔다. */
+private fun buys(side: Side, won: Int, lost: Int): List<Match> {
+    val rounds = List(won + lost) { index -> round(side = side, number = 5, teamLoadout = 3000, won = index < won) }
+    return listOf(match(*rounds.toTypedArray()))
 }
 
 /**

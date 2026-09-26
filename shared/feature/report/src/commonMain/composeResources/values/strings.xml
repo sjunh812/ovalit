@@ -78,6 +78,7 @@
     <string name="insight_gap_percent">%1$d%p</string>
     <string name="insight_values">%1$s %2$s, %3$s %4$s예요.</string>
     <string name="insight_values_with_role">%1$s %2$s, %3$s %4$s예요. %5$s에게 %6$s은 먼저 보는 지표예요.</string>
+    <string name="insight_values_with_focus">%1$s %2$s, %3$s %4$s예요. %5$s를 고르셔서 먼저 봤어요.</string>
     <!-- 라이벌과 친구 비교 -->
     <string name="rival_title">라이벌 · %1$s</string>
     <string name="rival_lead">%1$d개 중 %2$d개 앞섬</string>

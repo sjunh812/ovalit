@@ -18,13 +18,14 @@ internal fun match(
     startedAt: Instant = Instant.fromEpochMilliseconds(0),
     role: Role? = null,
     agent: AgentId = AgentId("agent"),
+    map: MapId = MapId("map"),
     won: Boolean? = null,
     players: List<Scoreline> = emptyList(),
 ) = Match(
     id = MatchId("match"),
     queue = queue,
     act = act,
-    map = MapId("map"),
+    map = map,
     startedAt = startedAt,
     lengthMillis = 0,
     me = Me,
@@ -70,12 +71,13 @@ internal fun kill(
     killer: PlayerId,
     victim: PlayerId,
     assistedBy: Set<PlayerId> = emptySet(),
+    weapon: WeaponId? = null,
 ) = KillEvent(
     atMillis = (atSeconds * 1000).toLong(),
     killer = killer,
     victim = victim,
     assistants = assistedBy,
-    weapon = null,
+    weapon = weapon,
 )
 
 internal fun assertRate(expected: Double, actual: Double?) {

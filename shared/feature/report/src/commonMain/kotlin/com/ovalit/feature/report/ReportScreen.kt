@@ -183,7 +183,7 @@ private fun ReportContent(
     if (queueFilter.hasDynamicMetrics) {
         report.note?.let { note ->
             Spacer(Modifier.height(18.dp))
-            WeekNoteLines(note = note, report = report, catalog = catalog)
+            WeekNoteLines(note = note, catalog = catalog)
         }
     }
     Spacer(Modifier.height(22.dp))
@@ -192,7 +192,7 @@ private fun ReportContent(
         DynamicMetricSection(report, onOpenMetric = { openDynamic = it })
         report.insight?.let { insight ->
             Spacer(Modifier.height(18.dp))
-            InsightSection(insight = insight, role = report.mainRole)
+            InsightSection(insight = insight, role = report.mainRole, catalog = catalog)
         }
         // S6과 S7이 경쟁 + 일반만 보니 기타 모드에는 두지 않는다
         PeriodPicksSection(report, catalog, onOpenAgents = onOpenAgents, onOpenWeapons = onOpenWeapons)

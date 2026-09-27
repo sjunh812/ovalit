@@ -5,7 +5,7 @@ import com.ovalit.core.model.Focus
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.Queue
 import com.ovalit.core.model.Role
-import com.ovalit.core.model.SideMetric
+import com.ovalit.core.model.InsightMetric
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.model.metrics
 import com.ovalit.core.model.weeklyReport
@@ -64,7 +64,7 @@ class FakeMatchRepositoryTest {
         val report = fakeMatches(Thursday).weeklyReport(Thursday, Seoul, focus = Focus.AIM)
         val insight = assertNotNull(assertIs<WeeklyReport.Ready>(report).insight)
 
-        assertEquals(SideMetric.MULTI_KILL_RATE, insight.metric)
+        assertEquals(InsightMetric.MULTI_KILL_RATE, insight.metric)
         assertEquals(Focus.AIM, insight.focus)
     }
 

@@ -9,94 +9,95 @@ import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.core.model.ContentCatalog
+import com.ovalit.core.model.Insight
+import com.ovalit.core.model.InsightMetric
+import com.ovalit.core.model.InsightPart
+import com.ovalit.core.model.InsightSubject
 import com.ovalit.core.model.Role
-import com.ovalit.core.model.SideInsight
-import com.ovalit.core.model.SideMetric
+import com.ovalit.core.model.Side
+import com.ovalit.core.ui.Josa
 import com.ovalit.core.ui.MetricFormat
+import com.ovalit.core.ui.agentName
+import com.ovalit.core.ui.joinKeepingParts
 import com.ovalit.core.ui.label
+import com.ovalit.core.ui.mapName
 import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.metric_damage
+import com.ovalit.core.ui.resources.metric_headshot
 import com.ovalit.core.ui.valueText
-import com.ovalit.feature.report.label
+import com.ovalit.core.ui.weaponName
+import com.ovalit.core.ui.withJosa
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.gap_percent
-import com.ovalit.feature.report.resources.insight_headline
-import com.ovalit.feature.report.resources.insight_headline_multi_kill
+import com.ovalit.feature.report.resources.insight_agent
+import com.ovalit.feature.report.resources.insight_map
+import com.ovalit.feature.report.resources.insight_matches
+import com.ovalit.feature.report.resources.insight_metric_multi_kill
+import com.ovalit.feature.report.resources.insight_other_agents
+import com.ovalit.feature.report.resources.insight_other_maps
+import com.ovalit.feature.report.resources.insight_other_weapons
+import com.ovalit.feature.report.resources.insight_part
+import com.ovalit.feature.report.resources.insight_reason_focus
+import com.ovalit.feature.report.resources.insight_reason_role
+import com.ovalit.feature.report.resources.insight_rounds
+import com.ovalit.feature.report.resources.insight_side
 import com.ovalit.feature.report.resources.insight_side_attack
 import com.ovalit.feature.report.resources.insight_side_defense
-import com.ovalit.feature.report.resources.insight_values
-import com.ovalit.feature.report.resources.insight_values_damage
-import com.ovalit.feature.report.resources.insight_values_damage_with_focus
-import com.ovalit.feature.report.resources.insight_values_damage_with_role
-import com.ovalit.feature.report.resources.insight_values_with_focus
-import com.ovalit.feature.report.resources.insight_values_with_role
+import com.ovalit.feature.report.resources.insight_weapon
 import com.ovalit.feature.report.resources.metric_eco_win
 import com.ovalit.feature.report.resources.metric_first_duel_win
 import com.ovalit.feature.report.resources.metric_force_buy_win
 import com.ovalit.feature.report.resources.metric_full_buy_win
 import com.ovalit.feature.report.resources.metric_kast
-import com.ovalit.feature.report.resources.metric_multi_kill
 import com.ovalit.feature.report.resources.metric_survival
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * 개선 포인트 문장입니다. [insight]에 담긴 지표의 공격과 수비 차이를 사실로만 적습니다. 어느 지표를 적을지는 모델이
- * 관심사 지표, 역할의 우선 지표, 가장 벌어진 지표 순으로 고릅니다. "수비에서 더 버티세요"처럼 게임 결정을 대신하는
- * 말은 쓰지 않습니다(CLAUDE.md 지켜야 할 선).
+ * 개선 포인트 문장입니다. [insight]의 낮은 쪽과 견준 쪽을 사실로만 적습니다. 무엇과 견줄지(공수, 요원, 맵, 무기)와 어느
+ * 지표를 적을지는 모델이 나에게 영향이 큰 순으로 고릅니다. "수비에서 더 버티세요"처럼 게임 결정을 대신하는 말은 쓰지
+ * 않습니다(CLAUDE.md 지켜야 할 선).
  */
 @Composable
-internal fun InsightSection(insight: SideInsight, role: Role?, modifier: Modifier = Modifier) {
-    val format = insight.metric.format
-    val attack = insight.metric.value(insight.attack) ?: return
-    val defense = insight.metric.value(insight.defense) ?: return
-    // 화면에 보이는 자릿수로 반올림한 값끼리 견주고 뺀다
-    val attackLower = format.steps(attack) < format.steps(defense)
-    val gap = format.formatGap(attack, defense)
-    val metricLabel = stringResource(insight.metric.label)
-    val attackLabel = stringResource(Res.string.insight_side_attack)
-    val defenseLabel = stringResource(Res.string.insight_side_defense)
-
-    val lower = if (attackLower) attackLabel else defenseLabel
-    val higher = if (attackLower) defenseLabel else attackLabel
+internal fun InsightSection(insight: Insight, role: Role?, catalog: ContentCatalog, modifier: Modifier = Modifier) {
+    val format = if (insight.metric.isPercent) MetricFormat.PERCENT else MetricFormat.INTEGER
+    val weak = insight.weak
+    val other = insight.other
+    // 화면에 보이는 자릿수로 반올림한 값끼리 뺀다
+    val gap = format.formatGap(other.value, weak.value)
     val gapText = if (format == MetricFormat.PERCENT) stringResource(Res.string.gap_percent, gap) else gap
-    // "멀티킬 라운드"는 받침이 없어 "이"가 붙지 않고, "수비 라운드 멀티킬 라운드"처럼 라운드가 겹쳐서 문장을 따로 쓴다
-    val headline = if (insight.metric == SideMetric.MULTI_KILL_RATE) {
-        stringResource(Res.string.insight_headline_multi_kill, lower, higher, gapText)
-    } else {
-        stringResource(Res.string.insight_headline, lower, metricLabel, higher, gapText)
-    }
-    val attackValue = format.valueText(attack)
-    val defenseValue = format.valueText(defense)
+    val metric = stringResource(insight.metric.label)
+    val weakName = weak.subject.name(catalog)
+    val otherName = other.subject.name(catalog)
+
+    val headline = stringResource(
+        when (weak.subject) {
+            is InsightSubject.OnAgent -> Res.string.insight_agent
+            is InsightSubject.OnMap -> Res.string.insight_map
+            is InsightSubject.WithWeapon -> Res.string.insight_weapon
+            else -> Res.string.insight_side
+        },
+        when (weak.subject) {
+            is InsightSubject.OnAgent -> weakName.withJosa(Josa.EURO_RO)
+            is InsightSubject.WithWeapon -> weakName.withJosa(Josa.EUL_REUL)
+            else -> weakName
+        },
+        metric.withJosa(Josa.I_GA),
+        otherName,
+        gapText,
+    )
+    // 몇 판, 몇 라운드로 센 숫자인지 같이 적는다. 적게 뛴 쪽의 숫자는 크게 흔들린다.
+    val parts = joinKeepingParts(listOf(weak.text(weakName, format), other.text(otherName, format)))
     val focus = insight.focus
-    // 피해량은 정수라 "121예요"처럼 숫자 뒤 조사가 틀린다. 숫자 뒤에 조사가 오지 않는 문장을 따로 쓴다.
-    val damage = insight.metric == SideMetric.DAMAGE
-    val body = when {
-        // 관심사 지표면 관심사를 까닭으로 든다
-        focus != null -> stringResource(
-            if (damage) Res.string.insight_values_damage_with_focus else Res.string.insight_values_with_focus,
-            attackLabel,
-            attackValue,
-            defenseLabel,
-            defenseValue,
-            stringResource(focus.label),
-        )
+    val reason = when {
+        focus != null -> stringResource(Res.string.insight_reason_focus, stringResource(focus.label).withJosa(Josa.EUL_REUL))
         insight.isRolePriority && role != null -> stringResource(
-            if (damage) Res.string.insight_values_damage_with_role else Res.string.insight_values_with_role,
-            attackLabel,
-            attackValue,
-            defenseLabel,
-            defenseValue,
+            Res.string.insight_reason_role,
             stringResource(role.label),
-            metricLabel,
+            metric.withJosa(Josa.EUN_NEUN),
         )
-        else -> stringResource(
-            if (damage) Res.string.insight_values_damage else Res.string.insight_values,
-            attackLabel,
-            attackValue,
-            defenseLabel,
-            defenseValue,
-        )
+        else -> null
     }
 
     Column(
@@ -104,21 +105,46 @@ internal fun InsightSection(insight: SideInsight, role: Role?, modifier: Modifie
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         OvalitText(text = headline, style = OvalitTheme.typography.bodyStrong)
-        OvalitText(text = body, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t2)
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            OvalitText(text = parts, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t2)
+            reason?.let { OvalitText(text = it, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t3) }
+        }
     }
 }
 
-private val SideMetric.label: StringResource
-    get() = when (this) {
-        SideMetric.SURVIVAL_RATE -> Res.string.metric_survival
-        SideMetric.KAST -> Res.string.metric_kast
-        SideMetric.FIRST_DUEL_WIN_RATE -> Res.string.metric_first_duel_win
-        SideMetric.DAMAGE -> CoreUiRes.string.metric_damage
-        SideMetric.MULTI_KILL_RATE -> Res.string.metric_multi_kill
-        SideMetric.FORCE_BUY_WIN_RATE -> Res.string.metric_force_buy_win
-        SideMetric.ECO_WIN_RATE -> Res.string.metric_eco_win
-        SideMetric.FULL_BUY_WIN_RATE -> Res.string.metric_full_buy_win
-    }
+@Composable
+private fun InsightSubject.name(catalog: ContentCatalog): String = when (this) {
+    is InsightSubject.OnSide -> stringResource(if (side == Side.ATTACK) Res.string.insight_side_attack else Res.string.insight_side_defense)
+    is InsightSubject.OnAgent -> catalog.agentName(agent)
+    is InsightSubject.OtherAgents -> agents.singleOrNull()?.let { catalog.agentName(it) }
+        ?: stringResource(Res.string.insight_other_agents, stringResource(role.label))
+    is InsightSubject.OnMap -> catalog.mapName(map)
+    InsightSubject.OtherMaps -> stringResource(Res.string.insight_other_maps)
+    is InsightSubject.WithWeapon -> catalog.weaponName(weapon)
+    is InsightSubject.OtherWeapons -> weapons.singleOrNull()?.let { catalog.weaponName(it) }
+        ?: stringResource(Res.string.insight_other_weapons, stringResource(category.label))
+}
 
-private val SideMetric.format: MetricFormat
-    get() = if (this == SideMetric.DAMAGE) MetricFormat.INTEGER else MetricFormat.PERCENT
+// 공수와 무기는 라운드로, 요원과 맵은 판으로 센다
+@Composable
+private fun InsightPart.text(name: String, format: MetricFormat): String {
+    val sample = when (subject) {
+        is InsightSubject.OnAgent, is InsightSubject.OtherAgents, is InsightSubject.OnMap, InsightSubject.OtherMaps ->
+            stringResource(Res.string.insight_matches, matches)
+        else -> stringResource(Res.string.insight_rounds, rounds)
+    }
+    return stringResource(Res.string.insight_part, name, sample, format.valueText(value))
+}
+
+private val InsightMetric.label: StringResource
+    get() = when (this) {
+        InsightMetric.SURVIVAL_RATE -> Res.string.metric_survival
+        InsightMetric.KAST -> Res.string.metric_kast
+        InsightMetric.FIRST_DUEL_WIN_RATE -> Res.string.metric_first_duel_win
+        InsightMetric.DAMAGE -> CoreUiRes.string.metric_damage
+        InsightMetric.MULTI_KILL_RATE -> Res.string.insight_metric_multi_kill
+        InsightMetric.HEADSHOT_RATE -> CoreUiRes.string.metric_headshot
+        InsightMetric.FORCE_BUY_WIN_RATE -> Res.string.metric_force_buy_win
+        InsightMetric.ECO_WIN_RATE -> Res.string.metric_eco_win
+        InsightMetric.FULL_BUY_WIN_RATE -> Res.string.metric_full_buy_win
+    }

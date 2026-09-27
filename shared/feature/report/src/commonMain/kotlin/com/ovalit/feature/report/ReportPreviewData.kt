@@ -7,15 +7,19 @@ import com.ovalit.core.model.Baseline
 import com.ovalit.core.model.DynamicMetric
 import com.ovalit.core.model.DynamicSlot
 import com.ovalit.core.model.FixedMetric
+import com.ovalit.core.model.Insight
+import com.ovalit.core.model.InsightMetric
+import com.ovalit.core.model.InsightPart
+import com.ovalit.core.model.InsightSubject
 import com.ovalit.core.model.MatchMetrics
+import com.ovalit.core.model.MovedAgent
 import com.ovalit.core.model.MovedMetric
 import com.ovalit.core.model.MovedWeapon
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.ReportPeriod
 import com.ovalit.core.model.Role
 import com.ovalit.core.model.Shots
-import com.ovalit.core.model.SideInsight
-import com.ovalit.core.model.SideMetric
+import com.ovalit.core.model.Side
 import com.ovalit.core.model.TrendWeek
 import com.ovalit.core.model.WeaponId
 import com.ovalit.core.model.WeaponMetric
@@ -115,10 +119,11 @@ internal object ReportPreviewData {
     )
 
     // 타격대가 수비에서 첫 교전을 자주 졌다. 공격 71%, 수비 45%.
-    private val firstDuelBySide = SideInsight(
-        metric = SideMetric.FIRST_DUEL_WIN_RATE,
-        attack = thisWeek.copy(rounds = 74, firstKills = 22, firstDeaths = 9),
-        defense = thisWeek.copy(rounds = 72, firstKills = 15, firstDeaths = 18),
+    // 수비 첫 교전 15승 18패(45%), 공격 22승 9패(71%)
+    private val firstDuelBySide = Insight(
+        metric = InsightMetric.FIRST_DUEL_WIN_RATE,
+        weak = InsightPart(InsightSubject.OnSide(Side.DEFENSE), value = 15 / 33.0, matches = 7, rounds = 72),
+        other = InsightPart(InsightSubject.OnSide(Side.ATTACK), value = 22 / 31.0, matches = 7, rounds = 74),
         isRolePriority = true,
     )
 
@@ -158,8 +163,9 @@ internal object ReportPreviewData {
         weapons = periodWeapons,
         note = WeekNote(
             moved = MovedMetric(FixedMetric.DAMAGE, current = 20_108 / 146.0, usual = 80_373 / 630.0),
-            weapon = MovedWeapon(periodWeapons.first().weapon, WeaponMetric.DAMAGE_PER_ROUND, current = 140.0, usual = 118.0),
+            weapon = MovedWeapon(periodWeapons.first().weapon, WeaponMetric.DAMAGE_PER_ROUND, current = 140.0, usual = 118.0, rounds = 44),
             agents = periodAgents,
+            agent = MovedAgent(periodAgents.first().agent, current = 146.0, usual = 124.0, matches = 4),
         ),
     )
 

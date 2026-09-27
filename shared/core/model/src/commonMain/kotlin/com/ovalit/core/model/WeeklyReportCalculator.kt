@@ -22,12 +22,15 @@ const val MIN_TREND_ROUNDS = 40
  *
  * 이번 주에 뛴 경기가 없으면 지난주에서 끝나는 기간을 봅니다. 그 기간이
  * [MIN_MATCHES_PER_REPORT]경기에 못 미치면 한 주씩 넓혀 [MAX_REPORT_WEEKS]주까지 봅니다.
+ *
+ * @param weaponCategories 개선 포인트가 같은 계열의 무기끼리 견줄 때 씁니다. 비어 있으면 무기끼리는 견주지 않습니다.
  */
 fun Iterable<Match>.weeklyReport(
     now: Instant,
     timeZone: TimeZone,
     queueFilter: QueueFilter = QueueFilter.COMPETITIVE_AND_UNRATED,
     focus: Focus = Focus.NONE,
+    weaponCategories: Map<WeaponId, WeaponCategory> = emptyMap(),
 ): WeeklyReport {
     val counted = filter { it.queue in queueFilter.queues }
     val act = counted.maxByOrNull { it.startedAt }?.act
@@ -59,7 +62,7 @@ fun Iterable<Match>.weeklyReport(
         } else {
             emptyList()
         },
-        insight = if (queueFilter.hasDynamicMetrics) periodMatches.sideInsight(mainRole, focus) else null,
+        insight = if (queueFilter.hasDynamicMetrics) periodMatches.insight(mainRole, focus, weaponCategories) else null,
         trend = counted.trendWeeks(end = end, period = period, timeZone = timeZone),
         results = periodMatches.sortedBy { it.startedAt }.map { it.myTeamWon },
         agents = periodMatches.agentReport().agents,
@@ -72,7 +75,7 @@ fun Iterable<Match>.weeklyReport(
     )
 }
 
-// 무기는 S6 위쪽 표처럼 기간 성적을 바로 앞 비교 기준과 견주고, 변동폭은 기간 앞 주마다 잰다
+// 무기와 요원은 기간 성적을 바로 앞 비교 기준과 견준다. 무기는 S6 위쪽 표와 같은 창이다.
 private fun Map<LocalDate, List<Match>>.weekNote(
     periodMatches: List<Match>,
     period: ReportPeriod,
@@ -81,23 +84,23 @@ private fun Map<LocalDate, List<Match>>.weekNote(
     history: List<MatchMetrics>,
     role: Role?,
 ): WeekNote? {
-    val usualWeapons = between(baselineStart(period.firstDay), period.firstDay).weaponStats().associateBy { it.weapon }
-    val weeklyWeapons = weeksBefore(period.firstDay).map { it.weaponStats() }
-    val trends = periodMatches.weaponStats().map { stats ->
-        WeaponTrend(
-            weapon = stats.weapon,
-            current = stats,
-            baseline = usualWeapons[stats.weapon],
-            weekly = weeklyWeapons.mapNotNull { week -> week.firstOrNull { it.weapon == stats.weapon } },
-        )
+    val usualMatches = between(baselineStart(period.firstDay), period.firstDay)
+    val usualWeapons = usualMatches.weaponStats().associateBy { it.weapon }
+    val weapons = periodMatches.weaponStats().map { stats ->
+        WeaponTrend(weapon = stats.weapon, current = stats, baseline = usualWeapons[stats.weapon])
+    }
+    val usualAgents = usualMatches.groupBy { it.myAgent }
+    val agentTrends = periodMatches.groupBy { it.myAgent }.map { (agent, matches) ->
+        AgentTrend(agent = agent, current = matches.totalMetrics(), baseline = usualAgents[agent]?.totalMetrics())
     }
     return chooseWeekNote(
         current = metrics,
         baseline = baseline?.metrics,
         history = history,
         role = role,
-        weapons = trends,
+        weapons = weapons,
         agents = periodMatches.agentReport().agents,
+        agentTrends = agentTrends,
     )
 }
 

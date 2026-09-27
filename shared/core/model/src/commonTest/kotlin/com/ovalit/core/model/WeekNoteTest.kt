@@ -46,7 +46,7 @@ class WeekNoteTest {
     }
 
     @Test
-    fun `같은 지표가 같은 쪽으로 크게 움직인 무기를 붙인다`() {
+    fun `같은 지표가 같은 쪽으로 움직인 무기를 붙인다`() {
         val note = note(current = fixed(head = 30), weapons = listOf(vandal(head = 30), phantom(head = 18)))
 
         assertEquals(Vandal, note?.weapon?.weapon)
@@ -68,6 +68,40 @@ class WeekNoteTest {
         val note = note(current = fixed(head = 30), weapons = listOf(phantom(head = 12)))
 
         assertNull(note?.weapon)
+    }
+
+    // 사용자 요청(2026-09-27): 크게 달라진 무기보다 전체 변화를 많이 끌어간 무기를 붙인다. 밴달은 25%p 올랐지만 20라운드,
+    // 팬텀은 15%p 올랐지만 60라운드라 팬텀이 헤드샷을 더 끌어올렸다.
+    @Test
+    fun `무기는 비중과 차이를 곱해 가장 많이 끌어간 것을 붙인다`() {
+        val note = note(
+            current = fixed(head = 30),
+            weapons = listOf(trend(Vandal, head = 46, singleRounds = 20), trend(Phantom, head = 36, singleRounds = 60)),
+        )
+
+        assertEquals(Phantom, note?.weapon?.weapon)
+        assertEquals(60, note?.weapon?.rounds)
+    }
+
+    // 제트는 9%p 올랐지만 60라운드, 레이즈는 11%p 올랐지만 40라운드라 제트가 헤드샷을 더 끌어올렸다
+    @Test
+    fun `요원도 비중과 차이를 곱해 가장 많이 끌어간 것을 붙인다`() {
+        val note = note(
+            current = fixed(head = 30),
+            agentTrends = listOf(agentTrend(Jett, rounds = 60, head = 30), agentTrend(Raze, rounds = 40, head = 32)),
+        )
+
+        assertEquals(Jett, note?.agent?.agent)
+    }
+
+    @Test
+    fun `표본이 모자라거나 반대로 움직인 요원은 붙이지 않는다`() {
+        val note = note(
+            current = fixed(head = 30),
+            agentTrends = listOf(agentTrend(Jett, rounds = 30, head = 40), agentTrend(Raze, rounds = 60, head = 15)),
+        )
+
+        assertNull(note?.agent)
     }
 
     @Test
@@ -114,6 +148,7 @@ class WeekNoteTest {
         role: Role? = Role.DUELIST,
         weapons: List<WeaponTrend> = emptyList(),
         agents: List<AgentStats> = emptyList(),
+        agentTrends: List<AgentTrend> = emptyList(),
     ) = chooseWeekNote(
         current = current,
         baseline = baseline,
@@ -121,6 +156,7 @@ class WeekNoteTest {
         role = role,
         weapons = weapons,
         agents = agents,
+        agentTrends = agentTrends,
     )
 
     private companion object {
@@ -148,26 +184,32 @@ class WeekNoteTest {
             fixed(kills = 110 + 6 * d, score = 20_000 + 400 * d, damage = 14_000 + 300 * d, head = 21 + d)
         }
 
-        fun weapon(id: WeaponId, head: Int, carriedRounds: Int = 40) = WeaponStats(
+        fun weapon(id: WeaponId, head: Int, carriedRounds: Int = 40, singleRounds: Int = 40) = WeaponStats(
             weapon = id,
             kills = 40,
-            singleWeaponRounds = 40,
+            singleWeaponRounds = singleRounds,
             shots = Shots(head = head, body = 100 - head, leg = 0),
             carriedRounds = carriedRounds,
             deaths = 30,
             damage = carriedRounds * 140,
         )
 
-        fun trend(id: WeaponId, head: Int, carriedRounds: Int = 40) = WeaponTrend(
+        fun trend(id: WeaponId, head: Int, carriedRounds: Int = 40, singleRounds: Int = 40) = WeaponTrend(
             weapon = id,
-            current = weapon(id, head, carriedRounds),
+            current = weapon(id, head, carriedRounds, singleRounds),
             baseline = weapon(id, 21),
-            weekly = listOf(-1, 1, 0, 0, -1, 1, 0, 0).map { d -> weapon(id, 21 + d) },
         )
 
         fun vandal(head: Int) = trend(Vandal, head)
 
         fun phantom(head: Int) = trend(Phantom, head)
+
+        // 평소 헤드샷은 21%다
+        fun agentTrend(id: AgentId, rounds: Int, head: Int) = AgentTrend(
+            agent = id,
+            current = fixed(head = head).copy(rounds = rounds, matches = rounds / 20),
+            baseline = fixed().copy(rounds = 80),
+        )
 
         fun agent(id: AgentId, wins: Int, losses: Int) = AgentStats(
             agent = id,

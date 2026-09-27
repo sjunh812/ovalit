@@ -5,45 +5,51 @@ package com.ovalit.core.model
  * 이상일 때만 적습니다.
  *
  * @property moved 평소 주간 변동폭보다 크게 움직인 고정 지표 중 가장 크게 움직인 것입니다. 없으면 `null`입니다.
- * @property weapon [moved]와 같은 지표가 같은 쪽으로 평소보다 크게 움직인 무기 중 가장 크게 움직인 것입니다. [moved]가
- * 없거나 맞는 무기가 없으면 `null`입니다.
+ * @property weapon [moved]를 같은 쪽으로 가장 많이 끌어간 무기입니다. [moved]가 없거나 맞는 무기가 없으면 `null`입니다.
+ * @property agent [moved]를 같은 쪽으로 가장 많이 끌어간 요원입니다. [moved]가 없거나 맞는 요원이 없으면 `null`입니다.
  * @property agents 이번 기간에 이긴 판이 진 판보다 많았던 요원입니다. 승률 높은 순이고, 둘이 안 되면 빈 목록입니다.
  */
 data class WeekNote(
     val moved: MovedMetric?,
     val weapon: MovedWeapon?,
     val agents: List<AgentStats>,
+    val agent: MovedAgent? = null,
 )
 
 data class MovedMetric(val metric: FixedMetric, val current: Double, val usual: Double) {
     val rose: Boolean get() = current > usual
 }
 
-data class MovedWeapon(val weapon: WeaponId, val metric: WeaponMetric, val current: Double, val usual: Double)
+/** @property rounds 이번 기간에 이 값을 낸 라운드입니다. 헤드샷은 한 무기만 쓴 라운드, 나머지는 들고 시작한 라운드입니다. */
+data class MovedWeapon(val weapon: WeaponId, val metric: WeaponMetric, val current: Double, val usual: Double, val rounds: Int = 0)
 
-/**
- * 무기 하나의 이번 기간, 비교 기준, 주간 성적입니다. [WeaponStats.value]가 표본을 넘긴 값만 주므로 모자란 주는
- * 변동폭에서 빠집니다.
- */
+data class MovedAgent(val agent: AgentId, val current: Double, val usual: Double, val matches: Int)
+
+/** 무기 하나의 이번 기간과 비교 기준 성적입니다. [WeaponStats.value]가 표본을 넘긴 값만 줍니다. */
 internal class WeaponTrend(
     val weapon: WeaponId,
     val current: WeaponStats?,
     val baseline: WeaponStats?,
-    val weekly: List<WeaponStats>,
 )
 
-/**
- * 짚을 요원이 되려면 승패가 갈린 판이 이만큼은 있어야 합니다. 한 판 이긴 것만으로 잘 풀린 요원이라고 하면 과장입니다.
- * 실데이터를 보고 조정할 시작값입니다.
- */
+/** 요원 하나의 이번 기간과 비교 기준 성적입니다. */
+internal class AgentTrend(
+    val agent: AgentId,
+    val current: MatchMetrics,
+    val baseline: MatchMetrics?,
+)
+
+/** 짚을 요원이 되려면 이만큼은 승패가 갈린 판이 있어야 합니다. 한 판 이긴 걸로 잘 풀렸다고 하면 과장입니다. */
 internal const val MIN_NOTE_AGENT_DECIDED = 2
 
 internal const val MAX_NOTE_AGENTS = 3
 
 /**
- * 고정 지표 중 평소 주간 변동폭의 [MOVEMENT_THRESHOLD]배를 넘게 움직인 것 하나, 같은 지표가 같은 쪽으로 가장 크게
- * 움직인 무기, 이긴 판이 더 많았던 요원을 둘 이상일 때 [MAX_NOTE_AGENTS]개까지 고릅니다. 셋 다 없으면 `null`이라
- * 칸을 두지 않습니다.
+ * 고정 지표 중 평소 주간 변동폭의 [MOVEMENT_THRESHOLD]배를 넘게 움직인 것 하나를 고르고, 그 변화를 가장 많이 끌어간
+ * 무기와 요원을 붙입니다. 이긴 판이 더 많았던 요원도 둘 이상이면 적습니다. 모두 없으면 `null`이라 칸을 두지 않습니다.
+ *
+ * 무기와 요원은 크게 달라진 것보다 많이 쓴 것을 봅니다. 이번 기간 라운드에서 차지하는 비중에 평소와의 차이를 곱해,
+ * 전체 변화에 가장 많이 보탠 것을 고릅니다. 한 판 쓴 무기가 크게 달라졌어도 전체 숫자는 거의 안 움직입니다.
  *
  * 역할이 크게 띄우지 않는 지표(척후대와 전략가의 K/D)는 고르지 않습니다. 동적 칸과 같은 규칙입니다. 기타 모드에서는
  * 부르지 않아서 고정 지표 넷을 다 봅니다.
@@ -58,9 +64,11 @@ internal fun chooseWeekNote(
     role: Role?,
     weapons: List<WeaponTrend>,
     agents: List<AgentStats>,
+    agentTrends: List<AgentTrend> = emptyList(),
 ): WeekNote? {
     val moved = movedFixedMetric(current, baseline, history, role)
-    val weapon = moved?.let { movedWeapon(it, weapons) }
+    val weapon = moved?.let { movedWeapon(it, weapons, current.rounds) }
+    val agent = moved?.let { movedAgent(it, agentTrends, current.rounds) }
     val wellPlayed = agents
         .filter { it.decided >= MIN_NOTE_AGENT_DECIDED && it.wins * 2 > it.decided }
         .sortedWith(compareByDescending<AgentStats> { it.winRate }.thenByDescending { it.decided })
@@ -70,7 +78,7 @@ internal fun chooseWeekNote(
         .orEmpty()
 
     if (moved == null && wellPlayed.isEmpty()) return null
-    return WeekNote(moved = moved, weapon = weapon, agents = wellPlayed)
+    return WeekNote(moved = moved, weapon = weapon, agents = wellPlayed, agent = agent)
 }
 
 private fun movedFixedMetric(
@@ -96,21 +104,39 @@ private fun movedFixedMetric(
         ?.first
 }
 
-private fun movedWeapon(moved: MovedMetric, weapons: List<WeaponTrend>): MovedWeapon? {
+// 같은 쪽으로 움직인 무기 중 비중 × 차이가 가장 큰 것이다. 한쪽 표본만 넘긴 무기를 짚으면 S6에서는 그 무기가
+// "이번 액트 기준"으로 떠서 숫자가 맞지 않으니 S6 위쪽 표처럼 두 표본을 다 본다.
+private fun movedWeapon(moved: MovedMetric, weapons: List<WeaponTrend>, rounds: Int): MovedWeapon? {
     // 전투점수는 무기별로 나눌 수 없다
     val metric = moved.metric.weaponMetric ?: return null
+    if (rounds == 0) return null
 
     return weapons
-        // S6 위쪽 표처럼 헤드샷과 K/D·피해량 표본을 둘 다 넘긴 무기만 본다. 한쪽만 넘긴 무기를 짚으면 S6에서는 그 무기가
-        // "이번 액트 기준"으로 떠서 숫자가 맞지 않는다.
         .filter { it.current?.isMeasurable == true && it.current.isCarriedMeasurable }
         .mapNotNull { trend ->
-            val now = trend.current?.value(metric) ?: return@mapNotNull null
+            val stats = trend.current ?: return@mapNotNull null
+            val now = stats.value(metric) ?: return@mapNotNull null
             val usual = trend.baseline?.value(metric) ?: return@mapNotNull null
-            if ((now > usual) != moved.rose || now == usual) return@mapNotNull null
-            val assessment = assessMovement(now, usual, weekly = trend.weekly.mapNotNull { it.value(metric) })
-            if (assessment.movement != Movement.MOVED) return@mapNotNull null
-            MovedWeapon(trend.weapon, metric, now, usual) to assessment.strength
+            val sample = if (metric == WeaponMetric.HEADSHOT_RATE) stats.singleWeaponRounds else stats.carriedRounds
+            val pull = (now - usual) * sample / rounds * if (moved.rose) 1 else -1
+            if (pull <= 0) return@mapNotNull null
+            MovedWeapon(trend.weapon, metric, now, usual, sample) to pull
+        }
+        .maxByOrNull { it.second }
+        ?.first
+}
+
+// 요원도 무기처럼 비중 × 차이로 고른다. 이번 기간과 비교 기준 모두 S1-a 막대의 라운드 기준을 넘긴 요원만 본다.
+private fun movedAgent(moved: MovedMetric, agents: List<AgentTrend>, rounds: Int): MovedAgent? {
+    if (rounds == 0) return null
+    return agents
+        .filter { it.current.rounds >= MIN_TREND_ROUNDS && (it.baseline?.rounds ?: 0) >= MIN_TREND_ROUNDS }
+        .mapNotNull { trend ->
+            val now = moved.metric.value(trend.current) ?: return@mapNotNull null
+            val usual = trend.baseline?.let(moved.metric.value) ?: return@mapNotNull null
+            val pull = (now - usual) * trend.current.rounds / rounds * if (moved.rose) 1 else -1
+            if (pull <= 0) return@mapNotNull null
+            MovedAgent(trend.agent, now, usual, trend.current.matches) to pull
         }
         .maxByOrNull { it.second }
         ?.first

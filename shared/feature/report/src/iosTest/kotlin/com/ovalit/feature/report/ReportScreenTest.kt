@@ -4,6 +4,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsActions
@@ -29,13 +32,18 @@ import com.ovalit.core.model.DynamicMetric
 import com.ovalit.core.model.DynamicSlot
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.Focus
+import com.ovalit.core.model.Insight
+import com.ovalit.core.model.InsightMetric
+import com.ovalit.core.model.InsightPart
+import com.ovalit.core.model.InsightSubject
+import com.ovalit.core.model.MapId
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.MovedMetric
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
-import com.ovalit.core.model.SideInsight
-import com.ovalit.core.model.SideMetric
+import com.ovalit.core.model.Role
+import com.ovalit.core.model.Side
 import com.ovalit.core.model.WeaponCategory
 import com.ovalit.core.model.WeaponId
 import com.ovalit.core.model.WeaponInfo
@@ -385,15 +393,18 @@ class ReportScreenTest {
         onNodeWithText("퍼블\u00a010번 이상이어야", substring = true).assertExists()
     }
 
-    // 프리뷰 데이터는 피해량이 128 → 138로 올랐다. 밴달 피해량도 같은 쪽으로 올랐고 이긴 판이 더 많은 요원은 둘이다.
+    // 프리뷰 데이터는 피해량이 128 → 138로 올랐다. 그 변화를 밴달과 제트가 가장 많이 끌었고 이긴 판이 더 많은 요원은 둘이다.
     @Test
     fun `짚을 점은 움직인 지표와 같은 쪽 무기와 요원을 숫자로 적는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
 
         onNodeWithText("피해량이 평소보다 10 올랐어요").assertExists()
-        onNodeWithText("지난 4주 평균 128 → 이번 주 138").assertExists()
-        onNodeWithText("가장 많이 오른 무기", substring = true).assertExists()
-        onNodeWithText("밴달 피해량 118 → 140", substring = true).assertExists()
+        // 사용자 요청(2026-09-27): 평균이 얼마였는지는 고정 칸에 이미 있어 다시 적지 않는다
+        onNodeWithText("→ 이번 주", substring = true).assertDoesNotExist()
+        onNodeWithText("가장 크게 끌어올린 무기", substring = true).assertExists()
+        onNodeWithText("밴달 피해량 118 → 140 · 44라운드", substring = true).assertExists()
+        onNodeWithText("가장 크게 끌어올린 요원", substring = true).assertExists()
+        onNodeWithText("제트 피해량 124 → 146 · 4판", substring = true).assertExists()
         onNodeWithText(joinKeepingParts(listOf("제트 3승 1패", "레이즈 2승 1패")), substring = true).assertExists()
     }
 
@@ -418,30 +429,77 @@ class ReportScreenTest {
         onNodeWithText(MetricFormat.TWO_DECIMALS.formatChange(kda, usual), useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // "멀티킬 라운드"는 받침이 없어 "이"가 붙지 않고, 기본 문장에 넣으면 "라운드"가 두 번 나온다
+    // "멀티킬 라운드 비율"도 받침에 맞는 조사를 붙인다
     @Test
-    fun `멀티킬 개선 포인트는 조사와 낱말이 맞는 문장으로 적는다`() = runComposeUiTest {
-        val insight = SideInsight(
-            metric = SideMetric.MULTI_KILL_RATE,
-            attack = MatchMetrics.Empty.copy(rounds = 40, multiKillRounds = 12),
-            defense = MatchMetrics.Empty.copy(rounds = 40, multiKillRounds = 2),
-            isRolePriority = false,
-            focus = Focus.AIM,
-        )
+    fun `멀티킬 개선 포인트는 조사가 맞는 문장으로 적는다`() = runComposeUiTest {
+        val insight = sideInsight(InsightMetric.MULTI_KILL_RATE, defense = 0.05 to 40, attack = 0.30 to 40, focus = Focus.AIM)
         setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
 
         onNodeWithText("수비에서 멀티킬 라운드 비율이 공격보다 25%p 낮아요.").assertExists()
-        onNodeWithText("공격 30%, 수비 5%예요. 에임 올리기를 고르셔서 먼저 봤어요.").assertExists()
+        onNodeWithText(joinKeepingParts(listOf("수비 40라운드 5%", "공격 40라운드 30%"))).assertExists()
+        onNodeWithText("에임 올리기를 고르셔서 먼저 봤어요.").assertExists()
     }
 
-    // 헤드라인과 풀이가 붙으면 한 덩어리로 뭉개진다. 개선 포인트 문장과 같은 간격이다.
+    // 사용자 요청(2026-09-27): 공수만 견주지 않는다. 요원은 같은 역할끼리, 이름 뒤 조사는 이름에 맞춘다.
     @Test
-    fun `짚을 점 헤드라인과 풀이 줄은 6dp 띄운다`() = runComposeUiTest {
+    fun `요원끼리 견준 개선 포인트는 판 수와 함께 적는다`() = runComposeUiTest {
+        val insight = Insight(
+            metric = InsightMetric.SURVIVAL_RATE,
+            weak = InsightPart(InsightSubject.OnAgent(Raze), value = 0.5, matches = 2, rounds = 40),
+            other = InsightPart(InsightSubject.OtherAgents(Role.DUELIST, listOf(Jett)), value = 0.75, matches = 3, rounds = 60),
+            isRolePriority = false,
+        )
+        setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
+
+        onNodeWithText("레이즈로 뛴 판은 생존율이 제트보다 25%p 낮아요.").assertExists()
+        onNodeWithText(joinKeepingParts(listOf("레이즈 2판 50%", "제트 3판 75%"))).assertExists()
+    }
+
+    @Test
+    fun `같은 역할 요원이 여럿이면 다른 요원으로 묶어 적는다`() = runComposeUiTest {
+        val insight = Insight(
+            metric = InsightMetric.KAST,
+            weak = InsightPart(InsightSubject.OnAgent(Raze), value = 0.6, matches = 2, rounds = 40),
+            other = InsightPart(InsightSubject.OtherAgents(Role.DUELIST, listOf(Jett, AgentId("neon"))), value = 0.74, matches = 5, rounds = 100),
+            isRolePriority = false,
+        )
+        setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
+
+        onNodeWithText("레이즈로 뛴 판은 관여율이 다른 타격대 요원보다 14%p 낮아요.").assertExists()
+    }
+
+    @Test
+    fun `맵과 무기끼리 견준 개선 포인트도 이름에 맞는 조사로 적는다`() = runComposeUiTest {
+        val map = Insight(
+            metric = InsightMetric.KAST,
+            weak = InsightPart(InsightSubject.OnMap(Haven), value = 0.58, matches = 3, rounds = 60),
+            other = InsightPart(InsightSubject.OtherMaps, value = 0.72, matches = 9, rounds = 180),
+            isRolePriority = false,
+        )
+        val weapon = Insight(
+            metric = InsightMetric.HEADSHOT_RATE,
+            weak = InsightPart(InsightSubject.WithWeapon(Vandal), value = 0.14, matches = 0, rounds = 34),
+            other = InsightPart(InsightSubject.OtherWeapons(WeaponCategory.RIFLE, listOf(Phantom, AgentlessRifle)), value = 0.25, matches = 0, rounds = 41),
+            isRolePriority = false,
+        )
+        var insight by mutableStateOf(map)
+        setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
+
+        onNodeWithText("헤이븐에서는 관여율이 다른 맵보다 14%p 낮아요.").assertExists()
+        onNodeWithText(joinKeepingParts(listOf("헤이븐 3판 58%", "다른 맵 9판 72%"))).assertExists()
+        insight = weapon
+        onNodeWithText("밴달을 든 라운드는 헤드샷이 다른 소총보다 11%p 낮아요.").assertExists()
+        onNodeWithText(joinKeepingParts(listOf("밴달 34라운드 14%", "다른 소총 41라운드 25%"))).assertExists()
+    }
+
+    // 헤드라인과 첫 줄이 붙으면 한 덩어리로 뭉개진다. 개선 포인트 문장과 같은 간격이다.
+    @Test
+    fun `짚을 점 헤드라인과 첫 줄은 6dp 띄운다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
 
         val headline = onNodeWithText("피해량이 평소보다 10 올랐어요").getUnclippedBoundsInRoot()
-        val usual = onNodeWithText("지난 4주 평균 128 → 이번 주 138").getUnclippedBoundsInRoot()
-        assertEquals(6.dp, usual.top - headline.bottom)
+        val first = onNodeWithText("가장 크게 끌어올린 무기", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        assertEquals(6.dp, first.top - headline.bottom)
     }
 
     // CLAUDE.md 지켜야 할 선: 게임 결정을 대신하지 않는다
@@ -475,15 +533,11 @@ class ReportScreenTest {
     // 피해량은 정수라 "121예요"처럼 숫자 뒤 조사가 틀린다
     @Test
     fun `피해량 개선 포인트는 숫자 뒤에 조사를 붙이지 않는다`() = runComposeUiTest {
-        val damage = SideInsight(
-            metric = SideMetric.DAMAGE,
-            attack = ReportPreviewData.moved.metrics.copy(rounds = 70, damage = 70 * 143),
-            defense = ReportPreviewData.moved.metrics.copy(rounds = 76, damage = 76 * 121),
-            isRolePriority = false,
-        )
+        val damage = sideInsight(InsightMetric.DAMAGE, defense = 121.0 to 76, attack = 143.0 to 70)
         setContent { Report(ReportPreviewData.moved.copy(insight = damage)) }
 
-        onNodeWithText("공격은 라운드당 143, 수비는 121 피해를 입혔어요.").assertExists()
+        onNodeWithText("수비에서 피해량이 공격보다 22 낮아요.").assertExists()
+        onNodeWithText(joinKeepingParts(listOf("수비 76라운드 121", "공격 70라운드 143"))).assertExists()
     }
 
     // 무기 값도 보이는 자릿수로 같으면 "140 → 140"이 돼서 무기 줄을 두지 않는다
@@ -550,8 +604,9 @@ class ReportScreenTest {
     fun `개선 포인트는 낮은 쪽 진영부터 사실만 적는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        onNodeWithText("수비 라운드 첫 교전 승률이 공격보다 26%p 낮아요.").assertExists()
-        onNodeWithText("공격 71%, 수비 45%예요. 타격대에게 첫 교전 승률은 먼저 보는 지표예요.").assertExists()
+        onNodeWithText("수비에서 첫 교전 승률이 공격보다 26%p 낮아요.").assertExists()
+        onNodeWithText(joinKeepingParts(listOf("수비 72라운드 45%", "공격 74라운드 71%"))).assertExists()
+        onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요.").assertExists()
     }
 
     @Test
@@ -559,7 +614,7 @@ class ReportScreenTest {
         val report = ReportPreviewData.moved.let { it.copy(insight = it.insight?.copy(isRolePriority = false)) }
         setContent { Report(report) }
 
-        onNodeWithText("공격 71%, 수비 45%예요.").assertExists()
+        onNodeWithText("먼저 보는 지표예요", substring = true).assertDoesNotExist()
     }
 
     // 관심사로 골라 앞에 둔 지표면 역할이 아니라 관심사로 까닭을 말한다
@@ -568,22 +623,27 @@ class ReportScreenTest {
         val report = ReportPreviewData.moved.let { it.copy(insight = it.insight?.copy(isRolePriority = false, focus = Focus.AIM)) }
         setContent { Report(report) }
 
-        onNodeWithText("공격 71%, 수비 45%예요. 에임 올리기를 고르셔서 먼저 봤어요.").assertExists()
+        onNodeWithText("에임 올리기를 고르셔서 먼저 봤어요.").assertExists()
     }
 
     @Test
-    fun `공격이 더 낮으면 공격 라운드부터 적는다`() = runComposeUiTest {
+    fun `공격이 더 낮으면 공격부터 적는다`() = runComposeUiTest {
         val report = ReportPreviewData.moved.let { base ->
             val insight = base.insight!!
-            base.copy(insight = insight.copy(attack = insight.defense, defense = insight.attack))
+            base.copy(
+                insight = insight.copy(
+                    weak = insight.weak.copy(subject = InsightSubject.OnSide(Side.ATTACK)),
+                    other = insight.other.copy(subject = InsightSubject.OnSide(Side.DEFENSE)),
+                ),
+            )
         }
         setContent { Report(report) }
 
-        onNodeWithText("공격 라운드 첫 교전 승률이 수비보다 26%p 낮아요.").assertExists()
+        onNodeWithText("공격에서 첫 교전 승률이 수비보다 26%p 낮아요.").assertExists()
     }
 
     @Test
-    fun `공수 격차가 없으면 개선 포인트를 비운다`() = runComposeUiTest {
+    fun `견줄 만한 격차가 없으면 개선 포인트를 비운다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = null)) }
 
         onNodeWithText("낮아요.", substring = true).assertDoesNotExist()
@@ -688,12 +748,26 @@ private fun Report(
 }
 
 // 짚을 점 문장에 이름이 들어가서 프리뷰 데이터의 요원과 무기에 이름을 붙였다
+private val Jett = AgentId("add6443a-41bd-e414-f6ad-e58d267f4e95")
+private val Raze = AgentId("f94c3b30-42be-e959-889c-5aa313dba261")
+private val Haven = MapId("2bee0dc9-4ffe-519b-1cbd-7fbe763a6047")
+private val Vandal = WeaponId("9C82E19D-4575-0200-1A81-3EACF00CF872")
+private val Phantom = WeaponId("EE8E8D15-496B-07AC-E5F6-8FAE5D4C7B1A")
+private val AgentlessRifle = WeaponId("rifle-without-name")
+
 private val NamedCatalog = ContentCatalog.Empty.copy(
-    agents = mapOf(
-        AgentId("add6443a-41bd-e414-f6ad-e58d267f4e95") to "제트",
-        AgentId("f94c3b30-42be-e959-889c-5aa313dba261") to "레이즈",
-    ),
-    weapons = mapOf(WeaponId("9C82E19D-4575-0200-1A81-3EACF00CF872") to WeaponInfo("밴달", WeaponCategory.RIFLE)),
+    agents = mapOf(Jett to "제트", Raze to "레이즈"),
+    weapons = mapOf(Vandal to WeaponInfo("밴달", WeaponCategory.RIFLE), Phantom to WeaponInfo("팬텀", WeaponCategory.RIFLE)),
+    maps = mapOf(Haven to "헤이븐"),
+)
+
+// 수비와 공격을 (값, 라운드)로 받아 공수 개선 포인트를 만든다
+private fun sideInsight(metric: InsightMetric, defense: Pair<Double, Int>, attack: Pair<Double, Int>, focus: Focus? = null) = Insight(
+    metric = metric,
+    weak = InsightPart(InsightSubject.OnSide(Side.DEFENSE), value = defense.first, matches = 7, rounds = defense.second),
+    other = InsightPart(InsightSubject.OnSide(Side.ATTACK), value = attack.first, matches = 7, rounds = attack.second),
+    isRolePriority = false,
+    focus = focus,
 )
 
 @Composable

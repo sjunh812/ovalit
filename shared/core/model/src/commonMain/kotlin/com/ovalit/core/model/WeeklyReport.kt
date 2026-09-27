@@ -20,7 +20,8 @@ sealed interface WeeklyReport {
      * 띄웁니다.
      * @property dynamic 동적 칸(3~5개)입니다. [Movement.MOVED]가 하나도 없고 [Movement.STEADY]가 있을 때만 "큰 변화
      * 없음"을 띄웁니다. 모두 [Movement.UNKNOWN]이면 판단을 보류했다고 적습니다. [QueueFilter.OTHER]면 빈 목록입니다.
-     * @property insight 개선 포인트 문장입니다. 공수 격차가 기준을 넘지 않거나 [QueueFilter.OTHER]면 `null`입니다.
+     * @property insight 개선 포인트 문장입니다. 공수, 요원, 맵, 무기 어디서도 격차가 기준을 넘지 않거나
+     * [QueueFilter.OTHER]면 `null`입니다.
      * @property trend 지표 설명 시트의 주별 막대입니다. 기간 마지막 주에서 끝나는 [TREND_WEEKS]주이고
      * 오래된 주가 앞에 옵니다.
      * @property results 기간 경기의 승패입니다. 오래된 경기가 앞에 오고, 비겼거나 결과를 모르면 `null`입니다.
@@ -36,7 +37,7 @@ sealed interface WeeklyReport {
         val mainRole: Role?,
         val mainRoleShare: Double?,
         val dynamic: List<DynamicSlot>,
-        val insight: SideInsight?,
+        val insight: Insight?,
         val trend: List<TrendWeek>,
         val results: List<Boolean?> = emptyList(),
         val agents: List<AgentStats> = emptyList(),

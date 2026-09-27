@@ -8,9 +8,12 @@ import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.ContentCatalog
+import com.ovalit.core.model.Match
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
+import com.ovalit.core.model.WeaponCategory
+import com.ovalit.core.model.WeaponId
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.model.metricsIn
 import com.ovalit.core.model.weeklyReport
@@ -108,12 +111,14 @@ class ReportViewModel(
     val isRefreshing: StateFlow<Boolean> = refreshing
 
     // 첫 수집이 끝나기 전에는 숫자를 띄우지 않는다. 헤드샷 24%가 잠시 뒤 19%로 바뀌면 유저는 그 뒤로 숫자를 믿지 않는다.
+    // 무기 계열은 개선 포인트가 같은 계열의 무기끼리 견줄 때 쓴다.
     private val importedMatches = combine(
         matchRepository.observeMatches(),
         matchRepository.importProgress,
         weekChanges,
-    ) { matches, progress, _ ->
-        matches.takeIf { progress == null || progress.isDone }
+        contentRepository.catalog,
+    ) { matches, progress, _, catalog ->
+        matches.takeIf { progress == null || progress.isDone }?.let { ReportInputs(it, catalog.weapons.mapValues { (_, info) -> info.category }) }
     }
 
     val uiState: StateFlow<ReportUiState> = combine(
@@ -122,10 +127,16 @@ class ReportViewModel(
         selectedQueue,
         friendRepository.friends,
         friendRepository.rival,
-    ) { matches, preferences, selected, friends, rivalId ->
-        if (matches == null) return@combine ReportUiState.Loading
+    ) { inputs, preferences, selected, friends, rivalId ->
+        if (inputs == null) return@combine ReportUiState.Loading
         val filter = selected ?: preferences.defaultQueue
-        val report = matches.weeklyReport(now = clock.now(), timeZone = timeZone, queueFilter = filter, focus = preferences.focus)
+        val report = inputs.matches.weeklyReport(
+            now = clock.now(),
+            timeZone = timeZone,
+            queueFilter = filter,
+            focus = preferences.focus,
+            weaponCategories = inputs.weaponCategories,
+        )
         val standings = if (report is WeeklyReport.Ready) {
             friends
                 .filter { it.statsPublic }
@@ -193,3 +204,5 @@ class ReportViewModel(
         viewModelScope.launch { friendRepository.setRival(id) }
     }
 }
+
+private class ReportInputs(val matches: List<Match>, val weaponCategories: Map<WeaponId, WeaponCategory>)

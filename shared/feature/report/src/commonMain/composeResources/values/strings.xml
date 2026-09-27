@@ -18,6 +18,7 @@
     <string name="metric_eco_win">이코 승률</string>
     <string name="metric_force_buy_win">포스바이 승률</string>
     <string name="metric_full_buy_win">풀바이 승률</string>
+    <string name="metric_multi_kill">멀티킬 라운드</string>
 
     <!-- 판당 K/D/A는 KDA 옆에 SeparatedRow로 붙는다. 좁으면 통째로 다음 줄로 내려간다 -->
     <string name="summary_kda">판당 %1$s / %2$s / %3$s</string>
@@ -97,6 +98,7 @@
     <string name="dynamic_sheet_assists_body">한 라운드에 어시스트를 몇 번 했는지예요.</string>
     <string name="dynamic_sheet_eco_body">우리 팀 평균 장비 가치가 2,000 미만인 이코 라운드 중 이긴 비율이에요. 피스톨 라운드는 넣지 않아요.</string>
     <string name="dynamic_sheet_force_buy_body">우리 팀 평균 장비 가치가 2,000 이상 3,900 미만인 포스바이 라운드 중 이긴 비율이에요. 피스톨 라운드는 넣지 않아요.</string>
+    <string name="dynamic_sheet_multi_kill_body">뛴 라운드 중 내가 적을 둘 이상 잡은 라운드의 비율이에요. 이긴 교전을 다음 교전까지 이어 갔는지 봐요.</string>
     <string name="dynamic_sheet_full_buy_body">우리 팀 평균 장비 가치가 3,900 이상인 풀바이 라운드 중 이긴 비율이에요. 피스톨 라운드는 넣지 않아요.</string>
     <string name="dynamic_sheet_sample_title">몇 번으로 셌나요?</string>
     <string name="dynamic_sheet_sample_body">위에 적은 표본이 이 비율의 분모예요. 이번 기간과 비교하는 주가 모두 %1$s 이상이어야 비교해요.</string>

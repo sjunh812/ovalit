@@ -42,6 +42,7 @@ import com.ovalit.feature.report.resources.dynamic_sheet_kast_body
 import com.ovalit.feature.report.resources.dynamic_sheet_kast_name
 import com.ovalit.feature.report.resources.dynamic_sheet_moved
 import com.ovalit.feature.report.resources.dynamic_sheet_movement_title
+import com.ovalit.feature.report.resources.dynamic_sheet_multi_kill_body
 import com.ovalit.feature.report.resources.dynamic_sheet_sample_body
 import com.ovalit.feature.report.resources.dynamic_sheet_sample_title
 import com.ovalit.feature.report.resources.dynamic_sheet_steady
@@ -196,4 +197,5 @@ private val DynamicMetric.sheetBody: StringResource
         DynamicMetric.ECO_WIN_RATE -> Res.string.dynamic_sheet_eco_body
         DynamicMetric.FORCE_BUY_WIN_RATE -> Res.string.dynamic_sheet_force_buy_body
         DynamicMetric.FULL_BUY_WIN_RATE -> Res.string.dynamic_sheet_full_buy_body
+        DynamicMetric.MULTI_KILL_RATE -> Res.string.dynamic_sheet_multi_kill_body
     }

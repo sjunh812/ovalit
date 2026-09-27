@@ -8,6 +8,7 @@ import com.ovalit.core.model.DynamicMetric.FIRST_KILL_WIN_RATE
 import com.ovalit.core.model.DynamicMetric.FORCE_BUY_WIN_RATE
 import com.ovalit.core.model.DynamicMetric.FULL_BUY_WIN_RATE
 import com.ovalit.core.model.DynamicMetric.KAST
+import com.ovalit.core.model.DynamicMetric.MULTI_KILL_RATE
 import com.ovalit.core.model.DynamicMetric.SURVIVAL_RATE
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -155,16 +156,37 @@ class DynamicSelectionTest {
     @Test
     fun `움직인 지표가 없으면 관심사 지표부터 채운다`() {
         assertEquals(
-            listOf(steady(FIRST_DUEL_WIN_RATE), steady(KAST), steady(SURVIVAL_RATE)),
+            listOf(steady(FIRST_DUEL_WIN_RATE), steady(MULTI_KILL_RATE), steady(KAST)),
             select(Usual, focus = Focus.AIM),
         )
+    }
+
+    // 사용자 결정(2026-09-27): 멀티킬은 K/D처럼 킬을 따내는 쪽이라 K/D를 먼저 보는 타격대의 우선 지표에 넣었다.
+    // 관여율이 13배로 더 크게 움직였어도 3.3배 움직인 멀티킬 라운드가 앞선다.
+    @Test
+    fun `타격대는 멀티킬 라운드가 움직이면 더 크게 움직인 지표보다 먼저 띄운다`() {
+        val current = stats(kast = 0.90, multiKill = 0.20)
+
+        assertEquals(listOf(moved(KAST), moved(MULTI_KILL_RATE), steady(SURVIVAL_RATE)), select(current))
+        assertEquals(listOf(moved(MULTI_KILL_RATE), moved(KAST), steady(SURVIVAL_RATE)), select(current, Role.DUELIST))
+    }
+
+    // K/D를 크게 띄우지 않는 역할이라 멀티킬도 같이 뺀다
+    @Test
+    fun `척후대와 전략가에게는 멀티킬 라운드를 띄우지 않는다`() {
+        val current = stats(multiKill = 0.30)
+
+        for (role in listOf(Role.INITIATOR, Role.CONTROLLER)) {
+            assertEquals(false, select(current, role).any { it.metric == MULTI_KILL_RATE }, "$role")
+        }
+        assertEquals(true, select(current, Role.SENTINEL).any { it.metric == MULTI_KILL_RATE })
     }
 
     // 전략가에게 퍼블 계열은 크게 띄우지 않는 지표지만, 사용자가 에임을 보겠다고 골랐다
     @Test
     fun `역할이 크게 띄우지 않는 지표라도 관심사로 고르면 넣는다`() {
         assertEquals(
-            listOf(steady(FIRST_DUEL_WIN_RATE), steady(KAST), steady(SURVIVAL_RATE)),
+            listOf(steady(FIRST_DUEL_WIN_RATE), steady(MULTI_KILL_RATE), steady(KAST)),
             select(Usual, Role.CONTROLLER, focus = Focus.AIM),
         )
     }

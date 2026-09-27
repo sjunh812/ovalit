@@ -29,6 +29,8 @@ data class MatchMetrics(
     val forceBuyRoundsWon: Int,
     val fullBuyRounds: Int,
     val fullBuyRoundsWon: Int,
+    /** 내가 적을 둘 이상 잡은 라운드 수입니다. 뒤에 더한 값이라 프리뷰와 테스트가 모르면 0으로 둡니다. */
+    val multiKillRounds: Int = 0,
 ) {
     val acs: Double? get() = combatScore over rounds
 
@@ -71,6 +73,9 @@ data class MatchMetrics(
 
     val fullBuyWinRate: Double? get() = fullBuyRoundsWon over fullBuyRounds
 
+    /** 멀티킬 라운드 비율. 뛴 라운드 중 내가 적을 둘 이상 잡은 비율입니다. 첫 교전을 이긴 뒤 다음 교전까지 이겨 냈는지를 봅니다. */
+    val multiKillRate: Double? get() = multiKillRounds over rounds
+
     operator fun plus(other: MatchMetrics) = MatchMetrics(
         matches = matches + other.matches,
         rounds = rounds + other.rounds,
@@ -91,6 +96,7 @@ data class MatchMetrics(
         forceBuyRoundsWon = forceBuyRoundsWon + other.forceBuyRoundsWon,
         fullBuyRounds = fullBuyRounds + other.fullBuyRounds,
         fullBuyRoundsWon = fullBuyRoundsWon + other.fullBuyRoundsWon,
+        multiKillRounds = multiKillRounds + other.multiKillRounds,
     )
 
     companion object {

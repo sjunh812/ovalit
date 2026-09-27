@@ -5,7 +5,7 @@ package com.ovalit.core.model
  * 크게 띄우지 않는 지표여도 넣습니다. 개선 포인트 문장도 이 지표부터 봅니다.
  */
 enum class Focus(internal val metrics: List<DynamicMetric>) {
-    AIM(listOf(DynamicMetric.FIRST_DUEL_WIN_RATE)),
+    AIM(listOf(DynamicMetric.FIRST_DUEL_WIN_RATE, DynamicMetric.MULTI_KILL_RATE)),
     ROUND_PLAY(listOf(DynamicMetric.FORCE_BUY_WIN_RATE, DynamicMetric.ECO_WIN_RATE, DynamicMetric.FULL_BUY_WIN_RATE)),
     CONSISTENCY(listOf(DynamicMetric.KAST, DynamicMetric.SURVIVAL_RATE)),
 

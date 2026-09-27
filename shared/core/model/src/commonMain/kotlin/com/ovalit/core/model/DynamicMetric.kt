@@ -31,6 +31,10 @@ enum class DynamicMetric(
     ECO_WIN_RATE({ it.ecoWinRate }, { it.ecoRounds }, 15),
     FORCE_BUY_WIN_RATE({ it.forceBuyWinRate }, { it.forceBuyRounds }, 15),
     FULL_BUY_WIN_RATE({ it.fullBuyWinRate }, { it.fullBuyRounds }, 40),
+
+    // 사용자 결정(2026-09-27): 에임 올리기에 첫 교전 다음 교전까지 이겨 내는지를 더했다. 기본 칸을 채우는 순서가
+    // 바뀌지 않게 맨 뒤에 둔다.
+    MULTI_KILL_RATE({ it.multiKillRate }, { it.rounds }, 40),
     ;
 
     internal fun isMeasurable(metrics: MatchMetrics) = sample(metrics) >= minSample
@@ -134,17 +138,19 @@ private fun List<Double>.sampleStandardDeviation(): Double {
 // 스킬 활용, 공수별 성적, 클러치, 사이트 수비는 데이터가 생기면 여기 넣는다.
 private val Role.priority: List<DynamicMetric>
     get() = when (this) {
-        Role.DUELIST -> listOf(DynamicMetric.FIRST_DUEL_INVOLVEMENT, DynamicMetric.FIRST_DUEL_WIN_RATE)
+        Role.DUELIST -> listOf(DynamicMetric.FIRST_DUEL_INVOLVEMENT, DynamicMetric.FIRST_DUEL_WIN_RATE, DynamicMetric.MULTI_KILL_RATE)
         Role.INITIATOR -> listOf(DynamicMetric.ASSISTS_PER_ROUND, DynamicMetric.KAST)
         Role.CONTROLLER -> listOf(DynamicMetric.KAST, DynamicMetric.SURVIVAL_RATE)
         Role.SENTINEL -> listOf(DynamicMetric.SURVIVAL_RATE)
     }
 
+// 멀티킬은 K/D처럼 킬을 따내는 쪽이라 K/D를 크게 띄우지 않는 척후대와 전략가에게서 뺀다
 private val Role.muted: Set<DynamicMetric>
     get() = when (this) {
         Role.DUELIST -> setOf(DynamicMetric.ASSISTS_PER_ROUND)
-        Role.INITIATOR -> emptySet()
-        Role.CONTROLLER, Role.SENTINEL -> FirstBloodMetrics
+        Role.INITIATOR -> setOf(DynamicMetric.MULTI_KILL_RATE)
+        Role.CONTROLLER -> FirstBloodMetrics + DynamicMetric.MULTI_KILL_RATE
+        Role.SENTINEL -> FirstBloodMetrics
     }
 
 private val FirstBloodMetrics = setOf(

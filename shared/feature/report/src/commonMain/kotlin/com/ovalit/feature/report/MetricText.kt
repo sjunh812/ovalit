@@ -13,6 +13,7 @@ import com.ovalit.feature.report.resources.metric_first_kill_win
 import com.ovalit.feature.report.resources.metric_force_buy_win
 import com.ovalit.feature.report.resources.metric_full_buy_win
 import com.ovalit.feature.report.resources.metric_kast
+import com.ovalit.feature.report.resources.metric_multi_kill
 import com.ovalit.feature.report.resources.metric_survival
 import com.ovalit.feature.report.resources.sample_eco_rounds
 import com.ovalit.feature.report.resources.sample_first_duels
@@ -34,6 +35,7 @@ internal val DynamicMetric.label: StringResource
         DynamicMetric.ECO_WIN_RATE -> Res.string.metric_eco_win
         DynamicMetric.FORCE_BUY_WIN_RATE -> Res.string.metric_force_buy_win
         DynamicMetric.FULL_BUY_WIN_RATE -> Res.string.metric_full_buy_win
+        DynamicMetric.MULTI_KILL_RATE -> Res.string.metric_multi_kill
     }
 
 internal val DynamicMetric.format: MetricFormat

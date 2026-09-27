@@ -47,6 +47,20 @@ class MatchMetricsTest {
         assertRate(2.0, metrics.kd)
     }
 
+    // 스킬로 우리 팀을 죽인 건 킬이 아니라 멀티킬에도 들어가지 않는다
+    @Test
+    fun `멀티킬 라운드는 한 라운드에 적을 둘 이상 잡은 라운드다`() {
+        val metrics = match(
+            round(kill(10.0, Me, Enemy), kill(20.0, Me, OtherEnemy)),
+            round(kill(10.0, Me, Enemy), kill(20.0, Me, Ally)),
+            round(kill(10.0, Me, Enemy)),
+            quietRound(),
+        ).metrics()
+
+        assertEquals(1, metrics.multiKillRounds)
+        assertRate(0.25, metrics.multiKillRate)
+    }
+
     @Test
     fun `데스가 없으면 K_D는 비워 둔다`() {
         val metrics = match(round(kill(10.0, Me, Enemy))).metrics()

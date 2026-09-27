@@ -39,6 +39,8 @@ fun Match.metrics(side: Side? = null): MatchMetrics {
         forceBuyRoundsWon = won(BuyType.FORCE_BUY),
         fullBuyRounds = played(BuyType.FULL_BUY),
         fullBuyRoundsWon = won(BuyType.FULL_BUY),
+        // 킬은 적을 잡은 것만 센다(analyze). 스킬로 우리 팀을 죽인 건 멀티킬에도 들어가지 않는다.
+        multiKillRounds = perRound.count { it.kills >= 2 },
     )
 }
 

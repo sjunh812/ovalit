@@ -55,7 +55,8 @@ internal val OvalitDarkColors = OvalitColors(
 
 // 다크를 그대로 뒤집은 것이 아니다. pos와 neg를 흰 바탕에 올리면 대비가 2:1 근처까지
 // 떨어지므로 둘 다 어둡게 내렸고, accent는 글자로 쓸 수 없어 accentInk를 따로 뒀다. KDA 구간 색도 같은 이유로
-// 어둡게 내려 bg와 raised 위에서 4.5:1을 넘긴다.
+// 어둡게 내려 bg와 raised 위에서 4.5:1을 넘긴다. pos와 t3도 작은 글자가 bg 위에서 4.5:1을 넘기게 목업보다 한 단계
+// 내렸다. t3를 더 내리면 t2와 거의 같아져 밝기 단계가 흐려진다.
 internal val OvalitLightColors = OvalitColors(
     bg = Color(0xFFFDFCFA),
     raised = Color(0xFFF7F4F0),
@@ -65,10 +66,10 @@ internal val OvalitLightColors = OvalitColors(
     bar = Color(0xFFEAE5DE),
     t1 = Color(0xFF191510),
     t2 = Color(0xFF6E675E),
-    t3 = Color(0xFF928B82),
+    t3 = Color(0xFF78726B),
     t4 = Color(0xFFACA49A),
     t5 = Color(0xFFC8C1B8),
-    pos = Color(0xFF0E8A52),
+    pos = Color(0xFF0A7D4A),
     neg = Color(0xFFC2262C),
     accent = Color(0xFFE0B252),
     accentInk = Color(0xFF8A6410),

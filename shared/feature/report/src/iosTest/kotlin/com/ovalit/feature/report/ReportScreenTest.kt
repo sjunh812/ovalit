@@ -40,6 +40,7 @@ import com.ovalit.core.model.WeaponId
 import com.ovalit.core.model.WeaponInfo
 import com.ovalit.core.model.WeekNote
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.core.ui.WRAPPING_SEPARATOR
 import com.ovalit.core.ui.joinKeepingParts
@@ -393,6 +394,27 @@ class ReportScreenTest {
         onNodeWithText("가장 많이 오른 무기", substring = true).assertExists()
         onNodeWithText("밴달 피해량 118 → 140", substring = true).assertExists()
         onNodeWithText(joinKeepingParts(listOf("제트 3승 1패", "레이즈 2승 1패")), substring = true).assertExists()
+    }
+
+    // 사용자 결정(2026-09-27): KDA에도 고정 칸처럼 보이는 두 자리끼리 뺀 변화량을 붙인다
+    @Test
+    fun `KDA 옆에 지난 평균과의 변화량을 적는다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved
+        val kda = assertNotNull(report.metrics.kda)
+        val usual = assertNotNull(report.baseline?.metrics?.kda)
+        setContent { Report(report) }
+
+        onNodeWithText(MetricFormat.TWO_DECIMALS.formatChange(kda, usual), useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun `비교할 기록이 없으면 KDA에 변화량을 붙이지 않는다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved.copy(baseline = null)
+        val kda = assertNotNull(report.metrics.kda)
+        val usual = assertNotNull(ReportPreviewData.moved.baseline?.metrics?.kda)
+        setContent { Report(report) }
+
+        onNodeWithText(MetricFormat.TWO_DECIMALS.formatChange(kda, usual), useUnmergedTree = true).assertDoesNotExist()
     }
 
     // 헤드라인과 풀이가 붙으면 한 덩어리로 뭉개진다. 개선 포인트 문장과 같은 간격이다.

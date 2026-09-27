@@ -30,6 +30,7 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Baseline
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchMetrics
+import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.SeparatedRow
 import com.ovalit.core.ui.format
@@ -178,13 +179,15 @@ internal fun FixedMetricSummary(
         verticalArrangement = Arrangement.spacedBy(OvalitSpacing.xs),
     ) {
         // 사용자 결정(2026-09-27): 어시스트가 킬만큼 중요해져서 KDA를 먼저, 한 단계 크게 둔다. KDA만으로는 몇 킬
-        // 몇 데스인지 몰라 판당 K/D/A를 옆에 붙인다. KDA에는 변화량을 붙이지 않는다(CLAUDE.md 지켜야 할 선). 좁으면
-        // 판당 K/D/A가 통째로 다음 줄로 내려간다.
+        // 몇 데스인지 몰라 판당 K/D/A를 옆에 붙인다. 좁으면 판당 K/D/A가 통째로 다음 줄로 내려간다.
+        // 사용자 결정(2026-09-27): KDA에도 고정 칸처럼 지난 평균과의 변화량을 붙인다.
         val perMatchText = metrics.perMatchKda()?.let { (kills, deaths, assists) ->
             stringResource(Res.string.summary_kda, kills, deaths, assists)
         }
         val label = OvalitTheme.typography.label
-        val ratio = metrics.kda?.let {
+        val kda = metrics.kda
+        val usualKda = baseline?.metrics?.kda
+        val ratio = kda?.let {
             kdaRatioText(
                 kda = it,
                 below = colors.t1,
@@ -193,7 +196,24 @@ internal fun FixedMetricSummary(
         }
         SeparatedRow(
             items = listOfNotNull<@Composable () -> Unit>(
-                ratio?.let { { OvalitText(text = it, style = kdaValueStyle(), color = colors.t1) } },
+                ratio?.let {
+                    {
+                        Row {
+                            OvalitText(text = it, modifier = Modifier.alignByBaseline(), style = kdaValueStyle(), color = colors.t1)
+                            // 고정 칸과 같이 보이는 두 자리끼리 빼고 오르면 초록, 내리면 빨강이다
+                            if (kda != null && usualKda != null) {
+                                // KDA 숫자에 딸린 값이라 붙이고, 숫자보다 눈에 덜 띄게 한 단계 작게 둔다
+                                Spacer(Modifier.width(3.dp))
+                                OvalitText(
+                                    text = MetricFormat.TWO_DECIMALS.formatChange(kda, usualKda),
+                                    modifier = Modifier.alignByBaseline(),
+                                    style = OvalitTheme.typography.metricS.copy(fontSize = 11.sp, lineHeight = 14.sp),
+                                    color = directionColor(MetricFormat.TWO_DECIMALS, kda, usualKda),
+                                )
+                            }
+                        }
+                    }
+                },
                 perMatchText?.let { { OvalitText(text = it, style = caption, color = colors.t3) } },
             ),
             separator = { Spacer(Modifier.width(OvalitSpacing.sm)) },

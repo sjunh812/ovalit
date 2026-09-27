@@ -111,12 +111,16 @@ class ReportScreenTest {
         onNodeWithText("이번 주 무기").assertDoesNotExist()
     }
 
-    // (118 + 30) ÷ 88
+    // 사용자 결정: KDA를 먼저, 한 단계 크게 두고 판당 K/D/A를 옆에 둔다. (118 + 30) ÷ 88
     @Test
-    fun `판당 K와 D와 A 옆에 KDA를 적는다`() = runComposeUiTest {
+    fun `KDA를 판당 K와 D와 A보다 먼저 크게 적는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        onNodeWithText("KDA 1.68", useUnmergedTree = true).assertExists()
+        val kda = onNodeWithText("KDA 1.68", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val perMatch = onNodeWithText("판당", substring = true, useUnmergedTree = true).getUnclippedBoundsInRoot()
+        assertTrue(kda.right <= perMatch.left)
+        // 제목 크기(줄 높이 24)라서 설명 글자(17)보다 줄이 확실히 높다
+        assertTrue(kda.bottom - kda.top >= perMatch.bottom - perMatch.top + 5.dp)
     }
 
     @Test

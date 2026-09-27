@@ -16,7 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitRollingText
@@ -31,7 +34,8 @@ import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.SeparatedRow
 import com.ovalit.core.ui.format
-import com.ovalit.core.ui.kdaRatioText
+import com.ovalit.core.ui.resources.Res as CoreUiRes
+import com.ovalit.core.ui.resources.kda_ratio
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.rememberFittingStyle
 import com.ovalit.core.ui.shrinkToFit
@@ -168,41 +172,67 @@ internal fun FixedMetricSummary(
 ) {
     val perMatch = MetricFormat.ONE_DECIMAL
     val matches = metrics.matches.toDouble()
+    val colors = OvalitTheme.colors
+    val caption = OvalitTheme.typography.caption
 
     Column(
         modifier = modifier.padding(horizontal = OvalitSpacing.gutter),
         verticalArrangement = Arrangement.spacedBy(OvalitSpacing.xs),
     ) {
-        // 글자를 키워 한 줄에 안 들어가면 표본이 통째로 다음 줄로 내려간다. 점은 줄 끝이나 맨 앞에 두지 않는다.
-        val caption = OvalitTheme.typography.caption
-        val kda = stringResource(
+        // 사용자 결정(2026-09-27): 어시스트가 킬만큼 중요해져서 KDA를 판당 K/D/A보다 먼저, 한 단계 크게 둔다.
+        // 합계 없이 KDA만 띄우면 몇 킬 몇 데스인지 몰라서 판당 K/D/A를 바로 옆에 둔다. 색이나 변화량은 붙이지
+        // 않는다(CLAUDE.md 지켜야 할 선). 좁으면 판당 K/D/A가 통째로 다음 줄로 내려간다.
+        val perMatchText = stringResource(
             Res.string.summary_kda,
             perMatch.format(metrics.kills / matches),
             perMatch.format(metrics.deaths / matches),
             perMatch.format(metrics.assists / matches),
         )
-        val sample = stringResource(Res.string.summary_sample, metrics.matches, metrics.rounds)
-        // 판당 K/D/A 옆에 KDA를 붙인다. 색이나 변화량은 붙이지 않는다(CLAUDE.md 지켜야 할 선).
-        val ratio = metrics.kda?.let { kdaRatioText(it) }
+        val ratio = metrics.kda?.let { summaryKdaText(it) }
         SeparatedRow(
             items = listOfNotNull<@Composable () -> Unit>(
-                { OvalitText(text = kda, style = caption, color = OvalitTheme.colors.t3) },
-                ratio?.let { { OvalitText(text = it, style = caption, color = OvalitTheme.colors.t3) } },
-                { OvalitText(text = sample, style = caption, color = OvalitTheme.colors.t3) },
+                ratio?.let { { OvalitText(text = it, style = kdaValueStyle(), color = colors.t1) } },
+                { OvalitText(text = perMatchText, style = caption, color = colors.t3) },
             ),
-            separator = { OvalitText(text = SEPARATOR, style = caption, color = OvalitTheme.colors.t3) },
+            separator = { Spacer(Modifier.width(OvalitSpacing.sm)) },
+            alignBaseline = true,
         )
-        OvalitText(
-            text = if (baseline != null) {
-                val usualValues = fixedMetrics.map { metric ->
-                    metric.value(baseline.metrics)?.let { metric.format.valueText(it) } ?: NO_VALUE
-                }
-                stringResource(Res.string.baseline_average, baseline.weeks, usualValues.joinToString(SEPARATOR))
-            } else {
-                stringResource(Res.string.baseline_missing)
-            },
-            style = OvalitTheme.typography.caption,
-            color = OvalitTheme.colors.t3,
+        // 표본과 비교 기준은 한 줄로 두고, 넘치면 비교 기준이 통째로 다음 줄로 내려간다
+        val sample = stringResource(Res.string.summary_sample, metrics.matches, metrics.rounds)
+        val usual = if (baseline != null) {
+            val usualValues = fixedMetrics.map { metric ->
+                metric.value(baseline.metrics)?.let { metric.format.valueText(it) } ?: NO_VALUE
+            }
+            stringResource(Res.string.baseline_average, baseline.weeks, usualValues.joinToString(SEPARATOR))
+        } else {
+            stringResource(Res.string.baseline_missing)
+        }
+        SeparatedRow(
+            items = listOf<@Composable () -> Unit>(
+                { OvalitText(text = sample, style = caption, color = colors.t3) },
+                { OvalitText(text = usual, style = caption, color = colors.t3) },
+            ),
+            separator = { OvalitText(text = SEPARATOR, style = caption, color = colors.t3) },
+        )
+    }
+}
+
+// 숫자는 제목 크기로 두고 "KDA"는 라벨 크기로 낮춘다. 자릿수가 바뀌어도 폭이 흔들리지 않게 숫자 폭을 고정한다.
+@Composable
+private fun kdaValueStyle(): TextStyle = OvalitTheme.typography.titleM.copy(fontFeatureSettings = "tnum")
+
+@Composable
+private fun summaryKdaText(kda: Double): AnnotatedString {
+    val value = MetricFormat.TWO_DECIMALS.format(kda)
+    val text = stringResource(CoreUiRes.string.kda_ratio, value)
+    val start = text.indexOf(value)
+    val label = OvalitTheme.typography.label
+    return buildAnnotatedString {
+        append(text)
+        addStyle(
+            SpanStyle(fontSize = label.fontSize, fontWeight = label.fontWeight, color = OvalitTheme.colors.t2),
+            0,
+            start,
         )
     }
 }

@@ -100,9 +100,33 @@ private fun Map<LocalDate, List<Match>>.weekNote(
         history = history,
         role = role,
         weapons = weapons,
-        agents = periodMatches.agentReport().agents,
         agentTrends = agentTrends,
+        mixes = listOf(
+            mixSlices(periodMatches, usualMatches) { match, round -> round.buyType(match.queue)?.let { MixGroup.Buy(it) } },
+            mixSlices(periodMatches, usualMatches) { _, round -> round.economy?.myWeapon?.let { MixGroup.Weapon(it) } },
+            agentSlices(periodMatches, usualMatches),
+        ),
     )
+}
+
+// 경기 안에서 라운드를 묶음으로 가른다. 어느 묶음에도 안 드는 라운드(장비 가치를 모르는 라운드)는 빠진다.
+private fun mixSlices(current: List<Match>, usual: List<Match>, group: (Match, Round) -> MixGroup?): List<MixSlice> {
+    fun List<Match>.split(): Map<MixGroup, MatchMetrics> = this
+        .flatMap { match -> match.rounds.mapNotNull { group(match, it) }.distinct().map { key -> key to match.roundMetrics { group(match, it) == key } } }
+        .groupBy({ it.first }, { it.second })
+        .mapValues { (_, metrics) -> metrics.sum() }
+    val now = current.split()
+    val before = usual.split()
+    return (now.keys + before.keys).map { key -> MixSlice(key, now[key] ?: MatchMetrics.Empty, before[key] ?: MatchMetrics.Empty) }
+}
+
+// 요원은 판 전체로 가른다. 전투점수도 요원으로는 가를 수 있다.
+private fun agentSlices(current: List<Match>, usual: List<Match>): List<MixSlice> {
+    val now = current.groupBy { it.myAgent }.mapValues { (_, matches) -> matches.totalMetrics() }
+    val before = usual.groupBy { it.myAgent }.mapValues { (_, matches) -> matches.totalMetrics() }
+    return (now.keys + before.keys).map { agent ->
+        MixSlice(MixGroup.Agent(agent), now[agent] ?: MatchMetrics.Empty, before[agent] ?: MatchMetrics.Empty)
+    }
 }
 
 // 첫 수집 범위가 8주라 막대도 8주다. 지난 액트 주도 그리되 경계에 전환 표시를 한다.

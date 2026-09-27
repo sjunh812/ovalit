@@ -53,10 +53,9 @@ class FakeMatchRepositoryTest {
         val note = assertNotNull(report.note)
         val baseline = assertNotNull(report.baseline).metrics
 
-        assertEquals(FixedMetric.DAMAGE, note.moved?.metric)
-        assertTrue(note.moved!!.rose)
+        assertEquals(FixedMetric.DAMAGE, note.moved.metric)
+        assertTrue(note.moved.rose)
         assertTrue(report.metrics.kd!! < baseline.kd!!)
-        assertTrue(note.agents.size >= 2, note.agents.toString())
     }
 
     // 가짜 경기는 늘 공격에서 첫 교전을 더 잘 이긴다. 개선 포인트는 이번 액트 경기로 견주니 한 주만 바꾼 멀티킬보다 이

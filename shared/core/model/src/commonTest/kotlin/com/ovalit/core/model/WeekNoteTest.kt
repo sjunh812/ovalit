@@ -13,7 +13,7 @@ class WeekNoteTest {
         val note = note(current = fixed(head = 30))
 
         assertEquals(FixedMetric.HEADSHOT_RATE, note?.moved?.metric)
-        assertTrue(note!!.moved!!.rose)
+        assertTrue(note!!.moved.rose)
     }
 
     @Test
@@ -112,29 +112,129 @@ class WeekNoteTest {
         assertNull(note?.weapon)
     }
 
-    // Riot 정책: 결정을 없애지 말고 선택지를 여럿 준다. 한 요원만 적으면 골라 주는 것처럼 읽힌다.
+    // 풀바이 피해량은 150 그대로인데 이코 라운드가 16%에서 31%로 늘어 전체가 140에서 131로 떨어졌다. 비중을 평소처럼 맞추면
+    // 140이라 떨어진 몫이 모두 비중에서 왔다.
     @Test
-    fun `이긴 판이 더 많은 요원이 둘 이상일 때만 요원을 적는다`() {
-        val two = note(current = fixed(head = 30), agents = listOf(agent(Sova, 2, 0), agent(Raze, 2, 1), agent(Jett, 1, 3)))
-        val one = note(current = fixed(head = 30), agents = listOf(agent(Sova, 2, 0), agent(Jett, 1, 3)))
+    fun `변화의 절반 이상이 비중에서 왔으면 무기와 요원 대신 비중을 적는다`() {
+        val note = note(
+            current = fixed(damage = 13_050),
+            agentTrends = listOf(agentTrend(Jett, rounds = 60, head = 21, damage = 7_000)),
+            mixes = listOf(ecoGrew()),
+        )
 
-        assertEquals(listOf(Sova, Raze), two?.agents?.map { it.agent })
-        assertEquals(emptyList(), one?.agents)
+        assertEquals(MixGroup.Buy(BuyType.ECO), note?.mix?.group)
+        assertEquals(0.31, note?.mix?.share)
+        assertEquals(0.16, note?.mix?.usualShare)
+        // 비중을 모르면 제트가 피해량을 끌어내린 것으로 적혔다
+        assertNull(note?.agent)
     }
 
     @Test
-    fun `한 판만 이긴 요원은 잘 풀렸다고 하지 않는다`() {
-        val note = note(current = fixed(head = 30), agents = listOf(agent(Sova, 1, 0), agent(Raze, 1, 0)))
+    fun `비중에 휘둘리지 않은 묶음은 짚은 묶음을 빼고 가장 많이 한 것이다`() {
+        val steady = note(current = fixed(damage = 13_050), mixes = listOf(ecoGrew()))?.mix?.steady
 
-        assertEquals(emptyList(), note?.agents)
+        assertEquals(MixGroup.Buy(BuyType.FULL_BUY), steady?.group)
+        assertEquals(150.0, steady?.current)
+        assertEquals(150.0, steady?.usual)
     }
 
+    // 비중은 평소와 같고 풀바이와 이코 모두 피해량이 떨어졌다. 실력이 달라진 것이라 무기와 요원을 적는다.
     @Test
-    fun `움직인 지표가 없어도 잘 풀린 요원이 둘 이상이면 짚는다`() {
-        val note = note(current = Usual, agents = listOf(agent(Sova, 3, 0), agent(Raze, 2, 1)))
+    fun `비중이 그대로면 비중을 적지 않는다`() {
+        val slices = listOf(
+            slice(MixGroup.Buy(BuyType.FULL_BUY), current = roundsOf(84, damage = 11_760), usual = roundsOf(336, damage = 50_400)),
+            slice(MixGroup.Buy(BuyType.ECO), current = roundsOf(16, damage = 1_200), usual = roundsOf(64, damage = 5_600)),
+        )
+        val note = note(current = fixed(damage = 12_960), agentTrends = listOf(agentTrend(Jett, rounds = 60, head = 21, damage = 7_000)), mixes = listOf(slices))
 
-        assertNull(note?.moved)
-        assertEquals(listOf(Sova, Raze), note?.agents?.map { it.agent })
+        assertNull(note?.mix)
+        assertEquals(Jett, note?.agent?.agent)
+    }
+
+    // 이코 비중은 늘었지만 풀바이 피해량도 150에서 120으로 떨어졌다. 비중을 평소처럼 맞춰도 115라 떨어진 30 중 5만 비중
+    // 몫이다. 실력이 달라진 게 더 크니 요원을 적는다.
+    @Test
+    fun `비중 몫이 변화의 절반에 못 미치면 비중을 적지 않는다`() {
+        val slices = listOf(
+            slice(MixGroup.Buy(BuyType.FULL_BUY), current = roundsOf(69, damage = 8_280), usual = roundsOf(336, damage = 50_400)),
+            slice(MixGroup.Buy(BuyType.ECO), current = roundsOf(31, damage = 2_700), usual = roundsOf(64, damage = 5_600)),
+        )
+        val note = note(current = fixed(damage = 10_980), agentTrends = listOf(agentTrend(Jett, rounds = 60, head = 21, damage = 7_000)), mixes = listOf(slices))
+
+        assertNull(note?.mix)
+        assertEquals(Jett, note?.agent?.agent)
+    }
+
+    // 풀바이 비중이 68%에서 52%로 줄어 피해량이 떨어졌다. 풀바이만 보면은 풀바이가 줄었다는 말을 되풀이할 뿐이라 그다음으로
+    // 많이 한 포스바이를 적는다.
+    @Test
+    fun `짚은 묶음이 가장 많이 한 묶음이어도 비교 묶음으로는 쓰지 않는다`() {
+        val slices = listOf(
+            slice(MixGroup.Buy(BuyType.FULL_BUY), current = roundsOf(104, damage = 15_600), usual = roundsOf(272, damage = 40_800)),
+            slice(MixGroup.Buy(BuyType.FORCE_BUY), current = roundsOf(48, damage = 5_280), usual = roundsOf(64, damage = 7_040)),
+            slice(MixGroup.Buy(BuyType.ECO), current = roundsOf(48, damage = 3_840), usual = roundsOf(64, damage = 5_120)),
+        )
+        val mix = note(current = fixed(damage = 12_360), baseline = fixed(damage = 13_240), mixes = listOf(slices))?.mix
+
+        assertEquals(MixGroup.Buy(BuyType.FULL_BUY), mix?.group)
+        assertEquals(MixGroup.Buy(BuyType.FORCE_BUY), mix?.steady?.group)
+        assertEquals(110.0, mix?.steady?.current)
+    }
+
+    // 피해량이 떨어진 건 피해량 0인 이코가 10%에서 14%로 는 탓인데, 4%p라 짚을 만큼은 아니다. 뚜렷하게 바뀐 건 포스바이가
+    // 줄어든 것뿐인데 포스바이는 평균보다 낮아서 줄면 오히려 값을 올린다. 거꾸로 짚지 않는다.
+    @Test
+    fun `변화와 반대로 움직인 비중은 짚지 않는다`() {
+        val slices = listOf(
+            slice(MixGroup.Buy(BuyType.FULL_BUY), current = roundsOf(620, damage = 93_000), usual = roundsOf(600, damage = 90_000)),
+            slice(MixGroup.Buy(BuyType.FORCE_BUY), current = roundsOf(236, damage = 23_600), usual = roundsOf(300, damage = 30_000)),
+            slice(MixGroup.Buy(BuyType.ECO), current = roundsOf(144), usual = roundsOf(100)),
+        )
+
+        assertNull(note(current = fixed(damage = 13_400), mixes = listOf(slices))?.mix)
+    }
+
+    // 여덟 판 중 레이즈가 한 판이라 비중이 25%에서 12.5%로 떨어졌지만 한 판 차이는 우연으로 흔히 나온다
+    @Test
+    fun `비중 차이가 우연 범위면 비중을 적지 않는다`() {
+        val slices = listOf(
+            slice(MixGroup.Agent(Raze), current = matchesOf(1, kills = 40, deaths = 20), usual = matchesOf(8, kills = 160, deaths = 80)),
+            slice(MixGroup.Agent(Jett), current = matchesOf(7, kills = 55, deaths = 80), usual = matchesOf(24, kills = 280, deaths = 320)),
+        )
+
+        assertNull(note(current = fixed(kills = 95), mixes = listOf(slices))?.mix)
+    }
+
+    // 요원은 판으로 비중을 센다. 전투점수는 라운드로 가를 수 없어서 요원으로만 본다. 지난 기간에만 뛴 세이지는 이번 기간
+    // 성적이 없어 비중을 맞출 수 없으니 다시 섞을 때 뺀다.
+    @Test
+    fun `전투점수는 요원 비중으로 짚는다`() {
+        val slices = listOf(
+            slice(MixGroup.Agent(Omen), current = matchesOf(6, score = 14_400), usual = matchesOf(4, score = 9_600)),
+            slice(MixGroup.Agent(Jett), current = matchesOf(2, score = 5_760), usual = matchesOf(28, score = 80_640)),
+            slice(MixGroup.Agent(Sage), current = MatchMetrics.Empty, usual = matchesOf(4, score = 9_600)),
+        )
+        val note = note(current = fixed(score = 18_000), mixes = listOf(slices))
+
+        assertEquals(FixedMetric.COMBAT_SCORE, note?.moved?.metric)
+        assertEquals(MixGroup.Agent(Omen), note?.mix?.group)
+        assertEquals(0.75, note?.mix?.share)
+    }
+
+    // 헤드샷 5%인 오퍼레이터 비중이 6%에서 40%로 늘었다. 밴달은 22% 그대로다. 밴달 값은 들고 시작한 라운드로 잰 22%가
+    // 아니라 S6과 같은 표본의 30%를 적는다.
+    @Test
+    fun `무기 비중이 헤드샷을 끌어내렸으면 무기 비중을 적고 S6과 같은 값으로 견준다`() {
+        val slices = listOf(
+            slice(MixGroup.Weapon(Operator), current = roundsOf(40, head = 2), usual = roundsOf(24, head = 1)),
+            slice(MixGroup.Weapon(Vandal), current = roundsOf(60, head = 13), usual = roundsOf(376, head = 83)),
+        )
+        val note = note(current = fixed(head = 15), weapons = listOf(trend(Vandal, head = 30)), mixes = listOf(slices))
+
+        assertEquals(MixGroup.Weapon(Operator), note?.mix?.group)
+        assertEquals(MixGroup.Weapon(Vandal), note?.mix?.steady?.group)
+        assertEquals(0.30, note?.mix?.steady?.current)
+        assertEquals(0.21, note?.mix?.steady?.usual)
     }
 
     @Test
@@ -147,24 +247,26 @@ class WeekNoteTest {
         baseline: MatchMetrics? = Usual,
         role: Role? = Role.DUELIST,
         weapons: List<WeaponTrend> = emptyList(),
-        agents: List<AgentStats> = emptyList(),
         agentTrends: List<AgentTrend> = emptyList(),
+        mixes: List<List<MixSlice>> = emptyList(),
     ) = chooseWeekNote(
         current = current,
         baseline = baseline,
         history = UsualWeeks,
         role = role,
         weapons = weapons,
-        agents = agents,
         agentTrends = agentTrends,
+        mixes = mixes,
     )
 
     private companion object {
         val Vandal = WeaponId("vandal")
         val Phantom = WeaponId("phantom")
-        val Sova = AgentId("sova")
+        val Operator = WeaponId("operator")
         val Raze = AgentId("raze")
         val Jett = AgentId("jett")
+        val Omen = AgentId("omen")
+        val Sage = AgentId("sage")
 
         // 100라운드, K/D 1.10, 전투점수 200, 피해량 140, 헤드샷 21%
         fun fixed(kills: Int = 110, score: Int = 20_000, damage: Int = 14_000, head: Int = 21) = MatchMetrics.Empty.copy(
@@ -205,19 +307,34 @@ class WeekNoteTest {
         fun phantom(head: Int) = trend(Phantom, head)
 
         // 평소 헤드샷은 21%다
-        fun agentTrend(id: AgentId, rounds: Int, head: Int) = AgentTrend(
+        fun agentTrend(id: AgentId, rounds: Int, head: Int, damage: Int = 14_000) = AgentTrend(
             agent = id,
-            current = fixed(head = head).copy(rounds = rounds, matches = rounds / 20),
+            current = fixed(head = head, damage = damage).copy(rounds = rounds, matches = rounds / 20),
             baseline = fixed().copy(rounds = 80),
         )
 
-        fun agent(id: AgentId, wins: Int, losses: Int) = AgentStats(
-            agent = id,
-            role = Role.DUELIST,
-            matches = wins + losses,
-            wins = wins,
-            decided = wins + losses,
-            metrics = MatchMetrics.Empty,
+        fun slice(group: MixGroup, current: MatchMetrics, usual: MatchMetrics) = MixSlice(group, current, usual)
+
+        fun roundsOf(rounds: Int, damage: Int = 0, head: Int = 0) = MatchMetrics.Empty.copy(
+            matches = 1,
+            rounds = rounds,
+            damage = damage,
+            shots = Shots(head = head, body = rounds - head, leg = 0),
+        )
+
+        // 한 판 24라운드
+        fun matchesOf(matches: Int, kills: Int = 0, deaths: Int = 0, score: Int = 0) = MatchMetrics.Empty.copy(
+            matches = matches,
+            rounds = matches * 24,
+            kills = kills,
+            deaths = deaths,
+            combatScore = score,
+        )
+
+        // 풀바이 피해량은 두 기간 모두 150, 이코는 87.5다. 이코 비중만 16%에서 31%로 늘었다.
+        fun ecoGrew() = listOf(
+            slice(MixGroup.Buy(BuyType.FULL_BUY), current = roundsOf(69, damage = 10_350), usual = roundsOf(336, damage = 50_400)),
+            slice(MixGroup.Buy(BuyType.ECO), current = roundsOf(31, damage = 2_700), usual = roundsOf(64, damage = 5_600)),
         )
     }
 }

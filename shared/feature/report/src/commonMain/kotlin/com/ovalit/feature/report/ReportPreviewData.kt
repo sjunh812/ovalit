@@ -166,7 +166,6 @@ internal object ReportPreviewData {
         note = WeekNote(
             moved = MovedMetric(FixedMetric.DAMAGE, current = 20_108 / 146.0, usual = 80_373 / 630.0),
             weapon = MovedWeapon(periodWeapons.first().weapon, WeaponMetric.DAMAGE_PER_ROUND, current = 140.0, usual = 118.0, rounds = 44),
-            agents = periodAgents,
             agent = MovedAgent(periodAgents.first().agent, current = 146.0, usual = 124.0, matches = 4),
         ),
     )

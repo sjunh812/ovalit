@@ -13,22 +13,24 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.FixedMetric
+import com.ovalit.core.model.MixGroup
+import com.ovalit.core.model.MixShift
 import com.ovalit.core.model.MovedMetric
+import com.ovalit.core.model.SteadyPart
 import com.ovalit.core.model.WeekNote
+import com.ovalit.core.ui.Josa
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.SeparatedRow
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.format
-import com.ovalit.core.ui.joinKeepingParts
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.valueText
 import com.ovalit.core.ui.weaponName
+import com.ovalit.core.ui.withJosa
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.gap_percent
-import com.ovalit.feature.report.resources.note_agent
 import com.ovalit.feature.report.resources.note_agent_down_label
 import com.ovalit.feature.report.resources.note_agent_up_label
-import com.ovalit.feature.report.resources.note_agents_label
 import com.ovalit.feature.report.resources.note_case_matches
 import com.ovalit.feature.report.resources.note_case_rounds
 import com.ovalit.feature.report.resources.note_case_value
@@ -36,6 +38,17 @@ import com.ovalit.feature.report.resources.note_down_combat_score
 import com.ovalit.feature.report.resources.note_down_damage
 import com.ovalit.feature.report.resources.note_down_headshot
 import com.ovalit.feature.report.resources.note_down_kd
+import com.ovalit.feature.report.resources.note_mix_agent_down
+import com.ovalit.feature.report.resources.note_mix_agent_up
+import com.ovalit.feature.report.resources.note_mix_buy_down
+import com.ovalit.feature.report.resources.note_mix_buy_up
+import com.ovalit.feature.report.resources.note_mix_value
+import com.ovalit.feature.report.resources.note_mix_weapon_down
+import com.ovalit.feature.report.resources.note_mix_weapon_up
+import com.ovalit.feature.report.resources.note_steady_agent
+import com.ovalit.feature.report.resources.note_steady_buy
+import com.ovalit.feature.report.resources.note_steady_value
+import com.ovalit.feature.report.resources.note_steady_weapon
 import com.ovalit.feature.report.resources.note_up_combat_score
 import com.ovalit.feature.report.resources.note_up_damage
 import com.ovalit.feature.report.resources.note_up_headshot
@@ -47,70 +60,58 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * 고정 칸 바로 밑에 붙는 "이번 주 짚을 점"입니다. 크게 움직인 고정 지표 하나를 문장으로 풀고, 그 변화를 가장 크게
- * 끌어간 무기와 요원, 이긴 판이 더 많았던 요원 둘 이상을 숫자로 붙입니다. "쓰세요"나 "추천"은 쓰지 않습니다(CLAUDE.md
- * 지켜야 할 선).
+ * 끌어간 무기와 요원을 숫자로 붙입니다. 변화의 절반 이상이 이코 라운드나 오퍼레이터처럼 비중이 바뀐 데서 왔으면 무기와
+ * 요원 대신 그 비중과, 비중에 휘둘리지 않은 묶음의 성적을 붙입니다. "쓰세요"나 "추천"은 쓰지 않습니다(CLAUDE.md 지켜야 할
+ * 선).
  */
 @Composable
 internal fun WeekNoteLines(note: WeekNote, catalog: ContentCatalog, modifier: Modifier = Modifier) {
-    // 보이는 자릿수로 뺀 차이가 0이면 "0 올랐어요"가 되니 지표 줄을 두지 않는다. 무기와 요원 줄도 "140 → 140"이면 뺀다.
-    val moved = note.moved?.takeIf { it.metric.format.steps(it.current) != it.metric.format.steps(it.usual) }
-    fun visible(current: Double, usual: Double) = moved != null && moved.metric.format.steps(current) != moved.metric.format.steps(usual)
+    val moved = note.moved
+    val format = moved.metric.format
+    // 보이는 자릿수로 뺀 차이가 0이면 "0 올랐어요"가 되니 칸을 두지 않는다. 무기와 요원 줄도 "140 → 140"이면 뺀다.
+    if (format.steps(moved.current) == format.steps(moved.usual)) return
+    fun visible(current: Double, usual: Double) = format.steps(current) != format.steps(usual)
     val weapon = note.weapon?.takeIf { visible(it.current, it.usual) }
     val agent = note.agent?.takeIf { visible(it.current, it.usual) }
-    if (moved == null && note.agents.isEmpty()) return
     val colors = OvalitTheme.colors
     val typography = OvalitTheme.typography
 
     Column(modifier = modifier.padding(horizontal = OvalitSpacing.gutter)) {
-        // 사용자 요청(2026-09-27): 평균이 얼마였는지는 위 고정 칸에 이미 있다. 그 변화를 어느 무기와 요원이 끌었는지를 적는다.
-        if (moved != null) OvalitText(text = movedHeadline(moved), style = typography.bodyStrong)
+        // 사용자 요청(2026-09-27): 평균이 얼마였는지는 위 고정 칸에 이미 있다. 그 변화를 무엇이 끌었는지를 적는다.
+        OvalitText(text = movedHeadline(moved), style = typography.bodyStrong)
         val rows = listOfNotNull(
-            if (moved != null && weapon != null) {
-                val format = moved.metric.format
+            note.mix?.let { mixRow(it, catalog) },
+            note.mix?.steady?.let { steadyRow(moved, it, catalog) },
+            weapon?.let {
                 NoteRow(
                     label = stringResource(if (moved.rose) Res.string.note_weapon_up_label else Res.string.note_weapon_down_label),
                     value = stringResource(
                         Res.string.note_case_value,
-                        catalog.weaponName(weapon.weapon),
+                        catalog.weaponName(it.weapon),
                         stringResource(moved.metric.label),
-                        format.valueText(weapon.usual),
-                        format.valueText(weapon.current),
-                        stringResource(Res.string.note_case_rounds, weapon.rounds),
+                        format.valueText(it.usual),
+                        format.valueText(it.current),
+                        stringResource(Res.string.note_case_rounds, it.rounds),
                     ),
                 )
-            } else {
-                null
             },
-            if (moved != null && agent != null) {
-                val format = moved.metric.format
+            agent?.let {
                 NoteRow(
                     label = stringResource(if (moved.rose) Res.string.note_agent_up_label else Res.string.note_agent_down_label),
                     value = stringResource(
                         Res.string.note_case_value,
-                        catalog.agentName(agent.agent),
+                        catalog.agentName(it.agent),
                         stringResource(moved.metric.label),
-                        format.valueText(agent.usual),
-                        format.valueText(agent.current),
-                        stringResource(Res.string.note_case_matches, agent.matches),
-                    ),
-                )
-            } else {
-                null
-            },
-            note.agents.takeIf { it.isNotEmpty() }?.let { agents ->
-                NoteRow(
-                    label = stringResource(Res.string.note_agents_label),
-                    value = joinKeepingParts(
-                        agents.map { agent ->
-                            stringResource(Res.string.note_agent, catalog.agentName(agent.agent), agent.wins, agent.decided - agent.wins)
-                        },
+                        format.valueText(it.usual),
+                        format.valueText(it.current),
+                        stringResource(Res.string.note_case_matches, it.matches),
                     ),
                 )
             },
         )
-        rows.forEachIndexed { index, row ->
+        rows.forEach { row ->
             // 개선 포인트 문장처럼 헤드라인과 첫 줄 사이를 6dp 띄운다. 더 붙이면 두 줄이 한 덩어리로 뭉개진다.
-            if (moved != null || index > 0) Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(6.dp))
             // 좁으면 값이 통째로 이름 밑으로 내려간다
             SeparatedRow(
                 items = listOf<@Composable () -> Unit>(
@@ -125,6 +126,54 @@ internal fun WeekNoteLines(note: WeekNote, catalog: ContentCatalog, modifier: Mo
 }
 
 private class NoteRow(val label: String, val value: String)
+
+// "비중이 늘어난 라운드 · 이코 16% → 29%"
+@Composable
+private fun mixRow(mix: MixShift, catalog: ContentCatalog): NoteRow {
+    val rose = mix.share > mix.usualShare
+    val label = when (mix.group) {
+        is MixGroup.Buy -> if (rose) Res.string.note_mix_buy_up else Res.string.note_mix_buy_down
+        is MixGroup.Weapon -> if (rose) Res.string.note_mix_weapon_up else Res.string.note_mix_weapon_down
+        is MixGroup.Agent -> if (rose) Res.string.note_mix_agent_up else Res.string.note_mix_agent_down
+    }
+    return NoteRow(
+        label = stringResource(label),
+        value = stringResource(
+            Res.string.note_mix_value,
+            mix.group.name(catalog),
+            MetricFormat.PERCENT.valueText(mix.usualShare),
+            MetricFormat.PERCENT.valueText(mix.share),
+        ),
+    )
+}
+
+// "풀바이 라운드만 보면 · 피해량 152 → 150". 차이가 없어도 적는다. 평소와 같았다는 게 이 줄이 하는 말이다.
+@Composable
+private fun steadyRow(moved: MovedMetric, steady: SteadyPart, catalog: ContentCatalog): NoteRow {
+    val name = steady.group.name(catalog)
+    val label = when (steady.group) {
+        is MixGroup.Buy -> stringResource(Res.string.note_steady_buy, name)
+        is MixGroup.Weapon -> stringResource(Res.string.note_steady_weapon, name.withJosa(Josa.EUL_REUL))
+        is MixGroup.Agent -> stringResource(Res.string.note_steady_agent, name.withJosa(Josa.EURO_RO))
+    }
+    val format = moved.metric.format
+    return NoteRow(
+        label = label,
+        value = stringResource(
+            Res.string.note_steady_value,
+            stringResource(moved.metric.label),
+            format.valueText(steady.usual),
+            format.valueText(steady.current),
+        ),
+    )
+}
+
+@Composable
+private fun MixGroup.name(catalog: ContentCatalog): String = when (this) {
+    is MixGroup.Buy -> stringResource(type.label)
+    is MixGroup.Weapon -> catalog.weaponName(weapon)
+    is MixGroup.Agent -> catalog.agentName(agent)
+}
 
 // 차이는 보이는 자릿수로 반올림한 값끼리 뺀다(CLAUDE.md 디자인)
 @Composable

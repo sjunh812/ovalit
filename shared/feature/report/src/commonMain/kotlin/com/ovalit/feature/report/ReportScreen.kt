@@ -181,10 +181,8 @@ private fun ReportContent(
     // 짚을 점과 개선 포인트는 바로 위 숫자를 풀어 말하는 문장이라 선과 제목 없이 붙인다. 선은 큰 묶음 사이에만
     // 긋는다(CLAUDE.md 화면).
     if (queueFilter.hasDynamicMetrics) {
-        report.note?.let { note ->
-            Spacer(Modifier.height(18.dp))
-            WeekNoteLines(note = note, catalog = catalog)
-        }
+        // 보이는 차이가 0이면 짚을 점이 그려지지 않으니 띄우는 것도 그 안에서 한다
+        report.note?.let { note -> WeekNoteLines(note = note, catalog = catalog, modifier = Modifier.padding(top = 18.dp)) }
     }
     Spacer(Modifier.height(22.dp))
 

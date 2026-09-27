@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.AgentId
+import com.ovalit.core.model.BuyType
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.DynamicMetric
 import com.ovalit.core.model.DynamicSlot
@@ -37,12 +38,15 @@ import com.ovalit.core.model.InsightMetric
 import com.ovalit.core.model.InsightPart
 import com.ovalit.core.model.InsightSubject
 import com.ovalit.core.model.MapId
+import com.ovalit.core.model.MixGroup
+import com.ovalit.core.model.MixShift
 import com.ovalit.core.model.MovedMetric
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.Role
 import com.ovalit.core.model.Side
+import com.ovalit.core.model.SteadyPart
 import com.ovalit.core.model.WeaponCategory
 import com.ovalit.core.model.WeaponId
 import com.ovalit.core.model.WeaponInfo
@@ -392,7 +396,7 @@ class ReportScreenTest {
         onNodeWithText("퍼블\u00a010번 이상이어야", substring = true).assertExists()
     }
 
-    // 프리뷰 데이터는 피해량이 128 → 138로 올랐다. 그 변화를 밴달과 제트가 가장 많이 끌었고 이긴 판이 더 많은 요원은 둘이다.
+    // 프리뷰 데이터는 피해량이 128 → 138로 올랐다. 그 변화를 밴달과 제트가 가장 많이 끌었다.
     @Test
     fun `짚을 점은 움직인 지표와 같은 쪽 무기와 요원을 숫자로 적는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
@@ -404,7 +408,57 @@ class ReportScreenTest {
         onNodeWithText("밴달 피해량 118 → 140 · 44라운드", substring = true).assertExists()
         onNodeWithText("가장 크게 끌어올린 요원", substring = true).assertExists()
         onNodeWithText("제트 피해량 124 → 146 · 4판", substring = true).assertExists()
-        onNodeWithText(joinKeepingParts(listOf("제트 3승 1패", "레이즈 2승 1패")), substring = true).assertExists()
+        // 사용자 결정(2026-09-27): 이긴 판이 더 많았던 요원은 바로 밑 이번 주 요원 칸의 승패와 겹쳐 적지 않는다
+        onNodeWithText("이긴 판이 더 많았던", substring = true, useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    // 이코 라운드가 늘어 떨어진 피해량을 무기 하나가 끌어내린 것처럼 적으면 틀린 얘기가 된다
+    @Test
+    fun `변화가 비중에서 왔으면 무기와 요원 대신 비중과 비중에 휘둘리지 않은 묶음을 적는다`() = runComposeUiTest {
+        val note = WeekNote(
+            moved = MovedMetric(FixedMetric.DAMAGE, current = 128.0, usual = 146.0),
+            mix = MixShift(MixGroup.Buy(BuyType.ECO), share = 0.31, usualShare = 0.16, steady = SteadyPart(MixGroup.Buy(BuyType.FULL_BUY), current = 156.0, usual = 158.0)),
+        )
+        setContent { Report(ReportPreviewData.moved.copy(note = note), catalog = NamedCatalog) }
+
+        onNodeWithText("피해량이 평소보다 18 떨어졌어요").assertExists()
+        onNodeWithText("비중이 늘어난 라운드", useUnmergedTree = true).assertExists()
+        onNodeWithText("이코 16% → 31%", useUnmergedTree = true).assertExists()
+        onNodeWithText("풀바이 라운드만 보면", useUnmergedTree = true).assertExists()
+        onNodeWithText("피해량 158 → 156", useUnmergedTree = true).assertExists()
+        onNodeWithText("끌어내린", substring = true, useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    // 무기는 "을/를 든", 요원은 "(으)로 뛴"이다. 이름에 받침이 있는지에 맞춘다.
+    @Test
+    fun `비중 줄은 무기와 요원 이름에 맞는 조사를 붙인다`() = runComposeUiTest {
+        fun note(group: MixGroup, steady: MixGroup) = WeekNote(
+            moved = MovedMetric(FixedMetric.HEADSHOT_RATE, current = 0.17, usual = 0.21),
+            mix = MixShift(group, share = 0.27, usualShare = 0.06, steady = SteadyPart(steady, current = 0.23, usual = 0.24)),
+        )
+        var shown by mutableStateOf(note(MixGroup.Weapon(Phantom), MixGroup.Weapon(Vandal)))
+        setContent { Report(ReportPreviewData.moved.copy(note = shown), catalog = NamedCatalog) }
+
+        onNodeWithText("비중이 늘어난 무기", useUnmergedTree = true).assertExists()
+        onNodeWithText("팬텀 6% → 27%", useUnmergedTree = true).assertExists()
+        onNodeWithText("밴달을 든 라운드만 보면", useUnmergedTree = true).assertExists()
+        shown = note(MixGroup.Agent(Jett), MixGroup.Agent(Raze))
+        onNodeWithText("비중이 늘어난 요원", useUnmergedTree = true).assertExists()
+        onNodeWithText("레이즈로 뛴 판만 보면", useUnmergedTree = true).assertExists()
+        onNodeWithText("헤드샷 24% → 23%", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun `비중이 줄었으면 줄어든 쪽으로 적는다`() = runComposeUiTest {
+        val note = WeekNote(
+            moved = MovedMetric(FixedMetric.DAMAGE, current = 131.0, usual = 147.0),
+            mix = MixShift(MixGroup.Buy(BuyType.FULL_BUY), share = 0.52, usualShare = 0.68, steady = null),
+        )
+        setContent { Report(ReportPreviewData.moved.copy(note = note)) }
+
+        onNodeWithText("비중이 줄어든 라운드", useUnmergedTree = true).assertExists()
+        onNodeWithText("풀바이 68% → 52%", useUnmergedTree = true).assertExists()
+        onNodeWithText("만 보면", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
     // 사용자 결정(2026-09-27): KDA에도 고정 칸처럼 보이는 두 자리끼리 뺀 변화량을 붙인다
@@ -575,16 +629,21 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(note = flat), catalog = NamedCatalog) }
 
         onNodeWithText("피해량이 평소보다 10 올랐어요").assertExists()
-        onNodeWithText("가장 많이 오른 무기", substring = true).assertDoesNotExist()
+        onNodeWithText("가장 크게 끌어올린 무기", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("가장 크게 끌어올린 요원", useUnmergedTree = true).assertExists()
     }
 
-    // 21.4%와 21.2%는 둘 다 21%로 보인다. "0%p 올랐어요"라고 쓰지 않는다.
+    // 21.4%와 21.2%는 둘 다 21%로 보인다. "0%p 올랐어요"라고 쓰지 않고, 빈 칸 몫의 간격도 남기지 않는다.
     @Test
-    fun `보이는 자릿수로 차이가 없으면 지표 줄을 두지 않는다`() = runComposeUiTest {
-        val flat = WeekNote(MovedMetric(FixedMetric.HEADSHOT_RATE, current = 0.214, usual = 0.212), weapon = null, agents = emptyList())
-        setContent { Report(ReportPreviewData.moved.copy(note = flat)) }
+    fun `보이는 자릿수로 차이가 없으면 짚을 점을 두지 않는다`() = runComposeUiTest {
+        val flat = WeekNote(MovedMetric(FixedMetric.HEADSHOT_RATE, current = 0.214, usual = 0.212))
+        var note by mutableStateOf<WeekNote?>(flat)
+        setContent { Report(ReportPreviewData.moved.copy(note = note)) }
 
         onNodeWithText("평소보다", substring = true).assertDoesNotExist()
+        val withFlat = onNodeWithText("달라진 점").getUnclippedBoundsInRoot().top
+        note = null
+        assertEquals(withFlat, onNodeWithText("달라진 점").getUnclippedBoundsInRoot().top)
     }
 
     // CLAUDE.md: 총량을 더한 뒤 나눈다

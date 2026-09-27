@@ -12,8 +12,19 @@ const val TRADE_WINDOW_MILLIS: Long = 5_000
  * [side]를 주면 그 진영 라운드만 셉니다. 전투점수는 응답에 경기 합계로만 있어서 진영별로는 0으로 둡니다.
  * 그래서 진영별 값의 [MatchMetrics.acs]는 읽지 않습니다. 개선 포인트도 전투점수를 후보에 두지 않습니다.
  */
-fun Match.metrics(side: Side? = null): MatchMetrics {
-    val rounds = if (side == null) rounds else rounds.filter { it.mySide == side }
+fun Match.metrics(side: Side? = null): MatchMetrics =
+    if (side == null) metricsOf(rounds, combatScore = myCombatScore) else metricsOf(rounds.filter { it.mySide == side }, combatScore = 0)
+
+/**
+ * [keep]에 드는 라운드만 셉니다. 이코 라운드나 밴달을 들고 시작한 라운드처럼 경기 안에서 라운드를 가를 때 씁니다. 전투점수는
+ * 경기 합계뿐이라 0으로 두고, 드는 라운드가 없으면 경기 수도 0입니다.
+ */
+internal fun Match.roundMetrics(keep: (Round) -> Boolean): MatchMetrics {
+    val kept = rounds.filter(keep)
+    return metricsOf(kept, combatScore = 0).copy(matches = if (kept.isEmpty()) 0 else 1)
+}
+
+private fun Match.metricsOf(rounds: List<Round>, combatScore: Int): MatchMetrics {
     val perRound = rounds.map { it.analyze(me = me, allies = allies) }
     val byBuy = rounds.groupBy { it.buyType(queue) }
     fun played(buy: BuyType) = byBuy[buy].orEmpty().size
@@ -25,7 +36,7 @@ fun Match.metrics(side: Side? = null): MatchMetrics {
         kills = perRound.sumOf { it.kills },
         deaths = perRound.count { it.died },
         assists = perRound.sumOf { it.assists },
-        combatScore = if (side == null) myCombatScore else 0,
+        combatScore = combatScore,
         damage = rounds.sumOf { it.myDamage },
         shots = rounds.fold(Shots.None) { acc, round -> acc + round.myShots },
         kastRounds = perRound.count { it.kast },

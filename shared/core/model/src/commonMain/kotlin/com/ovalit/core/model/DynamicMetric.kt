@@ -35,6 +35,10 @@ enum class DynamicMetric(
     // 사용자 결정(2026-09-27): 에임 올리기에 첫 교전 다음 교전까지 이겨 내는지를 더했다. 기본 칸을 채우는 순서가
     // 바뀌지 않게 맨 뒤에 둔다.
     MULTI_KILL_RATE({ it.multiKillRate }, { it.rounds }, 40),
+
+    // 코치들이 가장 많이 보는 지표라 넣었다(2026-09-27). 역할마다 우선 지표나 크게 띄우지 않는 것에는 두지 않는다. 동적 칸은
+    // 내 지난 기록과 견주니 역할마다 원래 높고 낮은 건 상관없다. 기본 칸을 채우는 순서가 바뀌지 않게 맨 뒤에 둔다.
+    TRADED_DEATH_RATE({ it.tradedDeathRate }, { it.deaths }, 40),
     ;
 
     internal fun isMeasurable(metrics: MatchMetrics) = sample(metrics) >= minSample

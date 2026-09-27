@@ -47,6 +47,7 @@ import com.ovalit.feature.report.resources.dynamic_sheet_sample_body
 import com.ovalit.feature.report.resources.dynamic_sheet_sample_title
 import com.ovalit.feature.report.resources.dynamic_sheet_steady
 import com.ovalit.feature.report.resources.dynamic_sheet_survival_body
+import com.ovalit.feature.report.resources.dynamic_sheet_traded_death_body
 import com.ovalit.feature.report.resources.dynamic_sheet_unknown
 import com.ovalit.feature.report.resources.period_label_matches
 import com.ovalit.feature.report.resources.sheet_usual_average
@@ -175,6 +176,7 @@ private fun DynamicMetric.minSampleText(): String {
     val sample = minSample
     val metrics = MatchMetrics.Empty.copy(
         rounds = sample,
+        deaths = sample,
         firstKills = sample,
         ecoRounds = sample,
         forceBuyRounds = sample,
@@ -198,4 +200,5 @@ private val DynamicMetric.sheetBody: StringResource
         DynamicMetric.FORCE_BUY_WIN_RATE -> Res.string.dynamic_sheet_force_buy_body
         DynamicMetric.FULL_BUY_WIN_RATE -> Res.string.dynamic_sheet_full_buy_body
         DynamicMetric.MULTI_KILL_RATE -> Res.string.dynamic_sheet_multi_kill_body
+        DynamicMetric.TRADED_DEATH_RATE -> Res.string.dynamic_sheet_traded_death_body
     }

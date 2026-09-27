@@ -396,6 +396,24 @@ class ReportScreenTest {
         onNodeWithText("퍼블\u00a010번 이상이어야", substring = true).assertExists()
     }
 
+    // 분모가 데스라 라운드가 아니라 데스 수를 표본으로 적는다. 우리 팀 움직임도 들어가는 숫자라는 걸 밝힌다.
+    @Test
+    fun `트레이드 받은 데스 시트는 데스 수를 표본으로 적는다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved
+        setContent { OvalitTheme { DynamicMetricSheetBody(DynamicMetric.TRADED_DEATH_RATE, report) } }
+
+        onNodeWithText("데스\u00a0${report.metrics.deaths}번").assertExists()
+        onNodeWithText("데스\u00a040번 이상이어야", substring = true).assertExists()
+    }
+
+    @Test
+    fun `트레이드 받은 데스 비율이 움직이면 달라진 점 칸에 띄운다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved.let { it.copy(dynamic = it.dynamic + DynamicSlot(DynamicMetric.TRADED_DEATH_RATE, Movement.MOVED)) }
+        setContent { Report(report) }
+
+        onNodeWithText("트레이드 받은 데스", useUnmergedTree = true).assertExists()
+    }
+
     // 프리뷰 데이터는 피해량이 128 → 138로 올랐다. 그 변화를 밴달과 제트가 가장 많이 끌었다.
     @Test
     fun `짚을 점은 움직인 지표와 같은 쪽 무기와 요원을 숫자로 적는다`() = runComposeUiTest {

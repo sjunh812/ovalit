@@ -54,6 +54,7 @@ internal object ReportPreviewData {
         forceBuyRoundsWon = 7,
         fullBuyRounds = 96,
         fullBuyRoundsWon = 55,
+        tradedDeaths = 34,
     )
 
     private val lastFourWeeks = Baseline(
@@ -77,6 +78,7 @@ internal object ReportPreviewData {
             forceBuyRoundsWon = 35,
             fullBuyRounds = 420,
             fullBuyRoundsWon = 230,
+            tradedDeaths = 112,
         ),
         weeks = 4,
     )

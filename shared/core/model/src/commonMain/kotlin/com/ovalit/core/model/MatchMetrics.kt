@@ -31,6 +31,8 @@ data class MatchMetrics(
     val fullBuyRoundsWon: Int,
     /** 내가 적을 둘 이상 잡은 라운드 수입니다. 뒤에 더한 값이라 프리뷰와 테스트가 모르면 0으로 둡니다. */
     val multiKillRounds: Int = 0,
+    /** 우리 팀이 트레이드해 준 내 데스 수입니다. 관여율의 트레이드와 같은 기준입니다. 뒤에 더한 값이라 모르면 0입니다. */
+    val tradedDeaths: Int = 0,
 ) {
     val acs: Double? get() = combatScore over rounds
 
@@ -76,6 +78,12 @@ data class MatchMetrics(
     /** 멀티킬 라운드 비율. 뛴 라운드 중 내가 적을 둘 이상 잡은 비율입니다. 첫 교전을 이긴 뒤 다음 교전까지 이겨 냈는지를 봅니다. */
     val multiKillRate: Double? get() = multiKillRounds over rounds
 
+    /**
+     * 트레이드 받은 데스 비율. 내 데스 중 5초 안에 우리 팀이 내 킬러를 잡은 비율입니다. 혼자 떨어져 죽었는지, 팀과 붙어
+     * 싸우다 죽었는지를 봅니다. 우리 팀이 얼마나 따라와 주는지도 같이 들어갑니다.
+     */
+    val tradedDeathRate: Double? get() = tradedDeaths over deaths
+
     operator fun plus(other: MatchMetrics) = MatchMetrics(
         matches = matches + other.matches,
         rounds = rounds + other.rounds,
@@ -97,6 +105,7 @@ data class MatchMetrics(
         fullBuyRounds = fullBuyRounds + other.fullBuyRounds,
         fullBuyRoundsWon = fullBuyRoundsWon + other.fullBuyRoundsWon,
         multiKillRounds = multiKillRounds + other.multiKillRounds,
+        tradedDeaths = tradedDeaths + other.tradedDeaths,
     )
 
     companion object {

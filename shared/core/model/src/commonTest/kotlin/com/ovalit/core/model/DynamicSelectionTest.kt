@@ -10,6 +10,7 @@ import com.ovalit.core.model.DynamicMetric.FULL_BUY_WIN_RATE
 import com.ovalit.core.model.DynamicMetric.KAST
 import com.ovalit.core.model.DynamicMetric.MULTI_KILL_RATE
 import com.ovalit.core.model.DynamicMetric.SURVIVAL_RATE
+import com.ovalit.core.model.DynamicMetric.TRADED_DEATH_RATE
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -169,6 +170,21 @@ class DynamicSelectionTest {
 
         assertEquals(listOf(moved(KAST), moved(MULTI_KILL_RATE), steady(SURVIVAL_RATE)), select(current))
         assertEquals(listOf(moved(MULTI_KILL_RATE), moved(KAST), steady(SURVIVAL_RATE)), select(current, Role.DUELIST))
+    }
+
+    // 역할마다 원래 높고 낮은 건 상관없다. 동적 칸은 내 지난 기록과 견준다.
+    @Test
+    fun `트레이드 받은 데스 비율이 움직이면 어느 역할에서든 띄운다`() {
+        val current = stats(traded = 0.40)
+
+        for (role in listOf(null) + Role.entries) {
+            assertEquals(listOf(moved(TRADED_DEATH_RATE)), select(current, role).filter { it.metric == TRADED_DEATH_RATE }, "$role")
+        }
+    }
+
+    @Test
+    fun `데스가 40번에 못 미치면 트레이드 받은 데스 비율은 판단하지 않는다`() {
+        assertEquals(false, select(stats(deaths = 30, traded = 0.60)).any { it.metric == TRADED_DEATH_RATE })
     }
 
     // K/D를 크게 띄우지 않는 역할이라 멀티킬도 같이 뺀다

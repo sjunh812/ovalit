@@ -52,6 +52,7 @@ private fun Match.metricsOf(rounds: List<Round>, combatScore: Int): MatchMetrics
         fullBuyRoundsWon = won(BuyType.FULL_BUY),
         // 킬은 적을 잡은 것만 센다(analyze). 스킬로 우리 팀을 죽인 건 멀티킬에도 들어가지 않는다.
         multiKillRounds = perRound.count { it.kills >= 2 },
+        tradedDeaths = perRound.count { it.traded },
     )
 }
 
@@ -63,6 +64,7 @@ internal class RoundResult(
     val kast: Boolean,
     val firstKill: Boolean,
     val firstDeath: Boolean,
+    val traded: Boolean,
 )
 
 internal fun Round.analyze(me: PlayerId, allies: Set<PlayerId>): RoundResult {
@@ -90,5 +92,6 @@ internal fun Round.analyze(me: PlayerId, allies: Set<PlayerId>): RoundResult {
         kast = myKills > 0 || myAssists > 0 || myDeath == null || traded,
         firstKill = firstBlood?.killer == me,
         firstDeath = firstBlood?.victim == me,
+        traded = traded,
     )
 }

@@ -35,7 +35,6 @@ import com.ovalit.feature.report.resources.metric_force_buy_win
 import com.ovalit.feature.report.resources.metric_full_buy_win
 import com.ovalit.feature.report.resources.metric_kast
 import com.ovalit.feature.report.resources.metric_survival
-import kotlin.math.abs
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -50,7 +49,7 @@ internal fun InsightSection(insight: SideInsight, role: Role?, modifier: Modifie
     val defense = insight.metric.value(insight.defense) ?: return
     // 화면에 보이는 자릿수로 반올림한 값끼리 뺀다
     val attackLower = format.steps(attack) < format.steps(defense)
-    val gap = abs(format.steps(attack) - format.steps(defense))
+    val gap = format.formatGap(attack, defense)
     val metricLabel = stringResource(insight.metric.label)
     val attackLabel = stringResource(Res.string.insight_side_attack)
     val defenseLabel = stringResource(Res.string.insight_side_defense)
@@ -60,7 +59,7 @@ internal fun InsightSection(insight: SideInsight, role: Role?, modifier: Modifie
         if (attackLower) attackLabel else defenseLabel,
         metricLabel,
         if (attackLower) defenseLabel else attackLabel,
-        if (format == MetricFormat.PERCENT) stringResource(Res.string.insight_gap_percent, gap) else gap.toString(),
+        if (format == MetricFormat.PERCENT) stringResource(Res.string.insight_gap_percent, gap) else gap,
     )
     val attackValue = format.valueText(attack)
     val defenseValue = format.valueText(defense)

@@ -35,9 +35,9 @@ import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.HeadToHeadRow
-import com.ovalit.core.ui.compare
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.label
+import com.ovalit.core.ui.leadDirection
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.rememberWidestWidth
 import com.ovalit.core.ui.valueText
@@ -69,7 +69,7 @@ internal fun RivalSection(
 ) {
     val theirs = rival.metrics
     // 화면에 보이는 자릿수로 반올림한 값끼리 겨룬다. 1.42와 1.42를 띄워 놓고 한쪽이 앞섰다고 하면 틀려 보인다.
-    val leads = if (theirs == null) 0 else RivalMetrics.count { metric -> compare(metric, mine, theirs) > 0 }
+    val leads = if (theirs == null) 0 else RivalMetrics.count { metric -> leadDirection(metric, mine, theirs) > 0 }
 
     Column(modifier = modifier.padding(horizontal = OvalitSpacing.gutter)) {
         TitleWithCaption(

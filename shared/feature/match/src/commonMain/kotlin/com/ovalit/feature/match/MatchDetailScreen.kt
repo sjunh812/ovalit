@@ -54,6 +54,7 @@ import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.halfScores
 import com.ovalit.core.ui.MapImage
 import com.ovalit.core.ui.MapImageStyle
+import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.mapName
 import com.ovalit.core.ui.resultColor
@@ -220,7 +221,7 @@ private fun ScoreHeadline(uiState: MatchDetailUiState.Success, modifier: Modifie
             else -> Res.string.half_overtime
         }
         stringResource(label, half.myTeam, half.enemyTeam)
-    }.joinToString(" · ")
+    }.joinToString(SEPARATOR)
     val scoreDescription = stringResource(Res.string.score_description, score.myTeam, score.enemyTeam)
 
     Column(modifier = modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = 14.dp)) {

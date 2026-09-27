@@ -246,7 +246,7 @@ private fun DynamicMetricColumn(
                 style = styles.label,
                 color = colors.t2,
                 maxLines = 1,
-                autoSize = shrinkToFit(styles.label.fontSize, min = 7.sp),
+                autoSize = shrinkToFit(styles.label.fontSize),
             )
             Spacer(Modifier.width(3.dp))
             OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = colors.t4, size = 10.dp)
@@ -279,7 +279,7 @@ private fun DynamicMetricColumn(
             style = styles.caption,
             color = colors.t3,
             maxLines = 1,
-            autoSize = shrinkToFit(styles.caption.fontSize, min = 7.sp),
+            autoSize = shrinkToFit(styles.caption.fontSize),
         )
     }
 }

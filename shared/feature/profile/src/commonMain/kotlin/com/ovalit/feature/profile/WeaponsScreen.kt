@@ -54,6 +54,7 @@ import com.ovalit.core.model.WeaponStats
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.SeparatedRow
+import com.ovalit.core.ui.SeparatorDot
 import com.ovalit.core.ui.WeaponThumb
 import com.ovalit.core.ui.annotated
 import com.ovalit.core.ui.format
@@ -243,7 +244,7 @@ private fun Highlights(report: WeaponReport, catalog: ContentCatalog) {
                             { OvalitText(text = stringResource(Res.string.weapons_compared, weeks), style = caption, color = colors.t3) }
                         },
                     ),
-                    separator = { OvalitText(text = " · ", style = caption, color = colors.t3) },
+                    separator = { SeparatorDot(caption, colors.t3) },
                     modifier = Modifier.weight(1f),
                 )
                 labels.forEach { label ->
@@ -552,7 +553,7 @@ private fun WeaponColumns() {
                     color = OvalitTheme.colors.t3,
                     textAlign = TextAlign.End,
                     maxLines = 1,
-                    autoSize = shrinkToFit(style.fontSize, min = 7.sp),
+                    autoSize = shrinkToFit(style.fontSize),
                 )
             }
     }
@@ -574,7 +575,7 @@ private fun WeaponRow(weapon: WeaponStats, catalog: ContentCatalog, line: Annota
                 style = lineStyle,
                 color = OvalitTheme.colors.t3,
                 maxLines = 1,
-                autoSize = shrinkToFit(lineStyle.fontSize, min = 7.sp),
+                autoSize = shrinkToFit(lineStyle.fontSize),
             )
         }
     }

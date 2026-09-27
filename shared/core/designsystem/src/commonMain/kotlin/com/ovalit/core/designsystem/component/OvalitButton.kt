@@ -1,5 +1,6 @@
 package com.ovalit.core.designsystem.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,7 +21,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -78,7 +78,7 @@ fun OvalitTextButton(
     }
 }
 
-/** 연동 해제처럼 되돌릴 수 없는 동작에 씁니다. */
+/** 테두리만 있는 한 단계 낮은 버튼입니다. */
 @Composable
 fun OvalitOutlinedButton(
     text: String,
@@ -88,23 +88,19 @@ fun OvalitOutlinedButton(
 ) {
     OvalitButtonSurface(
         onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .border(1.dp, OvalitTheme.colors.line, ButtonShape),
+        modifier = modifier.fillMaxWidth(),
         enabled = true,
         background = Color.Transparent,
         pressColor = contentColor,
+        border = BorderStroke(1.dp, OvalitTheme.colors.line),
     ) {
         OvalitText(text = text, style = OvalitTheme.typography.bodyStrong, color = contentColor)
     }
 }
 
 /**
- * 버튼이 공통으로 갖는 것들을 한곳에 모읍니다. 눌리는 영역, 최소 높이, 그리고 화면 낭독기에
- * 필요한 두 가지입니다.
- *
- * `clickable`만 걸면 낭독기가 누를 수 있는 칸과 그 안의 글자를 따로 읽습니다.
- * `mergeDescendants`로 묶고 [Role.Button]을 달아야 "○○, 버튼"으로 한 번에 읽힙니다.
+ * 버튼이 같이 쓰는 눌리는 영역, 최소 높이, 누름 효과입니다. `clickable`이 안의 글자를 묶어 읽으니 [Role.Button]만
+ * 달면 낭독기가 "○○, 버튼"으로 한 번에 읽습니다.
  */
 @Composable
 private fun OvalitButtonSurface(
@@ -113,6 +109,7 @@ private fun OvalitButtonSurface(
     enabled: Boolean,
     background: Color,
     pressColor: Color,
+    border: BorderStroke? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -120,8 +117,7 @@ private fun OvalitButtonSurface(
     Box(
         modifier = modifier
             .defaultMinSize(minHeight = ButtonMinHeight)
-            .semantics(mergeDescendants = true) {}
-            // 누르면 버튼 면까지 같이 줄어야 해서 면을 칠하기 전에 단다
+            // 누르면 면과 테두리까지 같이 줄어야 해서 둘을 그리기 전에 단다
             .clickable(
                 interactionSource = interactionSource,
                 indication = pressIndication(ButtonShape, pressColor),
@@ -131,6 +127,7 @@ private fun OvalitButtonSurface(
             )
             .clip(ButtonShape)
             .background(background)
+            .then(if (border != null) Modifier.border(border, ButtonShape) else Modifier)
             .padding(horizontal = OvalitSpacing.lg, vertical = OvalitSpacing.md),
         contentAlignment = Alignment.Center,
         content = content,

@@ -25,7 +25,7 @@ import com.ovalit.core.ui.PlayerAvatar
 
 @Composable
 internal fun Avatar(riotId: String, size: Dp, modifier: Modifier = Modifier) {
-    PlayerAvatar(riotId = riotId, modifier = modifier.size(size))
+    PlayerAvatar(riotId = riotId, size = size, modifier = modifier)
 }
 
 /**

@@ -5,7 +5,7 @@
 
     <!--
       Riot 개발자 포털 General Policies의 Core Policies가 지정한 문구다. 원문 그대로 두고
-      번역하거나 줄이지 않는다. 신청서에 등록한 제품 이름은 "오발있 (Ovalit)"이다.
+      번역하거나 줄이지 않는다. 제품 이름 자리에는 신청서의 영문 이름 Ovalit을 넣었다(DECISIONS 2026-09-25).
       "Legal Jibber Jabber" 문구는 팬 프로젝트용이라 API를 쓰는 이 앱에는 맞지 않는다.
     -->
     <string name="riot_disclaimer">Ovalit isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</string>

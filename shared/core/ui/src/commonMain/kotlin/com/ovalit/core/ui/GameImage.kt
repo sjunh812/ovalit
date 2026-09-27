@@ -3,7 +3,7 @@ package com.ovalit.core.ui
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,7 +18,9 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.AgentId
@@ -47,18 +49,21 @@ fun AgentImage(agent: AgentId?, name: String, modifier: Modifier = Modifier) {
 /**
  * 사람을 나타내는 동그란 아바타입니다. 플레이어 카드 자리인데 카드는 서버에서 받으므로, 그때까지는 Riot ID
  * 첫 글자를 띄웁니다. 요원 얼굴은 경기 기록에만 씁니다. 그 판에 고른 요원이지 그 사람 얼굴이 아닙니다.
+ *
+ * 첫 글자는 낭독기가 읽지 않습니다. 이름은 옆이나 밑에 따로 있습니다.
  */
 @Composable
-fun PlayerAvatar(riotId: String, modifier: Modifier = Modifier) {
+fun PlayerAvatar(riotId: String, size: Dp, modifier: Modifier = Modifier) {
     val colors = OvalitTheme.colors
-    BoxWithConstraints(
-        modifier = modifier.clip(CircleShape).background(colors.fill),
+    Box(
+        modifier = modifier.size(size).clip(CircleShape).background(colors.fill),
         contentAlignment = Alignment.Center,
     ) {
         // 글자를 아바타 크기에 맞춘다. 글꼴 배율을 따라 커지면 원 밖으로 넘친다.
-        val fontSize = with(LocalDensity.current) { (maxHeight * 0.42f).toSp() }
+        val fontSize = with(LocalDensity.current) { (size * 0.42f).toSp() }
         OvalitText(
             text = riotId.take(1).uppercase(),
+            modifier = Modifier.clearAndSetSemantics {},
             style = OvalitTheme.typography.label.copy(
                 fontSize = fontSize,
                 lineHeight = fontSize * 1.2f,
@@ -69,7 +74,7 @@ fun PlayerAvatar(riotId: String, modifier: Modifier = Modifier) {
     }
 }
 
-/** [map]은 UUID여야 합니다. 경기 응답이 경로로 오면 VAL-CONTENT에서 UUID를 찾아 담습니다. */
+/** [map]은 UUID여야 합니다. 경기 응답이 경로로 오면 부르기 전에 UUID로 바꿔야 하는데, 그 변환은 아직 없습니다. */
 @Composable
 fun MapImage(map: MapId, style: MapImageStyle, modifier: Modifier = Modifier) {
     val suffix = when (style) {
@@ -79,13 +84,16 @@ fun MapImage(map: MapId, style: MapImageStyle, modifier: Modifier = Modifier) {
     BundledImage(GameAssetIndex.maps[map.value.uppercase()]?.let { "maps/${it}_$suffix.jpg" }, modifier)
 }
 
-/** 무기는 기본 스킨 그림입니다. 카탈로그의 무기 그림은 흰 선화라 밝은 바탕에서 안 보입니다. */
+/**
+ * 무기는 기본 스킨 그림을 [tint] 한 가지로 칠한 실루엣입니다. 카탈로그의 무기 그림은 흰 선화라 밝은 바탕에서 안 보이고,
+ * 스킨 그림을 그대로 두면 짙은 총이 다크 바탕에 묻힙니다(CLAUDE.md 에셋).
+ */
 @Composable
 fun WeaponImage(
     weapon: WeaponId,
     name: String,
     modifier: Modifier = Modifier,
-    tint: Color? = null,
+    tint: Color,
     alignment: Alignment = Alignment.Center,
 ) {
     BundledImage(
@@ -93,7 +101,7 @@ fun WeaponImage(
         modifier = modifier,
         contentScale = ContentScale.Fit,
         background = Color.Transparent,
-        colorFilter = tint?.let { ColorFilter.tint(it) },
+        colorFilter = ColorFilter.tint(tint),
         fallbackText = name,
         alignment = alignment,
     )
@@ -139,8 +147,8 @@ private fun BundledImage(
     fallbackText: String? = null,
     alignment: Alignment = Alignment.Center,
 ) {
-    // 같은 자리에 다른 요원이나 무기가 오면 상태를 새로 만든다. produceState는 키가 바뀌어도 값을 그대로 두어서, 칸의
-    // 무기가 오퍼레이터에서 클래식으로 바뀌었는데 오퍼레이터 그림이 남았다.
+    // produceState는 키가 바뀌어도 이전 값을 들고 있어서 경로마다 상태를 새로 만든다. 안 그러면 칸의 무기가 바뀌어도
+    // 옛 그림이 남는다.
     val holder = remember(path) { mutableStateOf(ImageCache[path]) }
     LaunchedEffect(path) {
         if (path == null || holder.value != LoadState.Pending) return@LaunchedEffect
@@ -178,13 +186,18 @@ private sealed interface LoadState {
     data class Ready(val image: ImageBitmap) : LoadState
 }
 
-// 목록을 내릴 때마다 같은 그림을 다시 읽어 들이지 않도록 최근 것만 들고 있는다. 파일이 없었던 경로도 기억해서
-// 없는 파일을 거듭 찾지 않는다. 컴포지션 스레드에서만 만진다.
+// 목록을 내릴 때마다 같은 그림을 다시 읽어 들이지 않도록 최근에 쓴 것만 들고 있는다. 꺼낼 때마다 맨 뒤로 옮겨서
+// 오래 안 쓴 것부터 버린다. 파일이 없었던 경로도 기억해서 없는 파일을 거듭 찾지 않는다. 컴포지션 스레드에서만 만진다.
 private object ImageCache {
     private const val MAX_ENTRIES = 160
     private val entries = LinkedHashMap<String, LoadState>()
 
-    operator fun get(path: String?): LoadState = if (path == null) LoadState.Missing else entries[path] ?: LoadState.Pending
+    operator fun get(path: String?): LoadState {
+        if (path == null) return LoadState.Missing
+        val state = entries.remove(path) ?: return LoadState.Pending
+        entries[path] = state
+        return state
+    }
 
     operator fun set(path: String, state: LoadState) {
         entries[path] = state

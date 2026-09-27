@@ -36,6 +36,7 @@ import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.PlayerAvatar
 import com.ovalit.core.ui.PlayerBadge
+import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.TierLabel
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.mainRoleText
@@ -81,7 +82,7 @@ internal fun ReportTopBar(badge: PlayerBadge?, onOpenProfile: () -> Unit, modifi
                         emblemSize = TierEmblemSize,
                         modifier = Modifier.padding(end = 10.dp),
                     )
-                    PlayerAvatar(riotId = badge.riotId, modifier = Modifier.size(AvatarSize))
+                    PlayerAvatar(riotId = badge.riotId, size = AvatarSize)
                 }
             }
         },

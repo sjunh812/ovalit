@@ -17,11 +17,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitTheme
 
-// 경로는 화면 목업의 SVG를 그대로 옮겼다. 20×20 격자에 선으로 그린다. 채운 아이콘은 하단 탭에서 고른 탭에만 쓴다.
+// 경로는 화면 목업의 SVG를 그대로 옮겼다(경기 아이콘만 다르다, DECISIONS). 20×20 격자에 선으로 그린다.
 object OvalitIcons {
     val Home: ImageVector by lazy { strokeIcon(HOME) }
 
-    // 하단 탭에서 고른 탭은 채운 아이콘으로 바꾼다. 색만 바꾸면 선이 가늘어서 어느 탭인지 한눈에 안 들어온다.
+    // 하단 탭에서 고른 탭에만 쓴다. 색만 바꾸면 선이 가늘어서 어느 탭인지 한눈에 안 들어온다.
     // 채운 아이콘도 같은 선을 한 번 더 그려 모서리를 선 아이콘처럼 둥글게 맞춘다.
     val HomeFilled: ImageVector by lazy { icon(fills = listOf(HOME), strokes = listOf(HOME)) }
 

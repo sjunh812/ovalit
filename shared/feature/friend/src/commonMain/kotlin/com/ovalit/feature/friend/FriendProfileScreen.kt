@@ -151,9 +151,9 @@ internal fun FriendProfileScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter),
                 verticalAlignment = Alignment.Top,
             ) {
-                // 내 프로필처럼 티어를 아래 카드에 크게 두면 이름 줄에서는 뺀다
                 ProfileIdentity(
-                    badge = if (competitive != null) uiState.badge.copy(tier = null, tierName = null) else uiState.badge,
+                    badge = uiState.badge,
+                    showTier = competitive == null,
                     mainRole = profile?.agents?.mainRole,
                     mainRoleShare = profile?.agents?.mainRoleShare,
                     trailing = profile?.let { stringResource(CoreUiRes.string.act_matches, it.agents.matches) },

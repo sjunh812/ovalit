@@ -1,16 +1,16 @@
 package com.ovalit.core.designsystem.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -58,10 +58,10 @@ fun OvalitBottomSheet(
                 .padding(top = OvalitSpacing.lg, bottom = OvalitSpacing.lg),
             horizontalAlignment = Alignment.Start,
         ) {
-            Row(verticalAlignment = Alignment.Bottom) {
+            // 제목이 길면 정식 약어를 다음 줄로 넘긴다. 한 줄에 우겨 넣으면 약어가 글자 단위로 꺾인다.
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.sm)) {
                 OvalitText(text = title, modifier = Modifier.alignByBaseline(), style = OvalitTheme.typography.titleM)
                 if (titleNote != null) {
-                    Spacer(Modifier.width(OvalitSpacing.sm))
                     OvalitText(
                         text = titleNote,
                         modifier = Modifier.alignByBaseline(),

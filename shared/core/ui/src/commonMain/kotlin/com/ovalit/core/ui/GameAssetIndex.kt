@@ -1,7 +1,7 @@
 package com.ovalit.core.ui
 
-// tools/bundle_assets.py가 만든 파일입니다. 손으로 고치지 말고 스크립트를 다시 돌립니다.
-// 카탈로그 UUID(대문자)로 번들 파일 이름을 찾는 표입니다. 화면에 띄우는 이름은 여기서 가져오지 않습니다.
+// tools/bundle_assets.py가 만든 파일이다. 손으로 고치지 말고 스크립트를 다시 돌린다.
+// 카탈로그 UUID(대문자)로 번들 파일 이름을 찾는 표다. 화면에 띄우는 이름은 여기서 가져오지 않는다.
 internal object GameAssetIndex {
     val agents = mapOf(
         "41FB69C1-4189-7B37-F117-BCAF1E96F1BF" to "astra",

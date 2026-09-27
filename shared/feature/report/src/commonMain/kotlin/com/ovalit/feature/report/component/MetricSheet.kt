@@ -31,6 +31,7 @@ import com.ovalit.core.model.TREND_WEEKS
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.model.usualRange
 import com.ovalit.core.ui.NO_VALUE
+import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.periodLabel

@@ -3,6 +3,8 @@ package com.ovalit.feature.match
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.hasStateDescription
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -31,6 +33,15 @@ class MatchScreensTest {
         onNodeWithText("ADR 174").performClick()
 
         assertEquals(MatchId("ascent"), opened)
+    }
+
+    // 스코어 색만으로는 낭독기 사용자가 이겼는지 모른다
+    @Test
+    fun `경기 줄은 낭독기에 승패를 말로 알린다`() = runComposeUiTest {
+        setContent { Themed { MatchesScreen(MatchPreviewData.matches, {}, {}, {}) } }
+
+        onNode(hasText("ADR 174") and hasStateDescription("승리")).assertExists()
+        onAllNodes(hasStateDescription("패배")).fetchSemanticsNodes().let { assertTrue(it.isNotEmpty()) }
     }
 
     @Test

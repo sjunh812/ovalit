@@ -34,6 +34,9 @@ private const val ROLL_MILLIS = 240
  * 바로 바뀝니다.
  *
  * 큰 지표 숫자에만 씁니다. 옆에 붙는 변화량까지 움직이면 눈이 두 군데로 갈립니다.
+ *
+ * 같은 자리에 다른 지표가 올 수 있으면 부르는 쪽에서 지표로 `key`를 겁니다. 안 걸면 지표가 바뀔 때도 옛 지표 숫자에서
+ * 새 지표 숫자로 굴러갑니다.
  */
 @Composable
 fun OvalitRollingText(
@@ -44,7 +47,7 @@ fun OvalitRollingText(
     maxLines: Int = 1,
     autoSize: TextAutoSize? = null,
 ) {
-    // 자리 잡기는 글자 하나로 하고 구르는 모습은 그리는 단계에서만 덧그린다. 배치까지 움직이면 기준선과 칸 폭,
+    // 배치는 BasicText 하나로 잡고 구르는 모습은 그리는 단계에서만 덧그린다. 배치까지 움직이면 기준선과 칸 폭,
     // 좁은 칸에서 글자를 줄이는 규칙이 애니메이션 도중에 흔들린다.
     val last = remember { LastText(text) }
     val roll = remember(text) { Roll.between(last.value, text) }
@@ -59,7 +62,7 @@ fun OvalitRollingText(
     }
 
     BasicText(
-        // 구르는 자리는 도는 동안 비워 두고 아래에서 옛 숫자와 새 숫자를 따로 그린다
+        // 구르는 자리는 도는 동안 비워 두고 drawWithContent에서 옛 숫자와 새 숫자를 따로 그린다
         text = buildAnnotatedString {
             text.forEachIndexed { index, char ->
                 if (rolling && index in roll.slots) {
@@ -74,7 +77,7 @@ fun OvalitRollingText(
             val laidOut = layout ?: return@drawWithContent
             if (!rolling) return@drawWithContent
             // 굴러가는 글자를 한 글자씩 따로 재서 그리면 자간이 전체 글자와 달라서 1px쯤 옆으로 비껴 그려진다.
-            // 다 구른 뒤 제자리 글자로 바뀌는 순간 움찔하므로, 전체 글자를 같은 조건으로 한 번 더 그려 칸만 잘라 보인다.
+            // 다 구른 뒤 제자리 글자로 바뀌는 순간 움찔하므로, 전체 글자를 같은 조건으로 한 번 더 그려 바뀐 칸만 잘라 보여 준다.
             val input = laidOut.layoutInput
             fun layoutOf(value: String) = measurer.measure(
                 text = AnnotatedString(value),
@@ -113,9 +116,9 @@ fun OvalitRollingText(
 private class LastText(var value: String)
 
 /**
- * @property slots 새 글자에서 바뀐 자리입니다. 숫자는 오른쪽 끝을 맞춰 비교해서 "9%"가 "10%"가 되면 "%"는
+ * @property slots 새 글자에서 바뀐 자리입니다. 글자를 오른쪽 끝부터 맞춰 비교해서 "9%"가 "10%"가 되면 "%"는
  * 그대로이고 "9" 자리와 새로 생긴 "1" 자리가 굴러갑니다.
- * @property oldIndex 바뀐 자리마다 옛 글자에서 같은 자리의 순서입니다. 새로 생긴 자리에는 없습니다.
+ * @property oldIndex 바뀐 자리마다 옛 글자에서 같은 자리의 순서입니다. 새로 생긴 자리는 키가 없습니다.
  */
 private class Roll(val before: String, val slots: Set<Int>, val oldIndex: Map<Int, Int>, val direction: Float) {
     companion object {

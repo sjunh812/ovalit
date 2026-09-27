@@ -55,8 +55,12 @@
     <string name="match_score">%1$d – %2$d</string>
     <string name="match_kda">%1$d/%2$d/%3$d</string>
     <string name="match_adr">ADR %1$s</string>
+    <!-- 스코어 색을 못 보는 낭독기 사용자에게 승패를 읽어 준다 -->
+    <string name="match_result_win">승리</string>
+    <string name="match_result_loss">패배</string>
+    <string name="match_result_draw">무승부</string>
 
-    <!-- S0-4 관심사. 설정에서도 같은 이름으로 바꾼다 -->
+    <!-- S0-4 관심사. 설정에서도 같은 이름을 쓴다 -->
     <string name="focus_aim">에임 올리기</string>
     <string name="focus_aim_description">헤드샷 비율, 첫 교전 승률, 무기별 성적</string>
     <string name="focus_round_play">라운드 운영 다듬기</string>
@@ -66,12 +70,11 @@
     <string name="focus_none">특별히 없어요</string>
     <string name="focus_none_description">그 주에 제일 많이 움직인 것부터 보여드릴게요</string>
 
-    <!-- 내 프로필과 S5가 같이 쓰는 칸 -->
+    <!-- 내 프로필, S5, 홈 요원·무기 칸이 같이 쓴다 -->
     <string name="act_matches">이번 액트 %1$d경기</string>
     <string name="unknown_weapon">알 수 없는 무기</string>
     <string name="profile_competitive">경쟁전</string>
     <string name="profile_competitive_matches">경쟁 %1$d판</string>
-    <string name="profile_competitive_record">%1$d승 %2$d패</string>
     <string name="profile_stats_title">통계</string>
     <string name="profile_most_kills">최다 킬</string>
     <string name="profile_kda">KDA</string>
@@ -92,7 +95,7 @@
     <string name="profile_agents">요원</string>
     <string name="profile_weapons">무기</string>
     <string name="agents_matches">%1$d판</string>
-    <string name="agents_record">%1$d승 %2$d패</string>
+    <string name="record_wins_losses">%1$d승 %2$d패</string>
     <string name="column_win_rate">승률</string>
     <string name="profile_weapon_kills">%1$s킬</string>
     <string name="profile_weapon_headshot">헤드샷 %1$s</string>

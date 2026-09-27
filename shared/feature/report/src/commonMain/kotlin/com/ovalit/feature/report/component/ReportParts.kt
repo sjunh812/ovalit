@@ -21,8 +21,6 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.ui.MetricFormat
 
-internal const val SEPARATOR = " · "
-
 @Composable
 internal fun VerticalLine() {
     Box(

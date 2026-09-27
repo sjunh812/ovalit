@@ -28,15 +28,26 @@ enum class MetricFormat(private val scale: Int) {
         return sign + digits(abs(change))
     }
 
+    /** 보이는 자릿수로 반올림한 두 값의 차이를 부호 없이 적습니다. 74%와 69%면 "5"이고, 1.42와 1.29면 "0.13"입니다. */
+    fun formatGap(a: Double, b: Double): String = digits(abs(steps(a) - steps(b)))
+
     fun direction(current: Double, baseline: Double): Int = (steps(current) - steps(baseline)).coerceIn(-1, 1)
 
     fun steps(value: Double): Int = (value * scale).roundToInt()
 
-    private fun digits(steps: Int): String = when (this) {
-        INTEGER, PERCENT -> steps.toString()
-        ONE_DECIMAL -> "${steps / 10}.${steps % 10}"
-        TWO_DECIMALS -> "${steps / 100}.${(steps % 100).toString().padStart(2, '0')}"
+    // 음수는 부호를 떼고 자리를 나눈 뒤 다시 붙인다. 나머지 연산에 부호가 남으면 "0.-5"가 된다.
+    private fun digits(steps: Int): String {
+        val sign = if (steps < 0) "−" else ""
+        val size = abs(steps)
+        return sign + when (this) {
+            INTEGER, PERCENT -> size.toString()
+            ONE_DECIMAL -> "${size / 10}.${size % 10}"
+            TWO_DECIMALS -> "${size / 100}.${(size % 100).toString().padStart(2, '0')}"
+        }
     }
 }
 
-fun Int.withThousands(): String = toString().reversed().chunked(3).joinToString(",").reversed()
+fun Int.withThousands(): String {
+    val grouped = abs(this).toString().reversed().chunked(3).joinToString(",").reversed()
+    return if (this < 0) "−$grouped" else grouped
+}

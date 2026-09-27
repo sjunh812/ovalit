@@ -80,9 +80,9 @@ internal fun ProfileScreen(
                 OvalitBackTopBar(onBack = onBack)
             }
             Spacer(Modifier.height(10.dp))
-            // 티어는 바로 아래 티어 카드에 크게 두니 이름 줄에서는 뺀다. 이번 액트에 경쟁전이 없으면 이름 줄에 남긴다.
             ProfileIdentity(
-                badge = if (competitive != null) badge.copy(tier = null, tierName = null) else badge,
+                badge = badge,
+                showTier = competitive == null,
                 mainRole = uiState.agents.mainRole,
                 mainRoleShare = uiState.agents.mainRoleShare,
                 trailing = stringResource(CoreUiRes.string.act_matches, uiState.agents.matches),

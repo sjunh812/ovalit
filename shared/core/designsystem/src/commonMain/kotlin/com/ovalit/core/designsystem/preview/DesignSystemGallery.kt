@@ -94,6 +94,13 @@ private fun ColorTokens() {
         TextSwatch("neg", colors.neg)
         TextSwatch("accentInk", colors.accentInk)
         SurfaceSwatch("accent", colors.accent)
+        SurfaceSwatch("onAccent", colors.onAccent)
+
+        Spacer(Modifier.height(OvalitSpacing.sm))
+        SectionTitle("KDA 구간")
+        TextSwatch("kda1", colors.kda1)
+        TextSwatch("kda2", colors.kda2)
+        TextSwatch("kda3", colors.kda3)
     }
 }
 

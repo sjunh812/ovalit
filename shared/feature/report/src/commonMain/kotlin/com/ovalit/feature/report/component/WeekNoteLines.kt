@@ -17,6 +17,7 @@ import com.ovalit.core.model.MovedMetric
 import com.ovalit.core.model.WeekNote
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.MetricFormat
+import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.SeparatedRow
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.format
@@ -40,7 +41,6 @@ import com.ovalit.feature.report.resources.note_usual
 import com.ovalit.feature.report.resources.note_weapon_down_label
 import com.ovalit.feature.report.resources.note_weapon_up_label
 import com.ovalit.feature.report.resources.note_weapon_value
-import kotlin.math.abs
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -123,12 +123,8 @@ private class NoteRow(val label: String, val value: String)
 @Composable
 private fun movedHeadline(moved: MovedMetric): String {
     val format = moved.metric.format
-    val gap = abs(format.steps(moved.current) - format.steps(moved.usual))
-    val gapText = if (format == MetricFormat.PERCENT) {
-        stringResource(Res.string.insight_gap_percent, gap)
-    } else {
-        format.formatChange(moved.current, moved.usual).trimStart('+', '−')
-    }
+    val gap = format.formatGap(moved.current, moved.usual)
+    val gapText = if (format == MetricFormat.PERCENT) stringResource(Res.string.insight_gap_percent, gap) else gap
     return stringResource(moved.metric.headline(moved.rose), gapText)
 }
 

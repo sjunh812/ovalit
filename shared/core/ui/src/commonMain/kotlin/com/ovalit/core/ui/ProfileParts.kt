@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ContentCatalog
+import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.WeaponId
 import com.ovalit.core.ui.resources.Res
 import com.ovalit.core.ui.resources.kda_counts
@@ -40,9 +41,7 @@ fun winRateColor(rate: Double?): Color {
 @Composable
 fun ContentCatalog.weaponName(id: WeaponId): String = weapons[id]?.name ?: stringResource(Res.string.unknown_weapon)
 
-// 기본 스킨 그림을 글자색 한 가지로 칠한 실루엣이다. 그림 그대로면 짙은 회색 총이 다크 바탕에 묻혀서 면을 깔아야
-// 했는데, 그 면이 칸마다 상자처럼 떠 보였다. 모양만 남기면 두 테마 모두 면 없이 보인다. 총마다 길이가 달라서
-// 가운데에 두면 들쭉날쭉해 보여 왼쪽 끝을 아래 글자와 맞춘다.
+// CLAUDE.md 에셋 규칙대로 --t2 실루엣이고 면을 깔지 않는다. 총마다 길이가 달라서 왼쪽 끝을 아래 글자에 맞춘다.
 @Composable
 fun WeaponThumb(weapon: WeaponId, name: String, width: Dp, height: Dp) {
     WeaponImage(
@@ -64,9 +63,9 @@ fun kdaColor(kda: Double, below: Color): Color {
     val colors = OvalitTheme.colors
     return when (kdaTier(kda)) {
         KdaTier.BELOW_ONE -> below
-        KdaTier.ONE -> colors.kdaTier1
-        KdaTier.TWO -> colors.kdaTier2
-        KdaTier.THREE -> colors.kdaTier3
+        KdaTier.ONE -> colors.kda1
+        KdaTier.TWO -> colors.kda2
+        KdaTier.THREE -> colors.kda3
     }
 }
 
@@ -84,44 +83,53 @@ internal fun kdaTier(kda: Double): KdaTier {
 }
 
 /**
- * "1.92 (344/242/124)"의 두 조각입니다. KDA는 (킬 + 어시) ÷ 데스이고, 표본이 모자라거나 데스가 없으면 [ratio]가 없어서
+ * "1.92 (344/242/124)"의 두 조각입니다. KDA는 (킬 + 어시) ÷ 데스이고, 표본이 모자라거나 데스가 없으면 [kda]가 `null`이라
  * 합계만 적습니다. 킬과 어시를 더한 값이라 "평점"이라 부르지 않습니다(CLAUDE.md 지켜야 할 선).
- *
- * @property value 구간 색을 고르는 KDA입니다.
  */
-class KdaText(val ratio: String?, val counts: String, val value: Double? = null)
+class KdaText(val kda: Double?, val counts: String)
 
 @Composable
 fun kdaText(kda: Double?, kills: Int, deaths: Int, assists: Int): KdaText = KdaText(
-    ratio = kda?.let { MetricFormat.TWO_DECIMALS.format(it) },
+    kda = kda,
     counts = stringResource(Res.string.kda_counts, kills.withThousands(), deaths.withThousands(), assists.withThousands()),
-    value = kda,
 )
 
 /** KDA만 굵게 두고 구간 색을 칠한 한 줄입니다. */
 @Composable
 fun KdaText.annotated(): AnnotatedString {
-    val ratio = ratio ?: return AnnotatedString(counts)
+    val kda = kda ?: return AnnotatedString(counts)
+    val ratio = MetricFormat.TWO_DECIMALS.format(kda)
     val text = stringResource(Res.string.kda_with_counts, ratio, counts)
-    val color = value?.let { kdaColor(it, below = OvalitTheme.colors.t2) } ?: OvalitTheme.colors.t2
+    val start = text.indexOf(ratio)
     return buildAnnotatedString {
         append(text)
-        addStyle(SpanStyle(color = color, fontWeight = FontWeight.SemiBold), 0, ratio.length)
+        addStyle(SpanStyle(color = kdaColor(kda, below = OvalitTheme.colors.t2), fontWeight = FontWeight.SemiBold), start, start + ratio.length)
     }
 }
 
 /**
- * "KDA 2.13"입니다. 숫자만 굵게 두고 구간 색을 칠합니다. 프로필 요원 칸, 홈 요원 칸, S7이 같이 씁니다.
+ * "KDA 2.13"입니다. 숫자만 굵게 두고 구간 색을 칠합니다. 홈 고정 칸 밑 줄, 프로필과 홈의 요원 칸, S7이 같이 씁니다.
  *
  * @param below 1 미만일 때 숫자 색입니다.
+ * @param label "KDA" 글자에 덧씌울 모양입니다. 홈처럼 숫자보다 글자를 작게 둘 때 씁니다.
  */
 @Composable
-fun kdaRatioText(kda: Double, below: Color = OvalitTheme.colors.t2): AnnotatedString {
+fun kdaRatioText(kda: Double, below: Color = OvalitTheme.colors.t2, label: SpanStyle? = null): AnnotatedString {
     val value = MetricFormat.TWO_DECIMALS.format(kda)
     val text = stringResource(Res.string.kda_ratio, value)
     val start = text.indexOf(value)
     return buildAnnotatedString {
         append(text)
+        if (label != null) addStyle(label, 0, start)
         addStyle(SpanStyle(color = kdaColor(kda, below), fontWeight = FontWeight.SemiBold), start, start + value.length)
     }
+}
+
+/**
+ * 판당 킬, 데스, 어시스트를 첫째 자리까지 적은 세 조각입니다. 홈과 프로필 통계가 같은 자릿수로 적게 한곳에 둡니다.
+ * 경기가 없으면 `null`입니다.
+ */
+fun MatchMetrics.perMatchKda(): List<String>? {
+    if (matches == 0) return null
+    return listOf(kills, deaths, assists).map { MetricFormat.ONE_DECIMAL.format(it.toDouble() / matches) }
 }

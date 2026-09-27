@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -33,24 +34,25 @@ import com.ovalit.core.model.Match
 import com.ovalit.core.ui.resources.Res
 import com.ovalit.core.ui.resources.match_adr
 import com.ovalit.core.ui.resources.match_kda
+import com.ovalit.core.ui.resources.match_result_draw
+import com.ovalit.core.ui.resources.match_result_loss
+import com.ovalit.core.ui.resources.match_result_win
 import com.ovalit.core.ui.resources.match_score
 import org.jetbrains.compose.resources.stringResource
-
-private const val SEPARATOR = " · "
 
 enum class MatchRowStyle {
     /** S2 경기 목록. 맵 썸네일에 요원 얼굴을 겹쳐 둡니다. */
     LIST,
 
-    /** S5 친구의 최근 경기. 요원 얼굴만 둡니다. */
+    /** 프로필 최근 경기와 친구 경기 목록. 요원 얼굴만 둡니다. */
     COMPACT,
 }
 
 /**
- * 경기 한 줄입니다. 스코어는 이겼으면 `--pos`, 졌으면 `--neg`로 칠합니다. 숫자는 게임 스코어보드와 같게
- * 응답의 K/D/A를 그대로 씁니다.
+ * 경기 한 줄입니다. 스코어는 이겼으면 `--pos`, 졌으면 `--neg`로 칠하고, 낭독기에는 승패를 말로 읽어 줍니다. 숫자는 게임
+ * 스코어보드와 같게 응답의 K/D/A를 그대로 씁니다.
  *
- * @param onClick 없으면 누를 수 없는 줄입니다. 친구 경기는 다른 사람 기록이 섞여 있어서 열지 않습니다.
+ * @param onClick `null`이면 누를 수 없는 줄입니다. 친구 경기는 다른 사람 기록이 섞여 있어서 열지 않습니다.
  */
 @Composable
 fun MatchRow(
@@ -70,6 +72,13 @@ fun MatchRow(
         val digits = MetricFormat.INTEGER.format(value)
         if (style == MatchRowStyle.LIST) stringResource(Res.string.match_adr, digits) else digits
     }
+    val result = stringResource(
+        when (match.myTeamWon) {
+            true -> Res.string.match_result_win
+            false -> Res.string.match_result_loss
+            null -> Res.string.match_result_draw
+        },
+    )
     val compact = style == MatchRowStyle.COMPACT
     val caption = OvalitTheme.typography.caption
     val small = OvalitTheme.typography.metricS
@@ -78,7 +87,7 @@ fun MatchRow(
         modifier = modifier
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
-            .semantics(mergeDescendants = true) {}
+            .semantics(mergeDescendants = true) { stateDescription = result }
             .padding(horizontal = OvalitSpacing.gutter, vertical = if (compact) 11.dp else 13.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -99,7 +108,7 @@ fun MatchRow(
                     { OvalitText(text = stringResource(match.queue.label), style = caption, color = colors.t3) },
                     { OvalitText(text = timeLabel, style = caption, color = colors.t3) },
                 ),
-                separator = { OvalitText(text = SEPARATOR, style = caption, color = colors.t3) },
+                separator = { SeparatorDot(caption, colors.t3) },
             )
         }
         Spacer(Modifier.width(OvalitSpacing.sm))
@@ -124,7 +133,7 @@ fun MatchRow(
                         { OvalitText(text = kda, style = small, color = colors.t2) },
                         adr?.let { { OvalitText(text = it, style = small, color = colors.t2) } },
                     ),
-                    separator = { OvalitText(text = SEPARATOR, style = small, color = colors.t2) },
+                    separator = { SeparatorDot(small, colors.t2) },
                     alignEnd = true,
                 )
             }

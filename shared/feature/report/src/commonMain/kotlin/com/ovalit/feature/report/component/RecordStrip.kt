@@ -24,6 +24,7 @@ import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.percentText
 import com.ovalit.core.ui.rememberWidestWidth
 import com.ovalit.core.ui.winRateColor

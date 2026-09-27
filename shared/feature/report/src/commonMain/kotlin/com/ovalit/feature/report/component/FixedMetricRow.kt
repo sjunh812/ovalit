@@ -17,10 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitRollingText
@@ -32,15 +30,13 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Baseline
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchMetrics
-import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.SeparatedRow
 import com.ovalit.core.ui.format
-import com.ovalit.core.ui.kdaColor
+import com.ovalit.core.ui.kdaRatioText
 import com.ovalit.core.ui.label
+import com.ovalit.core.ui.perMatchKda
 import com.ovalit.core.ui.rememberFittingStyle
-import com.ovalit.core.ui.resources.Res as CoreUiRes
-import com.ovalit.core.ui.resources.kda_ratio
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.report.format
@@ -145,7 +141,7 @@ private fun FixedMetricCell(
                 style = styles.label,
                 color = OvalitTheme.colors.t2,
                 maxLines = 1,
-                autoSize = shrinkToFit(styles.label.fontSize, min = 7.sp),
+                autoSize = shrinkToFit(styles.label.fontSize),
             )
             Spacer(Modifier.width(3.dp))
             OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = OvalitTheme.colors.t4, size = 10.dp)
@@ -161,7 +157,7 @@ private fun FixedMetricCell(
                 style = styles.change,
                 color = cell.changeColor,
                 maxLines = 1,
-                autoSize = shrinkToFit(styles.change.fontSize, min = 7.sp),
+                autoSize = shrinkToFit(styles.change.fontSize),
             )
         }
     }
@@ -175,8 +171,6 @@ internal fun FixedMetricSummary(
     fixedMetrics: List<FixedMetric>,
     modifier: Modifier = Modifier,
 ) {
-    val perMatch = MetricFormat.ONE_DECIMAL
-    val matches = metrics.matches.toDouble()
     val colors = OvalitTheme.colors
     val caption = OvalitTheme.typography.caption
 
@@ -187,17 +181,21 @@ internal fun FixedMetricSummary(
         // 사용자 결정(2026-09-27): 어시스트가 킬만큼 중요해져서 KDA를 판당 K/D/A보다 먼저, 한 단계 크게 둔다.
         // 합계 없이 KDA만 띄우면 몇 킬 몇 데스인지 몰라서 판당 K/D/A를 바로 옆에 둔다. 숫자는 op.gg처럼 구간 색을
         // 칠하고 변화량은 붙이지 않는다. 좁으면 판당 K/D/A가 통째로 다음 줄로 내려간다.
-        val perMatchText = stringResource(
-            Res.string.summary_kda,
-            perMatch.format(metrics.kills / matches),
-            perMatch.format(metrics.deaths / matches),
-            perMatch.format(metrics.assists / matches),
-        )
-        val ratio = metrics.kda?.let { summaryKdaText(it) }
+        val perMatchText = metrics.perMatchKda()?.let { (kills, deaths, assists) ->
+            stringResource(Res.string.summary_kda, kills, deaths, assists)
+        }
+        val label = OvalitTheme.typography.label
+        val ratio = metrics.kda?.let {
+            kdaRatioText(
+                kda = it,
+                below = colors.t1,
+                label = SpanStyle(fontSize = label.fontSize, fontWeight = label.fontWeight, color = colors.t2),
+            )
+        }
         SeparatedRow(
             items = listOfNotNull<@Composable () -> Unit>(
                 ratio?.let { { OvalitText(text = it, style = kdaValueStyle(), color = colors.t1) } },
-                { OvalitText(text = perMatchText, style = caption, color = colors.t3) },
+                perMatchText?.let { { OvalitText(text = it, style = caption, color = colors.t3) } },
             ),
             separator = { Spacer(Modifier.width(OvalitSpacing.sm)) },
             alignBaseline = true,
@@ -219,20 +217,3 @@ internal fun FixedMetricSummary(
 // 숫자는 제목 크기로 두고 "KDA"는 라벨 크기로 낮춘다. 자릿수가 바뀌어도 폭이 흔들리지 않게 숫자 폭을 고정한다.
 @Composable
 private fun kdaValueStyle(): TextStyle = OvalitTheme.typography.titleM.copy(fontFeatureSettings = "tnum")
-
-@Composable
-private fun summaryKdaText(kda: Double): AnnotatedString {
-    val value = MetricFormat.TWO_DECIMALS.format(kda)
-    val text = stringResource(CoreUiRes.string.kda_ratio, value)
-    val start = text.indexOf(value)
-    val label = OvalitTheme.typography.label
-    return buildAnnotatedString {
-        append(text)
-        addStyle(
-            SpanStyle(fontSize = label.fontSize, fontWeight = label.fontWeight, color = OvalitTheme.colors.t2),
-            0,
-            start,
-        )
-        addStyle(SpanStyle(color = kdaColor(kda, below = OvalitTheme.colors.t1)), start, start + value.length)
-    }
-}

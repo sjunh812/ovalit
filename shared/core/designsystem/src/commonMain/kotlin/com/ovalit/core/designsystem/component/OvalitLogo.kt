@@ -16,8 +16,8 @@ import androidx.compose.ui.graphics.drawscope.scale
 import com.ovalit.core.designsystem.theme.OvalitTheme
 
 // 좌표는 CLAUDE.md의 로고 항목과 같은 값이다.
-// 같은 마크를 세 군데서 따로 그린다. 여기, 런처 아이콘(ic_launcher_foreground.xml),
-// 스플래시(ic_splash_mark.xml). 하나를 고치면 나머지도 같이 고쳐야 한다.
+// 같은 마크를 네 군데서 따로 그린다. 여기, 런처 아이콘(ic_launcher_foreground.xml), 스플래시(ic_splash_mark.xml),
+// 알림 작은 아이콘(ic_notification.xml). 하나를 고치면 나머지도 같이 고친다.
 private const val VIEW_BOX_WIDTH = 160f
 private const val VIEW_BOX_HEIGHT = 74f
 private const val STROKE_WIDTH = 11f

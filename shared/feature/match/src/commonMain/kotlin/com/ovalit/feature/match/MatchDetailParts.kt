@@ -46,6 +46,8 @@ import com.ovalit.core.model.RoundSummary
 import com.ovalit.core.model.Side
 import com.ovalit.core.ui.AgentImage
 import com.ovalit.core.ui.MetricFormat
+import com.ovalit.core.ui.NO_VALUE
+import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.TierEmblem
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.resources.Res as CoreUiRes
@@ -210,7 +212,7 @@ private fun PlayerRow(row: ScoreboardRow, uiState: MatchDetailUiState.Success, o
             maxLines = 1,
         )
         OvalitText(
-            text = line.adr?.let { MetricFormat.INTEGER.format(it) } ?: "–",
+            text = line.adr?.let { MetricFormat.INTEGER.format(it) } ?: NO_VALUE,
             modifier = Modifier.width(widths.adr),
             style = numberStyle,
             color = numberColor,
@@ -259,14 +261,14 @@ private fun RoundRow(round: RoundSummary) {
     val detail = if (!round.played) {
         stringResource(Res.string.round_not_played)
     } else {
-        listOfNotNull(round.side?.let { sideName(it) }, round.ending?.let { endingName(it) }).joinToString(" · ")
+        listOfNotNull(round.side?.let { sideName(it) }, round.ending?.let { endingName(it) }).joinToString(SEPARATOR)
     }
     val mine = if (round.played) {
         listOfNotNull(
             round.myKills.takeIf { it > 0 }?.let { stringResource(Res.string.round_kills, it) },
             stringResource(Res.string.round_first_kill).takeIf { round.firstKill },
             stringResource(Res.string.round_first_death).takeIf { round.firstDeath },
-        ).joinToString(" · ")
+        ).joinToString(SEPARATOR)
     } else {
         ""
     }

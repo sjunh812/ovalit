@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
@@ -52,7 +52,6 @@ fun OvalitTabBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
-                .height(TabBarHeight)
                 .selectableGroup(),
         ) {
             tabs.forEachIndexed { index, tab ->
@@ -60,7 +59,8 @@ fun OvalitTabBar(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .height(TabBarHeight)
+                        // 글자를 키우면 이름이 아래로 잘리지 않게 칸이 같이 커진다
+                        .heightIn(min = TabBarHeight)
                         .selectable(
                             selected = selected,
                             interactionSource = null,
@@ -68,7 +68,7 @@ fun OvalitTabBar(
                             role = Role.Tab,
                             onClick = { onSelect(index) },
                         )
-                        .padding(top = 10.dp),
+                        .padding(top = 10.dp, bottom = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {

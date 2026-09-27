@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,7 +31,7 @@ fun OvalitPickerButton(text: String, onClickLabel: String, onClick: () -> Unit, 
             .heightIn(min = 44.dp)
             .clickable(
                 interactionSource = null,
-                indication = pressIndication(RoundedCornerShape(8.dp)),
+                indication = pressIndication(),
                 onClickLabel = onClickLabel,
                 role = Role.Button,
                 onClick = onClick,

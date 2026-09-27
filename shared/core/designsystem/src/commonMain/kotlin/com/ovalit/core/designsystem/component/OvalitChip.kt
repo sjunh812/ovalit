@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -39,7 +38,6 @@ fun OvalitChip(
     Box(
         modifier = modifier
             .heightIn(min = ChipTouchHeight)
-            .semantics(mergeDescendants = true) {}
             .selectable(
                 selected = selected,
                 interactionSource = interactionSource,

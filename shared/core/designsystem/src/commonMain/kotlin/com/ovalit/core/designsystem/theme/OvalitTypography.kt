@@ -20,7 +20,7 @@ private val KoreanLineBreak = LineBreak.Heading
 
 // 위 줄바꿈 규칙은 "이 글자는 한국어"라고 알려줘야만 동작한다. 안 알려주면 기기 설정
 // 언어를 따라가는데, 폰을 영어로 쓰는 한국 유저가 흔해서 그 경우 다시 깨진다.
-// 지금 문구가 전부 한국어라 여기서 못박는다. 다른 언어를 넣을 때 바꾼다.
+// Riot 고지 말고는 문구가 전부 한국어라 여기서 못박는다. 다른 언어를 넣을 때 바꾼다.
 private val KoreanLocale = LocaleList("ko-KR")
 
 @Immutable

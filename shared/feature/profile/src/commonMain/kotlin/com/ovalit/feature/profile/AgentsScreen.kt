@@ -38,7 +38,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitDivider
@@ -57,7 +56,9 @@ import com.ovalit.core.ui.AgentImage
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.RoleIcon
+import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.SeparatedRow
+import com.ovalit.core.ui.SeparatorDot
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.kdaRatioText
@@ -218,7 +219,7 @@ private fun MainRole(report: AgentReport, role: Role, catalog: ContentCatalog) {
             )
             Spacer(Modifier.weight(1f))
             OvalitText(
-                text = topAgents.joinToString(" · "),
+                text = topAgents.joinToString(SEPARATOR),
                 modifier = Modifier.alignByBaseline(),
                 style = OvalitTheme.typography.caption,
                 color = colors.t3,
@@ -374,7 +375,7 @@ private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: 
         // 꺾으면 줄 높이가 제각각이다.
         val nameWidth = maxWidth - OvalitSpacing.gutter * 2 - ThumbnailSize - OvalitSpacing.md - WinColumn - MetricColumn * columns.size
         val captions = agents.map { agent ->
-            AnnotatedString(listOfNotNull(roleText(agent), stringResource(CoreUiRes.string.agents_matches, agent.matches), rowKda(agent)?.text).joinToString(" · "))
+            AnnotatedString(listOfNotNull(roleText(agent), stringResource(CoreUiRes.string.agents_matches, agent.matches), rowKda(agent)?.text).joinToString(SEPARATOR))
         }
         val stackKda = !rememberFitsOnOneLine(captions, OvalitTheme.typography.caption, nameWidth)
         Column {
@@ -404,7 +405,7 @@ private fun HeaderCell(text: String, width: Dp, style: TextStyle) {
         color = OvalitTheme.colors.t3,
         textAlign = TextAlign.End,
         maxLines = 1,
-        autoSize = shrinkToFit(style.fontSize, min = 7.sp),
+        autoSize = shrinkToFit(style.fontSize),
     )
 }
 
@@ -432,7 +433,7 @@ private fun AgentRow(agent: AgentStats, columns: List<MetricColumnSpec>, catalog
                     { OvalitText(stringResource(CoreUiRes.string.agents_matches, agent.matches), style = caption, color = OvalitTheme.colors.t3) },
                     kda?.takeIf { !stackKda }?.let { { OvalitText(text = it, style = caption, color = OvalitTheme.colors.t3) } },
                 ),
-                separator = { OvalitText(text = " · ", style = caption, color = OvalitTheme.colors.t3) },
+                separator = { SeparatorDot(caption, OvalitTheme.colors.t3) },
             )
             if (stackKda && kda != null) {
                 OvalitText(text = kda, style = caption, color = OvalitTheme.colors.t3, maxLines = 1)

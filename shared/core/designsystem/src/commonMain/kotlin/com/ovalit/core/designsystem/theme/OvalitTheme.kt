@@ -11,9 +11,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.font.FontFamily
 import com.ovalit.core.designsystem.component.OvalitPressIndication
 
-// 화면은 OvalitTheme.colors와 typography를 쓴다. Material의 primary, surface 같은 색 이름에 맞춰 화면을
-// 짜면 테두리 대신 배경 밝기로 영역을 나눈다는 우리 규칙이 흐려진다. 다만 바텀시트나 글자 선택처럼
-// Material 컴포넌트가 스스로 고르는 색과 글꼴이 우리 것과 맞도록 안쪽에 MaterialTheme을 같이 깐다.
+// 화면은 OvalitTheme.colors와 typography만 쓴다. 안쪽의 MaterialTheme은 바텀시트처럼 Material 컴포넌트가 스스로
+// 고르는 색과 글꼴을 우리 것에 맞추려고 깐다(MaterialBridge.kt).
 @Composable
 fun OvalitTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

@@ -16,12 +16,12 @@ import org.jetbrains.compose.resources.Font
  * 굵기로 그려집니다. 안 넘기면 전부 기본 굵기로 나오고, 굵게 써야 할 자리는 시스템이
  * 억지로 두껍게 흉내 냅니다.
  *
- * 한글 획이 얇아서 이름보다 한 단계 가까이 굵게 줍니다. 600으로 그린 제목과 숫자는 본문과 차이가 덜 났습니다.
- * [FontWeight.Bold]도 따로 등록합니다. 없으면 가장 가까운 SemiBold로 그려져서 스코어처럼 "굵게"를 달라고 한
- * 자리가 SemiBold와 똑같이 보였습니다.
+ * 한글 획이 얇아서 굵기 이름보다 한 단계 굵게 그립니다(SemiBold 700, Bold 800). 600으로 그린 제목과 숫자는 본문과
+ * 차이가 덜 났습니다. [FontWeight.Bold]도 따로 등록합니다. 없으면 가장 가까운 SemiBold로 그려져서 스코어처럼
+ * "굵게"를 달라고 한 자리가 SemiBold와 똑같이 보입니다.
  *
- * 결과를 기억해 둡니다. 매번 새 [FontFamily]를 돌려주면 이걸 받는 [OvalitTheme]이 글자
- * 스타일 아홉 개를 화면 갱신마다 다시 만듭니다.
+ * 결과를 기억해 둡니다. 매번 새 [FontFamily]를 돌려주면 이걸 받는 [OvalitTheme]이 글자 스타일을 화면 갱신마다 다시
+ * 만듭니다.
  */
 @Composable
 fun ovalitFontFamily(): FontFamily {

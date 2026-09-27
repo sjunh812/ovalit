@@ -119,9 +119,9 @@ private fun StackedAvatars(riotIds: List<String>) {
             val index = riotIds.lastIndex - reversedIndex
             PlayerAvatar(
                 riotId = riotId,
+                size = StackedAvatarSize,
                 modifier = Modifier
                     .padding(start = step * index)
-                    .size(StackedAvatarSize)
                     .border(2.dp, colors.raised, CircleShape),
             )
         }
@@ -161,7 +161,7 @@ internal fun RivalPickerSheet(
                     .padding(vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                PlayerAvatar(riotId = friend.riotId, modifier = Modifier.size(LeadingSize))
+                PlayerAvatar(riotId = friend.riotId, size = LeadingSize)
                 Spacer(Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     OvalitText(

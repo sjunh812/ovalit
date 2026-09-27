@@ -109,7 +109,7 @@
     <string name="insight_side_attack">공격</string>
     <string name="insight_side_defense">수비</string>
     <string name="insight_headline">%1$s 라운드 %2$s이 %3$s보다 %4$s 낮아요.</string>
-    <string name="insight_gap_percent">%1$d%p</string>
+    <string name="insight_gap_percent">%1$s%p</string>
     <string name="insight_values">%1$s %2$s, %3$s %4$s예요.</string>
     <!-- 피해량은 정수라 "121예요"처럼 조사가 틀린다. 숫자 뒤에 조사가 오지 않게 따로 쓴다 -->
     <string name="insight_values_damage">%1$s은 라운드당 %2$s, %3$s는 %4$s 피해를 입혔어요.</string>

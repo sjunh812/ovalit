@@ -22,14 +22,13 @@ data class OvalitColors(
     val accent: Color,
     val accentInk: Color,
     val onAccent: Color,
-    val kdaTier1: Color,
-    val kdaTier2: Color,
-    val kdaTier3: Color,
+    val kda1: Color,
+    val kda2: Color,
+    val kda3: Color,
     val isDark: Boolean,
 )
 
-// 배경이 회색이 아니라 따뜻한 쪽인 것은 의도다. 게임 에셋의 붉은 기와 나란히 놓으면 색이 맞는다.
-// KDA 구간 색(kdaTier1~3)은 op.gg처럼 청록, 파랑, 주황이다. 오르내림의 pos, neg와 섞여 보이지 않게 색상각을
+// KDA 구간 색(kda1~3)은 op.gg처럼 청록, 파랑, 주황이다. 오르내림의 pos, neg와 섞여 보이지 않게 색상각을
 // 30도 넘게 띄웠다. 초록이나 빨강으로 두면 "지난주보다 올랐다"는 뜻으로 읽힌다.
 internal val OvalitDarkColors = OvalitColors(
     bg = Color(0xFF100E0C),
@@ -48,9 +47,9 @@ internal val OvalitDarkColors = OvalitColors(
     accent = Color(0xFFE0B252),
     accentInk = Color(0xFFE0B252),
     onAccent = Color(0xFF100E0C),
-    kdaTier1 = Color(0xFF2EC5D3),
-    kdaTier2 = Color(0xFF5B9BFF),
-    kdaTier3 = Color(0xFFFF9433),
+    kda1 = Color(0xFF2EC5D3),
+    kda2 = Color(0xFF5B9BFF),
+    kda3 = Color(0xFFFF9433),
     isDark = true,
 )
 
@@ -74,8 +73,8 @@ internal val OvalitLightColors = OvalitColors(
     accent = Color(0xFFE0B252),
     accentInk = Color(0xFF8A6410),
     onAccent = Color(0xFF100E0C),
-    kdaTier1 = Color(0xFF007C89),
-    kdaTier2 = Color(0xFF1F63D6),
-    kdaTier3 = Color(0xFFB85200),
+    kda1 = Color(0xFF007C89),
+    kda2 = Color(0xFF1F63D6),
+    kda3 = Color(0xFFB85200),
     isDark = false,
 )

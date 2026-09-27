@@ -237,7 +237,7 @@ private fun AccountHeader(account: Account?) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // 홈 오른쪽 위, 프로필 머리와 같은 아바타다. 카드를 서버에서 받기 전까지는 Riot ID 첫 글자다.
-        PlayerAvatar(riotId = account?.riotId.orEmpty(), modifier = Modifier.size(AvatarSize))
+        PlayerAvatar(riotId = account?.riotId.orEmpty(), size = AvatarSize)
         Spacer(Modifier.width(OvalitSpacing.md))
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             if (account != null) {

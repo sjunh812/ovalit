@@ -41,6 +41,23 @@ class MetricFormatTest {
     }
 
     @Test
+    fun `차이는 보이는 자릿수끼리 빼서 부호 없이 적는다`() {
+        assertEquals("5", MetricFormat.PERCENT.formatGap(0.694, 0.736))
+        assertEquals("0.13", MetricFormat.TWO_DECIMALS.formatGap(1.29, 1.42))
+        assertEquals("0.5", MetricFormat.ONE_DECIMAL.formatGap(12.0, 11.5))
+    }
+
+    // 지금은 음수 값을 띄우는 곳이 없지만, 생기면 "0.-5"나 "-,123"처럼 깨지지 않아야 한다
+    @Test
+    fun `음수는 부호를 앞에 한 번만 붙인다`() {
+        assertEquals("−0.50", MetricFormat.TWO_DECIMALS.format(-0.5))
+        assertEquals("−1.2", MetricFormat.ONE_DECIMAL.format(-1.23))
+        assertEquals("−123", (-123).withThousands())
+        assertEquals("−1,234", (-1234).withThousands())
+        assertEquals("1,234", 1234.withThousands())
+    }
+
+    @Test
     fun `보이는 값이 같으면 부호 없이 0이다`() {
         assertEquals("0", MetricFormat.PERCENT.formatChange(current = 0.2141, baseline = 0.2149))
         assertEquals(0, MetricFormat.PERCENT.direction(current = 0.2141, baseline = 0.2149))

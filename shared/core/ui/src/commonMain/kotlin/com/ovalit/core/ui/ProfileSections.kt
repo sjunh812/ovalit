@@ -50,7 +50,6 @@ import com.ovalit.core.model.WeaponReport
 import com.ovalit.core.model.WeaponStats
 import com.ovalit.core.ui.resources.Res
 import com.ovalit.core.ui.resources.agents_matches
-import com.ovalit.core.ui.resources.agents_record
 import com.ovalit.core.ui.resources.column_win_rate
 import com.ovalit.core.ui.resources.duration_hours
 import com.ovalit.core.ui.resources.duration_hours_minutes
@@ -62,7 +61,6 @@ import com.ovalit.core.ui.resources.profile_clutch_value
 import com.ovalit.core.ui.resources.profile_clutches
 import com.ovalit.core.ui.resources.profile_competitive
 import com.ovalit.core.ui.resources.profile_competitive_matches
-import com.ovalit.core.ui.resources.profile_competitive_record
 import com.ovalit.core.ui.resources.profile_count
 import com.ovalit.core.ui.resources.profile_kda
 import com.ovalit.core.ui.resources.profile_most_kills
@@ -78,6 +76,7 @@ import com.ovalit.core.ui.resources.profile_weapon_damage
 import com.ovalit.core.ui.resources.profile_weapon_headshot
 import com.ovalit.core.ui.resources.profile_weapon_kills
 import com.ovalit.core.ui.resources.profile_weapons
+import com.ovalit.core.ui.resources.record_wins_losses
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -124,15 +123,15 @@ fun ProfileTierCard(record: CompetitiveRecord, catalog: ContentCatalog, modifier
             SeparatedRow(
                 items = listOf(
                     { OvalitText(stringResource(Res.string.profile_competitive_matches, record.matches), style = caption, color = colors.t2) },
-                    { OvalitText(stringResource(Res.string.profile_competitive_record, record.wins, record.losses), style = caption, color = colors.t2) },
+                    { OvalitText(stringResource(Res.string.record_wins_losses, record.wins, record.losses), style = caption, color = colors.t2) },
                 ),
-                separator = { OvalitText(text = " · ", style = caption, color = colors.t2) },
+                separator = { SeparatorDot(caption, colors.t2) },
             )
         }
         Spacer(Modifier.width(OvalitSpacing.md))
         Column(horizontalAlignment = Alignment.End, modifier = Modifier.semantics(mergeDescendants = true) {}) {
             OvalitText(text = stringResource(Res.string.column_win_rate), style = OvalitTheme.typography.caption, color = colors.t3)
-            // 티어 이름보다 크면 칸의 주인공이 승률로 바뀐다. 같은 크기에 숫자 폭만 고정한다.
+            // 승률을 티어 이름보다 크게 두면 티어보다 먼저 읽힌다. 같은 크기에 숫자 폭만 고정한다.
             OvalitText(
                 text = percentText(record.winRate),
                 style = StatValueStyle(),
@@ -213,9 +212,7 @@ private class StatCell(val label: String, val value: String?, val detail: String
 // 홈의 "판당 17.2 / 11.5 / 6.3"과 같은 자릿수다. 칸이 좁아서 빗금 양옆 공백만 뺐다.
 @Composable
 private fun perMatchText(metrics: MatchMetrics): String? {
-    if (metrics.matches == 0) return null
-    val (kills, deaths, assists) = listOf(metrics.kills, metrics.deaths, metrics.assists)
-        .map { MetricFormat.ONE_DECIMAL.format(it.toDouble() / metrics.matches) }
+    val (kills, deaths, assists) = metrics.perMatchKda() ?: return null
     return stringResource(Res.string.kda_counts, kills, deaths, assists)
 }
 
@@ -231,7 +228,7 @@ private fun StatRow(cells: List<StatCell>, columns: Int, styles: StatStyles) {
                     style = styles.label,
                     color = colors.t2,
                     maxLines = 1,
-                    autoSize = shrinkToFit(styles.label.fontSize, min = 7.sp),
+                    autoSize = shrinkToFit(styles.label.fontSize),
                 )
                 Spacer(Modifier.height(4.dp))
                 OvalitText(
@@ -252,7 +249,7 @@ private fun StatRow(cells: List<StatCell>, columns: Int, styles: StatStyles) {
                         style = styles.detail,
                         color = colors.t3,
                         maxLines = 1,
-                        autoSize = shrinkToFit(styles.detail.fontSize, min = 7.sp),
+                        autoSize = shrinkToFit(styles.detail.fontSize),
                     )
                 }
             }
@@ -262,12 +259,12 @@ private fun StatRow(cells: List<StatCell>, columns: Int, styles: StatStyles) {
     }
 }
 
-// 목업처럼 티어 이름과 같은 크기다. 홈의 큰 지표 숫자를 그대로 쓰면 여섯 칸이 한꺼번에 소리친다.
+// 목업처럼 티어 이름(titleM)과 같은 크기다. 홈의 큰 지표 숫자 크기를 쓰면 통계 칸들이 제목보다 커진다.
 @Composable
 private fun StatValueStyle(): TextStyle =
     OvalitTheme.typography.metricM.copy(fontSize = OvalitTheme.typography.titleM.fontSize, lineHeight = 24.sp)
 
-// 열 시간이 넘으면 분은 버린다. 칸이 좁고, 그만큼 뛰었으면 분까지 볼 일이 없다.
+// 열 시간부터는 분을 버린다. 칸이 좁다.
 @Composable
 private fun playTimeText(millis: Long): String {
     val minutes = (millis / 60_000).toInt()
@@ -350,14 +347,14 @@ private fun ShotLegend(part: ShotPart, total: Int, stacked: Boolean, modifier: M
 
 /**
  * 많이 뛴 요원 셋입니다. 판 수와 승률, KDA를 적습니다. 승률과 KDA는 S7처럼 5판 이상 뛴 요원만 띄웁니다.
- * [onOpen]이 있으면 섹션 전체가 눌리고 S7로 갑니다. 친구 프로필은 요원 화면이 없어서 누르지 않습니다.
+ * [onOpen]이 있으면 섹션 전체가 눌립니다. 내 프로필은 내 S7을, S5는 친구 기록으로 S7을 엽니다.
  */
 @Composable
 fun ProfileAgentsSection(report: AgentReport, catalog: ContentCatalog, onOpen: (() -> Unit)? = null) {
     val shown = report.agents.take(SHOWN_TILES)
     if (shown.isEmpty()) return
 
-    // 역할 비중("타격대 78%")은 바로 위 머리에 있어서 여기 다시 적지 않는다
+    // 역할 비중("타격대 78%")은 머리에 이미 있어서 여기 다시 적지 않는다
     ProfileSection(modifier = Modifier.openable(onOpen)) {
         ProfileSectionTitle(title = stringResource(Res.string.profile_agents), chevron = onOpen != null)
         Spacer(Modifier.height(12.dp))
@@ -369,7 +366,7 @@ fun ProfileAgentsSection(report: AgentReport, catalog: ContentCatalog, onOpen: (
  * 요원 세 칸입니다. 내 프로필, S5, 홈이 같이 씁니다.
  *
  * @param showRecord 판 수 대신 "2승 1패"를 적습니다. 홈처럼 기간이 짧아 5판을 못 넘기는 요원이 많은 곳에 씁니다. 그때는
- * KDA도 판 수와 상관없이 적습니다. 그 기간의 합계라서입니다. 승률은 어디서나 5판을 넘길 때만 붙입니다.
+ * KDA를 판 수와 상관없이 기간 합계로 적습니다. 승률은 어디서나 5판 이상일 때만 붙입니다.
  */
 @Composable
 fun AgentTileRow(agents: List<AgentStats>, catalog: ContentCatalog, showRecord: Boolean = false) {
@@ -392,7 +389,7 @@ fun AgentTileRow(agents: List<AgentStats>, catalog: ContentCatalog, showRecord: 
 
 @Composable
 private fun agentFirstLine(agent: AgentStats, showRecord: Boolean): String = if (showRecord) {
-    stringResource(Res.string.agents_record, agent.wins, agent.decided - agent.wins)
+    stringResource(Res.string.record_wins_losses, agent.wins, agent.decided - agent.wins)
 } else {
     stringResource(Res.string.agents_matches, agent.matches)
 }

@@ -77,9 +77,9 @@ fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Co
         }
         PlayerAvatar(
             riotId = badge.riotId,
+            size = AvatarSize,
             modifier = Modifier
                 .padding(start = OvalitSpacing.gutter, top = top + BannerHeight - AvatarSize / 2)
-                .size(AvatarSize)
                 .border(3.dp, colors.bg, CircleShape),
         )
     }
@@ -112,6 +112,8 @@ fun BoxScope.ProfileStatusBarScrim(scrollState: ScrollState) {
  * Riot ID와 티어, 가장 많이 뛴 역할입니다. 목업 S5처럼 이름 옆에 엠블럼을 두고, 아래 줄에 "다이아몬드 2 ·
  * 타격대 78%"를 씁니다. 역할 이름만 한 단계 밝고 굵게 올립니다. [trailing]은 그 뒤에 붙는 말입니다.
  *
+ * @param showTier 밑에 티어 카드를 크게 두는 화면은 `false`를 넘겨 이름 줄에서 티어를 뺍니다. 이번 액트에 경쟁전이 없어
+ * 카드가 없으면 `true`로 두어 이름 줄에 남깁니다.
  * @param mainRoleShare 역할을 아는 라운드 중 [mainRole]로 뛴 비중입니다. 역할만 적으면 그 역할만 한 것처럼 읽힙니다.
  */
 @Composable
@@ -120,12 +122,14 @@ fun ProfileIdentity(
     mainRole: Role?,
     mainRoleShare: Double?,
     modifier: Modifier = Modifier,
+    showTier: Boolean = true,
     trailing: String? = null,
 ) {
     val colors = OvalitTheme.colors
+    val tierName = badge.tierName?.takeIf { showTier }
     val caption = OvalitTheme.typography.caption
     val parts = buildList<@Composable () -> Unit> {
-        badge.tierName?.let { add { OvalitText(text = it, style = caption, color = colors.t3) } }
+        tierName?.let { add { OvalitText(text = it, style = caption, color = colors.t3) } }
         mainRole?.let { role -> add { MainRole(role, mainRoleShare) } }
         trailing?.let { add { OvalitText(text = it, style = caption, color = colors.t3) } }
     }
@@ -133,12 +137,12 @@ fun ProfileIdentity(
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(5.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
             OvalitText(text = badge.riotId, style = OvalitTheme.typography.titleL, modifier = Modifier.weight(1f, fill = false))
-            badge.tier?.takeIf { badge.tierName != null }?.let { TierEmblem(it, Modifier.size(18.dp)) }
+            badge.tier?.takeIf { tierName != null }?.let { TierEmblem(it, Modifier.size(18.dp)) }
         }
         if (parts.isNotEmpty()) {
             SeparatedRow(
                 items = parts,
-                separator = { OvalitText(text = "\u00a0·\u00a0", style = caption, color = colors.t5) },
+                separator = { SeparatorDot(caption, colors.t5) },
                 modifier = Modifier.semantics(mergeDescendants = true) {},
             )
         }

@@ -20,7 +20,8 @@ const val MOVEMENT_THRESHOLD = 1.5
 enum class DynamicMetric(
     val value: (MatchMetrics) -> Double?,
     private val sample: (MatchMetrics) -> Int,
-    private val minSample: Int,
+    /** 이번 기간, 비교 기준, 변동폭을 재는 각 주가 넘겨야 하는 표본입니다. 표본은 그 비율의 분모입니다. */
+    val minSample: Int,
 ) {
     KAST({ it.kast }, { it.rounds }, 40),
     SURVIVAL_RATE({ it.survivalRate }, { it.rounds }, 40),

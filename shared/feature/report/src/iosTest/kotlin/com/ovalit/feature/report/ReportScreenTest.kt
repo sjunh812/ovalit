@@ -3,8 +3,10 @@ package com.ovalit.feature.report
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -13,12 +15,14 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.core.model.DynamicMetric
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.Focus
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.PlayerBadge
+import com.ovalit.feature.report.component.DynamicMetricSheetBody
 import com.ovalit.feature.report.component.MetricSheetBody
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -263,6 +267,55 @@ class ReportScreenTest {
 
         onNodeWithText("ADR").assertExists()
         onNodeWithText("어떻게 계산하나요?").assertExists()
+    }
+
+    // 사용자 결정: 칸 밑의 작은 글씨를 줄인다. 네 칸의 평균을 한 줄로 늘어놓으면 어느 숫자가 어느 칸인지 읽히지 않았다.
+    @Test
+    fun `고정 칸 밑에는 무엇과 견준 변화량인지만 적는다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved) }
+
+        onNodeWithText("변화량은 지난 4주 평균과 비교했어요").assertExists()
+        onNodeWithText("146라운드", substring = true, useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("4주 평균 ", substring = true, useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun `고정 칸 시트에는 칸 밑에서 뺀 평균을 적는다`() = runComposeUiTest {
+        setContent { Sheet(FixedMetric.DAMAGE, ReportPreviewData.moved) }
+
+        onNodeWithText("지난 4주 평균", substring = true).assertExists()
+    }
+
+    // 사용자 결정: "라운드 153" 같은 표본은 칸에서 빼고 시트에서 풀어 적는다
+    @Test
+    fun `달라진 점 칸에는 평소 값만 두고 표본은 적지 않는다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved) }
+
+        onAllNodesWithText("평소 ", substring = true, useUnmergedTree = true).assertCountEquals(3)
+        onNodeWithText("라운드\u00a0146", substring = true, useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("4주 평균 ", substring = true, useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun `달라진 점 칸을 누르면 표본과 판단 근거를 적은 시트가 뜬다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved) }
+
+        onNodeWithText("몇 번으로 셌나요?").assertDoesNotExist()
+        onNodeWithText("생존율", substring = true).performScrollTo().performClick()
+
+        onNodeWithText("몇 번으로 셌나요?").assertExists()
+        onNodeWithText("라운드\u00a0146").assertExists()
+        onNodeWithText("비율의 분모예요. 이번 기간과 비교하는 주가 모두 라운드\u00a040 이상이어야 비교해요.").assertExists()
+        onNodeWithText("이번 변화가 지난 8주 동안 주마다 흔들린 폭의 1.5배를 넘어서 달라졌다고 봤어요.").assertExists()
+    }
+
+    // 판단을 보류한 칸은 달라졌다고도, 그대로라고도 하지 않는다
+    @Test
+    fun `판단하지 않은 칸의 시트는 기록이 모자라다고 적는다`() = runComposeUiTest {
+        setContent { OvalitTheme { DynamicMetricSheetBody(DynamicMetric.FIRST_KILL_WIN_RATE, ReportPreviewData.moved) } }
+
+        onNodeWithText("비교할 기록이 모자라 달라졌는지 판단하지 않았어요", substring = true).assertExists()
+        onNodeWithText("퍼블\u00a010번 이상이어야", substring = true).assertExists()
     }
 
     // CLAUDE.md: 총량을 더한 뒤 나눈다

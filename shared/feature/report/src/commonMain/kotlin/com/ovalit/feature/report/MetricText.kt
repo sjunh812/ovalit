@@ -46,7 +46,7 @@ internal val DynamicMetric.format: MetricFormat
 internal val DynamicMetric.hasGoodDirection: Boolean
     get() = this != DynamicMetric.FIRST_DUEL_INVOLVEMENT
 
-/** 카드 근거에 붙는 표본입니다. 비율의 분모를 보여줍니다. */
+/** 달라진 점 시트에 적는 표본입니다. 비율의 분모를 보여줍니다. */
 @Composable
 internal fun DynamicMetric.sampleText(metrics: MatchMetrics): String = when (this) {
     DynamicMetric.FIRST_KILL_WIN_RATE -> stringResource(Res.string.sample_first_kills, metrics.firstKills)

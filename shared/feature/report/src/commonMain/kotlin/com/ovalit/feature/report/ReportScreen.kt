@@ -23,6 +23,7 @@ import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ContentCatalog
+import com.ovalit.core.model.DynamicMetric
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MIN_MATCHES_PER_REPORT
 import com.ovalit.core.model.PlayerId
@@ -30,6 +31,7 @@ import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.feature.report.component.DynamicMetricSection
+import com.ovalit.feature.report.component.DynamicMetricSheet
 import com.ovalit.feature.report.component.FixedMetricRow
 import com.ovalit.feature.report.component.FixedMetricSummary
 import com.ovalit.feature.report.component.FriendRankingSection
@@ -160,6 +162,7 @@ private fun ReportContent(
     onOpenWeapons: () -> Unit,
 ) {
     var openMetric by rememberSaveable { mutableStateOf<FixedMetric?>(null) }
+    var openDynamic by rememberSaveable { mutableStateOf<DynamicMetric?>(null) }
     var pickingRival by rememberSaveable { mutableStateOf(false) }
 
     PeriodHeader(report)
@@ -177,7 +180,7 @@ private fun ReportContent(
     Spacer(Modifier.height(22.dp))
 
     if (queueFilter.hasDynamicMetrics) {
-        DynamicMetricSection(report)
+        DynamicMetricSection(report, onOpenMetric = { openDynamic = it })
         report.insight?.let { insight ->
             Spacer(Modifier.height(20.dp))
             HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
@@ -235,6 +238,9 @@ private fun ReportContent(
     }
     openMetric?.let { metric ->
         MetricSheet(metric = metric, report = report, onDismiss = { openMetric = null })
+    }
+    openDynamic?.let { metric ->
+        DynamicMetricSheet(metric = metric, report = report, onDismiss = { openDynamic = null })
     }
 }
 

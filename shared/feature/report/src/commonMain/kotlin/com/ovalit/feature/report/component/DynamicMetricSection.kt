@@ -1,5 +1,6 @@
 package com.ovalit.feature.report.component
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -13,10 +14,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -25,9 +27,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitRollingText
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.icon.OvalitIcon
+import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Baseline
+import com.ovalit.core.model.DynamicMetric
 import com.ovalit.core.model.DynamicSlot
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.Movement
@@ -41,7 +46,6 @@ import com.ovalit.feature.report.format
 import com.ovalit.feature.report.hasGoodDirection
 import com.ovalit.feature.report.label
 import com.ovalit.feature.report.resources.Res
-import com.ovalit.feature.report.resources.baseline_average
 import com.ovalit.feature.report.resources.baseline_missing
 import com.ovalit.feature.report.resources.dynamic_caption
 import com.ovalit.feature.report.resources.dynamic_caption_with_role
@@ -49,18 +53,26 @@ import com.ovalit.feature.report.resources.dynamic_title_moved
 import com.ovalit.feature.report.resources.dynamic_title_steady
 import com.ovalit.feature.report.resources.dynamic_title_unknown
 import com.ovalit.feature.report.resources.dynamic_unknown_hint
-import com.ovalit.feature.report.sampleText
+import com.ovalit.feature.report.resources.dynamic_usual
+import com.ovalit.feature.report.resources.sheet_open
 import org.jetbrains.compose.resources.stringResource
 
 // 한 줄에 세 칸씩 화면 폭을 나눠 갖고, 넷이나 다섯이면 다음 줄로 넘긴다. 목업처럼 옆으로 밀면 세 번째 칸이 화면
 // 끝에서 잘려 숫자가 끊겨 버그처럼 보였다. 간격은 구분선 양옆에만 준다. 칸 폭 안에 간격을 넣으면 첫 칸만 내용이
 // 넓어진다.
 private const val COLUMNS_PER_ROW = 3
+// 이름 옆 화살표 자리다. 고정 칸과 같다.
+private val ChevronSpace = 13.dp
 private val ColumnGap = 14.dp
 private val RowGap = 20.dp
 
+/** @param onOpenMetric 칸을 누르면 그 지표의 표본과 판단 근거를 시트로 엽니다. */
 @Composable
-internal fun DynamicMetricSection(report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
+internal fun DynamicMetricSection(
+    report: WeeklyReport.Ready,
+    modifier: Modifier = Modifier,
+    onOpenMetric: (DynamicMetric) -> Unit = {},
+) {
     val typography = OvalitTheme.typography
     val columns = report.dynamic.map { slot -> dynamicColumn(slot, report.metrics, report.baseline) }
 
@@ -78,10 +90,10 @@ internal fun DynamicMetricSection(report: WeeklyReport.Ready, modifier: Modifier
             val valueStyle = rememberFittingStyle(columns.map { it.value }, typography.metricM, columnWidth, min = 14.sp)
             val changeStyle = typography.metricS
             val styles = DynamicColumnStyles(
-                label = rememberFittingStyle(columns.map { it.label }, typography.caption, columnWidth),
+                label = rememberFittingStyle(columns.map { it.label }, typography.caption, columnWidth - ChevronSpace),
                 value = valueStyle,
                 change = changeStyle,
-                caption = rememberFittingStyle(columns.flatMap { it.lines }, typography.caption, columnWidth),
+                caption = rememberFittingStyle(columns.map { it.usual }, typography.caption, columnWidth),
                 stacked = needsStacking(columns, valueStyle, changeStyle, columnWidth),
             )
             Column(verticalArrangement = Arrangement.spacedBy(RowGap)) {
@@ -106,7 +118,12 @@ internal fun DynamicMetricSection(report: WeeklyReport.Ready, modifier: Modifier
                                 // 큐를 바꾸면 칸의 지표가 아예 바뀌기도 한다. 그때 숫자를 굴리면 같은 지표가 변한 것처럼
                                 // 보여서 지표마다 따로 그린다. 같은 지표일 때만 숫자가 구른다.
                                 key(column.slot.metric) {
-                                    DynamicMetricColumn(column = column, styles = styles, modifier = Modifier.weight(1f))
+                                    DynamicMetricColumn(
+                                        column = column,
+                                        styles = styles,
+                                        onClick = { onOpenMetric(column.slot.metric) },
+                                        modifier = Modifier.weight(1f),
+                                    )
                                 }
                             }
                         }
@@ -174,7 +191,7 @@ private class DynamicColumn(
     val valueColor: Color,
     val change: String?,
     val changeColor: Color,
-    val lines: List<String>,
+    val usual: String,
 )
 
 private class DynamicColumnStyles(
@@ -199,29 +216,44 @@ private fun dynamicColumn(slot: DynamicSlot, metrics: MatchMetrics, baseline: Ba
         valueColor = if (judged) colors.t1 else colors.t2,
         change = if (judged) metric.format.formatChange(current, usual) else null,
         changeColor = if (judged) changeColor(slot, current, usual) else colors.t3,
-        lines = listOf(
-            if (judged) {
-                stringResource(Res.string.baseline_average, baseline.weeks, metric.format.valueText(usual))
-            } else {
-                stringResource(Res.string.baseline_missing)
-            },
-            metric.sampleText(metrics),
-        ),
+        // 사용자 결정: 칸 밑에는 평소 값만 둔다. "라운드 153" 같은 표본은 무슨 숫자인지 읽히지 않아서 칸을 누르면
+        // 뜨는 시트에서 풀어 적는다. 표본이 모자란 칸은 애초에 판단하지 않고 "비교할 기록이 모자라요"로 적는다.
+        usual = if (judged) {
+            stringResource(Res.string.dynamic_usual, metric.format.valueText(usual))
+        } else {
+            stringResource(Res.string.baseline_missing)
+        },
     )
 }
 
 @Composable
-private fun DynamicMetricColumn(column: DynamicColumn, styles: DynamicColumnStyles, modifier: Modifier = Modifier) {
+private fun DynamicMetricColumn(
+    column: DynamicColumn,
+    styles: DynamicColumnStyles,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val colors = OvalitTheme.colors
-    Column(modifier = modifier.semantics(mergeDescendants = true) {}) {
+    Column(
+        modifier = modifier.clickable(
+            onClickLabel = stringResource(Res.string.sheet_open, column.label),
+            role = Role.Button,
+            onClick = onClick,
+        ),
+    ) {
         // 이름과 설명은 한 줄로 둔다. 좁은 칸에서 한 칸만 두 줄로 꺾이면 그 칸 숫자만 한 줄 아래로 내려간다.
-        OvalitText(
-            text = column.label,
-            style = styles.label,
-            color = colors.t2,
-            maxLines = 1,
-            autoSize = shrinkToFit(styles.label.fontSize, min = 7.sp),
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            OvalitText(
+                text = column.label,
+                modifier = Modifier.weight(1f, fill = false),
+                style = styles.label,
+                color = colors.t2,
+                maxLines = 1,
+                autoSize = shrinkToFit(styles.label.fontSize, min = 7.sp),
+            )
+            Spacer(Modifier.width(3.dp))
+            OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = colors.t4, size = 10.dp)
+        }
         Spacer(Modifier.height(6.dp))
         ValueWithChange(
             value = {
@@ -245,21 +277,19 @@ private fun DynamicMetricColumn(column: DynamicColumn, styles: DynamicColumnStyl
             stacked = styles.stacked,
         )
         Spacer(Modifier.height(6.dp))
-        column.lines.forEach { line ->
-            OvalitText(
-                text = line,
-                style = styles.caption,
-                color = colors.t3,
-                maxLines = 1,
-                autoSize = shrinkToFit(styles.caption.fontSize, min = 7.sp),
-            )
-        }
+        OvalitText(
+            text = column.usual,
+            style = styles.caption,
+            color = colors.t3,
+            maxLines = 1,
+            autoSize = shrinkToFit(styles.caption.fontSize, min = 7.sp),
+        )
     }
 }
 
 // 움직였다고 판단한 칸만 색을 칠한다. 평소 범위 안의 변화에 색을 칠하면 흔들림이 경고처럼 읽힌다.
 @Composable
-private fun changeColor(slot: DynamicSlot, current: Double, usual: Double): Color = when {
+internal fun changeColor(slot: DynamicSlot, current: Double, usual: Double): Color = when {
     slot.movement != Movement.MOVED -> OvalitTheme.colors.t3
     !slot.metric.hasGoodDirection -> OvalitTheme.colors.t1
     else -> directionColor(slot.metric.format, current, usual)

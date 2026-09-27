@@ -59,6 +59,7 @@ import com.ovalit.feature.report.resources.sheet_sample_rounds
 import com.ovalit.feature.report.resources.sheet_trend_act_marker
 import com.ovalit.feature.report.resources.sheet_trend_description
 import com.ovalit.feature.report.resources.sheet_trend_start
+import com.ovalit.feature.report.resources.sheet_usual_average
 import com.ovalit.feature.report.resources.sheet_usual_missing
 import com.ovalit.feature.report.resources.sheet_usual_range
 import com.ovalit.feature.report.resources.sheet_usual_same
@@ -99,6 +100,16 @@ internal fun MetricSheet(
 internal fun MetricSheetBody(metric: FixedMetric, report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
         CurrentValue(metric, report)
+        // 홈 칸 밑에서 뺀 평균을 여기 둔다. 변화량이 무엇과 견준 값인지 숫자로 보여 준다.
+        val usual = report.baseline?.let { baseline -> metric.value(baseline.metrics)?.let { baseline.weeks to it } }
+        if (usual != null) {
+            Spacer(Modifier.height(OvalitSpacing.xs))
+            OvalitText(
+                text = stringResource(Res.string.sheet_usual_average, usual.first, metric.format.valueText(usual.second)),
+                style = OvalitTheme.typography.caption,
+                color = OvalitTheme.colors.t2,
+            )
+        }
         Spacer(Modifier.height(OvalitSpacing.xl))
         TrendBars(metric, report)
         Spacer(Modifier.height(22.dp))

@@ -44,11 +44,10 @@ import com.ovalit.core.ui.valueText
 import com.ovalit.feature.report.format
 import com.ovalit.feature.report.label
 import com.ovalit.feature.report.resources.Res
-import com.ovalit.feature.report.resources.baseline_average
 import com.ovalit.feature.report.resources.baseline_missing
 import com.ovalit.feature.report.resources.sheet_open
+import com.ovalit.feature.report.resources.summary_compared
 import com.ovalit.feature.report.resources.summary_kda
-import com.ovalit.feature.report.resources.summary_sample
 import org.jetbrains.compose.resources.stringResource
 
 private val CellGap = 10.dp
@@ -198,22 +197,16 @@ internal fun FixedMetricSummary(
             separator = { Spacer(Modifier.width(OvalitSpacing.sm)) },
             alignBaseline = true,
         )
-        // 표본과 비교 기준은 한 줄로 두고, 넘치면 비교 기준이 통째로 다음 줄로 내려간다
-        val sample = stringResource(Res.string.summary_sample, metrics.matches, metrics.rounds)
-        val usual = if (baseline != null) {
-            val usualValues = fixedMetrics.map { metric ->
-                metric.value(baseline.metrics)?.let { metric.format.valueText(it) } ?: NO_VALUE
-            }
-            stringResource(Res.string.baseline_average, baseline.weeks, usualValues.joinToString(SEPARATOR))
-        } else {
-            stringResource(Res.string.baseline_missing)
-        }
-        SeparatedRow(
-            items = listOf<@Composable () -> Unit>(
-                { OvalitText(text = sample, style = caption, color = colors.t3) },
-                { OvalitText(text = usual, style = caption, color = colors.t3) },
-            ),
-            separator = { OvalitText(text = SEPARATOR, style = caption, color = colors.t3) },
+        // 사용자 결정: 네 칸의 평균을 "186 · 1.42 · 138 · 21%"로 늘어놓으면 어느 숫자가 어느 칸인지 읽히지 않았다.
+        // 무엇과 견준 변화량인지만 적고, 칸마다 평균은 누르면 뜨는 시트에 둔다. 경기 수는 기간 줄에 있다.
+        OvalitText(
+            text = if (baseline != null) {
+                stringResource(Res.string.summary_compared, baseline.weeks)
+            } else {
+                stringResource(Res.string.baseline_missing)
+            },
+            style = caption,
+            color = colors.t3,
         )
     }
 }

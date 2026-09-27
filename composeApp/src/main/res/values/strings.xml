@@ -8,5 +8,7 @@
     <string name="share_invite">초대 링크 보내기</string>
     <string name="notification_channel_analysis">분석 완료</string>
     <string name="notification_analysis_title">분석을 마쳤어요</string>
-    <string name="notification_analysis_body">최근 %1$d경기로 리포트를 만들었어요.</string>
+    <!-- 다섯 판이 안 되면 리포트가 없으니 불러온 것까지만 말한다 -->
+    <string name="notification_analysis_body">최근 %1$d경기를 다 불러왔어요.</string>
+    <string name="notification_analysis_body_none">최근 8주 동안 뛴 경기가 없어요.</string>
 </resources>

@@ -10,13 +10,14 @@ import kotlin.test.assertEquals
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import okio.FileSystem
+import okio.Path
 
 class DataStoreUserPreferencesRepositoryTest {
 
-    private fun repository(): DataStoreUserPreferencesRepository {
-        val file = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / "prefs-${Random.nextLong()}.preferences_pb"
-        return DataStoreUserPreferencesRepository(createPreferencesDataStore(file.toString()))
-    }
+    private fun repository(file: Path = newFile()) =
+        DataStoreUserPreferencesRepository(createPreferencesDataStore(file.toString()))
+
+    private fun newFile() = FileSystem.SYSTEM_TEMPORARY_DIRECTORY / "prefs-${Random.nextLong()}.preferences_pb"
 
     @Test
     fun `저장한 적이 없으면 기본값이다`() = runTest {
@@ -27,6 +28,18 @@ class DataStoreUserPreferencesRepositoryTest {
     @Test
     fun `전적 공개는 기본으로 켜져 있다`() = runTest {
         assertEquals(true, repository().preferences.first().statsPublic)
+    }
+
+    // 쓰다가 앱이 죽으면 파일이 반쯤 남는다. 그때 예외로 멈추지 않고 기본값으로 다시 시작한다.
+    @Test
+    fun `저장 파일이 깨졌으면 기본값으로 다시 시작한다`() = runTest {
+        val file = newFile()
+        FileSystem.SYSTEM.write(file) { writeUtf8("깨진 파일") }
+        val repository = repository(file)
+
+        assertEquals(UserPreferences.Default, repository.preferences.first())
+        repository.setTheme(ThemePreference.DARK)
+        assertEquals(ThemePreference.DARK, repository.preferences.first().theme)
     }
 
     @Test

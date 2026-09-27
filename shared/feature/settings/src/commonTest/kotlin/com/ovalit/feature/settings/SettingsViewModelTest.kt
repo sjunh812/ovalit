@@ -3,6 +3,7 @@ package com.ovalit.feature.settings
 import com.ovalit.core.data.AccountRepository
 import com.ovalit.core.data.FakeAccountRepository
 import com.ovalit.core.data.FakeMatchRepository
+import com.ovalit.core.data.ImportScheduler
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.Focus
 import com.ovalit.core.model.QueueFilter
@@ -35,7 +36,8 @@ class SettingsViewModelTest {
     private val matches = FakeMatchRepository()
     private val account = RecordingAccount(FakeAccountRepository(matches))
     private val preferences = InMemoryPreferences()
-    private val viewModel by lazy { SettingsViewModel(account, preferences, matches) }
+    private val importScheduler = RecordingScheduler()
+    private val viewModel by lazy { SettingsViewModel(account, preferences, matches, importScheduler) }
 
     @BeforeTest
     fun setUp() {
@@ -106,6 +108,8 @@ class SettingsViewModelTest {
         viewModel.unlink { unlinkedWhenNotified = account.unlinked }
 
         assertEquals(true, unlinkedWhenNotified)
+        // 수집을 멈추지 않으면 해제한 뒤에 경기를 다시 채우고 알림까지 보낸다
+        assertTrue(importScheduler.cancelled)
         assertNull(success().account)
         assertEquals(0, success().storedMatches)
     }
@@ -115,6 +119,17 @@ class SettingsViewModelTest {
     }
 
     private fun success() = assertIs<SettingsUiState.Success>(viewModel.uiState.value)
+}
+
+private class RecordingScheduler : ImportScheduler {
+    var cancelled = false
+        private set
+
+    override fun start() = Unit
+
+    override fun cancel() {
+        cancelled = true
+    }
 }
 
 private class RecordingAccount(private val delegate: FakeAccountRepository) : AccountRepository by delegate {

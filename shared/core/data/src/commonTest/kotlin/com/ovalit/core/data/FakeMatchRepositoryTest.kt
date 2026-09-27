@@ -1,5 +1,6 @@
 package com.ovalit.core.data
 
+import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.Queue
 import com.ovalit.core.model.Role
@@ -29,6 +30,19 @@ class FakeMatchRepositoryTest {
         assertEquals(Role.DUELIST, report.mainRole)
         assertTrue(report.dynamic.any { it.movement == Movement.MOVED }, report.dynamic.toString())
         assertTrue(report.dynamic.any { it.movement == Movement.STEADY }, report.dynamic.toString())
+    }
+
+    // 짚을 점이 헤드샷 말고도 뜨는지 가짜 데이터로 보려고 최근 7일은 K/D가 내려가고 피해량이 오르게 했다
+    @Test
+    fun `가짜 경기의 이번 주는 피해량이 올라 짚을 점에 뜨고 K_D는 내려간다`() {
+        val report = assertIs<WeeklyReport.Ready>(fakeMatches(Thursday).weeklyReport(Thursday, Seoul))
+        val note = assertNotNull(report.note)
+        val baseline = assertNotNull(report.baseline).metrics
+
+        assertEquals(FixedMetric.DAMAGE, note.moved?.metric)
+        assertTrue(note.moved!!.rose)
+        assertTrue(report.metrics.kd!! < baseline.kd!!)
+        assertTrue(note.agents.size >= 2, note.agents.toString())
     }
 
     @Test

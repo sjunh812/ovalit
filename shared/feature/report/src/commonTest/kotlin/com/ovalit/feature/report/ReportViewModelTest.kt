@@ -24,6 +24,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNotEquals
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.coroutines.Dispatchers
@@ -185,13 +186,19 @@ class ReportViewModelTest {
         val matches = FakeMatchRepository(ThursdayClock)
         val viewModel = ReportViewModel(matches, NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
-        val before = assertIs<WeeklyReport.Ready>(assertIs<ReportUiState.Success>(viewModel.uiState.value).report).metrics.matches
+        val before = assertIs<ReportUiState.Success>(viewModel.uiState.value).report
+        val countBefore = matches.observeMatches().first().size
 
         viewModel.refresh()
         advanceUntilIdle()
 
-        val after = assertIs<WeeklyReport.Ready>(assertIs<ReportUiState.Success>(viewModel.uiState.value).report).metrics.matches
-        assertEquals(before + 1, after)
+        // 새 경기로 이번 주가 다섯 판을 채우면 기간이 좁아져 기간 경기 수가 오히려 준다. 그래서 받은 경기 전체로 다시
+        // 만든 리포트와 같은지 본다.
+        val all = matches.observeMatches().first()
+        val after = assertIs<ReportUiState.Success>(viewModel.uiState.value).report
+        assertEquals(countBefore + 1, all.size)
+        assertNotEquals(before, after)
+        assertEquals(all.weeklyReport(Thursday, Seoul), after)
         assertEquals(false, viewModel.isRefreshing.value)
     }
 

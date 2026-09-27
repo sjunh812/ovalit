@@ -116,6 +116,13 @@ private val FakeAct = ActId("fake-act")
 // 최근 7일은 팬텀 헤드샷을 크게 올려서 무기 화면에 "요즘 잘 맞아요"가 뜨게 했다
 private const val RECENT_PHANTOM_HEADSHOT_RATE = 0.45
 
+// 최근 7일은 킬로 잇지 못한 피해가 늘었다. 피해는 주는데 마무리를 못 하는 한 주라 K/D는 내려가고 피해량은 오른다.
+// 홈 "이번 주 짚을 점"이 헤드샷 말고 다른 지표로도 뜨는지 보려고 넣었다. 데스 확률은 그대로 둬서 생존율과 관여율 칸은
+// 크게 움직이지 않는다. 이긴 판도 조금 늘려서 짚을 점에 요원 줄이 뜨게 했다.
+private const val RECENT_EXTRA_KILL_RATE = 0.25
+private const val RECENT_CHIP_DAMAGE = 70
+private const val RECENT_WIN_BONUS = 0.08
+
 private fun <T> Random.pick(items: List<T>, weight: (T) -> Double): T {
     var roll = nextDouble() * items.sumOf(weight)
     for (item in items) {
@@ -320,7 +327,8 @@ private fun Random.fakeRound(
     }
 
     if (myDeath == null) {
-        repeat(2) { if (nextDouble() < EXTRA_KILL_RATE) killEnemy(30_000L + 12_000L * it, killer = me) }
+        val extraKillRate = if (recent) RECENT_EXTRA_KILL_RATE else EXTRA_KILL_RATE
+        repeat(2) { if (nextDouble() < extraKillRate) killEnemy(30_000L + 12_000L * it, killer = me) }
         if (aliveEnemies.isNotEmpty() && nextDouble() < LATE_DEATH_RATE) {
             myDeath = KillEvent(60_000, aliveEnemies.first(), me, emptySet(), weapon = null)
         }
@@ -341,13 +349,14 @@ private fun Random.fakeRound(
     val openedByMe = kills.minBy { it.atMillis }.killer == me
     val duel = if (openedByMe) 0.15 else if (myDeath?.atMillis == 15_000L) -0.15 else 0.0
     val gear = (economy.teamLoadout - economy.enemyLoadout) / 10_000.0
-    val won = nextDouble() < (0.5 + duel + gear).coerceIn(0.1, 0.9)
+    val bonus = if (recent) RECENT_WIN_BONUS else 0.0
+    val won = nextDouble() < (0.5 + duel + gear + bonus).coerceIn(0.1, 0.9)
 
     return Round(
         number = number,
         won = won,
         kills = kills.sortedBy { it.atMillis },
-        myDamage = myKills * nextInt(110, 150) + nextInt(0, 70),
+        myDamage = myKills * nextInt(110, 150) + nextInt(0, 70) + if (recent) RECENT_CHIP_DAMAGE else 0,
         myShots = Shots(head = head, body = hits - head - leg, leg = leg),
         mySide = side,
         ending = ending(won = won, attacking = side == Side.ATTACK),

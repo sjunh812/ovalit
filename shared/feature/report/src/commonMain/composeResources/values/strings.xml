@@ -107,10 +107,13 @@
     <string name="dynamic_sheet_steady">이번 변화가 평소 주마다 흔들리는 폭 안이라 달라졌다고 보지 않았어요.</string>
     <string name="dynamic_sheet_unknown">이번 기간이나 앞선 주의 표본이 모자라 달라졌는지 판단하지 않았어요.</string>
     <string name="sheet_kd_no_deaths">데스가 없어서 K/D를 비워 뒀어요. 킬 수를 그대로 띄우면 실제보다 부풀려 보여요.</string>
-    <!-- 개선 포인트 문장. 지표 이름이 모두 받침으로 끝나서 조사를 "이", "은"으로 고정했다. 받침 없는 지표를 넣으면 문장을 나눠야 한다. 값 뒤 "예요"는 %로 끝나는 값에만 맞는다. -->
+    <!-- 개선 포인트 문장. 지표 이름이 받침으로 끝나서 조사를 "이", "은"으로 고정했다. 받침 없는 "멀티킬 라운드"는
+         헤드라인을 따로 두고 "비율이"로 받는다. 멀티킬은 역할 우선 지표가 아니라 insight_values_with_role에 들어가지 않는다.
+         값 뒤 "예요"는 %로 끝나는 값에만 맞는다. -->
     <string name="insight_side_attack">공격</string>
     <string name="insight_side_defense">수비</string>
     <string name="insight_headline">%1$s 라운드 %2$s이 %3$s보다 %4$s 낮아요.</string>
+    <string name="insight_headline_multi_kill">%1$s에서 멀티킬 라운드 비율이 %2$s보다 %3$s 낮아요.</string>
     <string name="gap_percent">%1$s%p</string>
     <string name="insight_values">%1$s %2$s, %3$s %4$s예요.</string>
     <!-- 피해량은 정수라 "121예요"처럼 조사가 틀린다. 숫자 뒤에 조사가 오지 않게 따로 쓴다 -->

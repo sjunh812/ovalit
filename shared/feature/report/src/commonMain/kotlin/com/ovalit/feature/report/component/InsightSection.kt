@@ -21,6 +21,7 @@ import com.ovalit.feature.report.label
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.gap_percent
 import com.ovalit.feature.report.resources.insight_headline
+import com.ovalit.feature.report.resources.insight_headline_multi_kill
 import com.ovalit.feature.report.resources.insight_side_attack
 import com.ovalit.feature.report.resources.insight_side_defense
 import com.ovalit.feature.report.resources.insight_values
@@ -34,6 +35,7 @@ import com.ovalit.feature.report.resources.metric_first_duel_win
 import com.ovalit.feature.report.resources.metric_force_buy_win
 import com.ovalit.feature.report.resources.metric_full_buy_win
 import com.ovalit.feature.report.resources.metric_kast
+import com.ovalit.feature.report.resources.metric_multi_kill
 import com.ovalit.feature.report.resources.metric_survival
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -55,13 +57,15 @@ internal fun InsightSection(insight: SideInsight, role: Role?, modifier: Modifie
     val attackLabel = stringResource(Res.string.insight_side_attack)
     val defenseLabel = stringResource(Res.string.insight_side_defense)
 
-    val headline = stringResource(
-        Res.string.insight_headline,
-        if (attackLower) attackLabel else defenseLabel,
-        metricLabel,
-        if (attackLower) defenseLabel else attackLabel,
-        if (format == MetricFormat.PERCENT) stringResource(Res.string.gap_percent, gap) else gap,
-    )
+    val lower = if (attackLower) attackLabel else defenseLabel
+    val higher = if (attackLower) defenseLabel else attackLabel
+    val gapText = if (format == MetricFormat.PERCENT) stringResource(Res.string.gap_percent, gap) else gap
+    // "멀티킬 라운드"는 받침이 없어 "이"가 붙지 않고, "수비 라운드 멀티킬 라운드"처럼 라운드가 겹쳐서 문장을 따로 쓴다
+    val headline = if (insight.metric == SideMetric.MULTI_KILL_RATE) {
+        stringResource(Res.string.insight_headline_multi_kill, lower, higher, gapText)
+    } else {
+        stringResource(Res.string.insight_headline, lower, metricLabel, higher, gapText)
+    }
     val attackValue = format.valueText(attack)
     val defenseValue = format.valueText(defense)
     val focus = insight.focus
@@ -110,6 +114,7 @@ private val SideMetric.label: StringResource
         SideMetric.KAST -> Res.string.metric_kast
         SideMetric.FIRST_DUEL_WIN_RATE -> Res.string.metric_first_duel_win
         SideMetric.DAMAGE -> CoreUiRes.string.metric_damage
+        SideMetric.MULTI_KILL_RATE -> Res.string.metric_multi_kill
         SideMetric.FORCE_BUY_WIN_RATE -> Res.string.metric_force_buy_win
         SideMetric.ECO_WIN_RATE -> Res.string.metric_eco_win
         SideMetric.FULL_BUY_WIN_RATE -> Res.string.metric_full_buy_win

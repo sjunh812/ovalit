@@ -149,6 +149,27 @@ class SideInsightTest {
         assertEquals(SideMetric.KAST, insight(Focus.CONSISTENCY)?.metric)
     }
 
+    // 사용자 요청(2026-09-27): 멀티킬 라운드 비율도 공수로 나눠 본다. 타격대의 우선 지표인 첫 교전 승률은 표본이 모자라다.
+    @Test
+    fun `멀티킬 라운드 비율이 공수로 벌어지면 문장을 만든다`() {
+        val insight = assertNotNull(multiKillGap().sideInsight(Role.DUELIST))
+
+        assertEquals(SideMetric.MULTI_KILL_RATE, insight.metric)
+        assertEquals(false, insight.isRolePriority)
+    }
+
+    // 동적 칸처럼 K/D를 크게 띄우지 않는 역할은 멀티킬도 빼지만, 에임 올리기를 골랐으면 본다
+    @Test
+    fun `척후대와 전략가는 에임 올리기를 고르지 않았으면 멀티킬로 문장을 만들지 않는다`() {
+        for (role in listOf(Role.INITIATOR, Role.CONTROLLER)) {
+            assertNull(multiKillGap().sideInsight(role), "$role")
+            val insight = assertNotNull(multiKillGap().sideInsight(role, Focus.AIM), "$role")
+            assertEquals(SideMetric.MULTI_KILL_RATE, insight.metric)
+            assertEquals(Focus.AIM, insight.focus)
+        }
+        assertEquals(SideMetric.MULTI_KILL_RATE, multiKillGap().sideInsight(Role.SENTINEL)?.metric)
+    }
+
     @Test
     fun `역할을 모르면 가장 벌어진 지표를 고르고 우선 지표라고 하지 않는다`() {
         val matches = side(Side.ATTACK, survived = 30, died = 10) + side(Side.DEFENSE, survived = 20, died = 20)
@@ -165,6 +186,17 @@ class SideInsightTest {
  */
 private fun aimGap() = side(Side.ATTACK, survived = 10, died = 30, openedByMe = 20) +
     side(Side.DEFENSE, survived = 10, died = 30, openedByMe = 5)
+
+/**
+ * 공격 40라운드 중 12라운드, 수비 40라운드 중 2라운드에서 적을 둘 잡습니다. 멀티킬 라운드 비율이 30%와 5%로 벌어집니다.
+ * 한 번도 죽지 않아 생존율과 관여율은 두 진영 모두 100%이고, 첫 교전은 15번에 못 미칩니다.
+ */
+private fun multiKillGap(): List<Match> {
+    fun side(side: Side, multi: Int) = List(40) { index ->
+        if (index < multi) round(kill(5.0, Me, Enemy), kill(8.0, Me, OtherEnemy), side = side) else round(side = side)
+    }
+    return listOf(match(*(side(Side.ATTACK, multi = 12) + side(Side.DEFENSE, multi = 2)).toTypedArray()))
+}
 
 /** 한 진영의 포스바이 라운드를 경기 하나에 담습니다. 피스톨 라운드가 아니게 번호를 5로 둡니다. */
 private fun buys(side: Side, won: Int, lost: Int): List<Match> {

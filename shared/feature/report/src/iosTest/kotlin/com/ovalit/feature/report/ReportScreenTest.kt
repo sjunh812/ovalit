@@ -29,6 +29,7 @@ import com.ovalit.core.model.DynamicMetric
 import com.ovalit.core.model.DynamicSlot
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.Focus
+import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.MovedMetric
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.PlayerId
@@ -415,6 +416,22 @@ class ReportScreenTest {
         setContent { Report(report) }
 
         onNodeWithText(MetricFormat.TWO_DECIMALS.formatChange(kda, usual), useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    // "멀티킬 라운드"는 받침이 없어 "이"가 붙지 않고, 기본 문장에 넣으면 "라운드"가 두 번 나온다
+    @Test
+    fun `멀티킬 개선 포인트는 조사와 낱말이 맞는 문장으로 적는다`() = runComposeUiTest {
+        val insight = SideInsight(
+            metric = SideMetric.MULTI_KILL_RATE,
+            attack = MatchMetrics.Empty.copy(rounds = 40, multiKillRounds = 12),
+            defense = MatchMetrics.Empty.copy(rounds = 40, multiKillRounds = 2),
+            isRolePriority = false,
+            focus = Focus.AIM,
+        )
+        setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
+
+        onNodeWithText("수비에서 멀티킬 라운드 비율이 공격보다 25%p 낮아요.").assertExists()
+        onNodeWithText("공격 30%, 수비 5%예요. 에임 올리기를 고르셔서 먼저 봤어요.").assertExists()
     }
 
     // 헤드라인과 풀이가 붙으면 한 덩어리로 뭉개진다. 개선 포인트 문장과 같은 간격이다.

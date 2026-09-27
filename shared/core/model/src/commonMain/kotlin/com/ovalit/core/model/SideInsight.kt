@@ -28,6 +28,7 @@ enum class SideMetric(
     KAST(DynamicMetric.KAST),
     FIRST_DUEL_WIN_RATE(DynamicMetric.FIRST_DUEL_WIN_RATE),
     DAMAGE(dynamic = null),
+    MULTI_KILL_RATE(DynamicMetric.MULTI_KILL_RATE),
     FORCE_BUY_WIN_RATE(DynamicMetric.FORCE_BUY_WIN_RATE, focusOnly = true),
     ECO_WIN_RATE(DynamicMetric.ECO_WIN_RATE, focusOnly = true),
     FULL_BUY_WIN_RATE(DynamicMetric.FULL_BUY_WIN_RATE, focusOnly = true),
@@ -115,9 +116,11 @@ private val Role.prioritySideMetric: SideMetric
         Role.CONTROLLER, Role.SENTINEL -> SideMetric.SURVIVAL_RATE
     }
 
-// 전략가와 감시자는 퍼블을 크게 띄우지 않는다
+// 동적 칸과 같다. 전략가와 감시자는 퍼블을, 척후대와 전략가는 멀티킬을 크게 띄우지 않는다.
 private val Role.mutedSideMetrics: Set<SideMetric>
     get() = when (this) {
-        Role.CONTROLLER, Role.SENTINEL -> setOf(SideMetric.FIRST_DUEL_WIN_RATE)
-        Role.DUELIST, Role.INITIATOR -> emptySet()
+        Role.CONTROLLER -> setOf(SideMetric.FIRST_DUEL_WIN_RATE, SideMetric.MULTI_KILL_RATE)
+        Role.SENTINEL -> setOf(SideMetric.FIRST_DUEL_WIN_RATE)
+        Role.INITIATOR -> setOf(SideMetric.MULTI_KILL_RATE)
+        Role.DUELIST -> emptySet()
     }

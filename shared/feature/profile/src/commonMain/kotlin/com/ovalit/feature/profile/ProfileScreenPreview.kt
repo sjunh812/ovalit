@@ -32,13 +32,13 @@ private fun ProfileNoCompetitivePreview() {
 @Preview(widthDp = 390, heightDp = 1000)
 @Composable
 private fun AgentsDarkPreview() {
-    OvalitThemePreview(darkTheme = true) { AgentsScreen(ProfilePreviewData.success, onBack = {}) }
+    OvalitThemePreview(darkTheme = true) { AgentsScreen(ProfilePreviewData.records, onBack = {}) }
 }
 
 @Preview(widthDp = 390, heightDp = 1000)
 @Composable
 private fun AgentsLightPreview() {
-    OvalitThemePreview(darkTheme = false) { AgentsScreen(ProfilePreviewData.success, onBack = {}) }
+    OvalitThemePreview(darkTheme = false) { AgentsScreen(ProfilePreviewData.records, onBack = {}) }
 }
 
 // 타격대가 주 역할이면 오른쪽 두 열이 퍼블 쪽 지표로 바뀐다
@@ -46,7 +46,7 @@ private fun AgentsLightPreview() {
 @Composable
 private fun AgentsDuelistPreview() {
     OvalitThemePreview {
-        AgentsScreen(ProfilePreviewData.success.copy(agents = ProfilePreviewData.duelistAgents), onBack = {})
+        AgentsScreen(ProfilePreviewData.records.copy(agents = ProfilePreviewData.duelistAgents), onBack = {})
     }
 }
 
@@ -54,23 +54,23 @@ private fun AgentsDuelistPreview() {
 @Preview(widthDp = 320, heightDp = 900, fontScale = 1.5f)
 @Composable
 private fun AgentsSmallLargeFontPreview() {
-    OvalitThemePreview { AgentsScreen(ProfilePreviewData.success, onBack = {}) }
+    OvalitThemePreview { AgentsScreen(ProfilePreviewData.records, onBack = {}) }
 }
 
 @Preview(widthDp = 390, heightDp = 1000)
 @Composable
 private fun WeaponsDarkPreview() {
-    OvalitThemePreview(darkTheme = true) { WeaponsScreen(ProfilePreviewData.success, onBack = {}) }
+    OvalitThemePreview(darkTheme = true) { WeaponsScreen(ProfilePreviewData.records, onBack = {}) }
 }
 
 @Preview(widthDp = 390, heightDp = 1000)
 @Composable
 private fun WeaponsLightPreview() {
-    OvalitThemePreview(darkTheme = false) { WeaponsScreen(ProfilePreviewData.success, onBack = {}) }
+    OvalitThemePreview(darkTheme = false) { WeaponsScreen(ProfilePreviewData.records, onBack = {}) }
 }
 
 @Preview(widthDp = 320, heightDp = 900, fontScale = 1.5f)
 @Composable
 private fun WeaponsSmallLargeFontPreview() {
-    OvalitThemePreview { WeaponsScreen(ProfilePreviewData.success, onBack = {}) }
+    OvalitThemePreview { WeaponsScreen(ProfilePreviewData.records, onBack = {}) }
 }

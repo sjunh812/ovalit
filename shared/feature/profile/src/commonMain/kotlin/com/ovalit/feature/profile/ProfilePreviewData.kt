@@ -228,6 +228,12 @@ internal object ProfilePreviewData {
         timeZone = seoul,
     )
 
+    // S6과 S7은 내 프로필과 같은 경기를 본다
+    val records = RecordsUiState.Success(ownerName = null, agents = agents, weapons = weapons, catalog = catalog)
+
+    // S5에서 연 친구 기록이다. 제목에 친구 이름을 붙인다.
+    val friendRecords = records.copy(ownerName = "민석")
+
     // 이번 액트에 경쟁전을 안 뛰었으면 티어 칸이 없고 티어는 이름 줄에 남는다
     val noCompetitive = success.copy(summary = summary.copy(competitive = null))
 }

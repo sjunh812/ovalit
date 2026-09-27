@@ -36,7 +36,7 @@ import kotlinx.datetime.TimeZone
 /**
  * 친구의 이번 액트 경쟁 + 일반 경기 성적입니다. 내 프로필과 같은 기준으로 셉니다.
  *
- * @property weapons 위쪽 세 무기의 이번 액트 값만 씁니다. 친구에게는 S6 무기 화면이 없습니다.
+ * @property weapons 위쪽 세 무기의 이번 액트 값만 씁니다. 누르면 여는 S6은 같은 경기로 따로 셉니다.
  */
 data class FriendProfile(
     val summary: ProfileSummary,

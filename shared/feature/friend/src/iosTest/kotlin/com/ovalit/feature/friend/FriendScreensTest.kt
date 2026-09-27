@@ -3,7 +3,6 @@ package com.ovalit.feature.friend
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -83,7 +82,7 @@ class FriendScreensTest {
         assertEquals(order.sorted(), order)
     }
 
-    // 요원과 무기 칸은 내 프로필과 같다. 친구에게는 요원·무기 상세 화면이 없어 누르지 않는다.
+    // 요원과 무기 칸은 내 프로필과 같다
     @Test
     fun `친구의 요원과 무기 칸에는 KDA와 킬 수와 헤드샷을 적는다`() = runComposeUiTest {
         setContent { Themed { FriendProfileScreen(FriendPreviewData.profile, {}, {}, {}) } }
@@ -93,8 +92,27 @@ class FriendScreensTest {
         onNodeWithText("330/260/72", substring = true, useUnmergedTree = true).assertDoesNotExist()
         onNodeWithText("260킬", useUnmergedTree = true).assertExists()
         onNodeWithText("헤드샷 28%", useUnmergedTree = true).assertExists()
-        // 눌리는 섹션이면 제목이 그 섹션 노드에 합쳐져 눌림 동작이 잡힌다
-        onNodeWithText("요원").assertHasNoClickAction()
+    }
+
+    // 사용자 요청: 친구의 요원과 무기도 내 프로필처럼 눌러서 S7과 S6으로 들어간다
+    @Test
+    fun `친구의 요원과 무기 칸을 누르면 친구 기록으로 들어간다`() = runComposeUiTest {
+        var agentsOpened = false
+        var weaponsOpened = false
+        setContent {
+            Themed {
+                FriendProfileScreen(
+                    FriendPreviewData.profile, {}, {}, {},
+                    onOpenAgents = { agentsOpened = true },
+                    onOpenWeapons = { weaponsOpened = true },
+                )
+            }
+        }
+
+        onNodeWithText("요원").performScrollTo().performClick()
+        onNodeWithText("무기").performScrollTo().performClick()
+
+        assertTrue(agentsOpened && weaponsOpened)
     }
 
     @Test

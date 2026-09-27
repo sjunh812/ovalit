@@ -39,13 +39,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ovalit.core.designsystem.component.OvalitBackTopBar
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitPickerButton
 import com.ovalit.core.designsystem.component.OvalitSheetOption
 import com.ovalit.core.designsystem.component.OvalitText
-import com.ovalit.core.designsystem.component.OvalitTopBarCaption
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.AgentReport
@@ -67,7 +65,6 @@ import com.ovalit.core.ui.percentText
 import com.ovalit.core.ui.rememberFitsOnOneLine
 import com.ovalit.core.ui.rememberFittingStyle
 import com.ovalit.core.ui.resources.Res as CoreUiRes
-import com.ovalit.core.ui.resources.act_matches
 import com.ovalit.core.ui.resources.agents_matches
 import com.ovalit.core.ui.resources.column_win_rate
 import com.ovalit.core.ui.shrinkToFit
@@ -88,6 +85,7 @@ import com.ovalit.feature.profile.resources.agents_focus_duelist
 import com.ovalit.feature.profile.resources.agents_focus_initiator
 import com.ovalit.feature.profile.resources.agents_focus_sentinel
 import com.ovalit.feature.profile.resources.agents_main_role
+import com.ovalit.feature.profile.resources.agents_owner_suffix
 import com.ovalit.feature.profile.resources.agents_role_controller
 import com.ovalit.feature.profile.resources.agents_role_duelist
 import com.ovalit.feature.profile.resources.agents_role_initiator
@@ -102,6 +100,7 @@ import com.ovalit.feature.profile.resources.not_enough_sample
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 private val WinColumn = 48.dp
 private val MetricColumn = 58.dp
@@ -109,27 +108,39 @@ private val MetricColumn = 58.dp
 private val ColumnGap = 6.dp
 private val ThumbnailSize = 34.dp
 
-/** S7 요원 화면입니다. */
+/** S7 요원 화면입니다. 내 프로필과 친구 프로필(S5)에서 열립니다. */
 @Composable
 fun AgentsRoute(
+    owner: RecordsOwner,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ProfileViewModel = koinViewModel(),
+    viewModel: RecordsViewModel = koinViewModel { parametersOf(owner) },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     AgentsScreen(uiState, onBack, modifier)
 }
 
 @Composable
-internal fun AgentsScreen(uiState: ProfileUiState, onBack: () -> Unit, modifier: Modifier = Modifier) {
+internal fun AgentsScreen(uiState: RecordsUiState, onBack: () -> Unit, modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize().background(OvalitTheme.colors.bg)) {
-        if (uiState !is ProfileUiState.Success) return@Box
+        when (uiState) {
+            RecordsUiState.Loading -> return@Box
+            RecordsUiState.Hidden -> {
+                RecordsHidden(Res.string.agents_title, onBack)
+                return@Box
+            }
+            is RecordsUiState.Success -> Unit
+        }
         val report = uiState.agents
 
         Column(modifier = Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState())) {
-            OvalitBackTopBar(onBack = onBack, title = stringResource(Res.string.agents_title)) {
-                OvalitTopBarCaption(stringResource(CoreUiRes.string.act_matches, report.matches))
-            }
+            RecordsTopBar(
+                title = Res.string.agents_title,
+                ownerSuffix = Res.string.agents_owner_suffix,
+                ownerName = uiState.ownerName,
+                matches = report.matches,
+                onBack = onBack,
+            )
             val mainRole = report.mainRole
             if (mainRole == null) {
                 OvalitText(

@@ -89,6 +89,8 @@ fun FriendProfileRoute(
     friendId: PlayerId,
     onBack: () -> Unit,
     onOpenMatches: () -> Unit,
+    onOpenAgents: () -> Unit,
+    onOpenWeapons: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: FriendProfileViewModel = koinViewModel(key = friendId.value) { parametersOf(friendId.value) },
 ) {
@@ -102,6 +104,8 @@ fun FriendProfileRoute(
         onToggleRival = viewModel::toggleRival,
         onUnfriend = { viewModel.unfriend(onBack) },
         onOpenMatches = onOpenMatches,
+        onOpenAgents = onOpenAgents,
+        onOpenWeapons = onOpenWeapons,
         modifier = modifier,
     )
 }
@@ -114,6 +118,8 @@ internal fun FriendProfileScreen(
     onUnfriend: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenMatches: () -> Unit = {},
+    onOpenAgents: () -> Unit = {},
+    onOpenWeapons: () -> Unit = {},
 ) {
     val colors = OvalitTheme.colors
     val haptics = rememberOvalitHaptics()
@@ -187,7 +193,7 @@ internal fun FriendProfileScreen(
                     OvalitText(text = stringResource(Res.string.private_body), style = OvalitTheme.typography.body, color = colors.t2)
                 }
             } else {
-                // 내 프로필과 같은 칸을 같은 순서로 쓴다. 다만 요원과 무기는 친구용 상세 화면이 없어 누르지 않는다.
+                // 내 프로필과 같은 칸을 같은 순서로 쓴다. 요원과 무기를 누르면 친구 기록으로 S7과 S6이 열린다.
                 if (hasActMatches) {
                     competitive?.let { TierCard(it, uiState) }
                     ProfileStatsSection(profile.summary, Modifier.padding(top = 6.dp))
@@ -195,8 +201,8 @@ internal fun FriendProfileScreen(
                 (uiState.myReport as? WeeklyReport.Ready)?.let { mine -> CompareSection(mine, uiState, name) }
                 if (hasActMatches) {
                     ProfileShotsSection(profile.summary.metrics.shots)
-                    ProfileAgentsSection(profile.agents, uiState.catalog)
-                    ProfileWeaponsSection(profile.weapons, uiState.catalog)
+                    ProfileAgentsSection(profile.agents, uiState.catalog, onOpen = onOpenAgents)
+                    ProfileWeaponsSection(profile.weapons, uiState.catalog, onOpen = onOpenWeapons)
                 }
                 RecentMatches(uiState, name, onOpenMatches)
             }

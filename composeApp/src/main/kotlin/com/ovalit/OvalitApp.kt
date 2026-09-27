@@ -47,6 +47,7 @@ import com.ovalit.feature.onboarding.importing.ImportRoute
 import com.ovalit.feature.onboarding.intro.IntroScreen
 import com.ovalit.feature.profile.AgentsRoute
 import com.ovalit.feature.profile.ProfileRoute
+import com.ovalit.feature.profile.RecordsOwner
 import com.ovalit.feature.profile.WeaponsRoute
 import com.ovalit.feature.report.ReportRoute
 import com.ovalit.feature.settings.SettingsRoute
@@ -92,6 +93,12 @@ private data object Agents : NavKey
 
 @Serializable
 private data object Weapons : NavKey
+
+@Serializable
+private data class FriendAgents(val id: String) : NavKey
+
+@Serializable
+private data class FriendWeapons(val id: String) : NavKey
 
 private val TopLevel = listOf(Report, Matches, Friends, Settings)
 
@@ -184,13 +191,21 @@ fun OvalitApp(appVersion: String) {
                             friendId = PlayerId(key.id),
                             onBack = { backStack.removeLastOrNull() },
                             onOpenMatches = { backStack.add(FriendMatches(key.id)) },
+                            onOpenAgents = { backStack.add(FriendAgents(key.id)) },
+                            onOpenWeapons = { backStack.add(FriendWeapons(key.id)) },
                         )
                     }
                     entry<FriendMatches> { key ->
                         FriendMatchesRoute(friendId = PlayerId(key.id), onBack = { backStack.removeLastOrNull() })
                     }
-                    entry<Agents> { AgentsRoute(onBack = { backStack.removeLastOrNull() }) }
-                    entry<Weapons> { WeaponsRoute(onBack = { backStack.removeLastOrNull() }) }
+                    entry<FriendAgents> { key ->
+                        AgentsRoute(owner = RecordsOwner.Friend(PlayerId(key.id)), onBack = { backStack.removeLastOrNull() })
+                    }
+                    entry<FriendWeapons> { key ->
+                        WeaponsRoute(owner = RecordsOwner.Friend(PlayerId(key.id)), onBack = { backStack.removeLastOrNull() })
+                    }
+                    entry<Agents> { AgentsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }) }
+                    entry<Weapons> { WeaponsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }) }
                     entry<Settings> {
                         SettingsRoute(
                             appVersion = appVersion,

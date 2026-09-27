@@ -1,12 +1,17 @@
 package com.ovalit.feature.profile
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.isHeading
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -94,14 +99,14 @@ class ProfileScreensTest {
 
     @Test
     fun `요원 화면은 주 역할을 무엇으로 보는지 알려준다`() = runComposeUiTest {
-        setContent { Themed { AgentsScreen(ProfilePreviewData.success, onBack = {}) } }
+        setContent { Themed { AgentsScreen(ProfilePreviewData.records, onBack = {}) } }
 
         onNodeWithText("전략가는 관여율과 생존율로 봐요. 퍼블이 적은 건 역할상 자연스러워요.").assertExists()
     }
 
     @Test
     fun `주 역할이 전략가면 관여율과 생존 열을 둔다`() = runComposeUiTest {
-        setContent { Themed { AgentsScreen(ProfilePreviewData.success, onBack = {}) } }
+        setContent { Themed { AgentsScreen(ProfilePreviewData.records, onBack = {}) } }
 
         onNodeWithText("관여율").assertExists()
         onNodeWithText("생존").assertExists()
@@ -111,7 +116,7 @@ class ProfileScreensTest {
     @Test
     fun `주 역할이 타격대면 퍼블 쪽 열로 바꾼다`() = runComposeUiTest {
         setContent {
-            Themed { AgentsScreen(ProfilePreviewData.success.copy(agents = ProfilePreviewData.duelistAgents), onBack = {}) }
+            Themed { AgentsScreen(ProfilePreviewData.records.copy(agents = ProfilePreviewData.duelistAgents), onBack = {}) }
         }
 
         onNodeWithText("퍼블 관여").assertExists()
@@ -122,7 +127,7 @@ class ProfileScreensTest {
     // 주 역할에 맞춘 열 말고 다른 지표도 볼 수 있어야 한다. 시트에서 고르면 표의 두 열이 바뀐다.
     @Test
     fun `요원 표의 지표는 표 위 버튼으로 바꾼다`() = runComposeUiTest {
-        setContent { Themed { AgentsScreen(ProfilePreviewData.success, onBack = {}) } }
+        setContent { Themed { AgentsScreen(ProfilePreviewData.records, onBack = {}) } }
 
         onNodeWithText("관여율 · 생존율").performScrollTo().performClick()
         onNodeWithText("전략가 기준").assertExists()
@@ -177,7 +182,7 @@ class ProfileScreensTest {
     // 무기를 잘 쓰는지 보려면 킬과 헤드샷만으로는 모자란다
     @Test
     fun `무기 표는 킬 데스 어시스트와 그 비율과 라운드당 피해량과 헤드샷을 둔다`() = runComposeUiTest {
-        setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
+        setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
 
         onNodeWithText("KDA", useUnmergedTree = true).assertExists()
         // (254 + 70) ÷ 180
@@ -191,7 +196,7 @@ class ProfileScreensTest {
 
     @Test
     fun `위쪽 세 무기는 킬데스와 피해량과 헤드샷을 이번 기간과 그 앞 4주 평균으로 견준다`() = runComposeUiTest {
-        setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
+        setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
 
         onNodeWithText("이번 주", useUnmergedTree = true).assertExists()
         onNodeWithText("4주 평균과 비교", useUnmergedTree = true).assertExists()
@@ -205,7 +210,7 @@ class ProfileScreensTest {
     // 한 줄 안에서 이번 주 헤드샷과 이번 액트 K/D가 섞이면 어느 숫자가 언제 것인지 모른다
     @Test
     fun `이번 기간 표본이 모자란 셋째 무기는 줄 전체를 이번 액트 값으로 띄운다`() = runComposeUiTest {
-        setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
+        setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
 
         onNodeWithText("이번 액트 기준", useUnmergedTree = true).assertExists()
         onNodeWithText("1.53", useUnmergedTree = true).assertExists()
@@ -214,7 +219,7 @@ class ProfileScreensTest {
     // 순서는 이번 액트 킬이다. 이번 주를 띄운 줄에 이번 주 킬을 적으면 킬이 적은 무기가 위에 있는 것처럼 보인다.
     @Test
     fun `위쪽 세 무기에는 순서를 정한 이번 액트 킬을 적는다`() = runComposeUiTest {
-        setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
+        setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
 
         onNodeWithText("이번 액트 254킬", useUnmergedTree = true).assertExists()
         onNodeWithText("이번 액트 198킬", useUnmergedTree = true).assertExists()
@@ -224,7 +229,7 @@ class ProfileScreensTest {
     // 5판을 넘긴 네 요원만 KDA를 적는다. 미리보기 요원은 킬·데스·어시가 라운드에 비례해서 모두 1.77이다.
     @Test
     fun `요원 표의 줄마다 5판을 넘긴 요원에게 KDA를 적는다`() = runComposeUiTest {
-        setContent { Themed { AgentsScreen(ProfilePreviewData.success, onBack = {}) } }
+        setContent { Themed { AgentsScreen(ProfilePreviewData.records, onBack = {}) } }
 
         onAllNodesWithText("KDA 1.77", useUnmergedTree = true).assertCountEquals(4)
         // 3판뿐인 킬조이에게는 적지 않는다
@@ -233,7 +238,7 @@ class ProfileScreensTest {
 
     @Test
     fun `5판에 못 미친 요원은 숫자 대신 표본 부족이라고 적는다`() = runComposeUiTest {
-        setContent { Themed { AgentsScreen(ProfilePreviewData.success, onBack = {}) } }
+        setContent { Themed { AgentsScreen(ProfilePreviewData.records, onBack = {}) } }
 
         onNodeWithText("킬조이", substring = true).assertExists()
         onNodeWithText("표본 부족").assertExists()
@@ -242,13 +247,13 @@ class ProfileScreensTest {
     // 카탈로그는 패치 뒤에 사람이 갱신해서 새 요원이 한동안 빠져 있을 수 있다
     @Test
     fun `카탈로그에 없는 요원과 무기는 알 수 없다고 적는다`() = runComposeUiTest {
-        setContent { Themed { AgentsScreen(ProfilePreviewData.success, onBack = {}) } }
+        setContent { Themed { AgentsScreen(ProfilePreviewData.records, onBack = {}) } }
         onNodeWithText("알 수 없는 요원").assertExists()
     }
 
     @Test
     fun `평소보다 크게 움직인 무기에만 문구를 붙인다`() = runComposeUiTest {
-        setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
+        setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
 
         onNodeWithText("요즘 잘 맞아요").assertExists()
         onNodeWithText("최근 떨어졌어요").assertDoesNotExist()
@@ -256,7 +261,7 @@ class ProfileScreensTest {
 
     @Test
     fun `가장 킬이 많은 계열만 펼쳐 두고 누르면 다른 계열을 펼친다`() = runComposeUiTest {
-        setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
+        setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
 
         // 고스트는 위쪽 주력 무기에도 있어서 이름 대신 표 줄의 KDA로 본다
         onNodeWithText("2.13 (46/30/18)", useUnmergedTree = true).assertDoesNotExist()
@@ -269,7 +274,7 @@ class ProfileScreensTest {
     // 들고 시작한 라운드가 모자라면 데스와 어시가 그 무기 몫이라고 보기 어렵다
     @Test
     fun `들고 시작한 라운드가 모자란 무기는 KDA 없이 합계만 적는다`() = runComposeUiTest {
-        setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
+        setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
         onNodeWithText("권총").performClick()
 
         onNodeWithText("5/7/4", useUnmergedTree = true).assertExists()
@@ -277,10 +282,47 @@ class ProfileScreensTest {
 
     @Test
     fun `두 표본이 모두 모자란 무기는 숫자 대신 표본 부족이라고 적는다`() = runComposeUiTest {
-        setContent { Themed { WeaponsScreen(ProfilePreviewData.success, onBack = {}) } }
+        setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
         onNodeWithText("권총").performClick()
 
         onNodeWithText("표본 부족").assertExists()
+    }
+
+    // S5에서 연 친구 기록은 누구 것인지 제목에 적는다
+    @Test
+    fun `친구 기록은 제목에 친구 이름을 붙인다`() = runComposeUiTest {
+        setContent { Themed { AgentsScreen(ProfilePreviewData.friendRecords, onBack = {}) } }
+
+        onNode(isHeading()).assertTextEquals("민석", "의 요원")
+        onNodeWithText("이번 액트 50경기").assertExists()
+    }
+
+    // 이름 길이는 모른다. 이름만 줄이고 "의 무기"와 경기 수는 남긴다.
+    @Test
+    fun `친구 이름이 길면 이름만 줄인다`() = runComposeUiTest {
+        setContent {
+            Themed {
+                Box(Modifier.width(320.dp)) {
+                    WeaponsScreen(ProfilePreviewData.friendRecords.copy(ownerName = "아주아주긴닉네임열여섯글자"), onBack = {})
+                }
+            }
+        }
+
+        val suffix = onNodeWithText("의 무기", useUnmergedTree = true).getBoundsInRoot()
+        val caption = onNodeWithText("이번 액트 50경기", useUnmergedTree = true).getBoundsInRoot()
+        assertTrue(suffix.right - suffix.left > 0.dp)
+        assertTrue(suffix.right <= caption.left)
+        assertTrue(caption.right <= 320.dp)
+    }
+
+    // 보던 중에 친구가 전적을 비공개로 바꾸면 숫자를 하나도 남기지 않는다
+    @Test
+    fun `볼 수 없는 친구 기록은 숫자 없이 안내만 한다`() = runComposeUiTest {
+        setContent { Themed { AgentsScreen(RecordsUiState.Hidden, onBack = {}) } }
+
+        onNodeWithText("지금은 이 친구의 기록을 볼 수 없어요").assertExists()
+        onNodeWithText("이번 액트", substring = true).assertDoesNotExist()
+        onNodeWithText("요원별").assertDoesNotExist()
     }
 }
 

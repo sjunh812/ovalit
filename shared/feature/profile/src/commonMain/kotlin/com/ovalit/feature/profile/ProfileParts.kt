@@ -2,15 +2,27 @@ package com.ovalit.feature.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.ovalit.core.designsystem.component.OvalitBackTopBar
+import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.OvalitTopBarCaption
+import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.WeaponCategory
+import com.ovalit.core.ui.resources.Res as CoreUiRes
+import com.ovalit.core.ui.resources.act_matches
 import com.ovalit.feature.profile.resources.Res
+import com.ovalit.feature.profile.resources.records_hidden
 import com.ovalit.feature.profile.resources.weapons_category_machine_gun
 import com.ovalit.feature.profile.resources.weapons_category_melee
 import com.ovalit.feature.profile.resources.weapons_category_pistol
@@ -19,6 +31,7 @@ import com.ovalit.feature.profile.resources.weapons_category_shotgun
 import com.ovalit.feature.profile.resources.weapons_category_smg
 import com.ovalit.feature.profile.resources.weapons_category_sniper
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 // 값 없는 칸 글자, 퍼센트, 승률 색, 무기 이름과 실루엣은 S5와 같이 쓰려고 core/ui의 ProfileParts.kt에 있다.
 
@@ -46,3 +59,51 @@ internal val WeaponCategory.label: StringResource
         WeaponCategory.MACHINE_GUN -> Res.string.weapons_category_machine_gun
         WeaponCategory.MELEE -> Res.string.weapons_category_melee
     }
+
+/**
+ * S6과 S7의 맨 위 줄입니다. 친구 기록이면 "민석의 요원"처럼 이름을 붙이고, 이름이 길면 이름만 줄여 뒤를 남깁니다.
+ *
+ * @param ownerSuffix 친구 이름 뒤에 붙는 말입니다("의 요원").
+ */
+@Composable
+internal fun RecordsTopBar(
+    title: StringResource,
+    ownerSuffix: StringResource,
+    ownerName: String?,
+    matches: Int,
+    onBack: () -> Unit,
+) {
+    val style = OvalitTheme.typography.titleL
+    OvalitBackTopBar(
+        onBack = onBack,
+        title = {
+            if (ownerName == null) {
+                OvalitText(stringResource(title), style = style, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            } else {
+                OvalitText(
+                    text = ownerName,
+                    modifier = Modifier.weight(1f, fill = false),
+                    style = style,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                OvalitText(stringResource(ownerSuffix), style = style, maxLines = 1)
+            }
+        },
+    ) {
+        OvalitTopBarCaption(stringResource(CoreUiRes.string.act_matches, matches))
+    }
+}
+
+/** 보던 친구를 끊었거나 친구가 전적을 비공개로 바꿨을 때입니다. 숫자는 하나도 남기지 않습니다. */
+@Composable
+internal fun RecordsHidden(title: StringResource, onBack: () -> Unit) {
+    Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+        OvalitBackTopBar(onBack = onBack, title = stringResource(title))
+        OvalitText(
+            text = stringResource(Res.string.records_hidden),
+            modifier = Modifier.padding(OvalitSpacing.gutter),
+            color = OvalitTheme.colors.t2,
+        )
+    }
+}

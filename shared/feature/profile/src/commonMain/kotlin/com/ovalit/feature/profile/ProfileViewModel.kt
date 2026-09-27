@@ -47,8 +47,8 @@ sealed interface ProfileUiState {
 }
 
 /**
- * 내 프로필, S6 무기, S7 요원이 같이 씁니다. 최근 경기 말고는 모두 이번 액트의 경쟁 + 일반 경기를 봅니다.
- * 기타 모드는 라운드 수와 크레드 규칙이 달라서 섞으면 비율이 틀어집니다.
+ * 내 프로필 화면입니다. 최근 경기 말고는 모두 이번 액트의 경쟁 + 일반 경기를 봅니다. 기타 모드는 라운드 수와
+ * 크레드 규칙이 달라서 섞으면 비율이 틀어집니다. S6 무기와 S7 요원은 [RecordsViewModel]이 맡습니다.
  */
 class ProfileViewModel(
     accountRepository: AccountRepository,

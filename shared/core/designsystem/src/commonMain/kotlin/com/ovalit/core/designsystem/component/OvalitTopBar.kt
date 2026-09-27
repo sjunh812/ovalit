@@ -87,16 +87,7 @@ fun OvalitBackTopBar(
     title: String? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(top = OvalitSpacing.sm)
-            .heightIn(min = HeaderHeight)
-            .padding(horizontal = OvalitSpacing.sm),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        OvalitIconButton(OvalitIcons.Back, stringResource(Res.string.back), onBack)
-        Spacer(Modifier.width(OvalitSpacing.xs))
+    BackTopBarRow(onBack, modifier, actions) {
         Box(modifier = Modifier.weight(1f)) {
             if (title != null) {
                 OvalitText(
@@ -108,6 +99,47 @@ fun OvalitBackTopBar(
                 )
             }
         }
+    }
+}
+
+/**
+ * 제목을 글자 하나로 쓸 수 없을 때입니다. "민석의 요원"처럼 길이를 모르는 이름만 줄이고 뒤는 남겨야 할 때 씁니다.
+ * 제목 글자는 [OvalitTheme]의 `titleL`로 씁니다. 안에 둔 글자는 하나의 제목으로 읽힙니다.
+ */
+@Composable
+fun OvalitBackTopBar(
+    onBack: () -> Unit,
+    title: @Composable RowScope.() -> Unit,
+    modifier: Modifier = Modifier,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
+    BackTopBarRow(onBack, modifier, actions) {
+        Row(
+            modifier = Modifier.weight(1f).semantics(mergeDescendants = true) { heading() },
+            verticalAlignment = Alignment.CenterVertically,
+            content = title,
+        )
+    }
+}
+
+@Composable
+private fun BackTopBarRow(
+    onBack: () -> Unit,
+    modifier: Modifier,
+    actions: @Composable RowScope.() -> Unit,
+    title: @Composable RowScope.() -> Unit,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = OvalitSpacing.sm)
+            .heightIn(min = HeaderHeight)
+            .padding(horizontal = OvalitSpacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OvalitIconButton(OvalitIcons.Back, stringResource(Res.string.back), onBack)
+        Spacer(Modifier.width(OvalitSpacing.xs))
+        title()
         actions()
     }
 }

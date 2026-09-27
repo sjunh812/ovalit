@@ -2,6 +2,10 @@
 <resources>
     <string name="not_enough_sample">표본 부족</string>
     <string name="no_matches">이번 액트에 뛴 경기가 아직 없어요</string>
+    <!-- 친구의 S6·S7 제목은 "민석의 요원"이다. 이름이 길면 이름만 줄이려고 뒤를 따로 둔다 -->
+    <string name="agents_owner_suffix">의 요원</string>
+    <string name="weapons_owner_suffix">의 무기</string>
+    <string name="records_hidden">지금은 이 친구의 기록을 볼 수 없어요</string>
 
     <!-- 내 프로필 -->
     <string name="profile_recent">최근 경기</string>

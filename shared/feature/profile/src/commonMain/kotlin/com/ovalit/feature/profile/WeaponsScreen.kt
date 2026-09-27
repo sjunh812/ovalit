@@ -35,12 +35,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ovalit.core.designsystem.component.OvalitBackTopBar
 import com.ovalit.core.designsystem.component.OvalitDisclosureIcon
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitExpandable
 import com.ovalit.core.designsystem.component.OvalitText
-import com.ovalit.core.designsystem.component.OvalitTopBarCaption
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ContentCatalog
@@ -63,8 +61,6 @@ import com.ovalit.core.ui.percentText
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.rememberFittingStyle
 import com.ovalit.core.ui.rememberWidestWidth
-import com.ovalit.core.ui.resources.Res as CoreUiRes
-import com.ovalit.core.ui.resources.act_matches
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
 import com.ovalit.core.ui.weaponName
@@ -86,33 +82,47 @@ import com.ovalit.feature.profile.resources.weapons_expand
 import com.ovalit.feature.profile.resources.weapons_kills
 import com.ovalit.feature.profile.resources.weapons_moved_down
 import com.ovalit.feature.profile.resources.weapons_moved_up
+import com.ovalit.feature.profile.resources.weapons_owner_suffix
 import com.ovalit.feature.profile.resources.weapons_sample_kills
 import com.ovalit.feature.profile.resources.weapons_single_round_note
 import com.ovalit.feature.profile.resources.weapons_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
-/** S6 무기 화면입니다. */
+/** S6 무기 화면입니다. 내 프로필과 친구 프로필(S5)에서 열립니다. */
 @Composable
 fun WeaponsRoute(
+    owner: RecordsOwner,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ProfileViewModel = koinViewModel(),
+    viewModel: RecordsViewModel = koinViewModel { parametersOf(owner) },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     WeaponsScreen(uiState, onBack, modifier)
 }
 
 @Composable
-internal fun WeaponsScreen(uiState: ProfileUiState, onBack: () -> Unit, modifier: Modifier = Modifier) {
+internal fun WeaponsScreen(uiState: RecordsUiState, onBack: () -> Unit, modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize().background(OvalitTheme.colors.bg)) {
-        if (uiState !is ProfileUiState.Success) return@Box
+        when (uiState) {
+            RecordsUiState.Loading -> return@Box
+            RecordsUiState.Hidden -> {
+                RecordsHidden(Res.string.weapons_title, onBack)
+                return@Box
+            }
+            is RecordsUiState.Success -> Unit
+        }
         val report = uiState.weapons
 
         Column(modifier = Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState())) {
-            OvalitBackTopBar(onBack = onBack, title = stringResource(Res.string.weapons_title)) {
-                OvalitTopBarCaption(stringResource(CoreUiRes.string.act_matches, report.matches))
-            }
+            RecordsTopBar(
+                title = Res.string.weapons_title,
+                ownerSuffix = Res.string.weapons_owner_suffix,
+                ownerName = uiState.ownerName,
+                matches = report.matches,
+                onBack = onBack,
+            )
             if (report.weapons.isEmpty()) {
                 OvalitText(
                     text = stringResource(Res.string.no_matches),

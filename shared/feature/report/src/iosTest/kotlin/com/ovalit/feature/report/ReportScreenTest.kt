@@ -37,7 +37,6 @@ import com.ovalit.core.model.InsightMetric
 import com.ovalit.core.model.InsightPart
 import com.ovalit.core.model.InsightSubject
 import com.ovalit.core.model.MapId
-import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.MovedMetric
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.PlayerId
@@ -432,35 +431,38 @@ class ReportScreenTest {
     // "멀티킬 라운드 비율"도 받침에 맞는 조사를 붙인다
     @Test
     fun `멀티킬 개선 포인트는 조사가 맞는 문장으로 적는다`() = runComposeUiTest {
-        val insight = sideInsight(InsightMetric.MULTI_KILL_RATE, defense = 0.05 to 40, attack = 0.30 to 40, focus = Focus.AIM)
+        val insight = sideInsight(InsightMetric.MULTI_KILL_RATE, lead = 0.30 to 40, other = 0.05 to 40, focus = Focus.AIM)
         setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
 
-        onNodeWithText("수비에서 멀티킬 라운드 비율이 공격보다 25%p 낮아요.").assertExists()
-        onNodeWithText(joinKeepingParts(listOf("수비 40라운드 5%", "공격 40라운드 30%"))).assertExists()
+        onNodeWithText("공격에서 멀티킬 라운드 비율이 수비보다 25%p 높아요.").assertExists()
+        onNodeWithText(joinKeepingParts(listOf("이번 액트", "공격 40라운드 30%", "수비 40라운드 5%"))).assertExists()
         onNodeWithText("에임 올리기를 고르셔서 먼저 봤어요.").assertExists()
     }
 
-    // 사용자 요청(2026-09-27): 공수만 견주지 않는다. 요원은 같은 역할끼리, 이름 뒤 조사는 이름에 맞춘다.
+    // 사용자 요청(2026-09-27): 공수만 견주지 않는다. 두 쪽 모두 이름이 있으면 높은 쪽이 주어다. "10판 뛴 레이즈보다 5판
+    // 뛴 제트가 높을 때는 제트를 중심으로"
     @Test
-    fun `요원끼리 견준 개선 포인트는 판 수와 함께 적는다`() = runComposeUiTest {
+    fun `요원끼리 견준 개선 포인트는 높은 쪽을 주어로 판 수와 함께 적는다`() = runComposeUiTest {
         val insight = Insight(
             metric = InsightMetric.SURVIVAL_RATE,
-            weak = InsightPart(InsightSubject.OnAgent(Raze), value = 0.5, matches = 2, rounds = 40),
-            other = InsightPart(InsightSubject.OtherAgents(Role.DUELIST, listOf(Jett)), value = 0.75, matches = 3, rounds = 60),
+            lead = InsightPart(InsightSubject.OnAgent(Jett), value = 0.75, matches = 5, rounds = 120),
+            other = InsightPart(InsightSubject.OnAgent(Raze), value = 0.5, matches = 10, rounds = 240),
+            leadIsHigher = true,
             isRolePriority = false,
         )
         setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
 
-        onNodeWithText("레이즈로 뛴 판은 생존율이 제트보다 25%p 낮아요.").assertExists()
-        onNodeWithText(joinKeepingParts(listOf("레이즈 2판 50%", "제트 3판 75%"))).assertExists()
+        onNodeWithText("제트로 뛴 판은 생존율이 레이즈보다 25%p 높아요.").assertExists()
+        onNodeWithText(joinKeepingParts(listOf("이번 액트", "제트 5판 75%", "레이즈 10판 50%"))).assertExists()
     }
 
     @Test
     fun `같은 역할 요원이 여럿이면 다른 요원으로 묶어 적는다`() = runComposeUiTest {
         val insight = Insight(
             metric = InsightMetric.KAST,
-            weak = InsightPart(InsightSubject.OnAgent(Raze), value = 0.6, matches = 2, rounds = 40),
-            other = InsightPart(InsightSubject.OtherAgents(Role.DUELIST, listOf(Jett, AgentId("neon"))), value = 0.74, matches = 5, rounds = 100),
+            lead = InsightPart(InsightSubject.OnAgent(Raze), value = 0.6, matches = 12, rounds = 280),
+            other = InsightPart(InsightSubject.OtherAgents(Role.DUELIST, listOf(Jett, AgentId("neon"))), value = 0.74, matches = 30, rounds = 700),
+            leadIsHigher = false,
             isRolePriority = false,
         )
         setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
@@ -468,28 +470,53 @@ class ReportScreenTest {
         onNodeWithText("레이즈로 뛴 판은 관여율이 다른 타격대 요원보다 14%p 낮아요.").assertExists()
     }
 
+    // 사용자 결정(2026-09-27): 역할끼리는 승률만 견주고, 우연을 넘을 만큼 차이가 클 때만 나온다. "추천"은 쓰지 않는다.
+    @Test
+    fun `역할끼리 견준 개선 포인트는 승률을 사실로만 적는다`() = runComposeUiTest {
+        val insight = Insight(
+            metric = InsightMetric.WIN_RATE,
+            lead = InsightPart(InsightSubject.OnRole(Role.CONTROLLER), value = 0.78, matches = 18, rounds = 420),
+            other = InsightPart(InsightSubject.OnRole(Role.DUELIST), value = 0.34, matches = 32, rounds = 760),
+            leadIsHigher = true,
+            isRolePriority = false,
+        )
+        setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
+
+        onNodeWithText("전략가로 뛴 판은 승률이 타격대보다 44%p 높아요.").assertExists()
+        onNodeWithText("추천", substring = true, useUnmergedTree = true).assertDoesNotExist()
+    }
+
     @Test
     fun `맵과 무기끼리 견준 개선 포인트도 이름에 맞는 조사로 적는다`() = runComposeUiTest {
         val map = Insight(
             metric = InsightMetric.KAST,
-            weak = InsightPart(InsightSubject.OnMap(Haven), value = 0.58, matches = 3, rounds = 60),
-            other = InsightPart(InsightSubject.OtherMaps, value = 0.72, matches = 9, rounds = 180),
+            lead = InsightPart(InsightSubject.OnMap(Haven), value = 0.58, matches = 9, rounds = 200),
+            other = InsightPart(InsightSubject.OtherMaps(listOf(MapId("ascent"), MapId("bind"))), value = 0.72, matches = 41, rounds = 900),
+            leadIsHigher = false,
             isRolePriority = false,
         )
-        val weapon = Insight(
+        val rifles = Insight(
             metric = InsightMetric.HEADSHOT_RATE,
-            weak = InsightPart(InsightSubject.WithWeapon(Vandal), value = 0.14, matches = 0, rounds = 34),
-            other = InsightPart(InsightSubject.OtherWeapons(WeaponCategory.RIFLE, listOf(Phantom, AgentlessRifle)), value = 0.25, matches = 0, rounds = 41),
+            lead = InsightPart(InsightSubject.WithWeapon(Vandal), value = 0.14, matches = 0, rounds = 180),
+            other = InsightPart(InsightSubject.OtherWeapons(WeaponCategory.RIFLE, listOf(Phantom, AgentlessRifle)), value = 0.25, matches = 0, rounds = 212),
+            leadIsHigher = false,
             isRolePriority = false,
+        )
+        val twoRifles = rifles.copy(
+            lead = InsightPart(InsightSubject.WithWeapon(Phantom), value = 0.25, matches = 0, rounds = 212),
+            other = InsightPart(InsightSubject.WithWeapon(Vandal), value = 0.14, matches = 0, rounds = 180),
+            leadIsHigher = true,
         )
         var insight by mutableStateOf(map)
         setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
 
         onNodeWithText("헤이븐에서는 관여율이 다른 맵보다 14%p 낮아요.").assertExists()
-        onNodeWithText(joinKeepingParts(listOf("헤이븐 3판 58%", "다른 맵 9판 72%"))).assertExists()
-        insight = weapon
+        onNodeWithText(joinKeepingParts(listOf("이번 액트", "헤이븐 9판 58%", "다른 맵 41판 72%"))).assertExists()
+        insight = rifles
         onNodeWithText("밴달을 든 라운드는 헤드샷이 다른 소총보다 11%p 낮아요.").assertExists()
-        onNodeWithText(joinKeepingParts(listOf("밴달 34라운드 14%", "다른 소총 41라운드 25%"))).assertExists()
+        onNodeWithText(joinKeepingParts(listOf("이번 액트", "밴달 180라운드 14%", "다른 소총 212라운드 25%"))).assertExists()
+        insight = twoRifles
+        onNodeWithText("팬텀을 든 라운드는 헤드샷이 밴달보다 11%p 높아요.").assertExists()
     }
 
     // 헤드라인과 첫 줄이 붙으면 한 덩어리로 뭉개진다. 개선 포인트 문장과 같은 간격이다.
@@ -533,11 +560,11 @@ class ReportScreenTest {
     // 피해량은 정수라 "121예요"처럼 숫자 뒤 조사가 틀린다
     @Test
     fun `피해량 개선 포인트는 숫자 뒤에 조사를 붙이지 않는다`() = runComposeUiTest {
-        val damage = sideInsight(InsightMetric.DAMAGE, defense = 121.0 to 76, attack = 143.0 to 70)
+        val damage = sideInsight(InsightMetric.DAMAGE, lead = 143.0 to 70, other = 121.0 to 76)
         setContent { Report(ReportPreviewData.moved.copy(insight = damage)) }
 
-        onNodeWithText("수비에서 피해량이 공격보다 22 낮아요.").assertExists()
-        onNodeWithText(joinKeepingParts(listOf("수비 76라운드 121", "공격 70라운드 143"))).assertExists()
+        onNodeWithText("공격에서 피해량이 수비보다 22 높아요.").assertExists()
+        onNodeWithText(joinKeepingParts(listOf("이번 액트", "공격 70라운드 143", "수비 76라운드 121"))).assertExists()
     }
 
     // 무기 값도 보이는 자릿수로 같으면 "140 → 140"이 돼서 무기 줄을 두지 않는다
@@ -600,12 +627,13 @@ class ReportScreenTest {
         onNodeWithText("킬 ÷", substring = true).assertDoesNotExist()
     }
 
+    // 한 주 경기를 둘로 나누면 우연한 차이가 대부분이라 이번 액트 경기로 견주고 밑 줄 맨 앞에 적는다
     @Test
-    fun `개선 포인트는 낮은 쪽 진영부터 사실만 적는다`() = runComposeUiTest {
+    fun `개선 포인트는 이번 액트 공수를 높은 쪽부터 사실만 적는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        onNodeWithText("수비에서 첫 교전 승률이 공격보다 26%p 낮아요.").assertExists()
-        onNodeWithText(joinKeepingParts(listOf("수비 72라운드 45%", "공격 74라운드 71%"))).assertExists()
+        onNodeWithText("공격에서 첫 교전 승률이 수비보다 14%p 높아요.").assertExists()
+        onNodeWithText(joinKeepingParts(listOf("이번 액트", "공격 388라운드 58%", "수비 388라운드 44%"))).assertExists()
         onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요.").assertExists()
     }
 
@@ -627,33 +655,33 @@ class ReportScreenTest {
     }
 
     @Test
-    fun `공격이 더 낮으면 공격부터 적는다`() = runComposeUiTest {
+    fun `수비가 더 높으면 수비부터 적는다`() = runComposeUiTest {
         val report = ReportPreviewData.moved.let { base ->
             val insight = base.insight!!
             base.copy(
                 insight = insight.copy(
-                    weak = insight.weak.copy(subject = InsightSubject.OnSide(Side.ATTACK)),
-                    other = insight.other.copy(subject = InsightSubject.OnSide(Side.DEFENSE)),
+                    lead = insight.lead.copy(subject = InsightSubject.OnSide(Side.DEFENSE)),
+                    other = insight.other.copy(subject = InsightSubject.OnSide(Side.ATTACK)),
                 ),
             )
         }
         setContent { Report(report) }
 
-        onNodeWithText("공격에서 첫 교전 승률이 수비보다 26%p 낮아요.").assertExists()
+        onNodeWithText("수비에서 첫 교전 승률이 공격보다 14%p 높아요.").assertExists()
     }
 
     @Test
     fun `견줄 만한 격차가 없으면 개선 포인트를 비운다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = null)) }
 
-        onNodeWithText("낮아요.", substring = true).assertDoesNotExist()
+        onNodeWithText("이번 액트", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test
     fun `기타 모드에는 개선 포인트가 없다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.otherQueue, QueueFilter.OTHER) }
 
-        onNodeWithText("낮아요.", substring = true).assertDoesNotExist()
+        onNodeWithText("이번 액트", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
     // 화면에 보이는 자릿수로 겨룬다. 나는 K/D 1.34, 피해량 138, 헤드샷 21%다.
@@ -761,11 +789,12 @@ private val NamedCatalog = ContentCatalog.Empty.copy(
     maps = mapOf(Haven to "헤이븐"),
 )
 
-// 수비와 공격을 (값, 라운드)로 받아 공수 개선 포인트를 만든다
-private fun sideInsight(metric: InsightMetric, defense: Pair<Double, Int>, attack: Pair<Double, Int>, focus: Focus? = null) = Insight(
+// 높은 공격과 낮은 수비를 (값, 라운드)로 받아 공수 개선 포인트를 만든다
+private fun sideInsight(metric: InsightMetric, lead: Pair<Double, Int>, other: Pair<Double, Int>, focus: Focus? = null) = Insight(
     metric = metric,
-    weak = InsightPart(InsightSubject.OnSide(Side.DEFENSE), value = defense.first, matches = 7, rounds = defense.second),
-    other = InsightPart(InsightSubject.OnSide(Side.ATTACK), value = attack.first, matches = 7, rounds = attack.second),
+    lead = InsightPart(InsightSubject.OnSide(Side.ATTACK), value = lead.first, matches = 7, rounds = lead.second),
+    other = InsightPart(InsightSubject.OnSide(Side.DEFENSE), value = other.first, matches = 7, rounds = other.second),
+    leadIsHigher = true,
     isRolePriority = false,
     focus = focus,
 )

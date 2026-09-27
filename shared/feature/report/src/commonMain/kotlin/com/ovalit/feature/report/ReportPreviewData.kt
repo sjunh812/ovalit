@@ -119,11 +119,13 @@ internal object ReportPreviewData {
     )
 
     // 타격대가 수비에서 첫 교전을 자주 졌다. 공격 71%, 수비 45%.
-    // 수비 첫 교전 15승 18패(45%), 공격 22승 9패(71%)
+    // 공격 첫 교전 22승 9패(71%), 수비 15승 18패(45%). 둘 다 이름이 있어 높은 공격이 주어다.
+    // 개선 포인트는 이번 액트 경기로 견준다. 이번 주 146라운드와 앞선 네 주 630라운드를 합친 서른세 판이다.
     private val firstDuelBySide = Insight(
         metric = InsightMetric.FIRST_DUEL_WIN_RATE,
-        weak = InsightPart(InsightSubject.OnSide(Side.DEFENSE), value = 15 / 33.0, matches = 7, rounds = 72),
-        other = InsightPart(InsightSubject.OnSide(Side.ATTACK), value = 22 / 31.0, matches = 7, rounds = 74),
+        lead = InsightPart(InsightSubject.OnSide(Side.ATTACK), value = 128 / 221.0, matches = 33, rounds = 388),
+        other = InsightPart(InsightSubject.OnSide(Side.DEFENSE), value = 96 / 218.0, matches = 33, rounds = 388),
+        leadIsHigher = true,
         isRolePriority = true,
     )
 

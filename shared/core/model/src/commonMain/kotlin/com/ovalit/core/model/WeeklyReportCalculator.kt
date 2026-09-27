@@ -62,7 +62,8 @@ fun Iterable<Match>.weeklyReport(
         } else {
             emptyList()
         },
-        insight = if (queueFilter.hasDynamicMetrics) periodMatches.insight(mainRole, focus, weaponCategories) else null,
+        // 한 주 경기를 둘로 나누면 표본이 작아 우연한 차이가 대부분이다. 이번 액트 경기로 견준다.
+        insight = if (queueFilter.hasDynamicMetrics) matchesByWeek.values.flatten().insight(mainRole, focus, weaponCategories) else null,
         trend = counted.trendWeeks(end = end, period = period, timeZone = timeZone),
         results = periodMatches.sortedBy { it.startedAt }.map { it.myTeamWon },
         agents = periodMatches.agentReport().agents,

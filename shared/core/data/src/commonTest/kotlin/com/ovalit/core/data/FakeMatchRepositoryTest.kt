@@ -2,10 +2,12 @@ package com.ovalit.core.data
 
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.Focus
+import com.ovalit.core.model.InsightMetric
+import com.ovalit.core.model.InsightSubject
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.Queue
 import com.ovalit.core.model.Role
-import com.ovalit.core.model.InsightMetric
+import com.ovalit.core.model.Side
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.model.metrics
 import com.ovalit.core.model.weeklyReport
@@ -57,15 +59,17 @@ class FakeMatchRepositoryTest {
         assertTrue(note.agents.size >= 2, note.agents.toString())
     }
 
-    // 최근 7일은 공격에서만 교전을 이어 이겨서 멀티킬이 공수로 크게 벌어진다. 에임 올리기를 고르면 개선 포인트에 멀티킬
-    // 문장이 뜨는지 가짜 데이터로 본다.
+    // 가짜 경기는 늘 공격에서 첫 교전을 더 잘 이긴다. 개선 포인트는 이번 액트 경기로 견주니 한 주만 바꾼 멀티킬보다 이
+    // 차이가 먼저다. 에임 올리기를 고르면 관심사라서 봤다는 말이 붙는다.
     @Test
-    fun `가짜 경기의 개선 포인트는 에임 올리기를 고르면 멀티킬 문장이 된다`() {
-        val report = fakeMatches(Thursday).weeklyReport(Thursday, Seoul, focus = Focus.AIM)
-        val insight = assertNotNull(assertIs<WeeklyReport.Ready>(report).insight)
+    fun `가짜 경기의 개선 포인트는 이번 액트 공수 첫 교전 승률 차이다`() {
+        fun insight(focus: Focus) =
+            assertNotNull(assertIs<WeeklyReport.Ready>(fakeMatches(Thursday).weeklyReport(Thursday, Seoul, focus = focus)).insight)
 
-        assertEquals(InsightMetric.MULTI_KILL_RATE, insight.metric)
-        assertEquals(Focus.AIM, insight.focus)
+        assertEquals(InsightMetric.FIRST_DUEL_WIN_RATE, insight(Focus.NONE).metric)
+        assertEquals(InsightSubject.OnSide(Side.ATTACK), insight(Focus.NONE).lead.subject)
+        assertEquals(true, insight(Focus.NONE).isRolePriority)
+        assertEquals(Focus.AIM, insight(Focus.AIM).focus)
     }
 
     // 홈과 경기 탭이 같이 당기면 레이트 리밋을 두 번 쓴다

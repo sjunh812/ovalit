@@ -116,15 +116,20 @@
          조사가 오지 않게 끊는다. "121예요"처럼 숫자 끝 소리에 따라 조사가 틀린다. -->
     <string name="insight_side_attack">공격</string>
     <string name="insight_side_defense">수비</string>
-    <string name="insight_side">%1$s에서 %2$s %3$s보다 %4$s 낮아요.</string>
-    <string name="insight_agent">%1$s 뛴 판은 %2$s %3$s보다 %4$s 낮아요.</string>
-    <string name="insight_map">%1$s에서는 %2$s %3$s보다 %4$s 낮아요.</string>
-    <string name="insight_weapon">%1$s 든 라운드는 %2$s %3$s보다 %4$s 낮아요.</string>
+    <!-- 요원과 역할은 "제트로 뛴 판은", "전략가로 뛴 판은"으로 같은 틀을 쓴다. %5$s는 높아요나 낮아요다. -->
+    <string name="insight_side">%1$s에서 %2$s %3$s보다 %4$s %5$s.</string>
+    <string name="insight_played_as">%1$s 뛴 판은 %2$s %3$s보다 %4$s %5$s.</string>
+    <string name="insight_map">%1$s에서는 %2$s %3$s보다 %4$s %5$s.</string>
+    <string name="insight_weapon">%1$s 든 라운드는 %2$s %3$s보다 %4$s %5$s.</string>
+    <string name="insight_higher">높아요</string>
+    <string name="insight_lower">낮아요</string>
     <string name="insight_other_agents">다른 %1$s 요원</string>
+    <string name="insight_other_roles">다른 역할</string>
     <string name="insight_other_maps">다른 맵</string>
     <string name="insight_other_weapons">다른 %1$s</string>
     <!-- "레이즈 2판 50%" -->
     <string name="insight_part">%1$s %2$s %3$s</string>
+    <string name="insight_period_act">이번 액트</string>
     <string name="insight_matches">%1$d판</string>
     <string name="insight_rounds">%1$d라운드</string>
     <string name="insight_reason_focus">%1$s 고르셔서 먼저 봤어요.</string>

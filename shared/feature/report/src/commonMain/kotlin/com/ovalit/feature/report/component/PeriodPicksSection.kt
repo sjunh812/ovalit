@@ -59,7 +59,7 @@ private fun PickSection(title: String, onOpen: () -> Unit, content: @Composable 
             .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = 18.dp, bottom = 4.dp),
     ) {
         ProfileSectionTitle(title = title, chevron = true)
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(SectionTitleGap))
         content()
     }
 }

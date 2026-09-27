@@ -275,7 +275,7 @@ private fun CompareSection(mine: WeeklyReport.Ready, uiState: FriendProfileUiSta
                 color = OvalitTheme.colors.t3,
             )
         }
-        Spacer(Modifier.height(13.dp))
+        Spacer(Modifier.height(12.dp))
         Column(verticalArrangement = Arrangement.spacedBy(11.dp)) {
             FixedMetric.entries.forEach {
                 HeadToHeadRow(it, mine.metrics, uiState.theirMetricsInMyPeriod, rowMetrics = FixedMetric.entries)

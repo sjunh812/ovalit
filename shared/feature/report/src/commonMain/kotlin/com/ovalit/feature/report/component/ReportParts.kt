@@ -31,6 +31,12 @@ internal fun VerticalLine() {
     )
 }
 
+/** 묶음 제목과 내용 사이입니다. 홈의 묶음이 모두 같이 써서 어느 묶음이든 제목에서 같은 거리에 내용이 옵니다. */
+internal val SectionTitleGap = 12.dp
+
+/** 막대가 있는 줄(라이벌, 친구 비교) 사이입니다. 친구 프로필의 나와 비교와 같습니다. */
+internal val BarRowGap = 11.dp
+
 @Composable
 internal fun HorizontalLine(modifier: Modifier = Modifier) {
     Box(

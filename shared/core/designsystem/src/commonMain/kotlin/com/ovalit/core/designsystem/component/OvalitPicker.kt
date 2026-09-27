@@ -12,6 +12,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -28,7 +29,7 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 fun OvalitPickerButton(text: String, onClickLabel: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
-            .heightIn(min = 44.dp)
+            .heightIn(min = PickerHeight)
             .clickable(
                 interactionSource = null,
                 indication = pressIndication(),
@@ -49,6 +50,27 @@ fun OvalitPickerButton(text: String, onClickLabel: String, onClick: () -> Unit, 
         )
         Spacer(Modifier.width(2.dp))
         OvalitIcon(OvalitIcons.ChevronDown, contentDescription = null, tint = OvalitTheme.colors.t3, size = 12.dp)
+    }
+}
+
+private val PickerHeight = 44.dp
+
+/**
+ * 묶음 제목과 [OvalitPickerButton]을 한 줄에 둡니다. 줄 높이는 제목 글자에 맞추고, 버튼의 눌리는 영역(44dp)은 제목
+ * 위아래로 넘치게 둡니다. 버튼 높이로 줄을 늘리면 이 묶음만 선에서 제목까지, 제목에서 내용까지가 다른 묶음보다 떠
+ * 보입니다. 제목은 버튼을 뺀 폭에서 꺾입니다.
+ */
+@Composable
+fun OvalitPickerTitle(title: @Composable () -> Unit, picker: @Composable () -> Unit, modifier: Modifier = Modifier) {
+    Layout(contents = listOf(title, picker), modifier = modifier) { (titles, pickers), constraints ->
+        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+        val button = pickers.first().measure(loose)
+        val text = titles.first().measure(loose.copy(maxWidth = (constraints.maxWidth - button.width).coerceAtLeast(0)))
+        val width = constraints.maxWidth
+        layout(width, text.height) {
+            text.place(0, 0)
+            button.place(width - button.width, (text.height - button.height) / 2)
+        }
     }
 }
 

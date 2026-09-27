@@ -174,7 +174,7 @@ fun ProfileStatsSection(summary: ProfileSummary, modifier: Modifier = Modifier, 
 
     ProfileSection(modifier = modifier, divider = divider) {
         ProfileSectionTitle(title = stringResource(Res.string.profile_stats_title))
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(12.dp))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             // 모든 칸의 이름과 숫자를 한 크기로 맞춘다. 칸마다 따로 줄이면 "4번 중 2번"처럼 긴 칸만 작아진다.
             // 세 칸에 가장 작게 줄여도 안 들어가면 두 칸씩 놓는다. 숫자가 잘리는 것보다 줄이 하나 느는 게 낫다.

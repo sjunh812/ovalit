@@ -24,9 +24,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitPickerButton
+import com.ovalit.core.designsystem.component.OvalitPickerTitle
 import com.ovalit.core.designsystem.component.OvalitSheetOption
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -58,7 +60,7 @@ import org.jetbrains.compose.resources.stringResource
 private val RivalMetrics = listOf(FixedMetric.KD, FixedMetric.DAMAGE, FixedMetric.HEADSHOT_RATE)
 private val NameWidth = 72.dp
 
-private class RankWidths(val rank: Dp, val value: Dp)
+private class RankWidths(val rank: Dp, val name: Dp, val value: Dp)
 
 @Composable
 internal fun RivalSection(
@@ -83,8 +85,8 @@ internal fun RivalSection(
                 },
             ),
         )
-        Spacer(Modifier.height(13.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(11.dp)) {
+        Spacer(Modifier.height(SectionTitleGap))
+        Column(verticalArrangement = Arrangement.spacedBy(BarRowGap)) {
             RivalMetrics.forEach { metric -> HeadToHeadRow(metric, mine, theirs, rowMetrics = RivalMetrics) }
         }
     }
@@ -117,28 +119,29 @@ internal fun FriendRankingSection(mine: MatchMetrics, friends: List<FriendStandi
     val top = entries.firstOrNull()?.third?.takeIf { it > 0 } ?: 1.0
 
     Column(modifier = modifier.padding(horizontal = OvalitSpacing.gutter)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            OvalitText(
-                text = stringResource(Res.string.friends_title),
-                modifier = Modifier.weight(1f),
-                style = OvalitTheme.typography.bodyStrong,
-            )
-            val metricLabel = stringResource(metric.label)
-            OvalitPickerButton(
-                text = metricLabel,
-                onClickLabel = stringResource(Res.string.friends_metric_button, metricLabel),
-                onClick = { choosing = true },
-            )
-        }
-        Spacer(Modifier.height(OvalitSpacing.xs))
+        val metricLabel = stringResource(metric.label)
+        OvalitPickerTitle(
+            title = { OvalitText(text = stringResource(Res.string.friends_title), style = OvalitTheme.typography.bodyStrong) },
+            picker = {
+                OvalitPickerButton(
+                    text = metricLabel,
+                    onClickLabel = stringResource(Res.string.friends_metric_button, metricLabel),
+                    onClick = { choosing = true },
+                )
+            },
+        )
+        Spacer(Modifier.height(SectionTitleGap))
         // 순위와 값 칸은 가장 긴 글자에 맞추고, 이름은 넘치면 말줄임표로 자른다. 순위와 값 폭을 박아 두면 글씨를
         // 키웠을 때 순위 "10"이 꺾이고 값이 잘렸다.
         val typography = OvalitTheme.typography
         val widths = RankWidths(
             rank = rememberWidestWidth(ranked.map { it.rank.toString() }, typography.metricS),
+            // 짧은 이름만 있으면 이름 칸을 줄여 막대가 이름 가까이에서 시작한다. 길면 [NameWidth]에서 자른다.
+            name = rememberWidestWidth(ranked.map { it.name }, typography.caption.copy(fontWeight = FontWeight.SemiBold))
+                .coerceAtMost(NameWidth),
             value = rememberWidestWidth(ranked.map { metric.format.valueText(it.value) }, typography.metricS.copy(fontWeight = FontWeight.Bold)),
         )
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(BarRowGap)) {
             ranked.forEach { RankRow(it, metric, top, widths) }
         }
     }
@@ -177,8 +180,9 @@ private fun RankRow(entry: Ranked, metric: FixedMetric, top: Double, widths: Ran
         Spacer(Modifier.width(OvalitSpacing.sm))
         OvalitText(
             text = entry.name,
-            modifier = Modifier.width(NameWidth),
-            style = if (entry.isMe) OvalitTheme.typography.bodyStrong else OvalitTheme.typography.body,
+            modifier = Modifier.width(widths.name),
+            // 사용자 요청(2026-09-27): 라이벌·나와 비교 줄처럼 작은 글자로 둔다. 본문 크기로 두면 이 칸만 줄이 크고 넓었다.
+            style = OvalitTheme.typography.caption.copy(fontWeight = if (entry.isMe) FontWeight.SemiBold else FontWeight.Normal),
             color = strong,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

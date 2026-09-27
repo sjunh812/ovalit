@@ -42,6 +42,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitPickerButton
+import com.ovalit.core.designsystem.component.OvalitPickerTitle
 import com.ovalit.core.designsystem.component.OvalitSheetOption
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -344,21 +345,19 @@ private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: 
     val columns = shown.columns
     val shownLabel = stringResource(shown.label)
 
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        OvalitText(
-            text = stringResource(Res.string.agents_by_agent),
-            modifier = Modifier.weight(1f),
-            style = OvalitTheme.typography.bodyStrong,
-        )
-        OvalitPickerButton(
-            text = shownLabel,
-            onClickLabel = stringResource(Res.string.agents_columns_button, shownLabel),
-            onClick = onChoose,
-        )
-    }
+    // 버튼 높이로 제목 줄을 늘리지 않는다. 위 역할 묶음처럼 선에서 제목까지, 제목에서 표까지를 같게 둔다.
+    OvalitPickerTitle(
+        title = { OvalitText(text = stringResource(Res.string.agents_by_agent), style = OvalitTheme.typography.bodyStrong) },
+        picker = {
+            OvalitPickerButton(
+                text = shownLabel,
+                onClickLabel = stringResource(Res.string.agents_columns_button, shownLabel),
+                onClick = onChoose,
+            )
+        },
+        modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
+    )
+    Spacer(Modifier.height(12.dp))
     // 열 제목을 칸마다 따로 줄이면 "전투점수"만 작아진다. 가장 긴 제목에 맞춘 크기를 셋에 같이 쓴다.
     val titles = listOf(stringResource(CoreUiRes.string.column_win_rate)) + columns.map { stringResource(it.title) }
     val headerStyle = rememberFittingStyle(titles, OvalitTheme.typography.caption, MetricColumn - ColumnGap)

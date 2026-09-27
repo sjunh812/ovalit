@@ -8,11 +8,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.onAllNodesWithText
@@ -20,6 +24,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
@@ -871,6 +876,36 @@ class ReportScreenTest {
         val me = onNodeWithText("나", substring = true).getUnclippedBoundsInRoot().top
         assertTrue(junho < me)
         onNodeWithText("민석", substring = true).assertDoesNotExist()
+    }
+
+    // 사용자 요청(2026-09-27): 친구 비교만 글자가 크고 줄이 넓었다. 라이벌 줄처럼 11dp씩 띄우고, 제목 옆 지표 버튼이 제목 줄을
+    // 높여도 제목에서 첫 줄까지는 다른 묶음처럼 12dp다.
+    @Test
+    fun `친구 비교는 다른 묶음과 같은 간격으로 줄을 세운다`() = runComposeUiTest {
+        val strong = ReportPreviewData.moved.metrics.copy(damage = 30_000)
+        setContent { Social(friends = listOf(FriendStanding(PlayerId("junho"), "준호#KR1", strong))) }
+
+        val title = onNodeWithText("친구 비교").getUnclippedBoundsInRoot()
+        val junho = onNodeWithText("준호", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val me = onNodeWithText("나", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        assertEquals(12f, (junho.top - title.bottom).value, absoluteTolerance = 0.5f)
+        assertEquals(11f, (me.top - junho.bottom).value, absoluteTolerance = 0.5f)
+    }
+
+    // 제목 줄은 제목 글자 높이로 두고 버튼의 눌리는 영역(44dp)은 위아래로 넘친다. 넘친 쪽 끝을 눌러도 열려야 한다.
+    @Test
+    fun `친구 비교 지표 버튼은 제목 줄 밖으로 넘친 곳을 눌러도 열린다`() = runComposeUiTest {
+        val strong = ReportPreviewData.moved.metrics.copy(damage = 30_000)
+        setContent { Social(friends = listOf(FriendStanding(PlayerId("junho"), "준호#KR1", strong))) }
+        val button = onNode(
+            SemanticsMatcher("지표 버튼") { it.config.getOrNull(SemanticsActions.OnClick)?.label == "피해량, 비교할 지표 바꾸기" },
+        )
+
+        button.performScrollTo()
+        val title = onNodeWithText("친구 비교").getUnclippedBoundsInRoot()
+        assertTrue(button.getUnclippedBoundsInRoot().top < title.top)
+        button.performTouchInput { click(Offset(centerX, 2f)) }
+        onNodeWithText("비교할 지표").assertExists()
     }
 
     @Test

@@ -81,7 +81,7 @@ internal fun DynamicMetricSection(
         HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
         Spacer(Modifier.height(18.dp))
         DynamicSectionTitle(report)
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(SectionTitleGap))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             // 이름, 숫자, 설명마다 모든 칸에 한 크기를 쓴다. 칸마다 따로 줄이면 긴 이름만 작아지고 그 칸의 숫자와
             // 설명만 다른 높이에 놓인다. 둘째 줄도 첫 줄과 칸 폭이 같다.

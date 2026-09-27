@@ -29,6 +29,7 @@ import com.ovalit.core.ui.MatchRowStyle
 import com.ovalit.core.ui.dayLabel
 import com.ovalit.core.ui.matchTimeLabel
 import com.ovalit.feature.friend.resources.Res
+import com.ovalit.feature.friend.resources.matches_hidden
 import com.ovalit.feature.friend.resources.matches_title
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
@@ -64,6 +65,16 @@ internal fun FriendMatchesScreen(uiState: FriendProfileUiState, onBack: () -> Un
         LazyColumn(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
             item {
                 OvalitBackTopBar(onBack = onBack, title = stringResource(Res.string.matches_title, name))
+            }
+            // 보는 중에 친구가 전적을 비공개로 바꿀 수 있다. 경기는 ViewModel이 이미 비웠고 까닭만 적는다.
+            if (!uiState.friend.statsPublic) {
+                item {
+                    OvalitText(
+                        text = stringResource(Res.string.matches_hidden),
+                        modifier = Modifier.padding(OvalitSpacing.gutter),
+                        color = colors.t2,
+                    )
+                }
             }
             days.forEach { (date, matches) ->
                 item(key = "day-$date") {

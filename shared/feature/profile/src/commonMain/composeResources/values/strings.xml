@@ -2,7 +2,7 @@
 <resources>
     <string name="not_enough_sample">표본 부족</string>
     <string name="no_matches">이번 액트에 뛴 경기가 아직 없어요</string>
-    <!-- 친구의 S6·S7 제목은 "민석의 요원"이다. 이름이 길면 이름만 줄이려고 뒤를 따로 둔다 -->
+    <!-- 친구의 S6·S7 제목은 "민석의 요원"이다. 이름이 길면 이름만 줄이려고 "의 요원"을 따로 둔다 -->
     <string name="agents_owner_suffix">의 요원</string>
     <string name="weapons_owner_suffix">의 무기</string>
     <string name="records_hidden">지금은 이 친구의 기록을 볼 수 없어요</string>
@@ -24,20 +24,18 @@
     <string name="agents_focus_controller">관여율과 생존율</string>
     <string name="agents_focus_sentinel">생존율</string>
     <string name="agents_by_agent">요원별</string>
-    <!-- 좁은 화면에서 "타격대 / · 28판"처럼 가운뎃점이 줄 맨 앞에 오지 않게
-         점 앞에 줄바꿈 없는 공백을 넣었다 -->
     <string name="column_kast">관여율</string>
     <string name="column_survival">생존</string>
     <string name="column_first_duel_involvement">퍼블 관여</string>
     <string name="column_first_duel_win">첫 교전</string>
-    <string name="agents_columns_note">처음에는 주 역할에 맞춘 두 지표를 보여 줘요. 표 위 버튼으로 다른 지표를 볼 수 있어요.</string>
+    <string name="agents_columns_note">처음에는 주 역할에 맞춘 두 지표를 보여드려요. 표 위 버튼으로 다른 지표를 볼 수 있어요.</string>
     <string name="agents_columns_first_duel">퍼블 관여율 · 첫 교전 승률</string>
     <string name="agents_columns_kast">관여율 · 생존율</string>
     <string name="agents_columns_fight">K/D · 피해량</string>
     <string name="agents_columns_score">전투점수 · 헤드샷</string>
-    <string name="agents_columns_sheet_title">표에 보여 줄 지표</string>
+    <string name="agents_columns_sheet_title">표에 보여줄 지표</string>
     <string name="agents_columns_button">표 지표 바꾸기, 지금 %1$s</string>
-    <string name="agents_columns_role_default">%1$s 기준</string>
+    <string name="agents_columns_role_default">기본</string>
 
     <!-- S6 무기 -->
     <string name="weapons_title">무기</string>
@@ -48,7 +46,7 @@
     <string name="weapons_act_basis">이번 액트 기준</string>
     <string name="weapons_compared">%1$d주 평균과 비교</string>
     <string name="weapons_act_value">이번 액트</string>
-    <string name="weapons_single_round_note">킬은 그 무기로 낸 킬이에요. 헤드샷은 그 무기만 쓴 라운드, 데스·어시스트·피해량은 그 무기를 들고 시작한 라운드를 기준으로 세요.</string>
+    <string name="weapons_single_round_note">킬은 처치한 무기로 셌어요. 헤드샷은 그 무기로만 킬을 낸 라운드에서, 데스·어시스트·피해량은 그 무기를 들고 시작한 라운드에서 셌어요.</string>
     <string name="column_kda">KDA</string>
     <string name="column_damage">피해량</string>
     <string name="column_headshot">헤드샷</string>
@@ -63,7 +61,7 @@
     <string name="weapons_category_melee">근접 무기</string>
     <!-- 카탈로그에 계열이 없는 새 무기 -->
     <string name="weapons_category_unknown">그 밖의 무기</string>
-    <string name="weapons_expand">%1$s 무기 펼치기</string>
-    <string name="weapons_collapse">%1$s 무기 접기</string>
+    <string name="weapons_expand">%1$s 펼치기</string>
+    <string name="weapons_collapse">%1$s 접기</string>
 
 </resources>

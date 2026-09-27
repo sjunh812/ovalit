@@ -83,7 +83,9 @@ class FriendProfileViewModel(
         matchRepository.observeMatches(),
         contentRepository.catalog,
     ) { friends, rival, myMatches, catalog ->
-        val friend = friends.firstOrNull { it.id == friendId } ?: return@combine FriendProfileUiState.Gone
+        // 전적을 비공개로 바꾼 친구는 기기에 경기가 남아 있어도 경기 목록, 티어, 최근 경기까지 모두 가린다
+        val found = friends.firstOrNull { it.id == friendId } ?: return@combine FriendProfileUiState.Gone
+        val friend = if (found.statsPublic) found else found.copy(matches = emptyList())
         val myReport = myMatches.weeklyReport(now = clock.now(), timeZone = timeZone, queueFilter = QUEUE)
         val tier = friend.matches.latestTier()
         FriendProfileUiState.Success(
@@ -118,11 +120,8 @@ class FriendProfileViewModel(
         }
     }
 
-    /** [onDone]은 끊은 뒤에 부릅니다. 화면을 먼저 닫으면 방금 끊은 친구가 목록에 잠깐 남습니다. */
-    fun unfriend(onDone: () -> Unit) {
-        viewModelScope.launch {
-            friendRepository.unfriend(friendId)
-            onDone()
-        }
+    /** 끊고 나면 상태가 [FriendProfileUiState.Gone]이 되고, 화면은 그걸 보고 닫힙니다. */
+    fun unfriend() {
+        viewModelScope.launch { friendRepository.unfriend(friendId) }
     }
 }

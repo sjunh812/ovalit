@@ -124,13 +124,24 @@ class ProfileScreensTest {
         onNodeWithText("생존").assertDoesNotExist()
     }
 
+    // 역할 표에 없는 새 요원만 뛰었으면 주 역할을 모른다. 경기는 있으니 "경기가 없어요"라고 하면 안 된다.
+    @Test
+    fun `주 역할을 몰라도 요원 표는 보여준다`() = runComposeUiTest {
+        val unknownRole = ProfilePreviewData.agents.copy(mainRole = null, roles = emptyList())
+        setContent { Themed { AgentsScreen(ProfilePreviewData.records.copy(agents = unknownRole), onBack = {}) } }
+
+        onNodeWithText("이번 액트에 뛴 경기가 아직 없어요").assertDoesNotExist()
+        onNodeWithText("주 역할").assertDoesNotExist()
+        onNodeWithText("요원별").assertExists()
+    }
+
     // 주 역할에 맞춘 열 말고 다른 지표도 볼 수 있어야 한다. 시트에서 고르면 표의 두 열이 바뀐다.
     @Test
     fun `요원 표의 지표는 표 위 버튼으로 바꾼다`() = runComposeUiTest {
         setContent { Themed { AgentsScreen(ProfilePreviewData.records, onBack = {}) } }
 
         onNodeWithText("관여율 · 생존율").performScrollTo().performClick()
-        onNodeWithText("전략가 기준").assertExists()
+        onNodeWithText("기본").assertExists()
         onNodeWithText("K/D · 피해량").performClick()
 
         onNodeWithText("K/D").assertExists()
@@ -269,6 +280,23 @@ class ProfileScreensTest {
 
         onNodeWithText("2.13 (46/30/18)", useUnmergedTree = true).assertExists()
         onNodeWithText("그 밖의 무기").assertExists()
+    }
+
+    // 카탈로그에 없는 무기는 계열이 null이다. 펼친 계열이 없다는 뜻의 null과 부딪쳐, 다른 계열을 접으면 이 계열이 펼쳐지고
+    // 다시 접히지 않았다.
+    @Test
+    fun `그 밖의 무기도 다른 계열처럼 펼쳤다가 접는다`() = runComposeUiTest {
+        setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
+        val unknownWeapon = "22/4/3"
+
+        onNodeWithText("소총").performScrollTo().performClick()
+        onNodeWithText(unknownWeapon, useUnmergedTree = true).assertDoesNotExist()
+
+        onNodeWithText("그 밖의 무기").performScrollTo().performClick()
+        onNodeWithText(unknownWeapon, useUnmergedTree = true).assertExists()
+
+        onNodeWithText("그 밖의 무기").performScrollTo().performClick()
+        onNodeWithText(unknownWeapon, useUnmergedTree = true).assertDoesNotExist()
     }
 
     // 들고 시작한 라운드가 모자라면 데스와 어시가 그 무기 몫이라고 보기 어렵다

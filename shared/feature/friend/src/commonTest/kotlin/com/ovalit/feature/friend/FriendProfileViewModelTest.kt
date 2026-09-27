@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -51,17 +52,31 @@ class FriendProfileViewModelTest {
         assertEquals(false, assertIs<FriendProfileUiState.Success>(viewModel.uiState.value).isRival)
     }
 
-    // 끊기 전에 화면을 닫으면 방금 끊은 친구가 목록에 잠깐 남는다
+    // 화면은 Gone을 보고 한 번만 닫힌다
     @Test
-    fun `친구를 끊으면 다 끊은 뒤에 알리고 화면은 사라진 상태가 된다`() = runTest {
+    fun `친구를 끊으면 끊긴 뒤에 화면이 사라진 상태가 된다`() = runTest {
         val viewModel = viewModel()
         collect(viewModel)
-        var unfriendedWhenNotified: Boolean? = null
 
-        viewModel.unfriend { unfriendedWhenNotified = friends.unfriended }
+        viewModel.unfriend()
 
-        assertEquals(true, unfriendedWhenNotified)
+        assertTrue(friends.unfriended)
         assertEquals(FriendProfileUiState.Gone, viewModel.uiState.value)
+    }
+
+    // 비공개로 바꾸기 전에 받아 둔 경기가 기기에 남아 있어도 보여주지 않는다
+    @Test
+    fun `전적을 비공개로 바꾼 친구는 남아 있는 경기와 티어를 가린다`() = runTest {
+        val source = FakeFriendRepository()
+        val public = source.friends.first().first { it.statsPublic && it.matches.isNotEmpty() }
+        val private = PrivateFriends(source, public.id)
+        val viewModel = FriendProfileViewModel(public.id, private, FakeMatchRepository(), FakeContentRepository(), Clock.System, TimeZone.of("Asia/Seoul"))
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+
+        val state = assertIs<FriendProfileUiState.Success>(viewModel.uiState.value)
+        assertTrue(state.friend.matches.isEmpty())
+        assertEquals(null, state.badge.tier)
+        assertEquals(null, state.theirProfile)
     }
 
     private suspend fun viewModel(): FriendProfileViewModel {
@@ -82,4 +97,9 @@ private class RecordingFriends(private val delegate: FakeFriendRepository) : Fri
         delegate.unfriend(id)
         unfriended = true
     }
+}
+
+// 경기는 그대로 둔 채 [id] 친구만 비공개로 바꾼다
+private class PrivateFriends(private val delegate: FakeFriendRepository, private val id: PlayerId) : FriendRepository by delegate {
+    override val friends = delegate.friends.map { list -> list.map { if (it.id == id) it.copy(statsPublic = false) else it } }
 }

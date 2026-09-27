@@ -11,11 +11,16 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.core.data.FakeContentRepository
+import com.ovalit.core.data.FakeFriendRepository
+import com.ovalit.core.data.FakeMatchRepository
 import com.ovalit.core.model.PlayerId
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.time.Clock
+import kotlinx.datetime.TimeZone
 
 @OptIn(ExperimentalTestApi::class)
 class FriendScreensTest {
@@ -146,6 +151,27 @@ class FriendScreensTest {
         onNodeWithText("친구 끊기").performClick()
 
         assertTrue(unfriended)
+    }
+
+    // 끊기 버튼과 Gone 상태가 둘 다 화면을 닫으면 그 앞 화면까지 빠진다
+    @Test
+    fun `친구를 끊으면 화면을 한 번만 닫는다`() = runComposeUiTest {
+        val minseok = PlayerId("fake-minseok")
+        val viewModel = FriendProfileViewModel(
+            minseok, FakeFriendRepository(), FakeMatchRepository(), FakeContentRepository(), Clock.System, TimeZone.of("Asia/Seoul"),
+        )
+        var backs = 0
+        setContent {
+            Themed {
+                FriendProfileRoute(minseok, onBack = { backs++ }, onOpenMatches = {}, onOpenAgents = {}, onOpenWeapons = {}, viewModel = viewModel)
+            }
+        }
+
+        onNodeWithContentDescription("더보기").performClick()
+        onNodeWithText("친구 끊기").performClick()
+        waitForIdle()
+
+        assertEquals(1, backs)
     }
 
     // 친구 경기에는 내가 안 뛴 경기의 다른 사람 기록이 섞여 있어서 줄을 눌러도 열지 않는다

@@ -147,7 +147,7 @@ fun ProfileTierCard(record: CompetitiveRecord, catalog: ContentCatalog, modifier
  * 놓습니다. 좁은 화면에서 글자를 키우면 같은 순서로 두 칸씩 놓습니다. 내 프로필과 S5가 같이 씁니다.
  */
 @Composable
-fun ProfileStatsSection(summary: ProfileSummary, modifier: Modifier = Modifier) {
+fun ProfileStatsSection(summary: ProfileSummary, modifier: Modifier = Modifier, divider: Boolean = false) {
     val metrics = summary.metrics
     val main = listOf(FixedMetric.DAMAGE, FixedMetric.KD, FixedMetric.COMBAT_SCORE).map { metric ->
         StatCell(stringResource(metric.label), metric.value(metrics)?.let { metric.format.valueText(it) })
@@ -173,7 +173,7 @@ fun ProfileStatsSection(summary: ProfileSummary, modifier: Modifier = Modifier) 
         ),
     )
 
-    ProfileSection(modifier = modifier, divider = false) {
+    ProfileSection(modifier = modifier, divider = divider) {
         ProfileSectionTitle(title = stringResource(Res.string.profile_stats_title))
         Spacer(Modifier.height(14.dp))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {

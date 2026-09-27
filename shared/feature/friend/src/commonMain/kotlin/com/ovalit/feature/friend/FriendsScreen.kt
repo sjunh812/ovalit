@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role as SemanticsRole
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitExpandable
@@ -261,11 +262,13 @@ private fun FriendRowItem(row: FriendRow, isRival: Boolean, onClick: () -> Unit)
         Spacer(Modifier.width(OvalitSpacing.md))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             Row(verticalAlignment = Alignment.Bottom) {
+                // 긴 Riot ID는 이름만 줄여 "라이벌" 표시를 남긴다
                 OvalitText(
                     text = friend.riotId,
-                    modifier = Modifier.alignByBaseline(),
+                    modifier = Modifier.weight(1f, fill = false).alignByBaseline(),
                     style = OvalitTheme.typography.bodyStrong,
                     maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 if (isRival) {
                     Spacer(Modifier.width(6.dp))
@@ -277,7 +280,7 @@ private fun FriendRowItem(row: FriendRow, isRival: Boolean, onClick: () -> Unit)
                     )
                 }
             }
-            OvalitText(text = caption(row), style = OvalitTheme.typography.caption, color = colors.t3, maxLines = 1)
+            OvalitText(text = caption(row), style = OvalitTheme.typography.caption, color = colors.t3)
         }
         Spacer(Modifier.width(OvalitSpacing.xs))
         OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = colors.t4, size = 16.dp)

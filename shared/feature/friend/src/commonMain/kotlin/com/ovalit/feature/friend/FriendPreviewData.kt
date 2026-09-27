@@ -167,7 +167,8 @@ internal object FriendPreviewData {
         ),
     )
     private val junho = Friend(PlayerId("junho"), "준호#KR1", playerCard = PlayerCardId("89FDD50E-439B-EBEB-0EF2-AF8271550943"), statsPublic = true, matches = emptyList())
-    private val seoyeon = Friend(PlayerId("seoyeon"), "서연#KR7", playerCard = null, statsPublic = false, matches = emptyList())
+    // 비공개로 바꾸기 전에 받아 둔 경기가 기기에 남아 있다. 화면은 이 경기를 보여주면 안 된다.
+    private val seoyeon = Friend(PlayerId("seoyeon"), "서연#KR7", playerCard = null, statsPublic = false, matches = minseok.matches)
 
     val friends = FriendsUiState.Success(
         requests = listOf(

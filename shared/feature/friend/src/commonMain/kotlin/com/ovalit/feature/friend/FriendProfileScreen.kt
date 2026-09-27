@@ -6,13 +6,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -24,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBackTopBar
@@ -63,6 +67,7 @@ import com.ovalit.feature.friend.resources.compare_caption
 import com.ovalit.feature.friend.resources.compare_no_matches
 import com.ovalit.feature.friend.resources.compare_title
 import com.ovalit.feature.friend.resources.more
+import com.ovalit.feature.friend.resources.no_act_matches
 import com.ovalit.feature.friend.resources.private_body
 import com.ovalit.feature.friend.resources.recent_all
 import com.ovalit.feature.friend.resources.recent_title
@@ -95,6 +100,7 @@ fun FriendProfileRoute(
     viewModel: FriendProfileViewModel = koinViewModel(key = friendId.value) { parametersOf(friendId.value) },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    // 화면을 닫는 곳은 여기 하나다. 끊기 버튼에서도 닫으면 뒤로 가기가 두 번 돼 그 앞 화면까지 빠진다.
     LaunchedEffect(uiState) {
         if (uiState == FriendProfileUiState.Gone) onBack()
     }
@@ -102,7 +108,7 @@ fun FriendProfileRoute(
         uiState = uiState,
         onBack = onBack,
         onToggleRival = viewModel::toggleRival,
-        onUnfriend = { viewModel.unfriend(onBack) },
+        onUnfriend = viewModel::unfriend,
         onOpenMatches = onOpenMatches,
         onOpenAgents = onOpenAgents,
         onOpenWeapons = onOpenWeapons,
@@ -153,7 +159,8 @@ internal fun FriendProfileScreen(
                     trailing = profile?.let { stringResource(CoreUiRes.string.act_matches, it.agents.matches) },
                     modifier = Modifier.weight(1f),
                 )
-                if (friend.statsPublic) {
+                // 라이벌로 둔 친구가 전적을 비공개로 바꿔도 해제할 수 있어야 한다
+                if (friend.statsPublic || uiState.isRival) {
                     SmallButton(
                         text = stringResource(if (uiState.isRival) Res.string.unset_rival else Res.string.set_rival),
                         filled = false,
@@ -196,7 +203,12 @@ internal fun FriendProfileScreen(
                 // 내 프로필과 같은 칸을 같은 순서로 쓴다. 요원과 무기를 누르면 친구 기록으로 S7과 S6이 열린다.
                 if (hasActMatches) {
                     competitive?.let { TierCard(it, uiState) }
-                    ProfileStatsSection(profile.summary, Modifier.padding(top = 6.dp))
+                    // 티어 카드가 없으면 바로 위가 같이 한 경기라 선을 그어 나눈다
+                    ProfileStatsSection(profile.summary, Modifier.padding(top = 6.dp), divider = competitive == null)
+                } else {
+                    ProfileSection {
+                        OvalitText(text = stringResource(Res.string.no_act_matches), style = OvalitTheme.typography.body, color = colors.t2)
+                    }
                 }
                 (uiState.myReport as? WeeklyReport.Ready)?.let { mine -> CompareSection(mine, uiState, name) }
                 if (hasActMatches) {
@@ -207,6 +219,8 @@ internal fun FriendProfileScreen(
                 RecentMatches(uiState, name, onOpenMatches)
             }
             Spacer(Modifier.height(OvalitSpacing.xxl))
+            // 탭바 밖 화면이라 시스템 내비게이션 바 높이만큼 더 띄운다. 안 그러면 마지막 줄이 내비게이션 바에 덮인다.
+            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
         }
         ProfileStatusBarScrim(scrollState)
     }
@@ -251,7 +265,7 @@ private fun CompareSection(mine: WeeklyReport.Ready, uiState: FriendProfileUiSta
         if (uiState.theirMetricsInMyPeriod == null) {
             Spacer(Modifier.height(OvalitSpacing.xs))
             OvalitText(
-                text = stringResource(Res.string.compare_no_matches, periodLabel(mine.period)),
+                text = stringResource(Res.string.compare_no_matches, periodLabel(mine.period), name),
                 style = OvalitTheme.typography.caption,
                 color = OvalitTheme.colors.t3,
             )
@@ -301,17 +315,21 @@ private fun RecentMatches(uiState: FriendProfileUiState.Success, name: String, o
 
 @Composable
 private fun TitleRow(title: String, caption: String) {
+    // 제목을 먼저 재고 설명은 남은 폭에서 꺾는다. 설명을 먼저 재면 친구 이름이 긴 설명에 "나와 비교"가 밀려 꺾인다.
     Row(verticalAlignment = Alignment.Bottom) {
         OvalitText(
             text = title,
-            modifier = Modifier.weight(1f).alignByBaseline(),
+            modifier = Modifier.alignByBaseline(),
             style = OvalitTheme.typography.bodyStrong,
+            maxLines = 1,
         )
+        Spacer(Modifier.width(OvalitSpacing.sm))
         OvalitText(
             text = caption,
-            modifier = Modifier.alignByBaseline(),
+            modifier = Modifier.weight(1f).alignByBaseline(),
             style = OvalitTheme.typography.caption,
             color = OvalitTheme.colors.t3,
+            textAlign = TextAlign.End,
         )
     }
 }

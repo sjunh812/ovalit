@@ -19,6 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -32,6 +33,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -405,7 +407,15 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
         .entries
         .sortedByDescending { (_, weapons) -> weapons.sumOf { it.kills } }
     val top = byCategory.firstOrNull()?.key
-    var expanded by rememberSaveable { mutableStateOf(top?.name) }
+    // 카탈로그에 없는 무기는 계열이 null이다. 펼친 계열이 없을 때도 null이라 따로 이름을 붙이지 않으면 "그 밖의 무기"가
+    // 늘 펼쳐진 것으로 읽혀 접히지 않는다.
+    fun WeaponCategory?.key(): String = this?.name ?: UNKNOWN_CATEGORY
+    var expanded by rememberSaveable { mutableStateOf(byCategory.firstOrNull()?.key?.key()) }
+    // 계열 이름과 킬 수 칸은 가장 긴 글자에 맞춘다. 폭을 박아 두면 "그 밖의 무기"가 기본 글자 크기에서도 잘렸다.
+    val names = byCategory.map { (category, _) -> category?.let { stringResource(it.label) } ?: stringResource(Res.string.weapons_category_unknown) }
+    val killTexts = byCategory.map { (_, weapons) -> stringResource(Res.string.weapons_kills, weapons.sumOf { it.kills }.withThousands()) }
+    val nameWidth = rememberWidestWidth(names, OvalitTheme.typography.bodyStrong).coerceAtMost(MaxCategoryNameWidth)
+    val killsWidth = rememberWidestWidth(killTexts, OvalitTheme.typography.metricS).coerceAtMost(MaxCategoryKillsWidth)
 
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter), verticalAlignment = Alignment.Bottom) {
         OvalitText(
@@ -420,16 +430,18 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
         )
     }
     Spacer(Modifier.height(OvalitSpacing.sm))
-    byCategory.forEachIndexed { index, (category, weapons) ->
+    byCategory.forEachIndexed { index, (category, weapons) -> key(category) {
         if (index > 0) OvalitDivider(Modifier.padding(start = OvalitSpacing.gutter), color = OvalitTheme.colors.lineWeak)
-        val key = category?.name
+        val key = category.key()
         CategoryRow(
-            category = category,
-            kills = weapons.sumOf { it.kills },
+            name = names[index],
+            kills = killTexts[index],
             share = weapons.sumOf { it.kills }.toFloat() / report.kills.coerceAtLeast(1),
             highlighted = category == top,
             expanded = expanded == key,
             onToggle = { expanded = if (expanded == key) null else key },
+            nameWidth = nameWidth,
+            killsWidth = killsWidth,
         )
         OvalitExpandable(visible = expanded == key) {
             BoxWithConstraints(
@@ -453,19 +465,24 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
                 }
             }
         }
-    }
+    } }
 }
+
+private const val UNKNOWN_CATEGORY = "UNKNOWN"
+private val MaxCategoryNameWidth = 120.dp
+private val MaxCategoryKillsWidth = 88.dp
 
 @Composable
 private fun CategoryRow(
-    category: WeaponCategory?,
-    kills: Int,
+    name: String,
+    kills: String,
     share: Float,
     highlighted: Boolean,
     expanded: Boolean,
     onToggle: () -> Unit,
+    nameWidth: Dp,
+    killsWidth: Dp,
 ) {
-    val name = category?.let { stringResource(it.label) } ?: stringResource(Res.string.weapons_category_unknown)
     val action = stringResource(if (expanded) Res.string.weapons_collapse else Res.string.weapons_expand, name)
 
     Row(
@@ -476,19 +493,25 @@ private fun CategoryRow(
             .padding(horizontal = OvalitSpacing.gutter),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        val nameStyle = if (highlighted) OvalitTheme.typography.bodyStrong else OvalitTheme.typography.body
         OvalitText(
             text = name,
-            modifier = Modifier.width(64.dp),
-            style = if (highlighted) OvalitTheme.typography.bodyStrong else OvalitTheme.typography.body,
+            modifier = Modifier.width(nameWidth),
+            style = nameStyle,
             maxLines = 1,
+            autoSize = shrinkToFit(nameStyle.fontSize),
         )
+        Spacer(Modifier.width(OvalitSpacing.sm))
         ShareBar(fraction = share, highlighted = highlighted, modifier = Modifier.weight(1f))
+        Spacer(Modifier.width(OvalitSpacing.sm))
         OvalitText(
-            text = stringResource(Res.string.weapons_kills, kills.withThousands()),
-            modifier = Modifier.width(56.dp),
+            text = kills,
+            modifier = Modifier.width(killsWidth),
             style = OvalitTheme.typography.metricS,
             color = if (highlighted) OvalitTheme.colors.t1 else OvalitTheme.colors.t2,
             textAlign = TextAlign.End,
+            maxLines = 1,
+            autoSize = shrinkToFit(OvalitTheme.typography.metricS.fontSize),
         )
         Spacer(Modifier.width(OvalitSpacing.sm))
         OvalitDisclosureIcon(expanded = expanded)

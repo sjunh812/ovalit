@@ -35,6 +35,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -141,8 +142,7 @@ internal fun AgentsScreen(uiState: RecordsUiState, onBack: () -> Unit, modifier:
                 matches = report.matches,
                 onBack = onBack,
             )
-            val mainRole = report.mainRole
-            if (mainRole == null) {
+            if (report.matches == 0) {
                 OvalitText(
                     text = stringResource(Res.string.no_matches),
                     modifier = Modifier.padding(OvalitSpacing.gutter),
@@ -151,26 +151,29 @@ internal fun AgentsScreen(uiState: RecordsUiState, onBack: () -> Unit, modifier:
                 return@Column
             }
 
-            Spacer(Modifier.height(22.dp))
-            MainRole(report, mainRole, uiState.catalog)
-            Spacer(Modifier.height(22.dp))
-            OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))
-            Spacer(Modifier.height(18.dp))
-            RoleShares(report, mainRole)
-            Spacer(Modifier.height(22.dp))
-            OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))
+            // 역할 표에 없는 새 요원만 뛰었으면 주 역할을 모른다. 역할 칸은 빼고 요원 표는 그대로 둔다.
+            val mainRole = report.mainRole
+            if (mainRole != null) {
+                Spacer(Modifier.height(22.dp))
+                MainRole(report, mainRole, uiState.catalog)
+                Spacer(Modifier.height(22.dp))
+                OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))
+                Spacer(Modifier.height(18.dp))
+                RoleShares(report, mainRole)
+                Spacer(Modifier.height(22.dp))
+                OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))
+            }
             Spacer(Modifier.height(18.dp))
             // 처음에는 주 역할에 맞춘 묶음이다. 고른 건 화면을 떠나기 전까지 기억한다.
             var chosen by rememberSaveable { mutableStateOf<String?>(null) }
             var choosing by remember { mutableStateOf(false) }
-            val roleDefault = AgentColumns.defaultFor(mainRole)
+            val roleDefault = mainRole?.let(AgentColumns::defaultFor) ?: AgentColumns.KAST
             val shown = chosen?.let(AgentColumns::valueOf) ?: roleDefault
             AgentTable(report.agents, shown, onChoose = { choosing = true }, uiState.catalog)
             if (choosing) {
                 AgentColumnsSheet(
                     selected = shown,
                     roleDefault = roleDefault,
-                    mainRole = mainRole,
                     onSelect = { chosen = it.name },
                     onDismiss = { choosing = false },
                 )
@@ -190,7 +193,6 @@ internal fun AgentsScreen(uiState: RecordsUiState, onBack: () -> Unit, modifier:
 @Composable
 private fun MainRole(report: AgentReport, role: Role, catalog: ContentCatalog) {
     val colors = OvalitTheme.colors
-    val share = report.roles.first().rounds.toDouble() / report.roles.sumOf { it.rounds }
     val topAgents = report.agents.filter { it.role == role }.take(2).map { catalog.agentName(it.agent) }
     val focus = stringResource(role.focus)
     val sentence = stringResource(role.sentence, focus)
@@ -209,7 +211,7 @@ private fun MainRole(report: AgentReport, role: Role, catalog: ContentCatalog) {
             }
             Spacer(Modifier.width(9.dp))
             OvalitText(
-                text = percentText(share),
+                text = percentText(report.mainRoleShare),
                 modifier = Modifier.alignByBaseline(),
                 style = OvalitTheme.typography.metricS,
                 color = colors.accentInk,
@@ -317,7 +319,6 @@ private fun FixedMetric.column() = MetricColumnSpec(label, format) { value(it) }
 private fun AgentColumnsSheet(
     selected: AgentColumns,
     roleDefault: AgentColumns,
-    mainRole: Role,
     onSelect: (AgentColumns) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -327,11 +328,8 @@ private fun AgentColumnsSheet(
                 OvalitSheetOption(
                     text = stringResource(option.label),
                     selected = option == selected,
-                    caption = if (option == roleDefault) {
-                        stringResource(Res.string.agents_columns_role_default, stringResource(mainRole.label))
-                    } else {
-                        null
-                    },
+                    // "척후대 기준"이라고 쓰면 위의 "척후대는 어시스트와 관여율로 봐요"와 어긋나서 처음 보여 주는 묶음이라고만 적는다
+                    caption = if (option == roleDefault) stringResource(Res.string.agents_columns_role_default) else null,
                     onClick = {
                         onSelect(option)
                         onDismiss()
@@ -425,8 +423,8 @@ private fun AgentRow(agent: AgentStats, columns: List<MetricColumnSpec>, catalog
         AgentImage(agent.agent, name, Modifier.size(ThumbnailSize).clip(RoundedCornerShape(9.dp)))
         Spacer(Modifier.width(OvalitSpacing.md))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            OvalitText(text = name, style = OvalitTheme.typography.bodyStrong, maxLines = 1)
-            // 좁은 칸에서 판 수를 통째로 다음 줄에 내린다. 한 글줄로 두면 점이 줄 끝에 남는다.
+            OvalitText(text = name, style = OvalitTheme.typography.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            // 칸이 좁으면 판 수를 통째로 다음 줄로 내린다. 한 문자열로 이으면 가운뎃점만 줄 끝에 남는다.
             val caption = OvalitTheme.typography.caption
             SeparatedRow(
                 items = listOfNotNull<@Composable () -> Unit>(

@@ -29,6 +29,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.Mutex
 
 /**
  * 프로덕션 키가 나오기 전까지 화면을 붙여 보는 데 쓰는 가짜 경기입니다.
@@ -48,12 +50,12 @@ class FakeMatchRepository(
 
     override val importProgress: Flow<ImportProgress?> = progress
 
-    // S0-4 막대가 차오르는 걸 볼 수 있게 한 판씩 틈을 두고 받는다
+    // S0-4 막대가 차오르는 걸 볼 수 있게 한 판씩 틈을 두고 받는다. 중간에 끊겼다 다시 돌면 이미 받은 경기는 건너뛴다.
     override suspend fun importRecent() {
+        val saved = matches.value.map { it.id }.toSet()
         val picked = imported()
-        matches.value = emptyList()
-        progress.value = ImportProgress(total = picked.size, results = emptyList())
-        for (match in picked) {
+        progress.value = ImportProgress(total = picked.size, results = picked.filter { it.id in saved }.map { it.myTeamWon })
+        for (match in picked.filterNot { it.id in saved }) {
             delay(importDelay)
             matches.update { it + match }
             progress.update { it?.copy(results = it.results + match.myTeamWon) }
@@ -62,22 +64,31 @@ class FakeMatchRepository(
 
     // 당길 때마다 방금 끝난 경기를 한 판 받은 것처럼 한다. 새로고침과 숫자가 바뀌는 모습을 가짜 데이터로도 본다.
     override suspend fun refresh(): Int {
-        delay(REFRESH_DELAY)
-        refreshed++
-        val now = clock.now()
-        // 경쟁전으로 고른다. 기타 모드 경기를 받으면 홈 리포트 숫자가 그대로라 새로고침한 티가 안 난다.
-        val fresh = fakeMatches(now, seed = SEED + refreshed, withFriends = false)
-            .filter { it.queue == Queue.COMPETITIVE }
-            .maxBy { it.startedAt }
-            .copy(id = MatchId("fresh-$refreshed"), startedAt = now - JUST_FINISHED)
-        matches.update { it + fresh }
-        return 1
+        // 홈과 경기 탭이 같이 당기면 한 번만 받는다. 뒤에 온 쪽은 앞의 것이 끝날 때까지 기다리고 새로 받지 않는다.
+        if (!refreshing.tryLock()) return refreshing.withLock { 0 }
+        try {
+            delay(REFRESH_DELAY)
+            refreshed++
+            val now = clock.now()
+            // 경쟁전으로 고른다. 일반전을 받으면 홈 칩이 경쟁일 때 숫자가 그대로라 새로고침한 티가 안 난다.
+            val picked = fakeMatches(now, seed = SEED + refreshed, withFriends = false)
+                .filter { it.queue == Queue.COMPETITIVE }
+                .maxBy { it.startedAt }
+            val fresh = picked.copy(id = MatchId("fresh-$refreshed"), startedAt = now - picked.lengthMillis.milliseconds - JUST_FINISHED)
+            matches.update { it + fresh }
+            return 1
+        } finally {
+            refreshing.unlock()
+        }
     }
 
+    private val refreshing = Mutex()
     private var refreshed = 0
 
+    // 다시 연동하면 지난 수집의 "다 불러왔어요"가 남아 S0-4가 새 수집 전에 리포트 보기를 띄웠다. 진행도도 같이 비운다.
     override suspend fun deleteAll() {
         matches.value = emptyList()
+        progress.value = null
     }
 
     private fun imported(): List<Match> = fakeMatches(clock.now()).forFirstImport(clock.now()) { it.startedAt }

@@ -10,6 +10,7 @@ import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.MapId
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.QueueFilter
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -100,7 +101,11 @@ class MatchesViewModel(
         refreshing.value = true
         viewModelScope.launch {
             try {
-                runCatching { matchRepository.refresh() }
+                matchRepository.refresh()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // 받지 못해도 저장해 둔 경기 목록은 그대로 둔다
             } finally {
                 refreshing.value = false
             }

@@ -114,7 +114,7 @@ class TrendTest {
     }
 }
 
-/** [rounds]라운드를 [matches]경기로 나눠 담는다. 라운드마다 [damagePerRound]만큼 피해를 준다. */
+/** [rounds]라운드를 [matches]경기로 나눠 담습니다. 라운드마다 [damagePerRound]만큼 피해를 줍니다. */
 private fun week(
     weeksAgo: Int,
     rounds: Int = 40,

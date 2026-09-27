@@ -16,9 +16,8 @@ import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEvent
 
-// 화면 전환은 iOS 내비게이션을 따른다. 새 화면은 오른쪽에서 밀려 들어오고, 아래 화면은 폭의 4분의 1만 왼쪽으로
-// 비키면서 조금 어두워진다. 뒤로 가기 스와이프는 손가락을 따라 위 화면을 옆으로 밀어낸다. 토스, 당근, 인스타그램
-// 같은 앱이 iOS에서 다 이렇게 움직여서 사람들이 "스와이프로 뒤로 간다"고 할 때 떠올리는 모양이 이것이다.
+// 화면 전환은 iOS 내비게이션을 따른다(CLAUDE.md 디자인). 새 화면은 오른쪽에서 밀려 들어오고, 아래 화면은 폭의
+// 4분의 1만 왼쪽으로 비키면서 조금 어두워진다. 뒤로 가기 스와이프는 손가락을 따라 위 화면을 옆으로 밀어낸다.
 //
 // 어둡게 하는 건 아래 화면의 불투명도를 낮춰 NavDisplay 뒤에 깐 검은 바탕이 비치게 해서 만든다. 그래서 위 화면은
 // 늘 불투명해야 하고, 두 화면을 같이 흐리게 하는 크로스페이드는 쓰지 않는다. 쓰면 가운데서 검은 바탕이 드러난다.
@@ -33,7 +32,7 @@ private const val DARK_DIMMED_ALPHA = 0.6f
 /** 밀려난 아래 화면의 불투명도입니다. */
 internal fun dimmedAlpha(isDark: Boolean): Float = if (isDark) DARK_DIMMED_ALPHA else LIGHT_DIMMED_ALPHA
 
-/** 새 화면을 쌓을 때입니다. */
+/** 새 화면을 쌓을 때의 전환입니다. */
 internal fun <T : Any> pushTransition(dimmedAlpha: Float): AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform = {
     val spec = tween<Float>(SLIDE_MILLIS, easing = FastOutSlowInEasing)
     val offset = tween<IntOffset>(SLIDE_MILLIS, easing = FastOutSlowInEasing)
@@ -43,13 +42,13 @@ internal fun <T : Any> pushTransition(dimmedAlpha: Float): AnimatedContentTransi
     )
 }
 
-/** 뒤로 가기 버튼이나 스와이프 없는 뒤로 가기로 화면을 뺄 때입니다. */
+/** 뒤로 가기 버튼처럼 스와이프 없이 화면을 뺄 때의 전환입니다. */
 internal fun <T : Any> popTransition(dimmedAlpha: Float): AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform = {
     slideBack(fromRightEdge = false, easedSpec = true, dimmedAlpha = dimmedAlpha)
 }
 
 /**
- * 뒤로 가기 스와이프를 하는 동안입니다. 진행도만큼 그대로 움직여야 손가락을 따라오는 것처럼 보여서 속도 곡선을
+ * 뒤로 가기 스와이프를 하는 동안의 전환입니다. 진행도만큼 그대로 움직여야 손가락을 따라오는 것처럼 보여서 속도 곡선을
  * 두지 않습니다. 안드로이드는 오른쪽 가장자리에서도 뒤로 가기를 쓸 수 있어서, 그때는 손가락을 따라 왼쪽으로 뺍니다.
  */
 internal fun <T : Any> predictivePopTransition(dimmedAlpha: Float):
@@ -70,9 +69,8 @@ private fun slideBack(fromRightEdge: Boolean, easedSpec: Boolean, dimmedAlpha: F
 }
 
 /**
- * 하단 탭끼리 오갈 때입니다. 탭은 쌓는 화면이 아니라서 밀지 않고 바로 바꿉니다. 뒤로 가기 스와이프로 홈에 돌아갈
- * 때도 스와이프하는 동안은 그대로 두고 손을 떼면 바꿉니다. 탭을 흐리게 하면 두 탭 글자가 겹쳐 보이고, 밀어내면
- * 탭바까지 같이 밀려서 탭이 쌓인 화면처럼 보입니다.
+ * 하단 탭끼리 오갈 때의 전환입니다. 탭은 쌓는 화면이 아니라서 밀거나 흐리게 하지 않고 바로 바꿉니다.
+ * 뒤로 가기 스와이프로 홈에 돌아갈 때도 스와이프하는 동안은 그대로 두고 손을 떼면 바꿉니다(CLAUDE.md 화면).
  */
 internal val TabTransitions: Map<String, Any> = run {
     val instant: AnimatedContentTransitionScope<Scene<*>>.() -> ContentTransform = {

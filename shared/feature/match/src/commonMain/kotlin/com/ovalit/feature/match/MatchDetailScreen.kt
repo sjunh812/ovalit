@@ -82,7 +82,7 @@ internal enum class DetailTab { SCOREBOARD, ROUNDS, ECONOMY }
 /**
  * S3 경기 상세입니다.
  *
- * @param onShareInvite 앱을 안 쓰는 플레이어에게 보낼 초대 링크를 받습니다. 공유 시트는 앱 모듈이 띄웁니다.
+ * @param onShareInvite 앱을 안 쓰거나 쓰는지 모르는 플레이어에게 초대 링크를 보낼 때 부릅니다. 공유 시트는 앱 모듈이 띄웁니다.
  */
 @Composable
 fun MatchDetailRoute(
@@ -250,7 +250,6 @@ private fun ScoreHeadline(uiState: MatchDetailUiState.Success, modifier: Modifie
     }
 }
 
-// 이긴 라운드는 높고 색이 있고, 진 라운드는 낮고 흐리다. 전반과 후반, 연장 사이는 틈을 넓힌다.
 @Composable
 private fun RoundStrip(uiState: MatchDetailUiState.Success) {
     val colors = OvalitTheme.colors

@@ -7,8 +7,8 @@ import kotlinx.datetime.toLocalDateTime
  * 서로 수락한 친구입니다. Riot 정책상 데이터 공유에 동의한 사람만 다른 사람에게 보여줄 수 있어서,
  * 친구는 우리 앱에 연동한 사람끼리만 맺어집니다.
  *
- * @property matches 친구 본인의 경기입니다. 전적을 공개하지 않았으면 빈 목록이고, 같이 한 경기 말고는 보여주지
- * 않습니다.
+ * @property matches 친구 본인의 경기입니다. 전적을 비공개로 바꾸기 전에 받아 둔 경기가 남아 있을 수 있습니다.
+ * [statsPublic]이 `false`면 여기 든 경기를 보여주지 않습니다. 같이 한 경기는 내 경기에서 셉니다.
  */
 data class Friend(
     val id: PlayerId,
@@ -31,7 +31,7 @@ enum class FriendRequestSource {
     INVITE_LINK,
 }
 
-/** S5 맨 위의 "같이 한 경기 12경기 8승 4패"입니다. 그 친구가 우리 팀이었던 내 경기만 셉니다. */
+/** S5 머리 바로 밑의 "같이 한 경기 12경기 8승 4패"입니다. 그 친구가 우리 팀이었던 내 경기만 셉니다. */
 data class SharedRecord(
     val matches: Int,
     val wins: Int,

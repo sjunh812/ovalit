@@ -32,7 +32,7 @@ private val ThursdayClock = object : Clock {
 
 class FakeMatchRepositoryTest {
 
-    // 가짜 데이터로 화면을 볼 때 세 상태가 다 나와야 한다. 움직인 칸이 없으면 동적 칸을 확인할 수 없다.
+    // 가짜 데이터로 화면을 볼 때 움직인 칸과 그대로인 칸이 다 있어야 동적 칸을 확인할 수 있다.
     @Test
     fun `가짜 경기로 리포트를 만들면 움직인 지표와 그대로인 지표가 함께 나온다`() {
         val report = assertIs<WeeklyReport.Ready>(fakeMatches(Thursday).weeklyReport(Thursday, Seoul))
@@ -67,7 +67,7 @@ class FakeMatchRepositoryTest {
         assertEquals(before + 1, repository.observeMatches().first().size)
     }
 
-    // 다시 연동하면 지난 수집의 "다 불러왔어요"가 남아 새 수집 전에 리포트 보기가 떴다
+    // 진행도가 남으면 다시 연동했을 때 새 수집 전에 지난 수집의 "리포트 보기"가 뜬다
     @Test
     fun `경기를 지우면 첫 수집 진행도도 지운다`() = runTest {
         val repository = FakeMatchRepository(clock = ThursdayClock)

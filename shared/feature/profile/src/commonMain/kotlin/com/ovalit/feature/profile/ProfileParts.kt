@@ -60,11 +60,8 @@ internal val WeaponCategory.label: StringResource
         WeaponCategory.MELEE -> Res.string.weapons_category_melee
     }
 
-/**
- * S6과 S7의 맨 위 줄입니다. 친구 기록이면 "민석의 요원"처럼 이름을 붙이고, 이름이 길면 이름만 줄여 뒤를 남깁니다.
- *
- * @param ownerSuffix 친구 이름 뒤에 붙는 말입니다("의 요원").
- */
+// S6과 S7의 맨 위 줄이다. 친구 기록이면 "민석의 요원"처럼 이름 뒤에 ownerSuffix를 붙이고, 이름이 길면 이름만 줄여
+// "의 요원"을 남긴다.
 @Composable
 internal fun RecordsTopBar(
     title: StringResource,
@@ -95,7 +92,7 @@ internal fun RecordsTopBar(
     }
 }
 
-/** 보던 친구를 끊었거나 친구가 전적을 비공개로 바꿨을 때입니다. 숫자는 하나도 남기지 않습니다. */
+// 보던 친구를 끊었거나 친구가 전적을 비공개로 바꿨을 때 띄운다. 숫자는 하나도 남기지 않는다.
 @Composable
 internal fun RecordsHidden(title: StringResource, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {

@@ -63,7 +63,7 @@ class FakeFriendRepositoryTest {
         assertEquals(emptySet(), friends.sentRequests.first())
     }
 
-    // 연동을 해제하면 Riot 계정과 이어진 관계도 남기지 않는다
+    // CLAUDE.md: 연동을 해제하면 친구 관계도 모두 지운다
     @Test
     fun `연동을 해제하면 친구와 요청과 라이벌을 모두 지운다`() = runTest {
         val friends = FakeFriendRepository()

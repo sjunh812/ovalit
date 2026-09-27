@@ -115,7 +115,7 @@ class MatchScreensTest {
         onNodeWithText("후반").assertExists()
     }
 
-    // 진 클러치는 적지 않는다. 적으면 진 라운드마다 꼬리표가 붙는다.
+    // CLAUDE.md S3: 진 클러치는 적지 않는다. 이 테스트는 적는 쪽만 본다.
     @Test
     fun `라운드 탭에 에이스와 이긴 클러치를 적는다`() = runComposeUiTest {
         setContent { Themed { Detail() } }

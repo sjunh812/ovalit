@@ -131,8 +131,8 @@ internal fun FriendRankingSection(mine: MatchMetrics, friends: List<FriendStandi
             )
         }
         Spacer(Modifier.height(OvalitSpacing.xs))
-        // 순위와 값 칸은 가장 긴 글자에 맞추고, 이름은 넘치면 줄인다. 폭을 박아 두면 글씨를 키웠을 때 순위 "10"이
-        // 꺾이고 값이 잘렸다.
+        // 순위와 값 칸은 가장 긴 글자에 맞추고, 이름은 넘치면 말줄임표로 자른다. 순위와 값 폭을 박아 두면 글씨를
+        // 키웠을 때 순위 "10"이 꺾이고 값이 잘렸다.
         val typography = OvalitTheme.typography
         val widths = RankWidths(
             rank = rememberWidestWidth(ranked.map { it.rank.toString() }, typography.metricS),
@@ -184,7 +184,7 @@ private fun RankRow(entry: Ranked, metric: FixedMetric, top: Double, widths: Ran
             overflow = TextOverflow.Ellipsis,
         )
         Box(modifier = Modifier.weight(1f).height(3.dp).background(colors.fill)) {
-            // 목업대로 나만 금색이다
+            // 목업대로 나만 --accent다
             Box(
                 Modifier
                     .fillMaxWidth((entry.value / top).toFloat().coerceIn(0f, 1f))

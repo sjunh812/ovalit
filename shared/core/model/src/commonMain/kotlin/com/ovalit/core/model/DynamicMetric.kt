@@ -40,7 +40,7 @@ enum class Movement {
     MOVED,
     STEADY,
 
-    /** 표본이나 지난 기록이 모자라 판단하지 못했습니다. "큰 변화 없음"으로 띄우면 안 됩니다. */
+    /** 표본이나 지난 기록이 모자라거나 주마다 값이 같아 판단하지 못했습니다. "큰 변화 없음"으로 띄우면 안 됩니다. */
     UNKNOWN,
 }
 
@@ -56,10 +56,10 @@ private val Defaults = listOf(
 )
 
 /**
- * 관심사 지표를 맨 앞에 늘 둡니다. 사용자가 보겠다고 고른 지표라 움직이지 않았어도, 역할이 크게 띄우지 않는 지표여도
- * 넣고, 관심사에 적힌 순서 그대로 둡니다. 그 뒤에 움직인 지표를 역할의 우선 지표, 많이 움직인 순으로 놓고
- * [MAX_DYNAMIC_SLOTS]개에서 자릅니다. [MIN_DYNAMIC_SLOTS]개가 안 되면 기본 지표로 채웁니다. 역할이 크게 띄우지 않는
- * 지표는 관심사로 골랐을 때만 넣습니다.
+ * 관심사 지표를 관심사에 적힌 순서대로 맨 앞에 늘 둡니다. 움직이지 않았어도, 역할이 크게 띄우지 않는 지표여도
+ * 넣습니다. 그 뒤에 움직인 지표를 역할의 우선 지표, 많이 움직인 순으로 놓고 [MAX_DYNAMIC_SLOTS]개에서 자릅니다.
+ * [MIN_DYNAMIC_SLOTS]개가 안 되면 기본 지표부터 채웁니다. 관심사가 아니면 역할이 크게 띄우지 않는 지표는 움직였어도,
+ * 빈칸을 채울 때도 넣지 않습니다.
  *
  * @param history 집계 기간 앞 주들의 주간 지표입니다. 평소 변동폭을 여기서 잽니다.
  */
@@ -109,8 +109,8 @@ internal fun DynamicMetric.assess(
 }
 
 /**
- * 이번 기간 값이 평소 주간 변동폭보다 크게 움직였는지 봅니다. [weekly]에는 표본을 넘긴 주의
- * 값만 넣습니다. 그런 주가 [MIN_VOLATILITY_WEEKS]주가 안 되면 판단하지 않습니다.
+ * 이번 기간 값이 평소 주간 변동폭의 [MOVEMENT_THRESHOLD]배를 넘게 움직였는지 봅니다. [weekly]에는 표본을 넘긴 주의
+ * 값만 넣습니다. 그런 주가 [MIN_VOLATILITY_WEEKS]주가 안 되면 [Movement.UNKNOWN]입니다.
  */
 internal fun assessMovement(now: Double, usual: Double, weekly: List<Double>): Assessment {
     if (weekly.size < MIN_VOLATILITY_WEEKS) return Assessment(Movement.UNKNOWN)

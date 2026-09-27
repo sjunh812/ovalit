@@ -26,7 +26,7 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 
-// 프리뷰와 UI 테스트가 같이 쓴다. 숫자는 가짜 저장소가 목요일 밤에 내놓는 값에 맞췄다.
+// 프리뷰와 UI 테스트가 같이 쓴다. 숫자를 바꾸면 ReportScreenTest의 기대값도 같이 바꿔야 한다.
 internal object ReportPreviewData {
 
     private val thisWeek = MatchMetrics(
@@ -79,7 +79,7 @@ internal object ReportPreviewData {
     private val act = ActId("preview")
     private val previousAct = ActId("previous")
 
-    // 7주 전부터 이번 주까지. 셋째 주는 두 판만 뛰어 막대가 비어 있다.
+    // 7주 전부터 지난주까지다. 이번 주는 아래에서 따로 붙인다. 셋째 주는 라운드가 모자라 막대를 비운 주다.
     private val weeklyDamagePerRound = listOf(128, 131, null, 126, 135, 129, 133)
 
     private val trend = weeklyDamagePerRound.mapIndexed { index, adr ->
@@ -163,7 +163,7 @@ internal object ReportPreviewData {
         ),
     )
 
-    // 4주 전에 액트가 바뀌었다. 그 앞 주는 평소 범위에서 빠진다.
+    // 3주 전에 액트가 바뀌었다. 기간 앞 새 액트 주가 셋뿐이라 평소 범위를 말하지 않는다.
     val newAct = moved.copy(
         trend = trend.mapIndexed { index, week ->
             when {

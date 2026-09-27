@@ -29,7 +29,7 @@
     <string name="no_act_matches">이번 액트에 뛴 경기가 아직 없어요</string>
     <string name="private_body">전적을 공개하지 않은 친구예요. 같이 한 경기만 볼 수 있어요.</string>
     <string name="compare_title">나와 비교</string>
-    <!-- 친구 칸은 친구의 기간이고 비교는 내 리포트 기간이라 기간을 같이 적는다 -->
+    <!-- 다른 칸은 이번 액트인데 나와 비교만 내 리포트 기간이라 기간을 같이 적는다 -->
     <string name="compare_caption">%1$s · 나 · %2$s</string>
     <string name="compare_no_matches">%2$s의 %1$s 경기가 없어요</string>
     <string name="recent_title">%1$s의 최근 경기</string>

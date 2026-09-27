@@ -9,7 +9,7 @@ import kotlin.time.Instant
  * 네트워크 계층이 여기에 맞춰 옮겨 담습니다.
  *
  * @property myRole 서버의 역할 표에 아직 없는 새 요원이면 `null`입니다.
- * @property allies 나를 뺀 우리 팀입니다. 팀킬을 가려내고 트레이드와 클러치를 볼 때 씁니다.
+ * @property allies 나를 뺀 우리 팀입니다. 팀킬, 트레이드, 클러치, 같이 한 경기를 이걸로 가립니다.
  * @property myTeamWon 비겼거나 결과를 모르면 `null`입니다. 승률을 낼 때 분모에서 뺍니다.
  * @property myCombatScore `players[].stats.score`. 라운드별이 아니라 경기 전체 합입니다.
  * @property rounds 내가 뛴 라운드만 담습니다. 중간에 튕겼다 들어온 경기에서 전체 라운드를
@@ -101,8 +101,9 @@ data class Scoreline(
 /**
  * 라운드 하나입니다.
  *
- * @property number 1부터 셉니다. 전반과 후반 첫 라운드(피스톨)를 이 번호로 가립니다. 응답의 `roundResults[].roundNum`이
- * 0부터 온다면 1을 더해 담습니다(실데이터로 확인해야 합니다).
+ * @property number 1부터 셉니다. 전반과 후반 첫 라운드(피스톨)를 이 번호로 가리고, S3 라운드 줄도 이 번호로
+ * [Match.roundOutcomes]의 몇 번째 라운드인지 찾습니다. 응답의 `roundResults[].roundNum`이 0부터 온다면 1을 더해
+ * 담습니다(실데이터로 확인해야 합니다).
  * @property kills 라운드에서 일어난 킬 전부입니다. 나와 무관한 킬도 들어갑니다. 트레이드와
  * 퍼블을 가르려면 누가 먼저 죽었는지 알아야 합니다.
  * @property myShots 내가 맞힌 부위별 횟수입니다. 킬 수가 아니라 적중 수입니다.
@@ -144,8 +145,8 @@ data class RoundEconomy(
 )
 
 /**
- * @property atMillis 라운드 시작부터 잰 시각. 응답의 `timeSinceRoundStartMillis`입니다.
- * @property weapon 킬을 낸 무기. `finishingDamage.damageItem`에서 옵니다.
+ * @property atMillis 라운드 시작부터 잰 시각(`timeSinceRoundStartMillis`)입니다.
+ * @property weapon 킬을 낸 무기입니다. `finishingDamage.damageItem`에서 옵니다.
  * `economy.weapon`을 쓰면 주워 쓴 총이 안 잡힙니다. 스킬 킬이면 `null`입니다.
  */
 data class KillEvent(

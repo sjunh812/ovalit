@@ -19,7 +19,7 @@ interface FriendRepository {
 
     /**
      * [players] 중 우리 앱에 연동한 사람입니다. 연동하지 않은 사람에게는 요청을 보낼 수 없어서 스코어보드에서
-     * 요청 대신 초대 링크를 권합니다.
+     * 요청 대신 초대 링크를 권합니다. 서버에 묻는 호출이라 예외가 날 수 있습니다.
      */
     suspend fun appUsersAmong(players: Collection<PlayerId>): Set<PlayerId>
 

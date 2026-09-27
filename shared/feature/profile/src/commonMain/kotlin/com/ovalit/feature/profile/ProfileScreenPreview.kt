@@ -16,7 +16,7 @@ private fun ProfileLightPreview() {
     OvalitThemePreview(darkTheme = false) { ProfileScreen(ProfilePreviewData.success, {}, {}, {}, {}, {}) }
 }
 
-// 통계 여섯 칸과 요원 세 칸이 가장 빡빡하다
+// 통계 여덟 칸과 요원 세 칸이 가장 빡빡하다
 @Preview(widthDp = 320, heightDp = 1800, fontScale = 1.5f)
 @Composable
 private fun ProfileSmallLargeFontPreview() {

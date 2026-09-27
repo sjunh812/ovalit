@@ -122,7 +122,7 @@ fun OvalitApp(appVersion: String) {
     val context = LocalContext.current
     val dimmedAlpha = dimmedAlpha(OvalitTheme.colors.isDark)
 
-    // 뒤 화면을 어둡게 비추는 바탕이다(OvalitTransitions). 화면은 모두 불투명해서 전환 중이 아니면 보이지 않는다.
+    // 전환 중에 아래 화면이 어두워 보이게 하는 검은 바탕이다(OvalitTransitions). 화면이 모두 불투명해서 평소에는 안 보인다.
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
         NavDisplay(
             backStack = backStack,
@@ -229,12 +229,12 @@ fun OvalitApp(appVersion: String) {
     }
 }
 
-// 탭바는 탭 화면마다 안에 둔다. 밖에 하나만 두고 숨기면 새 화면으로 넘어가는 순간 탭바가 먼저 사라져서, 밀려나는
-// 화면이 탭바 높이만큼 늘어나며 목록이 한 번 튄다. 안에 두면 탭바도 그 화면과 같이 밀려난다.
+// 탭바는 탭 화면마다 안에 둔다(CLAUDE.md 화면). 밖에 하나만 두면 새 화면으로 넘어갈 때 탭바가 먼저 사라져서
+// 밀려나는 화면이 탭바 높이만큼 늘어나고 목록이 튄다.
 @Composable
 private fun TabScaffold(selected: NavKey, onSelect: (NavKey) -> Unit, content: @Composable () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
-        // 탭바가 아래 내비게이션 바만큼 올라가 있으니 본문은 아래 여백을 또 두지 않는다. 가로 화면에서 옆에 붙는
+        // 탭바가 아래 내비게이션 바 높이만큼 여백을 두니 본문은 아래 여백을 또 두지 않는다. 가로 화면에서 옆에 붙는
         // 내비게이션 바는 본문도 피해야 해서 아래쪽만 쓴 것으로 친다.
         Box(
             modifier = Modifier.weight(1f).consumeWindowInsets(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)),
@@ -253,7 +253,7 @@ private fun TabScaffold(selected: NavKey, onSelect: (NavKey) -> Unit, content: @
 }
 
 // 화면마다 바탕을 깐다. 전환 중에 바탕이 빈 화면이 있으면 뒤의 검은 바탕이 그대로 보인다. 양옆 바깥에는 선을
-// 긋는다. 쉬고 있을 때는 화면 밖이라 안 보이고, 밀려 들어오거나 스와이프로 밀어낼 때만 두 화면 사이에 보인다.
+// 긋는다. 전환 중이 아닐 때는 화면 밖이라 안 보이고, 밀려 들어오거나 스와이프로 밀어낼 때만 두 화면 사이에 보인다.
 @Composable
 private fun rememberOpaqueEntryDecorator(): NavEntryDecorator<NavKey> {
     val background = OvalitTheme.colors.bg
@@ -298,7 +298,7 @@ private fun Context.shareInvite(link: String) {
     startActivity(Intent.createChooser(send, getString(R.string.share_invite)))
 }
 
-// S0-4 아래에 "다 모으면 알림으로 알려드릴게요"가 있어서 이 화면에 들어올 때 한 번 묻는다
+// S0-4 아래에 "다 모으면 알림으로 알려드릴게요"라고 적혀 있어서 이 화면에 들어올 때 한 번 묻는다
 @Composable
 private fun RequestNotificationPermission() {
     if (Build.VERSION.SDK_INT < 33) return

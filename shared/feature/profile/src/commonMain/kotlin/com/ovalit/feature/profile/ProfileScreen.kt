@@ -53,10 +53,7 @@ fun ProfileRoute(
     ProfileScreen(uiState, onBack, onOpenAgents, onOpenWeapons, onOpenMatch, onOpenMatches, modifier)
 }
 
-/**
- * 위에서부터 티어 카드, 통계, 맞힌 부위, 요원과 무기, 최근 경기 순서입니다. 최근 경기 말고는 모두 이번
- * 액트의 내 경기끼리만 셉니다.
- */
+// 칸 순서는 CLAUDE.md의 내 프로필을 따른다. 최근 경기 말고는 모두 이번 액트의 경쟁 + 일반 경기로 센 숫자다.
 @Composable
 internal fun ProfileScreen(
     uiState: ProfileUiState,

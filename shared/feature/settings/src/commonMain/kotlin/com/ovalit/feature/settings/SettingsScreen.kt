@@ -79,7 +79,7 @@ private val AvatarSize = 44.dp
  * S4 설정입니다.
  *
  * @param appVersion 앱 모듈만 버전을 알아서 밖에서 받습니다.
- * @param onUnlinked 연동을 해제하고 데이터를 다 지운 뒤에 불립니다. 인트로로 돌려보냅니다.
+ * @param onUnlinked 연동을 해제하고 데이터를 다 지운 뒤에 불립니다. 앱 모듈이 여기서 인트로로 돌려보냅니다.
  */
 @Composable
 fun SettingsRoute(
@@ -236,7 +236,6 @@ private fun AccountHeader(account: Account?) {
         modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // 홈 오른쪽 위, 프로필 머리와 같은 아바타다. 카드를 서버에서 받기 전까지는 Riot ID 첫 글자다.
         PlayerAvatar(riotId = account?.riotId.orEmpty(), size = AvatarSize)
         Spacer(Modifier.width(OvalitSpacing.md))
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {

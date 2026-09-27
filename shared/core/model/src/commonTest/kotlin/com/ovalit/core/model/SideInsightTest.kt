@@ -160,22 +160,22 @@ class SideInsightTest {
 }
 
 /**
- * 공격에서는 퍼블 20번에 퍼데 10번, 수비에서는 퍼블 5번에 퍼데 25번이다. 첫 교전 승률이 67%와 17%로 벌어지고, 관여율도
- * 75%와 38%로 벌어진다. 생존율은 두 진영 모두 25%다.
+ * 공격에서는 퍼블 20번에 퍼데 10번, 수비에서는 퍼블 5번에 퍼데 25번입니다. 첫 교전 승률이 67%와 17%로 벌어지고,
+ * 관여율도 75%와 38%로 벌어집니다. 생존율은 두 진영 모두 25%입니다.
  */
 private fun aimGap() = side(Side.ATTACK, survived = 10, died = 30, openedByMe = 20) +
     side(Side.DEFENSE, survived = 10, died = 30, openedByMe = 5)
 
-/** 한 진영의 포스바이 라운드를 경기 하나에 담는다. 피스톨 라운드가 아니게 번호를 5로 둔다. */
+/** 한 진영의 포스바이 라운드를 경기 하나에 담습니다. 피스톨 라운드가 아니게 번호를 5로 둡니다. */
 private fun buys(side: Side, won: Int, lost: Int): List<Match> {
     val rounds = List(won + lost) { index -> round(side = side, number = 5, teamLoadout = 3000, won = index < won) }
     return listOf(match(*rounds.toTypedArray()))
 }
 
 /**
- * 한 진영 라운드를 경기 하나에 담는다. [survived]라운드는 살아남고 [died]라운드는 첫 교전에서 죽는다.
- * 죽는 라운드 중 앞의 [openedByMe]라운드는 내가 먼저 한 명을 잡은 뒤 죽는다. 그 라운드는 관여율과
- * 첫 교전 승률에 들어간다.
+ * 한 진영 라운드를 경기 하나에 담습니다. [survived]라운드는 살아남고 [died]라운드는 죽습니다.
+ * 죽는 라운드 중 앞의 [openedByMe]라운드는 내가 퍼블을 딴 뒤 죽고, 나머지는 퍼데입니다. 퍼블을 딴 라운드는
+ * 관여율에도 들어갑니다.
  */
 private fun side(
     side: Side?,

@@ -33,7 +33,7 @@ class FriendTest {
         assertEquals(SharedRecord(matches = 3, wins = 1, losses = 1), matches.sharedWith(Junho))
     }
 
-    // 라이벌 대결은 같은 달력 구간을 봐야 둘을 나란히 놓을 수 있다
+    // 라이벌 대결은 나와 친구를 같은 달력 구간으로 세야 나란히 놓을 수 있다
     @Test
     fun `친구 값은 내 리포트와 같은 기간으로 센다`() {
         val friend = friend(games(weeksAgo = 0, count = 2, damage = 200) + games(weeksAgo = 1, count = 3, damage = 100))

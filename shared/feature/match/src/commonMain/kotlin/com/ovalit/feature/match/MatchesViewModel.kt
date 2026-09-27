@@ -105,7 +105,7 @@ class MatchesViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
-                // 받지 못해도 저장해 둔 경기 목록은 그대로 둔다
+                // 아직 실패를 화면에 알리지 않는다. 저장해 둔 경기는 그대로 남는다.
             } finally {
                 refreshing.value = false
             }

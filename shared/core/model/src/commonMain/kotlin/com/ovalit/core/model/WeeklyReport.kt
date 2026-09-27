@@ -17,7 +17,7 @@ sealed interface WeeklyReport {
      * @property baseline "지난 4주 평균"에 쓰는 비교 기준입니다. 그 기간 경기가 5경기에 못 미치면 `null`입니다.
      * @property mainRole 기간 중 라운드를 가장 많이 뛴 역할입니다. 역할을 아는 경기가 없으면 `null`입니다.
      * @property mainRoleShare 역할을 아는 라운드 중 [mainRole]로 뛴 라운드의 비중입니다. 화면에는 "타격대 78%"로
-     * 띄웁니다. 역할만 적으면 그 기간에 그 역할만 한 것처럼 읽힙니다.
+     * 띄웁니다.
      * @property dynamic 동적 칸(3~5개)입니다. [Movement.MOVED]가 하나도 없고 [Movement.STEADY]가 있을 때만 "큰 변화
      * 없음"을 띄웁니다. 모두 [Movement.UNKNOWN]이면 판단을 보류했다고 적습니다. [QueueFilter.OTHER]면 빈 목록입니다.
      * @property insight 개선 포인트 문장입니다. 공수 격차가 기준을 넘지 않거나 [QueueFilter.OTHER]면 `null`입니다.
@@ -84,7 +84,6 @@ data class Baseline(
  * @property metrics 그 주 합계입니다. 라운드가 [MIN_TREND_ROUNDS]에 못 미치면 `null`입니다. 한두 판만 뛴 주가 섞이면
  * 막대 하나 때문에 추이가 흔들립니다.
  * @property startsNewAct 앞 주와 액트가 다르면 `true`입니다. 화면은 이 막대 앞에 세로선을 긋습니다.
- * @property inPeriod 리포트 기간에 든 주입니다.
  */
 data class TrendWeek(
     val firstDay: LocalDate,

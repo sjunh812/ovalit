@@ -14,7 +14,7 @@
     <!-- S7 요원 -->
     <string name="agents_title">요원</string>
     <string name="agents_main_role">주 역할</string>
-    <!-- %1$s 자리의 지표 이름은 굵게 칠한다 -->
+    <!-- %1$s 자리의 지표 이름은 밝고 굵게 띄운다 -->
     <string name="agents_role_duelist">타격대는 %1$s로 봐요. 어시스트가 적은 건 역할상 자연스러워요.</string>
     <string name="agents_role_initiator">척후대는 %1$s로 봐요. K/D가 낮은 건 역할상 자연스러워요.</string>
     <string name="agents_role_controller">전략가는 %1$s로 봐요. 퍼블이 적은 건 역할상 자연스러워요.</string>
@@ -59,7 +59,7 @@
     <string name="weapons_category_shotgun">산탄총</string>
     <string name="weapons_category_machine_gun">기관총</string>
     <string name="weapons_category_melee">근접 무기</string>
-    <!-- 카탈로그에 계열이 없는 새 무기 -->
+    <!-- 카탈로그에 아직 없는 새 무기를 모으는 계열 -->
     <string name="weapons_category_unknown">그 밖의 무기</string>
     <string name="weapons_expand">%1$s 펼치기</string>
     <string name="weapons_collapse">%1$s 접기</string>

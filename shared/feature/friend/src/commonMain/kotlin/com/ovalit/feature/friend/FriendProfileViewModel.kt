@@ -36,7 +36,8 @@ import kotlinx.datetime.TimeZone
 /**
  * 친구의 이번 액트 경쟁 + 일반 경기 성적입니다. 내 프로필과 같은 기준으로 셉니다.
  *
- * @property weapons 위쪽 세 무기의 이번 액트 값만 씁니다. 누르면 여는 S6은 같은 경기로 따로 셉니다.
+ * @property weapons 위쪽 세 무기의 이번 액트 값만 씁니다. 누르면 여는 S6은 RecordsViewModel이 기기에 저장된 같은
+ * 경기로 다시 셉니다.
  */
 data class FriendProfile(
     val summary: ProfileSummary,
@@ -47,12 +48,13 @@ data class FriendProfile(
 sealed interface FriendProfileUiState {
     data object Loading : FriendProfileUiState
 
-    /** 친구를 끊었거나 목록에 없습니다. */
+    /** 친구 목록에 없을 때입니다. 내가 끊었든 상대가 끊었든 같습니다. */
     data object Gone : FriendProfileUiState
 
     /**
      * @property theirProfile 내 프로필과 같은 칸에 넣는 친구의 이번 액트 성적입니다. 전적 비공개면 `null`입니다.
-     * @property theirMetricsInMyPeriod "나와 비교"에 쓰는 값입니다. 내 리포트와 같은 기간으로 셉니다.
+     * @property theirMetricsInMyPeriod "나와 비교"에 쓰는 값입니다. 내 리포트와 같은 기간으로 셉니다. 내 리포트가 없거나,
+     * 친구가 전적을 공개하지 않았거나, 그 기간에 친구 경기가 없으면 `null`입니다.
      */
     data class Success(
         val friend: Friend,

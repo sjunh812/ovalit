@@ -8,8 +8,8 @@ import com.ovalit.core.model.Role
 import com.ovalit.core.model.WeaponCategory
 import com.ovalit.core.model.WeaponId
 
-// 가짜 경기에 나오는 요원, 맵, 무기, 플레이어입니다. ID는 콘텐츠 카탈로그의 실제 UUID라서 번들한
-// 이미지가 그대로 붙습니다. 이미지를 찾을 때 대문자로 맞추므로 ID의 대소문자는 상관없습니다.
+// 가짜 경기에 나오는 요원, 맵, 무기, 플레이어다. ID는 콘텐츠 카탈로그의 실제 UUID라서 번들한
+// 이미지가 그대로 붙는다. 이미지를 찾을 때 대문자로 맞추므로 ID의 대소문자는 상관없다.
 
 internal class FakeAgent(val id: AgentId, val name: String, val role: Role)
 

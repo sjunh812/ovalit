@@ -62,7 +62,7 @@ internal fun round(
     },
 )
 
-/** 아무 일도 없이 끝난 라운드. 나는 살아남는다. */
+/** 아무 일도 없이 끝난 라운드입니다. 나는 살아남습니다. */
 internal fun quietRound() = round()
 
 internal fun kill(

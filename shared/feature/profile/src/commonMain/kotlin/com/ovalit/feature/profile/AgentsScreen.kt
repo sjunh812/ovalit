@@ -110,7 +110,7 @@ private val MetricColumn = 58.dp
 private val ColumnGap = 6.dp
 private val ThumbnailSize = 34.dp
 
-/** S7 요원 화면입니다. 내 프로필과 친구 프로필(S5)에서 열립니다. */
+/** S7 요원 화면입니다. 홈, 내 프로필, 친구 프로필(S5)에서 열립니다. */
 @Composable
 fun AgentsRoute(
     owner: RecordsOwner,
@@ -202,7 +202,7 @@ private fun MainRole(report: AgentReport, role: Role, catalog: ContentCatalog) {
         OvalitText(text = stringResource(Res.string.agents_main_role), style = OvalitTheme.typography.label, color = colors.t3)
         Spacer(Modifier.height(9.dp))
         Row(verticalAlignment = Alignment.Bottom) {
-            // 프로필 머리처럼 역할 아이콘을 이름 바로 앞에 둔다. 글자 크기에 맞춰 키워서 글씨를 키운 사용자에게도 같은 비율이다.
+            // 프로필 머리처럼 역할 아이콘을 이름 바로 앞에 둔다. 아이콘 크기를 글자 크기에서 잡아 글씨를 키워도 같이 커진다.
             val titleStyle = OvalitTheme.typography.titleL
             val iconSize = with(LocalDensity.current) { titleStyle.fontSize.toDp() }
             Row(modifier = Modifier.alignByBaseline(), verticalAlignment = Alignment.CenterVertically) {
@@ -226,7 +226,7 @@ private fun MainRole(report: AgentReport, role: Role, catalog: ContentCatalog) {
             )
         }
         Spacer(Modifier.height(11.dp))
-        // 이 역할을 무엇으로 보는지만 굵게 칠한다
+        // 이 역할을 무엇으로 보는지만 밝고 굵게 띄운다
         OvalitText(
             text = buildAnnotatedString {
                 append(sentence)
@@ -279,10 +279,8 @@ private fun RoleShares(report: AgentReport, mainRole: Role) {
 
 private class MetricColumnSpec(val title: StringResource, val format: MetricFormat, val value: (MatchMetrics) -> Double?)
 
-/**
- * 요원별 표의 오른쪽 두 열입니다. 처음에는 주 역할에 맞춘 묶음을 보여 주고([defaultFor]), 표 위 버튼으로 바꿉니다.
- * 두 열씩 묶어 두면 무엇을 골라도 표 모양이 그대로입니다.
- */
+// 요원별 표의 오른쪽 두 열이다. 처음에는 주 역할에 맞춘 묶음(defaultFor)을 보여주고 표 위 버튼으로 바꾼다. 두 열씩
+// 묶어 두어서 무엇을 골라도 표 모양이 그대로다.
 private enum class AgentColumns(val label: StringResource, private val specs: () -> List<MetricColumnSpec>) {
     FIRST_DUEL(
         Res.string.agents_columns_first_duel,
@@ -329,7 +327,7 @@ private fun AgentColumnsSheet(
                 OvalitSheetOption(
                     text = stringResource(option.label),
                     selected = option == selected,
-                    // "척후대 기준"이라고 쓰면 위의 "척후대는 어시스트와 관여율로 봐요"와 어긋나서 처음 보여 주는 묶음이라고만 적는다
+                    // "척후대 기준"이라고 쓰면 위의 "척후대는 어시스트와 관여율로 봐요"와 어긋나서 "기본"이라고만 적는다
                     caption = if (option == roleDefault) stringResource(Res.string.agents_columns_role_default) else null,
                     onClick = {
                         onSelect(option)
@@ -392,7 +390,7 @@ private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: 
 @Composable
 private fun roleText(agent: AgentStats): String = agent.role?.let { stringResource(it.label) } ?: NO_VALUE
 
-// 승률처럼 5판을 넘긴 요원만 KDA를 적는다
+// 승률처럼 5판 이상 뛴 요원만 KDA를 적는다
 @Composable
 private fun rowKda(agent: AgentStats): AnnotatedString? = agent.metrics.kda?.takeIf { agent.isMeasurable }?.let { kdaRatioText(it) }
 

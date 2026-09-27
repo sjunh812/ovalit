@@ -119,8 +119,8 @@ internal fun FriendsScreen(
                 )
             }
 
-            // 수락하거나 거절하면 그 줄이 빠지면서 아래 목록이 끌려 올라온다. 한 번에 튀어 오르지 않게 높이가 천천히 줄게 한다.
-            // 마지막 요청을 처리하면 구역이 접히는 동안에도 그 줄을 보여 준다. 빈 목록을 그리면 "받은 요청 0"이 잠깐 뜬다.
+            // 요청을 처리하면 아래 목록이 한 번에 튀어 오르지 않게 높이를 천천히 줄인다. 마지막 요청이면 구역이 접히는 동안
+            // 그 줄을 그대로 둔다. 빈 목록을 그리면 "받은 요청 0"이 잠깐 뜬다.
             var lastRequests by remember { mutableStateOf(uiState.requests) }
             SideEffect { if (uiState.requests.isNotEmpty()) lastRequests = uiState.requests }
             val shownRequests = uiState.requests.ifEmpty { lastRequests }

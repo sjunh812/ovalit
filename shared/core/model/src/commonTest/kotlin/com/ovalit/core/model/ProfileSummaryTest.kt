@@ -7,7 +7,7 @@ import kotlin.time.Instant
 
 class ProfileSummaryTest {
 
-    // 일반전에도 티어가 실려 오지만 오르내리는 건 경쟁전뿐이다
+    // 일반전 응답에도 티어가 있지만 티어가 오르내리는 건 경쟁전뿐이다
     @Test
     fun `지금 티어는 가장 최근 경쟁전에서 읽는다`() {
         val summary = listOf(

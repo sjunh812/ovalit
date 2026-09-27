@@ -44,9 +44,10 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * S0-2 연동 동의입니다. RSO 인증 전이라 여기서도 아무 데이터를 요청하지 않습니다.
+ * S0-2 연동 동의입니다. RSO 인증 전이라 인트로처럼 아무 데이터도 요청하지 않습니다.
  *
- * @param onContinue 다음은 S0-3 Riot 로그인입니다. Custom Tabs로 띄우고 앱은 비밀번호를 만지지 않습니다.
+ * @param onContinue 다음은 S0-3 Riot 로그인입니다. Custom Tabs로 띄우고 앱은 비밀번호를 만지지 않습니다. RSO가 붙기
+ * 전까지는 앱 모듈이 S0-3을 건너뛰고 가짜 계정으로 연동합니다.
  */
 @Composable
 fun ConsentScreen(onBack: () -> Unit, onContinue: () -> Unit, modifier: Modifier = Modifier) {
@@ -89,8 +90,8 @@ fun ConsentScreen(onBack: () -> Unit, onContinue: () -> Unit, modifier: Modifier
         }
 
         Column(modifier = Modifier.padding(start = OvalitSpacing.xl, end = OvalitSpacing.xl, bottom = OvalitSpacing.xl)) {
-            // 글자를 키우면 본문이 버튼 뒤로 이어진다. 선이 없으면 글자가 반쯤 잘린 채 끝난 것처럼 보여서, 더 내릴
-            // 게 있을 때만 선을 긋는다. 선 자리는 늘 비워 둬서 긋고 지울 때 버튼이 움직이지 않는다.
+            // 글자를 키우면 본문이 버튼 위에서 잘린다. 선이 없으면 글자가 반쯤 잘린 채 끝난 것처럼 보여서 더 내릴 게
+            // 있을 때만 선을 긋는다. 선 자리는 늘 비워 둬서 긋고 지울 때 버튼이 움직이지 않는다.
             OvalitDivider(color = if (scroll.canScrollForward) colors.line else Color.Transparent)
             Spacer(Modifier.height(OvalitSpacing.lg))
             OvalitPrimaryButton(

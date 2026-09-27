@@ -54,7 +54,7 @@ class ProfileScreensTest {
         onNodeWithText("56%", useUnmergedTree = true).assertExists()
     }
 
-    // 티어 칸에 크게 두니 이름 줄에서는 뺀다. 경쟁전이 없으면 티어 칸이 없어 이름 줄에 남긴다.
+    // 티어를 카드에 크게 두니 이름 줄에서는 뺀다. 경쟁전이 없으면 티어 카드가 없어 이름 줄에 남긴다.
     @Test
     fun `경쟁전이 없으면 티어를 이름 줄에 둔다`() = runComposeUiTest {
         setContent { Themed { ProfileScreen(ProfilePreviewData.noCompetitive, {}, {}, {}, {}, {}) } }
@@ -237,7 +237,7 @@ class ProfileScreensTest {
         onNodeWithText("60킬", useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 5판을 넘긴 네 요원만 KDA를 적는다. 미리보기 요원은 킬·데스·어시가 라운드에 비례해서 모두 1.77이다.
+    // 5판 이상 뛴 네 요원만 KDA를 적는다. 미리보기 요원은 킬·데스·어시가 라운드에 비례해서 모두 1.77이다.
     @Test
     fun `요원 표의 줄마다 5판을 넘긴 요원에게 KDA를 적는다`() = runComposeUiTest {
         setContent { Themed { AgentsScreen(ProfilePreviewData.records, onBack = {}) } }

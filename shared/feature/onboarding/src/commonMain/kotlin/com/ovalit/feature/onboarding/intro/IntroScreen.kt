@@ -42,13 +42,12 @@ private val LogoWidth = 104.dp
 private val ParenthesisScale = 0.7.em
 
 /**
- * 괄호와 그 안의 글자를 색과 크기로 한 단계 눌러 줍니다.
+ * 괄호와 그 안의 글자를 한 단계 흐리고 작게 그립니다.
  *
- * "오발있? (오늘 발로 있어?)"에서 앱 이름을 먼저 읽히게 하고 뜻풀이는 뒤로 물립니다.
- * 전부 같은 색과 크기면 어디까지가 이름인지 구분이 안 됩니다.
+ * "오발있? (오늘 발로란트 할 사람 있어?)"에서 앱 이름이 먼저 읽히게 합니다. 전부 같은 색과
+ * 크기면 어디까지가 이름인지 구분이 안 됩니다.
  *
- * 문구는 리소스에 그대로 두고 보여주는 방법만 여기서 정합니다. 번역할 때도 괄호만 그대로
- * 쓰면 됩니다.
+ * 문구는 리소스에 그대로 두고 보여주는 방법만 여기서 정합니다. 번역할 때도 괄호만 지키면 됩니다.
  */
 @Composable
 private fun dimParentheses(text: String): AnnotatedString {
@@ -83,8 +82,8 @@ fun IntroScreen(
     onStart: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // 고지는 지우면 키가 회수되는 문구라 어떤 화면에서도 끝까지 보여야 한다. 작은 기기에서 글자를 키우면 한 화면에 다
-    // 안 들어가서 스크롤되게 두고, 화면이 넉넉하면 화면 높이를 채워 지금 배치 그대로 둔다.
+    // 고지는 빼면 키가 회수되는 문구라 어떤 기기에서도 끝까지 볼 수 있어야 한다. 작은 기기에서 글자를 키우면 한 화면에
+    // 다 안 들어가니 스크롤되게 두고, 화면이 넉넉하면 최소 높이를 화면 높이로 잡아 버튼과 고지를 아래에 붙인다.
     BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
@@ -97,8 +96,8 @@ fun IntroScreen(
                 .verticalScroll(rememberScrollState())
                 .heightIn(min = maxHeight)
                 .padding(horizontal = OvalitSpacing.xl),
-            // 로고와 문구 덩어리를 버튼 위 공간의 가운데에 둔다. 위로 붙이면 화면 한복판이 통째로 비어서 안 채운 것처럼
-            // 보인다. 스크롤 안에서는 weight가 듣지 않아 빈 칸을 셋으로 두고 사이를 벌린다.
+            // 로고와 문구 덩어리를 버튼 위 공간의 가운데에 둔다. 스크롤 안에서는 weight가 듣지 않아 세 덩어리를
+            // SpaceBetween으로 벌린다.
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Spacer(Modifier.height(OvalitSpacing.xl))
@@ -108,8 +107,8 @@ fun IntroScreen(
 
                 Spacer(Modifier.height(OvalitSpacing.xl))
 
-                // 로고가 초성 ㅇㅂㅇ이라 처음 보는 사람은 읽는 법을 모른다. 바로 밑에서 소리 내어 읽어 주는 자리다.
-                // 헤드라인과 같은 크기로 둬서 두 줄이 한 덩어리로 읽히게 한다.
+                // 로고 ㅇㅂㅇ을 소리 내어 읽어 주는 줄이라 로고 바로 밑에 둔다(CLAUDE.md 용어). 헤드라인과 같은 크기로
+                // 둬서 두 줄이 한 덩어리로 읽히게 한다.
                 OvalitText(
                     text = dimParentheses(stringResource(Res.string.intro_hook)),
                     style = OvalitTheme.typography.titleL,
@@ -122,8 +121,8 @@ fun IntroScreen(
 
                 Spacer(Modifier.height(OvalitSpacing.md))
 
-                // "움직였는지"에서 줄을 나눈다. 한 줄로 두면 기기 폭에 따라 "드려요"만 다음 줄에 떨어진다. 줄바꿈을 글자에
-                // 박지 않고 두 줄로 두어서, 좁은 화면에서는 줄마다 알아서 꺾인다.
+                // "움직였는지"에서 줄을 나눈다. 한 줄로 두면 기기 폭에 따라 "짚어드려요"만 다음 줄에 떨어진다. 문자열을
+                // 둘로 나눠 두어서 좁은 화면에서는 줄마다 알아서 꺾인다.
                 OvalitText(
                     text = stringResource(Res.string.intro_subtitle_what),
                     style = OvalitTheme.typography.body,

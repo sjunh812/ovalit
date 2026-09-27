@@ -9,7 +9,7 @@ const val MIN_AGENT_MATCHES = 5
  *
  * @property mainRole 라운드를 가장 많이 뛴 역할입니다. 홈의 "타격대 78%"와 같은 규칙입니다.
  * @property roles 라운드를 많이 뛴 역할 순서입니다.
- * @property agents 많이 뛴 요원 순서입니다.
+ * @property agents 판을 많이 뛴 요원 순서입니다.
  */
 data class AgentReport(
     val matches: Int,

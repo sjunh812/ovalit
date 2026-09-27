@@ -31,10 +31,7 @@ private const val WORK_NAME = "first-import"
 private const val CHANNEL_ID = "analysis_done"
 private const val NOTIFICATION_ID = 1
 
-/**
- * 첫 수집을 WorkManager에 맡깁니다. 앱을 닫아도 이어 받습니다. 같은 이름의 작업이 이미 돌고 있으면
- * 새로 걸지 않습니다. 주기적으로 다시 받는 동기화는 두지 않습니다.
- */
+/** 같은 이름의 작업이 돌고 있거나 시작을 기다리고 있으면 새로 걸지 않습니다. 네트워크가 연결돼야 시작합니다. */
 class WorkManagerImportScheduler(private val context: Context) : ImportScheduler {
     override fun start() {
         val request = OneTimeWorkRequestBuilder<FirstImportWorker>()
@@ -54,7 +51,7 @@ class FirstImportWorker(context: Context, params: WorkerParameters) : CoroutineW
     private val preferences: UserPreferencesRepository by inject()
 
     override suspend fun doWork(): Result {
-        // 연동을 해제한 뒤에 기다리던 작업이 돌면 RSO 세션 없이 전적을 요청하게 된다(CLAUDE.md 지켜야 할 선)
+        // 연동을 해제한 뒤에 기다리던 작업이 돌면 RSO 세션 없이 전적을 요청한다(CLAUDE.md 지켜야 할 선)
         if (account.account.first() == null) return Result.success()
         matches.importRecent()
         // 화면을 보고 있으면 S0-4가 이미 끝났다고 알려 주니 알림을 겹쳐 보내지 않는다. 받는 사이 연동을 해제했어도 보내지 않는다.

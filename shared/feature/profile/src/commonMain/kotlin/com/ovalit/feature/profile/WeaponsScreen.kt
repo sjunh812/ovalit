@@ -93,7 +93,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-/** S6 무기 화면입니다. 내 프로필과 친구 프로필(S5)에서 열립니다. */
+/** S6 무기 화면입니다. 홈, 내 프로필, 친구 프로필(S5)에서 열립니다. */
 @Composable
 fun WeaponsRoute(
     owner: RecordsOwner,
@@ -164,19 +164,14 @@ private val WeaponMetric.fixed: FixedMetric
         WeaponMetric.HEADSHOT_RATE -> FixedMetric.HEADSHOT_RATE
     }
 
-/**
- * 위쪽 세 무기 표의 한 칸입니다.
- *
- * @property change 이번 기간을 띄운 줄에만 있고, 비교할 값이 없으면 빈 글자입니다. 줄 안의 칸 높이를 맞추려고 비워 둡니다.
- * @property rise 움직였다고 판단한 변화의 방향입니다. 오르면 1, 내리면 -1, 평소 범위 안이거나 모르면 0입니다.
- */
+// 위쪽 세 무기 표의 한 칸이다. change는 이번 액트 값을 띄운 줄이면 null이고, 비교할 값이 없으면 빈 글자다. 빈 글자로
+// 두어야 줄 안의 칸 높이가 맞는다. rise는 움직였다고 판단한 변화의 방향이다. 오르면 1, 내리면 -1, 평소 범위 안이거나
+// 모르면 0이다.
 private class HighlightCell(val value: String, val change: String?, val rise: Int)
 
-/**
- * 위쪽 세 무기의 표입니다. 홈 리포트와 같은 기간의 K/D, 라운드당 피해량, 헤드샷을 그 앞 4주 평균과 견줍니다. 기간 표본이
- * 모자란 무기는 그 줄만 이번 액트 값을 띄우고 그렇다고 적습니다. 무기끼리 같은 지표를 위아래로 견줄 수 있게 열을
- * 맞추고, 열 제목은 맨 위에 한 번만 둡니다.
- */
+// 위쪽 세 무기의 표다. 홈 리포트와 같은 기간의 K/D, 라운드당 피해량, 헤드샷을 바로 앞 최대 4주 평균과 견준다. 기간
+// 표본이 모자란 무기는 그 줄만 이번 액트 값을 띄우고 "이번 액트 기준"이라고 적는다. 무기끼리 같은 지표를 위아래로
+// 견주도록 열을 맞추고, 열 제목은 맨 위에 한 번만 둔다.
 @Composable
 private fun Highlights(report: WeaponReport, catalog: ContentCatalog) {
     val colors = OvalitTheme.colors
@@ -214,8 +209,8 @@ private fun Highlights(report: WeaponReport, catalog: ContentCatalog) {
         )
         val labelStyle = rememberFittingStyle(labels, typography.caption, cellWidth)
 
-        // 이름 칸의 글자가 한 줄에 안 들어가면 세 줄 모두 숫자를 이름 밑으로 내린다. 한 줄만 내리면 열이 어긋난다.
-        // "요즘 잘 / 맞아요"처럼 문구가 가운데서 갈리는 것도 이렇게 막는다.
+        // 이름의 가장 긴 어절이나 "요즘 잘 맞아요", 킬 수가 숫자 옆 폭에 안 들어가면 세 줄 모두 숫자를 이름 밑으로
+        // 내린다. 한 줄만 내리면 열이 어긋난다. 문구를 통째로 재서 "요즘 잘 / 맞아요"처럼 가운데서 갈리는 것도 막는다.
         val nameWords = rows.flatMap { it.name.split(' ') }
         val captions = rows.flatMap { row ->
             listOfNotNull(
@@ -273,14 +268,15 @@ private class HighlightLine(
     val cells: List<HighlightCell>?,
     val comparesPeriod: Boolean,
 ) {
-    /** 표는 이번 기간을 보는데 이 줄만 표본이 모자라 이번 액트 값을 띄웁니다. */
+    // 표는 이번 기간을 보는데 이 줄만 표본이 모자라 이번 액트 값을 띄운다
     val fallsBackToAct: Boolean get() = comparesPeriod && highlight.current == null
 
     // "요즘 잘 맞아요"는 맞히는 얘기라 헤드샷이 움직였을 때만 붙인다
     val tag: Int? get() = cells?.get(WeaponMetric.HEADSHOT_RATE.ordinal)?.rise?.takeIf { it != 0 }
 }
 
-// 순서를 정한 이번 액트 킬이다. 표가 이번 기간을 볼 때 이번 주 킬과 섞어 적으면 순서가 틀려 보인다.
+// 순서를 정한 이번 액트 킬이다. 기간 킬을 적으면 킬이 적은 무기가 위에 있는 것처럼 보인다. 머리에 기간이 적혀 있을
+// 때만 "이번 액트"를 붙인다.
 @Composable
 private fun killsText(line: HighlightLine): String {
     val kills = line.highlight.act.kills.withThousands()
@@ -316,7 +312,7 @@ private fun highlightCells(highlight: WeaponHighlight): List<HighlightCell>? {
     }
 }
 
-/** [stacked]면 숫자 세 칸을 이름 밑 오른쪽에 둡니다. 열 위치는 그대로라 머리의 열 제목과 맞습니다. */
+// stacked면 숫자 세 칸을 이름 밑 오른쪽에 둔다. 열 위치는 그대로라 머리의 열 제목과 맞는다.
 @Composable
 private fun HighlightRow(line: HighlightLine, styles: HighlightStyles, stacked: Boolean) {
     val weapon = line.highlight.act.weapon
@@ -408,7 +404,7 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
         .entries
         .sortedByDescending { (_, weapons) -> weapons.sumOf { it.kills } }
     val top = byCategory.firstOrNull()?.key
-    // 카탈로그에 없는 무기는 계열이 null이다. 펼친 계열이 없을 때도 null이라 따로 이름을 붙이지 않으면 "그 밖의 무기"가
+    // 카탈로그에 없는 무기는 계열이 null이다. 펼친 계열이 없다는 뜻도 null이라 따로 키를 두지 않으면 "그 밖의 무기"가
     // 늘 펼쳐진 것으로 읽혀 접히지 않는다.
     fun WeaponCategory?.key(): String = this?.name ?: UNKNOWN_CATEGORY
     var expanded by rememberSaveable { mutableStateOf(byCategory.firstOrNull()?.key?.key()) }
@@ -456,7 +452,7 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
                 val nameWidth = maxWidth - WeaponThumbWidth - OvalitSpacing.md
                 val beside = rememberFittingStyle(lines.map { it.text }, caption, nameWidth - KdColumn - DamageColumn - HeadshotColumn)
                 val below = rememberFittingStyle(lines.map { it.text }, caption, nameWidth)
-                // 숫자 세 칸 옆에서 KDA 줄을 한참 줄여야 들어가면 계열 안의 모든 줄에서 세 칸을 이름 밑으로 내린다
+                // 세 칸 옆에 맞춘 KDA 줄 크기가 원래의 80%보다 작으면 계열 안의 모든 줄에서 세 칸을 이름 밑으로 내린다
                 val stacked = beside.fontSize.value < caption.fontSize.value * MIN_KDA_SCALE
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     WeaponColumns()
@@ -559,11 +555,7 @@ private fun WeaponColumns() {
     }
 }
 
-/**
- * 무기 한 줄입니다. 이름 밑에 KDA와 K/D/A 합계를 두고 오른쪽에 K/D, 라운드당 피해량, 헤드샷을 둡니다. K/D와 피해량은
- * 들고 시작한 라운드, 헤드샷은 한 무기만 쓴 라운드가 표본입니다. 둘 다 모자라면 칸을 합쳐 "표본 부족"이라고 한 번만
- * 적고, 하나만 모자라면 그 칸만 비웁니다. [stacked]면 세 칸을 이름 밑 오른쪽에 둡니다.
- */
+// stacked면 세 칸을 이름 밑 오른쪽에 둔다. 열 위치는 그대로라 계열 맨 위의 열 제목과 맞는다.
 @Composable
 private fun WeaponRow(weapon: WeaponStats, catalog: ContentCatalog, line: AnnotatedString, lineStyle: TextStyle, stacked: Boolean) {
     val name = catalog.weaponName(weapon.weapon)
@@ -598,6 +590,8 @@ private fun WeaponRow(weapon: WeaponStats, catalog: ContentCatalog, line: Annota
     }
 }
 
+// K/D와 피해량은 들고 시작한 라운드, 헤드샷은 한 무기만 쓴 라운드가 표본이다. 둘 다 모자라면 칸을 합쳐 "표본 부족"을
+// 한 번만 적고, 하나만 모자라면 그 표본을 쓰는 칸만 비운다.
 @Composable
 private fun WeaponCells(weapon: WeaponStats, modifier: Modifier = Modifier) {
     val colors = OvalitTheme.colors

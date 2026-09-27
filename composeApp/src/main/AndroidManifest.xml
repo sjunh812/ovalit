@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- RSO는 Custom Tabs로 띄운다. 어떤 브라우저가 붙어 있는지 물어보려면 이 선언이 필요하다. -->
+    <!-- RSO는 Custom Tabs로 띄운다. 기기에 깔린 브라우저를 찾으려면 이 선언이 필요하다. -->
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />

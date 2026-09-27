@@ -34,7 +34,7 @@ sealed interface RecordsOwner {
 sealed interface RecordsUiState {
     data object Loading : RecordsUiState
 
-    /** 친구를 끊었거나 친구가 전적을 비공개로 바꿨습니다. */
+    /** 친구를 끊었거나 친구가 전적을 비공개로 바꿨을 때입니다. */
     data object Hidden : RecordsUiState
 
     /** @property ownerName 친구 기록일 때 제목에 붙이는 이름입니다. 내 기록이면 `null`입니다. */
@@ -46,10 +46,7 @@ sealed interface RecordsUiState {
     ) : RecordsUiState
 }
 
-/**
- * S6 무기와 S7 요원이 같이 씁니다. 내 기록이든 친구 기록이든 이번 액트의 경쟁 + 일반 경기만 셉니다. 기타 모드는
- * 라운드 수와 크레드 규칙이 달라서 섞으면 비율이 틀어집니다.
- */
+/** S6 무기와 S7 요원이 같이 씁니다. 내 기록이든 친구 기록이든 이번 액트의 경쟁 + 일반 경기만 셉니다. */
 class RecordsViewModel(
     owner: RecordsOwner,
     matchRepository: MatchRepository,
@@ -59,7 +56,8 @@ class RecordsViewModel(
     timeZone: TimeZone,
 ) : ViewModel() {
 
-    // 이름과 경기를 같이 들고 온다. 비공개로 바꾼 친구는 경기 대신 null이다.
+    // 제목에 붙일 이름과 셀 경기다. 내 기록이면 이름이 null이고, 친구를 끊었거나 친구가 전적을 비공개로 바꿨으면 통째로
+    // null이다.
     private val source: Flow<Pair<String?, List<Match>>?> = when (owner) {
         RecordsOwner.Me -> matchRepository.observeMatches().map { null to it }
         is RecordsOwner.Friend -> friendRepository.friends.map { friends ->

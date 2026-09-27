@@ -54,8 +54,8 @@ sealed interface MatchDetailUiState {
 data class ScoreboardRow(val line: Scoreline, val relation: PlayerRelation)
 
 /**
- * 스코어보드에서 그 사람과 나의 관계입니다. 프로필은 서로 수락한 친구만 열 수 있고, 나머지는 눌러도
- * 친구 요청이나 초대 링크를 권하는 시트가 뜹니다.
+ * 스코어보드에서 그 사람과 나의 관계입니다. 프로필은 서로 수락한 친구만 열 수 있고, 친구가 아닌 사람을
+ * 누르면 친구 요청이나 초대 링크를 권하는 시트가 뜹니다.
  */
 enum class PlayerRelation {
     ME,

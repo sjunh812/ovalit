@@ -272,7 +272,7 @@ private fun RoundRow(round: RoundSummary) {
     } else {
         ""
     }
-    // 이긴 클러치만 적는다. 나만 남았다가 진 라운드까지 적으면 진 라운드마다 꼬리표가 붙는다.
+    // CLAUDE.md S3: 진 클러치는 적지 않는다.
     val highlight = round.highlight?.let { scene ->
         val clutch = scene.clutch
         when {
@@ -310,7 +310,6 @@ private fun RoundRow(round: RoundSummary) {
             },
             trailing = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // 에이스와 클러치는 그 라운드에서 가장 눈에 띄는 일이라 한 단계 밝고 굵게 둔다
                     if (highlight != null) {
                         OvalitText(
                             text = highlight,
@@ -329,7 +328,7 @@ private fun RoundRow(round: RoundSummary) {
 }
 
 /**
- * 라운드 줄의 설명과 오른쪽 끝 꼬리(에이스, 킬, 퍼블)입니다. 한 줄에 들어가면 꼬리를 오른쪽 끝에 두고, 안 들어가면
+ * 라운드 줄의 설명과 오른쪽 끝 꼬리(에이스·클러치, 킬, 퍼블·퍼데)입니다. 한 줄에 들어가면 꼬리를 오른쪽 끝에 두고, 안 들어가면
  * 꼬리를 설명 밑 오른쪽에 내립니다. 한 줄에 억지로 넣으면 "공격 · 스파이크 폭발"이 "공격 ·"에서 잘립니다.
  */
 @Composable
@@ -359,7 +358,7 @@ private fun DetailWithTrailing(detail: @Composable () -> Unit, trailing: @Compos
     }
 }
 
-// 라운드 막대와 같은 모양이다. 이기면 높고 색이 있고, 지면 낮고 흐리다.
+// S3 위쪽 라운드 막대(RoundStrip)와 같은 모양이다. 높이나 색을 바꾸면 둘 다 바꾼다.
 @Composable
 private fun ResultMark(won: Boolean) {
     Box(modifier = Modifier.size(width = 4.dp, height = 18.dp), contentAlignment = Alignment.BottomCenter) {
@@ -409,8 +408,8 @@ internal fun EconomyList(uiState: MatchDetailUiState.Success) {
                     .padding(horizontal = OvalitSpacing.gutter, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                // 좁은 화면에서 글자를 키우면 승률이 "65 / %"로 끊겼다. 이름과 승률은 한 줄로 제 폭을 쓰고,
-                // 남는 폭이 모자라면 가운데 라운드 수부터 줄인다.
+                // 이름과 승률은 한 줄로 제 폭을 다 쓰고, 폭이 모자라면 가운데 라운드 수부터 줄인다. 안 그러면 좁은
+                // 화면에서 글자를 키웠을 때 승률이 "65 / %"로 끊긴다.
                 OvalitText(text = buyName(record.type), style = OvalitTheme.typography.body, maxLines = 1)
                 Spacer(Modifier.width(OvalitSpacing.md))
                 OvalitText(

@@ -105,7 +105,7 @@ class MatchesViewModelTest {
         assertEquals("fresh-1", state.days.first().matches.first().id.value)
     }
 
-    // 받는 중에 또 당기면 같은 경기를 두 번 받는다. 레이트 리밋도 두 배로 쓴다.
+    // 받는 중에 또 당겨서 한 번 더 받으면 레이트 리밋을 두 배로 쓴다.
     @Test
     fun `받는 중에 또 당겨도 한 번만 받는다`() = runTest {
         val viewModel = viewModel()

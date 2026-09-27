@@ -33,10 +33,10 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.Mutex
 
 /**
- * 프로덕션 키가 나오기 전까지 화면을 붙여 보는 데 쓰는 가짜 경기입니다.
+ * 프로덕션 키가 나오기 전까지 화면에 띄울 가짜 경기입니다.
  *
- * 시드가 고정이라 매번 같은 경기가 나오고 날짜만 [clock]을 따라 움직입니다. 최근 7일은 첫
- * 교전에 더 자주 들어가게 해 둬서 홈 동적 칸에 움직인 지표가 뜹니다.
+ * 시드가 고정이라 매번 같은 경기가 나오고 날짜만 [clock]을 따라 움직입니다. 홈에 움직인 지표가 뜨도록
+ * 최근 7일은 첫 교전, 킬, 팬텀 헤드샷, 피해량, 승률을 일부러 바꿔 뒀습니다(`RECENT_`로 시작하는 상수).
  */
 class FakeMatchRepository(
     private val clock: Clock = Clock.System,
@@ -62,7 +62,7 @@ class FakeMatchRepository(
         }
     }
 
-    // 당길 때마다 방금 끝난 경기를 한 판 받은 것처럼 한다. 새로고침과 숫자가 바뀌는 모습을 가짜 데이터로도 본다.
+    // 당길 때마다 방금 끝난 경기를 한 판 받은 것처럼 한다. 가짜 데이터로도 당기면 숫자가 바뀌는 걸 볼 수 있다.
     override suspend fun refresh(): Int {
         // 홈과 경기 탭이 같이 당기면 한 번만 받는다. 뒤에 온 쪽은 앞의 것이 끝날 때까지 기다리고 새로 받지 않는다.
         if (!refreshing.tryLock()) return refreshing.withLock { 0 }
@@ -85,7 +85,7 @@ class FakeMatchRepository(
     private val refreshing = Mutex()
     private var refreshed = 0
 
-    // 다시 연동하면 지난 수집의 "다 불러왔어요"가 남아 S0-4가 새 수집 전에 리포트 보기를 띄웠다. 진행도도 같이 비운다.
+    // 진행도도 같이 비운다. 남겨 두면 다시 연동했을 때 S0-4가 새 수집 전에 지난 수집의 "리포트 보기"를 띄운다.
     override suspend fun deleteAll() {
         matches.value = emptyList()
         progress.value = null
@@ -127,9 +127,9 @@ private val FakeAct = ActId("fake-act")
 // 최근 7일은 팬텀 헤드샷을 크게 올려서 무기 화면에 "요즘 잘 맞아요"가 뜨게 했다
 private const val RECENT_PHANTOM_HEADSHOT_RATE = 0.45
 
-// 최근 7일은 킬로 잇지 못한 피해가 늘었다. 피해는 주는데 마무리를 못 하는 한 주라 K/D는 내려가고 피해량은 오른다.
-// 홈 "이번 주 짚을 점"이 헤드샷 말고 다른 지표로도 뜨는지 보려고 넣었다. 데스 확률은 그대로 둬서 생존율과 관여율 칸은
-// 크게 움직이지 않는다. 이긴 판도 조금 늘려서 짚을 점에 요원 줄이 뜨게 했다.
+// 최근 7일은 맞히고도 마무리하지 못한 피해가 늘었다. 킬이 줄어 K/D는 내려가고 피해량은 오른다.
+// 홈 "이번 주 짚을 점"이 헤드샷 말고 다른 지표로도 뜨는지 보려고 넣었다. 이긴 판도 조금 늘려서 짚을 점에 요원 줄이
+// 뜨게 했다.
 private const val RECENT_EXTRA_KILL_RATE = 0.25
 private const val RECENT_CHIP_DAMAGE = 70
 private const val RECENT_WIN_BONUS = 0.08
@@ -149,7 +149,7 @@ internal class Owner(val id: PlayerId, val riotId: String, val card: PlayerCardI
 internal val Myself = Owner(Me, MY_RIOT_ID, MyCard, MY_TIER)
 
 /**
- * @param withFriends 내 경기일 때만 켠다. 친구 경기에 다른 친구를 끼우면 같이 한 경기가 꼬인다.
+ * @param withFriends 내 경기일 때만 켭니다. 친구 경기에 다른 친구를 끼우면 S5의 같이 한 경기 수가 틀어집니다.
  */
 internal fun fakeMatches(
     now: Instant,
@@ -158,7 +158,8 @@ internal fun fakeMatches(
     owner: Owner = Myself,
 ): List<Match> {
     val random = Random(seed)
-    // 팀 구성과 스코어보드는 난수를 따로 쓴다. 같은 난수에서 뽑으면 친구를 넣는 순간 내 경기 숫자가 다 바뀐다.
+    // 팀 구성, 스코어보드, 에이스·클러치 장면은 난수를 따로 쓴다. 같은 난수에서 뽑으면 친구를 넣는 순간 내 경기 숫자가
+    // 다 바뀐다.
     val party = Random(seed + 1)
     val board = Random(seed + 2)
     val scenes = Random(seed + 3)
@@ -266,7 +267,7 @@ private fun sideIndex(number: Int): Int = when {
     else -> (number - HALF_ROUNDS * 2 - 1) % 2
 }
 
-/** 지난 라운드 결과로 이번 라운드 장비를 정합니다. 이기면 풀바이, 지면 이코와 포스바이를 오갑니다. */
+/** 지난 라운드 결과로 이번 라운드 장비를 정합니다. 이겼거나 지난 라운드에 아꼈으면 대개 풀바이, 지면 이코나 포스바이입니다. */
 private class FakeEconomy(private val random: Random) {
     private var myTeamWonLast: Boolean? = null
     private var myTeamSaved = false
@@ -434,7 +435,7 @@ private fun Match.lostClutchKills(random: Random, team: List<PlayerId>): List<Ki
     return kills.sortedBy { it.atMillis }
 }
 
-// 우리 팀이 한 명씩 [downed]를 잡고 쓰러진다. 잡는 건 끝까지 살아남는 상대다.
+// 우리 팀이 차례로 [downed]를 한 명씩 잡고 쓰러진다. 우리 팀을 쓰러뜨리는 건 끝까지 살아남는 상대다.
 private fun teamFalls(random: Random, team: List<PlayerId>, downed: List<PlayerId>, survivors: List<PlayerId>): List<KillEvent> =
     team.flatMapIndexed { index, ally ->
         val at = 10_000L + 6_000L * index

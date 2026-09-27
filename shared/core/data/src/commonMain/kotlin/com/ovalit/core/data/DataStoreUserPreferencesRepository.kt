@@ -33,7 +33,7 @@ class DataStoreUserPreferencesRepository(
     private val dataStore: DataStore<Preferences>,
 ) : UserPreferencesRepository {
 
-    // 읽다가 입출력 오류가 나면 기본값으로 연다. 그대로 던지면 설정을 읽는 화면이 모두 멈춘다.
+    // 읽다가 입출력 오류가 나면 기본값으로 연다. 그대로 던지면 테마를 읽는 MainActivity부터 앱이 죽는다.
     override val preferences: Flow<UserPreferences> = dataStore.data
         .catch { error -> if (error is IOException) emit(emptyPreferences()) else throw error }
         .map { stored ->

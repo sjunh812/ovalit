@@ -41,7 +41,7 @@ internal fun HorizontalLine(modifier: Modifier = Modifier) {
     )
 }
 
-/** 오르면 [OvalitTheme.colors.pos], 내리면 [OvalitTheme.colors.neg]. 화면에 보이는 값이 같으면 무채색입니다. */
+/** 보이는 자릿수로 견준 오르내림 색입니다. 오르면 `pos`, 내리면 `neg`, 같으면 `t3`입니다. */
 @Composable
 internal fun directionColor(format: MetricFormat, current: Double, baseline: Double): Color {
     val colors = OvalitTheme.colors

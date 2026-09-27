@@ -30,7 +30,7 @@ class DataStoreUserPreferencesRepositoryTest {
         assertEquals(true, repository().preferences.first().statsPublic)
     }
 
-    // 쓰다가 앱이 죽으면 파일이 반쯤 남는다. 그때 예외로 멈추지 않고 기본값으로 다시 시작한다.
+    // 깨진 파일을 읽다가 예외가 나면 테마를 읽는 MainActivity부터 앱이 켜지자마자 죽는다.
     @Test
     fun `저장 파일이 깨졌으면 기본값으로 다시 시작한다`() = runTest {
         val file = newFile()

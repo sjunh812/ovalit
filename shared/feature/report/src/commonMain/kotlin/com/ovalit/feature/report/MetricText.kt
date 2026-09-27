@@ -42,7 +42,7 @@ internal val DynamicMetric.format: MetricFormat
         else -> MetricFormat.PERCENT
     }
 
-// 퍼블 관여율은 역할에 따라 오르는 게 좋기도 나쁘기도 하다. 올랐다고 초록으로 칠하지 않는다.
+// 퍼블 관여율은 역할에 따라 오르는 게 좋기도 나쁘기도 하다. 움직여도 오르내림 색을 칠하지 않는다.
 internal val DynamicMetric.hasGoodDirection: Boolean
     get() = this != DynamicMetric.FIRST_DUEL_INVOLVEMENT
 

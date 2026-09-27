@@ -63,7 +63,8 @@ data class SideInsight(
  *
  * 관심사 지표 가운데 기준을 넘는 게 있으면 그중 가장 벌어진 것을 먼저 고릅니다. 사용자가 보겠다고 고른 지표라
  * 역할이 크게 띄우지 않는 지표여도 봅니다. 없으면 역할의 우선 지표, 그것도 기준에 못 미치면 나머지 가운데 기준보다
- * 가장 많이 벌어진 걸 고릅니다. 기준을 넘는 지표가 없으면 `null`입니다.
+ * 가장 많이 벌어진 걸 고릅니다. 관심사로 고른 게 아니면 역할이 크게 띄우지 않는 지표와 [SideMetric.focusOnly]
+ * 지표는 뺍니다. 기준을 넘는 지표가 없으면 `null`입니다.
  */
 internal fun List<Match>.sideInsight(role: Role?, focus: Focus = Focus.NONE): SideInsight? {
     val attack = map { it.metrics(Side.ATTACK) }.sum()

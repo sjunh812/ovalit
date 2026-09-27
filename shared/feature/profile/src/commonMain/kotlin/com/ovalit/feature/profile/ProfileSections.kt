@@ -24,7 +24,7 @@ import org.jetbrains.compose.resources.stringResource
 
 // 티어 카드, 통계, 맞힌 부위, 요원, 무기는 S5 친구 프로필과 같이 쓰려고 core/ui의 ProfileSections.kt에 있다.
 
-/** S5와 같은 짧은 줄 세 개입니다. 내 경기라 누르면 S3가 열리고, "전체 보기"는 경기 탭으로 갑니다. */
+// S5와 같은 짧은 줄 세 개다. 내 경기라 누르면 S3가 열리고, "전체 보기"는 경기 탭으로 간다.
 @Composable
 internal fun RecentMatchesSection(
     uiState: ProfileUiState.Success,

@@ -61,7 +61,7 @@ class IntroScreenTest {
         onNodeWithText("Riot Games", substring = true).assertExists()
     }
 
-    // 헤드라인이 늘어나면 아래 것들을 밀어낸다. 작은 기기 + 큰 글자가 가장 빡빡한 조합이다.
+    // 작은 기기 + 큰 글자가 가장 빡빡한 조합이다. 한 화면에 다 안 들어가도 스크롤하면 버튼이 보여야 한다.
     @Test
     fun `작은 기기에서 글자를 키워도 시작 버튼이 화면 안에 있다`() = runComposeUiTest {
         setContent {
@@ -78,7 +78,7 @@ class IntroScreenTest {
         onNodeWithText("Riot 계정으로 시작하기").performScrollTo().assertIsDisplayed()
     }
 
-    // 지우면 키가 회수되는 고지다. 작은 기기에서 글자를 키워도 끝까지 볼 수 있어야 한다.
+    // 고지가 아래에서 잘려도 assertExists는 통과한다. 스크롤한 뒤 고지의 아랫변이 화면 안에 들어오는지 본다.
     @Test
     fun `작은 기기에서 글자를 키워도 비공식 고지를 끝까지 볼 수 있다`() = runComposeUiTest {
         setContent {

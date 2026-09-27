@@ -187,7 +187,6 @@ private fun Progress(progress: ImportProgress?, onOpenReport: () -> Unit) {
         }
         if (total > 0) {
             Spacer(Modifier.height(11.dp))
-            // 받은 경기마다 한 칸씩 이긴 판은 초록, 진 판은 빨강으로 채운다. 아직 안 받은 칸은 흐리게 둔다.
             Row(
                 modifier = Modifier.fillMaxWidth().height(14.dp).semantics { contentDescription = description },
                 horizontalArrangement = Arrangement.spacedBy(2.dp),

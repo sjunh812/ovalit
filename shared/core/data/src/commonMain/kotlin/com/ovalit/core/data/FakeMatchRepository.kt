@@ -101,9 +101,10 @@ private const val DAYS = 70
 
 private const val USUAL_FIRST_DUEL_RATE = 0.28
 private const val RECENT_FIRST_DUEL_RATE = 0.42
-// 수비에서 첫 교전을 더 자주 지게 해서 홈에 개선 포인트 문장이 뜨게 했다. 둘의 평균은 0.55다.
-private const val ATTACK_FIRST_DUEL_WIN_RATE = 0.66
-private const val DEFENSE_FIRST_DUEL_WIN_RATE = 0.44
+// 수비에서 첫 교전을 더 자주 지게 해서 홈에 개선 포인트 문장이 뜨게 했다. 둘의 평균은 0.55다. 첫 교전은 판마다 몇 번뿐이라
+// 첫 수집 50경기에서도 우연 거르기(흔들림의 3.5배)를 넘도록 넉넉히 벌렸다.
+private const val ATTACK_FIRST_DUEL_WIN_RATE = 0.72
+private const val DEFENSE_FIRST_DUEL_WIN_RATE = 0.38
 // 최근 7일은 첫 교전을 공수 같게 둔다. 첫 교전 차이가 아래 멀티킬 차이보다 크면 에임 올리기를 골라도 첫 교전 문장이
 // 앞선다.
 private const val RECENT_FIRST_DUEL_WIN_RATE = 0.55

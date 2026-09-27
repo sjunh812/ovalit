@@ -8,6 +8,11 @@ export interface Env {
    * Host 헤더로 가려서 꾸밀 수 있으니 배포 환경에는 절대 넣지 않습니다.
    */
   DEV_LOGIN?: string;
+  /**
+   * 앱 서명 인증서의 SHA-256 지문입니다. 여럿이면 쉼표로 잇습니다(디버그 키, Play 앱 서명 키). 안드로이드가 이 값으로
+   * `/auth/done` App Link를 우리 앱에 이어 줍니다. 비워 두면 `/.well-known/assetlinks.json`이 404입니다.
+   */
+  ANDROID_CERT_SHA256?: string;
 }
 
 export interface User {

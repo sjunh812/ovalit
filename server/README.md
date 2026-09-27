@@ -58,7 +58,9 @@ npm run typecheck
 | GET | `/content/roles` | | 요원 UUID(소문자) → `duelist` · `initiator` · `controller` · `sentinel` |
 | GET | `/i/:code` | | 초대 링크를 브라우저에서 열었을 때 보이는 쪽 |
 | GET | `/auth/rso/start?challenge=` | | Riot 로그인으로 보냅니다 |
-| GET | `/auth/rso/callback` | | `ovalit://auth?code=`로 돌려보냅니다 |
+| GET | `/auth/rso/callback` | | `/auth/done?code=`(App Link)로 돌려보냅니다 |
+| GET | `/auth/done` | | 앱이 안 열렸을 때 보이는 쪽. 우리 패키지를 지정한 intent 버튼을 둡니다 |
+| GET | `/.well-known/assetlinks.json` | | App Link 검증 파일. `ANDROID_CERT_SHA256`이 없으면 404 |
 | POST | `/auth/session` | | `{code, verifier}` → `{token, expiresAt}` |
 | POST | `/auth/dev` | | 로컬 전용. `{puuid, gameName, tagLine}` → `{token, expiresAt}` |
 | POST | `/auth/logout` | 필요 | 이 세션을 끊습니다 |
@@ -215,3 +217,20 @@ npx wrangler deploy
 
 RSO 앱 설정의 redirect URI에는 `https://<배포 주소>/auth/rso/callback`을 등록합니다. 서버는 요청이
 들어온 주소로 이 값을 만듭니다.
+
+로그인을 마치면 서버는 `https://<배포 주소>/auth/done?code=`로 돌려보냅니다. `ovalit://` 같은 커스텀 스킴은 다른
+앱도 등록할 수 있어서, 남이 시작한 로그인의 코드를 가로채 그 사람 계정의 세션을 받을 수 있습니다. 안드로이드가
+이 주소를 우리 앱에 잇게 하려면 둘을 맞춥니다.
+
+- 서버: 앱 서명 인증서의 SHA-256 지문을 `ANDROID_CERT_SHA256`에 넣습니다. 여럿이면 쉼표로 잇습니다. 디버그 키는
+  `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android`로, 출시 키는 Play
+  Console의 앱 무결성 화면에서 봅니다. 비밀값은 아니지만 키마다 달라서 저장소에 두지 않습니다.
+- 앱: `local.properties`에 `ovalit.server.host=<배포 주소의 호스트>`를 적습니다. 매니페스트의 App Link 호스트가
+  됩니다. 적지 않으면 아무 데도 이어지지 않는 `ovalit.invalid`입니다.
+
+```bash
+npx wrangler secret put ANDROID_CERT_SHA256
+```
+
+검증이 안 된 기기에서는 `/auth/done`이 브라우저에 뜹니다. 그 페이지의 버튼은 `package=com.ovalit`을 지정한 intent
+주소라 우리 앱만 받습니다.

@@ -114,8 +114,12 @@ WorkManager는 S0-4 첫 수집 한 번만 맡긴다. 앱을 닫아도 이어 받
 
 - 앱은 서버가 준 세션 토큰만 든다. Riot 키와 RSO `client_secret`은 서버 비밀값이다. 세션 토큰과 로그인 코드는
   SHA-256 해시만 저장한다. Riot 토큰은 계정을 한 번 읽고 버린다.
-- RSO는 앱과 서버 사이에 PKCE를 한 겹 더 둔다. 앱이 verifier를 만들어 challenge만 넘기고, 콜백은
-  `ovalit://auth?code=`로 일회용 코드를 준다. 가로챈 코드는 verifier 없이 세션으로 못 바꾼다.
+- RSO는 앱과 서버 사이에 PKCE를 한 겹 더 둔다. 앱이 verifier를 만들어 challenge만 넘기고, 콜백은 서버 주소의 App Link
+  `https://<서버>/auth/done?code=`로 일회용 코드를 준다. 가로챈 코드는 verifier 없이 세션으로 못 바꾼다. 커스텀 스킴
+  (`ovalit://`)은 다른 앱이 같은 이름을 등록해 남이 시작한 로그인의 코드를 받아 갈 수 있어서 쓰지 않는다(2026-09-27). App
+  Link는 서버의 `/.well-known/assetlinks.json`(서명 지문은 `ANDROID_CERT_SHA256`)으로 검증하고, 매니페스트의 호스트는
+  `local.properties`의 `ovalit.server.host`에서 받는다. 앱이 안 열린 기기에서는 `/auth/done`이 `package=com.ovalit`을
+  지정한 intent 버튼을 띄운다. iOS Universal Link는 유료 개발자 계정이 있어야 해서 iOS에 RSO를 붙일 때 따로 정한다.
 - `/auth/dev`는 RSO 없이 친구 흐름을 돌려 보는 문이다. `DEV_LOGIN=true`이고 로컬 주소로 들어왔을 때만 열린다.
   배포 환경에는 넣지 않는다. 로컬 주소 확인은 Host 헤더라 꾸밀 수 있어서 실제로 막는 건 `DEV_LOGIN`이고,
   `wrangler dev`는 localhost에만 붙인다.

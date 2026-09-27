@@ -39,7 +39,7 @@ async function rsoLogin(t: ReturnType<typeof setup>, account = { puuid: makePuui
 }
 
 describe("RSO 로그인", () => {
-  it("Riot 로그인으로 보내고 콜백에서 앱 딥링크로 일회용 코드를 넘긴다", async () => {
+  it("Riot 로그인으로 보내고 콜백에서 App Link로 일회용 코드를 넘긴다", async () => {
     const t = setup();
     const { start, authorize, callback, deepLink } = await rsoLogin(t);
 
@@ -51,7 +51,8 @@ describe("RSO 로그인", () => {
     expect(authorize.searchParams.get("redirect_uri")).toBe("http://localhost/auth/rso/callback");
 
     expect(callback.status).toBe(302);
-    expect(deepLink.protocol).toBe("ovalit:");
+    // 커스텀 스킴은 다른 앱이 가로챌 수 있다. 서버 자기 주소의 App Link로만 돌려보낸다.
+    expect(deepLink.origin + deepLink.pathname).toBe("http://localhost/auth/done");
     expect(deepLink.searchParams.get("code")).toMatch(/^[A-Za-z0-9_-]{43}$/);
 
     const [token] = t.upstream.callsTo(TOKEN_URL);
@@ -120,7 +121,7 @@ describe("RSO 로그인", () => {
   it("모르는 state로 들어온 콜백은 Riot을 부르지 않고 앱에 실패를 알린다", async () => {
     const t = setup();
     const res = await t.call("GET", `/auth/rso/callback?code=riot-code&state=${randomToken()}`);
-    expect(res.headers.get("Location")).toBe("ovalit://auth?error=invalid_state");
+    expect(res.headers.get("Location")).toBe("http://localhost/auth/done?error=invalid_state");
     expect(t.upstream.calls).toHaveLength(0);
   });
 
@@ -128,7 +129,7 @@ describe("RSO 로그인", () => {
     const t = setup();
     const { state } = await rsoLogin(t);
     const again = await t.call("GET", `/auth/rso/callback?code=riot-code&state=${state}`);
-    expect(again.headers.get("Location")).toBe("ovalit://auth?error=invalid_state");
+    expect(again.headers.get("Location")).toBe("http://localhost/auth/done?error=invalid_state");
   });
 
   it("10분이 지난 state는 쓸 수 없다", async () => {
@@ -139,13 +140,13 @@ describe("RSO 로그인", () => {
       .bind(Date.now() - 11 * 60 * 1000, state)
       .run();
     const res = await t.call("GET", `/auth/rso/callback?code=riot-code&state=${state}`);
-    expect(res.headers.get("Location")).toBe("ovalit://auth?error=invalid_state");
+    expect(res.headers.get("Location")).toBe("http://localhost/auth/done?error=invalid_state");
   });
 
   it("유저가 Riot 로그인을 취소하면 앱에 알린다", async () => {
     const t = setup();
     const res = await t.call("GET", "/auth/rso/callback?error=access_denied");
-    expect(res.headers.get("Location")).toBe("ovalit://auth?error=access_denied");
+    expect(res.headers.get("Location")).toBe("http://localhost/auth/done?error=access_denied");
   });
 
   it("Riot이 레이트 리밋에 걸리면 앱에 그대로 알린다", async () => {
@@ -154,7 +155,7 @@ describe("RSO 로그인", () => {
     const state = new URL(start.headers.get("Location")!).searchParams.get("state")!;
     t.upstream.on(TOKEN_URL, () => new Response(null, { status: 429, headers: { "Retry-After": "7" } }));
     const res = await t.call("GET", `/auth/rso/callback?code=riot-code&state=${state}`);
-    expect(res.headers.get("Location")).toBe("ovalit://auth?error=riot_rate_limited");
+    expect(res.headers.get("Location")).toBe("http://localhost/auth/done?error=riot_rate_limited");
   });
 
   it("토큰 응답에 access_token이 없으면 계정을 읽지 않고 rso_failed로 돌려보낸다", async () => {
@@ -163,7 +164,7 @@ describe("RSO 로그인", () => {
     t.upstream.json(TOKEN_URL, { token_type: "Bearer" });
     t.upstream.json(ACCOUNT_ME_URL, { puuid: makePuuid(), gameName: "제트장인", tagLine: "KR1" });
     const res = await t.call("GET", `/auth/rso/callback?code=riot-code&state=${state}`);
-    expect(res.headers.get("Location")).toBe("ovalit://auth?error=rso_failed");
+    expect(res.headers.get("Location")).toBe("http://localhost/auth/done?error=rso_failed");
     expect(t.upstream.callsTo(ACCOUNT_ME_URL)).toHaveLength(0);
   });
 
@@ -178,7 +179,7 @@ describe("RSO 로그인", () => {
     t.upstream.on(ACCOUNT_ME_URL, account);
     const before = await userCount();
     const res = await t.call("GET", `/auth/rso/callback?code=riot-code&state=${state}`);
-    expect(res.headers.get("Location")).toBe("ovalit://auth?error=rso_failed");
+    expect(res.headers.get("Location")).toBe("http://localhost/auth/done?error=rso_failed");
     expect(await userCount()).toBe(before);
   });
 
@@ -190,7 +191,7 @@ describe("RSO 로그인", () => {
     const errors = vi.spyOn(console, "error").mockImplementation(() => {});
     t.env.DB = watchDb(t.env.DB, { failBatch: namedError("D1Down", "code=riot-code") }).db;
     const res = await t.call("GET", `/auth/rso/callback?code=riot-code&state=${state}`);
-    expect(res.headers.get("Location")).toBe("ovalit://auth?error=rso_failed");
+    expect(res.headers.get("Location")).toBe("http://localhost/auth/done?error=rso_failed");
     expect(errors.mock.calls).toEqual([["rso_callback", "D1Down"]]);
   });
 
@@ -304,5 +305,56 @@ describe("세션", () => {
     const user = await t.login();
     expect((await t.call("POST", "/auth/logout", user.token)).status).toBe(204);
     expect((await t.call("GET", "/me", user.token)).status).toBe(401);
+  });
+});
+
+describe("로그인을 마친 뒤 앱이 안 열렸을 때", () => {
+  it("우리 패키지를 지정한 intent 버튼으로 앱에 돌려보내고 캐시에 남기지 않는다", async () => {
+    const t = setup();
+    const code = randomToken();
+    const res = await t.call("GET", `/auth/done?code=${code}`);
+    const page = await res.text();
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Cache-Control")).toBe("no-store");
+    expect(res.headers.get("Referrer-Policy")).toBe("no-referrer");
+    expect(page).toContain(`href="intent://localhost/auth/done?code=${code}#Intent;scheme=http;package=com.ovalit;end"`);
+  });
+
+  it("실패도 앱에 그대로 넘긴다", async () => {
+    const t = setup();
+    const page = await (await t.call("GET", "/auth/done?error=access_denied")).text();
+    expect(page).toContain("intent://localhost/auth/done?error=access_denied#Intent;");
+  });
+
+  it("모양이 틀린 값은 버튼에 넣지 않고 페이지에도 적지 않는다", async () => {
+    const t = setup();
+    const page = await (await t.call("GET", `/auth/done?code=${encodeURIComponent('"><script>x</script>')}&error=nope`)).text();
+    expect(page).not.toContain("intent://");
+    expect(page).not.toContain("<script>");
+    expect(page).not.toContain("nope");
+  });
+});
+
+describe("App Link 검증 파일", () => {
+  const debug = Array.from({ length: 32 }, (_, i) => (i + 16).toString(16).toUpperCase()).join(":");
+
+  it("설정한 서명 지문으로 우리 패키지만 적는다", async () => {
+    const t = setup();
+    t.env.ANDROID_CERT_SHA256 = `${debug.toLowerCase()}, 잘못된 값`;
+    const res = await t.call("GET", "/.well-known/assetlinks.json");
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual([
+      {
+        relation: ["delegate_permission/common.handle_all_urls"],
+        target: { namespace: "android_app", package_name: "com.ovalit", sha256_cert_fingerprints: [debug] },
+      },
+    ]);
+  });
+
+  it("지문을 설정하지 않았으면 없는 파일로 답한다", async () => {
+    const t = setup();
+    expect((await t.call("GET", "/.well-known/assetlinks.json")).status).toBe(404);
   });
 });

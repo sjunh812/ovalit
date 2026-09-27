@@ -35,6 +35,18 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- RSO 로그인을 마치면 서버가 이 주소로 돌려보낸다. 서버의 assetlinks.json으로 검증한 App Link라 다른 앱이
+                 가로채지 못한다. 커스텀 스킴은 아무 앱이나 같은 이름을 등록할 수 있어서 쓰지 않는다. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="${ovalitServerHost}"
+                    android:path="/auth/done" />
+            </intent-filter>
         </activity>
     </application>
 

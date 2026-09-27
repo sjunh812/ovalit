@@ -9,6 +9,8 @@ const PUBLIC = new Set([
   "GET /i/:code",
   "GET /auth/rso/start",
   "GET /auth/rso/callback",
+  "GET /auth/done",
+  "GET /.well-known/assetlinks.json",
   "POST /auth/session",
   "POST /auth/dev",
 ]);

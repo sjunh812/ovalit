@@ -50,6 +50,7 @@ import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.TierEmblem
 import com.ovalit.core.ui.agentName
+import com.ovalit.core.ui.label
 import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.match_kda
 import com.ovalit.core.ui.resultColor
@@ -57,10 +58,6 @@ import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
 import com.ovalit.core.ui.withThousands
 import com.ovalit.feature.match.resources.Res
-import com.ovalit.feature.match.resources.buy_eco
-import com.ovalit.feature.match.resources.buy_force
-import com.ovalit.feature.match.resources.buy_full
-import com.ovalit.feature.match.resources.buy_pistol
 import com.ovalit.feature.match.resources.buy_record
 import com.ovalit.feature.match.resources.close
 import com.ovalit.feature.match.resources.column_adr
@@ -386,14 +383,7 @@ private fun endingName(ending: RoundEnding): String = stringResource(
 )
 
 @Composable
-private fun buyName(type: BuyType): String = stringResource(
-    when (type) {
-        BuyType.PISTOL -> Res.string.buy_pistol
-        BuyType.ECO -> Res.string.buy_eco
-        BuyType.FORCE_BUY -> Res.string.buy_force
-        BuyType.FULL_BUY -> Res.string.buy_full
-    },
-)
+private fun buyName(type: BuyType): String = stringResource(type.label)
 
 @Composable
 internal fun EconomyList(uiState: MatchDetailUiState.Success) {

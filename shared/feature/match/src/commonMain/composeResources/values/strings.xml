@@ -51,10 +51,6 @@
     <string name="section_second_half">후반</string>
     <string name="section_overtime">연장</string>
 
-    <string name="buy_full">풀바이</string>
-    <string name="buy_force">포스바이</string>
-    <string name="buy_eco">이코</string>
-    <string name="buy_pistol">피스톨</string>
     <string name="buy_record">%1$d라운드 %2$d승</string>
     <string name="economy_rounds_title">라운드별 장비</string>
     <string name="economy_versus">%1$s vs %2$s</string>

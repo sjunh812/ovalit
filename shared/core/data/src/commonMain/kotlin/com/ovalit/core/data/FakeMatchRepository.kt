@@ -36,7 +36,7 @@ import kotlinx.coroutines.sync.Mutex
  * 프로덕션 키가 나오기 전까지 화면에 띄울 가짜 경기입니다.
  *
  * 시드가 고정이라 매번 같은 경기가 나오고 날짜만 [clock]을 따라 움직입니다. 홈에 움직인 지표가 뜨도록
- * 최근 7일은 첫 교전, 킬, 팬텀 헤드샷, 피해량, 승률을 일부러 바꿔 뒀습니다(`RECENT_`로 시작하는 상수).
+ * 최근 7일은 첫 교전, 공격과 수비의 킬, 팬텀 헤드샷, 피해량, 승률을 일부러 바꿔 뒀습니다(`RECENT_`로 시작하는 상수).
  */
 class FakeMatchRepository(
     private val clock: Clock = Clock.System,
@@ -104,6 +104,9 @@ private const val RECENT_FIRST_DUEL_RATE = 0.42
 // 수비에서 첫 교전을 더 자주 지게 해서 홈에 개선 포인트 문장이 뜨게 했다. 둘의 평균은 0.55다.
 private const val ATTACK_FIRST_DUEL_WIN_RATE = 0.66
 private const val DEFENSE_FIRST_DUEL_WIN_RATE = 0.44
+// 최근 7일은 첫 교전을 공수 같게 둔다. 첫 교전 차이가 아래 멀티킬 차이보다 크면 에임 올리기를 골라도 첫 교전 문장이
+// 앞선다.
+private const val RECENT_FIRST_DUEL_WIN_RATE = 0.55
 private const val HALF_ROUNDS = 12
 private const val ROUNDS_TO_WIN = 13
 private const val EXTRA_KILL_RATE = 0.35
@@ -127,12 +130,15 @@ private val FakeAct = ActId("fake-act")
 // 최근 7일은 팬텀 헤드샷을 크게 올려서 무기 화면에 "요즘 잘 맞아요"가 뜨게 했다
 private const val RECENT_PHANTOM_HEADSHOT_RATE = 0.45
 
-// 최근 7일은 맞히고도 마무리하지 못한 피해가 늘었다. 킬이 줄어 K/D는 내려가고 피해량은 오른다.
-// 홈 "이번 주 짚을 점"이 헤드샷 말고 다른 지표로도 뜨는지 보려고 넣었다. 이긴 판도 조금 늘려서 짚을 점에 요원 줄이
-// 뜨게 했다.
-private const val RECENT_EXTRA_KILL_RATE = 0.25
-private const val RECENT_CHIP_DAMAGE = 70
-private const val RECENT_WIN_BONUS = 0.08
+// 최근 7일은 공격에서만 교전을 이어 이기고 수비에서는 첫 교전 뒤로 거의 못 잡는다. 멀티킬 라운드 비율이 공수로 크게
+// 벌어져서 에임 올리기를 고르면 개선 포인트에 멀티킬 문장이 뜬다. 평균 킬은 평소보다 적어 K/D는 내려간다.
+private const val RECENT_ATTACK_EXTRA_KILL_RATE = 0.5
+private const val RECENT_DEFENSE_EXTRA_KILL_RATE = 0.05
+
+// 최근 7일은 맞히고도 마무리하지 못한 피해가 늘어 피해량이 오른다. 홈 "이번 주 짚을 점"이 헤드샷 말고 다른 지표로도
+// 뜨는지 보려고 넣었다. 이긴 판도 조금 늘려서 짚을 점에 요원 줄이 뜨게 했다.
+private const val RECENT_CHIP_DAMAGE = 90
+private const val RECENT_WIN_BONUS = 0.04
 
 private fun <T> Random.pick(items: List<T>, weight: (T) -> Double): T {
     var roll = nextDouble() * items.sumOf(weight)
@@ -333,13 +339,21 @@ private fun Random.fakeRound(
         } else {
             kills += KillEvent(15_000, opener, allies.random(this), emptySet(), weapon = null)
         }
-        nextDouble() < if (side == Side.ATTACK) ATTACK_FIRST_DUEL_WIN_RATE else DEFENSE_FIRST_DUEL_WIN_RATE ->
+        nextDouble() < when {
+            recent -> RECENT_FIRST_DUEL_WIN_RATE
+            side == Side.ATTACK -> ATTACK_FIRST_DUEL_WIN_RATE
+            else -> DEFENSE_FIRST_DUEL_WIN_RATE
+        } ->
             killEnemy(15_000, killer = me)
         else -> myDeath = KillEvent(15_000, opener, me, emptySet(), weapon = null)
     }
 
     if (myDeath == null) {
-        val extraKillRate = if (recent) RECENT_EXTRA_KILL_RATE else EXTRA_KILL_RATE
+        val extraKillRate = when {
+            !recent -> EXTRA_KILL_RATE
+            side == Side.ATTACK -> RECENT_ATTACK_EXTRA_KILL_RATE
+            else -> RECENT_DEFENSE_EXTRA_KILL_RATE
+        }
         repeat(2) { if (nextDouble() < extraKillRate) killEnemy(30_000L + 12_000L * it, killer = me) }
         if (aliveEnemies.isNotEmpty() && nextDouble() < LATE_DEATH_RATE) {
             myDeath = KillEvent(60_000, aliveEnemies.first(), me, emptySet(), weapon = null)

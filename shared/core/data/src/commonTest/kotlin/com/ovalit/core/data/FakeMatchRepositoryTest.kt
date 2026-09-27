@@ -1,9 +1,11 @@
 package com.ovalit.core.data
 
 import com.ovalit.core.model.FixedMetric
+import com.ovalit.core.model.Focus
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.Queue
 import com.ovalit.core.model.Role
+import com.ovalit.core.model.SideMetric
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.model.metrics
 import com.ovalit.core.model.weeklyReport
@@ -53,6 +55,17 @@ class FakeMatchRepositoryTest {
         assertTrue(note.moved!!.rose)
         assertTrue(report.metrics.kd!! < baseline.kd!!)
         assertTrue(note.agents.size >= 2, note.agents.toString())
+    }
+
+    // 최근 7일은 공격에서만 교전을 이어 이겨서 멀티킬이 공수로 크게 벌어진다. 에임 올리기를 고르면 개선 포인트에 멀티킬
+    // 문장이 뜨는지 가짜 데이터로 본다.
+    @Test
+    fun `가짜 경기의 개선 포인트는 에임 올리기를 고르면 멀티킬 문장이 된다`() {
+        val report = fakeMatches(Thursday).weeklyReport(Thursday, Seoul, focus = Focus.AIM)
+        val insight = assertNotNull(assertIs<WeeklyReport.Ready>(report).insight)
+
+        assertEquals(SideMetric.MULTI_KILL_RATE, insight.metric)
+        assertEquals(Focus.AIM, insight.focus)
     }
 
     // 홈과 경기 탭이 같이 당기면 레이트 리밋을 두 번 쓴다

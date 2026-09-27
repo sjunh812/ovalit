@@ -11,9 +11,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -232,7 +234,11 @@ fun OvalitApp(appVersion: String) {
 @Composable
 private fun TabScaffold(selected: NavKey, onSelect: (NavKey) -> Unit, content: @Composable () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
-        Box(modifier = Modifier.weight(1f).consumeWindowInsets(WindowInsets.navigationBars)) { content() }
+        // 탭바가 아래 내비게이션 바만큼 올라가 있으니 본문은 아래 여백을 또 두지 않는다. 가로 화면에서 옆에 붙는
+        // 내비게이션 바는 본문도 피해야 해서 아래쪽만 쓴 것으로 친다.
+        Box(
+            modifier = Modifier.weight(1f).consumeWindowInsets(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)),
+        ) { content() }
         OvalitTabBar(
             tabs = listOf(
                 OvalitTab(stringResource(R.string.tab_home), OvalitIcons.Home, OvalitIcons.HomeFilled),

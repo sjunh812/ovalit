@@ -36,7 +36,7 @@ class OnboardingScreensTest {
         setContent { OvalitTheme { ImportScreen(OnboardingPreviewData.loading, {}, {}) } }
 
         onNodeWithText("37 / 50").assertExists()
-        onNodeWithContentDescription("경기 50개 중 37개를 불러왔어요").assertExists()
+        onNodeWithContentDescription("50경기 중 37경기를 불러왔어요").assertExists()
         onNodeWithText("리포트 보기").assertDoesNotExist()
     }
 

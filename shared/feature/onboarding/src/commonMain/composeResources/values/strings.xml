@@ -28,5 +28,5 @@
     <string name="import_done">%1$d경기를 다 불러왔어요</string>
     <string name="import_done_none">최근 8주 동안 뛴 경기가 없어요</string>
     <string name="import_open_report">리포트 보기</string>
-    <string name="import_progress_description">경기 %2$d개 중 %1$d개를 불러왔어요</string>
+    <string name="import_progress_description">%2$d경기 중 %1$d경기를 불러왔어요</string>
 </resources>

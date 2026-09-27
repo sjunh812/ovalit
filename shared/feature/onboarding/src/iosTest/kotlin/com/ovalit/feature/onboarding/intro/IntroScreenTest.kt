@@ -13,13 +13,16 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
 class IntroScreenTest {
@@ -72,6 +75,24 @@ class IntroScreenTest {
             }
         }
 
-        onNodeWithText("Riot 계정으로 시작하기").assertIsDisplayed()
+        onNodeWithText("Riot 계정으로 시작하기").performScrollTo().assertIsDisplayed()
+    }
+
+    // 지우면 키가 회수되는 고지다. 작은 기기에서 글자를 키워도 끝까지 볼 수 있어야 한다.
+    @Test
+    fun `작은 기기에서 글자를 키워도 비공식 고지를 끝까지 볼 수 있다`() = runComposeUiTest {
+        setContent {
+            val dense = Density(density = 2f, fontScale = 1.5f)
+            CompositionLocalProvider(LocalDensity provides dense) {
+                OvalitTheme {
+                    Box(Modifier.width(320.dp).height(568.dp)) {
+                        IntroScreen(onStart = {})
+                    }
+                }
+            }
+        }
+
+        val disclaimer = onNodeWithText("Riot Games", substring = true).performScrollTo()
+        assertTrue(disclaimer.getUnclippedBoundsInRoot().bottom <= 568.dp)
     }
 }

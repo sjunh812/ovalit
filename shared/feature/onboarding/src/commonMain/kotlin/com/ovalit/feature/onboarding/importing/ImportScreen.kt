@@ -58,7 +58,7 @@ import com.ovalit.feature.onboarding.resources.import_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-// 목업의 선택지 순서다. "특별히 없어요"가 기본값이라 맨 아래에 선택된 채로 둔다.
+// 목업의 선택지 순서다. 기본값인 "특별히 없어요"는 아무것도 안 고른 것과 같아서 맨 아래에 둔다.
 private val FocusOrder = listOf(Focus.AIM, Focus.ROUND_PLAY, Focus.CONSISTENCY, Focus.NONE)
 
 /** S0-4 불러오는 중입니다. 수집이 끝나야 리포트로 넘어갈 수 있습니다. */

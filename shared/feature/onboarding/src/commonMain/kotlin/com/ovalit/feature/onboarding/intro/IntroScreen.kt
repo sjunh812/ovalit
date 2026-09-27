@@ -1,14 +1,19 @@
 package com.ovalit.feature.onboarding.intro
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
@@ -78,59 +83,73 @@ fun IntroScreen(
     onStart: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
+    // 고지는 지우면 키가 회수되는 문구라 어떤 화면에서도 끝까지 보여야 한다. 작은 기기에서 글자를 키우면 한 화면에 다
+    // 안 들어가서 스크롤되게 두고, 화면이 넉넉하면 화면 높이를 채워 지금 배치 그대로 둔다.
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .background(OvalitTheme.colors.bg)
-            .safeDrawingPadding()
-            .padding(horizontal = OvalitSpacing.xl),
+            .safeDrawingPadding(),
     ) {
-        // 로고와 문구 덩어리를 버튼 위 공간의 가운데에 둔다. 위로 붙이면 화면 한복판이
-        // 통째로 비어서 안 채운 것처럼 보인다.
-        Spacer(Modifier.weight(1f))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .heightIn(min = maxHeight)
+                .padding(horizontal = OvalitSpacing.xl),
+            // 로고와 문구 덩어리를 버튼 위 공간의 가운데에 둔다. 위로 붙이면 화면 한복판이 통째로 비어서 안 채운 것처럼
+            // 보인다. 스크롤 안에서는 weight가 듣지 않아 빈 칸을 셋으로 두고 사이를 벌린다.
+            verticalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Spacer(Modifier.height(OvalitSpacing.xl))
 
-        OvalitLogo(modifier = Modifier.width(LogoWidth))
+            Column {
+                OvalitLogo(modifier = Modifier.width(LogoWidth))
 
-        Spacer(Modifier.height(OvalitSpacing.xl))
+                Spacer(Modifier.height(OvalitSpacing.xl))
 
-        // 로고가 초성 ㅇㅂㅇ라 처음 보는 사람은 읽는 법을 모른다. 바로 밑에서 소리 내어
-        // 읽어주는 자리다. 헤드라인과 같은 크기로 둬서 두 줄이 한 덩어리로 읽히게 한다.
-        OvalitText(
-            text = dimParentheses(stringResource(Res.string.intro_hook)),
-            style = OvalitTheme.typography.titleL,
-        )
+                // 로고가 초성 ㅇㅂㅇ이라 처음 보는 사람은 읽는 법을 모른다. 바로 밑에서 소리 내어 읽어 주는 자리다.
+                // 헤드라인과 같은 크기로 둬서 두 줄이 한 덩어리로 읽히게 한다.
+                OvalitText(
+                    text = dimParentheses(stringResource(Res.string.intro_hook)),
+                    style = OvalitTheme.typography.titleL,
+                )
 
-        OvalitText(
-            text = stringResource(Res.string.intro_headline),
-            style = OvalitTheme.typography.titleL,
-        )
+                OvalitText(
+                    text = stringResource(Res.string.intro_headline),
+                    style = OvalitTheme.typography.titleL,
+                )
 
-        Spacer(Modifier.height(OvalitSpacing.md))
+                Spacer(Modifier.height(OvalitSpacing.md))
 
-        // "움직였는지"에서 줄을 나눈다. 한 줄로 두면 기기 폭에 따라 "드려요"만 다음 줄에 떨어진다. 줄바꿈을 글자에
-        // 박지 않고 두 줄로 두어서, 좁은 화면에서는 줄마다 알아서 꺾인다.
-        OvalitText(
-            text = stringResource(Res.string.intro_subtitle_what),
-            style = OvalitTheme.typography.body,
-            color = OvalitTheme.colors.t2,
-        )
-        OvalitText(
-            text = stringResource(Res.string.intro_subtitle_when),
-            style = OvalitTheme.typography.body,
-            color = OvalitTheme.colors.t2,
-        )
+                // "움직였는지"에서 줄을 나눈다. 한 줄로 두면 기기 폭에 따라 "드려요"만 다음 줄에 떨어진다. 줄바꿈을 글자에
+                // 박지 않고 두 줄로 두어서, 좁은 화면에서는 줄마다 알아서 꺾인다.
+                OvalitText(
+                    text = stringResource(Res.string.intro_subtitle_what),
+                    style = OvalitTheme.typography.body,
+                    color = OvalitTheme.colors.t2,
+                )
+                OvalitText(
+                    text = stringResource(Res.string.intro_subtitle_when),
+                    style = OvalitTheme.typography.body,
+                    color = OvalitTheme.colors.t2,
+                )
+            }
 
-        Spacer(Modifier.weight(1f))
+            Column {
+                Spacer(Modifier.height(OvalitSpacing.xl))
 
-        OvalitPrimaryButton(
-            text = stringResource(Res.string.intro_start),
-            onClick = onStart,
-        )
+                OvalitPrimaryButton(
+                    text = stringResource(Res.string.intro_start),
+                    onClick = onStart,
+                )
 
-        Spacer(Modifier.height(OvalitSpacing.xl))
+                Spacer(Modifier.height(OvalitSpacing.xl))
 
-        OvalitDisclaimer(modifier = Modifier.fillMaxWidth())
+                OvalitDisclaimer(modifier = Modifier.fillMaxWidth())
 
-        Spacer(Modifier.height(OvalitSpacing.md))
+                Spacer(Modifier.height(OvalitSpacing.md))
+            }
+        }
     }
 }

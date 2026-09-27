@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -45,6 +44,7 @@ import com.ovalit.core.model.Account
 import com.ovalit.core.model.Focus
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
+import com.ovalit.core.ui.PlayerAvatar
 import com.ovalit.core.ui.label
 import com.ovalit.feature.settings.resources.Res
 import com.ovalit.feature.settings.resources.account_linked
@@ -236,17 +236,8 @@ private fun AccountHeader(account: Account?) {
         modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // 플레이어 카드는 콘텐츠 카탈로그가 붙은 뒤에 넣는다. 그전까지는 이름 첫 글자로 자리를 잡는다.
-        Box(
-            modifier = Modifier.size(AvatarSize).background(colors.fill, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            OvalitText(
-                text = account?.riotId?.take(1).orEmpty(),
-                style = OvalitTheme.typography.bodyStrong,
-                color = colors.t2,
-            )
-        }
+        // 홈 오른쪽 위, 프로필 머리와 같은 아바타다. 카드를 서버에서 받기 전까지는 Riot ID 첫 글자다.
+        PlayerAvatar(riotId = account?.riotId.orEmpty(), modifier = Modifier.size(AvatarSize))
         Spacer(Modifier.width(OvalitSpacing.md))
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             if (account != null) {

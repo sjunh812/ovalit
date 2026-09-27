@@ -183,6 +183,8 @@ private fun RankRow(entry: Ranked, metric: FixedMetric, top: Double, widths: Ran
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
+        // 이름이 말줄임으로 칸을 다 채워도 막대에 붙지 않게 띄운다
+        Spacer(Modifier.width(OvalitSpacing.sm))
         Box(modifier = Modifier.weight(1f).height(3.dp).background(colors.fill)) {
             // 목업대로 나만 --accent다
             Box(
@@ -192,6 +194,8 @@ private fun RankRow(entry: Ranked, metric: FixedMetric, top: Double, widths: Ran
                     .background(if (entry.isMe) colors.accent else colors.t4),
             )
         }
+        // 값 칸은 가장 긴 숫자에 맞춘 폭이라 띄우지 않으면 1위 막대 끝이 숫자에 닿는다
+        Spacer(Modifier.width(OvalitSpacing.md))
         OvalitText(
             text = metric.format.valueText(entry.value),
             modifier = Modifier.width(widths.value),

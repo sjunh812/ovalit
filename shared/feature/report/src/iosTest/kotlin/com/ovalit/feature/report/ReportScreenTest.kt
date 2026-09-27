@@ -184,7 +184,7 @@ class ReportScreenTest {
     fun `KDA를 판당 K와 D와 A보다 먼저 크게 적는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        val kda = onNodeWithText("KDA 1.68", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val kda = onNodeWithText("KDA 1.68", substring = true, useUnmergedTree = true).getUnclippedBoundsInRoot()
         val perMatch = onNodeWithText("판당", substring = true, useUnmergedTree = true).getUnclippedBoundsInRoot()
         assertTrue(kda.right <= perMatch.left)
         // 제목 크기(줄 높이 24)라서 설명 글자(17)보다 줄이 확실히 높다
@@ -393,6 +393,40 @@ class ReportScreenTest {
         onNodeWithText("가장 많이 오른 무기", substring = true).assertExists()
         onNodeWithText("밴달 피해량 118 → 140", substring = true).assertExists()
         onNodeWithText(joinKeepingParts(listOf("제트 3승 1패", "레이즈 2승 1패")), substring = true).assertExists()
+    }
+
+    // 이름 길이가 달라 값이 줄마다 다른 자리에서 시작하면 두 줄이 따로 논다
+    @Test
+    fun `짚을 점의 무기와 요원 값은 같은 자리에서 시작한다`() = runComposeUiTest {
+        setContent { Box(Modifier.width(420.dp)) { Report(ReportPreviewData.moved, catalog = NamedCatalog) } }
+
+        val weapon = onNodeWithText("밴달 피해량 118 → 140", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val agents = onNodeWithText(joinKeepingParts(listOf("제트 3승 1패", "레이즈 2승 1패")), useUnmergedTree = true)
+            .getUnclippedBoundsInRoot()
+        val label = onNodeWithText("가장 많이 오른 무기", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        assertEquals(weapon.left, agents.left)
+        assertTrue(weapon.top < label.bottom, "넓은 화면에서는 값이 이름 옆에 있어야 한다")
+    }
+
+    // 한 줄만 이름 밑으로 내리면 두 줄의 모양이 달라진다
+    @Test
+    fun `좁아서 한 줄이라도 옆에 안 들어가면 모든 값을 이름 밑으로 내린다`() = runComposeUiTest {
+        setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale = 1.5f)) {
+                Box(Modifier.width(320.dp)) { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
+            }
+        }
+
+        for ((labelText, valueText) in listOf(
+            "가장 많이 오른 무기" to "밴달 피해량 118 → 140",
+            "이긴 판이 더 많았던 요원" to joinKeepingParts(listOf("제트 3승 1패", "레이즈 2승 1패")),
+        )) {
+            val label = onNodeWithText(labelText, useUnmergedTree = true).getUnclippedBoundsInRoot()
+            val value = onNodeWithText(valueText, useUnmergedTree = true).getUnclippedBoundsInRoot()
+            assertTrue(value.top >= label.bottom, "$valueText 이(가) 이름 밑에 있지 않다")
+            assertEquals(label.left, value.left)
+        }
     }
 
     // CLAUDE.md 지켜야 할 선: 게임 결정을 대신하지 않는다

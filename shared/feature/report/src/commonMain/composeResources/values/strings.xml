@@ -135,12 +135,15 @@
     <string name="insight_played_as">%1$s 뛴 판은 %2$s %3$s보다 %4$s %5$s.</string>
     <string name="insight_map">%1$s에서는 %2$s %3$s보다 %4$s %5$s.</string>
     <string name="insight_weapon">%1$s 든 라운드는 %2$s %3$s보다 %4$s %5$s.</string>
+    <string name="insight_session">연달아 뛴 %1$s는 %2$s %3$s보다 %4$s %5$s.</string>
     <string name="insight_higher">높아요</string>
     <string name="insight_lower">낮아요</string>
     <string name="insight_other_agents">다른 %1$s 요원</string>
     <string name="insight_other_roles">다른 역할</string>
     <string name="insight_other_maps">다른 맵</string>
     <string name="insight_other_weapons">다른 %1$s</string>
+    <string name="insight_session_late">세 번째 판부터</string>
+    <string name="insight_session_early">첫 두 판</string>
     <!-- "레이즈 2판 50%" -->
     <string name="insight_part">%1$s %2$s %3$s</string>
     <string name="insight_period_act">이번 액트</string>

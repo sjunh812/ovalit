@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 
@@ -355,6 +356,44 @@ class InsightTest {
         assertNull(matches.insight(role = null, categories = mapOf(Vandal to WeaponCategory.RIFLE, Phantom to WeaponCategory.SMG)))
     }
 
+    // 사용자 요청(2026-09-27): 연달아 뛸수록 어떤지 본다. 첫 두 판을 주어로 두면 무엇을 짚는지 흐려져서 늘 세 번째 판부터가
+    // 주어다.
+    @Test
+    fun `연달아 뛴 세 번째 판부터를 첫 두 판과 견준다`() {
+        val insight = assertNotNull(sessions(early = 30 to 10, late = 20 to 20).insight(role = null))
+
+        assertEquals(InsightMetric.SURVIVAL_RATE, insight.metric)
+        assertEquals(InsightSubject.LateInSession, insight.lead.subject)
+        assertEquals(12, insight.lead.matches)
+        assertEquals(InsightSubject.EarlyInSession, insight.other.subject)
+        assertEquals(false, insight.leadIsHigher)
+    }
+
+    @Test
+    fun `세 번째 판부터가 더 높아도 세 번째 판부터를 주어로 둔다`() {
+        val insight = assertNotNull(sessions(early = 20 to 20, late = 30 to 10).insight(role = null))
+
+        assertEquals(InsightSubject.LateInSession, insight.lead.subject)
+        assertEquals(true, insight.leadIsHigher)
+    }
+
+    // 앞 판이 끝나고 한 시간 넘게 쉬면 새로 센다. 판 길이도 쉰 시간에서 뺀다.
+    @Test
+    fun `한 시간 넘게 쉬었으면 다시 첫 판부터 센다`() {
+        assertNull(sessions(early = 30 to 10, late = 20 to 20, gapMinutes = 61).insight(role = null))
+        assertNotNull(sessions(early = 30 to 10, late = 20 to 20, gapMinutes = 60).insight(role = null))
+        // 90분 간격이지만 한 판이 40분이라 쉰 건 50분이다
+        val long = sessions(early = 30 to 10, late = 20 to 20, gapMinutes = 90).map { it.copy(lengthMillis = 40 * 60_000L) }
+        assertEquals(InsightSubject.LateInSession, long.insight(role = null)?.lead?.subject)
+    }
+
+    @Test
+    fun `연달아 뛴 판도 이번 주 값을 붙인다`() {
+        val insight = assertNotNull(sessions(early = 30 to 10, late = 20 to 20).insight(role = null))
+
+        assertEquals(InsightRecent(lead = 0.5, other = 0.75), insight.during(sessions(early = 30 to 10, late = 20 to 20, days = 1), emptyMap()).recent)
+    }
+
     @Test
     fun `역할을 모르면 가장 벌어진 지표를 고르고 우선 지표라고 하지 않는다`() {
         val insight = assertNotNull(sides(attack = 30 to 10, defense = 20 to 20).insight(role = null))
@@ -419,6 +458,18 @@ private fun buys(attack: Pair<Int, Int>, defense: Pair<Int, Int>): List<Match> {
     fun side(side: Side, won: Int, lost: Int) = List(won + lost) { index -> round(side = side, number = 5, teamLoadout = 3000, won = index < won) }
     return List(4) { match(*(side(Side.ATTACK, attack.first, attack.second) + side(Side.DEFENSE, defense.first, defense.second)).toTypedArray()) }
 }
+
+/**
+ * 하루에 네 판씩, 판 시작이 [gapMinutes]분 간격인 [days]일입니다. 앞 두 판과 뒤 두 판의 (살아남은 라운드, 죽은 라운드)를
+ * 받습니다. 진영은 모릅니다.
+ */
+private fun sessions(early: Pair<Int, Int>, late: Pair<Int, Int>, days: Int = 6, gapMinutes: Int = 40): List<Match> =
+    (0 until days).flatMap { day ->
+        List(4) { game ->
+            val (survived, died) = if (game < 2) early else late
+            match(*outcomes(survived, died, side = null), startedAt = Instant.fromEpochMilliseconds(0) + day.days + (game * gapMinutes).minutes)
+        }
+    }
 
 private val Jett = AgentId("jett")
 private val Raze = AgentId("raze")

@@ -36,6 +36,7 @@ import com.ovalit.core.model.Focus
 import com.ovalit.core.model.Insight
 import com.ovalit.core.model.InsightMetric
 import com.ovalit.core.model.InsightPart
+import com.ovalit.core.model.InsightRecent
 import com.ovalit.core.model.InsightSubject
 import com.ovalit.core.model.MapId
 import com.ovalit.core.model.MixGroup
@@ -578,6 +579,25 @@ class ReportScreenTest {
 
         onNodeWithText("전략가로 뛴 판은 승률이 타격대보다 44%p 높아요.").assertExists()
         onNodeWithText("추천", substring = true, useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    // 사용자 요청(2026-09-27): 연달아 뛸수록 어떤지 숫자로만 적는다. 쉬라고 하지 않는다.
+    @Test
+    fun `연달아 뛴 판을 견준 개선 포인트는 세 번째 판부터를 주어로 적는다`() = runComposeUiTest {
+        val insight = Insight(
+            metric = InsightMetric.KAST,
+            lead = InsightPart(InsightSubject.LateInSession, value = 0.61, matches = 18, rounds = 420),
+            other = InsightPart(InsightSubject.EarlyInSession, value = 0.73, matches = 32, rounds = 760),
+            leadIsHigher = false,
+            isRolePriority = false,
+            recent = InsightRecent(lead = 0.55, other = 0.70),
+        )
+        setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
+
+        onNodeWithText("연달아 뛴 세 번째 판부터는 관여율이 첫 두 판보다 12%p 낮아요.").assertExists()
+        onNodeWithText(joinKeepingParts(listOf("이번 액트", "세 번째 판부터 18판 61%", "첫 두 판 32판 73%"))).assertExists()
+        onNodeWithText(joinKeepingParts(listOf("이번 주는 세 번째 판부터 55%", "첫 두 판 70%"))).assertExists()
+        onNodeWithText("쉬", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test

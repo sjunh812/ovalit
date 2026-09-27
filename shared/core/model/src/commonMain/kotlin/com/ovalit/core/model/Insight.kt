@@ -55,13 +55,22 @@ const val MIN_DAMAGE_GAP_RATIO = 0.15
 /**
  * 두 쪽 차이가 우연히 벌어질 만한 폭의 이 배수를 넘어야 문장을 만듭니다. 한 액트에 견주는 조합이 수십 개라, 한 번 견줄 때
  * 흔히 쓰는 2배로는 공수·요원·맵·무기가 성적과 아무 상관 없는 사람에게도 절반 넘게 문장 하나가 걸립니다. 3.5배면 50판까지
- * 스무 번에 한 번 아래로 내려가고, 실제로 수비 생존율이 10%p 낮은 사람은 50판에서 절반쯤 짚습니다(2026-09-27
- * 시뮬레이션). 실데이터를 보고 조정할 시작값입니다.
+ * 스무 번에 한 번 안팎이고, 실제로 수비 생존율이 10%p 낮은 사람은 50판에서 절반쯤 짚습니다(2026-09-27 시뮬레이션).
+ * 실데이터를 보고 조정할 시작값입니다.
  */
 const val MIN_GAP_Z = 3.5
 
 /** 흔들림을 경기마다 묶어 재려면 한쪽에 경기가 이만큼은 있어야 합니다. 두 판으로는 그날 컨디션과 가를 수 없습니다. */
 const val MIN_INSIGHT_MATCHES = 3
+
+/**
+ * 앞 판이 끝나고 이만큼 안에 다음 판을 시작하면 연달아 뛴 것으로 봅니다. 큐 잡는 시간과 잠깐 쉬는 시간을 넉넉히 넣은
+ * 시작 기준선입니다.
+ */
+const val SESSION_BREAK_MILLIS = 60 * 60 * 1000L
+
+/** 연달아 뛴 판 가운데 이 판부터를 늦은 판으로 묶습니다. 화면 문구("세 번째 판부터", "첫 두 판")도 이 값에 맞춰 있습니다. */
+const val LATE_SESSION_GAME = 3
 
 /** 견주는 한쪽이 무엇인지입니다. 화면은 이것으로 문장 틀과 이름을 고릅니다. */
 sealed interface InsightSubject {
@@ -86,15 +95,23 @@ sealed interface InsightSubject {
 
     /** 같은 계열의 나머지 무기 둘 이상입니다. 하나뿐이면 [WithWeapon]으로 바꿔 둡니다. */
     data class OtherWeapons(val category: WeaponCategory, val weapons: List<WeaponId>) : InsightSubject
+
+    /** 연달아 뛴 판 가운데 [LATE_SESSION_GAME]번째 판부터입니다. */
+    data object LateInSession : InsightSubject
+
+    /** 연달아 뛴 판 가운데 [LATE_SESSION_GAME]번째 판 앞까지입니다. */
+    data object EarlyInSession : InsightSubject
 }
 
-// 여럿을 묶은 쪽이다. 묶음을 주어로 두면 "다른 맵에서는 헤이븐보다 높아요"처럼 어색해진다.
+// 주어로 두지 않는 쪽이다. 묶음을 주어로 두면 "다른 맵에서는 헤이븐보다 높아요"처럼 어색해진다. 첫 두 판도 주어로 두면
+// "첫 두 판은 세 번째 판부터보다 높아요"가 되어 무엇을 짚는지 흐려져서, 늘 세 번째 판부터를 주어로 둔다.
 private val InsightSubject.isGroup: Boolean
     get() = when (this) {
         is InsightSubject.OtherAgents -> agents.size > 1
         is InsightSubject.OtherRoles -> roles.size > 1
         is InsightSubject.OtherMaps -> maps.size > 1
         is InsightSubject.OtherWeapons -> weapons.size > 1
+        InsightSubject.EarlyInSession -> true
         else -> false
     }
 
@@ -168,7 +185,7 @@ internal fun List<Match>.insight(
     if (rounds == 0) return null
     val scale = Scale(rounds, minZ)
     val candidates = sideCandidates(scale) + roleCandidates(scale) + agentCandidates(scale) + mapCandidates(scale) +
-        weaponCandidates(categories, scale)
+        weaponCandidates(categories, scale) + sessionCandidates(scale)
 
     val focusMetrics = focus.insightMetrics
     candidates.filter { it.metric in focusMetrics }.maxByOrNull { it.impact }?.let {
@@ -235,6 +252,9 @@ private fun InsightSubject.value(metric: InsightMetric, matches: List<Match>, ca
         is InsightSubject.OtherMaps -> matches.filter { it.map in maps }
         is InsightSubject.WithWeapon -> return matches.weaponValue(setOf(weapon), metric)
         is InsightSubject.OtherWeapons -> return matches.weaponValue(weapons.toSet(), metric)
+        // 기간 경기만으로 몇 번째 판인지 센다. 일요일 밤에 시작해 월요일로 넘어간 판은 기간 첫 판으로 세지만 드물다.
+        InsightSubject.LateInSession -> matches.bySessionGame(late = true)
+        InsightSubject.EarlyInSession -> matches.bySessionGame(late = false)
     }
     return group.group(this).takeIf { it.hasSample(metric) }?.value(metric)
 }
@@ -360,6 +380,28 @@ private fun List<Match>.mapCandidates(scale: Scale): List<Candidate> {
         val one = mine.group(InsightSubject.OnMap(map))
         val others = filter { it.map != map }.group(InsightSubject.OtherMaps((byMap.keys - map).toList()))
         MatchInsightMetrics.mapNotNull { compare(it, one, others, scale) }
+    }
+}
+
+// 사용자 요청(2026-09-27): 연달아 뛴 판이 뒤로 갈수록 어떤지 본다. 숫자만 적고 쉬라고 하지 않는다(CLAUDE.md 지켜야 할 선).
+private fun List<Match>.sessionCandidates(scale: Scale): List<Candidate> {
+    val late = bySessionGame(late = true).group(InsightSubject.LateInSession)
+    val early = bySessionGame(late = false).group(InsightSubject.EarlyInSession)
+    return MatchInsightMetrics.mapNotNull { compare(it, late, early, scale) }
+}
+
+/**
+ * 연달아 뛴 판 가운데 [LATE_SESSION_GAME]번째 판부터이거나([late]) 그 앞까지인 경기입니다. 앞 판이 끝나고
+ * [SESSION_BREAK_MILLIS] 넘게 쉬면 새로 셉니다.
+ */
+private fun List<Match>.bySessionGame(late: Boolean): List<Match> {
+    var game = 0
+    var previous: Match? = null
+    return sortedBy { it.startedAt }.filter { match ->
+        val rested = previous?.let { match.startedAt.toEpochMilliseconds() - it.startedAt.toEpochMilliseconds() - it.lengthMillis > SESSION_BREAK_MILLIS }
+        game = if (rested == false) game + 1 else 1
+        previous = match
+        (game >= LATE_SESSION_GAME) == late
     }
 }
 

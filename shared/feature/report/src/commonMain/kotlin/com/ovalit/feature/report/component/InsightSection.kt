@@ -50,6 +50,9 @@ import com.ovalit.feature.report.resources.insight_reason_role
 import com.ovalit.feature.report.resources.insight_recent_lead
 import com.ovalit.feature.report.resources.insight_recent_other
 import com.ovalit.feature.report.resources.insight_rounds
+import com.ovalit.feature.report.resources.insight_session
+import com.ovalit.feature.report.resources.insight_session_early
+import com.ovalit.feature.report.resources.insight_session_late
 import com.ovalit.feature.report.resources.insight_side
 import com.ovalit.feature.report.resources.insight_side_attack
 import com.ovalit.feature.report.resources.insight_side_defense
@@ -92,6 +95,7 @@ internal fun InsightSection(
             is InsightSubject.OnAgent, is InsightSubject.OnRole -> Res.string.insight_played_as
             is InsightSubject.OnMap -> Res.string.insight_map
             is InsightSubject.WithWeapon -> Res.string.insight_weapon
+            InsightSubject.LateInSession -> Res.string.insight_session
             else -> Res.string.insight_side
         },
         when (lead.subject) {
@@ -161,6 +165,9 @@ private fun InsightSubject.name(catalog: ContentCatalog): String = when (this) {
     is InsightSubject.WithWeapon -> catalog.weaponName(weapon)
     is InsightSubject.OtherWeapons -> weapons.singleOrNull()?.let { catalog.weaponName(it) }
         ?: stringResource(Res.string.insight_other_weapons, stringResource(category.label))
+    // 모델의 LATE_SESSION_GAME(3)에 맞춘 이름이다
+    InsightSubject.LateInSession -> stringResource(Res.string.insight_session_late)
+    InsightSubject.EarlyInSession -> stringResource(Res.string.insight_session_early)
 }
 
 // 공수와 무기는 라운드로, 요원과 역할과 맵은 판으로 센다

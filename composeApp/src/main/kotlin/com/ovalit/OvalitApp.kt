@@ -16,13 +16,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -111,48 +118,44 @@ fun OvalitApp(appVersion: String) {
     val importScheduler = koinInject<ImportScheduler>()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val selectedTab = TopLevel.indexOf(backStack.lastOrNull())
-    val showTabBar = selectedTab >= 0
+    val dimmedAlpha = dimmedAlpha(OvalitTheme.colors.isDark)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(OvalitTheme.colors.bg),
-    ) {
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .then(if (showTabBar) Modifier.consumeWindowInsets(WindowInsets.navigationBars) else Modifier),
-        ) {
-            NavDisplay(
-                backStack = backStack,
-                onBack = { backStack.removeLastOrNull() },
-                entryDecorators = listOf(
-                    rememberSaveableStateHolderNavEntryDecorator(),
-                    rememberViewModelStoreNavEntryDecorator(),
-                ),
-                entryProvider = entryProvider {
-                    entry<Intro> {
-                        IntroScreen(onStart = { backStack.add(Consent) })
-                    }
-                    entry<Consent> {
-                        ConsentScreen(
-                            onBack = { backStack.removeLastOrNull() },
-                            onContinue = {
-                                // S0-3 Riot 로그인은 RSO가 붙으면 여기서 Custom Tabs로 연다. 지금은 가짜 계정으로 연동한다.
-                                scope.launch {
-                                    account.link()
-                                    importScheduler.start()
-                                }
-                                backStack.replaceAllWith(Import)
-                            },
-                        )
-                    }
-                    entry<Import> {
-                        RequestNotificationPermission()
-                        ImportRoute(onOpenReport = { backStack.replaceAllWith(Report) })
-                    }
-                    entry<Report> {
+    // 뒤 화면을 어둡게 비추는 바탕이다(OvalitTransitions). 화면은 모두 불투명해서 전환 중이 아니면 보이지 않는다.
+    Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+        NavDisplay(
+            backStack = backStack,
+            onBack = { backStack.removeLastOrNull() },
+            entryDecorators = listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator(),
+                rememberOpaqueEntryDecorator(),
+            ),
+            transitionSpec = pushTransition(dimmedAlpha),
+            popTransitionSpec = popTransition(dimmedAlpha),
+            predictivePopTransitionSpec = predictivePopTransition(dimmedAlpha),
+            entryProvider = entryProvider {
+                entry<Intro> {
+                    IntroScreen(onStart = { backStack.add(Consent) })
+                }
+                entry<Consent> {
+                    ConsentScreen(
+                        onBack = { backStack.removeLastOrNull() },
+                        onContinue = {
+                            // S0-3 Riot 로그인은 RSO가 붙으면 여기서 Custom Tabs로 연다. 지금은 가짜 계정으로 연동한다.
+                            scope.launch {
+                                account.link()
+                                importScheduler.start()
+                            }
+                            backStack.replaceAllWith(Import)
+                        },
+                    )
+                }
+                entry<Import> {
+                    RequestNotificationPermission()
+                    ImportRoute(onOpenReport = { backStack.replaceAllWith(Report) })
+                }
+                entry<Report> {
+                    TabScaffold(selected = Report, onSelect = backStack::selectTab) {
                         ReportRoute(
                             onOpenProfile = { backStack.add(Profile) },
                             onShareInvite = { context.shareInvite(friends.inviteLink()) },
@@ -160,76 +163,112 @@ fun OvalitApp(appVersion: String) {
                             onOpenWeapons = { backStack.add(Weapons) },
                         )
                     }
-                    entry<Profile> {
-                        ProfileRoute(
-                            onBack = { backStack.removeLastOrNull() },
-                            onOpenAgents = { backStack.add(Agents) },
-                            onOpenWeapons = { backStack.add(Weapons) },
-                            onOpenMatch = { backStack.add(MatchDetail(it.value)) },
-                            onOpenMatches = { backStack.selectTab(Matches) },
-                        )
-                    }
-                    entry<Matches> {
+                }
+                entry<Profile> {
+                    ProfileRoute(
+                        onBack = { backStack.removeLastOrNull() },
+                        onOpenAgents = { backStack.add(Agents) },
+                        onOpenWeapons = { backStack.add(Weapons) },
+                        onOpenMatch = { backStack.add(MatchDetail(it.value)) },
+                        onOpenMatches = { backStack.selectTab(Matches) },
+                    )
+                }
+                entry<Matches>(metadata = TabTransitions) {
+                    TabScaffold(selected = Matches, onSelect = backStack::selectTab) {
                         MatchesRoute(onOpenMatch = { backStack.add(MatchDetail(it.value)) })
                     }
-                    entry<MatchDetail> { key ->
-                        MatchDetailRoute(
-                            matchId = MatchId(key.id),
-                            onBack = { backStack.removeLastOrNull() },
-                            onOpenFriend = { backStack.add(FriendProfile(it.value)) },
-                            onShareInvite = { context.shareInvite(friends.inviteLink()) },
-                        )
-                    }
-                    entry<Friends> {
+                }
+                entry<MatchDetail> { key ->
+                    MatchDetailRoute(
+                        matchId = MatchId(key.id),
+                        onBack = { backStack.removeLastOrNull() },
+                        onOpenFriend = { backStack.add(FriendProfile(it.value)) },
+                        onShareInvite = { context.shareInvite(friends.inviteLink()) },
+                    )
+                }
+                entry<Friends>(metadata = TabTransitions) {
+                    TabScaffold(selected = Friends, onSelect = backStack::selectTab) {
                         FriendsRoute(
                             onOpenFriend = { backStack.add(FriendProfile(it.value)) },
                             onShareInvite = { link -> context.shareInvite(link) },
                         )
                     }
-                    entry<FriendProfile> { key ->
-                        FriendProfileRoute(
-                            friendId = PlayerId(key.id),
-                            onBack = { backStack.removeLastOrNull() },
-                            onOpenMatches = { backStack.add(FriendMatches(key.id)) },
-                            onOpenAgents = { backStack.add(FriendAgents(key.id)) },
-                            onOpenWeapons = { backStack.add(FriendWeapons(key.id)) },
-                        )
-                    }
-                    entry<FriendMatches> { key ->
-                        FriendMatchesRoute(friendId = PlayerId(key.id), onBack = { backStack.removeLastOrNull() })
-                    }
-                    entry<FriendAgents> { key ->
-                        AgentsRoute(owner = RecordsOwner.Friend(PlayerId(key.id)), onBack = { backStack.removeLastOrNull() })
-                    }
-                    entry<FriendWeapons> { key ->
-                        WeaponsRoute(owner = RecordsOwner.Friend(PlayerId(key.id)), onBack = { backStack.removeLastOrNull() })
-                    }
-                    entry<Agents> { AgentsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }) }
-                    entry<Weapons> { WeaponsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }) }
-                    entry<Settings> {
+                }
+                entry<FriendProfile> { key ->
+                    FriendProfileRoute(
+                        friendId = PlayerId(key.id),
+                        onBack = { backStack.removeLastOrNull() },
+                        onOpenMatches = { backStack.add(FriendMatches(key.id)) },
+                        onOpenAgents = { backStack.add(FriendAgents(key.id)) },
+                        onOpenWeapons = { backStack.add(FriendWeapons(key.id)) },
+                    )
+                }
+                entry<FriendMatches> { key ->
+                    FriendMatchesRoute(friendId = PlayerId(key.id), onBack = { backStack.removeLastOrNull() })
+                }
+                entry<FriendAgents> { key ->
+                    AgentsRoute(owner = RecordsOwner.Friend(PlayerId(key.id)), onBack = { backStack.removeLastOrNull() })
+                }
+                entry<FriendWeapons> { key ->
+                    WeaponsRoute(owner = RecordsOwner.Friend(PlayerId(key.id)), onBack = { backStack.removeLastOrNull() })
+                }
+                entry<Agents> { AgentsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }) }
+                entry<Weapons> { WeaponsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }) }
+                entry<Settings>(metadata = TabTransitions) {
+                    TabScaffold(selected = Settings, onSelect = backStack::selectTab) {
                         SettingsRoute(
                             appVersion = appVersion,
                             onUnlinked = { backStack.replaceAllWith(Intro) },
                         )
                     }
-                },
-            )
-        }
+                }
+            },
+        )
+    }
+}
 
-        if (showTabBar) {
-            OvalitTabBar(
-                tabs = listOf(
-                    OvalitTab(stringResource(R.string.tab_home), OvalitIcons.Home, OvalitIcons.HomeFilled),
-                    OvalitTab(stringResource(R.string.tab_matches), OvalitIcons.Matches, OvalitIcons.MatchesFilled),
-                    OvalitTab(stringResource(R.string.tab_friends), OvalitIcons.Friends, OvalitIcons.FriendsFilled),
-                    OvalitTab(stringResource(R.string.tab_settings), OvalitIcons.Settings, OvalitIcons.SettingsFilled),
-                ),
-                selectedIndex = selectedTab,
-                onSelect = { index -> backStack.selectTab(TopLevel[index]) },
-            )
+// 탭바는 탭 화면마다 안에 둔다. 밖에 하나만 두고 숨기면 새 화면으로 넘어가는 순간 탭바가 먼저 사라져서, 밀려나는
+// 화면이 탭바 높이만큼 늘어나며 목록이 한 번 튄다. 안에 두면 탭바도 그 화면과 같이 밀려난다.
+@Composable
+private fun TabScaffold(selected: NavKey, onSelect: (NavKey) -> Unit, content: @Composable () -> Unit) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.weight(1f).consumeWindowInsets(WindowInsets.navigationBars)) { content() }
+        OvalitTabBar(
+            tabs = listOf(
+                OvalitTab(stringResource(R.string.tab_home), OvalitIcons.Home, OvalitIcons.HomeFilled),
+                OvalitTab(stringResource(R.string.tab_matches), OvalitIcons.Matches, OvalitIcons.MatchesFilled),
+                OvalitTab(stringResource(R.string.tab_friends), OvalitIcons.Friends, OvalitIcons.FriendsFilled),
+                OvalitTab(stringResource(R.string.tab_settings), OvalitIcons.Settings, OvalitIcons.SettingsFilled),
+            ),
+            selectedIndex = TopLevel.indexOf(selected),
+            onSelect = { index -> onSelect(TopLevel[index]) },
+        )
+    }
+}
+
+// 화면마다 바탕을 깐다. 전환 중에 바탕이 빈 화면이 있으면 뒤의 검은 바탕이 그대로 보인다. 양옆 바깥에는 선을
+// 긋는다. 쉬고 있을 때는 화면 밖이라 안 보이고, 밀려 들어오거나 스와이프로 밀어낼 때만 두 화면 사이에 보인다.
+@Composable
+private fun rememberOpaqueEntryDecorator(): NavEntryDecorator<NavKey> {
+    val background = OvalitTheme.colors.bg
+    val edge = OvalitTheme.colors.line
+    return remember(background, edge) {
+        NavEntryDecorator { entry ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .drawBehind {
+                        val width = EdgeWidth.toPx()
+                        drawRect(edge, topLeft = Offset(-width, 0f), size = Size(width, size.height))
+                        drawRect(edge, topLeft = Offset(size.width, 0f), size = Size(width, size.height))
+                    }
+                    .background(background),
+            ) { entry.Content() }
         }
     }
 }
+
+private val EdgeWidth = 1.dp
 
 // 홈은 늘 스택 맨 아래에 두고 다른 탭은 그 위에 하나만 둔다. 그래야 어느 탭에서 뒤로 가도 홈이 나오고 홈에서
 // 뒤로 가면 앱이 닫힌다. 홈은 새로 띄우지 않아서 스크롤과 칩이 남는다.

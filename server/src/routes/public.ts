@@ -9,8 +9,8 @@ export const publicRoutes = new Hono<AppEnv>();
 publicRoutes.get("/health", (c) => c.json({ ok: true }));
 
 /**
- * 앱이 없는 곳에서 초대 링크를 열었을 때 보이는 쪽입니다. DB를 읽지 않아서 코드가 살아 있는지 알려주지
- * 않고, 밖에서 불러오는 것도 없습니다.
+ * 앱이 없는 기기에서 초대 링크를 열면 보이는 페이지입니다. DB를 읽지 않으니 코드가 살아 있는지는 알려주지
+ * 않습니다. 밖에서 불러오는 것도 없습니다.
  */
 publicRoutes.get("/i/:code", (c) => {
   const code = c.req.param("code").toUpperCase();

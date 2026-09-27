@@ -2,9 +2,10 @@ import { env } from "cloudflare:workers";
 import { createApp } from "../src/app";
 import { base64url } from "../src/crypto";
 import type { Env } from "../src/env";
-import { cacheKey, clearMemoryCaches } from "../src/riot";
+import { cacheKey, clearMemoryCaches, clearQuotas } from "../src/riot";
+import { clearRiotBlocks } from "../src/upstream";
 
-// 실제 키는 쓰지 않는다. 테스트는 .dev.vars를 읽지 않도록 값을 여기서 덮어쓴다.
+// 실제 키는 쓰지 않는다. wrangler가 .dev.vars를 읽어 오더라도 여기 값으로 덮어쓴다.
 const TEST_SECRETS = {
   RIOT_API_KEY: "test-riot-key",
   RSO_CLIENT_ID: "test-client",
@@ -53,6 +54,9 @@ export interface TestUser {
 }
 
 export function setup(overrides: Partial<Env> = {}) {
+  // isolate 메모리에 남은 레이트 리밋과 사용자 호출 한도가 다음 테스트로 이어지지 않게 비운다.
+  clearRiotBlocks();
+  clearQuotas();
   const upstream = new FakeUpstream();
   const app = createApp({ fetch: upstream.fetch });
   const testEnv: Env = { ...env, ...TEST_SECRETS, ...overrides };
@@ -82,7 +86,7 @@ export function matchUrl(matchId: string): string {
   return `${RIOT}/val/match/v1/matches/${matchId}`;
 }
 
-/** isolate 메모리와 Cache API를 모두 비웁니다. 그 뒤에도 Riot을 안 부르면 D1에서 답한 것입니다. */
+/** isolate 메모리는 모두 비우고 Cache API에서는 `riotPaths`만 지웁니다. 그 뒤에도 Riot을 안 부르면 D1에서 답한 것입니다. */
 export async function forgetCaches(...riotPaths: string[]): Promise<void> {
   clearMemoryCaches();
   for (const path of riotPaths) await caches.default.delete(cacheKey("http://localhost", path));
@@ -112,7 +116,8 @@ export interface FixturePlayer {
 
 /**
  * VAL-MATCH-V1 모양을 흉내 낸 경기입니다. 앞 절반이 Blue, 뒤 절반이 Red이고 라운드마다 i번째가
- * 맞은편 i번째를 잡습니다. 가리기 테스트가 킬, 피해량, 라운드 기록 안의 PUUID까지 보게 합니다.
+ * 맞은편 i번째를 잡습니다. Blue에는 앱을 안 쓰는 코치가 한 명 붙습니다. 가리기 테스트가 킬, 피해량,
+ * 라운드 기록, 코치 자리의 PUUID까지 보게 합니다.
  */
 export function matchFixture(matchId: string, players: FixturePlayer[], rounds = 2) {
   const half = Math.ceil(players.length / 2);
@@ -156,7 +161,7 @@ export function matchFixture(matchId: string, players: FixturePlayer[], rounds =
       playerTitle: "d13e579c-435e-44d4-cec2-6eae5a3c5ed4",
       accountLevel: 120,
     })),
-    coaches: [],
+    coaches: [{ puuid: makePuuid(), teamId: "Blue" }],
     teams: [
       { teamId: "Blue", won: true, roundsPlayed: rounds, roundsWon: rounds, numPoints: rounds },
       { teamId: "Red", won: false, roundsPlayed: rounds, roundsWon: 0, numPoints: 0 },
@@ -192,6 +197,35 @@ export function strangers(n: number): FixturePlayer[] {
 export async function makeFriends(a: TestUser, b: TestUser): Promise<void> {
   const [x, y] = [await userId(a.puuid), await userId(b.puuid)].sort((m, n) => m - n);
   await env.DB.prepare("INSERT INTO friendships (user_a, user_b, created_at) VALUES (?, ?, ?)").bind(x, y, Date.now()).run();
+}
+
+/**
+ * D1을 감싸 준비한 SQL을 `sql`에 적어 둡니다. `failBatch`를 주면 `batch`가 그 에러로 실패합니다. 로그인처럼
+ * `batch`를 쓰는 준비를 마친 뒤 `t.env.DB`에 넣어 씁니다.
+ */
+export function watchDb(db: D1Database, options: { failBatch?: Error } = {}): { db: D1Database; sql: string[] } {
+  const sql: string[] = [];
+  const watched = new Proxy(db, {
+    get(target, prop) {
+      if (prop === "prepare") {
+        return (query: string) => {
+          sql.push(query);
+          return target.prepare(query);
+        };
+      }
+      if (prop === "batch" && options.failBatch) return () => Promise.reject(options.failBatch);
+      const value: unknown = Reflect.get(target, prop, target);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+  return { db: watched, sql };
+}
+
+/** 이름이 붙은 에러입니다. 로그에 이름만 남는지 볼 때 씁니다. */
+export function namedError(name: string, message: string): Error {
+  const error = new Error(message);
+  error.name = name;
+  return error;
 }
 
 export async function sendRequestRow(from: TestUser, to: TestUser, source = "scoreboard"): Promise<void> {

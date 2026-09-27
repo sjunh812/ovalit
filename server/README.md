@@ -29,6 +29,11 @@ RSO는 프로덕션 키가 나와야 붙일 수 있습니다. 그 전에는 `/au
 받습니다. `.dev.vars`의 `DEV_LOGIN=true`이고 로컬 주소로 들어올 때만 열립니다. 에뮬레이터에서는
 `http://10.0.2.2:8787`로 부르거나 `adb reverse tcp:8787 tcp:8787`을 걸고 `localhost`로 부릅니다.
 
+로컬 주소인지는 요청의 Host 헤더로 가립니다. 이 헤더는 보내는 쪽이 마음대로 적을 수 있어서 실제로 막는 건
+`DEV_LOGIN` 하나입니다. `wrangler dev`는 기본으로 localhost에만 붙습니다. `--ip 0.0.0.0`이나 `dev.ip` 설정으로
+바깥에 열지 마세요. 같은 네트워크의 누구든 Host 헤더만 바꿔 아무 PUUID로 로그인할 수 있게 됩니다. 기기에서 닿지
+않으면 바깥에 여는 대신 `adb reverse`를 씁니다.
+
 ```bash
 curl -X POST localhost:8787/auth/dev -H 'Content-Type: application/json' \
   -d '{"puuid":"<78자>","gameName":"제트장인","tagLine":"KR1"}'
@@ -62,7 +67,7 @@ npm run typecheck
 | DELETE | `/me` | 필요 | 연동 해제. 세션, 친구, 요청, 초대가 같이 지워집니다 |
 | GET | `/content` | 필요 | VAL-CONTENT(ko-KR). 6시간 담아 둡니다 |
 | GET | `/status` | 필요 | VAL-STATUS. 60초 담아 둡니다 |
-| GET | `/riot/matchlist` | 필요 | 내 경기 ID 목록 |
+| GET | `/riot/matchlist` | 필요 | 내 경기 ID 목록. 담아 두지 않고 10초에 한 번만 Riot에 갑니다 |
 | GET | `/riot/matches/:matchId` | 필요 | 내가 뛴 경기만. 30일 담아 둡니다 |
 | GET | `/riot/matches/:matchId/app-users` | 필요 | 그 경기의 앱 사용자와 나의 관계. 적어 둔 경기면 Riot을 부르지 않습니다 |
 | GET | `/friends` | 필요 | `[{puuid, gameName, tagLine, statsPublic, since}]` |
@@ -71,10 +76,15 @@ npm run typecheck
 | POST | `/friends/requests/:puuid/accept` | 필요 | 받은 요청 수락 |
 | POST | `/friends/requests/:puuid/decline` | 필요 | 받은 요청 거절 |
 | DELETE | `/friends/:puuid` | 필요 | 친구 끊기 |
-| GET | `/friends/:puuid/matchlist` | 필요 | 친구가 전적을 공개했을 때만 |
+| GET | `/friends/:puuid/matchlist` | 필요 | 친구가 전적을 공개했을 때만. 같은 친구는 1분에 한 번만 Riot에 갑니다 |
 | GET | `/friends/:puuid/matches/:matchId` | 필요 | 내가 안 뛴 경기면 친구와 나 말고는 가립니다 |
-| POST | `/invites` | 필요 | 7일짜리 초대 링크 `{code, url, expiresAt}` |
+| POST | `/invites` | 필요 | 7일짜리 초대 링크 `{code, url, expiresAt}`. 하루 넘게 남은 링크가 있으면 그 링크를 200으로 줍니다 |
 | POST | `/invites/:code/redeem` | 필요 | 초대한 사람에게 친구 요청을 보냅니다 |
+
+이미 친구인 사람에게 요청하면 스코어보드 쪽(`POST /friends/requests`)은 409 `already_friends`, 초대 링크 쪽은
+200 `{status: "already_friends"}`입니다. 초대 링크는 단톡방에 올려 여럿이 누르는 것이라 이미 친구인 사람이 다시
+눌러도 에러가 나지 않게 했습니다. 스코어보드는 친구가 아닌 사람에게만 요청 버튼이 뜨니, 거기서 409가 오면 앱이
+들고 있는 관계가 낡은 것입니다.
 
 `/cards/{uuid}_small.png`와 `/cards/{uuid}_wide.png`는 Worker를 거치지 않는 정적 파일입니다.
 `public/cards/`는 저장소에 없고 아래 스크립트로 채웁니다.
@@ -90,8 +100,10 @@ Riot 프로덕션 키의 승인 조건이라 서버가 직접 막습니다. 자�
   같이 뛰었는지는 서버가 경기를 직접 받아 확인합니다. 한 번 받은 경기는 참가자를 적어 두고 거기서 봅니다.
 - 다른 사람의 경기는 서로 수락한 친구이고 그 친구가 전적을 공개했을 때만 엽니다.
 - 내가 안 뛴 친구 경기에서는 친구와 나 말고 모두의 PUUID를 `anon-N`으로 바꾸고 이름, 태그,
-  카드, 칭호를 지웁니다. 파티 ID도 그 경기 안에서만 통하는 이름으로 바꿉니다.
-- Riot access token은 계정을 한 번 읽고 버립니다. 세션 토큰과 로그인 코드는 해시만 저장합니다.
+  카드, 칭호, 계정 레벨을 지웁니다. PUUID가 객체 키로 와도 바꿉니다. 파티 ID도 그 경기 안에서만 통하는
+  이름으로 바꿉니다.
+- Riot access token은 계정을 한 번 읽고 버립니다. 세션 토큰과 로그인 코드는 해시만 저장합니다. 세션 토큰을
+  주는 응답에는 `Cache-Control: no-store`를 붙입니다.
 
 ### 에러 코드
 
@@ -99,10 +111,30 @@ Riot이 돌려준 실패는 이렇게 바꿔 보냅니다.
 
 | Riot | 우리 응답 |
 | --- | --- |
-| 429 | 503 `riot_rate_limited`. `Retry-After`를 그대로 붙입니다 |
+| 429 | 503 `riot_rate_limited`. Riot이 준 `Retry-After`를 붙이고, 없으면 10초를 붙입니다 |
 | 401, 403, 5xx, 연결 실패 | 502 `riot_unavailable` |
 | 404 | 404 `not_found` |
 | 키 없음 | 503 `riot_key_missing` |
+
+429를 받은 뒤에는 `Retry-After`가 지날 때까지 그 호스트로 가는 요청을 Riot에 보내지 않고 바로 같은 503을
+돌려줍니다. 막힌 동안 계속 부르면 앱 전체의 몫이 더 깎이기 때문입니다.
+
+### 호출 한도
+
+Riot 레이트 리밋은 앱 전체에 걸려서 한 사람이 몰아 부르면 모두의 몫이 줄어듭니다. 그래서 사용자마다 Riot에
+가는 횟수를 셉니다. 넘기면 Riot을 부르지 않고 429 `too_many_requests`에 `Retry-After`(초)를 붙여 돌려줍니다.
+
+| 무엇 | 한도 |
+| --- | --- |
+| 내 경기 ID 목록 | 10초에 한 번 |
+| 친구 경기 ID 목록 | 같은 친구는 1분에 한 번. 앱의 규칙과 같습니다 |
+| 캐시에 없어 Riot에 가는 경기 상세 | 1분에 120번. 첫 수집 50경기는 걸리지 않습니다 |
+
+Riot이 404를 준 경기 ID는 10분 동안 기억해 두고 다시 묻지 않습니다. 아무 ID나 넣은 요청이 그때마다 Riot 몫을
+쓰지 않게 하려는 것입니다.
+
+이 한도와 404 기억, 위의 429 차단은 모두 isolate 메모리에 둡니다. isolate끼리 나누지 않으니 요청이 여러
+isolate로 나뉘면 한도를 넘길 수 있습니다. 막는 장치가 아니라 줄이는 장치로 봐 주세요.
 
 ## 무료 한도
 
@@ -124,6 +156,10 @@ Riot이 돌려준 실패는 이렇게 바꿔 보냅니다.
 D1 한도는 00:00 UTC에 초기화됩니다. KV는 하루 쓰기가 1,000번뿐이라 쓰지 않습니다. R2는 카드 등록이
 필요해서 쓰지 않습니다.
 
+크론을 두지 않아서 만료된 세션과 초대는 누가 로그인하거나 링크를 만들 때 한 번에 50줄까지 같이 지웁니다.
+`expires_at` 색인이 있어 지울 게 없으면 거의 읽지 않습니다. 색인 때문에 세션과 초대를 한 줄 넣을 때 쓰는 행이
+하나씩 늘어납니다.
+
 ### 캐시
 
 Riot 응답은 isolate 메모리, Cache API, Riot 순서로 찾습니다.
@@ -131,8 +167,8 @@ Riot 응답은 isolate 메모리, Cache API, Riot 순서로 찾습니다.
 - Cache API는 사용자 정의 도메인에 붙인 Worker에서만 실제로 담깁니다. `*.workers.dev`에서는 아무것도
   담기지 않습니다. 도메인은 돈이 들어서 붙이지 않았습니다.
 - 그래서 앞에 isolate 메모리 캐시를 둡니다. 콘텐츠 1개(6시간), 점검 안내 1개(60초), 끝난 경기는 합쳐서
-  8MB까지 오래 안 꺼낸 것부터 버립니다. isolate가 내려가거나 다른 데이터센터로 가면 비어서 있으면 쓰는
-  정도입니다.
+  24MB까지 오래 안 꺼낸 것부터 버립니다. 글자당 2바이트로 세서 800KB 경기가 15판쯤 들어갑니다. isolate가
+  내려가거나 요청이 다른 데이터센터로 가면 비므로, 없을 수 있다고 보고 씁니다.
 - 끝난 경기를 Riot에서 처음 받으면 참가자 PUUID를 D1 `match_players`에 적습니다. 스코어보드의 앱 사용자와
   친구 요청은 참가자만 알면 되니 적어 둔 경기면 Riot을 부르지 않습니다. 경기 원문이 필요한 경로도 적어 둔
   참가자로 먼저 걸러, 남의 경기를 Riot에 묻지 않습니다.

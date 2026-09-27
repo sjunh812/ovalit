@@ -5,14 +5,17 @@ import { ApiError } from "./errors";
 
 const SESSION_TTL_MS = 90 * 24 * 60 * 60 * 1000;
 const BEARER = /^Bearer ([A-Za-z0-9_-]{43})$/;
+// 크론을 두지 않아서 누가 로그인하든 만료된 세션을 같이 치운다. 쌓인 게 많아도 요청 하나가 지우는 줄은 50개로 묶는다.
+const CLEANUP_LIMIT = 50;
 
 export async function createSession(db: D1Database, userId: number): Promise<{ token: string; expiresAt: number }> {
   const token = randomToken();
   const now = Date.now();
   const expiresAt = now + SESSION_TTL_MS;
   await db.batch([
-    // 크론을 두지 않아서 로그인할 때 그 사람의 만료된 세션을 같이 치운다.
-    db.prepare("DELETE FROM sessions WHERE user_id = ? AND expires_at <= ?").bind(userId, now),
+    db
+      .prepare("DELETE FROM sessions WHERE rowid IN (SELECT rowid FROM sessions WHERE expires_at <= ? LIMIT ?)")
+      .bind(now, CLEANUP_LIMIT),
     db
       .prepare("INSERT INTO sessions (token_hash, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)")
       .bind(await sha256(token), userId, now, expiresAt),

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cacheKey, clearMemoryCaches } from "../src/riot";
 import {
   forgetCaches,
@@ -6,11 +6,17 @@ import {
   matchFixture,
   matchPath,
   matchUrl,
+  namedError,
   recordedPlayers,
   recordPlayers,
   setup,
   strangers,
+  watchDb,
 } from "./helpers";
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("경기 캐시", () => {
   it("Cache API가 담지 못해도 isolate 메모리에서 꺼내 Riot을 다시 부르지 않는다", async () => {
@@ -35,6 +41,46 @@ describe("경기 캐시", () => {
     expect((await t.call("GET", `/riot/matches/${id}`, me.token)).status).toBe(200);
     expect(t.upstream.callsTo(matchUrl(id))).toHaveLength(1);
   });
+
+  it("800KB 경기 여섯 판은 Cache API 없이도 메모리에 다 남는다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const ids = Array.from({ length: 6 }, () => crypto.randomUUID());
+    for (const id of ids) {
+      t.upstream.json(matchUrl(id), { ...matchFixture(id, [me, ...strangers(9)]), padding: "x".repeat(800_000) });
+      expect((await t.call("GET", `/riot/matches/${id}`, me.token)).status).toBe(200);
+    }
+    for (const id of ids) await caches.default.delete(cacheKey("http://localhost", matchPath(id)));
+    for (const id of ids) expect((await t.call("GET", `/riot/matches/${id}`, me.token)).status).toBe(200);
+    for (const id of ids) expect(t.upstream.callsTo(matchUrl(id))).toHaveLength(1);
+  });
+
+  it("메모리에서 꺼낸 경기는 파싱하지 않고 원문 그대로 내려보낸다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const id = crypto.randomUUID();
+    t.upstream.json(matchUrl(id), matchFixture(id, [me, ...strangers(9)]));
+    const first = await (await t.call("GET", `/riot/matches/${id}`, me.token)).text();
+    const parse = vi.spyOn(JSON, "parse");
+    const again = await t.call("GET", `/riot/matches/${id}`, me.token);
+    expect(await again.text()).toBe(first);
+    expect(parse.mock.calls.filter(([text]) => typeof text === "string" && text.includes(id))).toEqual([]);
+  });
+
+  it("Cache API에 담지 못해도 경기는 내려보내고 에러 이름만 남긴다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(caches.default, "put").mockRejectedValue(namedError("CacheDown", `put ${me.puuid}`));
+    const id = crypto.randomUUID();
+    const fixture = matchFixture(id, [me, ...strangers(9)]);
+    t.upstream.json(matchUrl(id), fixture);
+    const res = await t.call("GET", `/riot/matches/${id}`, me.token);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual(fixture);
+    expect(errors.mock.calls).toEqual([["match_cache", "CacheDown"]]);
+    expect(await recordedPlayers(id)).toHaveLength(10);
+  });
 });
 
 describe("경기 참가자 기록", () => {
@@ -46,6 +92,34 @@ describe("경기 참가자 기록", () => {
     t.upstream.json(matchUrl(id), matchFixture(id, players));
     await t.call("GET", `/riot/matches/${id}`, me.token);
     expect(new Set(await recordedPlayers(id))).toEqual(new Set(players.map((p) => p.puuid)));
+  });
+
+  it("참가자를 D1에 적지 못해도 경기는 내려보내고 에러 이름만 남긴다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    t.env.DB = watchDb(t.env.DB, { failBatch: namedError("D1Down", `INSERT ${me.puuid}`) }).db;
+    const id = crypto.randomUUID();
+    const fixture = matchFixture(id, [me, ...strangers(9)]);
+    t.upstream.json(matchUrl(id), fixture);
+    const res = await t.call("GET", `/riot/matches/${id}`, me.token);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual(fixture);
+    expect(errors.mock.calls).toEqual([["match_players", "D1Down"]]);
+  });
+
+  it("적어 둔 경기를 Riot에서 다시 받아도 참가자를 또 적지 않는다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const id = crypto.randomUUID();
+    const players = [me, ...strangers(9)];
+    await recordPlayers(id, players.map((p) => p.puuid));
+    t.upstream.json(matchUrl(id), matchFixture(id, players));
+    const watched = watchDb(t.env.DB);
+    t.env.DB = watched.db;
+    expect((await t.call("GET", `/riot/matches/${id}`, me.token)).status).toBe(200);
+    expect(t.upstream.callsTo(matchUrl(id))).toHaveLength(1);
+    expect(watched.sql.filter((sql) => sql.includes("INSERT"))).toEqual([]);
   });
 
   it("끝나지 않은 경기는 적지 않는다", async () => {

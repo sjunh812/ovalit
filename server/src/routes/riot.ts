@@ -10,7 +10,7 @@ export const riot = new Hono<AppEnv>();
 
 riot.use(requireSession);
 
-riot.get("/matchlist", async (c) => rawJson(c, await riotFor(c).matchlist(c.var.user.puuid)));
+riot.get("/matchlist", async (c) => rawJson(c, await riotFor(c).matchlist()));
 
 riot.get("/matches/:matchId", async (c) => {
   const match = await riotFor(c).matchWith(validate.matchId(c.req.param("matchId")), c.var.user.puuid);

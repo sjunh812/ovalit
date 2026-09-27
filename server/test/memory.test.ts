@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { MemoryCache } from "../src/memory";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { MemoryCache, Quota } from "../src/memory";
 
 describe("isolate 메모리 캐시", () => {
   it("기한이 지난 값은 돌려주지 않는다", () => {
@@ -46,5 +46,32 @@ describe("isolate 메모리 캐시", () => {
     cache.set("b", "bbbb", 60);
     expect(cache.get("a")).toBe("aaaa");
     expect(cache.get("b")).toBe("bbbb");
+  });
+});
+
+describe("호출 한도", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("창 하나에 정한 횟수만 받고 남은 초를 알려주며, 창이 끝나면 다시 받는다", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const quota = new Quota(2, 10_000);
+    expect(quota.take("a")).toBeUndefined();
+    vi.advanceTimersByTime(3_000);
+    expect(quota.take("a")).toBeUndefined();
+    expect(quota.take("a")).toBe(7);
+    expect(quota.take("b")).toBeUndefined();
+    vi.advanceTimersByTime(7_000);
+    expect(quota.take("a")).toBeUndefined();
+  });
+
+  it("키가 너무 많아지면 가장 먼저 연 창부터 버린다", () => {
+    const quota = new Quota(1, 60_000, 2);
+    quota.take("a");
+    quota.take("b");
+    quota.take("c");
+    expect(quota.take("a")).toBeUndefined();
+    expect(quota.take("c")).toBe(60);
   });
 });

@@ -1,8 +1,24 @@
 import { env } from "cloudflare:workers";
-import { describe, expect, it } from "vitest";
-import { makeFriends, matchFixture, matchUrl, RIOT, sendRequestRow, setup, strangers, type TestUser, userId } from "./helpers";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { redactMatch } from "../src/redact";
+import {
+  makeFriends,
+  makePuuid,
+  matchFixture,
+  matchUrl,
+  RIOT,
+  sendRequestRow,
+  setup,
+  strangers,
+  type TestUser,
+  userId,
+} from "./helpers";
 
 type T = ReturnType<typeof setup>;
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 function playedMatch(t: T, ...players: { puuid: string; gameName: string }[]): string {
   const id = crypto.randomUUID();
@@ -188,6 +204,30 @@ describe("친구 경기", () => {
     expect(t.upstream.callsTo(url)).toHaveLength(1);
   });
 
+  it("같은 친구의 경기 목록은 1분에 한 번만 Riot에 가고, 그 사이에는 429를 준다", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const t = setup();
+    const me = await t.login();
+    const friend = await t.login();
+    const another = await t.login();
+    await makeFriends(me, friend);
+    await makeFriends(me, another);
+    const url = (puuid: string) => `${RIOT}/val/match/v1/matchlists/by-puuid/${puuid}`;
+    for (const f of [friend, another]) t.upstream.json(url(f.puuid), { puuid: f.puuid, history: [] });
+
+    expect((await t.call("GET", `/friends/${friend.puuid}/matchlist`, me.token)).status).toBe(200);
+    vi.advanceTimersByTime(20_000);
+    const again = await t.call("GET", `/friends/${friend.puuid}/matchlist`, me.token);
+    expect(again.status).toBe(429);
+    expect(again.headers.get("Retry-After")).toBe("40");
+    expect(await again.json()).toEqual({ error: "too_many_requests" });
+    // 친구마다 따로 센다.
+    expect((await t.call("GET", `/friends/${another.puuid}/matchlist`, me.token)).status).toBe(200);
+    vi.advanceTimersByTime(40_000);
+    expect((await t.call("GET", `/friends/${friend.puuid}/matchlist`, me.token)).status).toBe(200);
+    expect(t.upstream.callsTo(url(friend.puuid))).toHaveLength(2);
+  });
+
   it("전적을 공개하지 않은 친구의 경기는 열리지 않는다", async () => {
     const t = setup();
     const me = await t.login();
@@ -264,8 +304,33 @@ describe("친구 경기", () => {
 
     it("친구 본인은 그대로 남는다", async () => {
       const { match, friend } = await redacted();
-      expect(match.players[0]).toMatchObject({ puuid: friend.puuid, gameName: "friend", tagLine: "KR1" });
+      expect(match.players[0]).toMatchObject({ puuid: friend.puuid, gameName: "friend", tagLine: "KR1", accountLevel: 120 });
       expect(match.players[0]).toHaveProperty("playerCard");
+    });
+
+    it("가린 사람의 계정 레벨은 빼고 티어는 남긴다", async () => {
+      const { match } = await redacted();
+      for (const player of match.players.slice(1)) {
+        expect(player).not.toHaveProperty("accountLevel");
+        expect(player.competitiveTier).toBe(12);
+      }
+    });
+
+    it("코치의 PUUID도 가린다", async () => {
+      const { body, match, fixture } = await redacted();
+      const [coach] = fixture.coaches;
+      expect(body).not.toContain(coach!.puuid);
+      expect(match.coaches[0]).toEqual({ puuid: expect.stringMatching(/^anon-\d+$/), teamId: "Blue" });
+    });
+
+    it("PUUID가 객체 키로 와도 가리고, 남길 사람의 키는 그대로 둔다", () => {
+      const kept = makePuuid();
+      const other = makePuuid();
+      const match = { byPlayer: { [kept]: { kills: 3 }, [other]: { kills: 1 } }, players: [{ puuid: other }] };
+      expect(redactMatch(match, new Set([kept]))).toEqual({
+        byPlayer: { [kept]: { kills: 3 }, "anon-1": { kills: 1 } },
+        players: [{ puuid: "anon-1" }],
+      });
     });
 
     it("킬, 어시스트, 피해량이 가린 뒤에도 같은 사람을 가리킨다", async () => {

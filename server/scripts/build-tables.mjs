@@ -35,7 +35,8 @@ function buildRoles(agents) {
 function buildTiers(competitiveTiers) {
   // 에피소드마다 표가 하나씩 쌓이고 마지막이 지금 쓰는 표다.
   const current = competitiveTiers.data.at(-1);
-  // 0은 랭크가 없는 상태다. 앱에 번들한 엠블럼도 3부터라 이름도 3부터 둔다. 1, 2는 게임에서 쓰지 않는 자리다.
+  // 0은 랭크가 없는 상태라 번호로 뺀다. 게임에서 쓰지 않는 1, 2는 번호가 아니라 이름("미사용", "Unused")으로
+  // 거른다. 그래서 표는 3(아이언 1)부터 시작하고 앱에 번들한 엠블럼과 맞는다.
   const tiers = current.tiers.filter((tier) => tier.tier > 0 && !/^(미사용|Unused)/.test(tier.tierName));
   return Object.fromEntries(tiers.map((tier) => [String(tier.tier), tier.tierName]));
 }

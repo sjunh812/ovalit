@@ -13,7 +13,7 @@ export function puuid(value: unknown): string {
   return value;
 }
 
-/** 캐시 키가 갈리지 않게 소문자로 맞춰 돌려줍니다. */
+/** 캐시 키와 `match_players`의 경기 ID가 대소문자로 갈리지 않게 소문자로 맞춰 돌려줍니다. */
 export function matchId(value: unknown): string {
   if (typeof value !== "string" || !MATCH_ID.test(value)) throw new ApiError(400, "invalid_match_id");
   return value.toLowerCase();

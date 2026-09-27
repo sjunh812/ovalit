@@ -13,6 +13,8 @@ const APP_CALLBACK = "ovalit://auth";
 // 에뮬레이터는 호스트 PC를 10.0.2.2로 본다.
 const DEV_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "10.0.2.2"]);
 const CALLBACK_ERRORS = new Set(["access_denied", "invalid_state", "riot_rate_limited", "rso_not_configured"]);
+// 세션 토큰이 담긴 응답이다. 중간 프록시나 기기 캐시에 남지 않게 한다.
+const NO_STORE = { "Cache-Control": "no-store" };
 
 export const auth = new Hono<AppEnv>();
 
@@ -68,6 +70,9 @@ auth.get("/rso/callback", async (c) => {
     ]);
     return c.redirect(`${APP_CALLBACK}?code=${loginCode}`, 302);
   } catch (err) {
+    // ApiError가 아니면 D1처럼 우리 쪽에서 난 실패다. 앱에는 rso_failed로만 가니 이름이라도 남겨 둔다.
+    // 쿼리에 Riot 인가 코드가 실려 오니 에러 객체를 통째로 찍지 않는다.
+    if (!(err instanceof ApiError)) console.error("rso_callback", err instanceof Error ? err.name : typeof err);
     const code = err instanceof ApiError && CALLBACK_ERRORS.has(err.code) ? err.code : "rso_failed";
     return c.redirect(`${APP_CALLBACK}?error=${code}`, 302);
   }
@@ -84,12 +89,15 @@ auth.post("/session", async (c) => {
   if (!row || row.expires_at <= Date.now() || (await sha256(verifier)) !== row.challenge) {
     throw new ApiError(400, "invalid_code");
   }
-  return c.json(await createSession(c.env.DB, row.user_id));
+  return c.json(await createSession(c.env.DB, row.user_id), 200, NO_STORE);
 });
 
 /**
  * RSO 없이 친구 흐름을 로컬에서 돌려 보는 문입니다. `DEV_LOGIN`이 `"true"`이고 로컬 주소로 들어왔을 때만
  * 열립니다. 아무 PUUID로나 로그인할 수 있어서 배포 환경에서 열리면 남의 전적을 볼 수 있게 됩니다.
+ *
+ * 로컬 주소는 요청의 Host 헤더로 가리므로 보내는 쪽이 얼마든지 꾸밀 수 있습니다. 실제로 막는 건 `DEV_LOGIN`
+ * 하나이고, `wrangler dev`도 localhost에만 붙여 둬야 합니다.
  */
 auth.post("/dev", async (c) => {
   if (c.env.DEV_LOGIN !== "true" || !DEV_HOSTS.has(new URL(c.req.url).hostname)) throw new ApiError(404, "not_found");
@@ -98,7 +106,7 @@ auth.post("/dev", async (c) => {
   const gameName = validate.text(body.gameName, 16, "invalid_game_name");
   const tagLine = validate.text(body.tagLine, 5, "invalid_tag_line");
   const userId = await upsertUser(c.env.DB, puuid, gameName, tagLine);
-  return c.json(await createSession(c.env.DB, userId));
+  return c.json(await createSession(c.env.DB, userId), 200, NO_STORE);
 });
 
 auth.post("/logout", requireSession, async (c) => {

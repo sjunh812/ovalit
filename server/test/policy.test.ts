@@ -20,10 +20,15 @@ function concrete(path: string): string {
     .replace(":code", "ABCDEFGHJKMN");
 }
 
+// use()로 건 미들웨어는 ALL <경로>/*로 들어온다. app.all()로 만든 경로는 걸러내지 않는다.
+function isMiddleware(route: { method: string; path: string }): boolean {
+  return route.method === "ALL" && route.path.endsWith("/*");
+}
+
 describe("지켜야 할 선", () => {
   const t = setup();
   const routes = [
-    ...new Set(t.app.routes.filter((route) => route.method !== "ALL").map((route) => `${route.method} ${route.path}`)),
+    ...new Set(t.app.routes.filter((route) => !isMiddleware(route)).map((route) => `${route.method} ${route.path}`)),
   ];
 
   it("세션 없이 열리는 경로는 정해 둔 것뿐이다", () => {

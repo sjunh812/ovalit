@@ -1,14 +1,28 @@
 import { env } from "cloudflare:workers";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { base64url, randomToken, sha256 } from "../src/crypto";
-import { makePuuid, setup } from "./helpers";
+import { makePuuid, namedError, setup, watchDb } from "./helpers";
 
 const TOKEN_URL = "https://auth.riotgames.com/token";
 const ACCOUNT_ME_URL = "https://asia.api.riotgames.com/riot/account/v1/accounts/me";
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 function pkce() {
   const verifier = base64url(crypto.getRandomValues(new Uint8Array(32)));
   return { verifier, challenge: sha256(verifier) };
+}
+
+/** RSO를 띄워 state를 받아 둡니다. 콜백에 무엇을 돌려줄지는 부르는 쪽이 정합니다. */
+async function rsoState(t: ReturnType<typeof setup>): Promise<string> {
+  const start = await t.call("GET", `/auth/rso/start?challenge=${await pkce().challenge}`);
+  return new URL(start.headers.get("Location")!).searchParams.get("state")!;
+}
+
+async function userCount(): Promise<number> {
+  return (await env.DB.prepare("SELECT COUNT(*) AS n FROM users").first<{ n: number }>())!.n;
 }
 
 /** 앱이 Custom Tabs로 RSO를 띄우고 딥링크를 받기까지를 따라갑니다. */
@@ -143,6 +157,43 @@ describe("RSO 로그인", () => {
     expect(res.headers.get("Location")).toBe("ovalit://auth?error=riot_rate_limited");
   });
 
+  it("토큰 응답에 access_token이 없으면 계정을 읽지 않고 rso_failed로 돌려보낸다", async () => {
+    const t = setup();
+    const state = await rsoState(t);
+    t.upstream.json(TOKEN_URL, { token_type: "Bearer" });
+    t.upstream.json(ACCOUNT_ME_URL, { puuid: makePuuid(), gameName: "제트장인", tagLine: "KR1" });
+    const res = await t.call("GET", `/auth/rso/callback?code=riot-code&state=${state}`);
+    expect(res.headers.get("Location")).toBe("ovalit://auth?error=rso_failed");
+    expect(t.upstream.callsTo(ACCOUNT_ME_URL)).toHaveLength(0);
+  });
+
+  it.each([
+    ["JSON이 아닌 계정", () => new Response("<html></html>")],
+    ["Riot ID가 빠진 계정", () => Response.json({ puuid: makePuuid() })],
+    ["PUUID 모양이 틀린 계정", () => Response.json({ puuid: "../../riot", gameName: "제트장인", tagLine: "KR1" })],
+  ])("%s이 오면 사용자를 만들지 않고 rso_failed로 돌려보낸다", async (_, account) => {
+    const t = setup();
+    const state = await rsoState(t);
+    t.upstream.json(TOKEN_URL, { access_token: "riot-access" });
+    t.upstream.on(ACCOUNT_ME_URL, account);
+    const before = await userCount();
+    const res = await t.call("GET", `/auth/rso/callback?code=riot-code&state=${state}`);
+    expect(res.headers.get("Location")).toBe("ovalit://auth?error=rso_failed");
+    expect(await userCount()).toBe(before);
+  });
+
+  it("D1처럼 예상 밖의 곳에서 실패하면 에러 이름만 남기고 rso_failed로 돌려보낸다", async () => {
+    const t = setup();
+    const state = await rsoState(t);
+    t.upstream.json(TOKEN_URL, { access_token: "riot-access" });
+    t.upstream.json(ACCOUNT_ME_URL, { puuid: makePuuid(), gameName: "제트장인", tagLine: "KR1" });
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    t.env.DB = watchDb(t.env.DB, { failBatch: namedError("D1Down", "code=riot-code") }).db;
+    const res = await t.call("GET", `/auth/rso/callback?code=riot-code&state=${state}`);
+    expect(res.headers.get("Location")).toBe("ovalit://auth?error=rso_failed");
+    expect(errors.mock.calls).toEqual([["rso_callback", "D1Down"]]);
+  });
+
   it("다시 로그인하면 바뀐 Riot ID로 덮어쓴다", async () => {
     const t = setup();
     const puuid = makePuuid();
@@ -225,6 +276,26 @@ describe("세션", () => {
     const hash = await sha256(user.token);
     await env.DB.prepare("UPDATE sessions SET expires_at = ? WHERE token_hash = ?").bind(Date.now() - 1, hash).run();
     expect((await t.call("GET", "/me", user.token)).status).toBe(401);
+    expect(await env.DB.prepare("SELECT 1 FROM sessions WHERE token_hash = ?").bind(hash).first()).toBeNull();
+  });
+
+  it("세션 토큰을 주는 응답은 캐시에 남기지 않는다", async () => {
+    const t = setup();
+    const { deepLink, verifier } = await rsoLogin(t);
+    const session = await t.call("POST", "/auth/session", undefined, { code: deepLink.searchParams.get("code"), verifier });
+    const dev = await t.call("POST", "/auth/dev", undefined, { puuid: makePuuid(), gameName: "dev", tagLine: "KR1" });
+    for (const res of [session, dev]) {
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Cache-Control")).toBe("no-store");
+    }
+  });
+
+  it("만료된 세션은 다른 사람이 로그인할 때도 치운다", async () => {
+    const t = setup();
+    const stale = await t.login();
+    const hash = await sha256(stale.token);
+    await env.DB.prepare("UPDATE sessions SET expires_at = ? WHERE token_hash = ?").bind(Date.now() - 1, hash).run();
+    await t.login();
     expect(await env.DB.prepare("SELECT 1 FROM sessions WHERE token_hash = ?").bind(hash).first()).toBeNull();
   });
 

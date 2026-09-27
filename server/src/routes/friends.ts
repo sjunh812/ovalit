@@ -2,8 +2,8 @@ import { type Context, Hono } from "hono";
 import type { AppEnv } from "../env";
 import { ApiError } from "../errors";
 import { redactMatch } from "../redact";
-import { type Relation, relationsTo } from "../relations";
-import { playersIn, rawJson, riotFor } from "../riot";
+import { relationsTo, sendRequest } from "../relations";
+import { rawJson, riotFor } from "../riot";
 import { requireSession } from "../session";
 import * as validate from "../validate";
 
@@ -74,24 +74,6 @@ friends.post("/requests", async (c) => {
   return sendRequest(c, related.id, related.relation, "scoreboard");
 });
 
-export async function sendRequest(
-  c: Context<AppEnv>,
-  targetId: number,
-  relation: Relation,
-  source: "scoreboard" | "invite_link",
-): Promise<Response> {
-  if (relation === "friend") throw new ApiError(409, "already_friends");
-  // 상대가 먼저 보냈으면 수락은 따로 누르게 한다. 요청을 겹쳐 두면 누가 누구를 기다리는지 흐려진다.
-  if (relation === "requested_me") throw new ApiError(409, "already_requested_you");
-  if (relation === "request_sent") return c.json({ status: "requested" });
-  await c.env.DB.prepare(
-    "INSERT INTO friend_requests (from_user, to_user, source, created_at) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING",
-  )
-    .bind(c.var.user.id, targetId, source, Date.now())
-    .run();
-  return c.json({ status: "requested" }, 201);
-}
-
 friends.post("/requests/:puuid/accept", async (c) => {
   const other = validate.puuid(c.req.param("puuid"));
   const me = c.var.user.id;
@@ -138,8 +120,8 @@ friends.delete("/:puuid", async (c) => {
   return c.body(null, 204);
 });
 
-/** 프로필과 경기는 서로 수락한 친구이고 그 친구가 전적을 공개했을 때만 엽니다. */
-async function visibleFriend(c: Context<AppEnv>, puuid: string): Promise<string> {
+/** 친구의 경기 목록과 경기는 서로 수락한 친구이고 그 친구가 전적을 공개했을 때만 엽니다. 아니면 403입니다. */
+async function assertVisibleFriend(c: Context<AppEnv>, puuid: string): Promise<void> {
   const row = await c.env.DB.prepare(
     `SELECT u.stats_public FROM users u
      JOIN friendships f ON f.user_a = MIN(u.id, ?1) AND f.user_b = MAX(u.id, ?1)
@@ -149,19 +131,20 @@ async function visibleFriend(c: Context<AppEnv>, puuid: string): Promise<string>
     .first<{ stats_public: number }>();
   if (!row) throw new ApiError(403, "not_friend");
   if (row.stats_public !== 1) throw new ApiError(403, "stats_private");
-  return puuid;
 }
 
 friends.get("/:puuid/matchlist", async (c) => {
-  const friend = await visibleFriend(c, validate.puuid(c.req.param("puuid")));
-  return rawJson(c, await riotFor(c).matchlist(friend));
+  const friend = validate.puuid(c.req.param("puuid"));
+  await assertVisibleFriend(c, friend);
+  return rawJson(c, await riotFor(c).friendMatchlist(friend));
 });
 
 friends.get("/:puuid/matches/:matchId", async (c) => {
-  const friend = await visibleFriend(c, validate.puuid(c.req.param("puuid")));
+  const friend = validate.puuid(c.req.param("puuid"));
+  await assertVisibleFriend(c, friend);
   const match = await riotFor(c).matchWith(validate.matchId(c.req.param("matchId")), friend);
   if (!match) throw new ApiError(403, "friend_not_in_match");
-  // 내가 같이 뛴 경기면 다른 사람 기록도 원래 볼 수 있다.
-  if (playersIn(match.data).has(c.var.user.puuid)) return rawJson(c, match.raw);
+  // 내가 같이 뛴 경기는 /riot/matches에서도 그대로 보이니 가리지 않는다.
+  if (match.players.has(c.var.user.puuid)) return rawJson(c, match.raw);
   return c.json(redactMatch(match.data, new Set([friend, c.var.user.puuid])));
 });

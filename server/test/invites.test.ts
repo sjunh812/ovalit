@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
-import { makeFriends, sendRequestRow, setup, type TestUser } from "./helpers";
+import { makeFriends, sendRequestRow, setup, type TestUser, userId } from "./helpers";
 
 type T = ReturnType<typeof setup>;
 
@@ -18,6 +18,39 @@ describe("초대 링크", () => {
     expect(code).toMatch(/^[2-9A-HJ-NP-Z]{12}$/);
     expect(url).toBe(`http://localhost/i/${code}`);
     expect(expiresAt - Date.now()).toBeGreaterThan(6.9 * 24 * 60 * 60 * 1000);
+  });
+
+  it("살아 있는 링크가 있으면 새로 만들지 않고 그 링크를 준다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const first = await invite(t, me);
+    const again = await t.call("POST", "/invites", me.token);
+    expect(again.status).toBe(200);
+    expect(await again.json()).toEqual(first);
+    const row = await env.DB.prepare("SELECT COUNT(*) AS n FROM invites WHERE user_id = ?")
+      .bind(await userId(me.puuid))
+      .first<{ n: number }>();
+    expect(row!.n).toBe(1);
+  });
+
+  it("기한이 하루도 안 남은 링크는 다시 주지 않고 새로 만든다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const old = await invite(t, me);
+    await env.DB.prepare("UPDATE invites SET expires_at = ? WHERE code = ?").bind(Date.now() + 60 * 60 * 1000, old.code).run();
+    const fresh = await invite(t, me);
+    expect(fresh.code).not.toBe(old.code);
+    expect(fresh.expiresAt - Date.now()).toBeGreaterThan(6.9 * 24 * 60 * 60 * 1000);
+  });
+
+  it("만료된 초대는 다른 사람이 링크를 만들 때도 치운다", async () => {
+    const t = setup();
+    const inviter = await t.login();
+    const someoneElse = await t.login();
+    const { code } = await invite(t, inviter);
+    await env.DB.prepare("UPDATE invites SET expires_at = ? WHERE code = ?").bind(Date.now() - 1, code).run();
+    await invite(t, someoneElse);
+    expect(await env.DB.prepare("SELECT 1 FROM invites WHERE code = ?").bind(code).first()).toBeNull();
   });
 
   it("받은 사람이 열면 초대한 사람에게 요청이 가고, 수락하면 친구가 된다", async () => {

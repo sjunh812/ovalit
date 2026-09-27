@@ -18,18 +18,10 @@ import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTopBarCaption
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
-import com.ovalit.core.model.WeaponCategory
 import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.act_matches
 import com.ovalit.feature.profile.resources.Res
 import com.ovalit.feature.profile.resources.records_hidden
-import com.ovalit.feature.profile.resources.weapons_category_machine_gun
-import com.ovalit.feature.profile.resources.weapons_category_melee
-import com.ovalit.feature.profile.resources.weapons_category_pistol
-import com.ovalit.feature.profile.resources.weapons_category_rifle
-import com.ovalit.feature.profile.resources.weapons_category_shotgun
-import com.ovalit.feature.profile.resources.weapons_category_smg
-import com.ovalit.feature.profile.resources.weapons_category_sniper
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -48,17 +40,6 @@ internal fun ShareBar(fraction: Float, highlighted: Boolean, modifier: Modifier 
         )
     }
 }
-
-internal val WeaponCategory.label: StringResource
-    get() = when (this) {
-        WeaponCategory.RIFLE -> Res.string.weapons_category_rifle
-        WeaponCategory.PISTOL -> Res.string.weapons_category_pistol
-        WeaponCategory.SMG -> Res.string.weapons_category_smg
-        WeaponCategory.SNIPER -> Res.string.weapons_category_sniper
-        WeaponCategory.SHOTGUN -> Res.string.weapons_category_shotgun
-        WeaponCategory.MACHINE_GUN -> Res.string.weapons_category_machine_gun
-        WeaponCategory.MELEE -> Res.string.weapons_category_melee
-    }
 
 // S6과 S7의 맨 위 줄이다. 친구 기록이면 "민석의 요원"처럼 이름 뒤에 ownerSuffix를 붙이고, 이름이 길면 이름만 줄여
 // "의 요원"을 남긴다.

@@ -73,6 +73,13 @@
     <!-- 내 프로필, S5, 홈 요원·무기 칸이 같이 쓴다 -->
     <string name="act_matches">이번 액트 %1$d경기</string>
     <string name="unknown_weapon">알 수 없는 무기</string>
+    <string name="weapon_category_rifle">소총</string>
+    <string name="weapon_category_pistol">권총</string>
+    <string name="weapon_category_smg">기관단총</string>
+    <string name="weapon_category_sniper">저격총</string>
+    <string name="weapon_category_shotgun">산탄총</string>
+    <string name="weapon_category_machine_gun">기관총</string>
+    <string name="weapon_category_melee">근접 무기</string>
     <string name="profile_competitive">경쟁전</string>
     <string name="profile_competitive_matches">경쟁 %1$d판</string>
     <string name="profile_stats_title">통계</string>

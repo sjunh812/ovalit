@@ -52,13 +52,6 @@
     <string name="column_headshot">헤드샷</string>
     <string name="weapons_by_category">계열별</string>
     <string name="weapons_kills">%1$s킬</string>
-    <string name="weapons_category_rifle">소총</string>
-    <string name="weapons_category_pistol">권총</string>
-    <string name="weapons_category_smg">기관단총</string>
-    <string name="weapons_category_sniper">저격총</string>
-    <string name="weapons_category_shotgun">산탄총</string>
-    <string name="weapons_category_machine_gun">기관총</string>
-    <string name="weapons_category_melee">근접 무기</string>
     <!-- 카탈로그에 아직 없는 새 무기를 모으는 계열 -->
     <string name="weapons_category_unknown">그 밖의 무기</string>
     <string name="weapons_expand">%1$s 펼치기</string>

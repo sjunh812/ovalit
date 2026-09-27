@@ -26,6 +26,7 @@ sealed interface WeeklyReport {
      * @property results 기간 경기의 승패입니다. 오래된 경기가 앞에 오고, 비겼거나 결과를 모르면 `null`입니다.
      * @property agents 기간에 많이 뛴 요원 순서입니다. 홈의 요원 칸에 씁니다.
      * @property weapons 기간에 킬을 많이 낸 무기 순서입니다. 홈의 무기 칸에 씁니다.
+     * @property note 홈 "이번 주 짚을 점"입니다. 짚을 게 없거나 [QueueFilter.OTHER]면 없습니다.
      */
     data class Ready(
         val act: ActId,
@@ -40,6 +41,7 @@ sealed interface WeeklyReport {
         val results: List<Boolean?> = emptyList(),
         val agents: List<AgentStats> = emptyList(),
         val weapons: List<WeaponStats> = emptyList(),
+        val note: WeekNote? = null,
     ) : WeeklyReport {
         val wins: Int get() = results.count { it == true }
         val losses: Int get() = results.count { it == false }

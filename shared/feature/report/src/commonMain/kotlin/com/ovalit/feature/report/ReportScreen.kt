@@ -45,6 +45,7 @@ import com.ovalit.feature.report.component.QueueChips
 import com.ovalit.feature.report.component.RecordStrip
 import com.ovalit.feature.report.component.ReportSkeleton
 import com.ovalit.feature.report.component.ReportTopBar
+import com.ovalit.feature.report.component.WeekNoteSection
 import com.ovalit.feature.report.component.RivalPickerSheet
 import com.ovalit.feature.report.component.RivalSection
 import com.ovalit.feature.report.resources.Res
@@ -180,6 +181,7 @@ private fun ReportContent(
     Spacer(Modifier.height(22.dp))
 
     if (queueFilter.hasDynamicMetrics) {
+        report.note?.let { WeekNoteSection(note = it, report = report, catalog = catalog) }
         DynamicMetricSection(report, onOpenMetric = { openDynamic = it })
         report.insight?.let { insight ->
             Spacer(Modifier.height(20.dp))

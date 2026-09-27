@@ -6,7 +6,10 @@ import com.ovalit.core.model.AgentStats
 import com.ovalit.core.model.Baseline
 import com.ovalit.core.model.DynamicMetric
 import com.ovalit.core.model.DynamicSlot
+import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchMetrics
+import com.ovalit.core.model.MovedMetric
+import com.ovalit.core.model.MovedWeapon
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.ReportPeriod
 import com.ovalit.core.model.Role
@@ -15,7 +18,9 @@ import com.ovalit.core.model.SideInsight
 import com.ovalit.core.model.SideMetric
 import com.ovalit.core.model.TrendWeek
 import com.ovalit.core.model.WeaponId
+import com.ovalit.core.model.WeaponMetric
 import com.ovalit.core.model.WeaponStats
+import com.ovalit.core.model.WeekNote
 import com.ovalit.core.model.WeeklyReport
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -151,6 +156,11 @@ internal object ReportPreviewData {
         results = listOf(true, false, true, true, false, true, true),
         agents = periodAgents,
         weapons = periodWeapons,
+        note = WeekNote(
+            moved = MovedMetric(FixedMetric.DAMAGE, current = 20_108 / 146.0, usual = 80_373 / 630.0),
+            weapon = MovedWeapon(periodWeapons.first().weapon, WeaponMetric.DAMAGE_PER_ROUND, current = 140.0, usual = 118.0),
+            agents = periodAgents,
+        ),
     )
 
     // 4주 전에 액트가 바뀌었다. 그 앞 주는 평소 범위에서 빠진다.

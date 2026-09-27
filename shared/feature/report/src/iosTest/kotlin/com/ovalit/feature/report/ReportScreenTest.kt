@@ -15,11 +15,18 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.core.model.AgentId
+import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.DynamicMetric
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.Focus
+import com.ovalit.core.model.MovedMetric
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
+import com.ovalit.core.model.WeaponCategory
+import com.ovalit.core.model.WeaponId
+import com.ovalit.core.model.WeaponInfo
+import com.ovalit.core.model.WeekNote
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.feature.report.component.DynamicMetricSheetBody
@@ -272,7 +279,7 @@ class ReportScreenTest {
     // 사용자 결정: 칸 밑의 작은 글씨를 줄인다. 네 칸의 평균을 한 줄로 늘어놓으면 어느 숫자가 어느 칸인지 읽히지 않았다.
     @Test
     fun `고정 칸 밑에는 무엇과 견준 변화량인지만 적는다`() = runComposeUiTest {
-        setContent { Report(ReportPreviewData.moved) }
+        setContent { Report(ReportPreviewData.moved.copy(note = null)) }
 
         onNodeWithText("변화량은 지난 4주 평균과 비교했어요").assertExists()
         onNodeWithText("146라운드", substring = true, useUnmergedTree = true).assertDoesNotExist()
@@ -289,7 +296,7 @@ class ReportScreenTest {
     // 사용자 결정: "라운드 153" 같은 표본은 칸에서 빼고 시트에서 풀어 적는다
     @Test
     fun `달라진 점 칸에는 평소 값만 두고 표본은 적지 않는다`() = runComposeUiTest {
-        setContent { Report(ReportPreviewData.moved) }
+        setContent { Report(ReportPreviewData.moved.copy(note = null)) }
 
         onAllNodesWithText("평소 ", substring = true, useUnmergedTree = true).assertCountEquals(3)
         onNodeWithText("라운드\u00a0146", substring = true, useUnmergedTree = true).assertDoesNotExist()
@@ -316,6 +323,54 @@ class ReportScreenTest {
 
         onNodeWithText("비교할 기록이 모자라 달라졌는지 판단하지 않았어요", substring = true).assertExists()
         onNodeWithText("퍼블\u00a010번 이상이어야", substring = true).assertExists()
+    }
+
+    // 피해량 128 → 138. 무기는 같은 쪽으로 움직인 것만, 요원은 이긴 판이 더 많은 둘 이상만 적는다.
+    @Test
+    fun `짚을 점은 움직인 지표와 같은 쪽 무기와 요원을 숫자로 적는다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
+
+        onNodeWithText("이번 주 짚을 점").assertExists()
+        onNodeWithText("피해량이 평소보다 10 올랐어요").assertExists()
+        onNodeWithText("지난 4주 평균 128 → 이번 주 138").assertExists()
+        onNodeWithText("가장 많이 오른 무기", substring = true).assertExists()
+        onNodeWithText("밴달 피해량 118 → 140", substring = true).assertExists()
+        onNodeWithText("제트 3승 1패 · 레이즈 2승 1패", substring = true).assertExists()
+    }
+
+    // CLAUDE.md 지켜야 할 선: 게임 결정을 대신하지 않는다
+    @Test
+    fun `짚을 점은 무엇을 쓰라고 하지 않는다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
+
+        onNodeWithText("추천", substring = true, useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("쓰세요", substring = true, useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun `짚을 점은 고정 칸과 달라진 점 사이에 둔다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved) }
+
+        val summary = onNodeWithText("변화량은 지난 4주 평균과 비교했어요").getUnclippedBoundsInRoot()
+        val note = onNodeWithText("이번 주 짚을 점").getUnclippedBoundsInRoot()
+        val dynamic = onNodeWithText("달라진 점").getUnclippedBoundsInRoot()
+        assertTrue(summary.bottom <= note.top && note.bottom <= dynamic.top)
+    }
+
+    @Test
+    fun `기타 모드에는 짚을 점이 없다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.otherQueue, QueueFilter.OTHER) }
+
+        onNodeWithText("짚을 점", substring = true).assertDoesNotExist()
+    }
+
+    // 21.4%와 21.2%는 둘 다 21%로 보인다. "0%p 올랐어요"라고 쓰지 않는다.
+    @Test
+    fun `보이는 자릿수로 차이가 없으면 지표 줄을 두지 않는다`() = runComposeUiTest {
+        val flat = WeekNote(MovedMetric(FixedMetric.HEADSHOT_RATE, current = 0.214, usual = 0.212), weapon = null, agents = emptyList())
+        setContent { Report(ReportPreviewData.moved.copy(note = flat)) }
+
+        onNodeWithText("짚을 점", substring = true).assertDoesNotExist()
     }
 
     // CLAUDE.md: 총량을 더한 뒤 나눈다
@@ -491,9 +546,22 @@ class ReportScreenTest {
 }
 
 @Composable
-private fun Report(report: WeeklyReport, queueFilter: QueueFilter = QueueFilter.COMPETITIVE_AND_UNRATED) {
-    OvalitTheme { ReportScreen(ReportUiState.Success(queueFilter, report), onSelectQueue = {}) }
+private fun Report(
+    report: WeeklyReport,
+    queueFilter: QueueFilter = QueueFilter.COMPETITIVE_AND_UNRATED,
+    catalog: ContentCatalog = ContentCatalog.Empty,
+) {
+    OvalitTheme { ReportScreen(ReportUiState.Success(queueFilter, report), onSelectQueue = {}, catalog = catalog) }
 }
+
+// 짚을 점 문장에 이름이 들어가서 미리보기 데이터의 요원과 무기에 이름을 붙였다
+private val NamedCatalog = ContentCatalog.Empty.copy(
+    agents = mapOf(
+        AgentId("add6443a-41bd-e414-f6ad-e58d267f4e95") to "제트",
+        AgentId("f94c3b30-42be-e959-889c-5aa313dba261") to "레이즈",
+    ),
+    weapons = mapOf(WeaponId("9C82E19D-4575-0200-1A81-3EACF00CF872") to WeaponInfo("밴달", WeaponCategory.RIFLE)),
+)
 
 @Composable
 private fun Sheet(metric: FixedMetric, report: WeeklyReport.Ready) {

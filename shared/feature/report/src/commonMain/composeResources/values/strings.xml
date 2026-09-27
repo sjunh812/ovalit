@@ -25,6 +25,22 @@
     <string name="summary_compared">변화량은 지난 %1$d주 평균과 비교했어요</string>
     <string name="dynamic_usual">평소 %1$s</string>
 
+    <!-- 이번 주 짚을 점. 움직인 숫자만 적고 "쓰세요", "추천"은 쓰지 않는다 -->
+    <string name="note_title">%1$s 짚을 점</string>
+    <string name="note_up_combat_score">전투점수가 평소보다 %1$s 올랐어요</string>
+    <string name="note_down_combat_score">전투점수가 평소보다 %1$s 떨어졌어요</string>
+    <string name="note_up_kd">K/D가 평소보다 %1$s 올랐어요</string>
+    <string name="note_down_kd">K/D가 평소보다 %1$s 떨어졌어요</string>
+    <string name="note_up_damage">피해량이 평소보다 %1$s 올랐어요</string>
+    <string name="note_down_damage">피해량이 평소보다 %1$s 떨어졌어요</string>
+    <string name="note_up_headshot">헤드샷이 평소보다 %1$s 올랐어요</string>
+    <string name="note_down_headshot">헤드샷이 평소보다 %1$s 떨어졌어요</string>
+    <string name="note_usual">지난 %1$d주 평균 %2$s → %3$s %4$s</string>
+    <string name="note_weapon_up_label">가장 많이 오른 무기</string>
+    <string name="note_weapon_down_label">가장 많이 떨어진 무기</string>
+    <string name="note_weapon_value">%1$s %2$s %3$s → %4$s</string>
+    <string name="note_agents_label">이긴 판이 더 많았던 요원</string>
+    <string name="note_agent">%1$s %2$d승 %3$d패</string>
     <string name="dynamic_title_moved">달라진 점</string>
     <string name="dynamic_title_steady">%1$s는 큰 변화가 없어요</string>
     <string name="dynamic_title_unknown">아직 비교할 기록이 모자라요</string>

@@ -74,6 +74,43 @@ fun Iterable<Match>.weeklyReport(
         results = periodMatches.sortedBy { it.startedAt }.map { it.myTeamWon },
         agents = periodMatches.agentReport().agents,
         weapons = periodMatches.weaponStats(),
+        note = if (queueFilter.hasDynamicMetrics) {
+            matchesByWeek.weekNote(periodMatches, period, metrics, baseline, history, mainRole, queueFilter.fixedMetrics)
+        } else {
+            null
+        },
+    )
+}
+
+// 무기는 S6 위쪽 표처럼 기간, 바로 앞 4주, 앞선 주마다의 성적을 견준다
+private fun Map<LocalDate, List<Match>>.weekNote(
+    periodMatches: List<Match>,
+    period: ReportPeriod,
+    metrics: MatchMetrics,
+    baseline: Baseline?,
+    history: List<MatchMetrics>,
+    role: Role?,
+    fixedMetrics: List<FixedMetric>,
+): WeekNote? {
+    val start = maxOf(period.firstDay.minusWeeks(BASELINE_WEEKS), keys.min())
+    val usualWeapons = between(start, period.firstDay).weaponStats().associateBy { it.weapon }
+    val weeklyWeapons = (1..VOLATILITY_WEEKS).mapNotNull { weeksBefore -> this[period.firstDay.minusWeeks(weeksBefore)]?.weaponStats() }
+    val trends = periodMatches.weaponStats().map { stats ->
+        WeaponTrend(
+            weapon = stats.weapon,
+            current = stats,
+            baseline = usualWeapons[stats.weapon],
+            weekly = weeklyWeapons.mapNotNull { week -> week.firstOrNull { it.weapon == stats.weapon } },
+        )
+    }
+    return chooseWeekNote(
+        current = metrics,
+        baseline = baseline?.metrics,
+        history = history,
+        role = role,
+        fixedMetrics = fixedMetrics,
+        weapons = trends,
+        agents = periodMatches.agentReport().agents,
     )
 }
 

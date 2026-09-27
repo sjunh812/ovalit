@@ -159,6 +159,7 @@ fun ProfileStatsSection(summary: ProfileSummary, modifier: Modifier = Modifier) 
             label = stringResource(Res.string.profile_kda),
             value = metrics.kda?.let { MetricFormat.TWO_DECIMALS.format(it) },
             detail = perMatchText(metrics)?.let { stringResource(Res.string.profile_per_match, it) },
+            kda = metrics.kda,
         ),
         StatCell(stringResource(Res.string.profile_play_time), playTimeText(summary.playTimeMillis)),
     )
@@ -203,8 +204,11 @@ private val STAT_MIN_SIZE = 11.sp
 
 private class StatStyles(val label: TextStyle, val value: TextStyle, val detail: TextStyle)
 
-/** @property detail 숫자 밑에 작게 붙이는 풀이입니다. KDA 밑의 판당 K/D/A가 그렇습니다. */
-private class StatCell(val label: String, val value: String?, val detail: String? = null)
+/**
+ * @property detail 숫자 밑에 작게 붙이는 풀이입니다. KDA 밑의 판당 K/D/A가 그렇습니다.
+ * @property kda KDA 칸이면 구간 색을 고르는 값입니다.
+ */
+private class StatCell(val label: String, val value: String?, val detail: String? = null, val kda: Double? = null)
 
 // 홈의 "판당 17.2 / 11.5 / 6.3"과 같은 자릿수다. 칸이 좁아서 빗금 양옆 공백만 뺐다.
 @Composable
@@ -233,7 +237,11 @@ private fun StatRow(cells: List<StatCell>, columns: Int, styles: StatStyles) {
                 OvalitText(
                     text = value ?: NO_VALUE,
                     style = styles.value,
-                    color = if (value != null) colors.t1 else colors.t3,
+                    color = when {
+                        value == null -> colors.t3
+                        cell.kda != null -> kdaColor(cell.kda, below = colors.t1)
+                        else -> colors.t1
+                    },
                     maxLines = 1,
                     autoSize = shrinkToFit(styles.value.fontSize, min = STAT_MIN_SIZE),
                 )

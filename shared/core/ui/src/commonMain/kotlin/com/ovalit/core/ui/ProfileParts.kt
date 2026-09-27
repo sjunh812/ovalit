@@ -55,37 +55,73 @@ fun WeaponThumb(weapon: WeaponId, name: String, width: Dp, height: Dp) {
 }
 
 /**
- * "1.92 (344/242/124)"의 두 조각입니다. KDA는 (킬 + 어시) ÷ 데스이고, 표본이 모자라거나 데스가 없으면 [ratio]가 없어서
- * 합계만 적습니다. 킬과 어시를 더한 값이라 "평점"이라 부르지 않고 색도 칠하지 않습니다(CLAUDE.md 지켜야 할 선).
+ * op.gg처럼 KDA를 구간마다 칠합니다. 1 미만은 [below] 그대로 두고 1~2는 청록, 2~3은 파랑, 3 이상은 주황입니다. 보이는
+ * 두 자리로 반올림한 값으로 가릅니다. 1.995가 "2.00"으로 보이는데 청록이면 틀려 보입니다. 오르내림의 pos, neg와는
+ * 다른 토큰이라 KDA가 "지난주보다 올랐다"로 읽히지 않습니다.
  */
-class KdaText(val ratio: String?, val counts: String)
+@Composable
+fun kdaColor(kda: Double, below: Color): Color {
+    val colors = OvalitTheme.colors
+    return when (kdaTier(kda)) {
+        KdaTier.BELOW_ONE -> below
+        KdaTier.ONE -> colors.kdaTier1
+        KdaTier.TWO -> colors.kdaTier2
+        KdaTier.THREE -> colors.kdaTier3
+    }
+}
+
+internal enum class KdaTier { BELOW_ONE, ONE, TWO, THREE }
+
+internal fun kdaTier(kda: Double): KdaTier {
+    // 두 자리로 반올림한 값을 100배 한 정수다(1.00 → 100)
+    val steps = MetricFormat.TWO_DECIMALS.steps(kda)
+    return when {
+        steps >= 300 -> KdaTier.THREE
+        steps >= 200 -> KdaTier.TWO
+        steps >= 100 -> KdaTier.ONE
+        else -> KdaTier.BELOW_ONE
+    }
+}
+
+/**
+ * "1.92 (344/242/124)"의 두 조각입니다. KDA는 (킬 + 어시) ÷ 데스이고, 표본이 모자라거나 데스가 없으면 [ratio]가 없어서
+ * 합계만 적습니다. 킬과 어시를 더한 값이라 "평점"이라 부르지 않습니다(CLAUDE.md 지켜야 할 선).
+ *
+ * @property value 구간 색을 고르는 KDA입니다.
+ */
+class KdaText(val ratio: String?, val counts: String, val value: Double? = null)
 
 @Composable
 fun kdaText(kda: Double?, kills: Int, deaths: Int, assists: Int): KdaText = KdaText(
     ratio = kda?.let { MetricFormat.TWO_DECIMALS.format(it) },
     counts = stringResource(Res.string.kda_counts, kills.withThousands(), deaths.withThousands(), assists.withThousands()),
+    value = kda,
 )
 
-/** KDA만 한 단계 밝고 굵게 둔 한 줄입니다. */
+/** KDA만 굵게 두고 구간 색을 칠한 한 줄입니다. */
 @Composable
 fun KdaText.annotated(): AnnotatedString {
     val ratio = ratio ?: return AnnotatedString(counts)
     val text = stringResource(Res.string.kda_with_counts, ratio, counts)
-    val strong = SpanStyle(color = OvalitTheme.colors.t2, fontWeight = FontWeight.SemiBold)
+    val color = value?.let { kdaColor(it, below = OvalitTheme.colors.t2) } ?: OvalitTheme.colors.t2
     return buildAnnotatedString {
         append(text)
-        addStyle(strong, 0, ratio.length)
+        addStyle(SpanStyle(color = color, fontWeight = FontWeight.SemiBold), 0, ratio.length)
     }
 }
 
-/** "KDA 2.13"입니다. 숫자만 한 단계 밝고 굵게 둡니다. 홈 고정 칸 밑 줄과 프로필 요원 칸이 같이 씁니다. */
+/**
+ * "KDA 2.13"입니다. 숫자만 굵게 두고 구간 색을 칠합니다. 프로필 요원 칸, 홈 요원 칸, S7이 같이 씁니다.
+ *
+ * @param below 1 미만일 때 숫자 색입니다.
+ */
 @Composable
-fun kdaRatioText(kda: Double): AnnotatedString {
+fun kdaRatioText(kda: Double, below: Color = OvalitTheme.colors.t2): AnnotatedString {
     val value = MetricFormat.TWO_DECIMALS.format(kda)
     val text = stringResource(Res.string.kda_ratio, value)
     val start = text.indexOf(value)
     return buildAnnotatedString {
         append(text)
-        addStyle(SpanStyle(color = OvalitTheme.colors.t2, fontWeight = FontWeight.SemiBold), start, start + value.length)
+        addStyle(SpanStyle(color = kdaColor(kda, below), fontWeight = FontWeight.SemiBold), start, start + value.length)
     }
 }

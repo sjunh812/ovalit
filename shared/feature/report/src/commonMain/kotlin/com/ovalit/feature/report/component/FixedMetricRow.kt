@@ -34,6 +34,7 @@ import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.SeparatedRow
 import com.ovalit.core.ui.format
+import com.ovalit.core.ui.kdaColor
 import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.kda_ratio
 import com.ovalit.core.ui.label
@@ -180,8 +181,8 @@ internal fun FixedMetricSummary(
         verticalArrangement = Arrangement.spacedBy(OvalitSpacing.xs),
     ) {
         // 사용자 결정(2026-09-27): 어시스트가 킬만큼 중요해져서 KDA를 판당 K/D/A보다 먼저, 한 단계 크게 둔다.
-        // 합계 없이 KDA만 띄우면 몇 킬 몇 데스인지 몰라서 판당 K/D/A를 바로 옆에 둔다. 색이나 변화량은 붙이지
-        // 않는다(CLAUDE.md 지켜야 할 선). 좁으면 판당 K/D/A가 통째로 다음 줄로 내려간다.
+        // 합계 없이 KDA만 띄우면 몇 킬 몇 데스인지 몰라서 판당 K/D/A를 바로 옆에 둔다. 숫자는 op.gg처럼 구간 색을
+        // 칠하고 변화량은 붙이지 않는다. 좁으면 판당 K/D/A가 통째로 다음 줄로 내려간다.
         val perMatchText = stringResource(
             Res.string.summary_kda,
             perMatch.format(metrics.kills / matches),
@@ -234,5 +235,6 @@ private fun summaryKdaText(kda: Double): AnnotatedString {
             0,
             start,
         )
+        addStyle(SpanStyle(color = kdaColor(kda, below = OvalitTheme.colors.t1)), start, start + value.length)
     }
 }

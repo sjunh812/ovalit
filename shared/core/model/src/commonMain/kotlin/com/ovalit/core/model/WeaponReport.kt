@@ -29,10 +29,10 @@ data class WeaponStats(
 
     val isMeasurable: Boolean get() = singleWeaponRounds >= MIN_WEAPON_ROUNDS
 
-    /** 이 무기로 낸 킬 ÷ 이 무기를 들고 시작한 라운드의 데스입니다. 데스가 없으면 비웁니다. */
+    /** 이 무기로 낸 킬 ÷ 이 무기를 들고 시작한 라운드의 데스입니다. 데스가 없으면 `null`입니다. */
     val kd: Double? get() = kills over deaths
 
-    /** (이 무기로 낸 킬 + 이 무기를 들고 시작한 라운드의 어시스트) ÷ 그 라운드의 데스입니다. [MatchMetrics.kda]와 같은 쓰임입니다. */
+    /** (이 무기로 낸 킬 + 이 무기를 들고 시작한 라운드의 어시스트) ÷ 그 라운드의 데스입니다. [MatchMetrics.kda]처럼 K/D/A 합계 옆에만 씁니다. */
     val kda: Double? get() = (kills + assists) over deaths
 
     /** 이 무기를 들고 시작한 라운드의 라운드당 피해량입니다. */
@@ -41,7 +41,7 @@ data class WeaponStats(
     /** K/D와 라운드당 피해량을 보여줄 만큼 이 무기를 들고 시작했는지입니다. 헤드샷과 같은 최소 라운드를 씁니다. */
     val isCarriedMeasurable: Boolean get() = carriedRounds >= MIN_WEAPON_ROUNDS
 
-    /** 표본을 넘긴 값만 돌려줍니다. */
+    /** 표본을 넘긴 값만 돌려줍니다. 모자라면 `null`입니다. */
     fun value(metric: WeaponMetric): Double? = when (metric) {
         WeaponMetric.KD -> kd.takeIf { isCarriedMeasurable }
         WeaponMetric.DAMAGE_PER_ROUND -> damagePerRound.takeIf { isCarriedMeasurable }
@@ -58,7 +58,7 @@ enum class WeaponMetric { KD, DAMAGE_PER_ROUND, HEADSHOT_RATE }
  * @property current 홈 리포트와 같은 기간의 성적입니다. 세 지표 중 하나라도 표본이 모자라면 `null`이고 화면은 [act]를
  * 띄웁니다. 한 줄 안에서 기간이 섞이면 어느 숫자가 언제 것인지 알 수 없습니다. 리포트를 만들 만큼 경기가 없어도
  * `null`입니다.
- * @property baseline 기간 바로 앞 4주입니다.
+ * @property baseline 기간 바로 앞 [baselineWeeks]주의 성적입니다. 그동안 이 무기를 안 썼으면 `null`입니다.
  * @property movements 지표마다 동적 칸과 같은 규칙으로 봅니다. 화면은 [Movement.MOVED]인 변화량만 칠합니다.
  */
 data class WeaponHighlight(

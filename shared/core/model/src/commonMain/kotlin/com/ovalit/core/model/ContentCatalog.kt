@@ -5,7 +5,7 @@ package com.ovalit.core.model
  *
  * 요원·무기·맵 이름은 VAL-CONTENT에서, 무기 계열은 콘텐츠 카탈로그에서 옵니다. 티어 이름은 Riot 공식
  * 자료에 없어서 우리 서버가 들고 있다가 내려줍니다. 카탈로그는 패치 뒤에 사람이 손으로 갱신해서 새
- * 요원이나 무기가 한동안 빠져 있을 수 있고, 그럴 때 화면에는 "알 수 없는 요원"이 뜹니다.
+ * 요원이나 무기가 한동안 빠져 있을 수 있고, 그럴 때 화면에는 "알 수 없는 요원"이나 "알 수 없는 무기"가 뜹니다.
  *
  * @property tiers 경기 응답의 `competitiveTier` 번호를 "플래티넘 2" 같은 이름으로 바꿉니다.
  */
@@ -25,7 +25,10 @@ data class WeaponInfo(
     val category: WeaponCategory,
 )
 
-/** 콘텐츠 카탈로그의 `weapons[].category`입니다. */
+/**
+ * 콘텐츠 카탈로그의 `weapons[].category`를 옮깁니다. `Sidearm`은 [PISTOL], `Heavy`는 [MACHINE_GUN]이고 스킬 장비용
+ * `Hidden`은 담지 않습니다.
+ */
 enum class WeaponCategory {
     RIFLE,
     PISTOL,

@@ -3,8 +3,12 @@ package com.ovalit.core.model
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
-/** S0-4 첫 수집은 최근 50경기를 받되 8주를 넘는 경기는 잘라냅니다. 집계 최대 4주와 비교 4주를 합친 길이입니다. */
 const val FIRST_IMPORT_MATCHES = 50
+
+/**
+ * 이보다 오래된 경기는 첫 수집에서 받지 않습니다. 집계 최대 4주와 비교 4주를 합친 길이입니다. 평소 변동폭은 기간 앞
+ * 8주를 보므로, 수집 직후에는 앞선 주가 모자라 동적 칸이 판단 보류로 뜨기 쉽습니다.
+ */
 const val FIRST_IMPORT_WEEKS = 8
 
 /** 경기 ID 목록에서 첫 수집에 받을 경기를 고릅니다. 최근 경기부터 받습니다. */

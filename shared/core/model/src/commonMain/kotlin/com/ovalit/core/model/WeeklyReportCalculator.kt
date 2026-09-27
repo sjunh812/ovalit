@@ -35,27 +35,16 @@ fun Iterable<Match>.weeklyReport(
         .filter { it.act == act }
         .groupBy { it.startedAt.weekStart(timeZone) }
 
-    // 월요일 아침에 "최근 2주"로 넓히면 전부 지난주 경기인데 이번 주가 섞인 것처럼 읽힌다.
-    val thisWeek = now.weekStart(timeZone)
-    val includesThisWeek = thisWeek in matchesByWeek
-    val end = if (includesThisWeek) thisWeek.plusWeeks(1) else thisWeek
-    val periods = (1..MAX_REPORT_WEEKS).map { weeks ->
-        ReportPeriod(firstDay = end.minusWeeks(weeks), weeks = weeks, includesThisWeek = includesThisWeek)
-    }
-    val period = periods.firstOrNull { period ->
-        matchesByWeek.between(period.firstDay, end).size >= MIN_MATCHES_PER_REPORT
-    } ?: return WeeklyReport.NotEnoughMatches(
-        played = matchesByWeek.between(periods.last().firstDay, end).size,
-    )
+    val choice = matchesByWeek.choosePeriod(now, timeZone)
+    val period = choice.period ?: return WeeklyReport.NotEnoughMatches(played = choice.played)
+    val end = period.end
 
     val periodMatches = matchesByWeek.between(period.firstDay, end)
     val metrics = periodMatches.totalMetrics()
     val baseline = matchesByWeek.baselineBefore(period.firstDay)
     val roleRounds = periodMatches.roleRounds()
     val mainRole = roleRounds.maxByOrNull { it.value }?.key
-    val history = (1..VOLATILITY_WEEKS).mapNotNull { weeksBefore ->
-        matchesByWeek[period.firstDay.minusWeeks(weeksBefore)]?.totalMetrics()
-    }
+    val history = matchesByWeek.weeksBefore(period.firstDay).map { it.totalMetrics() }
 
     return WeeklyReport.Ready(
         act = act,
@@ -75,14 +64,14 @@ fun Iterable<Match>.weeklyReport(
         agents = periodMatches.agentReport().agents,
         weapons = periodMatches.weaponStats(),
         note = if (queueFilter.hasDynamicMetrics) {
-            matchesByWeek.weekNote(periodMatches, period, metrics, baseline, history, mainRole, queueFilter.fixedMetrics)
+            matchesByWeek.weekNote(periodMatches, period, metrics, baseline, history, mainRole)
         } else {
             null
         },
     )
 }
 
-// 무기는 S6 위쪽 표처럼 기간, 바로 앞 4주, 앞선 주마다의 성적을 견준다
+// 무기는 S6 위쪽 표처럼 기간 성적을 바로 앞 4주, 그 앞 주별 성적과 견준다
 private fun Map<LocalDate, List<Match>>.weekNote(
     periodMatches: List<Match>,
     period: ReportPeriod,
@@ -90,11 +79,9 @@ private fun Map<LocalDate, List<Match>>.weekNote(
     baseline: Baseline?,
     history: List<MatchMetrics>,
     role: Role?,
-    fixedMetrics: List<FixedMetric>,
 ): WeekNote? {
-    val start = maxOf(period.firstDay.minusWeeks(BASELINE_WEEKS), keys.min())
-    val usualWeapons = between(start, period.firstDay).weaponStats().associateBy { it.weapon }
-    val weeklyWeapons = (1..VOLATILITY_WEEKS).mapNotNull { weeksBefore -> this[period.firstDay.minusWeeks(weeksBefore)]?.weaponStats() }
+    val usualWeapons = between(baselineStart(period.firstDay), period.firstDay).weaponStats().associateBy { it.weapon }
+    val weeklyWeapons = weeksBefore(period.firstDay).map { it.weaponStats() }
     val trends = periodMatches.weaponStats().map { stats ->
         WeaponTrend(
             weapon = stats.weapon,
@@ -108,7 +95,6 @@ private fun Map<LocalDate, List<Match>>.weekNote(
         baseline = baseline?.metrics,
         history = history,
         role = role,
-        fixedMetrics = fixedMetrics,
         weapons = trends,
         agents = periodMatches.agentReport().agents,
     )
@@ -134,20 +120,49 @@ private fun List<Match>.trendWeeks(end: LocalDate, period: ReportPeriod, timeZon
     }
 }
 
-// 역할마다 뛴 라운드 수다. 역할을 모르는 경기는 뺀다.
+// 역할을 모르는 경기는 뺀다
 private fun List<Match>.roleRounds(): Map<Role, Int> = this
     .mapNotNull { match -> match.myRole?.let { it to match.rounds.size } }
     .groupBy({ it.first }, { it.second })
     .mapValues { (_, rounds) -> rounds.sum() }
 
 private fun Map<LocalDate, List<Match>>.baselineBefore(periodStart: LocalDate): Baseline? {
-    // 이번 액트 첫 경기가 4주 안쪽이면 거기서부터 센다. 안 그러면 2주치 경기에 "지난 4주 평균"이 붙는다.
-    val start = maxOf(periodStart.minusWeeks(BASELINE_WEEKS), keys.min())
+    val start = baselineStart(periodStart)
     val matches = between(start, periodStart)
     if (matches.size < MIN_MATCHES_PER_REPORT) return null
 
     return Baseline(metrics = matches.totalMetrics(), weeks = start.daysUntil(periodStart) / 7)
 }
+
+/**
+ * 기간을 못 정했으면 [period]가 `null`이고 [played]에 최대 [MAX_REPORT_WEEKS]주 동안 뛴 경기 수를 담습니다.
+ */
+private class PeriodChoice(val period: ReportPeriod?, val played: Int)
+
+private fun Map<LocalDate, List<Match>>.choosePeriod(now: Instant, timeZone: TimeZone): PeriodChoice {
+    // 월요일 아침에 "최근 2주"로 넓히면 전부 지난주 경기인데 이번 주가 섞인 것처럼 읽힌다
+    val thisWeek = now.weekStart(timeZone)
+    val includesThisWeek = thisWeek in this
+    val end = if (includesThisWeek) thisWeek.plusWeeks(1) else thisWeek
+    val periods = (1..MAX_REPORT_WEEKS).map { weeks ->
+        ReportPeriod(firstDay = end.minusWeeks(weeks), weeks = weeks, includesThisWeek = includesThisWeek)
+    }
+    return PeriodChoice(
+        period = periods.firstOrNull { between(it.firstDay, end).size >= MIN_MATCHES_PER_REPORT },
+        played = between(periods.last().firstDay, end).size,
+    )
+}
+
+private val ReportPeriod.end: LocalDate get() = firstDay.plusWeeks(weeks)
+
+// 비교 기준은 기간 바로 앞 4주다. 이번 액트 첫 경기가 4주 안쪽이면 거기서부터 센다. 안 그러면 2주치 경기에 "지난 4주
+// 평균"이 붙는다. 홈 리포트, 짚을 점의 무기, S6이 같은 창을 써야 숫자가 갈리지 않는다.
+private fun Map<LocalDate, List<Match>>.baselineStart(periodStart: LocalDate): LocalDate =
+    maxOf(periodStart.minusWeeks(BASELINE_WEEKS), keys.min())
+
+// 평소 변동폭을 재는 기간 앞 주들이다. 경기가 없는 주는 빠진다.
+private fun Map<LocalDate, List<Match>>.weeksBefore(periodStart: LocalDate): List<List<Match>> =
+    (1..VOLATILITY_WEEKS).mapNotNull { weeksBefore -> this[periodStart.minusWeeks(weeksBefore)] }
 
 private fun Instant.weekStart(timeZone: TimeZone): LocalDate {
     val date = toLocalDateTime(timeZone).date
@@ -181,8 +196,8 @@ fun Iterable<Match>.weaponReport(
 ): WeaponReport {
     val matches = currentActMatches(queueFilter)
     val weapons = matches.weaponStats()
-    val period = (weeklyReport(now, timeZone, queueFilter) as? WeeklyReport.Ready)?.period
     val byWeek = matches.groupBy { it.startedAt.weekStart(timeZone) }
+    val period = byWeek.choosePeriod(now, timeZone).period
 
     return WeaponReport(
         matches = matches.size,
@@ -197,12 +212,11 @@ private fun Map<LocalDate, List<Match>>.highlight(act: WeaponStats, period: Repo
     if (period == null) return WeaponHighlight(act, null, null, baselineWeeks = 0, movements = emptyMap())
     fun List<Match>.stats() = weaponStats().firstOrNull { it.weapon == act.weapon }
 
-    val end = period.firstDay.plusWeeks(period.weeks)
     // 헤드샷과 K/D·피해량은 표본이 다르다. 하나라도 모자라면 줄 전체를 이번 액트로 띄운다.
-    val current = between(period.firstDay, end).stats()?.takeIf { it.isMeasurable && it.isCarriedMeasurable }
-    val start = maxOf(period.firstDay.minusWeeks(BASELINE_WEEKS), keys.min())
+    val current = between(period.firstDay, period.end).stats()?.takeIf { it.isMeasurable && it.isCarriedMeasurable }
+    val start = baselineStart(period.firstDay)
     val baseline = between(start, period.firstDay).stats()
-    val weeks = (1..VOLATILITY_WEEKS).mapNotNull { weeksBefore -> this[period.firstDay.minusWeeks(weeksBefore)]?.stats() }
+    val weeks = weeksBefore(period.firstDay).mapNotNull { it.stats() }
 
     val movements = WeaponMetric.entries.associateWith { metric ->
         val now = current?.value(metric)

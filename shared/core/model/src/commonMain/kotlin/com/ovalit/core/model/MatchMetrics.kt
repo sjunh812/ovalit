@@ -30,13 +30,11 @@ data class MatchMetrics(
     val fullBuyRounds: Int,
     val fullBuyRoundsWon: Int,
 ) {
-    /** 전투점수(ACS). 라운드당 전투 점수입니다. */
     val acs: Double? get() = combatScore over rounds
 
-    /** 피해량(ADR). 라운드당 준 피해입니다. */
     val adr: Double? get() = damage over rounds
 
-    /** 데스가 없으면 `null`입니다. 킬 수를 그대로 보여주면 한 판짜리 기록이 과장됩니다. */
+    /** 데스가 없으면 `null`입니다. 킬 수를 그대로 K/D로 띄우면 실제보다 부풀려 보입니다. */
     val kd: Double? get() = kills over deaths
 
     /**

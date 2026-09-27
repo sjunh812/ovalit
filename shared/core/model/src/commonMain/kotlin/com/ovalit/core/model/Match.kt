@@ -5,12 +5,12 @@ import kotlin.time.Instant
 /**
  * 내가 뛴 경기 하나입니다. 지표는 전부 여기서 나옵니다.
  *
- * API 응답을 그대로 옮긴 모양이 아닙니다. 응답에는 아직 확인 못 한 부분이 남아 있어서,
- * 계산에 필요한 것만 도메인 모양으로 정해 두고 네트워크 계층이 여기로 옮겨 담게 합니다.
+ * API 응답을 그대로 옮기지 않았습니다. 응답에 아직 확인 못 한 부분이 있어 계산에 필요한 것만 정해 두고,
+ * 네트워크 계층이 여기에 맞춰 옮겨 담습니다.
  *
- * @property myRole 콘텐츠 카탈로그에 아직 안 올라온 새 요원이면 없습니다.
- * @property allies 나를 뺀 우리 팀. 내가 죽은 뒤 누가 복수했는지(트레이드) 가를 때 씁니다.
- * @property myTeamWon 비겼거나 결과를 모르면 없습니다. 승률을 낼 때 분모에서 뺍니다.
+ * @property myRole 서버의 역할 표에 아직 없는 새 요원이면 `null`입니다.
+ * @property allies 나를 뺀 우리 팀입니다. 팀킬을 가려내고 트레이드와 클러치를 볼 때 씁니다.
+ * @property myTeamWon 비겼거나 결과를 모르면 `null`입니다. 승률을 낼 때 분모에서 뺍니다.
  * @property myCombatScore `players[].stats.score`. 라운드별이 아니라 경기 전체 합입니다.
  * @property rounds 내가 뛴 라운드만 담습니다. 중간에 튕겼다 들어온 경기에서 전체 라운드를
  * 넣으면 ACS와 ADR이 실제보다 낮게 나옵니다. 응답의 `stats.roundsPlayed`와 개수가 같아야 합니다.
@@ -49,8 +49,8 @@ data class Score(
 )
 
 /**
- * 전반, 후반, 연장 스코어를 순서대로 담습니다. 연장까지 안 갔으면 둘입니다. 라운드제가 아닌 모드면
- * 비어 있습니다.
+ * 전반, 후반, 연장 스코어를 순서대로 담습니다. 전반에 끝났으면 하나, 연장까지 안 갔으면 둘입니다. 라운드제가
+ * 아닌 모드면 빈 목록입니다.
  */
 val Match.halfScores: List<Score>
     get() {
@@ -61,9 +61,12 @@ val Match.halfScores: List<Score>
             .map { part -> Score(myTeam = part.count { it.value }, enemyTeam = part.count { !it.value }) }
     }
 
-/** 가장 최근 경쟁전의 내 티어 번호입니다. 응답은 경기 당시 티어만 줘서 이걸 지금 티어로 씁니다. */
+/**
+ * 가장 최근 경쟁전의 내 티어 번호입니다. 응답은 경기 당시 티어만 줘서 이걸 지금 티어로 씁니다. 그 판에 티어가 빠져
+ * 있으면 그 앞 판을 봅니다. 홈 배지와 프로필 티어 카드가 같은 규칙을 써야 두 곳의 티어가 갈리지 않습니다.
+ */
 fun Iterable<Match>.latestTier(): Int? = this
-    .filter { it.queue == Queue.COMPETITIVE }
+    .filter { it.queue == Queue.COMPETITIVE && it.myScoreline?.tier != null }
     .maxByOrNull { it.startedAt }
     ?.myScoreline
     ?.tier
@@ -98,10 +101,12 @@ data class Scoreline(
 /**
  * 라운드 하나입니다.
  *
+ * @property number 1부터 셉니다. 전반과 후반 첫 라운드(피스톨)를 이 번호로 가립니다. 응답의 `roundResults[].roundNum`이
+ * 0부터 온다면 1을 더해 담습니다(실데이터로 확인해야 합니다).
  * @property kills 라운드에서 일어난 킬 전부입니다. 나와 무관한 킬도 들어갑니다. 트레이드와
  * 퍼블을 가르려면 누가 먼저 죽었는지 알아야 합니다.
  * @property myShots 내가 맞힌 부위별 횟수입니다. 킬 수가 아니라 적중 수입니다.
- * @property mySide 그 라운드에 내가 공격이었는지 수비였는지입니다. 모르면 없고, 공수를 나눠 셀 때
+ * @property mySide 그 라운드에 내가 공격이었는지 수비였는지입니다. 모르면 `null`이고, 공수를 나눠 셀 때
  * 양쪽 다 빠집니다.
  * @property ending 라운드가 어떻게 끝났는지입니다. 응답의 `roundResult`에서 옵니다.
  */
@@ -128,8 +133,8 @@ enum class RoundEnding {
  * 라운드를 시작할 때 들고 있던 장비 가치(`economy.loadoutValue`)입니다. 팀 값은 한 사람당 평균이라
  * 누가 튕겨 네 명이 뛴 라운드도 같은 기준으로 가를 수 있습니다.
  *
- * @property myWeapon 라운드를 시작할 때 내가 든 주무기(`economy.weapon`)입니다. 킬을 무기별로 셀 때는 쓰지 않습니다.
- * 주워 쓴 총이 안 잡혀서입니다. 무기별 데스와 라운드당 피해량처럼 킬로는 무기를 알 수 없는 숫자의 기준으로만 씁니다.
+ * @property myWeapon 라운드를 시작할 때 내가 든 무기(`economy.weapon`)입니다. 주워 쓴 총이 안 잡혀 무기별 킬에는 쓰지
+ * 않고, 무기별 데스·어시스트·라운드당 피해량에만 씁니다.
  */
 data class RoundEconomy(
     val myLoadout: Int,
@@ -141,7 +146,7 @@ data class RoundEconomy(
 /**
  * @property atMillis 라운드 시작부터 잰 시각. 응답의 `timeSinceRoundStartMillis`입니다.
  * @property weapon 킬을 낸 무기. `finishingDamage.damageItem`에서 옵니다.
- * `economy.weapon`을 쓰면 주워 쓴 총이 안 잡힙니다. 스킬 킬이면 없습니다.
+ * `economy.weapon`을 쓰면 주워 쓴 총이 안 잡힙니다. 스킬 킬이면 `null`입니다.
  */
 data class KillEvent(
     val atMillis: Long,

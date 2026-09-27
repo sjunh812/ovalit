@@ -5,7 +5,7 @@ import kotlin.jvm.JvmInline
 @JvmInline
 value class MatchId(val value: String)
 
-/** Riot의 PUUID입니다. 화면에 띄우지 않습니다. */
+/** Riot의 PUUID입니다. 화면에 띄우지 않습니다. 내가 안 뛴 친구 경기의 다른 사람은 서버가 `anon-N`으로 바꿔 내려줍니다. */
 @JvmInline
 value class PlayerId(val value: String)
 
@@ -13,16 +13,11 @@ value class PlayerId(val value: String)
 @JvmInline
 value class AgentId(val value: String)
 
-/**
- * 경기 응답의 `seasonId`입니다.
- *
- * 액트마다 랭크가 초기화되고 매칭 난이도가 달라지므로, 액트 경계를 넘는 평균은 만들지
- * 않습니다. 이 값이 그 경계를 가릅니다.
- */
+/** 경기 응답의 `seasonId`입니다. 액트 경계를 넘는 평균을 막을 때 이 값으로 가릅니다. */
 @JvmInline
 value class ActId(val value: String)
 
-/** `kills[].finishingDamage.damageItem`입니다. 총기 종류까지만 가리키고 스킨은 모릅니다. */
+/** 무기 UUID입니다. 킬의 `finishingDamage.damageItem`과 라운드 시작의 `economy.weapon`에서 옵니다. 스킨은 모릅니다. */
 @JvmInline
 value class WeaponId(val value: String)
 

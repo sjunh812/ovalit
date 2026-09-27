@@ -39,6 +39,14 @@ class KastTest {
         assertEquals(1, metrics.kastRounds)
     }
 
+    // 세이지 부활로 두 번 죽은 라운드다. 목록에는 나중 데스가 먼저 왔지만 먼저 죽은 쪽으로 트레이드를 본다.
+    @Test
+    fun `두 번 죽은 라운드는 먼저 죽은 데스로 트레이드를 본다`() {
+        val metrics = match(round(kill(30.0, OtherEnemy, Me), kill(10.0, Enemy, Me), kill(12.0, Ally, Enemy))).metrics()
+
+        assertEquals(1, metrics.kastRounds)
+    }
+
     @Test
     fun `트레이드는 정확히 5초까지 인정한다`() {
         val metrics = match(round(kill(10.0, Enemy, Me), kill(15.0, Ally, Enemy))).metrics()

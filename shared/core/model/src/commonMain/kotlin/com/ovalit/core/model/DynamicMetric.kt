@@ -3,7 +3,7 @@ package com.ovalit.core.model
 import kotlin.math.abs
 import kotlin.math.sqrt
 
-/** 동적 칸은 적어도 이만큼 둡니다. 움직인 지표가 모자라면 관심사 지표와 기본 지표로 채웁니다. */
+/** 동적 칸은 적어도 이만큼 둡니다. 관심사 지표와 움직인 지표가 이보다 적으면 기본 지표로 채웁니다. */
 const val MIN_DYNAMIC_SLOTS = 3
 
 /** 관심사 지표와 움직인 지표가 많아도 이만큼까지만 둡니다. */
@@ -11,11 +11,10 @@ const val MAX_DYNAMIC_SLOTS = 5
 const val VOLATILITY_WEEKS = 8
 const val MIN_VOLATILITY_WEEKS = 4
 const val MOVEMENT_THRESHOLD = 1.5
+private const val FLAT_VOLATILITY = 1e-9
 
 /**
  * 홈의 동적 칸에 오를 수 있는 지표입니다. 고정 4개(전투점수, K/D, 피해량, 헤드샷)는 여기 없습니다.
- *
- * 이번 기간, 비교 기준, 변동폭을 재는 각 주가 모두 최소 표본을 넘겨야 판단합니다.
  */
 enum class DynamicMetric(
     val value: (MatchMetrics) -> Double?,
@@ -59,8 +58,8 @@ private val Defaults = listOf(
 /**
  * 관심사 지표를 맨 앞에 늘 둡니다. 사용자가 보겠다고 고른 지표라 움직이지 않았어도, 역할이 크게 띄우지 않는 지표여도
  * 넣고, 관심사에 적힌 순서 그대로 둡니다. 그 뒤에 움직인 지표를 역할의 우선 지표, 많이 움직인 순으로 놓고
- * [MAX_DYNAMIC_SLOTS]개에서 자릅니다. [MIN_DYNAMIC_SLOTS]개가 안 되면 기본 지표로 채웁니다. 관심사가 아닌 지표는 역할이
- * 크게 띄우지 않으면 넣지 않습니다.
+ * [MAX_DYNAMIC_SLOTS]개에서 자릅니다. [MIN_DYNAMIC_SLOTS]개가 안 되면 기본 지표로 채웁니다. 역할이 크게 띄우지 않는
+ * 지표는 관심사로 골랐을 때만 넣습니다.
  *
  * @param history 집계 기간 앞 주들의 주간 지표입니다. 평소 변동폭을 여기서 잽니다.
  */
@@ -118,6 +117,9 @@ internal fun assessMovement(now: Double, usual: Double, weekly: List<Double>): A
 
     val change = abs(now - usual)
     val volatility = weekly.sampleStandardDeviation()
+    // 주마다 값이 똑같았으면 변동폭이 0이라 조금만 달라도 무한히 크게 움직인 것이 된다. 기준을 잴 수 없으니 판단하지 않는다.
+    // 같은 값을 평균 내도 부동소수 오차로 정확히 0이 나오지 않아서 아주 작은 값과 견준다.
+    if (volatility < FLAT_VOLATILITY) return Assessment(Movement.UNKNOWN)
     val movement = if (change > MOVEMENT_THRESHOLD * volatility) Movement.MOVED else Movement.STEADY
     return Assessment(movement, strength = change / volatility)
 }

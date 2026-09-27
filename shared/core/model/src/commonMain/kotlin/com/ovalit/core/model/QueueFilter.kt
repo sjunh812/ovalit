@@ -13,7 +13,10 @@ enum class QueueFilter(val queues: Set<Queue>) {
     OTHER(setOf(Queue.SPIKE_RUSH, Queue.SWIFTPLAY, Queue.OTHER)),
     ;
 
-    /** 기타 모드는 K/D와 헤드샷만 봅니다. 4라운드 선취 같은 모드에서는 전투점수와 피해량이 성립하지 않습니다. */
+    /**
+     * 기타 모드는 K/D와 헤드샷만 봅니다. 데스매치처럼 라운드가 없는 모드가 섞여 있어 라운드당 값인 전투점수와 피해량은
+     * 뺍니다.
+     */
     val fixedMetrics: List<FixedMetric>
         get() = if (this == OTHER) listOf(FixedMetric.KD, FixedMetric.HEADSHOT_RATE) else FixedMetric.entries
 

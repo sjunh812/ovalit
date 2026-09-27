@@ -27,6 +27,15 @@ class MovementTest {
         assertEquals(Movement.MOVED, KAST.movement(current = stats(kast = 0.67)))
     }
 
+    // 변동폭이 0이면 기준선도 0이라 아주 작은 변화도 움직임이 되고, 변화가 없으면 0 ÷ 0이 된다
+    @Test
+    fun `주마다 값이 똑같았으면 움직였는지 판단하지 않는다`() {
+        val flat = List(8) { 0.70 }
+
+        assertEquals(Movement.UNKNOWN, assessMovement(now = 0.71, usual = 0.70, weekly = flat).movement)
+        assertEquals(Movement.UNKNOWN, assessMovement(now = 0.70, usual = 0.70, weekly = flat).movement)
+    }
+
     // 네 주의 표본 표준편차는 0.0231이고 모표준편차로 재면 0.02다. 기준선은 0.0346과 0.03으로 갈린다.
     @Test
     fun `변동폭은 표본 표준편차로 잰다`() {

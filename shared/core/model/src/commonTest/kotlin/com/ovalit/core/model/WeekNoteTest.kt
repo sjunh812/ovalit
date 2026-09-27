@@ -53,6 +53,15 @@ class WeekNoteTest {
         assertEquals(WeaponMetric.HEADSHOT_RATE, note?.weapon?.metric)
     }
 
+    // S6 위쪽 표는 두 표본을 다 넘겨야 기간 값을 띄운다. 한쪽만 넘긴 무기를 짚으면 S6에서 "이번 액트 기준"으로 떠서
+    // 숫자가 맞지 않는다.
+    @Test
+    fun `들고 시작한 라운드가 모자란 무기는 헤드샷이 올라도 붙이지 않는다`() {
+        val note = note(current = fixed(head = 30), weapons = listOf(trend(Vandal, head = 30, carriedRounds = 12)))
+
+        assertNull(note?.weapon)
+    }
+
     // 헤드샷이 올랐는데 팬텀만 크게 떨어졌다. 반대로 움직인 무기를 붙이면 "헤드샷이 올랐다"와 어긋난다.
     @Test
     fun `반대로 움직인 무기는 붙이지 않는다`() {
@@ -110,7 +119,6 @@ class WeekNoteTest {
         baseline = baseline,
         history = UsualWeeks,
         role = role,
-        fixedMetrics = FixedMetric.entries,
         weapons = weapons,
         agents = agents,
     )
@@ -140,16 +148,19 @@ class WeekNoteTest {
             fixed(kills = 110 + 6 * d, score = 20_000 + 400 * d, damage = 14_000 + 300 * d, head = 21 + d)
         }
 
-        fun weapon(id: WeaponId, head: Int) = WeaponStats(
+        fun weapon(id: WeaponId, head: Int, carriedRounds: Int = 40) = WeaponStats(
             weapon = id,
             kills = 40,
             singleWeaponRounds = 40,
             shots = Shots(head = head, body = 100 - head, leg = 0),
+            carriedRounds = carriedRounds,
+            deaths = 30,
+            damage = carriedRounds * 140,
         )
 
-        fun trend(id: WeaponId, head: Int) = WeaponTrend(
+        fun trend(id: WeaponId, head: Int, carriedRounds: Int = 40) = WeaponTrend(
             weapon = id,
-            current = weapon(id, head),
+            current = weapon(id, head, carriedRounds),
             baseline = weapon(id, 21),
             weekly = listOf(-1, 1, 0, 0, -1, 1, 0, 0).map { d -> weapon(id, 21 + d) },
         )

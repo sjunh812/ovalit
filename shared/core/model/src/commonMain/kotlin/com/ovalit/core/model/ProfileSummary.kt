@@ -1,8 +1,7 @@
 package com.ovalit.core.model
 
 /**
- * 내 프로필 위쪽의 이번 액트 요약입니다. [currentActMatches]로 추린 경쟁 + 일반 경기를 넘깁니다. 모두 내
- * 경기끼리만 셉니다.
+ * 프로필(내 프로필, S5) 위쪽의 이번 액트 요약입니다. [currentActMatches]로 추린 경쟁 + 일반 경기를 넘깁니다.
  *
  * @property mostKills 한 경기에서 낸 가장 많은 킬입니다. 판당 K/D/A와 같은 규칙으로 셉니다.
  * @property playTimeMillis 경기 길이를 더한 값입니다. 중간에 나갔다 들어온 경기도 경기 전체 길이로 셉니다.
@@ -17,9 +16,7 @@ data class ProfileSummary(
     val highlights: HighlightCount = HighlightCount(aces = 0, clutches = 0, clutchAttempts = 0),
 )
 
-/**
- * @property currentTier 가장 최근 경쟁전에 실려 온 내 티어입니다. 그 판에 티어가 빠져 있으면 그 앞 판을 봅니다.
- */
+/** @property currentTier [latestTier]와 같은 규칙으로 고른 이번 액트 티어입니다. */
 data class CompetitiveRecord(
     val matches: Int,
     val wins: Int,
@@ -43,7 +40,7 @@ fun List<Match>.profileSummary(): ProfileSummary {
                 matches = games.size,
                 wins = games.count { it.myTeamWon == true },
                 losses = games.count { it.myTeamWon == false },
-                currentTier = games.lastOrNull { it.myScoreline?.tier != null }?.myScoreline?.tier,
+                currentTier = games.latestTier(),
             )
         },
     )

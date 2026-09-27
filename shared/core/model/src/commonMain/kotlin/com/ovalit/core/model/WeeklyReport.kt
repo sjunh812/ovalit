@@ -9,24 +9,24 @@ import kotlinx.datetime.plus
  * 홈의 주간 리포트입니다. 한 액트 안에서 고른 큐의 경기만 담습니다.
  *
  * 액트가 바뀌면 랭크가 초기화되고 매칭 난이도가 달라집니다. 경계를 넘겨 합치면 비교가 의미를
- * 잃으니, 가장 최근 경기의 액트만 봅니다.
+ * 잃으니, 가장 최근 경기의 액트만 봅니다. [Ready.trend]만 앞 액트 주도 그리고 경계를 표시합니다.
  */
 sealed interface WeeklyReport {
 
     /**
-     * @property baseline "지난 4주 평균"에 쓰는 비교 기준입니다. 그 기간 경기가 모자라면 없습니다.
-     * @property mainRole 기간 중 라운드를 가장 많이 뛴 역할입니다. 역할을 아는 경기가 없으면 없습니다.
+     * @property baseline "지난 4주 평균"에 쓰는 비교 기준입니다. 그 기간 경기가 5경기에 못 미치면 `null`입니다.
+     * @property mainRole 기간 중 라운드를 가장 많이 뛴 역할입니다. 역할을 아는 경기가 없으면 `null`입니다.
      * @property mainRoleShare 역할을 아는 라운드 중 [mainRole]로 뛴 라운드의 비중입니다. 화면에는 "타격대 78%"로
      * 띄웁니다. 역할만 적으면 그 기간에 그 역할만 한 것처럼 읽힙니다.
-     * @property dynamic 동적 칸(3~5개)입니다. 하나도 [Movement.MOVED]가 아닐 때만 "큰 변화 없음"을 띄웁니다.
-     * [QueueFilter.OTHER]면 비어 있습니다.
-     * @property insight 개선 포인트 문장입니다. 공수 격차가 기준을 넘지 않거나 [QueueFilter.OTHER]면 없습니다.
+     * @property dynamic 동적 칸(3~5개)입니다. [Movement.MOVED]가 하나도 없고 [Movement.STEADY]가 있을 때만 "큰 변화
+     * 없음"을 띄웁니다. 모두 [Movement.UNKNOWN]이면 판단을 보류했다고 적습니다. [QueueFilter.OTHER]면 빈 목록입니다.
+     * @property insight 개선 포인트 문장입니다. 공수 격차가 기준을 넘지 않거나 [QueueFilter.OTHER]면 `null`입니다.
      * @property trend 지표 설명 시트의 주별 막대입니다. 기간 마지막 주에서 끝나는 [TREND_WEEKS]주이고
      * 오래된 주가 앞에 옵니다.
      * @property results 기간 경기의 승패입니다. 오래된 경기가 앞에 오고, 비겼거나 결과를 모르면 `null`입니다.
      * @property agents 기간에 많이 뛴 요원 순서입니다. 홈의 요원 칸에 씁니다.
      * @property weapons 기간에 킬을 많이 낸 무기 순서입니다. 홈의 무기 칸에 씁니다.
-     * @property note 홈 "이번 주 짚을 점"입니다. 짚을 게 없거나 [QueueFilter.OTHER]면 없습니다.
+     * @property note 홈 "이번 주 짚을 점"입니다. 짚을 게 없거나 [QueueFilter.OTHER]면 `null`입니다.
      */
     data class Ready(
         val act: ActId,
@@ -79,10 +79,10 @@ data class Baseline(
 /**
  * 지표 설명 시트의 주별 막대 하나입니다.
  *
- * @property act 그 주에 뛴 가장 최근 액트입니다. 한 주에 액트가 둘이면 새 액트 경기만 셉니다.
- * 액트 경계를 넘는 평균은 만들지 않습니다.
- * @property metrics 그 주 합계입니다. 라운드가 [MIN_TREND_ROUNDS]에 못 미치면 없습니다. 한두 판만
- * 뛴 주가 섞이면 막대 하나 때문에 추이가 흔들립니다.
+ * @property act 그 주에 뛴 가장 최근 액트입니다. 한 주에 액트가 둘이면 새 액트 경기만 셉니다. 그 주에 경기가 없으면
+ * `null`입니다.
+ * @property metrics 그 주 합계입니다. 라운드가 [MIN_TREND_ROUNDS]에 못 미치면 `null`입니다. 한두 판만 뛴 주가 섞이면
+ * 막대 하나 때문에 추이가 흔들립니다.
  * @property startsNewAct 앞 주와 액트가 다르면 `true`입니다. 화면은 이 막대 앞에 세로선을 긋습니다.
  * @property inPeriod 리포트 기간에 든 주입니다.
  */

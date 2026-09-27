@@ -79,6 +79,21 @@ class MatchScreensTest {
         assertTrue(invited)
     }
 
+    // 서버에 묻지 못했으면 앱을 쓰는지 모른다. 안 쓴다고 하지 않고, 초대 링크는 누구에게나 통하니 그대로 권한다.
+    @Test
+    fun `앱을 쓰는지 모르면 안 쓴다고 하지 않고 초대 링크를 권한다`() = runComposeUiTest {
+        var invited = false
+        val row = MatchPreviewData.detail.enemyTeam.first().copy(relation = PlayerRelation.UNKNOWN)
+        setContent { Themed { PlayerSheet(row, onSendRequest = {}, onAccept = {}, onShareInvite = { invited = true }, onDismiss = {}) } }
+
+        onNodeWithText("확인하지 못했어요", substring = true).assertExists()
+        onNodeWithText("오발있을 쓰지 않는", substring = true).assertDoesNotExist()
+        onNodeWithText("친구 요청 보내기").assertDoesNotExist()
+        onNodeWithText("초대 링크 보내기").performClick()
+
+        assertTrue(invited)
+    }
+
     @Test
     fun `라운드 탭은 전반과 후반으로 나눠 보여준다`() = runComposeUiTest {
         setContent { Themed { Detail() } }

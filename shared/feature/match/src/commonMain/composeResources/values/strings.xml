@@ -67,5 +67,6 @@
     <string name="player_requested_me">이 플레이어가 먼저 친구 요청을 보냈어요.</string>
     <string name="player_accept">수락</string>
     <string name="player_not_app_user">오발있을 쓰지 않는 플레이어예요. 초대 링크를 보내면 친구로 추가할 수 있어요.</string>
+    <string name="player_unknown">오발있을 쓰는지 확인하지 못했어요. 초대 링크로도 친구를 추가할 수 있어요.</string>
     <string name="player_invite">초대 링크 보내기</string>
 </resources>

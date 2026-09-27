@@ -3,8 +3,10 @@ package com.ovalit.feature.match
 import com.ovalit.core.data.FakeContentRepository
 import com.ovalit.core.data.FakeFriendRepository
 import com.ovalit.core.data.FakeMatchRepository
+import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.MatchId
+import com.ovalit.core.model.PlayerId
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -102,6 +104,22 @@ class MatchDetailViewModelTest {
 
         assertEquals(match.score.myTeam + match.score.enemyTeam, state.rounds.size)
         assertTrue(state.buys.isNotEmpty())
+    }
+
+    // 앱 사용자 확인은 서버에 묻는다. 실패해도 스코어보드는 기기에 있는 경기라 그대로 그린다. 모르는 사람을 앱을 안 쓴다고
+    // 하면 틀린 말이라 따로 둔다.
+    @Test
+    fun `앱을 쓰는지 묻지 못해도 경기를 보여주고 앱을 안 쓴다고 하지 않는다`() = runTest {
+        val broken = object : FriendRepository by friends {
+            override suspend fun appUsersAmong(players: Collection<PlayerId>): Set<PlayerId> = error("서버에 닿지 않음")
+        }
+        val viewModel = MatchDetailViewModel(MatchId(anyMatch().id.value), broken, matches, FakeContentRepository(), TimeZone.of("Asia/Seoul"))
+
+        val state = collect(viewModel)
+
+        val relations = (state.myTeam + state.enemyTeam).map { it.relation }
+        assertTrue(PlayerRelation.UNKNOWN in relations)
+        assertTrue(relations.none { it == PlayerRelation.APP_USER || it == PlayerRelation.NOT_APP_USER })
     }
 
     private suspend fun anyMatch(): Match = matches.observeMatches().first().first()

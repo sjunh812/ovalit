@@ -15,14 +15,17 @@ import com.ovalit.core.model.Scoreline
 import com.ovalit.core.model.buyRecords
 import com.ovalit.core.model.roundSummaries
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -69,6 +72,9 @@ enum class PlayerRelation {
 
     /** 앱을 쓰지 않아서 요청을 받을 수 없습니다. */
     NOT_APP_USER,
+
+    /** 앱을 쓰는지 서버에 묻는 중이거나 묻지 못했습니다. 모르는데 앱을 안 쓴다고 하면 틀린 말이 됩니다. */
+    UNKNOWN,
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -84,9 +90,16 @@ class MatchDetailViewModel(
         .map { matches -> matches.firstOrNull { it.id == matchId } }
         .distinctUntilChanged()
 
-    // 앱을 쓰는지는 서버에 물어야 알 수 있다. 그래서 보고 있는 경기가 바뀔 때만 다시 묻는다.
-    private val appUsers = match.flatMapLatest { match ->
-        if (match == null) flowOf(emptySet()) else flow { emit(friendRepository.appUsersAmong(match.players.map { it.player })) }
+    // 앱을 쓰는지는 서버에 물어야 안다. 경기를 불러올 때 한 번 묻는다. 답을 기다리는 동안과 묻지 못했을 때는 `null`로 두고
+    // 스코어보드부터 그린다. 답을 기다리느라 화면이 비거나, 실패해서 화면 전체가 깨지면 안 된다.
+    private val appUsers: Flow<Set<PlayerId>?> = match.flatMapLatest { match ->
+        if (match == null) {
+            flowOf(emptySet())
+        } else {
+            flow<Set<PlayerId>?> { emit(friendRepository.appUsersAmong(match.players.map { it.player })) }
+                .onStart { emit(null) }
+                .catch { emit(null) }
+        }
     }
 
     private val relations = combine(
@@ -137,14 +150,17 @@ private class Relations(
     val friends: Set<PlayerId>,
     val requestedMe: Set<PlayerId>,
     val sent: Set<PlayerId>,
-    val appUsers: Set<PlayerId>,
+    val appUsers: Set<PlayerId>?,
 ) {
     fun of(player: PlayerId, me: PlayerId): PlayerRelation = when (player) {
         me -> PlayerRelation.ME
         in friends -> PlayerRelation.FRIEND
         in requestedMe -> PlayerRelation.REQUESTED_ME
         in sent -> PlayerRelation.REQUEST_SENT
-        in appUsers -> PlayerRelation.APP_USER
-        else -> PlayerRelation.NOT_APP_USER
+        else -> when {
+            appUsers == null -> PlayerRelation.UNKNOWN
+            player in appUsers -> PlayerRelation.APP_USER
+            else -> PlayerRelation.NOT_APP_USER
+        }
     }
 }

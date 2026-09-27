@@ -9,14 +9,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
@@ -146,6 +152,8 @@ internal fun MatchDetailScreen(
                 }
             }
             Spacer(Modifier.height(OvalitSpacing.xxl))
+            // 탭바 밖 화면이라 시스템 내비게이션 바 높이만큼 더 띄운다. 안 그러면 마지막 줄이 내비게이션 바에 덮인다.
+            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
         }
     }
 
@@ -192,7 +200,7 @@ private fun Banner(uiState: MatchDetailUiState.Success, onBack: () -> Unit) {
                 .height(140.dp)
                 .background(Brush.verticalGradient(listOf(Color.Transparent, colors.bg))),
         )
-        OvalitBackTopBar(onBack = onBack, modifier = Modifier.safeDrawingPadding()) {
+        OvalitBackTopBar(onBack = onBack, modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))) {
             OvalitTopBarCaption(caption, color = colors.t1)
         }
         ScoreHeadline(uiState, Modifier.align(Alignment.BottomStart))

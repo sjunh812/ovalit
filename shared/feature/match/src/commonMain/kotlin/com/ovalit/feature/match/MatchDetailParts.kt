@@ -82,6 +82,7 @@ import com.ovalit.feature.match.resources.player_not_app_user
 import com.ovalit.feature.match.resources.player_request_sent
 import com.ovalit.feature.match.resources.player_requested_me
 import com.ovalit.feature.match.resources.player_send_request
+import com.ovalit.feature.match.resources.player_unknown
 import com.ovalit.feature.match.resources.round_ace
 import com.ovalit.feature.match.resources.round_clutch
 import com.ovalit.feature.match.resources.round_first_death
@@ -486,6 +487,7 @@ internal fun PlayerSheet(
             PlayerRelation.APP_USER -> Res.string.player_app_user
             PlayerRelation.REQUEST_SENT -> Res.string.player_request_sent
             PlayerRelation.REQUESTED_ME -> Res.string.player_requested_me
+            PlayerRelation.UNKNOWN -> Res.string.player_unknown
             else -> Res.string.player_not_app_user
         },
     )
@@ -508,7 +510,8 @@ internal fun PlayerSheet(
                 },
                 modifier = Modifier.fillMaxWidth(),
             )
-            PlayerRelation.NOT_APP_USER -> OvalitPrimaryButton(
+            // 앱을 쓰는지 몰라도 초대 링크로는 친구를 맺을 수 있다
+            PlayerRelation.NOT_APP_USER, PlayerRelation.UNKNOWN -> OvalitPrimaryButton(
                 text = stringResource(Res.string.player_invite),
                 onClick = {
                     onShareInvite()

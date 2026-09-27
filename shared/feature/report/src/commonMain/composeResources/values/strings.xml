@@ -36,28 +36,20 @@
     <string name="note_down_damage">피해량이 평소보다 %1$s 떨어졌어요</string>
     <string name="note_up_headshot">헤드샷이 평소보다 %1$s 올랐어요</string>
     <string name="note_down_headshot">헤드샷이 평소보다 %1$s 떨어졌어요</string>
+    <string name="note_best_combat_score">전투점수가 평소보다 %1$s 올라 이번 액트 최고예요</string>
+    <string name="note_best_kd">K/D가 평소보다 %1$s 올라 이번 액트 최고예요</string>
+    <string name="note_best_damage">피해량이 평소보다 %1$s 올라 이번 액트 최고예요</string>
+    <string name="note_best_headshot">헤드샷이 평소보다 %1$s 올라 이번 액트 최고예요</string>
+    <string name="note_case_change">%1$s → %2$s</string>
+    <string name="note_mix_buy">%1$s 라운드 비중</string>
+    <string name="note_mix_share">%1$s 비중</string>
     <!-- 이번 기간 비중에 평소와의 차이를 곱해 전체 변화에 가장 많이 보탠 것이다. 많이 달라진 것과 다르다. -->
-    <string name="note_weapon_up_label">가장 크게 끌어올린 무기</string>
-    <string name="note_weapon_down_label">가장 크게 끌어내린 무기</string>
-    <string name="note_agent_up_label">가장 크게 끌어올린 요원</string>
-    <string name="note_agent_down_label">가장 크게 끌어내린 요원</string>
     <!-- "팬텀 피해량 130 → 230 · 42라운드" -->
-    <string name="note_case_value">%1$s %2$s %3$s → %4$s · %5$s</string>
     <string name="note_case_rounds">%1$d라운드</string>
     <string name="note_case_matches">%1$d판</string>
-    <string name="note_best_label">이번 액트 주간 최고</string>
-    <string name="note_best_value">이전 최고 %1$s</string>
-    <string name="note_mix_buy_up">비중이 늘어난 라운드</string>
-    <string name="note_mix_buy_down">비중이 줄어든 라운드</string>
-    <string name="note_mix_weapon_up">비중이 늘어난 무기</string>
-    <string name="note_mix_weapon_down">비중이 줄어든 무기</string>
-    <string name="note_mix_agent_up">비중이 늘어난 요원</string>
-    <string name="note_mix_agent_down">비중이 줄어든 요원</string>
-    <string name="note_mix_value">%1$s %2$s → %3$s</string>
     <string name="note_steady_buy">%1$s 라운드만 보면</string>
     <string name="note_steady_weapon">%1$s 든 라운드만 보면</string>
     <string name="note_steady_agent">%1$s 뛴 판만 보면</string>
-    <string name="note_steady_value">%1$s %2$s → %3$s</string>
     <string name="dynamic_title_moved">달라진 점</string>
     <string name="dynamic_title_steady">%1$s는 큰 변화가 없어요</string>
     <string name="dynamic_title_unknown">아직 비교할 기록이 모자라요</string>
@@ -145,10 +137,7 @@
     <string name="insight_session_late">세 번째 판부터</string>
     <string name="insight_session_early">첫 두 판</string>
     <!-- "레이즈 2판 50%" -->
-    <string name="insight_part">%1$s %2$s %3$s</string>
     <string name="insight_period_act">이번 액트</string>
-    <string name="insight_recent_lead">%1$s %2$s %3$s</string>
-    <string name="insight_recent_other">%1$s %2$s</string>
     <string name="insight_matches">%1$d판</string>
     <string name="insight_rounds">%1$d라운드</string>
     <string name="insight_reason_focus">%1$s 고르셔서 먼저 봤어요.</string>

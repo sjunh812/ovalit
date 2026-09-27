@@ -132,6 +132,7 @@ internal object ReportPreviewData {
         leadIsHigher = true,
         isRolePriority = true,
         recent = InsightRecent(lead = 22 / 31.0, other = 15 / 33.0),
+        matches = 33,
     )
 
     private fun agentWeek(kills: Int, deaths: Int, assists: Int, matches: Int) =

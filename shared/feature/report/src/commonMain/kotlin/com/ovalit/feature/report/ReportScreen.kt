@@ -189,7 +189,6 @@ private fun ReportContent(
     if (queueFilter.hasDynamicMetrics) {
         DynamicMetricSection(report, onOpenMetric = { openDynamic = it })
         report.insight?.let { insight ->
-            Spacer(Modifier.height(18.dp))
             InsightSection(insight = insight, role = report.mainRole, period = report.period, catalog = catalog)
         }
         // S6과 S7이 경쟁 + 일반만 보니 기타 모드에는 두지 않는다

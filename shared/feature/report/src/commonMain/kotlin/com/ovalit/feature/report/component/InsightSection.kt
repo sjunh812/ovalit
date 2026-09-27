@@ -2,6 +2,8 @@ package com.ovalit.feature.report.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -48,7 +50,8 @@ import com.ovalit.feature.report.resources.insight_other_agents
 import com.ovalit.feature.report.resources.insight_other_maps
 import com.ovalit.feature.report.resources.insight_other_roles
 import com.ovalit.feature.report.resources.insight_other_weapons
-import com.ovalit.feature.report.resources.insight_period_act
+import com.ovalit.feature.report.resources.insight_title
+import com.ovalit.feature.report.resources.insight_title_matches
 import com.ovalit.feature.report.resources.insight_played_as
 import com.ovalit.feature.report.resources.insight_reason_focus
 import com.ovalit.feature.report.resources.insight_reason_role
@@ -113,8 +116,9 @@ internal fun InsightSection(
     )
     // 몇 판, 몇 라운드로 센 숫자인지 같이 적는다. 적게 뛴 쪽의 숫자는 크게 흔들린다. 위 칸들과 달리 이번 액트 경기로 견줘서
     // 기간을 맨 앞에 적는다.
+    // 묶음 제목에 "이번 액트"가 있어 이 줄에는 기간을 다시 적지 않는다
     val act = comparisonLine(
-        period = stringResource(Res.string.insight_period_act),
+        period = null,
         parts = listOf(
             LinePart(leadName, format.valueText(lead.value), lead.sampleText()),
             LinePart(otherName, format.valueText(other.value), other.sampleText()),
@@ -139,10 +143,20 @@ internal fun InsightSection(
         else -> null
     }
 
+    // 위 칸들은 모두 이번 주 숫자라 선과 제목으로 떼어 이번 액트 이야기임을 밝힌다
+    Spacer(Modifier.height(20.dp))
+    HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
+    Spacer(Modifier.height(18.dp))
     Column(
         modifier = modifier.padding(horizontal = OvalitSpacing.gutter),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
+        TitleWithCaption(
+            title = stringResource(Res.string.insight_title),
+            titleStyle = OvalitTheme.typography.bodyStrong,
+            caption = insight.matches.takeIf { it > 0 }?.let { AnnotatedString(stringResource(Res.string.insight_title_matches, it)) },
+        )
+        Spacer(Modifier.height(6.dp))
         OvalitText(text = headline, style = OvalitTheme.typography.bodyStrong)
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             OvalitText(text = act, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t2)
@@ -185,11 +199,11 @@ private class LinePart(val name: String, val value: String, val sample: String? 
 // 사용자 요청(2026-09-27): 짚을 점 줄처럼 이름을 가장 진하게, 값을 그다음, 기간과 표본을 가장 옅게 칠한다. 값을 이름 바로
 // 뒤에 두어 "공격 58%"로 읽힌다. 줄은 두 쪽 사이에서만 바뀐다.
 @Composable
-private fun comparisonLine(period: String, parts: List<LinePart>): AnnotatedString {
+private fun comparisonLine(period: String?, parts: List<LinePart>): AnnotatedString {
     val colors = OvalitTheme.colors
     val faint = SpanStyle(color = colors.t3)
     return buildAnnotatedString {
-        withStyle(faint) { append(period.keepTogether() + NBSP) }
+        period?.let { withStyle(faint) { append(it.keepTogether() + NBSP) } }
         parts.forEachIndexed { index, part ->
             if (index > 0) withStyle(faint) { append(WRAPPING_SEPARATOR) }
             withStyle(SpanStyle(color = colors.t1, fontWeight = FontWeight.Medium)) { append(part.name.keepTogether()) }

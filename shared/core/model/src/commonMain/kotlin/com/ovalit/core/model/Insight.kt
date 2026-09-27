@@ -140,6 +140,7 @@ data class InsightPart(
  * @property focus 관심사 지표라서 골랐으면 그 관심사입니다. 화면은 이때 "에임 올리기를 고르셔서 먼저 봤어요"를 붙입니다.
  * @property recent 홈 리포트 기간(이번 주)만 셌을 때 두 쪽 값입니다. 액트 동안 보인 차이가 이번 주에도 이어졌는지 보여줍니다.
  * 두 쪽 중 하나라도 기간 표본이 모자라거나, 기간이 이번 액트 경기를 모두 담아 위 숫자와 같으면 `null`입니다.
+ * @property matches 둘로 나눠 견준 경기 수입니다. 홈은 이번 액트 경기 수를 묶음 제목 옆에 적습니다.
  */
 data class Insight(
     val metric: InsightMetric,
@@ -149,6 +150,7 @@ data class Insight(
     val isRolePriority: Boolean,
     val focus: Focus? = null,
     val recent: InsightRecent? = null,
+    val matches: Int = 0,
 )
 
 /**

@@ -84,7 +84,7 @@ private fun Map<LocalDate, List<Match>>.actInsight(
     categories: Map<WeaponId, WeaponCategory>,
 ): Insight? {
     val actMatches = values.flatten()
-    val insight = actMatches.insight(role, focus, categories) ?: return null
+    val insight = actMatches.insight(role, focus, categories)?.copy(matches = actMatches.size) ?: return null
     return if (periodMatches.size < actMatches.size) insight.during(periodMatches, categories) else insight
 }
 

@@ -521,7 +521,7 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
 
         onNodeWithText("공격에서 멀티킬 라운드 비율이 수비보다 25%p 높아요.").assertExists()
-        onNodeWithText(insightLine("이번 액트", Triple("공격", "30%", "40라운드"), Triple("수비", "5%", "40라운드"))).assertExists()
+        onNodeWithText(insightLine(null, Triple("공격", "30%", "40라운드"), Triple("수비", "5%", "40라운드"))).assertExists()
         onNodeWithText("에임 올리기를 고르셔서 먼저 봤어요.").assertExists()
     }
 
@@ -539,7 +539,7 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
 
         onNodeWithText("제트로 뛴 판은 생존율이 레이즈보다 25%p 높아요.").assertExists()
-        onNodeWithText(insightLine("이번 액트", Triple("제트", "75%", "5판"), Triple("레이즈", "50%", "10판"))).assertExists()
+        onNodeWithText(insightLine(null, Triple("제트", "75%", "5판"), Triple("레이즈", "50%", "10판"))).assertExists()
     }
 
     @Test
@@ -586,7 +586,7 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
 
         onNodeWithText("연달아 뛴 세 번째 판부터는 관여율이 첫 두 판보다 12%p 낮아요.").assertExists()
-        onNodeWithText(insightLine("이번 액트", Triple("세 번째 판부터", "61%", "18판"), Triple("첫 두 판", "73%", "32판"))).assertExists()
+        onNodeWithText(insightLine(null, Triple("세 번째 판부터", "61%", "18판"), Triple("첫 두 판", "73%", "32판"))).assertExists()
         onNodeWithText(insightLine("이번 주", Triple("세 번째 판부터", "55%", null), Triple("첫 두 판", "70%", null))).assertExists()
         onNodeWithText("쉬", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
@@ -616,10 +616,10 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
 
         onNodeWithText("헤이븐에서는 관여율이 다른 맵보다 14%p 낮아요.").assertExists()
-        onNodeWithText(insightLine("이번 액트", Triple("헤이븐", "58%", "9판"), Triple("다른 맵", "72%", "41판"))).assertExists()
+        onNodeWithText(insightLine(null, Triple("헤이븐", "58%", "9판"), Triple("다른 맵", "72%", "41판"))).assertExists()
         insight = rifles
         onNodeWithText("밴달을 든 라운드는 헤드샷이 다른 소총보다 11%p 낮아요.").assertExists()
-        onNodeWithText(insightLine("이번 액트", Triple("밴달", "14%", "180라운드"), Triple("다른 소총", "25%", "212라운드"))).assertExists()
+        onNodeWithText(insightLine(null, Triple("밴달", "14%", "180라운드"), Triple("다른 소총", "25%", "212라운드"))).assertExists()
         insight = twoRifles
         onNodeWithText("팬텀을 든 라운드는 헤드샷이 밴달보다 11%p 높아요.").assertExists()
     }
@@ -672,7 +672,7 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = damage)) }
 
         onNodeWithText("공격에서 피해량이 수비보다 22 높아요.").assertExists()
-        onNodeWithText(insightLine("이번 액트", Triple("공격", "143", "70라운드"), Triple("수비", "121", "76라운드"))).assertExists()
+        onNodeWithText(insightLine(null, Triple("공격", "143", "70라운드"), Triple("수비", "121", "76라운드"))).assertExists()
     }
 
     // 무기 값도 보이는 자릿수로 같으면 "140 → 140"이 돼서 무기 줄을 두지 않는다
@@ -740,13 +740,27 @@ class ReportScreenTest {
         onNodeWithText("킬 ÷", substring = true).assertDoesNotExist()
     }
 
-    // 한 주 경기를 둘로 나누면 우연한 차이가 대부분이라 이번 액트 경기로 견주고 밑 줄 맨 앞에 적는다
+    // 사용자 결정(2026-09-27): 위 칸들은 모두 이번 주 숫자라, 이번 액트로 견준 문장이 이번 주 이야기처럼 읽혔다. 선과 제목으로
+    // 떼고 몇 경기로 견줬는지 적는다.
+    @Test
+    fun `개선 포인트는 이번 액트 돌아보기 묶음으로 달라진 점과 이번 주 요원 사이에 둔다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved) }
+
+        val dynamic = onNodeWithText("달라진 점").getUnclippedBoundsInRoot()
+        val title = onNodeWithText("이번 액트 돌아보기").getUnclippedBoundsInRoot()
+        val headline = onNodeWithText("공격에서 첫 교전 승률이 수비보다 14%p 높아요.").getUnclippedBoundsInRoot()
+        val agents = onNodeWithText("이번 주 요원", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        onNodeWithText("33경기", useUnmergedTree = true).assertExists()
+        assertTrue(dynamic.bottom <= title.top && title.bottom <= headline.top && headline.bottom <= agents.top)
+    }
+
+    // 한 주 경기를 둘로 나누면 우연한 차이가 대부분이라 이번 액트 경기로 견준다
     @Test
     fun `개선 포인트는 이번 액트 공수를 높은 쪽부터 사실만 적는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
         onNodeWithText("공격에서 첫 교전 승률이 수비보다 14%p 높아요.").assertExists()
-        onNodeWithText(insightLine("이번 액트", Triple("공격", "58%", "388라운드"), Triple("수비", "44%", "388라운드"))).assertExists()
+        onNodeWithText(insightLine(null, Triple("공격", "58%", "388라운드"), Triple("수비", "44%", "388라운드"))).assertExists()
         onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요.").assertExists()
     }
 
@@ -755,7 +769,7 @@ class ReportScreenTest {
     fun `개선 포인트 밑에 이번 주 값을 붙인다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        val act = onNodeWithText(insightLine("이번 액트", Triple("공격", "58%", "388라운드"), Triple("수비", "44%", "388라운드"))).getUnclippedBoundsInRoot()
+        val act = onNodeWithText(insightLine(null, Triple("공격", "58%", "388라운드"), Triple("수비", "44%", "388라운드"))).getUnclippedBoundsInRoot()
         val recent = onNodeWithText(insightLine("이번 주", Triple("공격", "71%", null), Triple("수비", "45%", null))).getUnclippedBoundsInRoot()
         val reason = onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요.").getUnclippedBoundsInRoot()
         assertTrue(act.bottom <= recent.top && recent.bottom <= reason.top)
@@ -810,17 +824,17 @@ class ReportScreenTest {
     }
 
     @Test
-    fun `견줄 만한 격차가 없으면 개선 포인트를 비운다`() = runComposeUiTest {
+    fun `견줄 만한 격차가 없으면 이번 액트 돌아보기 묶음을 두지 않는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = null)) }
 
-        onNodeWithText("이번 액트", substring = true, useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("이번 액트 돌아보기", useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test
     fun `기타 모드에는 개선 포인트가 없다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.otherQueue, QueueFilter.OTHER) }
 
-        onNodeWithText("이번 액트", substring = true, useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("이번 액트 돌아보기", useUnmergedTree = true).assertDoesNotExist()
     }
 
     // 화면에 보이는 자릿수로 겨룬다. 나는 K/D 1.34, 피해량 138, 헤드샷 21%다.
@@ -928,9 +942,9 @@ private val NamedCatalog = ContentCatalog.Empty.copy(
     maps = mapOf(Haven to "헤이븐"),
 )
 
-// 개선 포인트 밑 줄은 기간 이름 뒤에 두 쪽을 (이름, 값, 표본)으로 잇는다. 줄은 두 쪽 사이에서만 바뀐다.
-private fun insightLine(period: String, vararg parts: Triple<String, String, String?>) =
-    period.keepTogether() + "\u00a0" + parts.joinToString(WRAPPING_SEPARATOR) { (name, value, sample) ->
+// 개선 포인트 밑 줄은 기간 이름(액트 줄은 제목에 있어 없음) 뒤에 두 쪽을 (이름, 값, 표본)으로 잇는다. 줄은 두 쪽 사이에서만 바뀐다.
+private fun insightLine(period: String?, vararg parts: Triple<String, String, String?>) =
+    (period?.let { it.keepTogether() + "\u00a0" } ?: "") + parts.joinToString(WRAPPING_SEPARATOR) { (name, value, sample) ->
         name.keepTogether() + "\u00a0" + value + (sample?.let { "\u00a0" + it.keepTogether() } ?: "")
     }
 

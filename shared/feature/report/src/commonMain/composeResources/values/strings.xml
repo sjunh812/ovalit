@@ -137,7 +137,8 @@
     <string name="insight_session_late">세 번째 판부터</string>
     <string name="insight_session_early">첫 두 판</string>
     <!-- "레이즈 2판 50%" -->
-    <string name="insight_period_act">이번 액트</string>
+    <string name="insight_title">이번 액트 돌아보기</string>
+    <string name="insight_title_matches">%1$d경기</string>
     <string name="insight_matches">%1$d판</string>
     <string name="insight_rounds">%1$d라운드</string>
     <string name="insight_reason_focus">%1$s 고르셔서 먼저 봤어요.</string>

@@ -145,6 +145,7 @@ class InsightTest {
         val insight = assertNotNull(insight(thisWeek + earlier + lastAct))
         assertEquals(InsightSubject.OnSide(Side.ATTACK), insight.lead.subject)
         assertEquals(24 * 15, insight.lead.rounds)
+        assertEquals(15, insight.matches)
         // 사용자 요청(2026-09-27): 액트 동안의 차이가 이번 주에도 이어졌는지 이번 주 값을 붙인다
         assertEquals(InsightRecent(lead = 100 / 120.0, other = 95 / 120.0), insight.recent)
     }

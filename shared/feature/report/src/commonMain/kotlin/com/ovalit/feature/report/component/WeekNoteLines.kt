@@ -31,6 +31,8 @@ import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.gap_percent
 import com.ovalit.feature.report.resources.note_agent_down_label
 import com.ovalit.feature.report.resources.note_agent_up_label
+import com.ovalit.feature.report.resources.note_best_label
+import com.ovalit.feature.report.resources.note_best_value
 import com.ovalit.feature.report.resources.note_case_matches
 import com.ovalit.feature.report.resources.note_case_rounds
 import com.ovalit.feature.report.resources.note_case_value
@@ -61,7 +63,8 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * 고정 칸 바로 밑에 붙는 "이번 주 짚을 점"입니다. 크게 움직인 고정 지표 하나를 문장으로 풀고, 그 변화를 가장 크게
  * 끌어간 무기와 요원을 숫자로 붙입니다. 변화의 절반 이상이 이코 라운드나 오퍼레이터처럼 비중이 바뀐 데서 왔으면 무기와
- * 요원 대신 그 비중과, 비중에 휘둘리지 않은 묶음의 성적을 붙입니다. "쓰세요"나 "추천"은 쓰지 않습니다(CLAUDE.md 지켜야 할
+ * 요원 대신 그 비중과, 비중에 휘둘리지 않은 묶음의 성적을 붙입니다. 오른 값이 이번 액트 어느 주보다 높으면 이전 최고를
+ * 맨 앞에 적습니다. "쓰세요"나 "추천"은 쓰지 않습니다(CLAUDE.md 지켜야 할
  * 선).
  */
 @Composable
@@ -80,6 +83,13 @@ internal fun WeekNoteLines(note: WeekNote, catalog: ContentCatalog, modifier: Mo
         // 사용자 요청(2026-09-27): 평균이 얼마였는지는 위 고정 칸에 이미 있다. 그 변화를 무엇이 끌었는지를 적는다.
         OvalitText(text = movedHeadline(moved), style = typography.bodyStrong)
         val rows = listOfNotNull(
+            // 보이는 자릿수로 이전 최고와 같으면 최고라고 할 수 없다
+            note.previousBest?.takeIf { format.steps(moved.current) > format.steps(it) }?.let {
+                NoteRow(
+                    label = stringResource(Res.string.note_best_label),
+                    value = stringResource(Res.string.note_best_value, format.valueText(it)),
+                )
+            },
             note.mix?.let { mixRow(it, catalog) },
             note.mix?.steady?.let { steadyRow(moved, it, catalog) },
             weapon?.let {

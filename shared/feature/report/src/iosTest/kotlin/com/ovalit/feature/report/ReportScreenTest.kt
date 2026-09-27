@@ -430,6 +430,28 @@ class ReportScreenTest {
         onNodeWithText("이긴 판이 더 많았던", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
+    // 오른 값이 이번 액트 어느 주보다 높으면 헤드라인 바로 밑에 이전 최고를 적는다
+    @Test
+    fun `이번 액트 주간 최고면 이전 최고를 헤드라인 바로 밑에 적는다`() = runComposeUiTest {
+        val note = assertNotNull(ReportPreviewData.moved.note).copy(previousBest = 135.4)
+        setContent { Report(ReportPreviewData.moved.copy(note = note), catalog = NamedCatalog) }
+
+        val headline = onNodeWithText("피해량이 평소보다 10 올랐어요").getUnclippedBoundsInRoot()
+        val best = onNodeWithText("이번 액트 주간 최고", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val weapon = onNodeWithText("가장 크게 끌어올린 무기", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        onNodeWithText("이전 최고 135", useUnmergedTree = true).assertExists()
+        assertTrue(headline.bottom <= best.top && best.bottom <= weapon.top)
+    }
+
+    // 138과 137.6은 둘 다 138로 보인다. "이전 최고 138"보다 높다고 적으면 틀려 보인다.
+    @Test
+    fun `보이는 자릿수로 이전 최고와 같으면 최고를 적지 않는다`() = runComposeUiTest {
+        val note = assertNotNull(ReportPreviewData.moved.note).copy(previousBest = 137.6)
+        setContent { Report(ReportPreviewData.moved.copy(note = note), catalog = NamedCatalog) }
+
+        onNodeWithText("이번 액트 주간 최고", useUnmergedTree = true).assertDoesNotExist()
+    }
+
     // 이코 라운드가 늘어 떨어진 피해량을 무기 하나가 끌어내린 것처럼 적으면 틀린 얘기가 된다
     @Test
     fun `변화가 비중에서 왔으면 무기와 요원 대신 비중과 비중에 휘둘리지 않은 묶음을 적는다`() = runComposeUiTest {

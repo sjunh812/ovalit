@@ -118,6 +118,8 @@ private fun Map<LocalDate, List<Match>>.weekNote(
             mixSlices(periodMatches, usualMatches) { _, round -> round.economy?.myWeapon?.let { MixGroup.Weapon(it) } },
             agentSlices(periodMatches, usualMatches),
         ),
+        // 8주 변동폭과 달리 이번 액트 앞 주를 모두 본다. 액트가 길면 8주 앞에 더 높은 주가 있을 수 있다.
+        actWeeks = if (period.weeks == 1) filterKeys { it < period.firstDay }.values.map { it.totalMetrics() } else emptyList(),
     )
 }
 

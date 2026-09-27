@@ -45,6 +45,8 @@
     <string name="note_case_value">%1$s %2$s %3$s → %4$s · %5$s</string>
     <string name="note_case_rounds">%1$d라운드</string>
     <string name="note_case_matches">%1$d판</string>
+    <string name="note_best_label">이번 액트 주간 최고</string>
+    <string name="note_best_value">이전 최고 %1$s</string>
     <string name="note_mix_buy_up">비중이 늘어난 라운드</string>
     <string name="note_mix_buy_down">비중이 줄어든 라운드</string>
     <string name="note_mix_weapon_up">비중이 늘어난 무기</string>

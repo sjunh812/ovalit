@@ -12,12 +12,15 @@ import kotlin.math.sqrt
  * @property agent [moved]를 같은 쪽으로 가장 많이 끌어간 요원입니다. 맞는 요원이 없으면 `null`입니다.
  * @property mix [moved]의 절반 이상이 무엇을 얼마나 했는지가 바뀐 데서 왔으면 그 비중 변화입니다. 이때는 [weapon]과
  * [agent]를 비웁니다. 이코 라운드가 늘어 떨어진 피해량을 무기 하나가 끌어내린 것처럼 적으면 틀린 얘기가 됩니다.
+ * @property previousBest [moved]가 올라 이번 액트 어느 주보다 높으면 그 앞 주들 중 가장 높았던 값입니다. 떨어진 쪽의 최저
+ * 기록은 적지 않습니다. 떨어진 건 헤드라인이 이미 말합니다.
  */
 data class WeekNote(
     val moved: MovedMetric,
     val weapon: MovedWeapon? = null,
     val agent: MovedAgent? = null,
     val mix: MixShift? = null,
+    val previousBest: Double? = null,
 )
 
 /** 비중을 견주는 묶음입니다. 라운드 구매, 들고 시작한 무기, 뛴 요원으로 가릅니다. */
@@ -98,6 +101,8 @@ internal class AgentTrend(
  * 부르지 않아서 고정 지표 넷을 다 봅니다.
  *
  * @param mixes 라운드 구매, 들고 시작한 무기, 요원으로 나눈 묶음들입니다. 나누는 방법마다 목록 하나입니다.
+ * @param actWeeks 이번 액트에서 기간 앞의 주들입니다. 기간이 한 주일 때만 넘깁니다. 두 주를 합친 값을 한 주 값들과 견주면
+ * 주간 최고라고 할 수 없습니다. 라운드가 [MIN_TREND_ROUNDS]에 못 미치는 주는 뺍니다.
  * @param history 기간 앞 주들의 주간 지표입니다. S1-a 막대처럼 라운드가 [MIN_TREND_ROUNDS]에 못 미치는 주는 변동폭에서
  * 뺍니다.
  */
@@ -109,15 +114,26 @@ internal fun chooseWeekNote(
     weapons: List<WeaponTrend>,
     agentTrends: List<AgentTrend> = emptyList(),
     mixes: List<List<MixSlice>> = emptyList(),
+    actWeeks: List<MatchMetrics> = emptyList(),
 ): WeekNote? {
     val moved = movedFixedMetric(current, baseline, history, role) ?: return null
+    val best = previousBest(moved, actWeeks)
     val mix = chooseMix(moved, mixes, weapons)
-    if (mix != null) return WeekNote(moved = moved, mix = mix)
+    if (mix != null) return WeekNote(moved = moved, mix = mix, previousBest = best)
     return WeekNote(
         moved = moved,
         weapon = movedWeapon(moved, weapons, current.rounds),
         agent = movedAgent(moved, agentTrends, current.rounds),
+        previousBest = best,
     )
+}
+
+// 앞선 주가 몇 주뿐이면 최고라고 부를 만하지 않다. 변동폭을 재는 주 수와 같다.
+private fun previousBest(moved: MovedMetric, actWeeks: List<MatchMetrics>): Double? {
+    if (!moved.rose) return null
+    val weekly = actWeeks.filter { it.rounds >= MIN_TREND_ROUNDS }.mapNotNull(moved.metric.value)
+    if (weekly.size < MIN_VOLATILITY_WEEKS) return null
+    return weekly.max().takeIf { moved.current > it }
 }
 
 private fun movedFixedMetric(

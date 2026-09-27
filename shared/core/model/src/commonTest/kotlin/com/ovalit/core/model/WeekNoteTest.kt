@@ -2,8 +2,13 @@ package com.ovalit.core.model
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
+import kotlinx.datetime.TimeZone
 
 class WeekNoteTest {
 
@@ -237,6 +242,61 @@ class WeekNoteTest {
         assertEquals(0.21, note?.mix?.steady?.usual)
     }
 
+    // 사용자 요청(2026-09-27): Strava와 Riot 13.06 Accolades처럼 내 과거 기록 가운데 최고를 짚는다. 평소 주들은 20~22%다.
+    @Test
+    fun `이번 액트 어느 주보다 높으면 이전 최고를 붙인다`() {
+        assertEquals(0.22, note(current = fixed(head = 30), actWeeks = UsualWeeks)?.previousBest)
+    }
+
+    @Test
+    fun `앞선 주 최고보다 낮거나 떨어졌으면 최고를 붙이지 않는다`() {
+        val hot = UsualWeeks + fixed(head = 31)
+
+        assertNull(note(current = fixed(head = 30), actWeeks = hot)?.previousBest)
+        assertNull(note(current = fixed(head = 14), actWeeks = UsualWeeks)?.previousBest)
+    }
+
+    // 평소(35%)에는 라운드가 모자라 막대에서 빠진 주가 섞여 앞선 주들(20~22%)보다 높다. 30%는 그 주들보다 높지만 평소보다
+    // 떨어졌다. 떨어진 달에 최고라고 적으면 헤드라인과 어긋난다.
+    @Test
+    fun `떨어졌으면 앞선 주들보다 높아도 최고를 붙이지 않는다`() {
+        val note = note(current = fixed(head = 30), baseline = fixed(head = 35), actWeeks = UsualWeeks)
+
+        assertEquals(false, note?.moved?.rose)
+        assertNull(note?.previousBest)
+    }
+
+    // 세 주 중 최고는 최고라고 부를 만하지 않다. 라운드가 모자란 주는 S1-a 막대처럼 뺀다.
+    @Test
+    fun `앞선 주가 넉 주에 못 미치면 최고를 붙이지 않는다`() {
+        val short = fixed(head = 35).copy(rounds = 30)
+
+        assertNull(note(current = fixed(head = 30), actWeeks = UsualWeeks.take(3))?.previousBest)
+        assertEquals(0.22, note(current = fixed(head = 30), actWeeks = UsualWeeks + short)?.previousBest)
+    }
+
+    // 두 주를 합친 값을 한 주 값들과 견주면 주간 최고라고 할 수 없다
+    @Test
+    fun `리포트 기간이 한 주일 때만 주간 최고를 본다`() {
+        val wednesday = Instant.parse("2026-09-23T12:00:00Z")
+        fun week(weeksBefore: Int, games: Int, head: Int) = List(games) { game ->
+            match(
+                *Array(10) { round(shots = Shots(head = head, body = 10 - head, leg = 0)) },
+                startedAt = wednesday - (weeksBefore * 7).days + game.hours,
+            )
+        }
+        val usual = listOf(2, 3, 2, 3, 2).mapIndexed { index, head -> week(weeksBefore = index + 1, games = 5, head = head) }.flatten()
+        fun note(matches: List<Match>) =
+            (matches.weeklyReport(now = wednesday + 1.hours, timeZone = TimeZone.UTC) as WeeklyReport.Ready).note
+
+        assertEquals(0.3, note(usual + week(weeksBefore = 0, games = 5, head = 5))?.previousBest)
+        // 이번 주 세 판뿐이라 지난주까지 넓힌다
+        val twoWeeks = usual.drop(5) + week(weeksBefore = 1, games = 5, head = 5) + week(weeksBefore = 0, games = 3, head = 5)
+        val wide = assertNotNull(note(twoWeeks))
+        assertEquals(FixedMetric.HEADSHOT_RATE, wide.moved.metric)
+        assertNull(wide.previousBest)
+    }
+
     @Test
     fun `비교할 기록이 없으면 지표를 짚지 않는다`() {
         assertNull(note(current = fixed(head = 30), baseline = null))
@@ -249,6 +309,7 @@ class WeekNoteTest {
         weapons: List<WeaponTrend> = emptyList(),
         agentTrends: List<AgentTrend> = emptyList(),
         mixes: List<List<MixSlice>> = emptyList(),
+        actWeeks: List<MatchMetrics> = emptyList(),
     ) = chooseWeekNote(
         current = current,
         baseline = baseline,
@@ -257,6 +318,7 @@ class WeekNoteTest {
         weapons = weapons,
         agentTrends = agentTrends,
         mixes = mixes,
+        actWeeks = actWeeks,
     )
 
     private companion object {

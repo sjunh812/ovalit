@@ -25,6 +25,7 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.DynamicMetric
 import com.ovalit.core.model.FixedMetric
+import com.ovalit.core.model.MAX_REPORT_WEEKS
 import com.ovalit.core.model.MIN_MATCHES_PER_REPORT
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
@@ -45,9 +46,9 @@ import com.ovalit.feature.report.component.QueueChips
 import com.ovalit.feature.report.component.RecordStrip
 import com.ovalit.feature.report.component.ReportSkeleton
 import com.ovalit.feature.report.component.ReportTopBar
-import com.ovalit.feature.report.component.WeekNoteLines
 import com.ovalit.feature.report.component.RivalPickerSheet
 import com.ovalit.feature.report.component.RivalSection
+import com.ovalit.feature.report.component.WeekNoteLines
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.not_enough_body
 import com.ovalit.feature.report.resources.not_enough_title
@@ -108,8 +109,7 @@ internal fun ReportScreen(
             .background(OvalitTheme.colors.bg),
     ) {
         when (uiState) {
-            // 수집이 끝나기 전에는 숫자를 띄우지 않는다. 헤드샷 24%가 잠시 뒤 19%로 바뀌면
-            // 유저는 그 뒤로 숫자를 믿지 않는다. 빈 화면 대신 홈 모양대로 자리만 잡아 둔다.
+            // 빈 화면 대신 홈 모양대로 자리만 잡아 둔다
             ReportUiState.Loading -> Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
                 ReportTopBar(badge = badge, onOpenProfile = onOpenProfile)
                 Spacer(Modifier.height(OvalitSpacing.xs))
@@ -177,9 +177,9 @@ private fun ReportContent(
         onOpenMetric = { openMetric = it },
     )
     Spacer(Modifier.height(13.dp))
-    FixedMetricSummary(metrics = report.metrics, baseline = report.baseline, fixedMetrics = queueFilter.fixedMetrics)
-    // 짚을 점과 개선 포인트는 바로 위 숫자를 풀어 말하는 문장이라 선과 제목 없이 그 숫자 밑에 붙인다. 선은 고정 칸,
-    // 달라진 점, 이번 주 요원·무기처럼 큰 묶음 사이에만 긋는다.
+    FixedMetricSummary(metrics = report.metrics, baseline = report.baseline)
+    // 짚을 점과 개선 포인트는 바로 위 숫자를 풀어 말하는 문장이라 선과 제목 없이 붙인다. 선은 큰 묶음 사이에만
+    // 긋는다(CLAUDE.md 화면).
     if (queueFilter.hasDynamicMetrics) {
         report.note?.let { note ->
             Spacer(Modifier.height(18.dp))
@@ -257,7 +257,7 @@ private fun NotEnoughMatches(played: Int) {
         Spacer(Modifier.height(OvalitSpacing.xl))
         OvalitText(
             text = if (played == 0) {
-                stringResource(Res.string.not_enough_title_none)
+                stringResource(Res.string.not_enough_title_none, MAX_REPORT_WEEKS)
             } else {
                 stringResource(Res.string.not_enough_title, MIN_MATCHES_PER_REPORT - played)
             },

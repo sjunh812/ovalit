@@ -66,7 +66,7 @@ class FriendScreensTest {
         onNodeWithText("아직 친구가 없어요").assertExists()
     }
 
-    // CLAUDE.md: S5는 나와의 관계 페이지다. 같이 한 경기를 맨 위에 둔다.
+    // CLAUDE.md: S5는 나와의 관계에서 시작하는 친구 프로필이다. 머리 바로 밑에 같이 한 경기를 둔다.
     @Test
     fun `친구 프로필은 같이 한 경기와 나와 비교를 보여준다`() = runComposeUiTest {
         setContent { Themed { FriendProfileScreen(FriendPreviewData.profile, {}, {}, {}) } }
@@ -172,6 +172,8 @@ class FriendScreensTest {
         waitForIdle()
 
         assertEquals(1, backs)
+        // 닫히며 밀려나는 동안에도 마지막 모습을 그린다
+        assertTrue(onAllNodesWithText("민석", substring = true, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty())
     }
 
     // 친구 경기에는 내가 안 뛴 경기의 다른 사람 기록이 섞여 있어서 줄을 눌러도 열지 않는다

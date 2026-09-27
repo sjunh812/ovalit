@@ -24,6 +24,7 @@ import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.VOLATILITY_WEEKS
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.valueText
@@ -46,15 +47,15 @@ import com.ovalit.feature.report.resources.dynamic_sheet_sample_title
 import com.ovalit.feature.report.resources.dynamic_sheet_steady
 import com.ovalit.feature.report.resources.dynamic_sheet_survival_body
 import com.ovalit.feature.report.resources.dynamic_sheet_unknown
-import com.ovalit.feature.report.resources.sheet_sample_matches
+import com.ovalit.feature.report.resources.period_label_matches
 import com.ovalit.feature.report.resources.sheet_usual_average
 import com.ovalit.feature.report.sampleText
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * 달라진 점 칸을 누르면 뜨는 시트입니다. 칸 밑에서 뺀 표본과 평균을 여기서 풀어 적고, 달라졌다고 본 근거를
- * 붙입니다. 칸에는 "평소 27%"만 남습니다.
+ * 달라진 점 칸을 누르면 뜨는 시트입니다. 칸 밑에는 "평소 27%"만 있어서 표본과 최소 표본, 달라졌다고 본 근거를
+ * 여기에 적습니다.
  */
 @Composable
 internal fun DynamicMetricSheet(metric: DynamicMetric, report: WeeklyReport.Ready, onDismiss: () -> Unit) {
@@ -91,7 +92,7 @@ internal fun DynamicMetricSheetBody(metric: DynamicMetric, report: WeeklyReport.
                 Movement.MOVED -> stringResource(
                     Res.string.dynamic_sheet_moved,
                     VOLATILITY_WEEKS,
-                    MOVEMENT_THRESHOLD.toString(),
+                    MetricFormat.ONE_DECIMAL.format(MOVEMENT_THRESHOLD),
                 )
                 Movement.STEADY -> stringResource(Res.string.dynamic_sheet_steady)
                 Movement.UNKNOWN -> stringResource(Res.string.dynamic_sheet_unknown)
@@ -100,7 +101,6 @@ internal fun DynamicMetricSheetBody(metric: DynamicMetric, report: WeeklyReport.
     }
 }
 
-// 칸과 같은 규칙으로 변화량을 칠한다. 움직였다고 판단한 칸만 색이 있다.
 @Composable
 private fun CurrentValue(slot: DynamicSlot, report: WeeklyReport.Ready) {
     val metric = slot.metric
@@ -145,7 +145,7 @@ private fun CurrentValue(slot: DynamicSlot, report: WeeklyReport.Ready) {
         // 이 비율을 몇 번으로 셌는지 적는다. 분모가 작으면 숫자가 크게 흔들린다.
         Column {
             OvalitText(
-                text = stringResource(Res.string.sheet_sample_matches, periodLabel(report.period), report.metrics.matches),
+                text = stringResource(Res.string.period_label_matches, periodLabel(report.period), report.metrics.matches),
                 style = OvalitTheme.typography.caption,
                 color = OvalitTheme.colors.t3,
                 textAlign = TextAlign.End,
@@ -168,7 +168,7 @@ private fun SheetBlock(title: String, body: String) {
     }
 }
 
-// "라운드 40"처럼 최소 표본을 칸의 표본과 같은 꼴로 적는다
+// 최소 표본을 위에 적은 표본과 같은 꼴("40라운드", "퍼블 10번")로 적는다
 @Composable
 private fun DynamicMetric.minSampleText(): String {
     val sample = minSample

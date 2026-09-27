@@ -24,6 +24,7 @@ fun OvalitText(
     color: Color = OvalitTheme.colors.t1,
     textAlign: TextAlign? = null,
     maxLines: Int = Int.MAX_VALUE,
+    minLines: Int = 1,
     overflow: TextOverflow = TextOverflow.Clip,
     autoSize: TextAutoSize? = null,
 ) {
@@ -32,6 +33,7 @@ fun OvalitText(
         modifier = modifier,
         style = style.merge(color = color, textAlign = textAlign ?: TextAlign.Unspecified),
         maxLines = maxLines,
+        minLines = minLines,
         overflow = overflow,
         autoSize = autoSize,
     )
@@ -49,6 +51,7 @@ fun OvalitText(
     color: Color = OvalitTheme.colors.t1,
     textAlign: TextAlign? = null,
     maxLines: Int = Int.MAX_VALUE,
+    minLines: Int = 1,
     overflow: TextOverflow = TextOverflow.Clip,
     inlineContent: Map<String, InlineTextContent> = emptyMap(),
     autoSize: TextAutoSize? = null,
@@ -58,6 +61,7 @@ fun OvalitText(
         modifier = modifier,
         style = style.merge(color = color, textAlign = textAlign ?: TextAlign.Unspecified),
         maxLines = maxLines,
+        minLines = minLines,
         overflow = overflow,
         inlineContent = inlineContent,
         autoSize = autoSize,

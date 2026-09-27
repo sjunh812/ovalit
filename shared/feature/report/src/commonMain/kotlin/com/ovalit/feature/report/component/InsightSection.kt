@@ -19,14 +19,14 @@ import com.ovalit.core.ui.resources.metric_damage
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.report.label
 import com.ovalit.feature.report.resources.Res
-import com.ovalit.feature.report.resources.insight_gap_percent
+import com.ovalit.feature.report.resources.gap_percent
 import com.ovalit.feature.report.resources.insight_headline
 import com.ovalit.feature.report.resources.insight_side_attack
 import com.ovalit.feature.report.resources.insight_side_defense
 import com.ovalit.feature.report.resources.insight_values
-import com.ovalit.feature.report.resources.insight_values_damage_with_role
-import com.ovalit.feature.report.resources.insight_values_damage_with_focus
 import com.ovalit.feature.report.resources.insight_values_damage
+import com.ovalit.feature.report.resources.insight_values_damage_with_focus
+import com.ovalit.feature.report.resources.insight_values_damage_with_role
 import com.ovalit.feature.report.resources.insight_values_with_focus
 import com.ovalit.feature.report.resources.insight_values_with_role
 import com.ovalit.feature.report.resources.metric_eco_win
@@ -39,15 +39,16 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * 개선 포인트 문장입니다. 공격과 수비로 나눠 가장 크게 벌어진 지표를 사실로만 적습니다.
- * "수비에서 더 버티세요"처럼 게임 결정을 대신하는 말은 쓰지 않습니다.
+ * 개선 포인트 문장입니다. [insight]에 담긴 지표의 공격과 수비 차이를 사실로만 적습니다. 어느 지표를 적을지는 모델이
+ * 관심사 지표, 역할의 우선 지표, 가장 벌어진 지표 순으로 고릅니다. "수비에서 더 버티세요"처럼 게임 결정을 대신하는
+ * 말은 쓰지 않습니다(CLAUDE.md 지켜야 할 선).
  */
 @Composable
 internal fun InsightSection(insight: SideInsight, role: Role?, modifier: Modifier = Modifier) {
     val format = insight.metric.format
     val attack = insight.metric.value(insight.attack) ?: return
     val defense = insight.metric.value(insight.defense) ?: return
-    // 화면에 보이는 자릿수로 반올림한 값끼리 뺀다
+    // 화면에 보이는 자릿수로 반올림한 값끼리 견주고 뺀다
     val attackLower = format.steps(attack) < format.steps(defense)
     val gap = format.formatGap(attack, defense)
     val metricLabel = stringResource(insight.metric.label)
@@ -59,7 +60,7 @@ internal fun InsightSection(insight: SideInsight, role: Role?, modifier: Modifie
         if (attackLower) attackLabel else defenseLabel,
         metricLabel,
         if (attackLower) defenseLabel else attackLabel,
-        if (format == MetricFormat.PERCENT) stringResource(Res.string.insight_gap_percent, gap) else gap,
+        if (format == MetricFormat.PERCENT) stringResource(Res.string.gap_percent, gap) else gap,
     )
     val attackValue = format.valueText(attack)
     val defenseValue = format.valueText(defense)

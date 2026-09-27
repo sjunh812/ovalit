@@ -17,7 +17,7 @@ import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.report_loading
 import org.jetbrains.compose.resources.stringResource
 
-/** 리포트를 만들기 전 홈의 모양입니다. 칩, 기간, 고정 네 칸, 달라진 점 세 칸, 개선 포인트 자리를 잡습니다. */
+/** 리포트를 만들기 전 홈의 모양입니다. 칩, 기간, 승패 줄, 고정 네 칸과 그 밑 두 줄, 달라진 점 세 칸, 개선 포인트 자리를 잡습니다. */
 @Composable
 internal fun ReportSkeleton(modifier: Modifier = Modifier) {
     OvalitSkeleton(description = stringResource(Res.string.report_loading), modifier = modifier) {
@@ -30,6 +30,9 @@ internal fun ReportSkeleton(modifier: Modifier = Modifier) {
             }
             Spacer(Modifier.height(OvalitSpacing.xl))
             SkeletonBlock(width = 96.dp, height = 28.dp)
+            // 승패 줄이다. 없으면 리포트가 뜰 때 그 아래가 한 줄만큼 내려간다.
+            Spacer(Modifier.height(OvalitSpacing.md))
+            SkeletonBlock(width = 150.dp, height = 14.dp)
             Spacer(Modifier.height(OvalitSpacing.lg))
             Row {
                 repeat(4) {

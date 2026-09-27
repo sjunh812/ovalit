@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
@@ -17,6 +18,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
@@ -24,9 +26,11 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.AgentId
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.DynamicMetric
+import com.ovalit.core.model.DynamicSlot
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.Focus
 import com.ovalit.core.model.MovedMetric
+import com.ovalit.core.model.Movement
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.SideInsight
@@ -37,10 +41,13 @@ import com.ovalit.core.model.WeaponInfo
 import com.ovalit.core.model.WeekNote
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.PlayerBadge
+import com.ovalit.core.ui.WRAPPING_SEPARATOR
+import com.ovalit.core.ui.joinKeepingParts
 import com.ovalit.feature.report.component.DynamicMetricSheetBody
 import com.ovalit.feature.report.component.MetricSheetBody
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -64,7 +71,6 @@ class ReportScreenTest {
         assertEquals(bounds.sortedBy { it.left }, bounds)
     }
 
-    // 동적 칸과 개선 포인트가 이 역할에 맞춰 골라지니 한눈에 들어와야 한다
     @Test
     fun `기간 경기의 승패를 적고 승률을 붙인다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
@@ -97,6 +103,32 @@ class ReportScreenTest {
         val cells = onNodeWithContentDescription("최근 경기부터", substring = true, useUnmergedTree = true).getUnclippedBoundsInRoot()
         val record = onNodeWithText("20승 10패", useUnmergedTree = true).getUnclippedBoundsInRoot()
         assertTrue(record.top >= cells.bottom)
+    }
+
+    // 전략가·감시자의 빈칸을 채우는 "라운드당 어시스트"는 좁은 칸에서 가장 작은 글자로도 한 줄에 안 들어갔다.
+    // 잘리지 않게 꺾고, 한 칸만 꺾여 그 칸 숫자만 내려가지 않게 모든 칸을 같이 꺾는다.
+    @Test
+    fun `달라진 점 칸 이름이 좁은 칸에 안 들어가면 모든 칸을 같이 꺾는다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved.copy(
+            dynamic = listOf(
+                DynamicSlot(DynamicMetric.KAST, Movement.STEADY),
+                DynamicSlot(DynamicMetric.SURVIVAL_RATE, Movement.STEADY),
+                DynamicSlot(DynamicMetric.ASSISTS_PER_ROUND, Movement.STEADY),
+            ),
+        )
+        setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale = 1.5f)) {
+                Box(Modifier.width(320.dp)) { Report(report) }
+            }
+        }
+
+        val assists = onNodeWithText("라운드당 어시스트", useUnmergedTree = true)
+        val layouts = mutableListOf<TextLayoutResult>()
+        assists.fetchSemanticsNode().config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
+        assertFalse(layouts.single().hasVisualOverflow, "칸 이름이 잘렸다")
+        val kast = onNodeWithText("관여율", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        assertEquals(assists.getUnclippedBoundsInRoot().bottom, kast.bottom, "칸마다 이름 높이가 다르다")
     }
 
     // 리포트는 오래된 경기부터 담지만 칸은 op.gg와 경기 탭처럼 최근 경기가 왼쪽이다
@@ -147,7 +179,7 @@ class ReportScreenTest {
         onNodeWithText("이번 주 무기").assertDoesNotExist()
     }
 
-    // 사용자 결정: KDA를 먼저, 한 단계 크게 두고 판당 K/D/A를 옆에 둔다. (118 + 30) ÷ 88
+    // 사용자 결정(2026-09-27): KDA를 먼저, 한 단계 크게 두고 판당 K/D/A를 옆에 둔다. (118 + 30) ÷ 88 = 1.68
     @Test
     fun `KDA를 판당 K와 D와 A보다 먼저 크게 적는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
@@ -159,11 +191,12 @@ class ReportScreenTest {
         assertTrue(kda.bottom - kda.top >= perMatch.bottom - perMatch.top + 5.dp)
     }
 
+    // 동적 칸과 개선 포인트가 이 역할에 맞춰 골라지니 한눈에 들어와야 한다
     @Test
     fun `기간 줄에서 역할 이름만 굵게 둔다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        val caption = onNodeWithText("타격대 78% · ", substring = true)
+        val caption = onNodeWithText("타격대\u00a078%$WRAPPING_SEPARATOR", substring = true)
             .fetchSemanticsNode().config[SemanticsProperties.Text].first()
         val bold = caption.spanStyles.filter { it.item.fontWeight == FontWeight.SemiBold }
 
@@ -205,7 +238,7 @@ class ReportScreenTest {
     fun `기간 줄의 역할에는 그 역할로 뛴 비중을 붙인다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        onNodeWithText("타격대 78% · ", substring = true).assertExists()
+        onNodeWithText("타격대\u00a078%$WRAPPING_SEPARATOR", substring = true).assertExists()
     }
 
     @Test
@@ -301,7 +334,7 @@ class ReportScreenTest {
         onNodeWithText("어떻게 계산하나요?").assertExists()
     }
 
-    // 사용자 결정: 칸 밑의 작은 글씨를 줄인다. 네 칸의 평균을 한 줄로 늘어놓으면 어느 숫자가 어느 칸인지 읽히지 않았다.
+    // 사용자 결정(2026-09-27): 칸 밑 작은 글씨는 한 줄만 둔다. 네 칸의 평균을 늘어놓으면 어느 숫자가 어느 칸 것인지 읽히지 않았다.
     @Test
     fun `고정 칸 밑에는 무엇과 견준 변화량인지만 적는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved.copy(note = null)) }
@@ -318,7 +351,7 @@ class ReportScreenTest {
         onNodeWithText("지난 4주 평균", substring = true).assertExists()
     }
 
-    // 사용자 결정: "라운드 153" 같은 표본은 칸에서 빼고 시트에서 풀어 적는다
+    // 사용자 결정(2026-09-27): "라운드 153" 같은 표본은 칸에서 빼고 시트에서 풀어 적는다
     @Test
     fun `달라진 점 칸에는 평소 값만 두고 표본은 적지 않는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved.copy(note = null)) }
@@ -341,7 +374,7 @@ class ReportScreenTest {
         onNodeWithText("이번 변화가 지난 8주 동안 주마다 흔들린 폭의 1.5배를 넘어서 달라졌다고 봤어요.").assertExists()
     }
 
-    // 판단을 보류한 칸은 달라졌다고도, 그대로라고도 하지 않는다
+    // 판단을 보류한 칸은 달라졌다고도, 그대로라고도 하지 않는다. 퍼블 승률은 moved의 동적 칸에 없는 지표라 판단 보류로 연다.
     @Test
     fun `판단하지 않은 칸의 시트는 기록이 모자라다고 적는다`() = runComposeUiTest {
         setContent { OvalitTheme { DynamicMetricSheetBody(DynamicMetric.FIRST_KILL_WIN_RATE, ReportPreviewData.moved) } }
@@ -350,7 +383,7 @@ class ReportScreenTest {
         onNodeWithText("퍼블\u00a010번 이상이어야", substring = true).assertExists()
     }
 
-    // 피해량 128 → 138. 무기는 같은 쪽으로 움직인 것만, 요원은 이긴 판이 더 많은 둘 이상만 적는다.
+    // 프리뷰 데이터는 피해량이 128 → 138로 올랐다. 밴달 피해량도 같은 쪽으로 올랐고 이긴 판이 더 많은 요원은 둘이다.
     @Test
     fun `짚을 점은 움직인 지표와 같은 쪽 무기와 요원을 숫자로 적는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
@@ -359,7 +392,7 @@ class ReportScreenTest {
         onNodeWithText("지난 4주 평균 128 → 이번 주 138").assertExists()
         onNodeWithText("가장 많이 오른 무기", substring = true).assertExists()
         onNodeWithText("밴달 피해량 118 → 140", substring = true).assertExists()
-        onNodeWithText("제트 3승 1패 · 레이즈 2승 1패", substring = true).assertExists()
+        onNodeWithText(joinKeepingParts(listOf("제트 3승 1패", "레이즈 2승 1패")), substring = true).assertExists()
     }
 
     // CLAUDE.md 지켜야 할 선: 게임 결정을 대신하지 않는다
@@ -371,7 +404,7 @@ class ReportScreenTest {
         onNodeWithText("쓰세요", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 사용자 결정: 짚을 점은 바로 위 숫자를 풀어 말하는 문장이라 제목과 선 없이 고정 칸 밑에 붙인다
+    // 사용자 요청(2026-09-27): 짚을 점은 바로 위 숫자를 풀어 말하는 문장이라 제목과 선 없이 고정 칸 밑에 붙인다
     @Test
     fun `짚을 점은 제목 없이 고정 칸 바로 밑에 둔다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
@@ -586,7 +619,7 @@ class ReportScreenTest {
         assertEquals(PlayerId("junho"), picked)
     }
 
-    // 수집 중에는 숫자를 띄우지 않고 자리만 잡는다. 낭독기에는 칸마다가 아니라 한 줄로 알린다.
+    // 수집 중에는 숫자를 띄우지 않고 자리만 잡는다. 화면 읽기 프로그램에는 칸마다가 아니라 한 줄로 알린다.
     @Test
     fun `리포트를 만들기 전에는 자리만 잡고 숫자를 띄우지 않는다`() = runComposeUiTest {
         setContent { OvalitTheme { ReportScreen(ReportUiState.Loading, onSelectQueue = {}) } }
@@ -605,7 +638,7 @@ private fun Report(
     OvalitTheme { ReportScreen(ReportUiState.Success(queueFilter, report), onSelectQueue = {}, catalog = catalog) }
 }
 
-// 짚을 점 문장에 이름이 들어가서 미리보기 데이터의 요원과 무기에 이름을 붙였다
+// 짚을 점 문장에 이름이 들어가서 프리뷰 데이터의 요원과 무기에 이름을 붙였다
 private val NamedCatalog = ContentCatalog.Empty.copy(
     agents = mapOf(
         AgentId("add6443a-41bd-e414-f6ad-e58d267f4e95") to "제트",

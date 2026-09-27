@@ -27,13 +27,14 @@ import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.percentText
 import com.ovalit.core.ui.rememberWidestWidth
+import com.ovalit.core.ui.resources.Res as CoreUiRes
+import com.ovalit.core.ui.resources.record_wins_losses
 import com.ovalit.core.ui.winRateColor
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.record_cells_description
 import com.ovalit.feature.report.resources.record_draw
 import com.ovalit.feature.report.resources.record_loss
 import com.ovalit.feature.report.resources.record_recent
-import com.ovalit.feature.report.resources.record_value
 import com.ovalit.feature.report.resources.record_win
 import org.jetbrains.compose.resources.stringResource
 
@@ -42,15 +43,12 @@ private val MaxCellGap = 3.dp
 // 칸 하나가 이보다 좁아지면 승패 글자를 다음 줄로 내린다
 private val MinCellSlot = 7.dp
 
-/** 칸은 가장 최근 경기부터 이만큼만 둡니다. 한 주에 수십 판을 뛰면 칸이 1dp 아래로 줄어 바코드처럼 보였습니다. */
+/** 칸은 가장 최근 경기부터 이만큼만 둡니다. */
 internal const val MAX_RECORD_CELLS = 20
 
 /**
- * 기간 경기의 승패입니다. 가장 최근 경기부터 왼쪽에 한 칸씩 이긴 판은 `--pos`, 진 판은 `--neg`, 비긴 판은 `--bar`로
- * 칠하고 옆에 "4승 2패 · 67%"를 적습니다. op.gg와 경기 탭처럼 최근이 먼저입니다. S0-4에서 받은 경기를 채우는 칸과 같은
- * 색 규칙입니다. 승패가 난 경기가 없으면 두지 않습니다.
- *
- * 칸은 가장 최근 [MAX_RECORD_CELLS]경기까지만 두고, 넘치면 칸 앞에 "최근 20경기"를 적습니다. 승패 글자는 기간 전체를 셉니다.
+ * 기간 경기의 승패 칸과 "4승 2패 · 67%"입니다. 승패가 난 경기가 없으면 두지 않습니다. 칸은 최근
+ * [MAX_RECORD_CELLS]경기까지만 두고 넘치면 칸 앞에 "최근 20경기"를 적지만, 승패 글자는 기간 전체를 셉니다.
  */
 @Composable
 internal fun RecordStrip(report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
@@ -71,7 +69,7 @@ internal fun RecordStrip(report: WeeklyReport.Ready, modifier: Modifier = Modifi
     )
 
     val recent = if (cells.size < results.size) stringResource(Res.string.record_recent, cells.size) else null
-    val record = stringResource(Res.string.record_value, report.wins, report.losses)
+    val record = stringResource(CoreUiRes.string.record_wins_losses, report.wins, report.losses)
     val rate = percentText(report.winRate)
     val rateStyle = caption.copy(fontWeight = FontWeight.SemiBold)
 
@@ -81,8 +79,8 @@ internal fun RecordStrip(report: WeeklyReport.Ready, modifier: Modifier = Modifi
             .padding(horizontal = OvalitSpacing.gutter)
             .semantics(mergeDescendants = true) {},
     ) {
-        // 글자는 먼저 자리를 잡고 칸은 남은 폭을 나눠 갖는다. 글씨를 키운 좁은 화면에서는 칸이 한 칸에 몇 dp밖에 안
-        // 남아 바코드처럼 보여서, 그럴 때는 승패 글자를 칸 밑 줄로 내린다.
+        // 글자가 먼저 자리를 잡고 칸이 남은 폭을 나눠 갖는다. 글씨를 키운 좁은 화면에서는 칸 하나에 몇 dp만 남아
+        // 바코드처럼 보여서, 그때는 승패 글자를 칸 밑 줄로 내린다.
         val sideWidth = rememberWidestWidth(listOfNotNull(recent), caption).let { if (recent != null) it + OvalitSpacing.sm else it } +
             OvalitSpacing.md + rememberWidestWidth(listOf(record + SEPARATOR), caption) + rememberWidestWidth(listOf(rate), rateStyle)
         val stacked = maxWidth - sideWidth < MinCellSlot * cells.size

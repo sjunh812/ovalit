@@ -26,6 +26,7 @@ import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.FixedMetric
+import com.ovalit.core.model.MIN_VOLATILITY_WEEKS
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.TREND_WEEKS
 import com.ovalit.core.model.WeeklyReport
@@ -43,6 +44,7 @@ import com.ovalit.core.ui.withThousands
 import com.ovalit.feature.report.format
 import com.ovalit.feature.report.label
 import com.ovalit.feature.report.resources.Res
+import com.ovalit.feature.report.resources.period_label_matches
 import com.ovalit.feature.report.resources.sheet_combat_score_body
 import com.ovalit.feature.report.resources.sheet_combat_score_formula
 import com.ovalit.feature.report.resources.sheet_combat_score_method
@@ -60,7 +62,6 @@ import com.ovalit.feature.report.resources.sheet_kd_formula
 import com.ovalit.feature.report.resources.sheet_kd_method
 import com.ovalit.feature.report.resources.sheet_kd_no_deaths
 import com.ovalit.feature.report.resources.sheet_method_title
-import com.ovalit.feature.report.resources.sheet_sample_matches
 import com.ovalit.feature.report.resources.sheet_sample_rounds
 import com.ovalit.feature.report.resources.sheet_trend_act_marker
 import com.ovalit.feature.report.resources.sheet_trend_description
@@ -76,8 +77,7 @@ import org.jetbrains.compose.resources.stringResource
 private val TrendHeight = 62.dp
 private val BarGap = 5.dp
 
-// 막대 높이는 0이 아니라 8주 중 가장 낮은 값 근처에서 시작한다. 피해량 140과 165를 0부터 그리면
-// 둘 다 거의 같은 높이라 추이가 안 보인다.
+// 8주 중 가장 낮은 값이 차지하는 막대 높이 비율이다. 0부터 그리면 피해량 140과 165가 거의 같은 높이라 추이가 안 보인다.
 private const val LOWEST_BAR = 0.35f
 
 /** S1-a 지표 설명 시트입니다. 고정 지표 칸을 누르면 뜹니다. */
@@ -103,7 +103,7 @@ internal fun MetricSheet(
 internal fun MetricSheetBody(metric: FixedMetric, report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
         CurrentValue(metric, report)
-        // 홈 칸 밑에서 뺀 평균을 여기 둔다. 변화량이 무엇과 견준 값인지 숫자로 보여 준다.
+        // 홈 고정 칸 밑에는 평균이 없어서 변화량을 무엇과 견줬는지 여기서 숫자로 보여 준다
         val usual = report.baseline?.let { baseline -> metric.value(baseline.metrics)?.let { baseline.weeks to it } }
         if (usual != null) {
             Spacer(Modifier.height(OvalitSpacing.xs))
@@ -192,7 +192,7 @@ private fun CurrentValue(metric: FixedMetric, report: WeeklyReport.Ready) {
         }
         Column(horizontalAlignment = Alignment.End) {
             OvalitText(
-                text = stringResource(Res.string.sheet_sample_matches, periodLabel(report.period), report.metrics.matches),
+                text = stringResource(Res.string.period_label_matches, periodLabel(report.period), report.metrics.matches),
                 style = OvalitTheme.typography.caption,
                 color = OvalitTheme.colors.t3,
                 textAlign = TextAlign.End,
@@ -234,7 +234,7 @@ private fun TrendBars(metric: FixedMetric, report: WeeklyReport.Ready) {
                     Box(Modifier.width(1.dp).fillMaxHeight().background(colors.t4))
                 }
                 val value = values[index]
-                // 기간에 든 주만 금색으로 칠한다. 시트 위의 큰 숫자가 그 막대들을 합친 값이다.
+                // 기간에 든 주만 --accent로 칠한다. 위의 큰 숫자는 이 주들의 합계로 낸 값이다.
                 Bar(
                     fraction = value?.let { barFraction(it, low, high) },
                     color = if (week.inPeriod) colors.accent else colors.bar,
@@ -276,7 +276,7 @@ private fun firstBarWeeksAgo(report: WeeklyReport.Ready): Int =
 private fun barFraction(value: Double, low: Double, high: Double): Float =
     if (high <= low) 1f else LOWEST_BAR + (1 - LOWEST_BAR) * ((value - low) / (high - low)).toFloat()
 
-/** 라운드가 모자라 비운 주는 막대 대신 바닥 선만 둔다. 칸이 빠지면 몇 주 전인지 셀 수 없다. */
+// 라운드가 모자라 비운 주도 바닥 선을 남긴다. 칸이 빠지면 몇 주 전인지 셀 수 없다.
 @Composable
 private fun Bar(fraction: Float?, color: Color, modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxHeight(), contentAlignment = Alignment.BottomCenter) {
@@ -293,7 +293,7 @@ private fun Bar(fraction: Float?, color: Color, modifier: Modifier = Modifier) {
 private fun UsualRangeSection(metric: FixedMetric, report: WeeklyReport.Ready) {
     val range = report.usualRange(metric.value)
     val text = when {
-        range == null -> stringResource(Res.string.sheet_usual_missing)
+        range == null -> stringResource(Res.string.sheet_usual_missing, MIN_VOLATILITY_WEEKS)
         metric.format.format(range.min) == metric.format.format(range.max) ->
             stringResource(Res.string.sheet_usual_same, range.weeks, metric.format.valueText(range.min))
         else -> stringResource(

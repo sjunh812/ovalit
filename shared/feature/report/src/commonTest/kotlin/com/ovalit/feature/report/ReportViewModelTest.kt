@@ -18,24 +18,32 @@ import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.model.UserPreferences
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.model.nextWeekStart
 import com.ovalit.core.model.weeklyReport
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -95,6 +103,40 @@ class ReportViewModelTest {
 
         val state = assertIs<ReportUiState.Success>(viewModel.uiState.value)
         assertIs<WeeklyReport.Ready>(state.report)
+    }
+
+    // 홈을 켜 둔 채 월요일 0시를 넘기면 새 경기가 없어도 이번 주가 지난주가 된다
+    @Test
+    fun `주가 바뀌면 새 경기가 없어도 리포트 기간을 다시 잡는다`() = runTest {
+        var now = Thursday
+        val clock = object : Clock {
+            override fun now(): Instant = now
+        }
+        val weekChanges = MutableSharedFlow<Unit>(replay = 1).apply { tryEmit(Unit) }
+        val matches = FakeMatchRepository(ThursdayClock)
+        val viewModel = ReportViewModel(matches, NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), clock, Seoul, weekChanges)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+        val before = assertIs<WeeklyReport.Ready>(assertIs<ReportUiState.Success>(viewModel.uiState.value).report).period
+        assertTrue(before.includesThisWeek)
+
+        now = Thursday.nextWeekStart(Seoul) + 1.hours
+        weekChanges.emit(Unit)
+
+        val after = assertIs<WeeklyReport.Ready>(assertIs<ReportUiState.Success>(viewModel.uiState.value).report).period
+        assertFalse(after.includesThisWeek)
+    }
+
+    // 앱에서 넘기는 흐름은 지금 한 번, 그다음은 월요일 0시에 흐른다
+    @Test
+    fun `주 바뀜 흐름은 다음 월요일 0시까지 기다렸다 흐른다`() = runTest {
+        val clock = object : Clock {
+            override fun now(): Instant = Thursday + testScheduler.currentTime.milliseconds
+        }
+        val ticks = mutableListOf<Long>()
+        backgroundScope.launch { weekStarts(clock, Seoul).take(2).collect { ticks += testScheduler.currentTime } }
+        advanceTimeBy((Thursday.nextWeekStart(Seoul) - Thursday).inWholeMilliseconds + 1)
+
+        assertEquals(listOf(0L, (Thursday.nextWeekStart(Seoul) - Thursday).inWholeMilliseconds), ticks)
     }
 
     // 가짜 경기는 경쟁과 일반뿐이라 기타로 바꾸면 한 경기도 없다

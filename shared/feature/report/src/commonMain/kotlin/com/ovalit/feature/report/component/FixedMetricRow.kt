@@ -73,8 +73,8 @@ internal fun FixedMetricRow(
     }
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-        // 네 칸의 이름, 숫자, 변화량을 줄마다 한 크기로 맞춘다. 칸마다 따로 줄이면 "전투점수"만 작아지고
-        // 그 칸 숫자만 위로 올라가 줄이 어긋난다.
+        // 이름, 숫자, 변화량마다 모든 칸에 한 크기를 쓴다. 칸마다 따로 줄이면 "전투점수"만 작아지고 그 칸 숫자만
+        // 위로 올라가 줄이 어긋난다.
         val gaps = (CellGap * 2 + 1.dp) * (cells.size - 1)
         val cellWidth = (maxWidth - OvalitSpacing.gutter * 2 - gaps) / cells.size
         val styles = FixedCellStyles(
@@ -88,14 +88,14 @@ internal fun FixedMetricRow(
                 .height(IntrinsicSize.Min)
                 .padding(horizontal = OvalitSpacing.gutter),
         ) {
-            // 간격은 구분선 양옆에만 준다. 칸 폭 안에 간격을 넣으면 가운데 칸만 좁아진다.
+            // 간격은 구분선 양옆에만 준다. 칸 폭 안에 넣으면 칸마다 내용 폭이 달라진다.
             cells.forEachIndexed { index, cell ->
                 if (index > 0) {
                     Spacer(Modifier.width(CellGap))
                     VerticalLine()
                     Spacer(Modifier.width(CellGap))
                 }
-                // 기타 모드로 바꾸면 둘째 칸이 K/D에서 헤드샷으로 바뀐다. 자리로 묶으면 186이 1.34로 굴러가서 지표로 묶는다.
+                // 기타 모드로 바꾸면 첫 칸이 전투점수에서 K/D로 바뀐다. 자리로 묶으면 186이 1.34로 굴러가서 지표로 묶는다.
                 key(cell.metric) {
                     FixedMetricCell(
                         cell = cell,
@@ -163,12 +163,11 @@ private fun FixedMetricCell(
     }
 }
 
-/** 고정 지표 밑 두 줄입니다. 판당 K/D/A와 표본, 그리고 비교 기준 값을 고정 지표 순서대로 적습니다. */
+/** 고정 칸 밑 두 줄입니다. 첫 줄에 KDA와 판당 K/D/A를, 둘째 줄에 변화량을 무엇과 견줬는지 적습니다. */
 @Composable
 internal fun FixedMetricSummary(
     metrics: MatchMetrics,
     baseline: Baseline?,
-    fixedMetrics: List<FixedMetric>,
     modifier: Modifier = Modifier,
 ) {
     val colors = OvalitTheme.colors
@@ -178,9 +177,9 @@ internal fun FixedMetricSummary(
         modifier = modifier.padding(horizontal = OvalitSpacing.gutter),
         verticalArrangement = Arrangement.spacedBy(OvalitSpacing.xs),
     ) {
-        // 사용자 결정(2026-09-27): 어시스트가 킬만큼 중요해져서 KDA를 판당 K/D/A보다 먼저, 한 단계 크게 둔다.
-        // 합계 없이 KDA만 띄우면 몇 킬 몇 데스인지 몰라서 판당 K/D/A를 바로 옆에 둔다. 숫자는 op.gg처럼 구간 색을
-        // 칠하고 변화량은 붙이지 않는다. 좁으면 판당 K/D/A가 통째로 다음 줄로 내려간다.
+        // 사용자 결정(2026-09-27): 어시스트가 킬만큼 중요해져서 KDA를 먼저, 한 단계 크게 둔다. KDA만으로는 몇 킬
+        // 몇 데스인지 몰라 판당 K/D/A를 옆에 붙인다. KDA에는 변화량을 붙이지 않는다(CLAUDE.md 지켜야 할 선). 좁으면
+        // 판당 K/D/A가 통째로 다음 줄로 내려간다.
         val perMatchText = metrics.perMatchKda()?.let { (kills, deaths, assists) ->
             stringResource(Res.string.summary_kda, kills, deaths, assists)
         }
@@ -200,8 +199,8 @@ internal fun FixedMetricSummary(
             separator = { Spacer(Modifier.width(OvalitSpacing.sm)) },
             alignBaseline = true,
         )
-        // 사용자 결정: 네 칸의 평균을 "186 · 1.42 · 138 · 21%"로 늘어놓으면 어느 숫자가 어느 칸인지 읽히지 않았다.
-        // 무엇과 견준 변화량인지만 적고, 칸마다 평균은 누르면 뜨는 시트에 둔다. 경기 수는 기간 줄에 있다.
+        // 사용자 결정(2026-09-27): 무엇과 견준 변화량인지만 적는다. 네 칸의 평균을 한 줄에 늘어놓으면 어느 숫자가
+        // 어느 칸 것인지 읽히지 않았다. 칸마다 평균은 S1-a 시트에, 경기 수는 기간 줄에 있다.
         OvalitText(
             text = if (baseline != null) {
                 stringResource(Res.string.summary_compared, baseline.weeks)
@@ -214,6 +213,6 @@ internal fun FixedMetricSummary(
     }
 }
 
-// 숫자는 제목 크기로 두고 "KDA"는 라벨 크기로 낮춘다. 자릿수가 바뀌어도 폭이 흔들리지 않게 숫자 폭을 고정한다.
+// 제목 글꼴에는 tnum이 없어서 붙인다. 자릿수가 바뀌어도 KDA 줄이 흔들리지 않는다.
 @Composable
 private fun kdaValueStyle(): TextStyle = OvalitTheme.typography.titleM.copy(fontFeatureSettings = "tnum")

@@ -99,7 +99,7 @@ class SettingsViewModelTest {
         assertNotNull(success().account)
     }
 
-    // 지우기 전에 인트로로 보내면 홈이 지워질 경기를 잠깐 그린다
+    // 지우기 전에 인트로로 보내면 이 ViewModel이 정리되면서 지우던 작업이 끊길 수 있다
     @Test
     fun `연동을 해제하면 경기까지 다 지운 뒤에 알린다`() = runTest {
         collectUiState()
@@ -110,8 +110,19 @@ class SettingsViewModelTest {
         assertEquals(true, unlinkedWhenNotified)
         // 수집을 멈추지 않으면 해제한 뒤에 경기를 다시 채우고 알림까지 보낸다
         assertTrue(importScheduler.cancelled)
-        assertNull(success().account)
-        assertEquals(0, success().storedMatches)
+        assertNull(account.account.first())
+        assertTrue(matches.observeMatches().first().isEmpty())
+    }
+
+    // 인트로로 밀려나는 동안 "연동되지 않았어요"와 0경기가 잠깐 보이면 안 된다
+    @Test
+    fun `연동을 해제하는 동안에는 화면을 그대로 둔다`() = runTest {
+        collectUiState()
+        val before = success()
+
+        viewModel.unlink {}
+
+        assertEquals(before, success())
     }
 
     private fun TestScope.collectUiState() {

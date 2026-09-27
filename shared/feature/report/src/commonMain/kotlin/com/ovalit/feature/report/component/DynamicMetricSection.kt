@@ -40,6 +40,7 @@ import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.periodLabel
+import com.ovalit.core.ui.rememberFitsOnOneLine
 import com.ovalit.core.ui.rememberFittingStyle
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
@@ -57,11 +58,10 @@ import com.ovalit.feature.report.resources.dynamic_usual
 import com.ovalit.feature.report.resources.sheet_open
 import org.jetbrains.compose.resources.stringResource
 
-// 한 줄에 세 칸씩 화면 폭을 나눠 갖고, 넷이나 다섯이면 다음 줄로 넘긴다. 목업처럼 옆으로 밀면 세 번째 칸이 화면
-// 끝에서 잘려 숫자가 끊겨 버그처럼 보였다. 간격은 구분선 양옆에만 준다. 칸 폭 안에 간격을 넣으면 첫 칸만 내용이
-// 넓어진다.
+// 목업은 옆으로 밀지만 세 번째 칸이 화면 끝에서 잘려 숫자가 끊긴다. 한 줄에 세 칸씩 폭을 나누고 넘치면 다음 줄로
+// 넘긴다(DECISIONS 2026-09-25).
 private const val COLUMNS_PER_ROW = 3
-// 이름 옆 화살표 자리다. 고정 칸과 같다.
+// 이름 뒤 간격 3dp와 화살표 10dp를 더한 폭이다. 고정 칸도 같은 값을 쓴다.
 private val ChevronSpace = 13.dp
 private val ColumnGap = 14.dp
 private val RowGap = 20.dp
@@ -83,15 +83,23 @@ internal fun DynamicMetricSection(
         DynamicSectionTitle(report)
         Spacer(Modifier.height(14.dp))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            // 모든 칸의 이름, 숫자, 설명을 줄마다 한 크기로 맞춘다. 칸마다 따로 줄이면 긴 이름만 작아지고 그 칸의
-            // 숫자와 설명만 다른 높이에 놓인다. 둘째 줄도 첫 줄과 칸 폭이 같다.
+            // 이름, 숫자, 설명마다 모든 칸에 한 크기를 쓴다. 칸마다 따로 줄이면 긴 이름만 작아지고 그 칸의 숫자와
+            // 설명만 다른 높이에 놓인다. 둘째 줄도 첫 줄과 칸 폭이 같다.
             val perRow = columns.size.coerceAtMost(COLUMNS_PER_ROW)
             val gaps = (ColumnGap * 2 + 1.dp) * (perRow - 1)
             val columnWidth = (maxWidth - OvalitSpacing.gutter * 2 - gaps) / perRow
             val valueStyle = rememberFittingStyle(columns.map { it.value }, typography.metricM, columnWidth, min = 14.sp)
             val changeStyle = typography.metricS
+            // 가장 작은 글자로도 한 줄에 안 들어가는 이름이 있으면 모든 칸 이름을 두 줄로 꺾는다. 그때는 가장 긴 어절이
+            // 들어가는 크기를 쓴다.
+            val labels = columns.map { it.label }
+            val labelWidth = columnWidth - ChevronSpace
+            val oneLineLabel = rememberFittingStyle(labels, typography.caption, labelWidth)
+            val wordLabel = rememberFittingStyle(labels.flatMap { it.split(' ') }, typography.caption, labelWidth)
+            val wrapLabels = !rememberFitsOnOneLine(labels.map { AnnotatedString(it) }, oneLineLabel, labelWidth)
             val styles = DynamicColumnStyles(
-                label = rememberFittingStyle(columns.map { it.label }, typography.caption, columnWidth - ChevronSpace),
+                label = if (wrapLabels) wordLabel else oneLineLabel,
+                wrapLabels = wrapLabels,
                 value = valueStyle,
                 change = changeStyle,
                 caption = rememberFittingStyle(columns.map { it.usual }, typography.caption, columnWidth),
@@ -108,6 +116,7 @@ internal fun DynamicMetricSection(
                         repeat(perRow) { index ->
                             val column = row.getOrNull(index)
                             if (index > 0) {
+                                // 간격은 구분선 양옆에만 준다. 칸 폭 안에 넣으면 칸마다 내용 폭이 달라진다.
                                 Spacer(Modifier.width(ColumnGap))
                                 // 덜 찬 줄의 빈자리에는 구분선을 긋지 않는다
                                 if (column != null) VerticalLine() else Spacer(Modifier.width(1.dp))
@@ -117,7 +126,7 @@ internal fun DynamicMetricSection(
                                 Spacer(Modifier.weight(1f))
                             } else {
                                 // 큐를 바꾸면 칸의 지표가 아예 바뀌기도 한다. 그때 숫자를 굴리면 같은 지표가 변한 것처럼
-                                // 보여서 지표마다 따로 그린다. 같은 지표일 때만 숫자가 구른다.
+                                // 보여서 칸을 자리가 아니라 지표로 묶는다. 같은 지표일 때만 숫자가 구른다.
                                 key(column.slot.metric) {
                                     DynamicMetricColumn(
                                         column = column,
@@ -197,6 +206,7 @@ private class DynamicColumn(
 
 private class DynamicColumnStyles(
     val label: TextStyle,
+    val wrapLabels: Boolean,
     val value: TextStyle,
     val change: TextStyle,
     val caption: TextStyle,
@@ -238,15 +248,17 @@ private fun DynamicMetricColumn(
             onClick = onClick,
         ),
     ) {
-        // 이름과 설명은 한 줄로 둔다. 좁은 칸에서 한 칸만 두 줄로 꺾이면 그 칸 숫자만 한 줄 아래로 내려간다.
+        // 이름과 설명은 칸마다 따로 꺾지 않는다. 한 칸만 두 줄이 되면 그 칸 숫자만 한 줄 아래로 내려간다. 이름이 꺾일 때는
+        // 모든 칸이 두 줄을 차지한다.
         Row(verticalAlignment = Alignment.CenterVertically) {
             OvalitText(
                 text = column.label,
                 modifier = Modifier.weight(1f, fill = false),
                 style = styles.label,
                 color = colors.t2,
-                maxLines = 1,
-                autoSize = shrinkToFit(styles.label.fontSize),
+                maxLines = if (styles.wrapLabels) 2 else 1,
+                minLines = if (styles.wrapLabels) 2 else 1,
+                autoSize = if (styles.wrapLabels) null else shrinkToFit(styles.label.fontSize),
             )
             Spacer(Modifier.width(3.dp))
             OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = colors.t4, size = 10.dp)
@@ -284,7 +296,7 @@ private fun DynamicMetricColumn(
     }
 }
 
-// 움직였다고 판단한 칸만 색을 칠한다. 평소 범위 안의 변화에 색을 칠하면 흔들림이 경고처럼 읽힌다.
+// 움직였다고 판단한 칸만 오르내림 색을 칠한다(CLAUDE.md 디자인). 달라진 점 시트도 이 색을 쓴다.
 @Composable
 internal fun changeColor(slot: DynamicSlot, current: Double, usual: Double): Color = when {
     slot.movement != Movement.MOVED -> OvalitTheme.colors.t3

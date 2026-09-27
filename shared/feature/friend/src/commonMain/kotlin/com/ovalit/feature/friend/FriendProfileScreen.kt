@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -86,8 +87,8 @@ import org.koin.core.parameter.parametersOf
 private const val RECENT_MATCHES = 3
 
 /**
- * S5 친구 프로필입니다. 같이 한 경기를 맨 위에 두고, 전적을 공개한 친구면 그 아래에 내 프로필과 같은 칸(티어 카드, 통계,
- * 맞힌 부위, 요원, 무기)과 나와 비교, 최근 경기를 둡니다. 비공개면 같이 한 경기만 보여줍니다.
+ * S5 친구 프로필입니다. 머리 바로 밑에 같이 한 경기를 두고, 전적을 공개한 친구면 그 아래로 티어 카드, 통계, 나와 비교,
+ * 맞힌 부위, 요원, 무기, 최근 경기를 둡니다. 비공개면 같이 한 경기만 보여줍니다.
  */
 @Composable
 fun FriendProfileRoute(
@@ -104,8 +105,11 @@ fun FriendProfileRoute(
     LaunchedEffect(uiState) {
         if (uiState == FriendProfileUiState.Gone) onBack()
     }
+    // 친구가 끊겨 닫히는 동안에는 마지막 모습을 그린다. 바로 비우면 밀려나는 화면이 빈 바탕으로 나간다.
+    val lastShown = remember { LastShown() }
+    if (uiState != FriendProfileUiState.Gone) lastShown.state = uiState
     FriendProfileScreen(
-        uiState = uiState,
+        uiState = lastShown.state,
         onBack = onBack,
         onToggleRival = viewModel::toggleRival,
         onUnfriend = viewModel::unfriend,
@@ -173,7 +177,7 @@ internal fun FriendProfileScreen(
             }
             Spacer(Modifier.height(20.dp))
 
-            // 친구 기반 앱만 낼 수 있는 숫자라 맨 위에 둔다
+            // 친구 기반 앱만 낼 수 있는 숫자라 머리 바로 밑에 둔다
             ProfileSection {
                 Row(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically) {
                     OvalitText(
@@ -200,7 +204,8 @@ internal fun FriendProfileScreen(
                     OvalitText(text = stringResource(Res.string.private_body), style = OvalitTheme.typography.body, color = colors.t2)
                 }
             } else {
-                // 내 프로필과 같은 칸을 같은 순서로 쓴다. 요원과 무기를 누르면 친구 기록으로 S7과 S6이 열린다.
+                // 내 프로필과 같은 칸을 같은 순서로 쓰고 통계 다음에만 나와 비교를 끼운다. 요원과 무기를 누르면 친구 기록으로
+                // S7과 S6이 열린다.
                 if (hasActMatches) {
                     competitive?.let { TierCard(it, uiState) }
                     // 티어 카드가 없으면 바로 위가 같이 한 경기라 선을 그어 나눈다
@@ -315,7 +320,7 @@ private fun RecentMatches(uiState: FriendProfileUiState.Success, name: String, o
 
 @Composable
 private fun TitleRow(title: String, caption: String) {
-    // 제목을 먼저 재고 설명은 남은 폭에서 꺾는다. 설명을 먼저 재면 친구 이름이 긴 설명에 "나와 비교"가 밀려 꺾인다.
+    // 제목을 먼저 재고 설명은 남은 폭에서 꺾는다. 설명을 먼저 재면 친구 이름이 길 때 "나와 비교"가 밀려 꺾인다.
     Row(verticalAlignment = Alignment.Bottom) {
         OvalitText(
             text = title,
@@ -333,3 +338,5 @@ private fun TitleRow(title: String, caption: String) {
         )
     }
 }
+
+private class LastShown(var state: FriendProfileUiState = FriendProfileUiState.Loading)

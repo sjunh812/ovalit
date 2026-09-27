@@ -43,8 +43,8 @@ import com.ovalit.feature.report.resources.nudge_invite_body
 import com.ovalit.feature.report.resources.nudge_invite_title
 import com.ovalit.feature.report.resources.nudge_rival_body
 import com.ovalit.feature.report.resources.nudge_rival_title
+import com.ovalit.feature.report.resources.period_label_matches
 import com.ovalit.feature.report.resources.rival_pick_body
-import com.ovalit.feature.report.resources.rival_pick_matches
 import com.ovalit.feature.report.resources.rival_pick_no_matches
 import com.ovalit.feature.report.resources.rival_pick_title
 import org.jetbrains.compose.resources.stringResource
@@ -55,10 +55,7 @@ private val StackedAvatarSize = 32.dp
 private val StackedAvatarOverlap = 8.dp
 private const val STACKED_AVATARS = 2
 
-/**
- * 친구나 라이벌이 없을 때 라이벌 칸 자리에 두는 칸입니다. 비워 두면 홈이 거기서 끝난 것처럼 보입니다. 누르면
- * 초대 링크를 보내거나 라이벌을 고르는 시트를 엽니다.
- */
+/** 친구나 라이벌이 없을 때 라이벌 칸 자리에 두는 칸입니다. 누르면 초대 링크 공유 창이나 라이벌 고르기 시트가 뜹니다. */
 @Composable
 internal fun NudgeBanner(
     nudge: HomeNudge,
@@ -95,7 +92,6 @@ internal fun NudgeBanner(
             ) {
                 OvalitIcon(OvalitIcons.Friends, contentDescription = null, tint = colors.t1)
             }
-            // 고를 수 있는 친구 얼굴을 겹쳐 보여서 누구와 겨룰지 먼저 떠오르게 한다
             HomeNudge.PICK_RIVAL -> StackedAvatars(candidates.take(STACKED_AVATARS).map { it.riotId })
         }
         Spacer(Modifier.width(14.dp))
@@ -147,7 +143,7 @@ internal fun RivalPickerSheet(
     ) {
         candidates.forEachIndexed { index, friend ->
             if (index > 0) OvalitDivider(Modifier.padding(start = 52.dp), color = colors.lineWeak)
-            val caption = friend.metrics?.let { stringResource(Res.string.rival_pick_matches, period, it.matches) }
+            val caption = friend.metrics?.let { stringResource(Res.string.period_label_matches, period, it.matches) }
                 ?: stringResource(Res.string.rival_pick_no_matches, period)
             Row(
                 modifier = Modifier

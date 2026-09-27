@@ -26,6 +26,16 @@ private val PreviousAct = ActId("previous")
 
 class WeeklyReportTest {
 
+    // 주는 기기 시간대 기준 월요일 0시에 바뀐다(CLAUDE.md 지표 규칙). 월요일 0시 정각이면 그다음 주 월요일이다.
+    @Test
+    fun `다음 주는 기기 시간대의 다음 월요일 0시에 시작한다`() {
+        val nextMonday = LocalDateTime(2026, 9, 28, 0, 0).toInstant(Seoul)
+
+        assertEquals(nextMonday, Now.nextWeekStart(Seoul))
+        assertEquals(nextMonday, LocalDateTime(2026, 9, 27, 23, 59).toInstant(Seoul).nextWeekStart(Seoul))
+        assertEquals(LocalDateTime(2026, 10, 5, 0, 0).toInstant(Seoul), nextMonday.nextWeekStart(Seoul))
+    }
+
     @Test
     fun `이번 주에 5경기를 채웠으면 이번 주만 집계한다`() {
         val report = ready(games(weeksAgo = 0, count = 5) + games(weeksAgo = 1, count = 3))
@@ -252,7 +262,7 @@ class WeeklyReportTest {
         assertNull(report.mainRoleShare)
     }
 
-    // 역할을 모르면 빈칸이 기본 3개(관여율, 생존율, 퍼블 승률)로 채워진다
+    // 역할을 모르면 기본 3개(관여율, 생존율, 퍼블 승률)가 뜨지만 전략가는 퍼블 승률 대신 라운드당 어시스트로 채운다
     @Test
     fun `동적 칸은 주로 뛴 역할에 맞춰 고른다`() {
         val report = ready(List(5) { gameAt(LocalDateTime(2026, 9, 22, 21, 0), role = Role.CONTROLLER) })
@@ -343,7 +353,7 @@ private fun gameAt(
     rounds: List<Round> = listOf(quietRound()),
 ) = match(*rounds.toTypedArray(), queue = queue, act = act, startedAt = time.toInstant(Seoul), role = role)
 
-/** [rounds]라운드를 5경기로 나눠 담는다. 앞의 [kastRounds]라운드는 살아남고 나머지는 죽는다. */
+/** [rounds]라운드를 5경기로 나눠 담습니다. 앞의 [kastRounds]라운드는 살아남고 나머지는 죽습니다. */
 private fun kastWeek(weeksAgo: Int, kastRounds: Int, rounds: Int = 40): List<Match> {
     val date = ThisMonday.minus(weeksAgo, DateTimeUnit.WEEK).plus(1, DateTimeUnit.DAY)
     return List(rounds) { if (it < kastRounds) quietRound() else round(kill(10.0, Enemy, Me)) }

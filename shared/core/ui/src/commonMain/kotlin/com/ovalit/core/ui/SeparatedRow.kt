@@ -95,6 +95,18 @@ private val LineSpacing = 2.dp
 /** 항목 사이에 두는 가운뎃점입니다. 글자를 이어 붙일 때도 이 글자를 씁니다. */
 const val SEPARATOR = " · "
 
+/** 점 뒤에서만 줄이 바뀌는 [SEPARATOR]입니다. 점 앞을 붙여 두어 "· 7경기"처럼 점이 줄 맨 앞에 오지 않습니다. */
+const val WRAPPING_SEPARATOR = "\u00a0· "
+
+/**
+ * 항목들을 한 글자 안에서 [WRAPPING_SEPARATOR]로 잇습니다. 항목 안의 띄어쓰기도 붙여 두어 줄은 항목 사이에서만
+ * 바뀝니다. 그대로 이으면 좁은 화면에서 "레이즈 2승 / 1패"처럼 한 항목이 두 줄로 갈립니다.
+ */
+fun joinKeepingParts(parts: List<String>): String = parts.joinToString(WRAPPING_SEPARATOR) { it.keepTogether() }
+
+/** 띄어쓰기에서 줄이 바뀌지 않게 붙입니다. */
+fun String.keepTogether(): String = replace(' ', '\u00a0')
+
 /** [SeparatedRow]의 구분점입니다. 크기와 색은 옆 항목에 맞춰 부르는 쪽이 정합니다. */
 @Composable
 fun SeparatorDot(style: TextStyle, color: Color) {

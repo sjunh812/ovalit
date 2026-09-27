@@ -36,8 +36,9 @@ import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.PlayerAvatar
 import com.ovalit.core.ui.PlayerBadge
-import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.TierLabel
+import com.ovalit.core.ui.WRAPPING_SEPARATOR
+import com.ovalit.core.ui.keepTogether
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.mainRoleText
 import com.ovalit.core.ui.periodLabel
@@ -151,17 +152,18 @@ private fun periodCaption(report: WeeklyReport.Ready): AnnotatedString {
     val roleText = report.mainRole?.let { mainRoleText(it, report.mainRoleShare) }
     val emphasis = SpanStyle(color = OvalitTheme.colors.t2, fontWeight = FontWeight.SemiBold)
 
-    // 역할 이름만 한 단계 밝고 굵게 둔다. 홈에서 강조는 이 한 곳뿐이다(CLAUDE.md 화면).
+    // 역할 이름만 한 단계 밝고 굵게 둔다. 기간 줄의 강조는 이 한 곳뿐이다(CLAUDE.md 화면). 좁으면 항목 사이에서만
+    // 줄이 바뀐다.
     return buildAnnotatedString {
         if (role != null && roleText != null) {
-            // 그 역할만 했다는 뜻으로 읽히지 않게 비중을 붙인다. 가장 많은 라운드를 뛴 역할이다.
-            val start = roleText.indexOf(role)
-            append(roleText)
+            val kept = roleText.keepTogether()
+            val start = kept.indexOf(role.keepTogether())
+            append(kept)
             if (start >= 0) addStyle(emphasis, start, start + role.length)
-            append(SEPARATOR)
+            append(WRAPPING_SEPARATOR)
         }
-        append(range)
-        append(SEPARATOR)
-        append(matches)
+        append(range.keepTogether())
+        append(WRAPPING_SEPARATOR)
+        append(matches.keepTogether())
     }
 }

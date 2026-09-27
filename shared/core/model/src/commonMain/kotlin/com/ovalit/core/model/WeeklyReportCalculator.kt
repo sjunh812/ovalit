@@ -4,6 +4,7 @@ import kotlin.time.Instant
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.minus
@@ -71,7 +72,7 @@ fun Iterable<Match>.weeklyReport(
     )
 }
 
-// 무기는 S6 위쪽 표처럼 기간 성적을 바로 앞 4주, 그 앞 주별 성적과 견준다
+// 무기는 S6 위쪽 표처럼 기간 성적을 바로 앞 비교 기준과 견주고, 변동폭은 기간 앞 주마다 잰다
 private fun Map<LocalDate, List<Match>>.weekNote(
     periodMatches: List<Match>,
     period: ReportPeriod,
@@ -169,6 +170,9 @@ private fun Instant.weekStart(timeZone: TimeZone): LocalDate {
     return date.minus(date.dayOfWeek.isoDayNumber - 1, DateTimeUnit.DAY)
 }
 
+/** 이 시각 다음에 오는 [timeZone] 기준 월요일 0시입니다. 그때 리포트의 "이번 주"가 바뀝니다. */
+fun Instant.nextWeekStart(timeZone: TimeZone): Instant = weekStart(timeZone).plus(1, DateTimeUnit.WEEK).atStartOfDayIn(timeZone)
+
 private fun Map<LocalDate, List<Match>>.between(from: LocalDate, until: LocalDate): List<Match> =
     filterKeys { it >= from && it < until }.values.flatten()
 
@@ -178,7 +182,7 @@ private fun LocalDate.plusWeeks(weeks: Int) = plus(weeks, DateTimeUnit.WEEK)
 
 private fun LocalDate.minusWeeks(weeks: Int) = minus(weeks, DateTimeUnit.WEEK)
 
-/** 요원·무기 화면이 보는 경기입니다. 고른 큐에서 가장 최근 경기의 액트만 남깁니다. */
+/** S6·S7과 프로필이 보는 경기입니다. 고른 큐에서 가장 최근 경기의 액트만 남깁니다. */
 fun Iterable<Match>.currentActMatches(queueFilter: QueueFilter): List<Match> {
     val counted = filter { it.queue in queueFilter.queues }
     val act = counted.maxByOrNull { it.startedAt }?.act ?: return emptyList()
@@ -186,8 +190,8 @@ fun Iterable<Match>.currentActMatches(queueFilter: QueueFilter): List<Match> {
 }
 
 /**
- * S6 무기 화면에 쓰는 집계입니다. 목록은 이번 액트 전체를 보고, 위쪽 세 무기는 홈 리포트와 같은
- * 기간을 그 앞 4주와 비교합니다.
+ * S6 무기 화면에 쓰는 집계입니다. 목록은 이번 액트 전체를 보고, 위쪽 세 무기는 기간과 비교 기준을
+ * 홈 리포트와 똑같이 잡습니다.
  */
 fun Iterable<Match>.weaponReport(
     now: Instant,

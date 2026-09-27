@@ -16,12 +16,14 @@ import com.ovalit.core.model.metricsIn
 import com.ovalit.core.model.weeklyReport
 import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.core.ui.playerBadge
-import kotlin.time.Clock
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Clock
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -30,9 +32,10 @@ sealed interface ReportUiState {
     data object Loading : ReportUiState
 
     /**
-     * @property rival 고른 라이벌입니다. 고르지 않았거나 전적을 공개하지 않았으면 `null`입니다.
+     * @property rival 고른 라이벌입니다. 고르지 않았거나, 라이벌이 전적을 공개하지 않았거나, 리포트를 만들지 못했으면
+     * `null`입니다.
      * @property friends 전적을 공개한 친구 전부입니다. 리포트 기간에 경기가 없는 친구도 들어 있습니다. 라이벌은
-     * 이 안에서만 고릅니다.
+     * 이 안에서만 고릅니다. 리포트를 만들지 못했으면 빈 목록입니다.
      * @property nudge 라이벌 칸 자리에 두는 유도 칸입니다. [homeNudge]가 정합니다.
      */
     data class Success(
@@ -52,10 +55,12 @@ enum class HomeNudge {
 
 /**
  * 리포트, 친구, 라이벌 순서로 봅니다. 리포트를 만들 기록이 없으면 그 안내가 먼저라 아무것도 권하지 않고, 친구가
- * 없으면 라이벌을 고를 수 없으니 초대부터 권합니다. 기타 모드에는 친구 칸이 없어서 권하지 않습니다.
+ * 없으면 라이벌을 고를 수 없으니 초대부터 권합니다. 기타 모드에는 친구 칸이 없어서 권하지 않습니다. 권할 게 없으면
+ * `null`입니다.
  *
  * @param hasFriends 전적 공개와 상관없이 친구가 한 명이라도 있는지입니다.
- * @param rivalCandidates 라이벌로 고를 수 있는 친구입니다. 전적을 공개한 친구뿐이라, 친구가 모두 비공개면 권하지 않습니다.
+ * @param rivalCandidates 라이벌로 고를 수 있는 친구입니다. 전적을 공개한 친구뿐이라, 친구가 모두 비공개면 빈 목록이고
+ * 라이벌을 권하지 않습니다.
  */
 internal fun homeNudge(
     report: WeeklyReport,
@@ -79,6 +84,10 @@ data class FriendStanding(
     val metrics: MatchMetrics?,
 )
 
+/**
+ * @param weekChanges 흐를 때마다 리포트를 다시 셉니다. 앱에서는 [weekStarts]를 넘겨 월요일 0시에 "이번 주"를 바꿉니다.
+ * 테스트는 시계를 멈춰 두므로 한 번만 흐르는 기본값을 씁니다.
+ */
 class ReportViewModel(
     private val matchRepository: MatchRepository,
     accountRepository: AccountRepository,
@@ -87,9 +96,10 @@ class ReportViewModel(
     contentRepository: ContentRepository,
     clock: Clock,
     timeZone: TimeZone,
+    weekChanges: Flow<Unit> = flowOf(Unit),
 ) : ViewModel() {
 
-    // 칩으로 고르기 전까지는 설정의 기본 큐를 따른다. 고른 칩은 이 화면에 있는 동안만 유지한다.
+    // 칩으로 고르기 전까지는 설정의 기본 큐를 따른다. 고른 칩은 저장하지 않아 앱을 새로 열면 기본 큐로 돌아간다.
     private val selectedQueue = MutableStateFlow<QueueFilter?>(null)
 
     private val refreshing = MutableStateFlow(false)
@@ -97,8 +107,12 @@ class ReportViewModel(
     /** 홈을 당겨 새 경기를 받는 중인지입니다. */
     val isRefreshing: StateFlow<Boolean> = refreshing
 
-    // 첫 수집이 끝나기 전에는 숫자를 띄우지 않는다. 헤드샷 24%가 잠시 뒤 19%로 바뀌면 그 뒤로 숫자를 믿지 않는다.
-    private val importedMatches = combine(matchRepository.observeMatches(), matchRepository.importProgress) { matches, progress ->
+    // 첫 수집이 끝나기 전에는 숫자를 띄우지 않는다. 헤드샷 24%가 잠시 뒤 19%로 바뀌면 유저는 그 뒤로 숫자를 믿지 않는다.
+    private val importedMatches = combine(
+        matchRepository.observeMatches(),
+        matchRepository.importProgress,
+        weekChanges,
+    ) { matches, progress, _ ->
         matches.takeIf { progress == null || progress.isDone }
     }
 
@@ -140,7 +154,7 @@ class ReportViewModel(
         initialValue = ReportUiState.Loading,
     )
 
-    /** 요원 얼굴과 무기 이름을 찾는 카탈로그입니다. 받기 전에는 비어 있어 이름 첫 글자와 "알 수 없는 무기"가 뜹니다. */
+    /** 요원과 무기 이름을 찾는 카탈로그입니다. 받기 전에는 비어 있어 "알 수 없는 요원", "알 수 없는 무기"가 뜹니다. */
     val catalog: StateFlow<ContentCatalog> =
         contentRepository.catalog.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initialValue = ContentCatalog.Empty)
 
@@ -174,7 +188,7 @@ class ReportViewModel(
         }
     }
 
-    /** 홈의 유도 칸에서 고른 라이벌입니다. S5의 라이벌 지정과 같은 값을 바꿉니다. */
+    /** 유도 칸에서 고른 친구를 라이벌로 정합니다. S5의 라이벌 지정과 같은 값을 바꿉니다. */
     fun selectRival(id: PlayerId) {
         viewModelScope.launch { friendRepository.setRival(id) }
     }

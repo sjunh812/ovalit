@@ -6,6 +6,8 @@ import android.os.Bundle
 
 /** 앱 화면이 보이고 있는지입니다. 보고 있을 때는 첫 수집 완료 알림을 보내지 않습니다. */
 object AppVisibility : Application.ActivityLifecycleCallbacks {
+    // 메인 스레드에서 바뀌고 첫 수집 작업의 스레드에서 읽는다
+    @Volatile
     private var started = 0
 
     val isVisible: Boolean get() = started > 0

@@ -41,7 +41,7 @@ private fun SettingsAllOffPreview() {
     SettingsPreview(SettingsPreviewData.allOff)
 }
 
-// 주간 리포트 줄은 제목, 시각, 스위치가 한 줄이라 가장 빡빡하다
+// 좁은 화면에 글자를 키우면 설명이 긴 전적 공개 줄이 가장 빡빡하다
 @Preview(widthDp = 320, heightDp = 568, fontScale = 1.5f)
 @Composable
 private fun SettingsSmallLargeFontPreview() {

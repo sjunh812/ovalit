@@ -23,7 +23,7 @@ class OnboardingScreensTest {
         var continued = false
         setContent { OvalitTheme { ConsentScreen(onBack = {}, onContinue = { continued = true }) } }
 
-        onNodeWithText("전적이 다른 사용자에게 공개돼요").assertExists()
+        onNodeWithText("서로 수락한 친구에게 전적이 공개돼요").assertExists()
         onNodeWithText("언제든 해제할 수 있어요").assertExists()
         onNodeWithText("이 앱은 비밀번호를 받지도, 저장하지도 않아요", substring = true).assertExists()
         onNodeWithText("Riot 계정으로 계속하기").performClick()

@@ -71,7 +71,6 @@ class SettingsViewModelTest {
 
         viewModel.setStatsPublic(false)
         viewModel.setNotifyAnalysisDone(false)
-        viewModel.setNotifyWeeklyReport(false)
         viewModel.setTheme(ThemePreference.LIGHT)
         viewModel.setDefaultQueue(QueueFilter.COMPETITIVE)
         viewModel.setFocus(Focus.AIM)
@@ -82,7 +81,7 @@ class SettingsViewModelTest {
                 defaultQueue = QueueFilter.COMPETITIVE,
                 statsPublic = false,
                 notifyAnalysisDone = false,
-                notifyWeeklyReport = false,
+                notifyWeeklyReport = UserPreferences.Default.notifyWeeklyReport,
                 focus = Focus.AIM,
             ),
             success().preferences,

@@ -61,7 +61,14 @@ class SettingsScreenTest {
         setContent { Settings(SettingsPreviewData.allOff) }
 
         onNodeWithText("분석 완료").assertIsOff()
-        onNodeWithText("주간 리포트").assertIsOff()
+    }
+
+    // 보낼 길이 없는 알림 스위치는 켜도 아무 일도 없어서 두지 않는다
+    @Test
+    fun `주간 리포트 알림은 보낼 수 있을 때까지 두지 않는다`() = runComposeUiTest {
+        setContent { Settings() }
+
+        onNodeWithText("주간 리포트").assertDoesNotExist()
     }
 
     // 누를 곳이 없는 화살표는 두지 않는다

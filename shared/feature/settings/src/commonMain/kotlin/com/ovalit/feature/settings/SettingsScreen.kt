@@ -53,8 +53,6 @@ import com.ovalit.feature.settings.resources.default_queue
 import com.ovalit.feature.settings.resources.delete_data
 import com.ovalit.feature.settings.resources.focus
 import com.ovalit.feature.settings.resources.notify_analysis_done
-import com.ovalit.feature.settings.resources.notify_weekly_report
-import com.ovalit.feature.settings.resources.notify_weekly_report_time
 import com.ovalit.feature.settings.resources.section_data
 import com.ovalit.feature.settings.resources.section_display
 import com.ovalit.feature.settings.resources.section_notifications
@@ -96,7 +94,6 @@ fun SettingsRoute(
         actions = SettingsActions(
             onStatsPublicChange = viewModel::setStatsPublic,
             onNotifyAnalysisDoneChange = viewModel::setNotifyAnalysisDone,
-            onNotifyWeeklyReportChange = viewModel::setNotifyWeeklyReport,
             onThemeChange = viewModel::setTheme,
             onDefaultQueueChange = viewModel::setDefaultQueue,
             onFocusChange = viewModel::setFocus,
@@ -110,7 +107,6 @@ fun SettingsRoute(
 internal class SettingsActions(
     val onStatsPublicChange: (Boolean) -> Unit = {},
     val onNotifyAnalysisDoneChange: (Boolean) -> Unit = {},
-    val onNotifyWeeklyReportChange: (Boolean) -> Unit = {},
     val onThemeChange: (ThemePreference) -> Unit = {},
     val onDefaultQueueChange: (QueueFilter) -> Unit = {},
     val onFocusChange: (Focus) -> Unit = {},
@@ -159,13 +155,8 @@ internal fun SettingsScreen(
                 checked = preferences.notifyAnalysisDone,
                 onCheckedChange = actions.onNotifyAnalysisDoneChange,
             )
-            RowDivider()
-            ToggleRow(
-                title = stringResource(Res.string.notify_weekly_report),
-                trailingLabel = stringResource(Res.string.notify_weekly_report_time),
-                checked = preferences.notifyWeeklyReport,
-                onCheckedChange = actions.onNotifyWeeklyReportChange,
-            )
+            // 목업의 "주간 리포트 · 월요일 오전" 알림은 보낼 길이 생길 때까지 두지 않는다. 켜도 아무 일도 없는 스위치가 된다
+            // (DECISIONS 2026-09-27).
 
             SectionHeader(stringResource(Res.string.section_display))
             ValueRow(

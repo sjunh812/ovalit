@@ -24,6 +24,9 @@ import com.ovalit.feature.report.resources.insight_headline
 import com.ovalit.feature.report.resources.insight_side_attack
 import com.ovalit.feature.report.resources.insight_side_defense
 import com.ovalit.feature.report.resources.insight_values
+import com.ovalit.feature.report.resources.insight_values_damage_with_role
+import com.ovalit.feature.report.resources.insight_values_damage_with_focus
+import com.ovalit.feature.report.resources.insight_values_damage
 import com.ovalit.feature.report.resources.insight_values_with_focus
 import com.ovalit.feature.report.resources.insight_values_with_role
 import com.ovalit.feature.report.resources.metric_eco_win
@@ -62,10 +65,12 @@ internal fun InsightSection(insight: SideInsight, role: Role?, modifier: Modifie
     val attackValue = format.valueText(attack)
     val defenseValue = format.valueText(defense)
     val focus = insight.focus
+    // 피해량은 정수라 "121예요"처럼 숫자 뒤 조사가 틀린다. 숫자 뒤에 조사가 오지 않는 문장을 따로 쓴다.
+    val damage = insight.metric == SideMetric.DAMAGE
     val body = when {
-        // 관심사로 고른 지표면 왜 이 지표인지를 관심사로 말한다
+        // 관심사 지표면 관심사를 까닭으로 든다
         focus != null -> stringResource(
-            Res.string.insight_values_with_focus,
+            if (damage) Res.string.insight_values_damage_with_focus else Res.string.insight_values_with_focus,
             attackLabel,
             attackValue,
             defenseLabel,
@@ -73,7 +78,7 @@ internal fun InsightSection(insight: SideInsight, role: Role?, modifier: Modifie
             stringResource(focus.label),
         )
         insight.isRolePriority && role != null -> stringResource(
-            Res.string.insight_values_with_role,
+            if (damage) Res.string.insight_values_damage_with_role else Res.string.insight_values_with_role,
             attackLabel,
             attackValue,
             defenseLabel,
@@ -81,7 +86,13 @@ internal fun InsightSection(insight: SideInsight, role: Role?, modifier: Modifie
             stringResource(role.label),
             metricLabel,
         )
-        else -> stringResource(Res.string.insight_values, attackLabel, attackValue, defenseLabel, defenseValue)
+        else -> stringResource(
+            if (damage) Res.string.insight_values_damage else Res.string.insight_values,
+            attackLabel,
+            attackValue,
+            defenseLabel,
+            defenseValue,
+        )
     }
 
     Column(

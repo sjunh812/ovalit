@@ -22,6 +22,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitPickerButton
@@ -37,6 +39,7 @@ import com.ovalit.core.ui.compare
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.periodLabel
+import com.ovalit.core.ui.rememberWidestWidth
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.report.FriendStanding
 import com.ovalit.feature.report.format
@@ -53,7 +56,9 @@ import org.jetbrains.compose.resources.stringResource
 
 // 목업대로 역할이 달라도 나란히 놓을 수 있는 세 지표만 겨룬다
 private val RivalMetrics = listOf(FixedMetric.KD, FixedMetric.DAMAGE, FixedMetric.HEADSHOT_RATE)
-private val ValueWidth = 40.dp
+private val NameWidth = 72.dp
+
+private class RankWidths(val rank: Dp, val value: Dp)
 
 @Composable
 internal fun RivalSection(
@@ -126,8 +131,15 @@ internal fun FriendRankingSection(mine: MatchMetrics, friends: List<FriendStandi
             )
         }
         Spacer(Modifier.height(OvalitSpacing.xs))
+        // 순위와 값 칸은 가장 긴 글자에 맞추고, 이름은 넘치면 줄인다. 폭을 박아 두면 글씨를 키웠을 때 순위 "10"이
+        // 꺾이고 값이 잘렸다.
+        val typography = OvalitTheme.typography
+        val widths = RankWidths(
+            rank = rememberWidestWidth(ranked.map { it.rank.toString() }, typography.metricS),
+            value = rememberWidestWidth(ranked.map { metric.format.valueText(it.value) }, typography.metricS.copy(fontWeight = FontWeight.Bold)),
+        )
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            ranked.forEach { RankRow(it, metric, top) }
+            ranked.forEach { RankRow(it, metric, top, widths) }
         }
     }
 
@@ -150,23 +162,26 @@ internal fun FriendRankingSection(mine: MatchMetrics, friends: List<FriendStandi
 }
 
 @Composable
-private fun RankRow(entry: Ranked, metric: FixedMetric, top: Double) {
+private fun RankRow(entry: Ranked, metric: FixedMetric, top: Double, widths: RankWidths) {
     val colors = OvalitTheme.colors
     val strong = if (entry.isMe) colors.t1 else colors.t2
 
     Row(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically) {
         OvalitText(
             text = entry.rank.toString(),
-            modifier = Modifier.width(16.dp),
+            modifier = Modifier.width(widths.rank),
             style = OvalitTheme.typography.metricS,
             color = colors.t3,
+            maxLines = 1,
         )
+        Spacer(Modifier.width(OvalitSpacing.sm))
         OvalitText(
             text = entry.name,
-            modifier = Modifier.width(60.dp),
+            modifier = Modifier.width(NameWidth),
             style = if (entry.isMe) OvalitTheme.typography.bodyStrong else OvalitTheme.typography.body,
             color = strong,
             maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         Box(modifier = Modifier.weight(1f).height(3.dp).background(colors.fill)) {
             // 목업대로 나만 금색이다
@@ -179,7 +194,7 @@ private fun RankRow(entry: Ranked, metric: FixedMetric, top: Double) {
         }
         OvalitText(
             text = metric.format.valueText(entry.value),
-            modifier = Modifier.width(ValueWidth),
+            modifier = Modifier.width(widths.value),
             style = OvalitTheme.typography.metricS.copy(fontWeight = if (entry.isMe) FontWeight.Bold else FontWeight.Medium),
             color = strong,
             textAlign = TextAlign.End,

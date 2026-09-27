@@ -455,3 +455,5 @@
   Riot 정책("should not remove game decisions, but may highlight decisions that are important and give multiple choices")과
   기획서의 "게임 결정을 대신하지 않는다"에 맞춰 "추천"이나 "쓰세요" 대신 움직인 숫자만 적는 쪽을 사용자가 골랐다.
   신청서의 "show a player what to work on between sessions"와 맞는다. 요원은 둘 이상일 때만 적는다. 목업 S1에는 없는 칸이다.
+- 2026-09-27 · "이번 주 짚을 점"의 제목과 구분선을 빼고 고정 칸 바로 밑에 붙였다. 개선 포인트 문장 위의 선도 뺐다(사용자
+  제안). 두 문장 모두 바로 위 숫자를 풀어 말하는 글이라, 제목과 선으로 떼면 숫자와 설명이 따로 놀고 홈에 선만 늘었다.

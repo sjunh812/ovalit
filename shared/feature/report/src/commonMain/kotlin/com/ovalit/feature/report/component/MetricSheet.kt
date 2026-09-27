@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -29,14 +30,18 @@ import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.TREND_WEEKS
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.model.usualRange
+import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.format
-import com.ovalit.feature.report.format
 import com.ovalit.core.ui.label
-import com.ovalit.feature.report.label
 import com.ovalit.core.ui.periodLabel
-import com.ovalit.feature.report.resources.Res
+import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.period_last_week
 import com.ovalit.core.ui.resources.period_this_week
+import com.ovalit.core.ui.valueText
+import com.ovalit.core.ui.withThousands
+import com.ovalit.feature.report.format
+import com.ovalit.feature.report.label
+import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.sheet_combat_score_body
 import com.ovalit.feature.report.resources.sheet_combat_score_formula
 import com.ovalit.feature.report.resources.sheet_combat_score_method
@@ -64,11 +69,8 @@ import com.ovalit.feature.report.resources.sheet_usual_missing
 import com.ovalit.feature.report.resources.sheet_usual_range
 import com.ovalit.feature.report.resources.sheet_usual_same
 import com.ovalit.feature.report.resources.sheet_usual_title
-import com.ovalit.core.ui.valueText
-import com.ovalit.core.ui.withThousands
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import com.ovalit.core.ui.resources.Res as CoreUiRes
 
 private val TrendHeight = 62.dp
 private val BarGap = 5.dp
@@ -164,22 +166,29 @@ private fun CurrentValue(metric: FixedMetric, report: WeeklyReport.Ready) {
     val current = metric.value(report.metrics)
     val usual = report.baseline?.let { metric.value(it.metrics) }
 
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-        OvalitText(
-            text = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
-            modifier = Modifier.alignByBaseline(),
-            style = OvalitTheme.typography.metricXl,
-        )
-        if (current != null && usual != null) {
-            Spacer(Modifier.width(OvalitSpacing.sm))
+    // 좁은 화면에서 오른쪽 표본이 먼저 자리를 잡으면 큰 숫자와 변화량이 꺾인다. 모자라면 표본을 다음 줄로 내린다.
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalArrangement = Arrangement.spacedBy(OvalitSpacing.sm),
+        itemVerticalAlignment = Alignment.Bottom,
+    ) {
+        Row {
             OvalitText(
-                text = metric.format.formatChange(current, usual),
+                text = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
                 modifier = Modifier.alignByBaseline(),
-                style = OvalitTheme.typography.metricS,
-                color = directionColor(metric.format, current, usual),
+                style = OvalitTheme.typography.metricXl,
             )
+            if (current != null && usual != null) {
+                Spacer(Modifier.width(OvalitSpacing.sm))
+                OvalitText(
+                    text = metric.format.formatChange(current, usual),
+                    modifier = Modifier.alignByBaseline(),
+                    style = OvalitTheme.typography.metricS,
+                    color = directionColor(metric.format, current, usual),
+                )
+            }
         }
-        Spacer(Modifier.weight(1f))
         Column(horizontalAlignment = Alignment.End) {
             OvalitText(
                 text = stringResource(Res.string.sheet_sample_matches, periodLabel(report.period), report.metrics.matches),

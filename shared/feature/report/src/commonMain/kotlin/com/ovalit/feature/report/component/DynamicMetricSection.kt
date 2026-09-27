@@ -37,6 +37,7 @@ import com.ovalit.core.model.DynamicSlot
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.rememberFittingStyle
@@ -46,7 +47,6 @@ import com.ovalit.feature.report.format
 import com.ovalit.feature.report.hasGoodDirection
 import com.ovalit.feature.report.label
 import com.ovalit.feature.report.resources.Res
-import com.ovalit.feature.report.resources.baseline_missing
 import com.ovalit.feature.report.resources.dynamic_caption
 import com.ovalit.feature.report.resources.dynamic_caption_with_role
 import com.ovalit.feature.report.resources.dynamic_title_moved
@@ -75,6 +75,7 @@ internal fun DynamicMetricSection(
 ) {
     val typography = OvalitTheme.typography
     val columns = report.dynamic.map { slot -> dynamicColumn(slot, report.metrics, report.baseline) }
+    if (columns.isEmpty()) return
 
     Column(modifier = modifier) {
         HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
@@ -216,13 +217,9 @@ private fun dynamicColumn(slot: DynamicSlot, metrics: MatchMetrics, baseline: Ba
         valueColor = if (judged) colors.t1 else colors.t2,
         change = if (judged) metric.format.formatChange(current, usual) else null,
         changeColor = if (judged) changeColor(slot, current, usual) else colors.t3,
-        // 사용자 결정: 칸 밑에는 평소 값만 둔다. "라운드 153" 같은 표본은 무슨 숫자인지 읽히지 않아서 칸을 누르면
-        // 뜨는 시트에서 풀어 적는다. 표본이 모자란 칸은 애초에 판단하지 않고 "비교할 기록이 모자라요"로 적는다.
-        usual = if (judged) {
-            stringResource(Res.string.dynamic_usual, metric.format.valueText(usual))
-        } else {
-            stringResource(Res.string.baseline_missing)
-        },
+        // 칸 밑에는 평소 값만 둔다. 표본은 시트에 있다. 판단을 보류한 칸도 평균이 있으면 적고, 없으면 대시만 둔다.
+        // "비교할 기록이 모자라요"를 칸마다 쓰면 좁은 칸에서 잘리고 제목과 같은 말이 다섯 번 뜬다.
+        usual = stringResource(Res.string.dynamic_usual, usual?.let { metric.format.valueText(it) } ?: NO_VALUE),
     )
 }
 

@@ -1,6 +1,11 @@
 package com.ovalit.feature.report
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
@@ -13,6 +18,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.AgentId
@@ -23,6 +29,8 @@ import com.ovalit.core.model.Focus
 import com.ovalit.core.model.MovedMetric
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
+import com.ovalit.core.model.SideInsight
+import com.ovalit.core.model.SideMetric
 import com.ovalit.core.model.WeaponCategory
 import com.ovalit.core.model.WeaponId
 import com.ovalit.core.model.WeaponInfo
@@ -33,6 +41,7 @@ import com.ovalit.feature.report.component.DynamicMetricSheetBody
 import com.ovalit.feature.report.component.MetricSheetBody
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
@@ -72,6 +81,22 @@ class ReportScreenTest {
 
         onNodeWithText("최근 20경기", useUnmergedTree = true).assertExists()
         onNodeWithText("20승 10패", useUnmergedTree = true).assertExists()
+    }
+
+    // 글씨를 키운 좁은 화면에서 승패 글자가 먼저 자리를 잡으면 칸이 몇 dp만 남아 바코드처럼 보였다
+    @Test
+    fun `좁은 화면에서 칸이 너무 좁아지면 승패 글자를 칸 밑으로 내린다`() = runComposeUiTest {
+        val many = ReportPreviewData.moved.copy(results = List(30) { it % 3 != 0 })
+        setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale = 1.5f)) {
+                Box(Modifier.width(320.dp)) { Report(many) }
+            }
+        }
+
+        val cells = onNodeWithContentDescription("최근 경기부터", substring = true, useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val record = onNodeWithText("20승 10패", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        assertTrue(record.top >= cells.bottom)
     }
 
     // 리포트는 오래된 경기부터 담지만 칸은 op.gg와 경기 탭처럼 최근 경기가 왼쪽이다
@@ -299,7 +324,7 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(note = null)) }
 
         onAllNodesWithText("평소 ", substring = true, useUnmergedTree = true).assertCountEquals(3)
-        onNodeWithText("라운드\u00a0146", substring = true, useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("146라운드", substring = true, useUnmergedTree = true).assertDoesNotExist()
         onNodeWithText("4주 평균 ", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
@@ -311,8 +336,8 @@ class ReportScreenTest {
         onNodeWithText("생존율", substring = true).performScrollTo().performClick()
 
         onNodeWithText("몇 번으로 셌나요?").assertExists()
-        onNodeWithText("라운드\u00a0146").assertExists()
-        onNodeWithText("비율의 분모예요. 이번 기간과 비교하는 주가 모두 라운드\u00a040 이상이어야 비교해요.").assertExists()
+        onNodeWithText("146라운드").assertExists()
+        onNodeWithText("위에 적은 표본이 이 비율의 분모예요. 이번 기간과 비교하는 주가 모두 40라운드 이상이어야 비교해요.").assertExists()
         onNodeWithText("이번 변화가 지난 8주 동안 주마다 흔들린 폭의 1.5배를 넘어서 달라졌다고 봤어요.").assertExists()
     }
 
@@ -321,7 +346,7 @@ class ReportScreenTest {
     fun `판단하지 않은 칸의 시트는 기록이 모자라다고 적는다`() = runComposeUiTest {
         setContent { OvalitTheme { DynamicMetricSheetBody(DynamicMetric.FIRST_KILL_WIN_RATE, ReportPreviewData.moved) } }
 
-        onNodeWithText("비교할 기록이 모자라 달라졌는지 판단하지 않았어요", substring = true).assertExists()
+        onNodeWithText("달라졌는지 판단하지 않았어요", substring = true).assertExists()
         onNodeWithText("퍼블\u00a010번 이상이어야", substring = true).assertExists()
     }
 
@@ -330,7 +355,6 @@ class ReportScreenTest {
     fun `짚을 점은 움직인 지표와 같은 쪽 무기와 요원을 숫자로 적는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
 
-        onNodeWithText("이번 주 짚을 점").assertExists()
         onNodeWithText("피해량이 평소보다 10 올랐어요").assertExists()
         onNodeWithText("지난 4주 평균 128 → 이번 주 138").assertExists()
         onNodeWithText("가장 많이 오른 무기", substring = true).assertExists()
@@ -347,12 +371,14 @@ class ReportScreenTest {
         onNodeWithText("쓰세요", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
+    // 사용자 결정: 짚을 점은 바로 위 숫자를 풀어 말하는 문장이라 제목과 선 없이 고정 칸 밑에 붙인다
     @Test
-    fun `짚을 점은 고정 칸과 달라진 점 사이에 둔다`() = runComposeUiTest {
+    fun `짚을 점은 제목 없이 고정 칸 바로 밑에 둔다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
+        onNodeWithText("짚을 점", substring = true).assertDoesNotExist()
         val summary = onNodeWithText("변화량은 지난 4주 평균과 비교했어요").getUnclippedBoundsInRoot()
-        val note = onNodeWithText("이번 주 짚을 점").getUnclippedBoundsInRoot()
+        val note = onNodeWithText("피해량이 평소보다 10 올랐어요").getUnclippedBoundsInRoot()
         val dynamic = onNodeWithText("달라진 점").getUnclippedBoundsInRoot()
         assertTrue(summary.bottom <= note.top && note.bottom <= dynamic.top)
     }
@@ -361,7 +387,32 @@ class ReportScreenTest {
     fun `기타 모드에는 짚을 점이 없다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.otherQueue, QueueFilter.OTHER) }
 
-        onNodeWithText("짚을 점", substring = true).assertDoesNotExist()
+        onNodeWithText("평소보다", substring = true).assertDoesNotExist()
+    }
+
+    // 피해량은 정수라 "121예요"처럼 숫자 뒤 조사가 틀린다
+    @Test
+    fun `피해량 개선 포인트는 숫자 뒤에 조사를 붙이지 않는다`() = runComposeUiTest {
+        val damage = SideInsight(
+            metric = SideMetric.DAMAGE,
+            attack = ReportPreviewData.moved.metrics.copy(rounds = 70, damage = 70 * 143),
+            defense = ReportPreviewData.moved.metrics.copy(rounds = 76, damage = 76 * 121),
+            isRolePriority = false,
+        )
+        setContent { Report(ReportPreviewData.moved.copy(insight = damage)) }
+
+        onNodeWithText("공격은 라운드당 143, 수비는 121 피해를 입혔어요.").assertExists()
+    }
+
+    // 무기 값도 보이는 자릿수로 같으면 "140 → 140"이 돼서 무기 줄을 두지 않는다
+    @Test
+    fun `보이는 자릿수로 같은 무기는 짚지 않는다`() = runComposeUiTest {
+        val note = assertNotNull(ReportPreviewData.moved.note)
+        val flat = note.copy(weapon = note.weapon?.copy(current = 140.2, usual = 139.8))
+        setContent { Report(ReportPreviewData.moved.copy(note = flat), catalog = NamedCatalog) }
+
+        onNodeWithText("피해량이 평소보다 10 올랐어요").assertExists()
+        onNodeWithText("가장 많이 오른 무기", substring = true).assertDoesNotExist()
     }
 
     // 21.4%와 21.2%는 둘 다 21%로 보인다. "0%p 올랐어요"라고 쓰지 않는다.
@@ -370,7 +421,7 @@ class ReportScreenTest {
         val flat = WeekNote(MovedMetric(FixedMetric.HEADSHOT_RATE, current = 0.214, usual = 0.212), weapon = null, agents = emptyList())
         setContent { Report(ReportPreviewData.moved.copy(note = flat)) }
 
-        onNodeWithText("짚을 점", substring = true).assertDoesNotExist()
+        onNodeWithText("평소보다", substring = true).assertDoesNotExist()
     }
 
     // CLAUDE.md: 총량을 더한 뒤 나눈다
@@ -401,7 +452,7 @@ class ReportScreenTest {
         setContent { Sheet(FixedMetric.DAMAGE, ReportPreviewData.newAct) }
 
         onNodeWithText("이번 액트 기록이 4주 이상 쌓이면 평소 범위를 알려드려요.").assertExists()
-        onNodeWithText("세로선은 액트가 바뀐 곳이에요").assertExists()
+        onNodeWithText("세로선은 액트가 바뀐 곳이에요.").assertExists()
     }
 
     @Test

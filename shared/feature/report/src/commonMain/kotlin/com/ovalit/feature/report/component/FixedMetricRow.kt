@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,13 +33,14 @@ import com.ovalit.core.model.Baseline
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.ui.MetricFormat
+import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.SeparatedRow
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.kdaColor
-import com.ovalit.core.ui.resources.Res as CoreUiRes
-import com.ovalit.core.ui.resources.kda_ratio
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.rememberFittingStyle
+import com.ovalit.core.ui.resources.Res as CoreUiRes
+import com.ovalit.core.ui.resources.kda_ratio
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.report.format
@@ -97,12 +99,15 @@ internal fun FixedMetricRow(
                     VerticalLine()
                     Spacer(Modifier.width(CellGap))
                 }
-                FixedMetricCell(
-                    cell = cell,
-                    styles = styles,
-                    onClick = { onOpenMetric(cell.metric) },
-                    modifier = Modifier.weight(1f),
-                )
+                // 기타 모드로 바꾸면 둘째 칸이 K/D에서 헤드샷으로 바뀐다. 자리로 묶으면 186이 1.34로 굴러가서 지표로 묶는다.
+                key(cell.metric) {
+                    FixedMetricCell(
+                        cell = cell,
+                        styles = styles,
+                        onClick = { onOpenMetric(cell.metric) },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
     }
@@ -148,7 +153,7 @@ private fun FixedMetricCell(
         OvalitRollingText(
             text = cell.value,
             style = styles.value,
-            autoSize = shrinkToFit(styles.value.fontSize),
+            autoSize = shrinkToFit(styles.value.fontSize, min = 14.sp),
         )
         if (cell.change != null && cell.changeColor != null) {
             OvalitText(

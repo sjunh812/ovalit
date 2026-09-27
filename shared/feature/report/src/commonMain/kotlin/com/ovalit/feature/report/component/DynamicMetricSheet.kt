@@ -2,6 +2,7 @@ package com.ovalit.feature.report.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,7 +19,6 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.DynamicMetric
 import com.ovalit.core.model.DynamicSlot
-import com.ovalit.core.model.MIN_VOLATILITY_WEEKS
 import com.ovalit.core.model.MOVEMENT_THRESHOLD
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.Movement
@@ -94,7 +94,7 @@ internal fun DynamicMetricSheetBody(metric: DynamicMetric, report: WeeklyReport.
                     MOVEMENT_THRESHOLD.toString(),
                 )
                 Movement.STEADY -> stringResource(Res.string.dynamic_sheet_steady)
-                Movement.UNKNOWN -> stringResource(Res.string.dynamic_sheet_unknown, MIN_VOLATILITY_WEEKS)
+                Movement.UNKNOWN -> stringResource(Res.string.dynamic_sheet_unknown)
             },
         )
     }
@@ -109,8 +109,14 @@ private fun CurrentValue(slot: DynamicSlot, report: WeeklyReport.Ready) {
     val baseline = report.baseline
     val usual = baseline?.let { metric.value(it.metrics) }
 
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-        Column(modifier = Modifier.weight(1f)) {
+    // 좁은 화면에서 오른쪽 표본이 먼저 자리를 잡으면 큰 숫자와 변화량이 글자 단위로 꺾인다. 모자라면 표본을 다음 줄로 내린다.
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalArrangement = Arrangement.spacedBy(OvalitSpacing.sm),
+        itemVerticalAlignment = Alignment.Bottom,
+    ) {
+        Column {
             Row {
                 OvalitText(
                     text = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
@@ -136,8 +142,8 @@ private fun CurrentValue(slot: DynamicSlot, report: WeeklyReport.Ready) {
                 )
             }
         }
-        // 오른쪽에는 이 비율을 몇 번으로 셌는지 적는다. 분모가 작으면 숫자가 크게 흔들린다.
-        Column(horizontalAlignment = Alignment.End) {
+        // 이 비율을 몇 번으로 셌는지 적는다. 분모가 작으면 숫자가 크게 흔들린다.
+        Column {
             OvalitText(
                 text = stringResource(Res.string.sheet_sample_matches, periodLabel(report.period), report.metrics.matches),
                 style = OvalitTheme.typography.caption,

@@ -233,6 +233,22 @@ class ReportViewModelTest {
         assertEquals(null, homeNudge(ReportPreviewData.moved, QueueFilter.COMPETITIVE_AND_UNRATED, hasFriends = true, rivalCandidates = listOf(junho), rival = junho))
     }
 
+    // 라이벌로 둔 친구가 전적을 비공개로 바꾸면 라이벌 칸은 없어도 라이벌은 그대로다
+    @Test
+    fun `라이벌이 비공개로 바뀌었으면 다른 라이벌을 고르라고 하지 않는다`() {
+        val junho = FriendStanding(PlayerId("junho"), "준호#KR1", null)
+        val nudge = homeNudge(
+            ReportPreviewData.moved,
+            QueueFilter.COMPETITIVE_AND_UNRATED,
+            hasFriends = true,
+            rivalCandidates = listOf(junho),
+            rival = null,
+            hasRival = true,
+        )
+
+        assertEquals(null, nudge)
+    }
+
     @Test
     fun `첫 수집이 끝나기 전에는 리포트를 띄우지 않는다`() = runTest {
         val matches = FakeMatchRepository(ThursdayClock).observeMatches().first()

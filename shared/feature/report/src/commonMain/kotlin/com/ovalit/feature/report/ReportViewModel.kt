@@ -18,6 +18,7 @@ import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.core.ui.playerBadge
 import kotlin.time.Clock
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -62,10 +63,12 @@ internal fun homeNudge(
     hasFriends: Boolean,
     rivalCandidates: List<FriendStanding>,
     rival: FriendStanding?,
+    hasRival: Boolean = rival != null,
 ): HomeNudge? = when {
     report !is WeeklyReport.Ready || !queueFilter.hasDynamicMetrics -> null
     !hasFriends -> HomeNudge.INVITE_FRIEND
-    rival == null && rivalCandidates.isNotEmpty() -> HomeNudge.PICK_RIVAL
+    // 라이벌로 둔 친구가 전적을 비공개로 바꾸면 라이벌 칸은 없지만 라이벌은 그대로다. 그때 또 고르라고 하지 않는다.
+    !hasRival && rivalCandidates.isNotEmpty() -> HomeNudge.PICK_RIVAL
     else -> null
 }
 
@@ -122,7 +125,14 @@ class ReportViewModel(
             report = report,
             rival = rival,
             friends = standings,
-            nudge = homeNudge(report, filter, hasFriends = friends.isNotEmpty(), rivalCandidates = standings, rival = rival),
+            nudge = homeNudge(
+                report,
+                filter,
+                hasFriends = friends.isNotEmpty(),
+                rivalCandidates = standings,
+                rival = rival,
+                hasRival = rivalId != null,
+            ),
         )
     }.stateIn(
         scope = viewModelScope,
@@ -153,7 +163,11 @@ class ReportViewModel(
         refreshing.value = true
         viewModelScope.launch {
             try {
-                runCatching { matchRepository.refresh() }
+                matchRepository.refresh()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // 받지 못해도 저장해 둔 경기로 그린 리포트는 그대로 둔다
             } finally {
                 refreshing.value = false
             }

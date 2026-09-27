@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -23,6 +25,7 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.percentText
+import com.ovalit.core.ui.rememberWidestWidth
 import com.ovalit.core.ui.winRateColor
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.record_cells_description
@@ -35,6 +38,8 @@ import org.jetbrains.compose.resources.stringResource
 
 private val MaxCell = 14.dp
 private val MaxCellGap = 3.dp
+// 칸 하나가 이보다 좁아지면 승패 글자를 다음 줄로 내린다
+private val MinCellSlot = 7.dp
 
 /** 칸은 가장 최근 경기부터 이만큼만 둡니다. 한 주에 수십 판을 뛰면 칸이 1dp 아래로 줄어 바코드처럼 보였습니다. */
 internal const val MAX_RECORD_CELLS = 20
@@ -64,40 +69,71 @@ internal fun RecordStrip(report: WeeklyReport.Ready, modifier: Modifier = Modifi
         cells.joinToString(", ") { won -> if (won == true) win else if (won == false) loss else draw },
     )
 
-    Row(
+    val recent = if (cells.size < results.size) stringResource(Res.string.record_recent, cells.size) else null
+    val record = stringResource(Res.string.record_value, report.wins, report.losses)
+    val rate = percentText(report.winRate)
+    val rateStyle = caption.copy(fontWeight = FontWeight.SemiBold)
+
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = OvalitSpacing.gutter)
             .semantics(mergeDescendants = true) {},
-        verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (cells.size < results.size) {
-            OvalitText(text = stringResource(Res.string.record_recent, cells.size), style = caption, color = colors.t3)
-            Spacer(Modifier.width(OvalitSpacing.sm))
-        }
-        BoxWithConstraints(modifier = Modifier.weight(1f).semantics { contentDescription = description }) {
-            // 좁은 화면이나 큰 글씨에서도 칸이 줄 밖으로 넘치지 않게 칸과 간격을 같이 줄인다
-            val slot = maxWidth / cells.size
-            val gap = minOf(MaxCellGap, slot / 4)
-            val cell = minOf(MaxCell, slot - gap)
-            Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
-                cells.forEach { won ->
-                    val color = when (won) {
-                        true -> colors.pos
-                        false -> colors.neg
-                        null -> colors.bar
+        // 글자는 먼저 자리를 잡고 칸은 남은 폭을 나눠 갖는다. 글씨를 키운 좁은 화면에서는 칸이 한 칸에 몇 dp밖에 안
+        // 남아 바코드처럼 보여서, 그럴 때는 승패 글자를 칸 밑 줄로 내린다.
+        val sideWidth = rememberWidestWidth(listOfNotNull(recent), caption).let { if (recent != null) it + OvalitSpacing.sm else it } +
+            OvalitSpacing.md + rememberWidestWidth(listOf(record + SEPARATOR), caption) + rememberWidestWidth(listOf(rate), rateStyle)
+        val stacked = maxWidth - sideWidth < MinCellSlot * cells.size
+
+        @Composable
+        fun Cells(modifier: Modifier) {
+            BoxWithConstraints(modifier = modifier.semantics { contentDescription = description }) {
+                // 좁은 화면이나 큰 글씨에서도 칸이 줄 밖으로 넘치지 않게 칸과 간격을 같이 줄인다
+                val slot = maxWidth / cells.size
+                val gap = minOf(MaxCellGap, slot / 4)
+                val cell = minOf(MaxCell, slot - gap)
+                Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
+                    cells.forEach { won ->
+                        val color = when (won) {
+                            true -> colors.pos
+                            false -> colors.neg
+                            null -> colors.bar
+                        }
+                        Box(Modifier.size(width = cell, height = MaxCell).background(color, RoundedCornerShape(3.dp)))
                     }
-                    Box(Modifier.size(width = cell, height = MaxCell).background(color, RoundedCornerShape(3.dp)))
                 }
             }
         }
-        Spacer(Modifier.width(OvalitSpacing.md))
-        OvalitText(text = stringResource(Res.string.record_value, report.wins, report.losses), style = caption, color = colors.t2)
-        OvalitText(text = SEPARATOR, style = caption, color = colors.t3)
-        OvalitText(
-            text = percentText(report.winRate),
-            style = caption.copy(fontWeight = FontWeight.SemiBold),
-            color = winRateColor(report.winRate),
-        )
+
+        @Composable
+        fun Record() {
+            OvalitText(text = record, style = caption, color = colors.t2)
+            OvalitText(text = SEPARATOR, modifier = Modifier.clearAndSetSemantics {}, style = caption, color = colors.t3)
+            OvalitText(text = rate, style = rateStyle, color = winRateColor(report.winRate))
+        }
+
+        if (stacked) {
+            Column(verticalArrangement = Arrangement.spacedBy(OvalitSpacing.xs)) {
+                Cells(Modifier.fillMaxWidth())
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (recent != null) {
+                        OvalitText(text = recent, style = caption, color = colors.t3)
+                        Spacer(Modifier.width(OvalitSpacing.sm))
+                    }
+                    Record()
+                }
+            }
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (recent != null) {
+                    OvalitText(text = recent, style = caption, color = colors.t3)
+                    Spacer(Modifier.width(OvalitSpacing.sm))
+                }
+                Cells(Modifier.weight(1f))
+                Spacer(Modifier.width(OvalitSpacing.md))
+                Record()
+            }
+        }
     }
 }

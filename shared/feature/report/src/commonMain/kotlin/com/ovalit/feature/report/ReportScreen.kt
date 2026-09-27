@@ -45,7 +45,7 @@ import com.ovalit.feature.report.component.QueueChips
 import com.ovalit.feature.report.component.RecordStrip
 import com.ovalit.feature.report.component.ReportSkeleton
 import com.ovalit.feature.report.component.ReportTopBar
-import com.ovalit.feature.report.component.WeekNoteSection
+import com.ovalit.feature.report.component.WeekNoteLines
 import com.ovalit.feature.report.component.RivalPickerSheet
 import com.ovalit.feature.report.component.RivalSection
 import com.ovalit.feature.report.resources.Res
@@ -178,14 +178,19 @@ private fun ReportContent(
     )
     Spacer(Modifier.height(13.dp))
     FixedMetricSummary(metrics = report.metrics, baseline = report.baseline, fixedMetrics = queueFilter.fixedMetrics)
+    // 짚을 점과 개선 포인트는 바로 위 숫자를 풀어 말하는 문장이라 선과 제목 없이 그 숫자 밑에 붙인다. 선은 고정 칸,
+    // 달라진 점, 이번 주 요원·무기처럼 큰 묶음 사이에만 긋는다.
+    if (queueFilter.hasDynamicMetrics) {
+        report.note?.let { note ->
+            Spacer(Modifier.height(18.dp))
+            WeekNoteLines(note = note, report = report, catalog = catalog)
+        }
+    }
     Spacer(Modifier.height(22.dp))
 
     if (queueFilter.hasDynamicMetrics) {
-        report.note?.let { WeekNoteSection(note = it, report = report, catalog = catalog) }
         DynamicMetricSection(report, onOpenMetric = { openDynamic = it })
         report.insight?.let { insight ->
-            Spacer(Modifier.height(20.dp))
-            HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
             Spacer(Modifier.height(18.dp))
             InsightSection(insight = insight, role = report.mainRole)
         }

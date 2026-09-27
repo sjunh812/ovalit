@@ -14,6 +14,7 @@ import com.ovalit.core.model.Insight
 import com.ovalit.core.model.InsightMetric
 import com.ovalit.core.model.InsightPart
 import com.ovalit.core.model.InsightSubject
+import com.ovalit.core.model.ReportPeriod
 import com.ovalit.core.model.Role
 import com.ovalit.core.model.Side
 import com.ovalit.core.ui.Josa
@@ -22,6 +23,7 @@ import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.joinKeepingParts
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.mapName
+import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.column_win_rate
 import com.ovalit.core.ui.resources.metric_damage
@@ -45,6 +47,8 @@ import com.ovalit.feature.report.resources.insight_period_act
 import com.ovalit.feature.report.resources.insight_played_as
 import com.ovalit.feature.report.resources.insight_reason_focus
 import com.ovalit.feature.report.resources.insight_reason_role
+import com.ovalit.feature.report.resources.insight_recent_lead
+import com.ovalit.feature.report.resources.insight_recent_other
 import com.ovalit.feature.report.resources.insight_rounds
 import com.ovalit.feature.report.resources.insight_side
 import com.ovalit.feature.report.resources.insight_side_attack
@@ -66,7 +70,13 @@ import org.jetbrains.compose.resources.stringResource
  * 게임 결정을 대신하는 말은 쓰지 않습니다(CLAUDE.md 지켜야 할 선).
  */
 @Composable
-internal fun InsightSection(insight: Insight, role: Role?, catalog: ContentCatalog, modifier: Modifier = Modifier) {
+internal fun InsightSection(
+    insight: Insight,
+    role: Role?,
+    period: ReportPeriod,
+    catalog: ContentCatalog,
+    modifier: Modifier = Modifier,
+) {
     val format = if (insight.metric.isPercent) MetricFormat.PERCENT else MetricFormat.INTEGER
     val lead = insight.lead
     val other = insight.other
@@ -99,6 +109,20 @@ internal fun InsightSection(insight: Insight, role: Role?, catalog: ContentCatal
     val parts = joinKeepingParts(
         listOf(stringResource(Res.string.insight_period_act), lead.text(leadName, format), other.text(otherName, format)),
     )
+    // 사용자 요청(2026-09-27): 액트 동안의 차이가 이번 주에도 이어졌는지 숫자만 붙인다. 한 주 표본이라 판단은 하지 않는다.
+    val recent = insight.recent?.let {
+        joinKeepingParts(
+            listOf(
+                stringResource(
+                    Res.string.insight_recent_lead,
+                    periodLabel(period).withJosa(Josa.EUN_NEUN),
+                    leadName,
+                    format.valueText(it.lead),
+                ),
+                stringResource(Res.string.insight_recent_other, otherName, format.valueText(it.other)),
+            ),
+        )
+    }
     val focus = insight.focus
     val reason = when {
         focus != null -> stringResource(Res.string.insight_reason_focus, stringResource(focus.label).withJosa(Josa.EUL_REUL))
@@ -117,6 +141,7 @@ internal fun InsightSection(insight: Insight, role: Role?, catalog: ContentCatal
         OvalitText(text = headline, style = OvalitTheme.typography.bodyStrong)
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             OvalitText(text = parts, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t2)
+            recent?.let { OvalitText(text = it, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t2) }
             reason?.let { OvalitText(text = it, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t3) }
         }
     }

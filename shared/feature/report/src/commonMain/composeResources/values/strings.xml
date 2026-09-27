@@ -139,6 +139,8 @@
     <!-- "레이즈 2판 50%" -->
     <string name="insight_part">%1$s %2$s %3$s</string>
     <string name="insight_period_act">이번 액트</string>
+    <string name="insight_recent_lead">%1$s %2$s %3$s</string>
+    <string name="insight_recent_other">%1$s %2$s</string>
     <string name="insight_matches">%1$d판</string>
     <string name="insight_rounds">%1$d라운드</string>
     <string name="insight_reason_focus">%1$s 고르셔서 먼저 봤어요.</string>

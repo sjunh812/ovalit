@@ -121,6 +121,8 @@ data class InsightPart(
  * @property isRolePriority 고른 지표가 역할의 우선 지표인지입니다. 화면은 이때 "전략가에게 생존율은 먼저 보는
  * 지표예요"를 붙입니다.
  * @property focus 관심사 지표라서 골랐으면 그 관심사입니다. 화면은 이때 "에임 올리기를 고르셔서 먼저 봤어요"를 붙입니다.
+ * @property recent 홈 리포트 기간(이번 주)만 셌을 때 두 쪽 값입니다. 액트 동안 보인 차이가 이번 주에도 이어졌는지 보여줍니다.
+ * 두 쪽 중 하나라도 기간 표본이 모자라거나, 기간이 이번 액트 경기를 모두 담아 위 숫자와 같으면 `null`입니다.
  */
 data class Insight(
     val metric: InsightMetric,
@@ -129,7 +131,15 @@ data class Insight(
     val leadIsHigher: Boolean,
     val isRolePriority: Boolean,
     val focus: Focus? = null,
+    val recent: InsightRecent? = null,
 )
+
+/**
+ * 리포트 기간의 두 쪽 값입니다. 한 주 표본은 작아서 우연을 거르지 않고, 달라졌다고 판단하지도 않습니다. 숫자만 적습니다.
+ *
+ * @property lead [Insight.lead]와 같은 쪽의 값, [other]는 [Insight.other]와 같은 쪽의 값입니다.
+ */
+data class InsightRecent(val lead: Double, val other: Double)
 
 /**
  * 경기를 공격과 수비, 역할끼리, 같은 역할의 요원끼리, 맵끼리, 같은 계열의 무기끼리 나눠 견주고 문장 하나를 고릅니다. 홈은
@@ -204,6 +214,36 @@ private fun InsightSubject.single(): InsightSubject = when (this) {
     else -> this
 }
 
+/**
+ * [matches]만 셌을 때 두 쪽 값을 [Insight.recent]에 담습니다. 홈은 리포트 기간 경기를 넘깁니다. 두 쪽 모두 동적 칸과 같은
+ * 최소 표본을 넘겨야 합니다. 무기는 S6과 같은 표본입니다.
+ */
+internal fun Insight.during(matches: List<Match>, categories: Map<WeaponId, WeaponCategory>): Insight {
+    val lead = lead.subject.value(metric, matches, categories) ?: return this
+    val other = other.subject.value(metric, matches, categories) ?: return this
+    return copy(recent = InsightRecent(lead, other))
+}
+
+private fun InsightSubject.value(metric: InsightMetric, matches: List<Match>, categories: Map<WeaponId, WeaponCategory>): Double? {
+    val group = when (this) {
+        is InsightSubject.OnSide -> return matches.sideGroup(side).takeIf { it.hasSample(metric) }?.value(metric)
+        is InsightSubject.OnAgent -> matches.filter { it.myAgent == agent }
+        is InsightSubject.OtherAgents -> matches.filter { it.myAgent in agents }
+        is InsightSubject.OnRole -> matches.filter { it.myRole == role }
+        is InsightSubject.OtherRoles -> matches.filter { it.myRole in roles }
+        is InsightSubject.OnMap -> matches.filter { it.map == map }
+        is InsightSubject.OtherMaps -> matches.filter { it.map in maps }
+        is InsightSubject.WithWeapon -> return matches.weaponValue(setOf(weapon), metric)
+        is InsightSubject.OtherWeapons -> return matches.weaponValue(weapons.toSet(), metric)
+    }
+    return group.group(this).takeIf { it.hasSample(metric) }?.value(metric)
+}
+
+private fun List<Match>.weaponValue(weapons: Set<WeaponId>, metric: InsightMetric): Double? {
+    val stats = weaponStats().filter { it.weapon in weapons }.reduceOrNull(WeaponStats::plus) ?: return null
+    return stats.value(if (metric == InsightMetric.HEADSHOT_RATE) WeaponMetric.HEADSHOT_RATE else WeaponMetric.DAMAGE_PER_ROUND)
+}
+
 // 경기 지표로 셀 수 있는 것들이다. 헤드샷은 무기끼리만 본다.
 private val MatchInsightMetrics = InsightMetric.entries - InsightMetric.HEADSHOT_RATE
 
@@ -243,7 +283,10 @@ private class Group(
         else -> metrics.adr
     }
 
-    fun isMeasurable(metric: InsightMetric): Boolean = matches.size >= MIN_INSIGHT_MATCHES && when {
+    fun isMeasurable(metric: InsightMetric): Boolean = matches.size >= MIN_INSIGHT_MATCHES && hasSample(metric)
+
+    // 동적 칸과 같은 최소 표본이다. 이번 주 숫자는 우연을 거르지 않으니 판 수는 보지 않는다.
+    fun hasSample(metric: InsightMetric): Boolean = when {
         metric == InsightMetric.WIN_RATE -> decided >= MIN_AGENT_MATCHES
         metric.dynamic != null -> metric.dynamic.isMeasurable(metrics)
         else -> metrics.rounds >= DAMAGE_MIN_ROUNDS

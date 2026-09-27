@@ -696,6 +696,32 @@ class ReportScreenTest {
         onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요.").assertExists()
     }
 
+    // 사용자 요청(2026-09-27): 액트 동안의 차이가 이번 주에도 이어졌는지 숫자만 붙인다. 까닭 줄보다 앞, 액트 줄 바로 밑이다.
+    @Test
+    fun `개선 포인트 밑에 이번 주 값을 붙인다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved) }
+
+        val act = onNodeWithText(joinKeepingParts(listOf("이번 액트", "공격 388라운드 58%", "수비 388라운드 44%"))).getUnclippedBoundsInRoot()
+        val recent = onNodeWithText(joinKeepingParts(listOf("이번 주는 공격 71%", "수비 45%"))).getUnclippedBoundsInRoot()
+        val reason = onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요.").getUnclippedBoundsInRoot()
+        assertTrue(act.bottom <= recent.top && recent.bottom <= reason.top)
+    }
+
+    // 기간을 넓혔으면 그 기간 이름으로 적는다
+    @Test
+    fun `이번 주 값은 리포트 기간 이름으로 적는다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.steady.copy(insight = ReportPreviewData.moved.insight)) }
+
+        onNodeWithText(joinKeepingParts(listOf("최근 2주는 공격 71%", "수비 45%"))).assertExists()
+    }
+
+    @Test
+    fun `이번 주 값이 없으면 그 줄을 두지 않는다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved.let { it.copy(insight = it.insight?.copy(recent = null)) }) }
+
+        onNodeWithText("이번 주는", substring = true, useUnmergedTree = true).assertDoesNotExist()
+    }
+
     @Test
     fun `우선 지표가 아니면 역할 문장을 붙이지 않는다`() = runComposeUiTest {
         val report = ReportPreviewData.moved.let { it.copy(insight = it.insight?.copy(isRolePriority = false)) }

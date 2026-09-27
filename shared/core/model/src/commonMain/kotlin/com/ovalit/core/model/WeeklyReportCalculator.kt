@@ -62,8 +62,7 @@ fun Iterable<Match>.weeklyReport(
         } else {
             emptyList()
         },
-        // 한 주 경기를 둘로 나누면 표본이 작아 우연한 차이가 대부분이다. 이번 액트 경기로 견준다.
-        insight = if (queueFilter.hasDynamicMetrics) matchesByWeek.values.flatten().insight(mainRole, focus, weaponCategories) else null,
+        insight = if (queueFilter.hasDynamicMetrics) matchesByWeek.actInsight(periodMatches, mainRole, focus, weaponCategories) else null,
         trend = counted.trendWeeks(end = end, period = period, timeZone = timeZone),
         results = periodMatches.sortedBy { it.startedAt }.map { it.myTeamWon },
         agents = periodMatches.agentReport().agents,
@@ -74,6 +73,19 @@ fun Iterable<Match>.weeklyReport(
             null
         },
     )
+}
+
+// 한 주 경기를 둘로 나누면 표본이 작아 우연한 차이가 대부분이다. 이번 액트 경기로 견주고, 그 차이가 이번 기간에도
+// 이어졌는지 기간 값을 붙인다. 기간이 액트 경기를 모두 담으면 위 숫자와 같아서 붙이지 않는다.
+private fun Map<LocalDate, List<Match>>.actInsight(
+    periodMatches: List<Match>,
+    role: Role?,
+    focus: Focus,
+    categories: Map<WeaponId, WeaponCategory>,
+): Insight? {
+    val actMatches = values.flatten()
+    val insight = actMatches.insight(role, focus, categories) ?: return null
+    return if (periodMatches.size < actMatches.size) insight.during(periodMatches, categories) else insight
 }
 
 // 무기와 요원은 기간 성적을 바로 앞 비교 기준과 견준다. 무기는 S6 위쪽 표와 같은 창이다.

@@ -144,6 +144,49 @@ class InsightTest {
         val insight = assertNotNull(insight(thisWeek + earlier + lastAct))
         assertEquals(InsightSubject.OnSide(Side.ATTACK), insight.lead.subject)
         assertEquals(24 * 15, insight.lead.rounds)
+        // 사용자 요청(2026-09-27): 액트 동안의 차이가 이번 주에도 이어졌는지 이번 주 값을 붙인다
+        assertEquals(InsightRecent(lead = 100 / 120.0, other = 95 / 120.0), insight.recent)
+    }
+
+    // 이번 액트 경기가 모두 이번 주 것이면 이번 주 값이 위 숫자와 같다
+    @Test
+    fun `기간이 이번 액트 경기를 모두 담으면 이번 주 값을 붙이지 않는다`() {
+        val report = aimGap(games = 5).weeklyReport(now = OneDayLater, timeZone = TimeZone.UTC) as WeeklyReport.Ready
+
+        assertNull(assertNotNull(report.insight).recent)
+    }
+
+    // 이번 주 레이즈는 30라운드뿐이라 동적 칸 최소 표본(40라운드)에 못 미친다. 한쪽만 적으면 무엇과 견주는지 모른다.
+    @Test
+    fun `이번 주에 한쪽 표본이 모자라면 이번 주 값을 붙이지 않는다`() {
+        val act = agentMatches(Jett, Role.DUELIST, survived = 45, died = 15) + agentMatches(Raze, Role.DUELIST, survived = 20, died = 20)
+        val insight = assertNotNull(act.insight(role = null))
+        val shortRaze = agentMatches(Raze, Role.DUELIST, survived = 15, died = 15, games = 1)
+
+        assertNull(insight.during(act.take(1) + shortRaze, categories = emptyMap()).recent)
+        assertEquals(InsightRecent(lead = 0.75, other = 0.5), insight.during(act.take(1) + act.last(), categories = emptyMap()).recent)
+    }
+
+    @Test
+    fun `이번 주 공수 라운드가 모자라면 이번 주 값을 붙이지 않는다`() {
+        val insight = assertNotNull(sides(attack = 30 to 10, defense = 20 to 20).insight(Role.SENTINEL))
+
+        assertNull(insight.during(sides(attack = 15 to 5, defense = 10 to 10, games = 1), categories = emptyMap()).recent)
+        assertEquals(
+            InsightRecent(lead = 0.75, other = 0.5),
+            insight.during(sides(attack = 15 to 5, defense = 10 to 10, games = 2), categories = emptyMap()).recent,
+        )
+    }
+
+    @Test
+    fun `무기의 이번 주 값은 S6과 같은 표본으로 센다`() {
+        val matches = weaponMatches(Vandal, head = 1) + weaponMatches(Phantom, head = 3)
+        val rifles = mapOf(Vandal to WeaponCategory.RIFLE, Phantom to WeaponCategory.RIFLE)
+        val insight = assertNotNull(matches.insight(role = null, categories = rifles))
+
+        // 한 경기 10라운드씩이라 두 경기면 S6 기준 20라운드를 채운다
+        assertNull(insight.during(matches.take(1) + matches.takeLast(1), rifles).recent)
+        assertEquals(InsightRecent(lead = 0.3, other = 0.1), insight.during(matches.take(2) + matches.takeLast(2), rifles).recent)
     }
 
     // 감시자는 퍼블 쪽을 크게 띄우지 않지만, 에임 올리기를 골랐으면 첫 교전 승률부터 본다

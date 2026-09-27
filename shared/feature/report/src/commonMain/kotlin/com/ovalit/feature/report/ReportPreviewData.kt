@@ -10,6 +10,7 @@ import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.Insight
 import com.ovalit.core.model.InsightMetric
 import com.ovalit.core.model.InsightPart
+import com.ovalit.core.model.InsightRecent
 import com.ovalit.core.model.InsightSubject
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.MovedAgent
@@ -120,13 +121,15 @@ internal object ReportPreviewData {
 
     // 타격대가 수비에서 첫 교전을 자주 졌다. 공격 71%, 수비 45%.
     // 공격 첫 교전 22승 9패(71%), 수비 15승 18패(45%). 둘 다 이름이 있어 높은 공격이 주어다.
-    // 개선 포인트는 이번 액트 경기로 견준다. 이번 주 146라운드와 앞선 네 주 630라운드를 합친 서른세 판이다.
+    // 개선 포인트는 이번 액트 경기로 견준다. 이번 주 146라운드와 앞선 네 주 630라운드를 합친 서른세 판이다. 이번 주만 보면
+    // 공격 첫 교전 31번 중 22번, 수비 33번 중 15번을 이겼다.
     private val firstDuelBySide = Insight(
         metric = InsightMetric.FIRST_DUEL_WIN_RATE,
         lead = InsightPart(InsightSubject.OnSide(Side.ATTACK), value = 128 / 221.0, matches = 33, rounds = 388),
         other = InsightPart(InsightSubject.OnSide(Side.DEFENSE), value = 96 / 218.0, matches = 33, rounds = 388),
         leadIsHigher = true,
         isRolePriority = true,
+        recent = InsightRecent(lead = 22 / 31.0, other = 15 / 33.0),
     )
 
     private fun agentWeek(kills: Int, deaths: Int, assists: Int, matches: Int) =

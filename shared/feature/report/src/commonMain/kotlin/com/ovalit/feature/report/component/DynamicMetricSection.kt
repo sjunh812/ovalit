@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitRollingText
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.currentMaxWidth
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -87,7 +88,7 @@ internal fun DynamicMetricSection(
             // 설명만 다른 높이에 놓인다. 둘째 줄도 첫 줄과 칸 폭이 같다.
             val perRow = columns.size.coerceAtMost(COLUMNS_PER_ROW)
             val gaps = (ColumnGap * 2 + 1.dp) * (perRow - 1)
-            val columnWidth = (maxWidth - OvalitSpacing.gutter * 2 - gaps) / perRow
+            val columnWidth = (currentMaxWidth - OvalitSpacing.gutter * 2 - gaps) / perRow
             val valueStyle = rememberFittingStyle(columns.map { it.value }, typography.metricM, columnWidth, min = 14.sp)
             val changeStyle = typography.metricS
             // 가장 작은 글자로도 한 줄에 안 들어가는 이름이 있으면 모든 칸 이름을 두 줄로 꺾는다. 그때는 가장 긴 어절이

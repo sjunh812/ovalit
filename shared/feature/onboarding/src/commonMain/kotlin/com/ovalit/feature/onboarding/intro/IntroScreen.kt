@@ -26,6 +26,7 @@ import com.ovalit.core.designsystem.component.OvalitDisclaimer
 import com.ovalit.core.designsystem.component.OvalitLogo
 import com.ovalit.core.designsystem.component.OvalitPrimaryButton
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.currentMaxHeight
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.feature.onboarding.resources.Res
@@ -94,7 +95,7 @@ fun IntroScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .heightIn(min = maxHeight)
+                .heightIn(min = currentMaxHeight)
                 .padding(horizontal = OvalitSpacing.xl),
             // 로고와 문구 덩어리를 버튼 위 공간의 가운데에 둔다. 스크롤 안에서는 weight가 듣지 않아 세 덩어리를
             // SpaceBetween으로 벌린다.

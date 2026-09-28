@@ -45,6 +45,7 @@ import com.ovalit.core.designsystem.component.OvalitPickerButton
 import com.ovalit.core.designsystem.component.OvalitPickerTitle
 import com.ovalit.core.designsystem.component.OvalitSheetOption
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.currentMaxWidth
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.AgentReport
@@ -370,7 +371,7 @@ private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         // 한 줄이라도 "타격대 · 20판 · KDA 1.88"이 이름 밑에 안 들어가면 모든 줄에서 KDA를 한 줄 내린다. 줄마다 따로
         // 꺾으면 줄 높이가 제각각이다.
-        val nameWidth = maxWidth - OvalitSpacing.gutter * 2 - ThumbnailSize - OvalitSpacing.md - WinColumn - MetricColumn * columns.size
+        val nameWidth = currentMaxWidth - OvalitSpacing.gutter * 2 - ThumbnailSize - OvalitSpacing.md - WinColumn - MetricColumn * columns.size
         val captions = agents.map { agent ->
             AnnotatedString(listOfNotNull(roleText(agent), stringResource(CoreUiRes.string.agents_matches, agent.matches), rowKda(agent)?.text).joinToString(SEPARATOR))
         }

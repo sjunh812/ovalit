@@ -21,6 +21,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.currentMaxWidth
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.WeeklyReport
@@ -83,13 +84,13 @@ internal fun RecordStrip(report: WeeklyReport.Ready, modifier: Modifier = Modifi
         // 바코드처럼 보여서, 그때는 승패 글자를 칸 밑 줄로 내린다.
         val sideWidth = rememberWidestWidth(listOfNotNull(recent), caption).let { if (recent != null) it + OvalitSpacing.sm else it } +
             OvalitSpacing.md + rememberWidestWidth(listOf(record + SEPARATOR), caption) + rememberWidestWidth(listOf(rate), rateStyle)
-        val stacked = maxWidth - sideWidth < MinCellSlot * cells.size
+        val stacked = currentMaxWidth - sideWidth < MinCellSlot * cells.size
 
         @Composable
         fun Cells(modifier: Modifier) {
             BoxWithConstraints(modifier = modifier.semantics { contentDescription = description }) {
                 // 좁은 화면이나 큰 글씨에서도 칸이 줄 밖으로 넘치지 않게 칸과 간격을 같이 줄인다
-                val slot = maxWidth / cells.size
+                val slot = currentMaxWidth / cells.size
                 val gap = minOf(MaxCellGap, slot / 4)
                 val cell = minOf(MaxCell, slot - gap)
                 Row(horizontalArrangement = Arrangement.spacedBy(gap)) {

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitRollingText
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.currentMaxWidth
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -77,7 +78,7 @@ internal fun FixedMetricRow(
         // 이름, 숫자, 변화량마다 모든 칸에 한 크기를 쓴다. 칸마다 따로 줄이면 "전투점수"만 작아지고 그 칸 숫자만
         // 위로 올라가 줄이 어긋난다.
         val gaps = (CellGap * 2 + 1.dp) * (cells.size - 1)
-        val cellWidth = (maxWidth - OvalitSpacing.gutter * 2 - gaps) / cells.size
+        val cellWidth = (currentMaxWidth - OvalitSpacing.gutter * 2 - gaps) / cells.size
         val styles = FixedCellStyles(
             label = rememberFittingStyle(cells.map { it.label }, typography.caption, cellWidth - ChevronSpace),
             value = rememberFittingStyle(cells.map { it.value }, typography.metricM, cellWidth, min = 14.sp),

@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.currentMaxWidth
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -182,10 +183,10 @@ fun ProfileStatsSection(summary: ProfileSummary, modifier: Modifier = Modifier, 
             val labels = cells.map { it.label }
             val values = cells.map { it.value ?: NO_VALUE }
             val valueStyle = StatValueStyle()
-            val threeWide = maxWidth / STAT_COLUMNS - OvalitSpacing.sm
+            val threeWide = currentMaxWidth / STAT_COLUMNS - OvalitSpacing.sm
             val threeValue = rememberFittingStyle(values, valueStyle, threeWide, min = STAT_MIN_SIZE)
             val columns = if (rememberFitsOnOneLine(values.map(::AnnotatedString), threeValue, threeWide)) STAT_COLUMNS else 2
-            val cellWidth = maxWidth / columns - OvalitSpacing.sm
+            val cellWidth = currentMaxWidth / columns - OvalitSpacing.sm
             val styles = StatStyles(
                 label = rememberFittingStyle(labels, OvalitTheme.typography.caption, cellWidth),
                 value = rememberFittingStyle(values, valueStyle, cellWidth, min = STAT_MIN_SIZE),
@@ -314,7 +315,7 @@ fun ProfileShotsSection(shots: Shots) {
                     append(part.count.withThousands())
                 }
             }
-            val stacked = !rememberFitsOnOneLine(lines, typography.label, maxWidth / parts.size, extra = ShotGap)
+            val stacked = !rememberFitsOnOneLine(lines, typography.label, currentMaxWidth / parts.size, extra = ShotGap)
             Row {
                 parts.forEach { part -> ShotLegend(part, shots.total, stacked, Modifier.weight(1f)) }
             }
@@ -373,7 +374,7 @@ fun AgentTileRow(agents: List<AgentStats>, catalog: ContentCatalog, showRecord: 
     val shown = agents.take(SHOWN_TILES)
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val caption = OvalitTheme.typography.caption
-        val tileWidth = (maxWidth - TileGap * (SHOWN_TILES - 1)) / SHOWN_TILES
+        val tileWidth = (currentMaxWidth - TileGap * (SHOWN_TILES - 1)) / SHOWN_TILES
         // 한 칸이라도 승률이 판 수 옆에 안 들어가면 모든 칸의 승률을 아래로 내린다
         val lines = shown.map { agent ->
             val first = agentFirstLine(agent, showRecord)
@@ -448,7 +449,7 @@ fun ProfileWeaponsSection(report: WeaponReport, catalog: ContentCatalog, onOpen:
 fun WeaponTileRow(weapons: List<WeaponStats>, catalog: ContentCatalog) {
     val shown = weapons.take(SHOWN_TILES)
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-        val tileWidth = (maxWidth - TileGap * (SHOWN_TILES - 1)) / SHOWN_TILES
+        val tileWidth = (currentMaxWidth - TileGap * (SHOWN_TILES - 1)) / SHOWN_TILES
         val lines = shown.map { weaponLine(it) }
         // 한 칸이라도 헤드샷과 피해량이 한 줄에 안 들어가면 모든 칸에서 피해량을 아래로 내린다
         val stacked = !rememberFitsOnOneLine(

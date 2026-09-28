@@ -41,6 +41,7 @@ import com.ovalit.core.designsystem.component.OvalitDisclosureIcon
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitExpandable
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.currentMaxWidth
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ContentCatalog
@@ -218,10 +219,10 @@ private fun Highlights(report: WeaponReport, catalog: ContentCatalog) {
                 killsText(row),
             )
         }
-        val besideCells = maxWidth - HighlightThumbWidth - OvalitSpacing.md - HighlightColumn * WeaponMetric.entries.size
+        val besideCells = currentMaxWidth - HighlightThumbWidth - OvalitSpacing.md - HighlightColumn * WeaponMetric.entries.size
         val needed = maxOf(rememberWidestWidth(nameWords, typography.bodyStrong), rememberWidestWidth(captions, typography.caption))
         val stacked = needed > besideCells
-        val nameWidth = if (stacked) maxWidth - HighlightThumbWidth - OvalitSpacing.md else besideCells
+        val nameWidth = if (stacked) currentMaxWidth - HighlightThumbWidth - OvalitSpacing.md else besideCells
         // 이름은 어절 단위로 꺾이게 두고, 가장 긴 어절이 한 줄에 들어가는 크기로 셋을 같이 줄인다
         val styles = HighlightStyles(
             name = rememberFittingStyle(nameWords, typography.bodyStrong, nameWidth, min = 11.sp),
@@ -449,7 +450,7 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
                 // 줄마다 KDA 줄을 따로 줄이면 킬이 많은 총만 작아진다. 계열 안의 줄이 같은 크기를 쓴다.
                 val caption = OvalitTheme.typography.caption
                 val lines = weapons.map { weapon -> kdaText(weapon.kda?.takeIf { weapon.isCarriedMeasurable }, weapon.kills, weapon.deaths, weapon.assists).annotated() }
-                val nameWidth = maxWidth - WeaponThumbWidth - OvalitSpacing.md
+                val nameWidth = currentMaxWidth - WeaponThumbWidth - OvalitSpacing.md
                 val beside = rememberFittingStyle(lines.map { it.text }, caption, nameWidth - KdColumn - DamageColumn - HeadshotColumn)
                 val below = rememberFittingStyle(lines.map { it.text }, caption, nameWidth)
                 // 세 칸 옆에 맞춘 KDA 줄 크기가 원래의 80%보다 작으면 계열 안의 모든 줄에서 세 칸을 이름 밑으로 내린다

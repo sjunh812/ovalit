@@ -14,7 +14,6 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.ui.unit.IntOffset
 import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
-import androidx.navigationevent.NavigationEvent
 
 // 화면 전환은 iOS 내비게이션을 따른다(CLAUDE.md 디자인). 새 화면은 오른쪽에서 밀려 들어오고, 아래 화면은 폭의
 // 4분의 1만 왼쪽으로 비키면서 조금 어두워진다. 뒤로 가기 스와이프는 손가락을 따라 위 화면을 옆으로 밀어낸다.
@@ -44,27 +43,26 @@ internal fun <T : Any> pushTransition(dimmedAlpha: Float): AnimatedContentTransi
 
 /** 뒤로 가기 버튼처럼 스와이프 없이 화면을 뺄 때의 전환입니다. */
 internal fun <T : Any> popTransition(dimmedAlpha: Float): AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform = {
-    slideBack(fromRightEdge = false, easedSpec = true, dimmedAlpha = dimmedAlpha)
+    slideBack(easedSpec = true, dimmedAlpha = dimmedAlpha)
 }
 
 /**
  * 뒤로 가기 스와이프를 하는 동안의 전환입니다. 진행도만큼 그대로 움직여야 손가락을 따라오는 것처럼 보여서 속도 곡선을
- * 두지 않습니다. 안드로이드는 오른쪽 가장자리에서도 뒤로 가기를 쓸 수 있어서, 그때는 손가락을 따라 왼쪽으로 뺍니다.
+ * 두지 않습니다. 안드로이드는 오른쪽 가장자리에서도 뒤로 가기를 쓸 수 있지만, 어느 쪽에서 시작해도 뒤로 가기 버튼처럼
+ * 오른쪽으로 뺍니다(사용자 요청, 2026-09-28). 가장자리마다 방향이 바뀌면 같은 뒤로 가기가 두 가지로 보입니다.
  */
 internal fun <T : Any> predictivePopTransition(dimmedAlpha: Float):
-    AnimatedContentTransitionScope<Scene<T>>.(Int) -> ContentTransform = { edge ->
-    slideBack(fromRightEdge = edge == NavigationEvent.EDGE_RIGHT, easedSpec = false, dimmedAlpha = dimmedAlpha)
+    AnimatedContentTransitionScope<Scene<T>>.(Int) -> ContentTransform = {
+    slideBack(easedSpec = false, dimmedAlpha = dimmedAlpha)
 }
 
-private fun slideBack(fromRightEdge: Boolean, easedSpec: Boolean, dimmedAlpha: Float): ContentTransform {
+private fun slideBack(easedSpec: Boolean, dimmedAlpha: Float): ContentTransform {
     val easing = if (easedSpec) FastOutSlowInEasing else LinearEasing
     val spec = tween<Float>(SLIDE_MILLIS, easing = easing)
     val offset = tween<IntOffset>(SLIDE_MILLIS, easing = easing)
-    val direction = if (fromRightEdge) -1 else 1
     return ContentTransform(
-        targetContentEnter = slideInHorizontally(offset) { -direction * it / PARALLAX_DIVISOR } +
-            fadeIn(spec, initialAlpha = dimmedAlpha),
-        initialContentExit = slideOutHorizontally(offset) { direction * it },
+        targetContentEnter = slideInHorizontally(offset) { -it / PARALLAX_DIVISOR } + fadeIn(spec, initialAlpha = dimmedAlpha),
+        initialContentExit = slideOutHorizontally(offset) { it },
     )
 }
 

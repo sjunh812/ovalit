@@ -123,11 +123,11 @@
     <string name="insight_side_attack">공격</string>
     <string name="insight_side_defense">수비</string>
     <!-- 요원과 역할은 "제트로 뛴 판은", "전략가로 뛴 판은"으로 같은 틀을 쓴다. %5$s는 높아요나 낮아요다. -->
-    <string name="insight_side">%1$s에서 %2$s %3$s보다 %4$s %5$s.</string>
-    <string name="insight_played_as">%1$s 뛴 판은 %2$s %3$s보다 %4$s %5$s.</string>
-    <string name="insight_map">%1$s에서는 %2$s %3$s보다 %4$s %5$s.</string>
-    <string name="insight_weapon">%1$s 든 라운드는 %2$s %3$s보다 %4$s %5$s.</string>
-    <string name="insight_session">연달아 뛴 %1$s는 %2$s %3$s보다 %4$s %5$s.</string>
+    <string name="insight_side">%1$s에서 %2$s %3$s보다 %4$s %5$s</string>
+    <string name="insight_played_as">%1$s 뛴 판은 %2$s %3$s보다 %4$s %5$s</string>
+    <string name="insight_map">%1$s에서는 %2$s %3$s보다 %4$s %5$s</string>
+    <string name="insight_weapon">%1$s 든 라운드는 %2$s %3$s보다 %4$s %5$s</string>
+    <string name="insight_session">연달아 뛴 %1$s는 %2$s %3$s보다 %4$s %5$s</string>
     <string name="insight_higher">높아요</string>
     <string name="insight_lower">낮아요</string>
     <string name="insight_other_agents">다른 %1$s 요원</string>
@@ -141,8 +141,8 @@
     <string name="insight_title_matches">%1$d경기</string>
     <string name="insight_matches">%1$d판</string>
     <string name="insight_rounds">%1$d라운드</string>
-    <string name="insight_reason_focus">%1$s 고르셔서 먼저 봤어요.</string>
-    <string name="insight_reason_role">%1$s에게 %2$s 먼저 보는 지표예요.</string>
+    <string name="insight_reason_focus">%1$s 고르셔서 먼저 봤어요</string>
+    <string name="insight_reason_role">%1$s에게 %2$s 먼저 보는 지표예요</string>
     <string name="insight_metric_multi_kill">멀티킬 라운드 비율</string>
     <string name="gap_percent">%1$s%p</string>
     <!-- 라이벌과 친구 비교 -->
@@ -150,9 +150,9 @@
     <string name="rival_lead">%1$d개 중 %2$d개 앞섬</string>
     <string name="rival_no_matches">%1$s 경기가 없어요</string>
     <string name="nudge_invite_title">같이 뛰는 친구를 불러 보세요</string>
-    <string name="nudge_invite_body">초대 링크로 친구가 되면 매주 기록을 나란히 놓고 볼 수 있어요.</string>
+    <string name="nudge_invite_body">초대 링크로 친구가 되면 매주 기록을 나란히 놓고 볼 수 있어요</string>
     <string name="nudge_rival_title">라이벌을 골라 보세요</string>
-    <string name="nudge_rival_body">고른 친구와 K/D, 피해량, 헤드샷을 매주 겨뤄요.</string>
+    <string name="nudge_rival_body">고른 친구와 K/D, 피해량, 헤드샷을 매주 겨뤄요</string>
     <string name="rival_pick_title">라이벌 고르기</string>
     <string name="rival_pick_body">전적을 공개한 친구만 고를 수 있어요. 친구 프로필에서 언제든 바꿀 수 있어요.</string>
     <string name="rival_pick_no_matches">%1$s 경기 없음</string>

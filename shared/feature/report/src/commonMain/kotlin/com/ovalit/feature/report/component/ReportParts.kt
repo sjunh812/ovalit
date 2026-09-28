@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -30,6 +31,13 @@ internal fun VerticalLine() {
             .background(OvalitTheme.colors.line),
     )
 }
+
+/**
+ * 짚을 점과 개선 포인트의 헤드라인 글꼴입니다. 한 문장이라 본문처럼 줄을 끝까지 채우면 "높아요"만 다음 줄에 남아서, 제목처럼
+ * 줄 길이를 고르게 나눕니다(CLAUDE.md 디자인).
+ */
+@Composable
+internal fun headlineStyle(): TextStyle = OvalitTheme.typography.bodyStrong.copy(lineBreak = LineBreak.Heading)
 
 /** 묶음 제목과 내용 사이입니다. 홈의 묶음이 모두 같이 써서 어느 묶음이든 제목에서 같은 거리에 내용이 옵니다. */
 internal val SectionTitleGap = 12.dp

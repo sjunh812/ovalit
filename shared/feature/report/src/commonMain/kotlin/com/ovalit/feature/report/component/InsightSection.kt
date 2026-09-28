@@ -157,12 +157,13 @@ internal fun InsightSection(
             caption = insight.matches.takeIf { it > 0 }?.let { AnnotatedString(stringResource(Res.string.insight_title_matches, it)) },
         )
         Spacer(Modifier.height(6.dp))
-        OvalitText(text = headline, style = OvalitTheme.typography.bodyStrong)
+        OvalitText(text = headline, style = headlineStyle())
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             OvalitText(text = act, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t2)
             recent?.let { OvalitText(text = it, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t2) }
-            reason?.let { OvalitText(text = it, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t3) }
         }
+        // 왜 이 지표를 먼저 봤는지는 숫자 줄과 다른 이야기라 숫자 줄에 붙이지 않고 한 칸 띄운다
+        reason?.let { OvalitText(text = it, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t3) }
     }
 }
 

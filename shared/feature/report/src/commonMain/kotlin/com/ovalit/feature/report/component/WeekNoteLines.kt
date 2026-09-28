@@ -108,7 +108,7 @@ internal fun WeekNoteLines(note: WeekNote, catalog: ContentCatalog, modifier: Mo
 
     Column(modifier = modifier.padding(horizontal = OvalitSpacing.gutter)) {
         // 사용자 요청(2026-09-27): 평균이 얼마였는지는 위 고정 칸에 이미 있다. 그 변화를 무엇이 끌었는지를 적는다.
-        OvalitText(text = movedHeadline(moved, best), style = OvalitTheme.typography.bodyStrong)
+        OvalitText(text = movedHeadline(moved, best), style = headlineStyle())
         val rows = listOfNotNull(
             note.mix?.let { mixRow(it, catalog) },
             note.mix?.steady?.let { steadyRow(moved, it, catalog) },

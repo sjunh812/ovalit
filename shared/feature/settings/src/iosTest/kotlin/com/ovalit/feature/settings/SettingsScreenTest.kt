@@ -105,6 +105,17 @@ class SettingsScreenTest {
         assertEquals(Focus.CONSISTENCY, focus)
     }
 
+    // S0-4처럼 무엇을 먼저 보는지 적는다. 이름만으로는 어떤 지표가 올라오는지 모른다.
+    @Test
+    fun `관심사 시트는 고르면 먼저 볼 지표를 적는다`() = runComposeUiTest {
+        setContent { Settings() }
+
+        onNodeWithText("관심사").performClick()
+
+        onNodeWithText("첫 교전 승률, 멀티킬 라운드", useUnmergedTree = true).assertExists()
+        onNodeWithText("관여율, 생존율", useUnmergedTree = true).assertExists()
+    }
+
     @Test
     fun `연동 해제는 확인을 받은 뒤에 한다`() = runComposeUiTest {
         var unlinked = false

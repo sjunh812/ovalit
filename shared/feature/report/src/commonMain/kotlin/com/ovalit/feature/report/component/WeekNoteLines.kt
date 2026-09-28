@@ -1,30 +1,47 @@
 package com.ovalit.feature.report.component
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.core.model.AgentId
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MixGroup
 import com.ovalit.core.model.MixShift
 import com.ovalit.core.model.MovedMetric
 import com.ovalit.core.model.SteadyPart
+import com.ovalit.core.model.WeaponId
 import com.ovalit.core.model.WeekNote
+import com.ovalit.core.ui.AgentImage
 import com.ovalit.core.ui.Josa
 import com.ovalit.core.ui.MetricFormat
-import com.ovalit.core.ui.WRAPPING_SEPARATOR
+import com.ovalit.core.ui.WeaponImage
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.keepTogether
@@ -57,14 +74,25 @@ import com.ovalit.feature.report.resources.note_up_kd
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
+// 무기 실루엣은 길어서 폭을 넉넉히 둔다. 요원 얼굴도 같은 칸에 넣어 두 줄의 이름이 같은 자리에서 시작한다.
+private val LeadWidth = 40.dp
+private val LeadHeight = 24.dp
+private val WeaponHeight = 16.dp
+private val FaceSize = 24.dp
+private val LeadGap = 8.dp
+
+// 이름과 숫자가 붙어 보이지 않을 만큼만 띄운다
+private val ValueGap = 12.dp
+
 /**
  * 고정 칸 바로 밑에 붙는 "이번 주 짚을 점"입니다. 크게 움직인 고정 지표 하나를 문장으로 풀고, 그 변화를 가장 크게
  * 끌어간 무기와 요원을 숫자로 붙입니다. 변화의 절반 이상이 이코 라운드나 오퍼레이터처럼 비중이 바뀐 데서 왔으면 무기와
  * 요원 대신 그 비중과, 비중에 휘둘리지 않은 묶음의 성적을 붙입니다. 오른 값이 이번 액트 어느 주보다 높으면 헤드라인에
  * "이번 액트 최고"를 넣습니다. "쓰세요"나 "추천"은 쓰지 않습니다(CLAUDE.md 지켜야 할 선).
  *
- * 사용자 요청(2026-09-27): 줄마다 붙던 "가장 크게 끌어올린 무기" 같은 이름표를 뺐다. 이름, 숫자, 표본을 굵기와 밝기로만
- * 가른다. 지표 이름은 헤드라인에 있어 줄마다 되풀이하지 않는다.
+ * 사용자 요청(2026-09-28): 줄마다 무기 실루엣과 요원 얼굴을 앞에 두고, 숫자는 오른쪽에 모아 평소 값보다 이번 값을 밝고
+ * 굵게 둔다. 오르내림은 헤드라인이 말하고 줄은 모두 같은 쪽으로 움직인 것이라 색은 입히지 않는다. 비중 줄은 늘어난 게
+ * 좋은지 나쁜지 정해져 있지 않고, 평소와 같았다는 줄에 빨강이 붙으면 틀린 말이 된다.
  */
 @Composable
 internal fun WeekNoteLines(note: WeekNote, catalog: ContentCatalog, modifier: Modifier = Modifier) {
@@ -85,55 +113,172 @@ internal fun WeekNoteLines(note: WeekNote, catalog: ContentCatalog, modifier: Mo
             note.mix?.let { mixRow(it, catalog) },
             note.mix?.steady?.let { steadyRow(moved, it, catalog) },
             weapon?.let {
+                val name = catalog.weaponName(it.weapon)
                 NoteRow(
-                    name = catalog.weaponName(it.weapon),
-                    change = stringResource(Res.string.note_case_change, format.valueText(it.usual), format.valueText(it.current)),
+                    lead = NoteLead.Weapon(it.weapon, name),
+                    name = name,
                     sample = stringResource(Res.string.note_case_rounds, it.rounds),
+                    usual = format.valueText(it.usual),
+                    current = format.valueText(it.current),
                 )
             },
             agent?.let {
+                val name = catalog.agentName(it.agent)
                 NoteRow(
-                    name = catalog.agentName(it.agent),
-                    change = stringResource(Res.string.note_case_change, format.valueText(it.usual), format.valueText(it.current)),
+                    lead = NoteLead.Agent(it.agent, name),
+                    name = name,
                     sample = stringResource(Res.string.note_case_matches, it.matches),
+                    usual = format.valueText(it.usual),
+                    current = format.valueText(it.current),
                 )
             },
         )
-        rows.forEachIndexed { index, row ->
-            // 개선 포인트 문장처럼 헤드라인과 첫 줄 사이를 6dp 띄운다. 더 붙이면 두 줄이 한 덩어리로 뭉개진다. 줄끼리는 한
-            // 묶음으로 읽히게 조금 덜 띄운다.
-            Spacer(Modifier.height(if (index == 0) 6.dp else 4.dp))
-            OvalitText(text = row.text(), style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t2)
+        if (rows.isNotEmpty()) {
+            // 헤드라인과 첫 줄 사이는 줄끼리보다 넓게 띄워 문장과 근거가 갈려 보이게 한다
+            Spacer(Modifier.height(8.dp))
+            NoteRows(rows)
         }
     }
 }
 
-/** 짚을 점 한 줄입니다. "팬텀 130 → 233 · 60라운드"처럼 이름, 숫자, 표본 순서입니다. */
-private class NoteRow(val name: String, val change: String, val sample: String? = null)
+/** 짚을 점 한 줄입니다. 앞에 무기나 요원 그림, 이름과 표본, 오른쪽에 "평소 → 이번" 숫자 순서입니다. */
+private class NoteRow(
+    val lead: NoteLead?,
+    val name: String,
+    val sample: String? = null,
+    val usual: String,
+    val current: String,
+)
 
-// 이름은 가장 진하게, 숫자는 그다음, 표본은 가장 옅게 칠한다. 줄은 이름과 숫자 사이, 표본 앞에서만 바뀐다.
+private sealed interface NoteLead {
+    class Weapon(val weapon: WeaponId, val name: String) : NoteLead
+
+    class Agent(val agent: AgentId, val name: String) : NoteLead
+}
+
 @Composable
-private fun NoteRow.text(): AnnotatedString {
-    val colors = OvalitTheme.colors
-    return buildAnnotatedString {
-        withStyle(SpanStyle(color = colors.t1, fontWeight = FontWeight.Medium)) { append(name.keepTogether()) }
-        append(" ")
-        append(change.keepTogether())
-        sample?.let { withStyle(SpanStyle(color = colors.t3)) { append(WRAPPING_SEPARATOR + it.keepTogether()) } }
+private fun NoteRows(rows: List<NoteRow>) {
+    val typography = OvalitTheme.typography
+    val nameStyle = typography.label
+    val valueStyle = typography.label.copy(fontWeight = FontWeight.Normal, fontFeatureSettings = "tnum")
+    val labels = rows.map { it.labelText(nameStyle) }
+    val values = rows.map { changeText(it.usual, it.current) }
+    // 이코 라운드처럼 그림이 없는 묶음은 글자를 왼쪽 끝에 붙인다. 한 칸에 뜨는 줄은 모두 같은 종류라 섞이지 않는다.
+    val hasLead = rows.any { it.lead != null }
+    val measurer = rememberTextMeasurer()
+
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        // 한 줄이라도 이름 옆에 숫자가 안 들어가면 모든 줄의 숫자를 이름 밑으로 내린다. 한 줄만 내리면 숫자 열이 어긋난다.
+        val stacked = with(LocalDensity.current) {
+            val leadSpace = if (hasLead) (LeadWidth + LeadGap).roundToPx() else 0
+            labels.indices.any { index ->
+                val label = measurer.measure(labels[index], nameStyle, maxLines = 1).size.width
+                val value = measurer.measure(values[index], valueStyle, maxLines = 1).size.width
+                leadSpace + label + ValueGap.roundToPx() + value > constraints.maxWidth
+            }
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            rows.forEachIndexed { index, row ->
+                NoteRowLine(row, labels[index], values[index], nameStyle, valueStyle, hasLead, stacked)
+            }
+        }
     }
 }
+
+@Composable
+private fun NoteRowLine(
+    row: NoteRow,
+    label: AnnotatedString,
+    value: AnnotatedString,
+    nameStyle: TextStyle,
+    valueStyle: TextStyle,
+    hasLead: Boolean,
+    stacked: Boolean,
+) {
+    // 낭독기는 한 줄을 "팬텀 78라운드, 131 → 217"로 한 번에 읽는다
+    Row(
+        modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
+        verticalAlignment = if (stacked) Alignment.Top else Alignment.CenterVertically,
+    ) {
+        if (hasLead) {
+            Box(modifier = Modifier.width(LeadWidth).height(LeadHeight), contentAlignment = Alignment.CenterStart) {
+                row.lead?.let { NoteLeadImage(it) }
+            }
+            Spacer(Modifier.width(LeadGap))
+        }
+        if (stacked) {
+            Column(modifier = Modifier.weight(1f)) {
+                OvalitText(text = label, style = nameStyle)
+                OvalitText(text = value, style = valueStyle)
+            }
+        } else {
+            OvalitText(text = label, modifier = Modifier.weight(1f), style = nameStyle, maxLines = 1)
+            Spacer(Modifier.width(ValueGap))
+            OvalitText(text = value, style = valueStyle, maxLines = 1)
+        }
+    }
+}
+
+// 그림은 이름 옆에 붙는 장식이라 낭독기가 읽지 않는다. 이름은 바로 옆에 있다.
+@Composable
+private fun NoteLeadImage(lead: NoteLead) {
+    when (lead) {
+        is NoteLead.Weapon -> WeaponImage(
+            weapon = lead.weapon,
+            name = lead.name,
+            modifier = Modifier.width(LeadWidth).height(WeaponHeight),
+            tint = OvalitTheme.colors.t2,
+            alignment = Alignment.CenterStart,
+        )
+        is NoteLead.Agent -> AgentImage(lead.agent, lead.name, Modifier.size(FaceSize).clip(RoundedCornerShape(7.dp)))
+    }
+}
+
+// 이름은 가장 진하게, 표본은 옅고 작게 붙인다
+@Composable
+private fun NoteRow.labelText(nameStyle: TextStyle): AnnotatedString {
+    val colors = OvalitTheme.colors
+    val caption = OvalitTheme.typography.caption
+    return buildAnnotatedString {
+        withStyle(SpanStyle(color = colors.t1, fontWeight = nameStyle.fontWeight)) { append(name.keepTogether()) }
+        sample?.let {
+            withStyle(SpanStyle(color = colors.t3, fontSize = caption.fontSize, fontWeight = FontWeight.Normal)) {
+                append("\u00a0" + it.keepTogether())
+            }
+        }
+    }
+}
+
+// "131 → 217". 평소 값과 화살표는 옅게, 이번 값은 밝고 굵게 둔다. 꼴은 문자열 리소스를 따른다.
+@Composable
+private fun changeText(usual: String, current: String): AnnotatedString {
+    val colors = OvalitTheme.colors
+    val pattern = stringResource(Res.string.note_case_change, USUAL_MARK, CURRENT_MARK)
+    val usualAt = pattern.indexOf(USUAL_MARK)
+    val currentAt = pattern.indexOf(CURRENT_MARK)
+    return buildAnnotatedString {
+        withStyle(SpanStyle(color = colors.t3)) {
+            append(pattern.substring(0, usualAt))
+            append(usual)
+            append(pattern.substring(usualAt + USUAL_MARK.length, currentAt).keepTogether())
+        }
+        withStyle(SpanStyle(color = colors.t1, fontWeight = FontWeight.SemiBold)) { append(current) }
+        withStyle(SpanStyle(color = colors.t3)) { append(pattern.substring(currentAt + CURRENT_MARK.length)) }
+    }
+}
+
+private const val USUAL_MARK = "\u0001"
+private const val CURRENT_MARK = "\u0002"
 
 // "이코 라운드 비중 16% → 31%"
 @Composable
 private fun mixRow(mix: MixShift, catalog: ContentCatalog): NoteRow {
     val name = mix.group.name(catalog)
     return NoteRow(
+        lead = mix.group.lead(catalog),
         name = stringResource(if (mix.group is MixGroup.Buy) Res.string.note_mix_buy else Res.string.note_mix_share, name),
-        change = stringResource(
-            Res.string.note_case_change,
-            MetricFormat.PERCENT.valueText(mix.usualShare),
-            MetricFormat.PERCENT.valueText(mix.share),
-        ),
+        usual = MetricFormat.PERCENT.valueText(mix.usualShare),
+        current = MetricFormat.PERCENT.valueText(mix.share),
     )
 }
 
@@ -143,12 +288,14 @@ private fun steadyRow(moved: MovedMetric, steady: SteadyPart, catalog: ContentCa
     val name = steady.group.name(catalog)
     val format = moved.metric.format
     return NoteRow(
+        lead = steady.group.lead(catalog),
         name = when (steady.group) {
             is MixGroup.Buy -> stringResource(Res.string.note_steady_buy, name)
             is MixGroup.Weapon -> stringResource(Res.string.note_steady_weapon, name.withJosa(Josa.EUL_REUL))
             is MixGroup.Agent -> stringResource(Res.string.note_steady_agent, name.withJosa(Josa.EURO_RO))
         },
-        change = stringResource(Res.string.note_case_change, format.valueText(steady.usual), format.valueText(steady.current)),
+        usual = format.valueText(steady.usual),
+        current = format.valueText(steady.current),
     )
 }
 
@@ -157,6 +304,14 @@ private fun MixGroup.name(catalog: ContentCatalog): String = when (this) {
     is MixGroup.Buy -> stringResource(type.label)
     is MixGroup.Weapon -> catalog.weaponName(weapon)
     is MixGroup.Agent -> catalog.agentName(agent)
+}
+
+// 이코·포스바이·풀바이에는 그림이 없다
+@Composable
+private fun MixGroup.lead(catalog: ContentCatalog): NoteLead? = when (this) {
+    is MixGroup.Buy -> null
+    is MixGroup.Weapon -> NoteLead.Weapon(weapon, catalog.weaponName(weapon))
+    is MixGroup.Agent -> NoteLead.Agent(agent, catalog.agentName(agent))
 }
 
 // 차이는 보이는 자릿수로 반올림한 값끼리 뺀다(CLAUDE.md 디자인)

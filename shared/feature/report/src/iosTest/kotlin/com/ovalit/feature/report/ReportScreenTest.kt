@@ -69,6 +69,7 @@ import com.ovalit.core.ui.WRAPPING_SEPARATOR
 import com.ovalit.core.ui.keepTogether
 import com.ovalit.feature.report.component.DynamicMetricSheetBody
 import com.ovalit.feature.report.component.MetricSheetBody
+import com.ovalit.feature.report.component.TrendSheetBody
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -298,6 +299,36 @@ class ReportScreenTest {
 
         onNodeWithText("전투점수", useUnmergedTree = true).assertDoesNotExist()
         onNodeWithText("KDA", useUnmergedTree = true).assertExists()
+    }
+
+    // 사용자 결정(2026-09-29): 여러 지표의 흐름을 홈에 늘어놓으면 복잡해서 입구 한 줄만 두고 시트로 연다
+    @Test
+    fun `8주 흐름 입구를 누르면 흐름 시트가 뜬다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved) }
+
+        onNodeWithText("지난 8주 흐름 한눈에 보기").performScrollTo().performClick()
+
+        onNodeWithText("지난 8주 흐름").assertExists()
+    }
+
+    @Test
+    fun `흐름 시트는 고정 지표마다 한 줄을 두고 누르면 그 지표를 연다`() = runComposeUiTest {
+        var opened: FixedMetric? = null
+        setContent {
+            OvalitTheme { TrendSheetBody(ReportPreviewData.moved, FixedMetric.entries, onOpenMetric = { opened = it }) }
+        }
+
+        FixedMetric.entries.forEach { metric ->
+            val label = when (metric) {
+                FixedMetric.COMBAT_SCORE -> "전투점수"
+                FixedMetric.KD -> "K/D"
+                FixedMetric.DAMAGE -> "피해량"
+                FixedMetric.HEADSHOT_RATE -> "헤드샷"
+                FixedMetric.KDA -> "KDA"
+            }
+            onNode(SemanticsMatcher(label) { it.config.getOrNull(SemanticsActions.OnClick)?.label == "$label 설명 보기" }).performClick()
+            assertEquals(metric, opened)
+        }
     }
 
     // 동적 칸과 개선 포인트가 이 역할에 맞춰 골라지니 한눈에 들어와야 한다

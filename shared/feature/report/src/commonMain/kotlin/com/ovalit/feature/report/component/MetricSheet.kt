@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitText
@@ -223,6 +224,20 @@ private fun CurrentValue(metric: FixedMetric, report: WeeklyReport.Ready) {
 
 @Composable
 private fun TrendBars(metric: FixedMetric, report: WeeklyReport.Ready) {
+    Column {
+        TrendBarRow(metric, report, Modifier.fillMaxWidth().height(TrendHeight))
+        Spacer(Modifier.height(OvalitSpacing.sm))
+        TrendAxis(report)
+        TrendActNote(report)
+    }
+}
+
+/**
+ * S1-a와 8주 흐름 시트가 같이 쓰는 주별 막대입니다. 기간에 든 주만 `--accent`로 칠하고, 라운드가 모자라 비운 주는 바닥
+ * 선만 남기며, 액트가 바뀐 곳에 세로선을 긋습니다. 낭독기는 주마다 값을 읽습니다.
+ */
+@Composable
+internal fun TrendBarRow(metric: FixedMetric, report: WeeklyReport.Ready, modifier: Modifier = Modifier, gap: Dp = BarGap) {
     val colors = OvalitTheme.colors
     val values = report.trend.map { week -> week.metrics?.let(metric.value) }
     val present = values.filterNotNull()
@@ -234,52 +249,57 @@ private fun TrendBars(metric: FixedMetric, report: WeeklyReport.Ready) {
         values.map { value -> value?.let { metric.format.valueText(it) } ?: NO_VALUE }.joinToString(SEPARATOR),
     )
 
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(TrendHeight)
-                .clearAndSetSemantics { contentDescription = description },
-            horizontalArrangement = Arrangement.spacedBy(BarGap),
-            verticalAlignment = Alignment.Bottom,
-        ) {
-            report.trend.forEachIndexed { index, week ->
-                if (week.startsNewAct) {
-                    Box(Modifier.width(1.dp).fillMaxHeight().background(colors.t4))
-                }
-                val value = values[index]
-                // 기간에 든 주만 --accent로 칠한다. 위의 큰 숫자는 이 주들의 합계로 낸 값이다.
-                Bar(
-                    fraction = value?.let { barFraction(it, low, high) },
-                    color = if (week.inPeriod) colors.accent else colors.bar,
-                    modifier = Modifier.weight(1f),
-                )
+    Row(
+        modifier = modifier.clearAndSetSemantics { contentDescription = description },
+        horizontalArrangement = Arrangement.spacedBy(gap),
+        verticalAlignment = Alignment.Bottom,
+    ) {
+        report.trend.forEachIndexed { index, week ->
+            if (week.startsNewAct) {
+                Box(Modifier.width(1.dp).fillMaxHeight().background(colors.t4))
             }
-        }
-        Spacer(Modifier.height(OvalitSpacing.sm))
-        Row(modifier = Modifier.fillMaxWidth()) {
-            OvalitText(
-                text = stringResource(Res.string.sheet_trend_start, firstBarWeeksAgo(report)),
+            val value = values[index]
+            // 기간에 든 주만 --accent로 칠한다. 위의 큰 숫자는 이 주들의 합계로 낸 값이다.
+            Bar(
+                fraction = value?.let { barFraction(it, low, high) },
+                color = if (week.inPeriod) colors.accent else colors.bar,
                 modifier = Modifier.weight(1f),
-                style = OvalitTheme.typography.caption,
-                color = colors.t3,
-            )
-            OvalitText(
-                text = stringResource(
-                    if (report.period.includesThisWeek) CoreUiRes.string.period_this_week else CoreUiRes.string.period_last_week,
-                ),
-                style = OvalitTheme.typography.caption,
-                color = colors.t3,
             )
         }
-        if (report.trend.any { it.startsNewAct }) {
-            Spacer(Modifier.height(OvalitSpacing.xs))
-            OvalitText(
-                text = stringResource(Res.string.sheet_trend_act_marker),
-                style = OvalitTheme.typography.caption,
-                color = colors.t3,
-            )
-        }
+    }
+}
+
+/** 막대 밑 "7주 전 · 이번 주"입니다. */
+@Composable
+internal fun TrendAxis(report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.fillMaxWidth()) {
+        OvalitText(
+            text = stringResource(Res.string.sheet_trend_start, firstBarWeeksAgo(report)),
+            modifier = Modifier.weight(1f),
+            style = OvalitTheme.typography.caption,
+            color = OvalitTheme.colors.t3,
+        )
+        OvalitText(
+            text = stringResource(
+                if (report.period.includesThisWeek) CoreUiRes.string.period_this_week else CoreUiRes.string.period_last_week,
+            ),
+            style = OvalitTheme.typography.caption,
+            color = OvalitTheme.colors.t3,
+        )
+    }
+}
+
+/** 액트가 바뀐 곳이 있으면 세로선이 무엇인지 적습니다. */
+@Composable
+internal fun TrendActNote(report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
+    if (report.trend.none { it.startsNewAct }) return
+    Column(modifier = modifier) {
+        Spacer(Modifier.height(OvalitSpacing.xs))
+        OvalitText(
+            text = stringResource(Res.string.sheet_trend_act_marker),
+            style = OvalitTheme.typography.caption,
+            color = OvalitTheme.colors.t3,
+        )
     }
 }
 

@@ -49,6 +49,8 @@ import com.ovalit.feature.report.component.ReportSkeleton
 import com.ovalit.feature.report.component.ReportTopBar
 import com.ovalit.feature.report.component.RivalPickerSheet
 import com.ovalit.feature.report.component.RivalSection
+import com.ovalit.feature.report.component.TrendEntry
+import com.ovalit.feature.report.component.TrendSheet
 import com.ovalit.feature.report.component.WeekNoteLines
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.not_enough_body
@@ -167,6 +169,7 @@ private fun ReportContent(
     onOpenWeapons: () -> Unit,
 ) {
     var openMetric by rememberSaveable { mutableStateOf<FixedMetric?>(null) }
+    var openTrend by rememberSaveable { mutableStateOf(false) }
     var openDynamic by rememberSaveable { mutableStateOf<DynamicMetric?>(null) }
     var pickingRival by rememberSaveable { mutableStateOf(false) }
 
@@ -188,6 +191,13 @@ private fun ReportContent(
         // 보이는 차이가 0이면 짚을 점이 그려지지 않으니 띄우는 것도 그 안에서 한다
         report.note?.let { note -> WeekNoteLines(note = note, catalog = catalog, modifier = Modifier.padding(top = 18.dp)) }
     }
+    // 짚을 점은 바로 위 숫자를 풀어 말해서 숫자에 붙여 두고, 흐름을 보는 입구는 그 뒤에 둔다
+    TrendEntry(
+        report = report,
+        metric = queueFilter.fixedMetrics.first(),
+        onClick = { openTrend = true },
+        modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = 16.dp),
+    )
     Spacer(Modifier.height(22.dp))
 
     if (queueFilter.hasDynamicMetrics) {
@@ -242,6 +252,18 @@ private fun ReportContent(
                 pickingRival = false
             },
             onDismiss = { pickingRival = false },
+        )
+    }
+    if (openTrend) {
+        TrendSheet(
+            report = report,
+            metrics = queueFilter.fixedMetrics,
+            // 흐름 시트에서 한 줄을 누르면 그 지표 설명으로 넘어간다. 시트 두 장을 겹치지 않는다.
+            onOpenMetric = {
+                openTrend = false
+                openMetric = it
+            },
+            onDismiss = { openTrend = false },
         )
     }
     openMetric?.let { metric ->

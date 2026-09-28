@@ -101,6 +101,10 @@
     <string name="sheet_trend_start">%1$d주 전</string>
     <string name="sheet_trend_act_marker">세로선은 액트가 바뀐 곳이에요.</string>
     <string name="sheet_trend_description">주별 %1$s: %2$s</string>
+    <!-- 홈 고정 칸 밑 8주 흐름 입구와 시트 -->
+    <string name="trend_entry">지난 8주 흐름 한눈에 보기</string>
+    <string name="trend_title">지난 8주 흐름</string>
+    <string name="trend_body">금색 막대가 리포트 기간이에요. %1$d라운드를 못 뛴 주는 비워 뒀어요.</string>
     <string name="sheet_usual_title">평소에는 어느 정도였나요?</string>
     <string name="sheet_usual_range">지난 %1$d주 동안 주마다 %2$s~%3$s 사이였어요.</string>
     <string name="sheet_usual_same">지난 %1$d주 동안 주마다 %2$s 그대로였어요.</string>

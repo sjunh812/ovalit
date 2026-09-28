@@ -15,6 +15,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getBoundsInRoot
@@ -30,6 +31,7 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.LocalScreenEntering
 import com.ovalit.core.designsystem.theme.OvalitColors
@@ -222,15 +224,80 @@ class ReportScreenTest {
     }
 
     // 사용자 결정(2026-09-27): KDA를 먼저, 한 단계 크게 두고 판당 K/D/A를 옆에 둔다. (118 + 30) ÷ 88 = 1.68
+    // 사용자 결정(2026-09-29): 어시스트가 킬만큼 중요해져 KDA를 고정 칸과 같은 숫자 크기로 올렸다. 목업의 네 칸 한 줄은 둔다.
     @Test
-    fun `KDA를 판당 K와 D와 A보다 먼저 크게 적는다`() = runComposeUiTest {
+    fun `KDA는 네 칸 밑 넓은 칸에 고정 칸과 같은 숫자 크기로 둔다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved
+        setContent { Report(report) }
+
+        val combat = onNodeWithText("전투점수", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val headshot = onNodeWithText("헤드샷", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val kdaLabel = onNodeWithText("KDA", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        assertTrue(kdaLabel.top > combat.bottom, "KDA가 네 칸과 같은 줄에 있다")
+        assertEquals(combat.left, kdaLabel.left)
+        assertTrue(headshot.top == combat.top, "네 칸이 한 줄이 아니다")
+        val kda = MetricFormat.TWO_DECIMALS.valueTextFor(assertNotNull(report.metrics.kda))
+        val combatValue = MetricFormat.INTEGER.valueTextFor(assertNotNull(report.metrics.acs))
+        assertEquals(fontSizeOf(combatValue), fontSizeOf(kda))
+    }
+
+    // KDA만으로는 몇 킬 몇 데스인지 몰라 판당 킬·데스·어시를 옆에 풀어 둔다
+    @Test
+    fun `KDA 칸 오른쪽에 판당 킬 데스 어시를 적는다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved
+        setContent { Report(report) }
+
+        val kda = onNodeWithText(MetricFormat.TWO_DECIMALS.valueTextFor(assertNotNull(report.metrics.kda)), useUnmergedTree = true)
+            .getUnclippedBoundsInRoot()
+        val perMatch = onNodeWithText("판당", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        listOf("킬", "데스", "어시").forEach { onNodeWithText(it, useUnmergedTree = true).assertExists() }
+        val kills = MetricFormat.ONE_DECIMAL.format(report.metrics.kills.toDouble() / report.metrics.matches)
+        onNodeWithText(kills, useUnmergedTree = true).assertExists()
+        assertTrue(perMatch.left > kda.right, "판당 표가 KDA 숫자 오른쪽에 없다")
+    }
+
+    // 좁은 화면이나 큰 글꼴에서 판당 표가 KDA 숫자를 덮지 않게 숫자 밑으로 내린다
+    @Test
+    fun `KDA 칸이 좁으면 판당 표를 숫자 밑으로 내린다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved
+        setContent {
+            CompositionLocalProvider(LocalDensity provides Density(density = 2f, fontScale = 2f)) {
+                Box(Modifier.width(300.dp)) { Report(report) }
+            }
+        }
+
+        val kda = onNodeWithText(MetricFormat.TWO_DECIMALS.valueTextFor(assertNotNull(report.metrics.kda)), useUnmergedTree = true)
+            .getUnclippedBoundsInRoot()
+        val perMatch = onNodeWithText("판당", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        assertTrue(perMatch.top >= kda.bottom, "판당 표가 KDA 숫자 옆에 끼었다")
+    }
+
+    @Test
+    fun `KDA 칸을 누르면 KDA 설명 시트가 뜬다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        val kda = onNodeWithText("KDA 1.68", substring = true, useUnmergedTree = true).getUnclippedBoundsInRoot()
-        val perMatch = onNodeWithText("판당", substring = true, useUnmergedTree = true).getUnclippedBoundsInRoot()
-        assertTrue(kda.right <= perMatch.left)
-        // 제목 크기(줄 높이 24)라서 설명 글자(17)보다 줄이 확실히 높다
-        assertTrue(kda.bottom - kda.top >= perMatch.bottom - perMatch.top + 5.dp)
+        onNode(SemanticsMatcher("KDA 칸") { it.config.getOrNull(SemanticsActions.OnClick)?.label == "KDA 설명 보기" }).performClick()
+
+        onNodeWithText("한 번 죽을 때마다 킬과 어시스트를 합쳐 몇 번 했는지예요. K/D와 달리 어시스트도 들어가요.").assertExists()
+    }
+
+    // CLAUDE.md: 총량을 더한 뒤 나눈다. 식에도 실제 합계를 적는다.
+    @Test
+    fun `KDA 시트는 킬과 어시를 더해 데스로 나눈 식을 적는다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved
+        val metrics = report.metrics
+        setContent { Sheet(FixedMetric.KDA, report) }
+
+        val kda = MetricFormat.TWO_DECIMALS.valueTextFor(assertNotNull(metrics.kda))
+        onNodeWithText("(${metrics.kills}킬 + ${metrics.assists}어시) ÷ ${metrics.deaths}데스 = $kda").assertExists()
+    }
+
+    @Test
+    fun `기타 모드는 K_D와 헤드샷 칸 밑에 KDA 칸을 둔다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.otherQueue, QueueFilter.OTHER) }
+
+        onNodeWithText("전투점수", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("KDA", useUnmergedTree = true).assertExists()
     }
 
     // 동적 칸과 개선 포인트가 이 역할에 맞춰 골라지니 한눈에 들어와야 한다
@@ -925,14 +992,17 @@ class ReportScreenTest {
         onNodeWithText("이번 액트 돌아보기", useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 화면에 보이는 자릿수로 겨룬다. 나는 K/D 1.34, 피해량 138, 헤드샷 21%다.
+    // 화면에 보이는 자릿수로 겨룬다. 나는 K/D 1.34, 피해량 138, 헤드샷 21%다. 사용자 결정(2026-09-29)으로 목업의 세 지표에 KDA를
+    // 더해 넷을 겨룬다.
     @Test
-    fun `라이벌 칸은 세 지표 중 앞선 개수를 센다`() = runComposeUiTest {
+    fun `라이벌 칸은 KDA까지 네 지표 중 앞선 개수를 센다`() = runComposeUiTest {
         val rival = ReportPreviewData.moved.metrics.let { it.copy(kills = 100, damage = 21_000, shots = it.shots.copy(head = 60)) }
         setContent { Social(rival = FriendStanding(PlayerId("junho"), "준호#KR1", rival)) }
 
         onNodeWithText("라이벌 · 준호#KR1").assertExists()
-        onNodeWithText("3개 중 2개 앞섬").assertExists()
+        onNodeWithText("4개 중 3개 앞섬").assertExists()
+        // 고정 칸의 KDA와 라이벌 줄의 KDA다
+        onAllNodesWithText("KDA", useUnmergedTree = true).assertCountEquals(2)
     }
 
     @Test
@@ -989,6 +1059,25 @@ class ReportScreenTest {
         assertTrue(button.getUnclippedBoundsInRoot().top < title.top)
         button.performTouchInput { click(Offset(centerX, 2f)) }
         onNodeWithText("비교할 지표").assertExists()
+    }
+
+    // 사용자 결정(2026-09-29): 친구 비교도 홈 고정 칸 다섯 가운데 골라 줄을 세운다
+    @Test
+    fun `친구 비교는 KDA로도 줄을 세운다`() = runComposeUiTest {
+        val mine = ReportPreviewData.moved.metrics
+        val strong = mine.copy(assists = mine.assists + 300)
+        setContent { Social(friends = listOf(FriendStanding(PlayerId("junho"), "준호#KR1", strong))) }
+
+        onNode(SemanticsMatcher("지표 버튼") { it.config.getOrNull(SemanticsActions.OnClick)?.label == "피해량, 비교할 지표 바꾸기" })
+            .performScrollTo()
+            .performClick()
+        onNode(hasText("KDA") and SemanticsMatcher.keyIsDefined(SemanticsProperties.Selected)).performClick()
+
+        val strongKda = MetricFormat.TWO_DECIMALS.format(assertNotNull(strong.kda))
+        onNodeWithText(strongKda, useUnmergedTree = true).assertExists()
+        val junho = onNodeWithText("준호", useUnmergedTree = true).getUnclippedBoundsInRoot().top
+        val me = onNodeWithText("나", useUnmergedTree = true).getUnclippedBoundsInRoot().top
+        assertTrue(junho < me, "KDA가 높은 준호가 위에 있어야 한다")
     }
 
     @Test
@@ -1083,6 +1172,15 @@ private fun sideInsight(metric: InsightMetric, lead: Pair<Double, Int>, other: P
     isRolePriority = false,
     focus = focus,
 )
+
+private fun SemanticsNodeInteractionsProvider.fontSizeOf(text: String): TextUnit {
+    val layouts = mutableListOf<TextLayoutResult>()
+    onNodeWithText(text, useUnmergedTree = true).fetchSemanticsNode().config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
+    return layouts.single().layoutInput.style.fontSize
+}
+
+// 화면에 뜨는 자릿수로 적은 값이다. valueText는 컴포저블이라 테스트에서는 format으로 같은 글자를 만든다.
+private fun MetricFormat.valueTextFor(value: Double): String = if (this == MetricFormat.PERCENT) "${format(value)}%" else format(value)
 
 @Composable
 private fun Sheet(metric: FixedMetric, report: WeeklyReport.Ready) {

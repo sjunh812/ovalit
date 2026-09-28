@@ -9,6 +9,7 @@ import com.ovalit.core.ui.resources.metric_damage
 import com.ovalit.core.ui.resources.metric_headshot
 import com.ovalit.core.ui.resources.metric_kd
 import com.ovalit.core.ui.resources.period_last_week
+import com.ovalit.core.ui.resources.profile_kda
 import com.ovalit.core.ui.resources.period_past_weeks
 import com.ovalit.core.ui.resources.period_recent_weeks
 import com.ovalit.core.ui.resources.period_this_week
@@ -22,12 +23,13 @@ val FixedMetric.label: StringResource
         FixedMetric.KD -> Res.string.metric_kd
         FixedMetric.DAMAGE -> Res.string.metric_damage
         FixedMetric.HEADSHOT_RATE -> Res.string.metric_headshot
+        FixedMetric.KDA -> Res.string.profile_kda
     }
 
 val FixedMetric.format: MetricFormat
     get() = when (this) {
         FixedMetric.COMBAT_SCORE, FixedMetric.DAMAGE -> MetricFormat.INTEGER
-        FixedMetric.KD -> MetricFormat.TWO_DECIMALS
+        FixedMetric.KD, FixedMetric.KDA -> MetricFormat.TWO_DECIMALS
         FixedMetric.HEADSHOT_RATE -> MetricFormat.PERCENT
     }
 

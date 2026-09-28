@@ -180,8 +180,8 @@ private fun ReportContent(
         fixedMetrics = queueFilter.fixedMetrics,
         onOpenMetric = { openMetric = it },
     )
-    Spacer(Modifier.height(13.dp))
-    FixedMetricSummary(metrics = report.metrics, baseline = report.baseline)
+    Spacer(Modifier.height(10.dp))
+    FixedMetricSummary(baseline = report.baseline)
     // 짚을 점과 개선 포인트는 바로 위 숫자를 풀어 말하는 문장이라 선과 제목 없이 붙인다. 선은 큰 묶음 사이에만
     // 긋는다(CLAUDE.md 화면).
     if (queueFilter.hasDynamicMetrics) {

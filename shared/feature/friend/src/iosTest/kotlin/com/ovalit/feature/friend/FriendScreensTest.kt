@@ -80,6 +80,19 @@ class FriendScreensTest {
         onNodeWithText("이번 주 · 나 · 민석").assertExists()
     }
 
+    // 사용자 결정(2026-09-29): 나와 비교도 홈 고정 칸처럼 KDA까지 다섯을 견준다
+    @Test
+    fun `나와 비교는 KDA까지 견준다`() = runComposeUiTest {
+        setContent { Themed { FriendProfileScreen(FriendPreviewData.profile, {}, {}, {}) } }
+
+        val compare = onNodeWithText("나와 비교", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val hitShots = onNodeWithText("맞힌 부위", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val kdaRows = onAllNodesWithText("KDA", useUnmergedTree = true).fetchSemanticsNodes()
+            .map { it.boundsInRoot.top }
+            .filter { it > compare.bottom.value && it < hitShots.top.value }
+        assertEquals(1, kdaRows.size, "나와 비교에 KDA 줄이 없다")
+    }
+
     // 사용자 요청: 같이 한 경기 다음에 내 프로필과 같은 칸을 두고, 나와 비교는 통계 다음이다
     @Test
     fun `전적을 공개한 친구는 내 프로필과 같은 칸을 정한 순서로 보여준다`() = runComposeUiTest {

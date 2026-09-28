@@ -34,6 +34,7 @@ import com.ovalit.core.model.usualRange
 import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.format
+import com.ovalit.core.ui.kdaColor
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.resources.Res as CoreUiRes
@@ -61,6 +62,10 @@ import com.ovalit.feature.report.resources.sheet_kd_body
 import com.ovalit.feature.report.resources.sheet_kd_formula
 import com.ovalit.feature.report.resources.sheet_kd_method
 import com.ovalit.feature.report.resources.sheet_kd_no_deaths
+import com.ovalit.feature.report.resources.sheet_kda_body
+import com.ovalit.feature.report.resources.sheet_kda_formula
+import com.ovalit.feature.report.resources.sheet_kda_method
+import com.ovalit.feature.report.resources.sheet_kda_no_deaths
 import com.ovalit.feature.report.resources.sheet_method_title
 import com.ovalit.feature.report.resources.sheet_sample_rounds
 import com.ovalit.feature.report.resources.sheet_trend_act_marker
@@ -160,6 +165,13 @@ private val FixedMetric.sheetText: SheetText
             method = Res.string.sheet_headshot_method,
             formula = Res.string.sheet_headshot_formula,
         )
+        // KDA도 화면 라벨이 곧 정식 명칭이다
+        FixedMetric.KDA -> SheetText(
+            name = null,
+            body = Res.string.sheet_kda_body,
+            method = Res.string.sheet_kda_method,
+            formula = Res.string.sheet_kda_formula,
+        )
     }
 
 @Composable
@@ -179,6 +191,8 @@ private fun CurrentValue(metric: FixedMetric, report: WeeklyReport.Ready) {
                 text = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
                 modifier = Modifier.alignByBaseline(),
                 style = OvalitTheme.typography.metricXl,
+                // KDA 숫자는 어디서나 구간 색이다(CLAUDE.md 디자인)
+                color = if (metric == FixedMetric.KDA && current != null) kdaColor(current, below = OvalitTheme.colors.t1) else OvalitTheme.colors.t1,
             )
             if (current != null && usual != null) {
                 Spacer(Modifier.width(OvalitSpacing.sm))
@@ -336,6 +350,13 @@ private fun MethodSection(metric: FixedMetric, metrics: MatchMetrics) {
                 metrics.shots.total.withThousands(),
                 result,
             )
+            FixedMetric.KDA -> stringResource(
+                metric.sheetText.formula,
+                metrics.kills.withThousands(),
+                metrics.assists.withThousands(),
+                metrics.deaths.withThousands(),
+                result,
+            )
         }
     }
 
@@ -351,9 +372,9 @@ private fun MethodSection(metric: FixedMetric, metrics: MatchMetrics) {
             style = OvalitTheme.typography.metricS,
             color = OvalitTheme.colors.t2,
         )
-    } else if (metric == FixedMetric.KD) {
+    } else if (metric == FixedMetric.KD || metric == FixedMetric.KDA) {
         OvalitText(
-            text = stringResource(Res.string.sheet_kd_no_deaths),
+            text = stringResource(if (metric == FixedMetric.KD) Res.string.sheet_kd_no_deaths else Res.string.sheet_kda_no_deaths),
             style = OvalitTheme.typography.caption,
             color = OvalitTheme.colors.t3,
         )

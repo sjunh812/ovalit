@@ -2,6 +2,7 @@ package com.ovalit.core.model
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -44,10 +45,49 @@ class WeekNoteTest {
 
     // CLAUDE.md 역할군: 척후대와 전략가는 K/D를 크게 띄우지 않는다
     @Test
-    fun `척후대는 K_D가 더 크게 움직여도 다른 지표를 짚는다`() {
+    fun `척후대는 K_D가 더 크게 움직여도 K_D를 짚지 않는다`() {
         val note = note(current = fixed(kills = 160, head = 26), role = Role.INITIATOR)
 
-        assertEquals(FixedMetric.HEADSHOT_RATE, note?.moved?.metric)
+        assertNotEquals(FixedMetric.KD, note?.moved?.metric)
+    }
+
+    // 척후대에게 K/D는 크게 띄우지 않는 지표지만 KDA는 어시스트가 들어가 제 몫이 드러난다
+    @Test
+    fun `척후대도 KDA는 짚는다`() {
+        val note = note(current = fixed(kills = 110, assists = 60), role = Role.INITIATOR)
+
+        assertEquals(FixedMetric.KDA, note?.moved?.metric)
+    }
+
+    // 무기별 어시스트는 들고 시작한 라운드로만 세서 무기 KDA로 짚을 값이 없다
+    @Test
+    fun `KDA에는 무기를 붙이지 않는다`() {
+        // 밴달 K/D는 1.33에서 2.0으로 KDA와 같은 쪽으로 올랐다. 무기 K/D를 KDA로 적으면 이 줄이 붙는다.
+        val vandal = WeaponTrend(Vandal, current = weapon(Vandal, head = 21).copy(kills = 60), baseline = weapon(Vandal, head = 21))
+        val note = note(current = fixed(assists = 60), weapons = listOf(vandal))
+
+        assertEquals(FixedMetric.KDA, note?.moved?.metric)
+        assertEquals(1.7, note?.moved?.current)
+        assertNull(note?.weapon)
+    }
+
+    // KDA 2.0인 소바를 뛴 판이 12.5%에서 80%로 늘고 KDA 1.1인 제트는 줄었다. 두 요원 모두 KDA는 그대로라 오른 몫은 비중이다.
+    @Test
+    fun `KDA는 킬과 어시를 더해 비중 몫을 잰다`() {
+        val slices = listOf(
+            slice(MixGroup.Agent(Jett), current = matchesOf(1, kills = 22, deaths = 20), usual = matchesOf(28, kills = 616, deaths = 560)),
+            slice(
+                MixGroup.Agent(Sova),
+                current = matchesOf(4, kills = 80, deaths = 80, assists = 80),
+                usual = matchesOf(4, kills = 80, deaths = 80, assists = 80),
+            ),
+        )
+        val note = note(current = fixed(assists = 72), mixes = listOf(slices))
+
+        assertEquals(FixedMetric.KDA, note?.moved?.metric)
+        assertEquals(MixGroup.Agent(Jett), note?.mix?.group)
+        assertEquals(MixGroup.Agent(Sova), note?.mix?.steady?.group)
+        assertEquals(2.0, note?.mix?.steady?.current)
     }
 
     @Test
@@ -328,14 +368,16 @@ class WeekNoteTest {
         val Raze = AgentId("raze")
         val Jett = AgentId("jett")
         val Omen = AgentId("omen")
+        val Sova = AgentId("sova")
         val Sage = AgentId("sage")
 
         // 100라운드, K/D 1.10, 전투점수 200, 피해량 140, 헤드샷 21%
-        fun fixed(kills: Int = 110, score: Int = 20_000, damage: Int = 14_000, head: Int = 21) = MatchMetrics.Empty.copy(
+        fun fixed(kills: Int = 110, score: Int = 20_000, damage: Int = 14_000, head: Int = 21, assists: Int = 0) = MatchMetrics.Empty.copy(
             matches = 5,
             rounds = 100,
             kills = kills,
             deaths = 100,
+            assists = assists,
             combatScore = score,
             damage = damage,
             shots = Shots(head = head, body = 100 - head, leg = 0),
@@ -385,11 +427,12 @@ class WeekNoteTest {
         )
 
         // 한 판 24라운드
-        fun matchesOf(matches: Int, kills: Int = 0, deaths: Int = 0, score: Int = 0) = MatchMetrics.Empty.copy(
+        fun matchesOf(matches: Int, kills: Int = 0, deaths: Int = 0, score: Int = 0, assists: Int = 0) = MatchMetrics.Empty.copy(
             matches = matches,
             rounds = matches * 24,
             kills = kills,
             deaths = deaths,
+            assists = assists,
             combatScore = score,
         )
 

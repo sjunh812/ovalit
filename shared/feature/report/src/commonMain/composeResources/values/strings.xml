@@ -21,8 +21,11 @@
     <string name="metric_multi_kill">멀티킬 라운드</string>
     <string name="metric_traded_death">트레이드 받은 데스</string>
 
-    <!-- 판당 K/D/A는 KDA 옆에 SeparatedRow로 붙는다. 좁으면 통째로 다음 줄로 내려간다 -->
-    <string name="summary_kda">판당 %1$s / %2$s / %3$s</string>
+    <!-- KDA 넓은 칸 오른쪽의 판당 킬·데스·어시 표. "판당"은 줄 머리, 나머지는 열 머리다 -->
+    <string name="kda_per_match">판당</string>
+    <string name="kda_kills">킬</string>
+    <string name="kda_deaths">데스</string>
+    <string name="kda_assists">어시</string>
     <string name="baseline_missing">비교할 기록이 모자라요</string>
     <string name="summary_compared">변화량은 지난 %1$d주 평균과 비교했어요</string>
     <string name="dynamic_usual">평소 %1$s</string>
@@ -32,12 +35,15 @@
     <string name="note_down_combat_score">전투점수가 평소보다 %1$s 떨어졌어요</string>
     <string name="note_up_kd">K/D가 평소보다 %1$s 올랐어요</string>
     <string name="note_down_kd">K/D가 평소보다 %1$s 떨어졌어요</string>
+    <string name="note_up_kda">KDA가 평소보다 %1$s 올랐어요</string>
+    <string name="note_down_kda">KDA가 평소보다 %1$s 떨어졌어요</string>
     <string name="note_up_damage">피해량이 평소보다 %1$s 올랐어요</string>
     <string name="note_down_damage">피해량이 평소보다 %1$s 떨어졌어요</string>
     <string name="note_up_headshot">헤드샷이 평소보다 %1$s 올랐어요</string>
     <string name="note_down_headshot">헤드샷이 평소보다 %1$s 떨어졌어요</string>
     <string name="note_best_combat_score">전투점수가 평소보다 %1$s 올라 이번 액트 최고예요</string>
     <string name="note_best_kd">K/D가 평소보다 %1$s 올라 이번 액트 최고예요</string>
+    <string name="note_best_kda">KDA가 평소보다 %1$s 올라 이번 액트 최고예요</string>
     <string name="note_best_damage">피해량이 평소보다 %1$s 올라 이번 액트 최고예요</string>
     <string name="note_best_headshot">헤드샷이 평소보다 %1$s 올라 이번 액트 최고예요</string>
     <string name="note_case_change">%1$s → %2$s</string>
@@ -80,6 +86,9 @@
     <string name="sheet_kd_body">한 번 죽을 때마다 적을 몇 번 처치했는지예요.</string>
     <string name="sheet_kd_method">킬을 전부 더해 데스 수로 나눠요. 스킬로 자기나 우리 팀을 죽인 건 킬로 세지 않고, 자기를 죽인 건 데스에는 넣어요.</string>
     <string name="sheet_kd_formula">%1$s킬 ÷ %2$s데스 = %3$s</string>
+    <string name="sheet_kda_body">한 번 죽을 때마다 킬과 어시스트를 합쳐 몇 번 했는지예요. K/D와 달리 어시스트도 들어가요.</string>
+    <string name="sheet_kda_method">킬과 어시스트를 전부 더해 데스 수로 나눠요. 경기마다 KDA를 먼저 내지 않고 다 더한 뒤에 나눠요.</string>
+    <string name="sheet_kda_formula">(%1$s킬 + %2$s어시) ÷ %3$s데스 = %4$s</string>
     <string name="sheet_damage_name">ADR</string>
     <string name="sheet_damage_body">한 라운드에 적에게 입힌 피해의 평균이에요. 킬로 이어지지 않은 피해도 들어가요.</string>
     <string name="sheet_damage_method">경기에서 입힌 피해를 전부 더해 뛴 라운드 수로 나눠요.</string>
@@ -118,6 +127,7 @@
     <string name="dynamic_sheet_steady">이번 변화가 평소 주마다 흔들리는 폭 안이라 달라졌다고 보지 않았어요.</string>
     <string name="dynamic_sheet_unknown">이번 기간이나 앞선 주의 표본이 모자라 달라졌는지 판단하지 않았어요.</string>
     <string name="sheet_kd_no_deaths">데스가 없어서 K/D를 비워 뒀어요. 킬 수를 그대로 띄우면 실제보다 부풀려 보여요.</string>
+    <string name="sheet_kda_no_deaths">데스가 없어서 KDA를 비워 뒀어요. 킬과 어시스트를 그대로 띄우면 실제보다 부풀려 보여요.</string>
     <!-- 개선 포인트 문장. 이름 뒤 조사는 카탈로그 이름에 따라 달라서 코드가 붙여 넘긴다(core/ui Josa). 값 뒤에는
          조사가 오지 않게 끊는다. "121예요"처럼 숫자 끝 소리에 따라 조사가 틀린다. -->
     <string name="insight_side_attack">공격</string>
@@ -152,7 +162,7 @@
     <string name="nudge_invite_title">같이 뛰는 친구를 불러 보세요</string>
     <string name="nudge_invite_body">초대 링크로 친구가 되면 매주 기록을 나란히 놓고 볼 수 있어요</string>
     <string name="nudge_rival_title">라이벌을 골라 보세요</string>
-    <string name="nudge_rival_body">고른 친구와 K/D, 피해량, 헤드샷을 매주 겨뤄요</string>
+    <string name="nudge_rival_body">고른 친구와 K/D, 피해량, 헤드샷, KDA를 매주 겨뤄요</string>
     <string name="rival_pick_title">라이벌 고르기</string>
     <string name="rival_pick_body">전적을 공개한 친구만 고를 수 있어요. 친구 프로필에서 언제든 바꿀 수 있어요.</string>
     <string name="rival_pick_no_matches">%1$s 경기 없음</string>

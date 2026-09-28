@@ -55,6 +55,7 @@ import com.ovalit.feature.report.resources.note_best_combat_score
 import com.ovalit.feature.report.resources.note_best_damage
 import com.ovalit.feature.report.resources.note_best_headshot
 import com.ovalit.feature.report.resources.note_best_kd
+import com.ovalit.feature.report.resources.note_best_kda
 import com.ovalit.feature.report.resources.note_case_change
 import com.ovalit.feature.report.resources.note_case_matches
 import com.ovalit.feature.report.resources.note_case_rounds
@@ -62,6 +63,7 @@ import com.ovalit.feature.report.resources.note_down_combat_score
 import com.ovalit.feature.report.resources.note_down_damage
 import com.ovalit.feature.report.resources.note_down_headshot
 import com.ovalit.feature.report.resources.note_down_kd
+import com.ovalit.feature.report.resources.note_down_kda
 import com.ovalit.feature.report.resources.note_mix_buy
 import com.ovalit.feature.report.resources.note_mix_share
 import com.ovalit.feature.report.resources.note_steady_agent
@@ -71,6 +73,7 @@ import com.ovalit.feature.report.resources.note_up_combat_score
 import com.ovalit.feature.report.resources.note_up_damage
 import com.ovalit.feature.report.resources.note_up_headshot
 import com.ovalit.feature.report.resources.note_up_kd
+import com.ovalit.feature.report.resources.note_up_kda
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -330,6 +333,7 @@ private fun FixedMetric.headline(rose: Boolean, best: Boolean): StringResource {
         FixedMetric.KD -> Triple(Res.string.note_up_kd, Res.string.note_down_kd, Res.string.note_best_kd)
         FixedMetric.DAMAGE -> Triple(Res.string.note_up_damage, Res.string.note_down_damage, Res.string.note_best_damage)
         FixedMetric.HEADSHOT_RATE -> Triple(Res.string.note_up_headshot, Res.string.note_down_headshot, Res.string.note_best_headshot)
+        FixedMetric.KDA -> Triple(Res.string.note_up_kda, Res.string.note_down_kda, Res.string.note_best_kda)
     }
     return when {
         best -> record

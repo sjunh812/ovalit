@@ -97,8 +97,8 @@ internal class AgentTrend(
  * 그 전에 변화가 실력이 아니라 비중에서 왔는지 봅니다. 이번 기간 묶음별 성적을 비교 기준의 비중으로 다시 섞어, 원래 값과의
  * 차이가 변화의 [MIN_MIX_EXPLAINED] 이상이면 무기와 요원 대신 비중 변화를 적습니다(`mixes`).
  *
- * 역할이 크게 띄우지 않는 지표(척후대와 전략가의 K/D)는 고르지 않습니다. 동적 칸과 같은 규칙입니다. 기타 모드에서는
- * 부르지 않아서 고정 지표 넷을 다 봅니다.
+ * 역할이 크게 띄우지 않는 지표(척후대와 전략가의 K/D)는 고르지 않습니다. 동적 칸과 같은 규칙입니다. KDA는 어시스트가
+ * 들어가 척후대와 전략가도 봅니다. 기타 모드에서는 부르지 않습니다.
  *
  * @param mixes 라운드 구매, 들고 시작한 무기, 요원으로 나눈 묶음들입니다. 나누는 방법마다 목록 하나입니다.
  * @param actWeeks 이번 액트에서 기간 앞의 주들입니다. 기간이 한 주일 때만 넘깁니다. 두 주를 합친 값을 한 주 값들과 견주면
@@ -162,7 +162,7 @@ private fun movedFixedMetric(
 // 같은 쪽으로 움직인 무기 중 비중 × 차이가 가장 큰 것이다. 한쪽 표본만 넘긴 무기를 짚으면 S6에서는 그 무기가
 // "이번 액트 기준"으로 떠서 숫자가 맞지 않으니 S6 위쪽 표처럼 두 표본을 다 본다.
 private fun movedWeapon(moved: MovedMetric, weapons: List<WeaponTrend>, rounds: Int): MovedWeapon? {
-    // 전투점수는 무기별로 나눌 수 없다
+    // 전투점수와 KDA는 무기별로 짚을 값이 없다
     val metric = moved.metric.weaponMetric ?: return null
     if (rounds == 0) return null
 
@@ -293,6 +293,7 @@ private fun FixedMetric.fraction(metrics: MatchMetrics): Pair<Double, Double> = 
     FixedMetric.KD -> metrics.kills.toDouble() to metrics.deaths.toDouble()
     FixedMetric.DAMAGE -> metrics.damage.toDouble() to metrics.rounds.toDouble()
     FixedMetric.HEADSHOT_RATE -> metrics.shots.head.toDouble() to metrics.shots.total.toDouble()
+    FixedMetric.KDA -> (metrics.kills + metrics.assists).toDouble() to metrics.deaths.toDouble()
 }
 
 private val FixedMetric.weaponMetric: WeaponMetric?
@@ -301,6 +302,8 @@ private val FixedMetric.weaponMetric: WeaponMetric?
         FixedMetric.KD -> WeaponMetric.KD
         FixedMetric.DAMAGE -> WeaponMetric.DAMAGE_PER_ROUND
         FixedMetric.HEADSHOT_RATE -> WeaponMetric.HEADSHOT_RATE
+        // 무기별 어시스트는 들고 시작한 라운드로만 세서 무기 KDA를 짚을 값이 없다
+        FixedMetric.KDA -> null
     }
 
 // CLAUDE.md 역할군 표의 "크게 띄우지 않는 것" 중 고정 지표에 해당하는 것만 옮겼다

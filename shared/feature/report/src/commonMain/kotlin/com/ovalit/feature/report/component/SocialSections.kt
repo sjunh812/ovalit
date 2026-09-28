@@ -56,8 +56,9 @@ import com.ovalit.feature.report.resources.rival_no_matches
 import com.ovalit.feature.report.resources.rival_title
 import org.jetbrains.compose.resources.stringResource
 
-// 목업대로 역할이 달라도 나란히 놓을 수 있는 세 지표만 겨룬다
-private val RivalMetrics = listOf(FixedMetric.KD, FixedMetric.DAMAGE, FixedMetric.HEADSHOT_RATE)
+// 목업의 세 지표는 역할이 달라도 나란히 놓을 수 있는 것이다. 사용자 결정(2026-09-29)으로 KDA를 더했다. 어시스트가 들어가
+// 척후대·전략가도 제 몫이 드러나서 역할이 달라도 견줄 만하다.
+private val RivalMetrics = listOf(FixedMetric.KD, FixedMetric.DAMAGE, FixedMetric.HEADSHOT_RATE, FixedMetric.KDA)
 private val NameWidth = 72.dp
 
 private class RankWidths(val rank: Dp, val name: Dp, val value: Dp)
@@ -92,7 +93,8 @@ internal fun RivalSection(
     }
 }
 
-private val RankableMetrics = listOf(FixedMetric.COMBAT_SCORE, FixedMetric.KD, FixedMetric.DAMAGE, FixedMetric.HEADSHOT_RATE)
+// 홈 고정 칸과 같은 순서다
+private val RankableMetrics = FixedMetric.entries
 
 private class Ranked(val name: String, val isMe: Boolean, val value: Double, val rank: Int)
 

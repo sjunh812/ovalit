@@ -14,11 +14,11 @@ enum class QueueFilter(val queues: Set<Queue>) {
     ;
 
     /**
-     * 기타 모드는 K/D와 헤드샷만 봅니다. 데스매치처럼 라운드가 없는 모드가 섞여 있어 라운드당 값인 전투점수와 피해량은
+     * 기타 모드는 K/D, 헤드샷, KDA만 봅니다. 데스매치처럼 라운드가 없는 모드가 섞여 있어 라운드당 값인 전투점수와 피해량은
      * 뺍니다.
      */
     val fixedMetrics: List<FixedMetric>
-        get() = if (this == OTHER) listOf(FixedMetric.KD, FixedMetric.HEADSHOT_RATE) else FixedMetric.entries
+        get() = if (this == OTHER) listOf(FixedMetric.KD, FixedMetric.HEADSHOT_RATE, FixedMetric.KDA) else FixedMetric.entries
 
     val hasDynamicMetrics: Boolean get() = this != OTHER
 }

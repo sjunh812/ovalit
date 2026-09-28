@@ -5,6 +5,7 @@ import com.ovalit.core.data.FakeFriendRepository
 import com.ovalit.core.data.FakeMatchRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.model.PlayerId
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -18,12 +19,17 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.datetime.TimeZone
+
+// 앱은 Dispatchers.Default에서 세지만 테스트는 값을 바로 읽으려고 부르는 쪽에서 센다
+private val SameThread = EmptyCoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FriendProfileViewModelTest {
@@ -70,7 +76,7 @@ class FriendProfileViewModelTest {
         val source = FakeFriendRepository()
         val public = source.friends.first().first { it.statsPublic && it.matches.isNotEmpty() }
         val private = PrivateFriends(source, public.id)
-        val viewModel = FriendProfileViewModel(public.id, private, FakeMatchRepository(), FakeContentRepository(), Clock.System, TimeZone.of("Asia/Seoul"))
+        val viewModel = FriendProfileViewModel(public.id, private, FakeMatchRepository(), FakeContentRepository(), Clock.System, TimeZone.of("Asia/Seoul"), computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         val state = assertIs<FriendProfileUiState.Success>(viewModel.uiState.value)
@@ -79,9 +85,29 @@ class FriendProfileViewModelTest {
         assertEquals(null, state.theirProfile)
     }
 
+    // 메인 스레드에서 세면 화면이 밀려 들어오는 동안 멈춘다
+    @Test
+    fun `친구 프로필은 넘겨받은 곳에서 센다`() = runTest {
+        val id = friends.friends.first().first().id
+        val viewModel = FriendProfileViewModel(
+            id,
+            friends,
+            FakeMatchRepository(),
+            FakeContentRepository(),
+            Clock.System,
+            TimeZone.of("Asia/Seoul"),
+            computation = StandardTestDispatcher(testScheduler),
+        )
+        collect(viewModel)
+
+        assertEquals(FriendProfileUiState.Loading, viewModel.uiState.value)
+        advanceUntilIdle()
+        assertIs<FriendProfileUiState.Success>(viewModel.uiState.value)
+    }
+
     private suspend fun viewModel(): FriendProfileViewModel {
         val id = friends.friends.first().first().id
-        return FriendProfileViewModel(id, friends, FakeMatchRepository(), FakeContentRepository(), Clock.System, TimeZone.of("Asia/Seoul"))
+        return FriendProfileViewModel(id, friends, FakeMatchRepository(), FakeContentRepository(), Clock.System, TimeZone.of("Asia/Seoul"), computation = SameThread)
     }
 
     private fun TestScope.collect(viewModel: FriendProfileViewModel) {

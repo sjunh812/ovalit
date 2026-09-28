@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.EnterExitState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -36,10 +38,12 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
 import com.ovalit.core.data.FakeAccountRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.ImportScheduler
+import com.ovalit.core.designsystem.component.LocalScreenEntering
 import com.ovalit.core.designsystem.component.OvalitTab
 import com.ovalit.core.designsystem.component.OvalitTabBar
 import com.ovalit.core.designsystem.icon.OvalitIcons
@@ -260,6 +264,9 @@ private fun rememberOpaqueEntryDecorator(): NavEntryDecorator<NavKey> {
     val edge = OvalitTheme.colors.line
     return remember(background, edge) {
         NavEntryDecorator { entry ->
+            // 밀려 들어오는 동안에는 화면이 무거운 내용을 늦게 그리게 알린다(rememberContentShown)
+            val transition = LocalNavAnimatedContentScope.current.transition
+            val entering = transition.targetState == EnterExitState.Visible && transition.currentState != EnterExitState.Visible
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -269,7 +276,9 @@ private fun rememberOpaqueEntryDecorator(): NavEntryDecorator<NavKey> {
                         drawRect(edge, topLeft = Offset(size.width, 0f), size = Size(width, size.height))
                     }
                     .background(background),
-            ) { entry.Content() }
+            ) {
+                CompositionLocalProvider(LocalScreenEntering provides entering) { entry.Content() }
+            }
         }
     }
 }

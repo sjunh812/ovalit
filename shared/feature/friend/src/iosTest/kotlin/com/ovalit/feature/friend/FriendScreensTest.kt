@@ -15,12 +15,16 @@ import com.ovalit.core.data.FakeContentRepository
 import com.ovalit.core.data.FakeFriendRepository
 import com.ovalit.core.data.FakeMatchRepository
 import com.ovalit.core.model.PlayerId
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
+
+// 앱은 Dispatchers.Default에서 세지만 테스트는 값을 바로 읽으려고 부르는 쪽에서 센다
+private val SameThread = EmptyCoroutineContext
 
 @OptIn(ExperimentalTestApi::class)
 class FriendScreensTest {
@@ -159,6 +163,7 @@ class FriendScreensTest {
         val minseok = PlayerId("fake-minseok")
         val viewModel = FriendProfileViewModel(
             minseok, FakeFriendRepository(), FakeMatchRepository(), FakeContentRepository(), Clock.System, TimeZone.of("Asia/Seoul"),
+            computation = SameThread,
         )
         var backs = 0
         setContent {

@@ -14,11 +14,14 @@ import com.ovalit.core.model.WeaponReport
 import com.ovalit.core.model.agentReport
 import com.ovalit.core.model.currentActMatches
 import com.ovalit.core.model.weaponReport
+import kotlin.coroutines.CoroutineContext
 import kotlin.time.Clock
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.TimeZone
@@ -46,7 +49,12 @@ sealed interface RecordsUiState {
     ) : RecordsUiState
 }
 
-/** S6 무기와 S7 요원이 같이 씁니다. 내 기록이든 친구 기록이든 이번 액트의 경쟁 + 일반 경기만 셉니다. */
+/**
+ * S6 무기와 S7 요원이 같이 씁니다. 내 기록이든 친구 기록이든 이번 액트의 경쟁 + 일반 경기만 셉니다.
+ *
+ * @param computation 경기를 모아 세는 곳입니다. 메인 스레드에서 세면 화면이 밀려 들어오는 동안 멈춰서 기본은
+ * [Dispatchers.Default]입니다.
+ */
 class RecordsViewModel(
     owner: RecordsOwner,
     matchRepository: MatchRepository,
@@ -54,6 +62,7 @@ class RecordsViewModel(
     contentRepository: ContentRepository,
     clock: Clock,
     timeZone: TimeZone,
+    computation: CoroutineContext = Dispatchers.Default,
 ) : ViewModel() {
 
     // 제목에 붙일 이름과 셀 경기다. 내 기록이면 이름이 null이고, 친구를 끊었거나 친구가 전적을 비공개로 바꿨으면 통째로
@@ -75,7 +84,7 @@ class RecordsViewModel(
             weapons = matches.weaponReport(now = clock.now(), timeZone = timeZone, queueFilter = QUEUE),
             catalog = catalog,
         )
-    }.stateIn(
+    }.flowOn(computation).stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = RecordsUiState.Loading,

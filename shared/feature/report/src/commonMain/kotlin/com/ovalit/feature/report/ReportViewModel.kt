@@ -19,14 +19,17 @@ import com.ovalit.core.model.metricsIn
 import com.ovalit.core.model.weeklyReport
 import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.core.ui.playerBadge
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Clock
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -90,6 +93,8 @@ data class FriendStanding(
 /**
  * @param weekChanges 흐를 때마다 리포트를 다시 셉니다. 앱에서는 [weekStarts]를 넘겨 월요일 0시에 "이번 주"를 바꿉니다.
  * 테스트는 시계를 멈춰 두므로 한 번만 흐르는 기본값을 씁니다.
+ * @param computation 리포트를 세는 곳입니다. 메인 스레드에서 세면 첫 수집 뒤 홈으로 넘어가는 전환이 멈춰서 기본은
+ * [Dispatchers.Default]입니다. 테스트는 값을 바로 읽으려고 부르는 쪽에서 셉니다.
  */
 class ReportViewModel(
     private val matchRepository: MatchRepository,
@@ -100,6 +105,7 @@ class ReportViewModel(
     clock: Clock,
     timeZone: TimeZone,
     weekChanges: Flow<Unit> = flowOf(Unit),
+    computation: CoroutineContext = Dispatchers.Default,
 ) : ViewModel() {
 
     // 칩으로 고르기 전까지는 설정의 기본 큐를 따른다. 고른 칩은 저장하지 않아 앱을 새로 열면 기본 큐로 돌아간다.
@@ -159,7 +165,7 @@ class ReportViewModel(
                 hasRival = rivalId != null,
             ),
         )
-    }.stateIn(
+    }.flowOn(computation).stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = ReportUiState.Loading,
@@ -176,7 +182,7 @@ class ReportViewModel(
         contentRepository.catalog,
     ) { account, matches, catalog ->
         account?.let { playerBadge(it.riotId, matches, catalog) }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initialValue = null)
+    }.flowOn(computation).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initialValue = null)
 
     fun selectQueue(filter: QueueFilter) {
         selectedQueue.value = filter

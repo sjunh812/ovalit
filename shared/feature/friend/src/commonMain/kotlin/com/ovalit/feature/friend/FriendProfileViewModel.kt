@@ -23,12 +23,15 @@ import com.ovalit.core.model.sharedWith
 import com.ovalit.core.model.weaponReport
 import com.ovalit.core.model.weeklyReport
 import com.ovalit.core.ui.PlayerBadge
+import kotlin.coroutines.CoroutineContext
 import kotlin.time.Clock
 import kotlin.time.Instant
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -70,6 +73,12 @@ sealed interface FriendProfileUiState {
     ) : FriendProfileUiState
 }
 
+/**
+ * S5 친구 프로필입니다.
+ *
+ * @param computation 경기를 모아 세는 곳입니다. 메인 스레드에서 세면 화면이 밀려 들어오는 동안 멈춰서 기본은
+ * [Dispatchers.Default]입니다.
+ */
 class FriendProfileViewModel(
     private val friendId: PlayerId,
     private val friendRepository: FriendRepository,
@@ -77,6 +86,7 @@ class FriendProfileViewModel(
     contentRepository: ContentRepository,
     clock: Clock,
     timeZone: TimeZone,
+    computation: CoroutineContext = Dispatchers.Default,
 ) : ViewModel() {
 
     val uiState: StateFlow<FriendProfileUiState> = combine(
@@ -109,7 +119,7 @@ class FriendProfileViewModel(
             now = clock.now(),
             timeZone = timeZone,
         )
-    }.stateIn(
+    }.flowOn(computation).stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = FriendProfileUiState.Loading,

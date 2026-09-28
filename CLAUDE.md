@@ -97,6 +97,11 @@ RSO는 Custom Tabs로 띄운다. WebView는 쓰지 않는다. 앱이 비밀번�
 nowinandroid에서 가져올 것: UDF, `sealed interface UiState`,
 `stateIn(WhileSubscribed(5_000))`, Repository 분리, `build-logic` convention plugin.
 
+경기를 모아 세는 계산(홈 리포트, 내 프로필, S6·S7, S5)은 ViewModel이 `Dispatchers.Default`에서 한다. 메인 스레드에서 세면
+화면이 밀려 들어오는 동안 멈춘다. 첫 수집 뒤 홈으로 넘어갈 때 한 프레임이 250ms까지 걸렸다. 화면이 밀려 들어오는 중에
+내용이 도착하면 다 들어올 때까지 스켈레톤을 둔다(`rememberContentShown`, 지금은 홈). 긴 화면을 전환 한가운데서 한꺼번에
+그리면 그 프레임이 늦어진다. 끊김은 릴리스 빌드로 잰다. 디버그 빌드는 Compose가 몇 배 느려서 릴리스에 없는 끊김이 보인다.
+
 화면 전환은 Navigation 3이고 `composeApp`에만 둔다. 출시가 안드로이드뿐이라 안드로이드
 아티팩트를 쓴다. 기능 모듈은 `ReportRoute`처럼 ViewModel을 받아 그리는 진입 컴포저블까지만
 내놓고, 어디서 어디로 가는지는 `composeApp`이 정한다.

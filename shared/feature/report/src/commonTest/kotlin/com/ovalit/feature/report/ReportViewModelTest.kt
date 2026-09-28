@@ -1,6 +1,7 @@
 package com.ovalit.feature.report
 
 import com.ovalit.core.data.AccountRepository
+import com.ovalit.core.data.FakeAccountRepository
 import com.ovalit.core.data.FakeContentRepository
 import com.ovalit.core.data.FakeFriendRepository
 import com.ovalit.core.data.FakeMatchRepository
@@ -20,6 +21,7 @@ import com.ovalit.core.model.UserPreferences
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.model.nextWeekStart
 import com.ovalit.core.model.weeklyReport
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -27,6 +29,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
@@ -42,6 +46,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -51,6 +56,9 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
+
+// 앱은 Dispatchers.Default에서 세지만 테스트는 값을 바로 읽으려고 부르는 쪽에서 센다
+private val SameThread = EmptyCoroutineContext
 
 private val Seoul = TimeZone.of("Asia/Seoul")
 private val Thursday = LocalDateTime(2026, 9, 24, 22, 0).toInstant(Seoul)
@@ -73,14 +81,30 @@ class ReportViewModelTest {
 
     @Test
     fun `경기를 받기 전에는 불러오는 중이다`() {
-        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul)
+        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
 
         assertEquals(ReportUiState.Loading, viewModel.uiState.value)
     }
 
+    // 메인 스레드에서 세면 첫 수집 뒤 홈으로 넘어가는 전환이 멈춘다
+    @Test
+    fun `리포트와 배지는 넘겨받은 곳에서 센다`() = runTest {
+        val computation = StandardTestDispatcher(testScheduler)
+        val matches = FakeMatchRepository(ThursdayClock)
+        val viewModel = ReportViewModel(matches, FakeAccountRepository(matches, ThursdayClock), StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = computation)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.badge.collect() }
+
+        assertEquals(ReportUiState.Loading, viewModel.uiState.value)
+        assertNull(viewModel.badge.value)
+        advanceUntilIdle()
+        assertIs<ReportUiState.Success>(viewModel.uiState.value)
+        assertNotNull(viewModel.badge.value)
+    }
+
     @Test
     fun `받은 경기로 주간 리포트를 만든다`() = runTest {
-        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul)
+        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         val state = assertIs<ReportUiState.Success>(viewModel.uiState.value)
@@ -91,7 +115,7 @@ class ReportViewModelTest {
     @Test
     fun `경기가 새로 들어오면 리포트를 다시 만든다`() = runTest {
         val matches = MutableStateFlow<List<Match>>(emptyList())
-        val viewModel = ReportViewModel(StubRepository(matches), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul)
+        val viewModel = ReportViewModel(StubRepository(matches), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         assertEquals(
@@ -114,7 +138,7 @@ class ReportViewModelTest {
         }
         val weekChanges = MutableSharedFlow<Unit>(replay = 1).apply { tryEmit(Unit) }
         val matches = FakeMatchRepository(ThursdayClock)
-        val viewModel = ReportViewModel(matches, NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), clock, Seoul, weekChanges)
+        val viewModel = ReportViewModel(matches, NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), clock, Seoul, weekChanges, computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
         val before = assertIs<WeeklyReport.Ready>(assertIs<ReportUiState.Success>(viewModel.uiState.value).report).period
         assertTrue(before.includesThisWeek)
@@ -142,7 +166,7 @@ class ReportViewModelTest {
     // 가짜 경기는 경쟁과 일반뿐이라 기타로 바꾸면 한 경기도 없다
     @Test
     fun `큐를 바꾸면 그 큐 경기로 리포트를 다시 만든다`() = runTest {
-        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul)
+        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         viewModel.selectQueue(QueueFilter.OTHER)
@@ -156,7 +180,7 @@ class ReportViewModelTest {
     @Test
     fun `칩을 고르기 전에는 설정의 기본 큐로 시작한다`() = runTest {
         val preferences = StubPreferences(UserPreferences.Default.copy(defaultQueue = QueueFilter.OTHER))
-        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, preferences, NoFriends, FakeContentRepository(), ThursdayClock, Seoul)
+        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, preferences, NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         assertEquals(QueueFilter.OTHER, assertIs<ReportUiState.Success>(viewModel.uiState.value).queueFilter)
@@ -165,7 +189,7 @@ class ReportViewModelTest {
     @Test
     fun `전적을 공개한 친구만 내 리포트와 같은 기간으로 센다`() = runTest {
         val friends = FakeFriendRepository(ThursdayClock)
-        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), friends, FakeContentRepository(), ThursdayClock, Seoul)
+        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), friends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         val state = assertIs<ReportUiState.Success>(viewModel.uiState.value)
@@ -176,7 +200,7 @@ class ReportViewModelTest {
     @Test
     fun `라이벌을 고르면 그 친구를 라이벌 칸에 올린다`() = runTest {
         val friends = FakeFriendRepository(ThursdayClock)
-        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), friends, FakeContentRepository(), ThursdayClock, Seoul)
+        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), friends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         val minseok = friends.friends.first().first { it.riotId == "민석#KR3" }.id
@@ -186,7 +210,7 @@ class ReportViewModelTest {
     }
     @Test
     fun `친구가 없으면 라이벌 칸 자리에 초대를 권한다`() = runTest {
-        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul)
+        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         assertEquals(HomeNudge.INVITE_FRIEND, assertIs<ReportUiState.Success>(viewModel.uiState.value).nudge)
@@ -194,7 +218,7 @@ class ReportViewModelTest {
 
     @Test
     fun `친구는 있고 라이벌이 없으면 라이벌 고르기를 권한다`() = runTest {
-        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), FakeFriendRepository(ThursdayClock), FakeContentRepository(), ThursdayClock, Seoul)
+        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), FakeFriendRepository(ThursdayClock), FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         assertEquals(HomeNudge.PICK_RIVAL, assertIs<ReportUiState.Success>(viewModel.uiState.value).nudge)
@@ -203,7 +227,7 @@ class ReportViewModelTest {
     @Test
     fun `홈에서 라이벌을 고르면 권하던 칸 대신 라이벌 대결을 둔다`() = runTest {
         val friends = FakeFriendRepository(ThursdayClock)
-        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), friends, FakeContentRepository(), ThursdayClock, Seoul)
+        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), friends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         viewModel.selectRival(friends.friends.first().first { it.riotId == "준호#KR1" }.id)
@@ -217,7 +241,7 @@ class ReportViewModelTest {
     @Test
     fun `친구가 모두 전적 비공개면 초대도 라이벌도 권하지 않는다`() = runTest {
         val hidden = Friend(PlayerId("seoyeon"), "서연#KR7", playerCard = null, statsPublic = false, matches = emptyList())
-        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), StubFriends(listOf(hidden)), FakeContentRepository(), ThursdayClock, Seoul)
+        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), StubFriends(listOf(hidden)), FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         assertEquals(null, assertIs<ReportUiState.Success>(viewModel.uiState.value).nudge)
@@ -226,7 +250,7 @@ class ReportViewModelTest {
     @Test
     fun `홈을 당겨 새 경기를 받으면 리포트를 다시 만든다`() = runTest {
         val matches = FakeMatchRepository(ThursdayClock)
-        val viewModel = ReportViewModel(matches, NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul)
+        val viewModel = ReportViewModel(matches, NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
         val before = assertIs<ReportUiState.Success>(viewModel.uiState.value).report
         val countBefore = matches.observeMatches().first().size
@@ -296,7 +320,7 @@ class ReportViewModelTest {
         val matches = FakeMatchRepository(ThursdayClock).observeMatches().first()
         val progress = MutableStateFlow<ImportProgress?>(ImportProgress(total = matches.size, results = listOf(true)))
         val repository = StubRepository(MutableStateFlow(matches.take(1)), importProgress = progress)
-        val viewModel = ReportViewModel(repository, NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul)
+        val viewModel = ReportViewModel(repository, NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         assertEquals(ReportUiState.Loading, viewModel.uiState.value)
@@ -309,7 +333,7 @@ class ReportViewModelTest {
     @Test
     fun `고른 관심사로 달라진 점 순서를 정한다`() = runTest {
         val preferences = StubPreferences(UserPreferences.Default.copy(focus = Focus.ROUND_PLAY))
-        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, preferences, NoFriends, FakeContentRepository(), ThursdayClock, Seoul)
+        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, preferences, NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         val report = assertIs<WeeklyReport.Ready>(assertIs<ReportUiState.Success>(viewModel.uiState.value).report)

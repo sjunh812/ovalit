@@ -30,6 +30,7 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import com.ovalit.core.designsystem.component.LocalScreenEntering
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.AgentId
 import com.ovalit.core.model.BuyType
@@ -78,6 +79,26 @@ class ReportScreenTest {
         setContent { OvalitTheme { ReportScreen(ReportUiState.Loading, onSelectQueue = {}) } }
 
         onNodeWithText("전투점수", substring = true).assertDoesNotExist()
+    }
+
+    // 첫 수집 뒤 홈으로 넘어올 때 리포트가 전환 한가운데 도착한다. 그때 홈 전체를 그리면 밀려 들어오던 화면이 멈춘다.
+    @Test
+    fun `밀려 들어오는 중에 리포트가 오면 다 들어온 뒤에 숫자를 띄운다`() = runComposeUiTest {
+        var entering by mutableStateOf(true)
+        var uiState by mutableStateOf<ReportUiState>(ReportUiState.Loading)
+        setContent {
+            CompositionLocalProvider(LocalScreenEntering provides entering) {
+                OvalitTheme { ReportScreen(uiState, onSelectQueue = {}) }
+            }
+        }
+
+        uiState = ReportUiState.Success(QueueFilter.COMPETITIVE_AND_UNRATED, ReportPreviewData.moved)
+        waitForIdle()
+        onNodeWithText("전투점수").assertDoesNotExist()
+
+        entering = false
+        waitForIdle()
+        onNodeWithText("전투점수").assertExists()
     }
 
     @Test

@@ -7,6 +7,7 @@ import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.model.Friend
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.currentActMatches
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -22,12 +23,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.datetime.TimeZone
+
+// 앱은 Dispatchers.Default에서 세지만 테스트는 값을 바로 읽으려고 부르는 쪽에서 센다
+private val SameThread = EmptyCoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RecordsViewModelTest {
@@ -90,8 +96,27 @@ class RecordsViewModelTest {
         assertEquals(RecordsUiState.Hidden, viewModel.uiState.value)
     }
 
+    // 메인 스레드에서 세면 화면이 밀려 들어오는 동안 멈춘다
+    @Test
+    fun `기록은 넘겨받은 곳에서 센다`() = runTest {
+        val viewModel = RecordsViewModel(
+            RecordsOwner.Me,
+            myMatches,
+            FakeFriendRepository(),
+            FakeContentRepository(),
+            Clock.System,
+            TimeZone.of("Asia/Seoul"),
+            computation = StandardTestDispatcher(testScheduler),
+        )
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+
+        assertEquals(RecordsUiState.Loading, viewModel.uiState.value)
+        advanceUntilIdle()
+        assertIs<RecordsUiState.Success>(viewModel.uiState.value)
+    }
+
     private fun viewModel(owner: RecordsOwner, friends: FriendRepository) =
-        RecordsViewModel(owner, myMatches, friends, FakeContentRepository(), Clock.System, TimeZone.of("Asia/Seoul"))
+        RecordsViewModel(owner, myMatches, friends, FakeContentRepository(), Clock.System, TimeZone.of("Asia/Seoul"), computation = SameThread)
 
     private fun TestScope.collect(viewModel: RecordsViewModel) {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }

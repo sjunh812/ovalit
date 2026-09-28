@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitPullToRefresh
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.rememberContentShown
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ContentCatalog
@@ -103,19 +104,22 @@ internal fun ReportScreen(
     onOpenAgents: () -> Unit = {},
     onOpenWeapons: () -> Unit = {},
 ) {
+    // 첫 수집 뒤 홈으로 넘어오면 리포트가 전환 한가운데 도착한다. 그때 홈 전체를 그리면 밀려 들어오던 화면이 한 번
+    // 멈춰서, 다 들어올 때까지 스켈레톤을 둔다.
+    val shown = rememberContentShown(loaded = uiState is ReportUiState.Success)
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(OvalitTheme.colors.bg),
     ) {
-        when (uiState) {
+        when {
             // 빈 화면 대신 홈 모양대로 자리만 잡아 둔다
-            ReportUiState.Loading -> Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+            uiState !is ReportUiState.Success || !shown -> Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
                 ReportTopBar(badge = badge, onOpenProfile = onOpenProfile)
                 Spacer(Modifier.height(OvalitSpacing.xs))
                 ReportSkeleton()
             }
-            is ReportUiState.Success -> OvalitPullToRefresh(
+            else -> OvalitPullToRefresh(
                 isRefreshing = isRefreshing,
                 onRefresh = onRefresh,
                 modifier = Modifier.fillMaxSize().safeDrawingPadding(),

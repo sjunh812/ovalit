@@ -28,8 +28,10 @@ data class OvalitColors(
     val isDark: Boolean,
 )
 
-// KDA 구간 색(kda1~3)은 op.gg처럼 청록, 파랑, 주황이다. 오르내림의 pos, neg와 섞여 보이지 않게 색상각을
-// 30도 넘게 띄웠다. 초록이나 빨강으로 두면 "지난주보다 올랐다"는 뜻으로 읽힌다.
+// KDA 구간 색(kda1~3)은 파랑, 보라, 주황이다. 게임 아이템 등급처럼 올라갈수록 뜨거운 색으로 읽힌다. 처음 쓴 청록은
+// 오르내림의 pos와 OKLab 거리가 10이 안 돼 "지난주보다 올랐다"는 초록으로 보였다(사용자 요청, 2026-09-29). 파랑과 보라는
+// pos, neg, 액센트와 모두 15 넘게 떨어진다. 주황은 라이트에서 neg와 8 남짓이라 가깝지만 등급의 맨 위를 알리는 색이라 두었고,
+// 옆에 붙는 변화량은 부호와 크기로 갈린다.
 internal val OvalitDarkColors = OvalitColors(
     bg = Color(0xFF100E0C),
     raised = Color(0xFF1A1714),
@@ -47,8 +49,8 @@ internal val OvalitDarkColors = OvalitColors(
     accent = Color(0xFFE0B252),
     accentInk = Color(0xFFE0B252),
     onAccent = Color(0xFF100E0C),
-    kda1 = Color(0xFF2EC5D3),
-    kda2 = Color(0xFF5B9BFF),
+    kda1 = Color(0xFF5B9BFF),
+    kda2 = Color(0xFFC772F6),
     kda3 = Color(0xFFFF9433),
     isDark = true,
 )
@@ -74,8 +76,8 @@ internal val OvalitLightColors = OvalitColors(
     accent = Color(0xFFE0B252),
     accentInk = Color(0xFF8A6410),
     onAccent = Color(0xFF100E0C),
-    kda1 = Color(0xFF007C89),
-    kda2 = Color(0xFF1F63D6),
+    kda1 = Color(0xFF1F63D6),
+    kda2 = Color(0xFF8E38BA),
     kda3 = Color(0xFFB85200),
     isDark = false,
 )

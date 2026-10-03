@@ -156,7 +156,8 @@ private fun List<Match>.trendWeeks(end: LocalDate, period: ReportPeriod, timeZon
         TrendWeek(
             firstDay = firstDay,
             act = act,
-            metrics = metrics.takeIf { it.rounds >= MIN_TREND_ROUNDS },
+            // 한 판이라도 뛰었으면 그린다. 라운드가 모자란 주는 화면이 테두리만 그린다(TrendWeek.sparse).
+            metrics = metrics.takeIf { it.matches > 0 },
             startsNewAct = act != null && previousAct != null && act != previousAct,
             inPeriod = firstDay >= period.firstDay,
         ).also { if (act != null) previousAct = act }

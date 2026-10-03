@@ -2,9 +2,10 @@ package com.ovalit.core.model
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -48,13 +49,22 @@ class TrendTest {
         assertEquals(false, trend[5].inPeriod)
     }
 
-    // 한두 판짜리 주는 막대 하나가 추이를 흔든다
+    // 사용자 요청(2026-10-03): 기록이 하나라도 있으면 그려야 견줄 수 있다
     @Test
-    fun `라운드가 40에 못 미치는 주는 막대를 비운다`() {
-        val trend = ready(week(weeksAgo = 0) + week(weeksAgo = 1, rounds = 39)).trend
+    fun `라운드가 40에 못 미치는 주도 값을 두고 표본이 적다고 표시한다`() {
+        val trend = ready(week(weeksAgo = 0) + week(weeksAgo = 1, rounds = 39, matches = 2)).trend
+
+        assertEquals(39, trend[6].metrics?.rounds)
+        assertTrue(trend[6].sparse)
+        assertFalse(trend[7].sparse)
+    }
+
+    @Test
+    fun `경기가 없는 주는 값이 없고 표본이 적다고도 하지 않는다`() {
+        val trend = ready(week(weeksAgo = 0)).trend
 
         assertNull(trend[6].metrics)
-        assertNotNull(trend[7].metrics)
+        assertFalse(trend[6].sparse)
     }
 
     @Test
@@ -102,6 +112,15 @@ class TrendTest {
         val matches = week(weeksAgo = 0) + (1..3).flatMap { week(weeksAgo = it) }
 
         assertNull(ready(matches).usualRange { it.adr })
+    }
+
+    @Test
+    fun `라운드가 40에 못 미치는 주는 평소 범위에 넣지 않는다`() {
+        val matches = week(weeksAgo = 0) +
+            (1..4).flatMap { week(weeksAgo = it, damagePerRound = 150) } +
+            week(weeksAgo = 5, rounds = 39, damagePerRound = 300)
+
+        assertEquals(UsualRange(min = 150.0, max = 150.0, weeks = 4), ready(matches).usualRange { it.adr })
     }
 
     @Test

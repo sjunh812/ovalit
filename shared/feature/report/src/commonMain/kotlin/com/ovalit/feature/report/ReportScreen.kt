@@ -268,16 +268,7 @@ private fun ReportContent(
         )
     }
     if (openTrend) {
-        TrendSheet(
-            report = report,
-            metrics = queueFilter.fixedMetrics,
-            // 흐름 시트에서 한 줄을 누르면 그 지표 설명으로 넘어간다. 시트 두 장을 겹치지 않는다.
-            onOpenMetric = {
-                openTrend = false
-                openMetric = it
-            },
-            onDismiss = { openTrend = false },
-        )
+        TrendSheet(report = report, metrics = queueFilter.fixedMetrics, onDismiss = { openTrend = false })
     }
     openMetric?.let { metric ->
         MetricSheet(metric = metric, report = report, onDismiss = { openMetric = null })

@@ -21,12 +21,15 @@ import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipe
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
@@ -311,24 +314,70 @@ class ReportScreenTest {
         onNodeWithText("지난 8주 흐름").assertExists()
     }
 
+    // 사용자 요청(2026-10-03): 막대만으로는 전에 얼마였고 지금 얼마인지 안 보였다
     @Test
-    fun `흐름 시트는 고정 지표마다 한 줄을 두고 누르면 그 지표를 연다`() = runComposeUiTest {
-        var opened: FixedMetric? = null
-        setContent {
-            OvalitTheme { TrendSheetBody(ReportPreviewData.moved, FixedMetric.entries, onOpenMetric = { opened = it }) }
+    fun `흐름 시트는 처음에 리포트 기간 값과 평소 값을 띄운다`() = runComposeUiTest {
+        setContent { TrendSheet(ReportPreviewData.moved) }
+
+        onNode(hasText("이번 주") and hasText("7경기 · 146라운드")).assertExists()
+        onNode(hasText("피해량") and hasText("138") and hasText("평소 128")).assertExists()
+    }
+
+    @Test
+    fun `흐름 막대를 누르면 모든 줄이 그 주 값으로 바뀐다`() = runComposeUiTest {
+        setContent { TrendSheet(ReportPreviewData.moved) }
+
+        tapWeek("피해량", index = 3)
+
+        onNode(hasText("4주 전") and hasText("8/24 – 8/30") and hasText("7경기 · 150라운드")).assertExists()
+        onNode(hasText("피해량") and hasText("126")).assertExists()
+        onNode(hasText("K/D") and hasText("1.28")).assertExists()
+        onNode(hasText("헤드샷") and hasText("20%")).assertExists()
+    }
+
+    @Test
+    fun `고른 막대를 다시 누르면 리포트 기간으로 돌아간다`() = runComposeUiTest {
+        setContent { TrendSheet(ReportPreviewData.moved) }
+
+        tapWeek("K/D", index = 3)
+        tapWeek("K/D", index = 3)
+
+        onNode(hasText("피해량") and hasText("138")).assertExists()
+        onNodeWithText("4주 전").assertDoesNotExist()
+    }
+
+    @Test
+    fun `흐름 막대를 옆으로 끌면 손가락이 멈춘 주를 고른다`() = runComposeUiTest {
+        setContent { TrendSheet(ReportPreviewData.moved) }
+
+        onNodeWithContentDescription("주별 피해량", substring = true).performTouchInput {
+            swipe(start = Offset(width * 0.5f / 8, centerY), end = Offset(width * 6.5f / 8, centerY))
         }
 
-        FixedMetric.entries.forEach { metric ->
-            val label = when (metric) {
-                FixedMetric.COMBAT_SCORE -> "전투점수"
-                FixedMetric.KD -> "K/D"
-                FixedMetric.DAMAGE -> "피해량"
-                FixedMetric.HEADSHOT_RATE -> "헤드샷"
-                FixedMetric.KDA -> "KDA"
-            }
-            onNode(SemanticsMatcher(label) { it.config.getOrNull(SemanticsActions.OnClick)?.label == "$label 설명 보기" }).performClick()
-            assertEquals(metric, opened)
-        }
+        onNodeWithText("지난주").assertExists()
+        onNode(hasText("피해량") and hasText("133")).assertExists()
+    }
+
+    // 사용자 요청(2026-10-03): 기록이 하나라도 있으면 그려야 견줄 수 있다
+    @Test
+    fun `라운드가 모자란 주도 고를 수 있고 그 뜻을 적는다`() = runComposeUiTest {
+        setContent { TrendSheet(ReportPreviewData.moved) }
+
+        tapWeek("피해량", index = 2)
+
+        onNode(hasText("5주 전") and hasText("1경기 · 22라운드")).assertExists()
+        onNode(hasText("피해량") and hasText("142")).assertExists()
+        onNodeWithText("테두리만 그린 막대는 40라운드를 못 뛴 주예요.", substring = true).assertExists()
+    }
+
+    @Test
+    fun `지표 설명 시트도 막대를 누르면 막대 위에 그 주 값을 띄운다`() = runComposeUiTest {
+        setContent { Sheet(FixedMetric.DAMAGE, ReportPreviewData.moved) }
+
+        tapWeek("피해량", index = 3)
+
+        onNode(hasText("4주 전") and hasText("126") and hasText("7경기 · 150라운드")).assertExists()
+        onNodeWithText("점선은 지난 4주 평균이에요.", substring = true).assertExists()
     }
 
     // 동적 칸과 개선 포인트가 이 역할에 맞춰 골라지니 한눈에 들어와야 한다
@@ -488,7 +537,7 @@ class ReportScreenTest {
     fun `고정 칸 시트에는 칸 밑에서 뺀 평균을 적는다`() = runComposeUiTest {
         setContent { Sheet(FixedMetric.DAMAGE, ReportPreviewData.moved) }
 
-        onNodeWithText("지난 4주 평균", substring = true).assertExists()
+        onNodeWithText("지난 4주 평균 128").assertExists()
     }
 
     // 사용자 결정(2026-09-27): "라운드 153" 같은 표본은 칸에서 빼고 시트에서 풀어 적는다
@@ -911,7 +960,7 @@ class ReportScreenTest {
         setContent { Sheet(FixedMetric.DAMAGE, ReportPreviewData.newAct) }
 
         onNodeWithText("이번 액트 기록이 4주 이상 쌓이면 평소 범위를 알려드려요.").assertExists()
-        onNodeWithText("세로선은 액트가 바뀐 곳이에요.").assertExists()
+        onNodeWithText("세로선은 액트가 바뀐 곳이에요.", substring = true).assertExists()
     }
 
     @Test
@@ -1212,6 +1261,18 @@ private fun SemanticsNodeInteractionsProvider.fontSizeOf(text: String): TextUnit
 
 // 화면에 뜨는 자릿수로 적은 값이다. valueText는 컴포저블이라 테스트에서는 format으로 같은 글자를 만든다.
 private fun MetricFormat.valueTextFor(value: Double): String = if (this == MetricFormat.PERCENT) "${format(value)}%" else format(value)
+
+@Composable
+private fun TrendSheet(report: WeeklyReport.Ready) {
+    OvalitTheme { TrendSheetBody(report, FixedMetric.entries) }
+}
+
+// 막대 줄을 여덟 칸으로 나눠 [index]번째 칸 가운데를 누른다
+private fun SemanticsNodeInteractionsProvider.tapWeek(label: String, index: Int) {
+    onAllNodesWithContentDescription("주별 $label", substring = true).onFirst().performTouchInput {
+        click(Offset(width * (index + 0.5f) / 8, centerY))
+    }
+}
 
 @Composable
 private fun Sheet(metric: FixedMetric, report: WeeklyReport.Ready) {

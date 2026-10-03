@@ -12,6 +12,7 @@ import com.ovalit.core.model.InsightMetric
 import com.ovalit.core.model.InsightPart
 import com.ovalit.core.model.InsightRecent
 import com.ovalit.core.model.InsightSubject
+import com.ovalit.core.model.MIN_TREND_ROUNDS
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.MovedAgent
 import com.ovalit.core.model.MovedMetric
@@ -86,27 +87,27 @@ internal object ReportPreviewData {
     private val act = ActId("preview")
     private val previousAct = ActId("previous")
 
-    // 7주 전부터 지난주까지다. 이번 주는 아래에서 따로 붙인다. 셋째 주는 라운드가 모자라 막대를 비운 주다.
-    private val weeklyDamagePerRound = listOf(128, 131, null, 126, 135, 129, 133)
+    // 7주 전부터 지난주까지다. 이번 주는 아래에서 따로 붙인다. 셋째 주는 한 판만 뛰어 라운드가 모자란 주다.
+    private val weeklyDamagePerRound = listOf(128, 131, 142, 126, 135, 129, 133)
 
     private val trend = weeklyDamagePerRound.mapIndexed { index, adr ->
         TrendWeek(
             firstDay = LocalDate(2026, 8, 3).plus(index, DateTimeUnit.WEEK),
             act = act,
-            metrics = adr?.let { lastWeekLike(damagePerRound = it, headshots = 80 + index * 3) },
+            metrics = lastWeekLike(damagePerRound = adr, headshots = 80 + index * 3, rounds = if (index == 2) 22 else 150),
             startsNewAct = false,
             inPeriod = false,
         )
     } + TrendWeek(LocalDate(2026, 9, 21), act, thisWeek, startsNewAct = false, inPeriod = true)
 
-    private fun lastWeekLike(damagePerRound: Int, headshots: Int) = MatchMetrics(
-        matches = 7,
-        rounds = 150,
+    private fun lastWeekLike(damagePerRound: Int, headshots: Int, rounds: Int = 150) = MatchMetrics(
+        matches = if (rounds < MIN_TREND_ROUNDS) 1 else 7,
+        rounds = rounds,
         kills = 115,
         deaths = 90,
         assists = 32,
         combatScore = 25_800 + damagePerRound * 10,
-        damage = damagePerRound * 150,
+        damage = damagePerRound * rounds,
         shots = Shots(head = headshots, body = 320, leg = 30),
         kastRounds = 128,
         survivedRounds = 62,

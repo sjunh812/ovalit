@@ -13,6 +13,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,7 +31,6 @@ import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.FixedMetric
-import com.ovalit.core.model.MIN_TREND_ROUNDS
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.format
@@ -35,15 +38,16 @@ import com.ovalit.core.ui.kdaColor
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.report.resources.Res
-import com.ovalit.feature.report.resources.sheet_open
+import com.ovalit.feature.report.resources.dynamic_usual
 import com.ovalit.feature.report.resources.trend_body
+import com.ovalit.feature.report.resources.trend_body_baseline
 import com.ovalit.feature.report.resources.trend_entry
 import com.ovalit.feature.report.resources.trend_title
 import org.jetbrains.compose.resources.stringResource
 
 private val EntryBarsWidth = 58.dp
 private val EntryBarsHeight = 20.dp
-private val RowBarsHeight = 30.dp
+private val RowBarsHeight = 44.dp
 private val RowNameWidth = 88.dp
 
 /**
@@ -76,21 +80,28 @@ internal fun TrendEntry(report: WeeklyReport.Ready, metric: FixedMetric, onClick
 
 /**
  * 고정 지표의 8주 막대를 한 시트에 모은 것입니다. 지표마다 자기 범위로 막대를 그립니다. 한 축에 겹치면 K/D 1.2와
- * 피해량 140을 같은 눈금에 올리게 됩니다. 줄을 누르면 그 지표의 S1-a 시트로 넘어갑니다.
+ * 피해량 140을 같은 눈금에 올리게 됩니다.
+ *
+ * 사용자 요청(2026-10-03): 막대만으로는 전에 얼마였고 지금 얼마인지 안 보였다. 줄마다 지난 4주 평균에 점선을 긋고, 막대를
+ * 누르거나 옆으로 끌면 모든 줄이 그 주 값으로 바뀐다. 처음에는 리포트 기간 값이다.
  */
 @Composable
 internal fun TrendSheet(
     report: WeeklyReport.Ready,
     metrics: List<FixedMetric>,
-    onOpenMetric: (FixedMetric) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val baselineWeeks = report.baseline?.weeks
     OvalitBottomSheet(
         title = stringResource(Res.string.trend_title),
-        body = stringResource(Res.string.trend_body, MIN_TREND_ROUNDS),
+        body = if (baselineWeeks != null) {
+            stringResource(Res.string.trend_body_baseline, baselineWeeks)
+        } else {
+            stringResource(Res.string.trend_body)
+        },
         onDismiss = onDismiss,
     ) {
-        TrendSheetBody(report, metrics, onOpenMetric)
+        TrendSheetBody(report, metrics)
     }
 }
 
@@ -99,42 +110,46 @@ internal fun TrendSheet(
 internal fun TrendSheetBody(
     report: WeeklyReport.Ready,
     metrics: List<FixedMetric>,
-    onOpenMetric: (FixedMetric) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = OvalitTheme.colors
+    // 고른 주는 모든 줄이 같이 쓴다. 한 주를 골라 그 주 지표를 한꺼번에 견준다.
+    var selected by rememberSaveable { mutableStateOf<Int?>(null) }
     Column(modifier = modifier) {
+        TrendReadout(report, selected)
+        Spacer(Modifier.height(OvalitSpacing.xs))
         metrics.forEachIndexed { index, metric ->
             if (index > 0) Spacer(Modifier.fillMaxWidth().height(1.dp).background(colors.lineWeak))
-            TrendRow(report, metric, onClick = { onOpenMetric(metric) })
+            TrendRow(report, metric, selected, onSelect = { selected = it })
         }
         // 막대 열 밑에만 "7주 전 · 이번 주"를 단다
         Row {
             Spacer(Modifier.width(RowNameWidth + OvalitSpacing.md))
             Column(modifier = Modifier.weight(1f)) {
                 TrendAxis(report)
-                TrendActNote(report)
+                TrendNotes(report)
             }
         }
     }
 }
 
 @Composable
-private fun TrendRow(report: WeeklyReport.Ready, metric: FixedMetric, onClick: () -> Unit) {
+private fun TrendRow(report: WeeklyReport.Ready, metric: FixedMetric, selected: Int?, onSelect: (Int?) -> Unit) {
     val colors = OvalitTheme.colors
-    val label = stringResource(metric.label)
-    val current = metric.value(report.metrics)
-    val valueStyle = OvalitTheme.typography.metricS.copy(fontSize = 17.sp, lineHeight = 22.sp)
+    val typography = OvalitTheme.typography
+    val metrics = if (selected == null) report.metrics else report.trend.getOrNull(selected)?.metrics
+    val current = metrics?.let(metric.value)
+    val usual = report.baseline?.let { metric.value(it.metrics) }
+    val valueStyle = typography.metricS.copy(fontSize = 17.sp, lineHeight = 22.sp)
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClickLabel = stringResource(Res.string.sheet_open, label), role = Role.Button, onClick = onClick)
-            .padding(vertical = 10.dp)
-            .semantics(mergeDescendants = true) {},
+        modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
         verticalAlignment = Alignment.Bottom,
     ) {
-        Column(modifier = Modifier.width(RowNameWidth), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            OvalitText(text = label, style = OvalitTheme.typography.caption, color = colors.t2, maxLines = 1)
+        Column(
+            modifier = Modifier.width(RowNameWidth).semantics(mergeDescendants = true) {},
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            OvalitText(text = stringResource(metric.label), style = typography.caption, color = colors.t2, maxLines = 1)
             OvalitText(
                 text = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
                 style = valueStyle,
@@ -142,8 +157,24 @@ private fun TrendRow(report: WeeklyReport.Ready, metric: FixedMetric, onClick: (
                 color = if (metric == FixedMetric.KDA && current != null) kdaColor(current, below = colors.t1) else colors.t1,
                 maxLines = 1,
             )
+            if (usual != null) {
+                OvalitText(
+                    text = stringResource(Res.string.dynamic_usual, metric.format.valueText(usual)),
+                    style = typography.caption,
+                    color = colors.t3,
+                    maxLines = 1,
+                )
+            }
         }
         Spacer(Modifier.width(OvalitSpacing.md))
-        TrendBarRow(metric, report, Modifier.weight(1f).height(RowBarsHeight), gap = 3.dp)
+        TrendBarRow(
+            metric = metric,
+            report = report,
+            modifier = Modifier.weight(1f).height(RowBarsHeight),
+            gap = 3.dp,
+            selected = selected,
+            onSelect = onSelect,
+            baseline = usual,
+        )
     }
 }

@@ -73,7 +73,6 @@ import com.ovalit.feature.friend.resources.ping_compose_open
 import com.ovalit.feature.friend.resources.ping_compose_title
 import com.ovalit.feature.friend.resources.ping_compose_when
 import com.ovalit.feature.friend.resources.ping_compose_who
-import com.ovalit.feature.friend.resources.ping_empty_hint
 import com.ovalit.feature.friend.resources.ping_count_no
 import com.ovalit.feature.friend.resources.ping_count_other
 import com.ovalit.feature.friend.resources.ping_count_pending
@@ -160,7 +159,7 @@ internal fun PingListCard(
         }
         if (pings.isEmpty()) {
             OvalitText(
-                text = stringResource(Res.string.ping_empty_hint, MAX_PING_FRIENDS),
+                text = stringResource(Res.string.ping_compose_hint, MAX_PING_FRIENDS),
                 modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.sm),
                 style = OvalitTheme.typography.caption,
                 color = OvalitTheme.colors.t3,

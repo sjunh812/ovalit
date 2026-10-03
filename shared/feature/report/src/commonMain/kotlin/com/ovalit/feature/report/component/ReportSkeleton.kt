@@ -23,7 +23,8 @@ import com.ovalit.feature.report.resources.report_loading
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * 리포트를 만들기 전 홈의 모양입니다. 칩, 기간, 승패 줄, 고정 네 칸과 그 밑 두 줄, 달라진 점 세 칸, 개선 포인트 자리를 잡습니다.
+ * 리포트를 만들기 전 홈의 모양입니다. 칩, 기간, 승패 줄, 세 칸씩 두 줄인 고정 칸과 그 밑 두 줄, 달라진 점 세 칸, 개선 포인트
+ * 자리를 잡습니다.
  * 홈처럼 카드에 담아 내용이 나타날 때 카드 자리가 움직이지 않습니다. 카드 면은 깜빡이지 않고 안의 칸만 깜빡입니다.
  */
 @Composable
@@ -46,12 +47,19 @@ internal fun ReportSkeleton(modifier: Modifier = Modifier) {
             Spacer(Modifier.height(OvalitSpacing.md))
             SkeletonBlock(width = 150.dp, height = 14.dp)
             Spacer(Modifier.height(OvalitSpacing.lg))
-            Row {
-                repeat(4) {
-                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SkeletonBlock(width = 44.dp, height = 12.dp)
-                        SkeletonBlock(width = 58.dp, height = 28.dp)
-                        SkeletonBlock(width = 26.dp, height = 12.dp)
+            // 고정 칸은 세 칸씩 두 줄이다. 둘째 줄은 두 칸이고 남은 자리는 비운다.
+            Column(verticalArrangement = Arrangement.spacedBy(OvalitSpacing.lg)) {
+                listOf(3, 2).forEach { cells ->
+                    Row {
+                        repeat(3) { index ->
+                            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                if (index < cells) {
+                                    SkeletonBlock(width = 44.dp, height = 12.dp)
+                                    SkeletonBlock(width = 58.dp, height = 28.dp)
+                                    SkeletonBlock(width = 72.dp, height = 12.dp)
+                                }
+                            }
+                        }
                     }
                 }
             }

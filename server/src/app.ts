@@ -6,16 +6,21 @@ import { content } from "./routes/content";
 import { friends } from "./routes/friends";
 import { invites } from "./routes/invites";
 import { me } from "./routes/me";
+import { pings } from "./routes/pings";
 import { publicRoutes } from "./routes/public";
 import { riot } from "./routes/riot";
 
 export interface Deps {
-  /** 비워 두면 전역 `fetch`로 Riot을 부릅니다. */
+  /** 비워 두면 전역 `fetch`로 Riot과 FCM을 부릅니다. */
   fetch?: typeof fetch;
 }
 
+export function upstreamFetch(deps: Deps): typeof fetch {
+  return deps.fetch ?? ((input, init) => fetch(input, init));
+}
+
 export function createApp(deps: Deps = {}) {
-  const upstream: typeof fetch = deps.fetch ?? ((input, init) => fetch(input, init));
+  const upstream = upstreamFetch(deps);
   const app = new Hono<AppEnv>();
 
   app.use(async (c, next) => {
@@ -30,6 +35,7 @@ export function createApp(deps: Deps = {}) {
   app.route("/riot", riot);
   app.route("/friends", friends);
   app.route("/invites", invites);
+  app.route("/pings", pings);
 
   app.notFound((c) => c.json({ error: "not_found" }, 404));
 

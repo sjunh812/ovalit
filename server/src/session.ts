@@ -5,7 +5,7 @@ import { ApiError } from "./errors";
 
 const SESSION_TTL_MS = 90 * 24 * 60 * 60 * 1000;
 const BEARER = /^Bearer ([A-Za-z0-9_-]{43})$/;
-// 크론을 두지 않아서 누가 로그인하든 만료된 세션을 같이 치운다. 쌓인 게 많아도 요청 하나가 지우는 줄은 50개로 묶는다.
+// 크론에 맡기지 않고 누가 로그인하든 만료된 세션을 같이 치운다. 쌓인 게 많아도 요청 하나가 지우는 줄은 50개로 묶는다.
 const CLEANUP_LIMIT = 50;
 
 export async function createSession(db: D1Database, userId: number): Promise<{ token: string; expiresAt: number }> {

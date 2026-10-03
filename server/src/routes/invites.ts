@@ -9,7 +9,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const INVITE_TTL_MS = 7 * DAY_MS;
 // 하루도 안 남은 링크를 단톡방에 올리면 받은 사람이 열기 전에 끝날 수 있어 새로 만든다.
 const REUSE_MIN_REMAINING_MS = DAY_MS;
-// 크론을 두지 않아서 누가 링크를 만들든 만료된 초대를 같이 치운다. 쌓인 게 많아도 요청 하나가 지우는 줄은 50개로 묶는다.
+// 크론에 맡기지 않고 누가 링크를 만들든 만료된 초대를 같이 치운다. 쌓인 게 많아도 요청 하나가 지우는 줄은 50개로 묶는다.
 const CLEANUP_LIMIT = 50;
 
 export const invites = new Hono<AppEnv>();

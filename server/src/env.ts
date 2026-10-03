@@ -13,6 +13,11 @@ export interface Env {
    * `/auth/done` App Link를 우리 앱에 이어 줍니다. 비워 두면 `/.well-known/assetlinks.json`이 404입니다.
    */
   ANDROID_CERT_SHA256?: string;
+  /**
+   * FCM HTTP v1로 알림을 보낼 Google 서비스 계정 JSON 원문입니다(`project_id`, `client_email`, `private_key`). 비워 두거나
+   * 읽을 수 없는 값이면 알림을 보내지 않고 넘어갑니다.
+   */
+  FCM_SERVICE_ACCOUNT?: string;
 }
 
 export interface User {
@@ -26,7 +31,7 @@ export interface User {
 export interface AppEnv {
   Bindings: Env;
   Variables: {
-    /** Riot API와 RSO를 부를 때 쓰는 `fetch`입니다. 테스트는 가짜로 바꿔 끼워 실제 Riot을 부르지 않습니다. */
+    /** Riot API, RSO, FCM을 부를 때 쓰는 `fetch`입니다. 테스트는 가짜로 바꿔 끼워 실제로 밖에 나가지 않습니다. */
     upstream: typeof fetch;
     user: User;
     sessionHash: string;

@@ -1,7 +1,9 @@
+import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
 import { env } from "cloudflare:workers";
 import { createApp } from "../src/app";
 import { base64url } from "../src/crypto";
 import type { Env } from "../src/env";
+import { clearAccessTokens } from "../src/push";
 import { cacheKey, clearMemoryCaches, clearQuotas } from "../src/riot";
 import { clearRiotBlocks } from "../src/upstream";
 
@@ -11,6 +13,7 @@ const TEST_SECRETS = {
   RSO_CLIENT_ID: "test-client",
   RSO_CLIENT_SECRET: "test-secret",
   DEV_LOGIN: "true",
+  FCM_SERVICE_ACCOUNT: undefined,
 } satisfies Partial<Env>;
 
 export function makePuuid(): string {
@@ -54,20 +57,24 @@ export interface TestUser {
 }
 
 export function setup(overrides: Partial<Env> = {}) {
-  // isolate 메모리에 남은 레이트 리밋과 사용자 호출 한도가 다음 테스트로 이어지지 않게 비운다.
+  // isolate 메모리에 남은 레이트 리밋, 사용자 호출 한도, FCM 액세스 토큰이 다음 테스트로 이어지지 않게 비운다.
   clearRiotBlocks();
   clearQuotas();
+  clearAccessTokens();
   const upstream = new FakeUpstream();
   const app = createApp({ fetch: upstream.fetch });
   const testEnv: Env = { ...env, ...TEST_SECRETS, ...overrides };
 
-  function call(method: string, path: string, token?: string, body?: unknown): Promise<Response> {
+  // waitUntil로 넘긴 일(알림)이 끝날 때까지 기다렸다가 응답을 돌려준다. 그래야 알림을 바로 들여다볼 수 있다.
+  async function call(method: string, path: string, token?: string, body?: unknown): Promise<Response> {
     const headers: Record<string, string> = {};
     if (token) headers.Authorization = `Bearer ${token}`;
     if (body !== undefined) headers["Content-Type"] = "application/json";
-    return Promise.resolve(
-      app.request(path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) }, testEnv),
-    );
+    const ctx = createExecutionContext();
+    const init = { method, headers, body: body === undefined ? undefined : JSON.stringify(body) };
+    const res = await app.request(path, init, testEnv, ctx);
+    await waitOnExecutionContext(ctx);
+    return res;
   }
 
   async function login(gameName = "tester", puuid = makePuuid()): Promise<TestUser> {

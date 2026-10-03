@@ -109,14 +109,26 @@ friends.post("/requests/:puuid/decline", async (c) => {
 
 friends.delete("/:puuid", async (c) => {
   const other = validate.puuid(c.req.param("puuid"));
-  const result = await c.env.DB.prepare(
-    `DELETE FROM friendships
-     WHERE user_a = (SELECT MIN(id, ?2) FROM users WHERE puuid = ?1)
-       AND user_b = (SELECT MAX(id, ?2) FROM users WHERE puuid = ?1)`,
-  )
-    .bind(other, c.var.user.id)
-    .run();
-  if (result.meta.changes === 0) throw new ApiError(404, "not_friend");
+  const db = c.env.DB;
+  const otherId = "(SELECT id FROM users WHERE puuid = ?1)";
+  const [removed] = await db.batch([
+    db
+      .prepare(
+        `DELETE FROM friendships
+         WHERE user_a = (SELECT MIN(id, ?2) FROM users WHERE puuid = ?1)
+           AND user_b = (SELECT MAX(id, ?2) FROM users WHERE puuid = ?1)`,
+      )
+      .bind(other, c.var.user.id),
+    // 오발있은 친구만 부를 수 있으니 끊으면 서로 띄운 오발있에서도 빠진다.
+    db
+      .prepare(
+        `DELETE FROM ping_members
+         WHERE (user_id = ?2 AND ping_id IN (SELECT id FROM pings WHERE host = ${otherId}))
+            OR (user_id = ${otherId} AND ping_id IN (SELECT id FROM pings WHERE host = ?2))`,
+      )
+      .bind(other, c.var.user.id),
+  ]);
+  if (removed!.meta.changes === 0) throw new ApiError(404, "not_friend");
   return c.body(null, 204);
 });
 

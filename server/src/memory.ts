@@ -46,7 +46,7 @@ export class MemoryCache {
     return this.entries.size;
   }
 
-  private delete(key: string): void {
+  delete(key: string): void {
     const entry = this.entries.get(key);
     if (!entry) return;
     this.entries.delete(key);

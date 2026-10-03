@@ -4,5 +4,7 @@ RSO_CLIENT_ID=
 RSO_CLIENT_SECRET=
 # 앱 서명 인증서의 SHA-256 지문. App Link 검증 파일(/.well-known/assetlinks.json)에 들어갑니다.
 ANDROID_CERT_SHA256=
+# Firebase 서비스 계정 JSON을 한 줄로 넣습니다. 비우면 푸시를 보내지 않습니다.
+FCM_SERVICE_ACCOUNT=
 # 로컬에서 RSO 없이 친구 흐름을 돌려 보려고 둡니다. 배포 환경에는 넣지 않습니다.
 DEV_LOGIN=true

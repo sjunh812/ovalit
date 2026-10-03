@@ -39,4 +39,24 @@ describe("뼈대", () => {
     await expect(env.DB.prepare(request).bind(a!.id, b!.id, "search", now).run()).rejects.toThrow();
     await env.DB.prepare(request).bind(a!.id, b!.id, "invite_link", now).run();
   });
+
+  it("오발있 대답은 정해 둔 넷이고 제안한 시각은 다른 시간에만 있다", async () => {
+    const now = Date.now();
+    const insert = env.DB.prepare(
+      "INSERT INTO users (puuid, game_name, tag_line, created_at, updated_at) VALUES (?, 'a', 'kr1', ?, ?) RETURNING id",
+    );
+    const host = await insert.bind(`ping-host-${now}`, now, now).first<{ id: number }>();
+    const friend = await insert.bind(`ping-friend-${now}`, now, now).first<{ id: number }>();
+    const pingId = `schema-${now}`;
+    await env.DB.prepare("INSERT INTO pings (id, host, starts_at, created_at, expires_at) VALUES (?, ?, ?, ?, ?)")
+      .bind(pingId, host!.id, now, now, now + 3_600_000)
+      .run();
+    const member = env.DB.prepare(
+      "INSERT INTO ping_members (ping_id, user_id, position, answer, proposed_at, updated_at) VALUES (?, ?, 1, ?, ?, ?)",
+    );
+    for (const [answer, proposedAt] of [["maybe", null], ["yes", now], ["other_time", null]] as const) {
+      await expect(member.bind(pingId, friend!.id, answer, proposedAt, now).run()).rejects.toThrow();
+    }
+    await member.bind(pingId, friend!.id, "other_time", now, now).run();
+  });
 });

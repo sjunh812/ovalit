@@ -1,11 +1,13 @@
 # 오발있 서버
 
-앱과 Riot 사이에 서는 Cloudflare Worker입니다. 세 가지 일을 합니다.
+앱과 Riot 사이에 서는 Cloudflare Worker입니다. 네 가지 일을 합니다.
 
 - RSO 로그인을 대신 마칩니다. `client_secret`과 RGAPI 키는 앱에 넣을 수 없어서 여기서만 씁니다.
   앱에는 우리 세션 토큰만 내려갑니다.
 - Riot API를 대신 부릅니다. 끝난 경기는 결과가 바뀌지 않으니 한 번 받으면 담아 둡니다.
 - 친구 관계를 들고 있습니다. 서로 수락한 친구끼리만 전적을 보여주려면 서버가 알아야 합니다.
+- 알림을 보냅니다. 오발있("오늘 발로란트 할 사람 있어?")을 띄우거나 대답하면 FCM으로 친구에게 알리고, 월요일
+  아침에는 지난주 리포트가 나왔다고 알립니다.
 
 지금은 로컬에서만 돕니다. Cloudflare 계정이 없어도 됩니다.
 
@@ -66,7 +68,9 @@ npm run typecheck
 | POST | `/auth/logout` | 필요 | 이 세션을 끊습니다 |
 | GET | `/me` | 필요 | `{puuid, gameName, tagLine, statsPublic}` |
 | PATCH | `/me` | 필요 | `{statsPublic}` |
-| DELETE | `/me` | 필요 | 연동 해제. 세션, 친구, 요청, 초대가 같이 지워집니다 |
+| DELETE | `/me` | 필요 | 연동 해제. 세션, 친구, 요청, 초대, 오발있, 기기 토큰이 같이 지워집니다 |
+| PUT | `/me/push-token` | 필요 | `{token}`. FCM 기기 토큰을 등록합니다. 다른 계정이 쓰던 토큰이면 옮겨 오고, 사람마다 최근 셋만 둡니다 |
+| DELETE | `/me/push-token` | 필요 | `{token}`. 내 토큰일 때만 지우고 없어도 204입니다. 로그아웃하기 전에 부릅니다 |
 | GET | `/content` | 필요 | VAL-CONTENT(ko-KR). 6시간 담아 둡니다 |
 | GET | `/status` | 필요 | VAL-STATUS. 60초 담아 둡니다 |
 | GET | `/riot/matchlist` | 필요 | 내 경기 ID 목록. 담아 두지 않고 10초에 한 번만 Riot에 갑니다 |
@@ -77,16 +81,71 @@ npm run typecheck
 | POST | `/friends/requests` | 필요 | `{puuid, matchId}`. 같이 뛴 경기가 있어야 합니다 |
 | POST | `/friends/requests/:puuid/accept` | 필요 | 받은 요청 수락 |
 | POST | `/friends/requests/:puuid/decline` | 필요 | 받은 요청 거절 |
-| DELETE | `/friends/:puuid` | 필요 | 친구 끊기 |
+| DELETE | `/friends/:puuid` | 필요 | 친구 끊기. 서로 띄운 오발있에서도 빠집니다 |
 | GET | `/friends/:puuid/matchlist` | 필요 | 친구가 전적을 공개했을 때만. 같은 친구는 1분에 한 번만 Riot에 갑니다 |
 | GET | `/friends/:puuid/matches/:matchId` | 필요 | 내가 안 뛴 경기면 친구와 나 말고는 가립니다 |
 | POST | `/invites` | 필요 | 7일짜리 초대 링크 `{code, url, expiresAt}`. 하루 넘게 남은 링크가 있으면 그 링크를 200으로 줍니다 |
 | POST | `/invites/:code/redeem` | 필요 | 초대한 사람에게 친구 요청을 보냅니다 |
+| GET | `/pings` | 필요 | `{pings: [Ping]}`. 내가 띄웠거나 불려 간 것 중 취소하지 않았고 끝나지 않은 것. 최근에 띄운 것부터 |
+| POST | `/pings` | 필요 | `{friends: [puuid], startsAt}` → 201 `{ping}`. 서로 수락한 친구를 1~4명 부릅니다 |
+| POST | `/pings/:id/reply` | 필요 | `{answer, proposedAt?}` → `{ping}`. 불려 간 친구만 |
+| POST | `/pings/:id/time` | 필요 | `{startsAt}` → `{ping}`. 호스트만 |
+| POST | `/pings/:id/members` | 필요 | `{friends: [puuid]}` → `{ping}`. 호스트만. 못 간다고 한 사람을 뺀 인원이 넷까지. 넘으면 409 `ping_full`, 이미 부른 친구면 409 `already_invited`. 더한 친구에게만 `ping_new` |
+| DELETE | `/pings/:id` | 필요 | 호스트만. 취소하면 아무에게도 보이지 않습니다 |
 
 이미 친구인 사람에게 요청하면 스코어보드 쪽(`POST /friends/requests`)은 409 `already_friends`, 초대 링크 쪽은
 200 `{status: "already_friends"}`입니다. 초대 링크는 단톡방에 올려 여럿이 누르는 것이라 이미 친구인 사람이 다시
 눌러도 에러가 나지 않게 했습니다. 스코어보드는 친구가 아닌 사람에게만 요청 버튼이 뜨니, 거기서 409가 오면 앱이
 들고 있는 관계가 낡은 것입니다.
+
+### 오발있
+
+호스트가 서로 수락한 친구를 넷까지 불러 언제 할지 묻습니다. 발로란트 파티가 다섯 명까지라 넷입니다.
+
+```
+Ping = {
+  id, host: {puuid, gameName, tagLine}, startsAt, createdAt, expiresAt,
+  members: [{puuid, gameName, tagLine, answer, proposedAt, updatedAt}]
+}
+```
+
+- 시각은 모두 epoch ms입니다. `startsAt`은 지금부터 1분 전과 24시간 뒤 사이여야 하고, `expiresAt`은 늘
+  `startsAt` 한 시간 뒤입니다. 그때가 지나면 목록에서 빠집니다.
+- `answer`는 `pending` · `yes` · `no` · `other_time`입니다. `other_time`이면 `proposedAt`을 같은 범위로 같이 보내고,
+  `yes`나 `no`면 `proposedAt`은 보내도 버리고 `null`로 둡니다. 같은 대답을 다시 보내면 호스트에게 알리지 않습니다.
+- 호스트가 시간을 바꾸면 그 시각을 제안한 친구는 `yes`가 되고, 나머지는 `yes`였던 친구까지 `pending`으로 돌아가
+  다시 대답합니다. 같은 시각으로 다시 보내면 아무것도 바꾸지 않습니다. 버튼을 두 번 눌러 방금 `yes`가 된 친구가
+  `pending`으로 돌아가지 않게 하려는 것입니다.
+- `members`는 호스트가 고른 순서입니다. 친구를 끊거나 친구가 연동을 해제하면 그 자리가 빠집니다.
+- 보는 사람과 친구가 아닌 `members`의 `puuid`는 `anon-N`입니다. N은 그 사람이 불린 순서라 앞사람이 빠져도 바뀌지 않고,
+  다른 오발있의 같은 번호와는 상관이 없습니다. 호스트와 나 자신은 늘 진짜 PUUID입니다.
+- 한 사람이 살아 있는 오발있은 하나만 띄웁니다. 24시간 동안 띄울 수 있는 건 취소한 것까지 열 번입니다.
+
+| 상태 | 코드 | 언제 |
+| --- | --- | --- |
+| 400 | `invalid_body` | 본문 모양이 틀렸을 때. 친구 목록이 비었거나, 넷을 넘거나, 겹치거나, 나를 넣었을 때도 |
+| 400 | `invalid_time` | `startsAt`이나 `proposedAt`이 1분 전보다 이르거나 24시간 뒤보다 늦을 때 |
+| 400 | `invalid_push_token` | 토큰이 문자열이 아니거나 1~4096자가 아닐 때 |
+| 403 | `not_friend` | 부른 사람 중에 서로 수락한 친구가 아닌 사람이 있을 때 |
+| 404 | `not_found` | 없거나, 취소했거나, 끝났거나, 내가 대답하거나 고칠 수 있는 오발있이 아닐 때 |
+| 409 | `ping_active` | 띄운 오발있이 아직 끝나지 않았을 때 |
+| 429 | `too_many_requests` | 24시간 동안 열 번 띄웠을 때. `Retry-After`(초)가 지나면 한 번 더 띄울 수 있습니다 |
+
+알림은 FCM data 메시지라 값이 모두 문자열입니다. 시각도 epoch ms를 문자열로 보냅니다. 오발있 알림은 `HIGH`에
+TTL 1시간이고, 주간 리포트는 `NORMAL`입니다. 이름 목록은 쉼표로 잇고 빈칸을 두지 않습니다.
+
+| `type` | 받는 사람 | 나머지 필드 |
+| --- | --- | --- |
+| `ping_new` | 불려 간 친구 | `pingId`, `startsAt`, `hostName`, `others`(같이 불린 친구 이름. 없으면 빈 문자열) |
+| `ping_reply` | 호스트 | `pingId`, `startsAt`, `memberName`, `answer`, `proposedAt`(없으면 빈 문자열) |
+| `ping_time` | 불려 간 친구 | `pingId`, `startsAt`(새 시각), `hostName` |
+| `ping_cancel` | 불려 간 친구 | `pingId`, `hostName` |
+| `ping_remind` | 호스트와 `yes`인 친구 | `pingId`, `startsAt`, `names`(호스트, `yes`인 친구 순서) |
+| `weekly_report` | `weekly_report` 주제를 구독한 기기 | 없음 |
+
+`ping_remind`는 시작 10분 전 안쪽에서 한 번만 갑니다. 아무도 `yes`가 아니면 보내지 않습니다. 시간을 바꾸면 새
+시각으로 다시 한 번 갑니다. 알림이 실패해도 API 요청은 성공하고, 알림은 응답을 보낸 뒤에 나갑니다. FCM이 받을 수
+없다고 한 토큰(404, `UNREGISTERED`, 토큰 형식이 틀린 `INVALID_ARGUMENT`)은 지웁니다.
 
 `/cards/{uuid}_small.png`와 `/cards/{uuid}_wide.png`는 Worker를 거치지 않는 정적 파일입니다.
 `public/cards/`는 저장소에 없고 아래 스크립트로 채웁니다.
@@ -104,6 +163,8 @@ Riot 프로덕션 키의 승인 조건이라 서버가 직접 막습니다. 자�
 - 내가 안 뛴 친구 경기에서는 친구와 나 말고 모두의 PUUID를 `anon-N`으로 바꾸고 이름, 태그,
   카드, 칭호, 계정 레벨을 지웁니다. PUUID가 객체 키로 와도 바꿉니다. 파티 ID도 그 경기 안에서만 통하는
   이름으로 바꿉니다.
+- 오발있에 같이 불린 사람 중 나와 서로 수락한 친구가 아닌 사람은 PUUID를 그 오발있 안에서만 통하는 `anon-N`으로
+  바꿉니다. 이름, 태그, 대답은 그대로 보여 줍니다(사용자 결정, 2026-10-03).
 - Riot access token은 계정을 한 번 읽고 버립니다. 세션 토큰과 로그인 코드는 해시만 저장합니다. 세션 토큰을
   주는 응답에는 `Cache-Control: no-store`를 붙입니다.
 
@@ -158,9 +219,35 @@ isolate로 나뉘면 한도를 넘길 수 있습니다. 막는 장치가 아니�
 D1 한도는 00:00 UTC에 초기화됩니다. KV는 하루 쓰기가 1,000번뿐이라 쓰지 않습니다. R2는 카드 등록이
 필요해서 쓰지 않습니다.
 
-크론을 두지 않아서 만료된 세션과 초대는 누가 로그인하거나 링크를 만들 때 한 번에 50줄까지 같이 지웁니다.
+만료된 세션과 초대는 누가 로그인하거나 링크를 만들 때 한 번에 50줄까지 같이 지웁니다.
 `expires_at` 색인이 있어 지울 게 없으면 거의 읽지 않습니다. 색인 때문에 세션과 초대를 한 줄 넣을 때 쓰는 행이
 하나씩 늘어납니다.
+
+### 크론과 알림
+
+`wrangler.jsonc`의 `triggers`에 크론 둘을 둡니다.
+
+- `*/5 * * * *`: 10분 안에 시작하는 오발있을 알리고, 끝나고 하루가 지난 오발있을 한 번에 100개까지 지웁니다. 하루
+  288번 돕니다. 하루 열 번 한도를 띄운 줄로 세서 끝나자마자 지우지 않습니다.
+- `0 0 * * 1`: 월요일 00:00 UTC, 한국 시각 월요일 오전 9시에 지난주 리포트 알림을 보냅니다. 주제 메시지 하나라 사용자
+  수와 상관없이 일주일에 FCM 요청 한 번입니다.
+
+크론이 요청 한도에 같이 세어져도 하루 289건입니다. 오발있 하나를 넷에게 띄우고 넷이 대답한 뒤 알림까지 가면 이렇게
+씁니다. 2026-10-03에 로컬 D1의 `rows_written`으로 쟀습니다.
+
+| 무엇 | Worker 요청 | D1 행 쓰기(색인 포함) | FCM 하위 요청 |
+| --- | --- | --- | --- |
+| 띄우기 | 1 | 16 | 부른 친구의 기기 수(사람마다 셋까지) |
+| 대답 | 1 | 1 | 호스트의 기기 수 |
+| 시간 바꾸기 | 1 | 7 | 부른 친구의 기기 수 |
+| 취소 | 1 | 1 | 부른 친구의 기기 수 |
+| 시작 전 알림 | 크론 | 1 | 호스트와 `yes`인 친구의 기기 수 |
+| 지우기 | 크론 | 5 | 0 |
+
+기기가 사람마다 하나면 띄우고 대답하고 알리기까지 D1 쓰기 26행, FCM 하위 요청 13번 안팎입니다. 액세스 토큰을 새로
+받을 때 한 번이 더 듭니다. 액세스 토큰은 isolate 메모리에 만료 5분 전까지 두고, 서비스 계정 키로 JWT에 서명하는 것도
+그때만 합니다. 한 번 불릴 때 하위 요청은 50번까지라 알림은 40번 안에서만 보냅니다. 시작 전 알림이 그보다 많으면
+남은 것은 5분 뒤 크론이 보냅니다.
 
 ### 캐시
 
@@ -211,9 +298,15 @@ npx wrangler d1 create ovalit
 npx wrangler secret put RIOT_API_KEY
 npx wrangler secret put RSO_CLIENT_ID
 npx wrangler secret put RSO_CLIENT_SECRET
+npx wrangler secret put FCM_SERVICE_ACCOUNT
 npx wrangler d1 migrations apply ovalit --remote
 npx wrangler deploy
 ```
+
+`FCM_SERVICE_ACCOUNT`에는 Firebase 콘솔의 프로젝트 설정 > 서비스 계정에서 받은 JSON 파일 내용을 통째로 붙여 넣습니다.
+`project_id`, `client_email`, `private_key`를 씁니다. 개인 키가 들어 있어서 저장소, `wrangler.jsonc`, `.dev.vars.example`
+어디에도 두지 않습니다. 넣지 않으면 서버는 알림만 보내지 않고 나머지는 그대로 돕니다. 크론은 `wrangler deploy`가
+`triggers`를 읽어 같이 등록합니다.
 
 RSO 앱 설정의 redirect URI에는 `https://<배포 주소>/auth/rso/callback`을 등록합니다. 서버는 요청이
 들어온 주소로 이 값을 만듭니다.

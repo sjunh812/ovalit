@@ -362,6 +362,8 @@ private open class StubFriends(list: List<Friend> = emptyList()) : FriendReposit
 
     override suspend fun setRival(id: PlayerId?) = Unit
 
+    override suspend fun refresh() = Unit
+
     override fun inviteLink() = ""
 }
 
@@ -398,6 +400,8 @@ private class StubPreferences(initial: UserPreferences = UserPreferences.Default
     override suspend fun setNotifyAnalysisDone(enabled: Boolean) = Unit
 
     override suspend fun setNotifyWeeklyReport(enabled: Boolean) = Unit
+
+    override suspend fun setNotifyPing(enabled: Boolean) = Unit
 
     override suspend fun setFocus(focus: Focus) = Unit
 }

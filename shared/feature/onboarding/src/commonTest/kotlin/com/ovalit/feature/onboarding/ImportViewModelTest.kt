@@ -80,5 +80,7 @@ private class InMemoryPreferences : UserPreferencesRepository {
 
     override suspend fun setNotifyWeeklyReport(enabled: Boolean) = Unit
 
+    override suspend fun setNotifyPing(enabled: Boolean) = Unit
+
     override suspend fun setFocus(focus: Focus) = preferences.update { it.copy(focus = focus) }
 }

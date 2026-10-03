@@ -32,6 +32,7 @@ import com.ovalit.core.model.DynamicMetric
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MAX_REPORT_WEEKS
 import com.ovalit.core.model.MIN_MATCHES_PER_REPORT
+import com.ovalit.core.model.PingId
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
@@ -46,6 +47,7 @@ import com.ovalit.feature.report.component.MetricSheet
 import com.ovalit.feature.report.component.NudgeBanner
 import com.ovalit.feature.report.component.PeriodHeader
 import com.ovalit.feature.report.component.PeriodPicksSection
+import com.ovalit.feature.report.component.PingHomeCard
 import com.ovalit.feature.report.component.QueueChips
 import com.ovalit.feature.report.component.RecordStrip
 import com.ovalit.feature.report.component.ReportSkeleton
@@ -60,6 +62,7 @@ import com.ovalit.feature.report.resources.not_enough_body
 import com.ovalit.feature.report.resources.not_enough_title
 import com.ovalit.feature.report.resources.not_enough_title_none
 import com.ovalit.feature.report.resources.other_queue_hint
+import kotlinx.datetime.TimeZone
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -71,12 +74,14 @@ fun ReportRoute(
     onOpenAgents: () -> Unit,
     onOpenWeapons: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenPing: (PingId) -> Unit = {},
     viewModel: ReportViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val badge by viewModel.badge.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val catalog by viewModel.catalog.collectAsStateWithLifecycle()
+    val homePing by viewModel.homePing.collectAsStateWithLifecycle()
 
     ReportScreen(
         uiState = uiState,
@@ -91,6 +96,9 @@ fun ReportRoute(
         onOpenAgents = onOpenAgents,
         onOpenWeapons = onOpenWeapons,
         modifier = modifier,
+        homePing = homePing,
+        onOpenPing = onOpenPing,
+        timeZone = viewModel.timeZone,
     )
 }
 
@@ -108,6 +116,9 @@ internal fun ReportScreen(
     catalog: ContentCatalog = ContentCatalog.Empty,
     onOpenAgents: () -> Unit = {},
     onOpenWeapons: () -> Unit = {},
+    homePing: HomePing? = null,
+    onOpenPing: (PingId) -> Unit = {},
+    timeZone: TimeZone = TimeZone.currentSystemDefault(),
 ) {
     // 첫 수집 뒤 홈으로 넘어오면 리포트가 전환 한가운데 도착한다. 그때 홈 전체를 그리면 밀려 들어오던 화면이 한 번
     // 멈춰서, 다 들어올 때까지 스켈레톤을 둔다. 다 들어온 뒤에도 한 프레임에 다 그리면 그 프레임이 200ms 가까이 걸려 묶음마다
@@ -143,6 +154,8 @@ internal fun ReportScreen(
 
                 // 큰 묶음마다 카드 하나다. 카드끼리는 화면 가장자리와 같은 간격을 둔다.
                 Column(verticalArrangement = Arrangement.spacedBy(OvalitCardGap)) {
+                    // 답해야 하는 ㅇㅂㅇ이 리포트에 묻히지 않게 맨 위에 둔다
+                    homePing?.let { home -> PingHomeCard(home = home, timeZone = timeZone, onClick = { onOpenPing(home.ping.id) }) }
                     when (val report = uiState.report) {
                         is WeeklyReport.Ready -> ReportContent(
                             report = report,

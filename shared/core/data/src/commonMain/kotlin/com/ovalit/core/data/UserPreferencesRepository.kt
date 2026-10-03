@@ -20,5 +20,7 @@ interface UserPreferencesRepository {
 
     suspend fun setNotifyWeeklyReport(enabled: Boolean)
 
+    suspend fun setNotifyPing(enabled: Boolean)
+
     suspend fun setFocus(focus: Focus)
 }

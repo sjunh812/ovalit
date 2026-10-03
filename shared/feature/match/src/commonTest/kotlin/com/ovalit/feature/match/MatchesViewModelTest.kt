@@ -145,5 +145,7 @@ internal class StubPreferences(initial: UserPreferences = UserPreferences.Defaul
 
     override suspend fun setNotifyWeeklyReport(enabled: Boolean) = Unit
 
+    override suspend fun setNotifyPing(enabled: Boolean) = Unit
+
     override suspend fun setFocus(focus: Focus) = Unit
 }

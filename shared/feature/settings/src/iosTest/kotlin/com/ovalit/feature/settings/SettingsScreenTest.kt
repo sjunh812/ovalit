@@ -63,12 +63,21 @@ class SettingsScreenTest {
         onNodeWithText("분석 완료").assertIsOff()
     }
 
-    // 보낼 길이 없는 알림 스위치는 켜도 아무 일도 없어서 두지 않는다
+    // 서버가 월요일 9시에 FCM 토픽으로 보내게 되어 목업의 줄을 되살렸다(2026-10-03)
     @Test
-    fun `주간 리포트 알림은 보낼 수 있을 때까지 두지 않는다`() = runComposeUiTest {
-        setContent { Settings() }
+    fun `알림에는 분석 완료 주간 리포트 게임 초대 스위치를 둔다`() = runComposeUiTest {
+        var weekly: Boolean? = null
+        var ping: Boolean? = null
+        setContent {
+            Settings(actions = SettingsActions(onNotifyWeeklyReportChange = { weekly = it }, onNotifyPingChange = { ping = it }))
+        }
 
-        onNodeWithText("주간 리포트").assertDoesNotExist()
+        onNodeWithText("분석 완료", substring = true).assertExists()
+        onNodeWithText("주간 리포트", substring = true).performScrollTo().performClick()
+        onNodeWithText("게임 초대", substring = true).performScrollTo().performClick()
+
+        assertEquals(false, weekly)
+        assertEquals(false, ping)
     }
 
     // 누를 곳이 없는 화살표는 두지 않는다

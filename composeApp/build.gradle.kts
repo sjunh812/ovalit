@@ -20,6 +20,16 @@ android {
             rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
         }
         manifestPlaceholders["ovalitServerHost"] = localProperties.getProperty("ovalit.server.host") ?: "ovalit.invalid"
+        // FCM은 google-services.json 대신 이 네 값으로 띄운다. 비밀값은 아니지만 프로젝트마다 달라서 local.properties에서
+        // 받는다. 없으면 빈 값이고 앱은 푸시 없이 돈다.
+        listOf(
+            "FIREBASE_APP_ID" to "firebase.appId",
+            "FIREBASE_API_KEY" to "firebase.apiKey",
+            "FIREBASE_PROJECT_ID" to "firebase.projectId",
+            "FIREBASE_SENDER_ID" to "firebase.senderId",
+        ).forEach { (field, key) ->
+            buildConfigField("String", field, "\"${localProperties.getProperty(key).orEmpty()}\"")
+        }
     }
 
     buildFeatures {
@@ -67,6 +77,8 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.work.runtime)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
     implementation(libs.jb.lifecycle.runtime.compose)
     implementation(libs.kotlinx.serialization.core)
 

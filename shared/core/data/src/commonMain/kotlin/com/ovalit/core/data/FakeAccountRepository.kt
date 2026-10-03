@@ -12,6 +12,7 @@ class FakeAccountRepository(
     private val matchRepository: FakeMatchRepository,
     private val clock: Clock = Clock.System,
     private val friendRepository: FakeFriendRepository? = null,
+    private val pingRepository: FakePingRepository? = null,
 ) : AccountRepository {
 
     private val linked = MutableStateFlow<Account?>(fakeAccount())
@@ -23,15 +24,18 @@ class FakeAccountRepository(
         linked.value = fakeAccount()
         matchRepository.deleteAll()
         friendRepository?.refill()
+        pingRepository?.refill()
     }
 
     override suspend fun unlink() {
         linked.value = null
         matchRepository.deleteAll()
         friendRepository?.clear()
+        pingRepository?.clear()
     }
 
     private fun fakeAccount() = Account(
+        id = Me,
         riotId = MY_RIOT_ID,
         linkedOn = clock.todayIn(TimeZone.currentSystemDefault()),
     )

@@ -6,15 +6,18 @@ import com.ovalit.core.data.AccountRepository
 import com.ovalit.core.data.ContentRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.MatchRepository
+import com.ovalit.core.data.PingRepository
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.MatchMetrics
+import com.ovalit.core.model.Ping
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeaponCategory
 import com.ovalit.core.model.WeaponId
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.model.forHome
 import com.ovalit.core.model.metricsIn
 import com.ovalit.core.model.weeklyReport
 import com.ovalit.core.ui.PlayerBadge
@@ -22,6 +25,7 @@ import com.ovalit.core.ui.playerBadge
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,6 +56,9 @@ sealed interface ReportUiState {
         val nudge: HomeNudge? = null,
     ) : ReportUiState
 }
+
+/** 홈 맨 위 ㅇㅂㅇ 한 줄입니다. [now]는 시각 글자("21:00", "내일 01:00")를 정할 때 씁니다. */
+data class HomePing(val ping: Ping, val me: PlayerId, val now: Instant)
 
 /** 친구나 라이벌이 없을 때 빈자리 대신 두는 칸입니다. 한 번에 하나만 둡니다. */
 enum class HomeNudge {
@@ -102,11 +109,19 @@ class ReportViewModel(
     preferencesRepository: UserPreferencesRepository,
     private val friendRepository: FriendRepository,
     contentRepository: ContentRepository,
-    clock: Clock,
-    timeZone: TimeZone,
+    private val clock: Clock,
+    val timeZone: TimeZone,
     weekChanges: Flow<Unit> = flowOf(Unit),
     computation: CoroutineContext = Dispatchers.Default,
+    pingRepository: PingRepository? = null,
 ) : ViewModel() {
+
+    /** 홈 맨 위에 띄울 ㅇㅂㅇ입니다. 리포트 계산과 따로 둬서 답이 바뀔 때 리포트를 다시 세지 않습니다. */
+    val homePing: StateFlow<HomePing?> = (pingRepository?.pings ?: flowOf(emptyList()))
+        .combine(accountRepository.account) { pings, account ->
+            account?.let { mine -> pings.forHome(mine.id)?.let { HomePing(it, mine.id, clock.now()) } }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     // 칩으로 고르기 전까지는 설정의 기본 큐를 따른다. 고른 칩은 저장하지 않아 앱을 새로 열면 기본 큐로 돌아간다.
     private val selectedQueue = MutableStateFlow<QueueFilter?>(null)

@@ -35,6 +35,9 @@ interface FriendRepository {
 
     suspend fun setRival(id: PlayerId?)
 
+    /** 친구 목록과 받은 요청을 서버에서 다시 받습니다. 친구 탭을 당길 때 부릅니다. */
+    suspend fun refresh()
+
     /** 받은 사람이 앱에서 열면 나에게 친구 요청이 옵니다. */
     fun inviteLink(): String
 }

@@ -5,9 +5,13 @@ import com.ovalit.core.model.FriendRequest
 import com.ovalit.core.model.FriendRequestSource
 import com.ovalit.core.model.PlayerId
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+
+private val REFRESH_DELAY = 700.milliseconds
 
 /** 친구 서버가 생기기 전까지 쓰는 가짜 친구입니다. 목업의 준호, 민석, 재현과 전적을 비공개한 서연이 있습니다. */
 class FakeFriendRepository(
@@ -65,7 +69,13 @@ class FakeFriendRepository(
         rivalId.value = id
     }
 
+    // 받을 것은 없지만 당긴 티가 나게 잠깐 기다린다
+    override suspend fun refresh() = delay(REFRESH_DELAY)
+
     override fun inviteLink(): String = "https://ovalit.netlify.app/invite/K7Q2M"
+
+    /** 가짜 ㅇㅂㅇ이 친구 이름을 찾을 때 씁니다. */
+    internal fun currentFriends(): List<Friend> = friendList.value
 
     /** 연동을 해제하면 친구 관계도 사라집니다. */
     fun clear() {

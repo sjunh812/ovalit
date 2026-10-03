@@ -212,7 +212,7 @@ internal object ProfilePreviewData {
     )
 
     val success = ProfileUiState.Success(
-        account = Account(riotId = "오발러#KR1", linkedOn = LocalDate(2026, 9, 19)),
+        account = Account(id = PlayerId("me"), riotId = "오발러#KR1", linkedOn = LocalDate(2026, 9, 19)),
         badge = PlayerBadge(
             riotId = "오발러#KR1",
             tier = 16,

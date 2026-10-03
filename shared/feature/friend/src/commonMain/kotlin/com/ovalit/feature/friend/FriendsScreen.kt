@@ -30,12 +30,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role as SemanticsRole
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ovalit.core.data.PingSendResult
+import com.ovalit.core.designsystem.component.OvalitCard
+import com.ovalit.core.designsystem.component.OvalitCardGap
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitExpandable
 import com.ovalit.core.designsystem.component.OvalitOutlinedButton
+import com.ovalit.core.designsystem.component.OvalitPullToRefresh
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
@@ -45,6 +49,7 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.FriendRequest
 import com.ovalit.core.model.FriendRequestSource
+import com.ovalit.core.model.PingId
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.periodLabel
@@ -65,6 +70,8 @@ import com.ovalit.feature.friend.resources.request_from_invite
 import com.ovalit.feature.friend.resources.request_from_scoreboard
 import com.ovalit.feature.friend.resources.requests_title
 import com.ovalit.feature.friend.resources.rival
+import kotlin.time.Instant
+import kotlinx.datetime.TimeZone
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -77,21 +84,43 @@ private val RequestTextMinWidth = 150.dp
 @Composable
 fun FriendsRoute(
     onOpenFriend: (PlayerId) -> Unit,
+    onOpenPing: (PingId) -> Unit,
     onShareInvite: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: FriendsViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     FriendsScreen(
         uiState = uiState,
+        isRefreshing = isRefreshing,
+        onRefresh = viewModel::refresh,
         onOpenFriend = onOpenFriend,
         onInvite = { onShareInvite(viewModel.inviteLink()) },
         onAccept = viewModel::accept,
         onDecline = viewModel::decline,
         modifier = modifier,
+        timeZone = viewModel.timeZone,
+        ping = PingActions(slots = viewModel::pingSlots, send = viewModel::sendPing, open = onOpenPing),
     )
 }
 
+/**
+ * 친구 탭의 ㅇㅂㅇ 동작입니다. 테스트와 프리뷰는 비워 둡니다.
+ *
+ * @property open 초대 줄을 누르면 그 초대 화면을 엽니다. 답하고 시각을 옮기는 건 거기서 합니다.
+ */
+internal class PingActions(
+    val slots: () -> List<Instant> = { emptyList() },
+    val send: (List<PlayerId>, Instant, (PingSendResult) -> Unit) -> Unit = { _, _, _ -> },
+    val open: (PingId) -> Unit = {},
+)
+
+/**
+ * 친구 탭입니다. 맨 위에 ㅇㅂㅇ, 그 밑에 받은 요청과 친구 목록을 카드로 둡니다(사용자 결정, 2026-10-03). 홈처럼 큰 묶음마다
+ * 카드 하나입니다. ㅇㅂㅇ 카드는 초대마다 한 줄이고 누르면 초대 화면으로 들어갑니다. 부르는 건 시트에서 합니다. 친구 목록보다
+ * 크게 자리를 차지하지 않게 했습니다(사용자 요청).
+ */
 @Composable
 internal fun FriendsScreen(
     uiState: FriendsUiState,
@@ -100,79 +129,124 @@ internal fun FriendsScreen(
     onAccept: (PlayerId) -> Unit,
     onDecline: (PlayerId) -> Unit,
     modifier: Modifier = Modifier,
+    isRefreshing: Boolean = false,
+    onRefresh: () -> Unit = {},
+    timeZone: TimeZone = TimeZone.currentSystemDefault(),
+    ping: PingActions = PingActions(),
 ) {
     val colors = OvalitTheme.colors
+    var composing by remember { mutableStateOf(false) }
+    var tooMany by remember { mutableStateOf(false) }
 
-    Box(modifier = modifier.fillMaxSize().background(colors.bg)) {
+    Box(modifier = modifier.fillMaxSize().background(colors.canvas)) {
         if (uiState !is FriendsUiState.Success) return@Box
+        val me = uiState.me
+        val now = uiState.now
+        val outgoing = me?.let { id -> uiState.pings.firstOrNull { it.isHostedBy(id) } }
+        val incoming = me?.let { id -> uiState.pings.filterNot { it.isHostedBy(id) } }.orEmpty()
 
-        Column(modifier = Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState())) {
-            OvalitTabHeader(title = stringResource(Res.string.friends_title))
-            Spacer(Modifier.height(OvalitSpacing.xs))
-            Column(modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
-                OvalitOutlinedButton(text = stringResource(Res.string.invite), onClick = onInvite)
-                Spacer(Modifier.height(OvalitSpacing.sm))
-                OvalitText(
-                    text = stringResource(Res.string.invite_note),
-                    style = OvalitTheme.typography.caption,
-                    color = colors.t3,
-                )
-            }
+        OvalitPullToRefresh(
+            isRefreshing = isRefreshing,
+            onRefresh = onRefresh,
+            modifier = Modifier.fillMaxSize().safeDrawingPadding(),
+        ) {
+            Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                OvalitTabHeader(title = stringResource(Res.string.friends_title))
+                Spacer(Modifier.height(OvalitSpacing.xs))
+                Column(verticalArrangement = Arrangement.spacedBy(OvalitCardGap)) {
+                    // 친구가 없으면 부를 사람도, 받을 초대도 없다
+                    if (me != null && (uiState.friends.isNotEmpty() || uiState.pings.isNotEmpty())) {
+                        PingListCard(
+                            // 받은 것은 답해야 해서 보낸 것보다 위에 둔다
+                            pings = incoming + listOfNotNull(outgoing),
+                            me = me,
+                            now = now,
+                            timeZone = timeZone,
+                            canCompose = outgoing == null && uiState.friends.isNotEmpty(),
+                            onOpen = { ping.open(it.id) },
+                            onCompose = { composing = true },
+                        )
+                    }
 
-            // 요청을 처리하면 아래 목록이 한 번에 튀어 오르지 않게 높이를 천천히 줄인다. 마지막 요청이면 구역이 접히는 동안
-            // 그 줄을 그대로 둔다. 빈 목록을 그리면 "받은 요청 0"이 잠깐 뜬다.
-            var lastRequests by remember { mutableStateOf(uiState.requests) }
-            SideEffect { if (uiState.requests.isNotEmpty()) lastRequests = uiState.requests }
-            val shownRequests = uiState.requests.ifEmpty { lastRequests }
-            OvalitExpandable(visible = uiState.requests.isNotEmpty()) {
-                Column(modifier = Modifier.animateContentSize()) {
-                    SectionHeader(stringResource(Res.string.requests_title, shownRequests.size))
-                    shownRequests.forEachIndexed { index, request ->
-                        key(request.id.value) {
-                            if (index > 0) RowDivider()
-                            RequestRow(request, onAccept = { onAccept(request.id) }, onDecline = { onDecline(request.id) })
+                    // 요청을 처리하면 아래 목록이 한 번에 튀어 오르지 않게 높이를 천천히 줄인다. 마지막 요청이면 구역이 접히는 동안
+                    // 그 줄을 그대로 둔다. 빈 목록을 그리면 "받은 요청 0"이 잠깐 뜬다.
+                    var lastRequests by remember { mutableStateOf(uiState.requests) }
+                    SideEffect { if (uiState.requests.isNotEmpty()) lastRequests = uiState.requests }
+                    val shownRequests = uiState.requests.ifEmpty { lastRequests }
+                    OvalitExpandable(visible = uiState.requests.isNotEmpty()) {
+                        OvalitCard(modifier = Modifier.animateContentSize()) {
+                            CardTitle(stringResource(Res.string.requests_title, shownRequests.size))
+                            shownRequests.forEachIndexed { index, request ->
+                                key(request.id.value) {
+                                    if (index > 0) RowDivider()
+                                    RequestRow(request, onAccept = { onAccept(request.id) }, onDecline = { onDecline(request.id) })
+                                }
+                            }
+                        }
+                    }
+
+                    OvalitCard {
+                        if (uiState.friends.isEmpty()) {
+                            Column(
+                                modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
+                                verticalArrangement = Arrangement.spacedBy(OvalitSpacing.sm),
+                            ) {
+                                OvalitText(text = stringResource(Res.string.empty_title), style = OvalitTheme.typography.bodyStrong)
+                                OvalitText(
+                                    text = stringResource(Res.string.empty_body),
+                                    style = OvalitTheme.typography.body,
+                                    color = colors.t2,
+                                )
+                            }
+                        } else {
+                            CardTitle(stringResource(Res.string.friends_count, uiState.friends.size))
+                            uiState.friends.forEachIndexed { index, row ->
+                                if (index > 0) RowDivider()
+                                FriendRowItem(row, isRival = row.friend.id == uiState.rivalId, onClick = { onOpenFriend(row.friend.id) })
+                            }
+                        }
+                        Spacer(Modifier.height(OvalitSpacing.md))
+                        Column(modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+                            OvalitOutlinedButton(text = stringResource(Res.string.invite), onClick = onInvite)
+                            Spacer(Modifier.height(OvalitSpacing.sm))
+                            OvalitText(
+                                text = stringResource(Res.string.invite_note),
+                                style = OvalitTheme.typography.caption,
+                                color = colors.t3,
+                            )
                         }
                     }
                 }
-            }
-
-            if (uiState.friends.isEmpty()) {
                 Spacer(Modifier.height(OvalitSpacing.xxl))
-                Column(
-                    modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
-                    verticalArrangement = Arrangement.spacedBy(OvalitSpacing.sm),
-                ) {
-                    OvalitText(text = stringResource(Res.string.empty_title), style = OvalitTheme.typography.bodyStrong)
-                    OvalitText(
-                        text = stringResource(Res.string.empty_body),
-                        style = OvalitTheme.typography.body,
-                        color = colors.t2,
-                    )
-                }
-            } else {
-                SectionHeader(stringResource(Res.string.friends_count, uiState.friends.size))
-                uiState.friends.forEachIndexed { index, row ->
-                    if (index > 0) RowDivider()
-                    FriendRowItem(row, isRival = row.friend.id == uiState.rivalId, onClick = { onOpenFriend(row.friend.id) })
-                }
             }
-            Spacer(Modifier.height(OvalitSpacing.xxl))
+        }
+
+        if (composing) {
+            PingComposeSheet(
+                friends = uiState.friends.map { it.friend },
+                slots = remember { ping.slots() },
+                now = now,
+                timeZone = timeZone,
+                tooMany = tooMany,
+                onSend = { friends, startsAt ->
+                    ping.send(friends, startsAt) { result ->
+                        tooMany = result == PingSendResult.TOO_MANY
+                        if (result == PingSendResult.SENT) composing = false
+                    }
+                },
+                onDismiss = { composing = false },
+            )
         }
     }
 }
 
+// 카드 맨 위 제목이다. 홈 카드의 묶음 제목과 같이 굵은 본문 글자로 둔다.
 @Composable
-private fun SectionHeader(text: String) {
+private fun CardTitle(text: String) {
     OvalitText(
         text = text,
-        modifier = Modifier.padding(
-            start = OvalitSpacing.gutter,
-            end = OvalitSpacing.gutter,
-            top = OvalitSpacing.xl,
-            bottom = OvalitSpacing.xs,
-        ),
-        style = OvalitTheme.typography.label,
-        color = OvalitTheme.colors.t3,
+        modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = OvalitSpacing.xs),
+        style = OvalitTheme.typography.bodyStrong,
     )
 }
 

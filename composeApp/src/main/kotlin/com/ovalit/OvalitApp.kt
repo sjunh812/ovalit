@@ -51,6 +51,7 @@ import com.ovalit.core.model.PlayerId
 import com.ovalit.feature.friend.FriendMatchesRoute
 import com.ovalit.feature.friend.FriendProfileRoute
 import com.ovalit.feature.friend.FriendsRoute
+import com.ovalit.feature.friend.PingDetailRoute
 import com.ovalit.feature.match.MatchDetailRoute
 import com.ovalit.feature.match.MatchesRoute
 import com.ovalit.feature.onboarding.consent.ConsentScreen
@@ -62,6 +63,8 @@ import com.ovalit.feature.profile.RecordsOwner
 import com.ovalit.feature.profile.WeaponsRoute
 import com.ovalit.feature.report.ReportRoute
 import com.ovalit.feature.settings.SettingsRoute
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import org.koin.compose.koinInject
@@ -109,13 +112,24 @@ private data object Weapons : NavKey
 private data class FriendAgents(val id: String) : NavKey
 
 @Serializable
+private data class PingDetail(val id: String) : NavKey
+
+@Serializable
 private data class FriendWeapons(val id: String) : NavKey
 
 private val TopLevel = listOf(Report, Matches, Friends, Settings)
 
 @Composable
-fun OvalitApp(appVersion: String) {
+fun OvalitApp(appVersion: String, openPing: Flow<String> = emptyFlow()) {
     val backStack = rememberNavBackStack(Intro)
+    // ㅇㅂㅇ 알림을 누르면 친구 탭 위에 그 초대 화면을 연다. 뒤로 가면 친구 탭이다. 아직 연동 전이면 그대로 둔다.
+    LaunchedEffect(openPing) {
+        openPing.collect { id ->
+            if (Report !in backStack || backStack.last() == PingDetail(id)) return@collect
+            backStack.selectTab(Friends)
+            backStack.add(PingDetail(id))
+        }
+    }
     // RSO가 붙기 전까지는 가짜 계정이다. S0-2의 계속하기가 연동을 대신한다.
     val account = koinInject<FakeAccountRepository>()
     val friends = koinInject<FriendRepository>()
@@ -123,6 +137,10 @@ fun OvalitApp(appVersion: String) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val dimmedAlpha = dimmedAlpha(OvalitTheme.colors.isDark)
+    // 탭을 바꿀 때는 홈이 스택에 남는다. 연동을 해제하면 홈까지 빠지니 그때 남겨 둔 탭 화면도 지운다.
+    val linked = Report in backStack
+    val tabState = rememberTabStateDecorator(keepTabs = { Report in backStack })
+    LaunchedEffect(linked) { if (!linked) tabState.clearKept() }
 
     // 전환 중에 아래 화면이 어두워 보이게 하는 검은 바탕이다(OvalitTransitions). 화면이 모두 불투명해서 평소에는 안 보인다.
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
@@ -133,10 +151,6 @@ fun OvalitApp(appVersion: String) {
             transitionSpec = pushTransition(dimmedAlpha),
             popTransitionSpec = popTransition(dimmedAlpha),
             predictivePopTransitionSpec = predictivePopTransition(dimmedAlpha),
-    // 탭을 바꿀 때는 홈이 스택에 남는다. 연동을 해제하면 홈까지 빠지니 그때 남겨 둔 탭 화면도 지운다.
-    val linked = Report in backStack
-    val tabState = rememberTabStateDecorator(keepTabs = { Report in backStack })
-    LaunchedEffect(linked) { if (!linked) tabState.clearKept() }
             entryProvider = entryProvider {
                 entry<Intro> {
                     IntroScreen(onStart = { backStack.add(Consent) })
@@ -165,6 +179,7 @@ fun OvalitApp(appVersion: String) {
                             onShareInvite = { context.shareInvite(friends.inviteLink()) },
                             onOpenAgents = { backStack.add(Agents) },
                             onOpenWeapons = { backStack.add(Weapons) },
+                            onOpenPing = { backStack.add(PingDetail(it.value)) },
                         )
                     }
                 }
@@ -194,6 +209,7 @@ fun OvalitApp(appVersion: String) {
                     TabScaffold(selected = Friends, onSelect = backStack::selectTab) {
                         FriendsRoute(
                             onOpenFriend = { backStack.add(FriendProfile(it.value)) },
+                            onOpenPing = { backStack.add(PingDetail(it.value)) },
                             onShareInvite = { link -> context.shareInvite(link) },
                         )
                     }
@@ -206,6 +222,9 @@ fun OvalitApp(appVersion: String) {
                         onOpenAgents = { backStack.add(FriendAgents(key.id)) },
                         onOpenWeapons = { backStack.add(FriendWeapons(key.id)) },
                     )
+                }
+                entry<PingDetail> { key ->
+                    PingDetailRoute(pingId = key.id, onBack = { backStack.removeLastOrNull() })
                 }
                 entry<FriendMatches> { key ->
                     FriendMatchesRoute(friendId = PlayerId(key.id), onBack = { backStack.removeLastOrNull() })

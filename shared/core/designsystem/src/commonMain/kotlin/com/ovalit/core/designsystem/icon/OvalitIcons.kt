@@ -51,9 +51,14 @@ object OvalitIcons {
 
     val ChevronDown: ImageVector by lazy { strokeIcon("M4 8l6 6 6-6", strokeWidth = 2f) }
 
+    val Plus: ImageVector by lazy { strokeIcon("M10 4v12M4 10h12", strokeWidth = 1.8f) }
+
     val Back: ImageVector by lazy { strokeIcon("M12 4l-6 6 6 6", strokeWidth = 1.8f) }
 
     val Check: ImageVector by lazy { strokeIcon("M4 10.5l4 4 8-9", strokeWidth = 2f) }
+
+    // 다른 시간을 낸 친구 아바타에 붙는 시계다
+    val Clock: ImageVector by lazy { strokeIcon("M10 3a7 7 0 1 1 0 14a7 7 0 1 1 0-14", "M10 6.5v3.8l2.6 1.6", strokeWidth = 1.8f) }
 
     // 목업의 세 줄은 메뉴 버튼처럼 읽혀서 경기 기록 한 장을 뜻하는 카드로 바꿨다
     val Matches: ImageVector by lazy { strokeIcon(MATCH_CARD, MATCH_LINES) }

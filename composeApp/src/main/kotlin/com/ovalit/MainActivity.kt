@@ -1,5 +1,6 @@
 package com.ovalit
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -14,15 +15,28 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ThemePreference
+import com.ovalit.push.EXTRA_OPEN_PING
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import org.koin.compose.koinInject
 
 class MainActivity : ComponentActivity() {
+
+    // ㅇㅂㅇ 알림을 눌러 들어오면 그 초대 화면을 연다. 앱이 떠 있으면 onNewIntent로 온다. 화면이 받기 전에 온 것도 남겨 두려고
+    // 채널에 담는다.
+    private val openPing = Channel<String>(Channel.CONFLATED)
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent.getStringExtra(EXTRA_OPEN_PING)?.let(openPing::trySend)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) intent.getStringExtra(EXTRA_OPEN_PING)?.let(openPing::trySend)
 
         setContent {
             val preferences = koinInject<UserPreferencesRepository>()
@@ -46,7 +60,7 @@ class MainActivity : ComponentActivity() {
             }
 
             OvalitTheme(darkTheme = darkTheme) {
-                OvalitApp(appVersion = BuildConfig.VERSION_NAME)
+                OvalitApp(appVersion = BuildConfig.VERSION_NAME, openPing = openPing.receiveAsFlow())
             }
         }
     }

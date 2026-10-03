@@ -10,6 +10,16 @@ import org.koin.dsl.module
 val reportModule = module {
     viewModel {
         val timeZone = TimeZone.currentSystemDefault()
-        ReportViewModel(get(), get(), get(), get(), get(), Clock.System, timeZone, weekStarts(Clock.System, timeZone))
+        ReportViewModel(
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            Clock.System,
+            timeZone,
+            weekStarts(Clock.System, timeZone),
+            pingRepository = get(),
+        )
     }
 }

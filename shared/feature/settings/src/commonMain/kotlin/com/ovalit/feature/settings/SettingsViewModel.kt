@@ -56,6 +56,10 @@ class SettingsViewModel(
 
     fun setNotifyAnalysisDone(enabled: Boolean) = launch { preferencesRepository.setNotifyAnalysisDone(enabled) }
 
+    fun setNotifyWeeklyReport(enabled: Boolean) = launch { preferencesRepository.setNotifyWeeklyReport(enabled) }
+
+    fun setNotifyPing(enabled: Boolean) = launch { preferencesRepository.setNotifyPing(enabled) }
+
     fun setTheme(theme: ThemePreference) = launch { preferencesRepository.setTheme(theme) }
 
     fun setFocus(focus: Focus) = launch { preferencesRepository.setFocus(focus) }

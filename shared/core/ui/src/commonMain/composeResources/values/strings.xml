@@ -117,4 +117,33 @@
     <string name="kda_counts">%1$s/%2$s/%3$s</string>
     <string name="kda_with_counts">%1$s (%2$s)</string>
     <string name="kda_ratio">KDA %1$s</string>
+    <!-- ㅇㅂㅇ(오발있?). 친구 탭과 홈이 같이 쓴다. 친구의 답은 "참석, 불참"처럼 상태 말로, 내가 누르는 버튼만 해요체로 쓴다. -->
+    <string name="ping_time_now">지금</string>
+    <string name="ping_time_tomorrow">내일 %1$s</string>
+    <string name="ping_time_dawn">새벽 %1$s</string>
+    <string name="ping_day_today">오늘</string>
+    <string name="ping_day_tomorrow">내일</string>
+    <string name="ping_day_dawn">새벽</string>
+    <string name="ping_in_hours_minutes">%1$d시간 %2$d분 뒤</string>
+    <string name="ping_in_hours">%1$d시간 뒤</string>
+    <string name="ping_in_minutes">%1$d분 뒤</string>
+    <string name="ping_started">시작했어요</string>
+    <string name="ping_called_just_now">방금 불렀어요</string>
+    <string name="ping_called_minutes_ago">%1$d분 전에 불렀어요</string>
+    <string name="ping_called_by">%1$s의 초대</string>
+    <string name="ping_when">%1$s · %2$s</string>
+    <string name="ping_called_by_me">내 초대</string>
+    <string name="ping_home_received">%1$s의 초대 · %2$s</string>
+    <string name="ping_home_received_now">%1$s의 초대 · 지금</string>
+    <string name="ping_home_sent">내 초대 · %1$s</string>
+    <string name="ping_home_sent_now">내 초대 · 지금</string>
+    <string name="ping_summary_outgoing">%1$d명 중 %2$d명 참석</string>
+    <string name="ping_answer_yes">참석</string>
+    <string name="ping_answer_no">불참</string>
+    <string name="ping_answer_pending">응답 전</string>
+    <string name="ping_answer_other">%1$s 제안</string>
+    <string name="ping_my_answer_yes">참석으로 답했어요</string>
+    <string name="ping_my_answer_no">불참으로 답했어요</string>
+    <string name="ping_my_answer_other">%1$s 제안했어요</string>
+    <string name="ping_my_answer_pending">아직 답하지 않았어요</string>
 </resources>

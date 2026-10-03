@@ -44,6 +44,7 @@ class DataStoreUserPreferencesRepository(
                 statsPublic = stored[Keys.statsPublic] ?: default.statsPublic,
                 notifyAnalysisDone = stored[Keys.notifyAnalysisDone] ?: default.notifyAnalysisDone,
                 notifyWeeklyReport = stored[Keys.notifyWeeklyReport] ?: default.notifyWeeklyReport,
+                notifyPing = stored[Keys.notifyPing] ?: default.notifyPing,
                 focus = stored[Keys.focus].toEnumOr(default.focus),
             )
         }
@@ -58,6 +59,8 @@ class DataStoreUserPreferencesRepository(
 
     override suspend fun setNotifyWeeklyReport(enabled: Boolean) = set(Keys.notifyWeeklyReport, enabled)
 
+    override suspend fun setNotifyPing(enabled: Boolean) = set(Keys.notifyPing, enabled)
+
     override suspend fun setFocus(focus: Focus) = set(Keys.focus, focus.name)
 
     private suspend fun <T> set(key: Preferences.Key<T>, value: T) {
@@ -71,6 +74,7 @@ class DataStoreUserPreferencesRepository(
         val statsPublic = booleanPreferencesKey("stats_public")
         val notifyAnalysisDone = booleanPreferencesKey("notify_analysis_done")
         val notifyWeeklyReport = booleanPreferencesKey("notify_weekly_report")
+        val notifyPing = booleanPreferencesKey("notify_ping")
         val focus = stringPreferencesKey("focus")
     }
 }

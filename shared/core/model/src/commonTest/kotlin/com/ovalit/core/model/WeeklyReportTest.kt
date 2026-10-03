@@ -155,7 +155,7 @@ class WeeklyReportTest {
 
         assertEquals(5, report.metrics.matches)
         assertEquals(emptyList(), report.dynamic)
-        assertEquals(listOf(FixedMetric.KD, FixedMetric.HEADSHOT_RATE, FixedMetric.KDA), QueueFilter.OTHER.fixedMetrics)
+        assertEquals(listOf(FixedMetric.KD, FixedMetric.KDA, FixedMetric.HEADSHOT_RATE), QueueFilter.OTHER.fixedMetrics)
     }
 
     @Test

@@ -14,7 +14,7 @@ const val MOVEMENT_THRESHOLD = 1.5
 private const val FLAT_VOLATILITY = 1e-9
 
 /**
- * 홈의 동적 칸에 오를 수 있는 지표입니다. 고정 4개(전투점수, K/D, 피해량, 헤드샷)는 여기 없습니다.
+ * 홈의 동적 칸에 오를 수 있는 지표입니다. 고정 5개(피해량, K/D, KDA, 전투점수, 헤드샷)는 여기 없습니다.
  */
 enum class DynamicMetric(
     val value: (MatchMetrics) -> Double?,

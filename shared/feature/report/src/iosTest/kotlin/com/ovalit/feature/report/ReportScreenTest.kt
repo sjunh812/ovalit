@@ -111,18 +111,18 @@ class ReportScreenTest {
 
     // 사용자 결정(2026-10-03): 달라진 점과 같은 격자로 한 줄에 세 칸씩 둔다
     @Test
-    fun `고정 지표는 한 줄에 세 칸씩 전투점수 K_D 피해량 헤드샷 KDA 순서로 놓는다`() = runComposeUiTest {
+    fun `고정 지표는 한 줄에 세 칸씩 피해량 K_D KDA 전투점수 헤드샷 순서로 놓는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        val (combat, kd, damage, headshot, kda) = listOf("전투점수", "K/D", "피해량", "헤드샷", "KDA")
+        val (damage, kd, kda, combat, headshot) = listOf("피해량", "K/D", "KDA", "전투점수", "헤드샷")
             .map { onNodeWithText(it).getUnclippedBoundsInRoot() }
 
-        val first = listOf(combat, kd, damage)
-        assertTrue(first.all { it.top == combat.top })
+        val first = listOf(damage, kd, kda)
+        assertTrue(first.all { it.top == damage.top })
         assertEquals(first.sortedBy { it.left }, first)
-        assertTrue(headshot.top >= combat.bottom && kda.top == headshot.top, "헤드샷과 KDA가 둘째 줄에 없다")
-        assertEquals(combat.left, headshot.left)
-        assertEquals(kd.left, kda.left)
+        assertTrue(combat.top >= damage.bottom && headshot.top == combat.top, "전투점수와 헤드샷이 둘째 줄에 없다")
+        assertEquals(damage.left, combat.left)
+        assertEquals(kd.left, headshot.left)
     }
 
     @Test

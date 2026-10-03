@@ -57,8 +57,8 @@ import com.ovalit.feature.report.resources.rival_title
 import org.jetbrains.compose.resources.stringResource
 
 // 목업의 세 지표는 역할이 달라도 나란히 놓을 수 있는 것이다. 사용자 결정(2026-09-29)으로 KDA를 더했다. 어시스트가 들어가
-// 척후대·전략가도 제 몫이 드러나서 역할이 달라도 견줄 만하다.
-private val RivalMetrics = listOf(FixedMetric.KD, FixedMetric.DAMAGE, FixedMetric.HEADSHOT_RATE, FixedMetric.KDA)
+// 척후대·전략가도 제 몫이 드러나서 역할이 달라도 견줄 만하다. 순서는 홈 고정 칸을 따른다.
+private val RivalMetrics = listOf(FixedMetric.DAMAGE, FixedMetric.KD, FixedMetric.KDA, FixedMetric.HEADSHOT_RATE)
 private val NameWidth = 72.dp
 
 private class RankWidths(val rank: Dp, val name: Dp, val value: Dp)

@@ -18,7 +18,7 @@ enum class QueueFilter(val queues: Set<Queue>) {
      * 뺍니다.
      */
     val fixedMetrics: List<FixedMetric>
-        get() = if (this == OTHER) listOf(FixedMetric.KD, FixedMetric.HEADSHOT_RATE, FixedMetric.KDA) else FixedMetric.entries
+        get() = if (this == OTHER) listOf(FixedMetric.KD, FixedMetric.KDA, FixedMetric.HEADSHOT_RATE) else FixedMetric.entries
 
     val hasDynamicMetrics: Boolean get() = this != OTHER
 }

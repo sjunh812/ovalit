@@ -45,7 +45,7 @@ import com.ovalit.feature.report.resources.sheet_open
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * 홈 위쪽 고정 칸입니다. 전투점수, K/D, 피해량 / 헤드샷, KDA를 한 줄에 세 칸씩 놓고, 칸마다 이름, 숫자, 그 밑에
+ * 홈 위쪽 고정 칸입니다. 피해량, K/D, KDA / 전투점수, 헤드샷을 한 줄에 세 칸씩 놓고, 칸마다 이름, 숫자, 그 밑에
  * "+75 · 평소 177"을 둡니다. 달라진 점과 같은 격자, 같은 칸 모양이라 두 카드의 칸 경계가 위아래로 맞습니다.
  *
  * 사용자 결정(2026-10-03): 목업의 네 칸 한 줄 밑에 KDA 넓은 칸을 두니 KDA만 따로 놀아 보였다. 다섯 칸을 같은 모양으로

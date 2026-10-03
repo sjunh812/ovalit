@@ -1,12 +1,15 @@
 package com.ovalit.core.ui
 
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.text.modifiers.TextAutoSizeLayoutScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -20,7 +23,22 @@ val MinFittingTextSize = 7.sp
  * 폭이 정해진 칸에서 글자를 키운 사용자에게 "전투점수"가 "전투"로 잘리지 않게, 줄을 바꾸는 대신 글자를
  * 줄입니다. `maxLines = 1`과 같이 씁니다.
  */
-fun shrinkToFit(size: TextUnit, min: TextUnit = MinFittingTextSize) = TextAutoSize.StepBased(minFontSize = min, maxFontSize = size)
+fun shrinkToFit(size: TextUnit, min: TextUnit = MinFittingTextSize): TextAutoSize = FitFirstAutoSize(min = min, max = size)
+
+// 기본 StepBased는 다 들어가도 범위를 반씩 좁혀 가며 예닐곱 번 다시 잰다. 홈 고정 칸처럼 칸마다 붙이면 첫 화면 한 프레임이
+// 수십 ms 늘어서, 원래 크기로 한 번 재 보고 넘칠 때만 줄여 찾는다.
+private data class FitFirstAutoSize(val min: TextUnit, val max: TextUnit) : TextAutoSize {
+    private val shrinking = TextAutoSize.StepBased(minFontSize = min, maxFontSize = max)
+
+    override fun TextAutoSizeLayoutScope.getFontSize(constraints: Constraints, text: AnnotatedString): TextUnit {
+        if (performLayout(constraints, text, max).fits()) return max
+        return with(shrinking) { getFontSize(constraints, text) }
+    }
+}
+
+// 말줄임이 붙었으면 넘친 것으로 본다. StepBased도 그렇게 본다.
+private fun TextLayoutResult.fits(): Boolean =
+    !didOverflowWidth && !didOverflowHeight && (lineCount == 0 || !isLineEllipsized(lineCount - 1))
 
 /**
  * 나란히 놓인 칸들의 글자를 한 크기로 맞춥니다. 칸마다 따로 줄이면 긴 글자만 작아져서 "전투점수" 옆의 "K/D"가

@@ -117,8 +117,8 @@ auth.get("/done", (c) => {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>오발있 로그인</title>
 <style>
-:root { --bg: #100E0C; --t1: #F5F2ED; --t2: #9A9289; --accent: #FF4655; --on-accent: #FFFFFF; }
-@media (prefers-color-scheme: light) { :root { --bg: #FDFCFA; --t1: #191510; --t2: #6E675E; } }
+:root { --bg: #101012; --t1: #F2F2F4; --t2: #9E9EA6; --accent: #FF4655; --on-accent: #FFFFFF; }
+@media (prefers-color-scheme: light) { :root { --bg: #FFFFFF; --t1: #191F28; --t2: #5F6873; } }
 body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
   background: var(--bg); color: var(--t1); font-family: system-ui, sans-serif; }
 main { padding: 24px 16px; text-align: center; }

@@ -8,7 +8,7 @@
 -->
 <resources>
     <!-- 창 배경만 테마를 따릅니다. OvalitLightColors.bg -->
-    <color name="window_background">#FDFCFA</color>
+    <color name="window_background">#FFFFFF</color>
 
     <!--
       스플래시와 런처 아이콘은 테마를 따르지 않습니다. 둘 다 브랜드 면이라 같은 색을 씁니다.

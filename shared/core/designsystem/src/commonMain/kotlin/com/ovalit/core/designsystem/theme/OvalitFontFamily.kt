@@ -16,8 +16,8 @@ import org.jetbrains.compose.resources.Font
  * 굵기로 그려집니다. 안 넘기면 전부 기본 굵기로 나오고, 굵게 써야 할 자리는 시스템이
  * 억지로 두껍게 흉내 냅니다.
  *
- * 한글 획이 얇아서 굵기 이름보다 한 단계 굵게 그립니다(SemiBold 700, Bold 800). 600으로 그린 제목과 숫자는 본문과
- * 차이가 덜 났습니다. [FontWeight.Bold]도 따로 등록합니다. 없으면 가장 가까운 SemiBold로 그려져서 스코어처럼
+ * 굵기 이름 그대로 그립니다(SemiBold 600, Bold 700). 한 단계 굵게(700, 800) 그렸더니 숫자가 뭉툭하게 두꺼워 보였습니다
+ * (사용자 결정, 2026-10-03). [FontWeight.Bold]도 따로 등록합니다. 없으면 가장 가까운 SemiBold로 그려져서 스코어처럼
  * "굵게"를 달라고 한 자리가 SemiBold와 똑같이 보입니다.
  *
  * 결과를 기억해 둡니다. 매번 새 [FontFamily]를 돌려주면 이걸 받는 [OvalitTheme]이 글자 스타일을 화면 갱신마다 다시
@@ -33,8 +33,8 @@ fun ovalitFontFamily(): FontFamily {
     return remember(regular, medium, semiBold, bold) { FontFamily(regular, medium, semiBold, bold) }
 }
 
-private const val SEMI_BOLD_AXIS = 700
-private const val BOLD_AXIS = 800
+private const val SEMI_BOLD_AXIS = 600
+private const val BOLD_AXIS = 700
 
 @Composable
 private fun pretendard(weight: FontWeight, axis: Int) = Font(

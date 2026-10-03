@@ -476,8 +476,8 @@ MaterialTheme은 `OvalitTheme` 안에 우리 토큰을 옮겨 담아 같이 깐�
 서체는 Pretendard Variable 한 벌이다. SIL OFL이라 상업 번들이 자유롭고, 가변 폰트라 파일
 하나로 9굵기를 다 쓴다(`FontVariation`은 API 26+라 minSdk와 맞는다).
 
-한글 획이 얇아서 굵기 이름보다 한 단계 굵게 그린다. SemiBold는 `wght` 700, Bold는 800이고 Normal과 Medium은
-400, 500 그대로다. 600으로는 제목과 숫자가 본문과 덜 갈렸다. Bold도 꼭 등록한다. 빠지면 "굵게"를 달라고 한
+굵기는 이름 그대로 그린다. SemiBold는 `wght` 600, Bold는 700, Normal과 Medium은 400, 500이다. 한글 획이 얇아 한 단계 굵게(700,
+800) 그렸었는데 숫자가 뭉툭하게 두꺼워 보였다(사용자 결정, 2026-10-03). 650과 750도 견줘 보고 600, 700을 골랐다. Bold도 꼭 등록한다. 빠지면 "굵게"를 달라고 한
 자리(스코어, 앞선 값)가 가장 가까운 SemiBold로 그려져 구분이 안 된다.
 
 숫자도 같은 서체로 간다. 지표 숫자는 `FontFeatureSetting`의 `tnum`으로 폭을 고정한다.

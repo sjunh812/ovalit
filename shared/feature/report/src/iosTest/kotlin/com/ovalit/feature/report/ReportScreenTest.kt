@@ -373,16 +373,16 @@ class ReportScreenTest {
         onNode(hasText("피해량") and hasText("133")).assertExists()
     }
 
-    // 사용자 요청(2026-10-03): 기록이 하나라도 있으면 그려야 견줄 수 있다
+    // 사용자 요청(2026-10-03): 기록이 하나라도 있으면 그려야 견줄 수 있다. 내 기록이라 표본으로 가르지 않는다.
     @Test
-    fun `라운드가 모자란 주도 고를 수 있고 그 뜻을 적는다`() = runComposeUiTest {
+    fun `라운드가 모자란 주도 다른 주처럼 그리고 고를 수 있다`() = runComposeUiTest {
         setContent { TrendSheet(ReportPreviewData.moved) }
 
         tapWeek("피해량", index = 2)
 
         onNode(hasText("5주 전") and hasText("1경기 · 22라운드")).assertExists()
         onNode(hasText("피해량") and hasText("142")).assertExists()
-        onNodeWithText("테두리만 그린 막대는 40라운드를 못 뛴 주예요.", substring = true).assertExists()
+        onNodeWithText("40라운드", substring = true).assertDoesNotExist()
     }
 
     @Test

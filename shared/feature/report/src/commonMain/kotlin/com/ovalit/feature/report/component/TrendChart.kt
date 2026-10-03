@@ -1,7 +1,6 @@
 package com.ovalit.feature.report.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -34,7 +33,6 @@ import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.FixedMetric
-import com.ovalit.core.model.MIN_TREND_ROUNDS
 import com.ovalit.core.model.TREND_WEEKS
 import com.ovalit.core.model.TrendWeek
 import com.ovalit.core.model.WeeklyReport
@@ -53,7 +51,6 @@ import com.ovalit.feature.report.resources.sheet_trend_act_marker
 import com.ovalit.feature.report.resources.sheet_trend_description
 import com.ovalit.feature.report.resources.sheet_trend_start
 import com.ovalit.feature.report.resources.trend_baseline_note
-import com.ovalit.feature.report.resources.trend_sparse_note
 import com.ovalit.feature.report.resources.trend_week_empty
 import com.ovalit.feature.report.resources.trend_week_sample
 import kotlinx.datetime.DateTimeUnit
@@ -71,7 +68,8 @@ private const val DIMMED_BAR = 0.35f
 
 /**
  * S1-a, 8주 흐름 시트, 홈 흐름 입구가 같이 쓰는 주별 막대입니다. 기간에 든 주만 `--accent`로 칠하고, 경기가 없는 주는 바닥
- * 선만 남기며, 라운드가 모자란 주는 테두리만 그립니다. 액트가 바뀐 곳에는 세로선을 긋습니다. 낭독기는 주마다 값을 읽습니다.
+ * 선만 남깁니다. 한 판만 뛴 주도 다른 주와 똑같이 그립니다. 견주는 게 아니라 내 기록이라 표본으로 가르지 않습니다(사용자
+ * 요청, 2026-10-03). 액트가 바뀐 곳에는 세로선을 긋습니다. 낭독기는 주마다 값을 읽습니다.
  *
  * @param selected 고른 주의 자리입니다. 고르면 그 막대만 밝게 두고 나머지는 흐리게 합니다.
  * @param onSelect 막대를 누르거나 옆으로 끌면 고른 주를 알립니다. 고른 막대를 다시 누르면 `null`입니다. 없으면 누를 수 없습니다.
@@ -154,7 +152,6 @@ internal fun TrendBarRow(
             Bar(
                 fraction = values[index]?.let { barFraction(it, low, high) },
                 color = barColor(week, index, selected, restColor),
-                sparse = week.sparse,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -166,12 +163,7 @@ internal fun TrendBarRow(
 @Composable
 private fun barColor(week: TrendWeek, index: Int, selected: Int?, rest: Color): Color {
     val colors = OvalitTheme.colors
-    // 라운드가 모자란 주는 테두리만 그려서 면을 칠한 막대보다 한 단계 진하게 둔다
-    val base = when {
-        week.inPeriod -> colors.accent
-        week.sparse -> colors.t4
-        else -> rest
-    }
+    val base = if (week.inPeriod) colors.accent else rest
     return when (selected) {
         null -> base
         index -> if (week.inPeriod) colors.accent else colors.t3
@@ -187,7 +179,7 @@ private fun barFraction(value: Double, low: Double, high: Double): Float =
 
 // 경기가 없는 주도 바닥 선을 남긴다. 칸이 빠지면 몇 주 전인지 셀 수 없다.
 @Composable
-private fun Bar(fraction: Float?, color: Color, sparse: Boolean, modifier: Modifier = Modifier) {
+private fun Bar(fraction: Float?, color: Color, modifier: Modifier = Modifier) {
     val shape = RoundedCornerShape(2.dp)
     Box(modifier = modifier.fillMaxHeight(), contentAlignment = Alignment.BottomCenter) {
         Box(
@@ -196,7 +188,6 @@ private fun Bar(fraction: Float?, color: Color, sparse: Boolean, modifier: Modif
                 .then(
                     when {
                         fraction == null -> Modifier.height(2.dp).background(OvalitTheme.colors.fill, shape)
-                        sparse -> Modifier.fillMaxHeight(fraction).border(1.dp, color, shape)
                         else -> Modifier.fillMaxHeight(fraction).background(color, shape)
                     },
                 ),
@@ -297,7 +288,7 @@ internal fun TrendAxis(report: WeeklyReport.Ready, modifier: Modifier = Modifier
 }
 
 /**
- * 막대 밑 안내입니다. 액트가 바뀐 곳, 테두리만 그린 막대, 점선이 있을 때만 그 뜻을 적습니다.
+ * 막대 밑 안내입니다. 액트가 바뀐 곳과 점선이 있을 때만 그 뜻을 적습니다.
  *
  * @param baselineWeeks 점선을 그었으면 그 평균의 주 수입니다.
  */
@@ -305,7 +296,6 @@ internal fun TrendAxis(report: WeeklyReport.Ready, modifier: Modifier = Modifier
 internal fun TrendNotes(report: WeeklyReport.Ready, modifier: Modifier = Modifier, baselineWeeks: Int? = null) {
     val notes = buildList {
         if (report.trend.any { it.startsNewAct }) add(stringResource(Res.string.sheet_trend_act_marker))
-        if (report.trend.any { it.sparse }) add(stringResource(Res.string.trend_sparse_note, MIN_TREND_ROUNDS))
         if (baselineWeeks != null) add(stringResource(Res.string.trend_baseline_note, baselineWeeks))
     }
     if (notes.isEmpty()) return

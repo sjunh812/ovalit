@@ -342,7 +342,7 @@ private fun ShotLegend(part: ShotPart, total: Int, stacked: Boolean, modifier: M
 }
 
 /**
- * 많이 뛴 요원 셋입니다. 판 수와 승률, KDA를 적습니다. 승률과 KDA는 S7처럼 5판 이상 뛴 요원만 띄웁니다.
+ * 많이 뛴 요원 셋입니다. 판 수와 승률, KDA를 적습니다.
  * [onOpen]이 있으면 섹션 전체가 눌립니다. 내 프로필은 내 S7을, S5는 친구 기록으로 S7을 엽니다.
  */
 @Composable
@@ -361,8 +361,8 @@ fun ProfileAgentsSection(report: AgentReport, catalog: ContentCatalog, onOpen: (
 /**
  * 요원 세 칸입니다. 내 프로필, S5, 홈이 같이 씁니다.
  *
- * @param showRecord 판 수 대신 "2승 1패"를 적습니다. 홈처럼 기간이 짧아 5판을 못 넘기는 요원이 많은 곳에 씁니다. 그때는
- * KDA를 판 수와 상관없이 기간 합계로 적습니다. 승률은 어디서나 5판 이상일 때만 붙입니다.
+ * @param showRecord 판 수 대신 "2승 1패"를 적습니다. 홈처럼 기간이 짧은 곳에 씁니다. 승률과 KDA는 판 수와 상관없이
+ * 적습니다. 견주는 숫자가 아니라 내 기록이라 표본이 적다고 가리지 않습니다(사용자 요청, 2026-10-03).
  */
 @Composable
 fun AgentTileRow(agents: List<AgentStats>, catalog: ContentCatalog, showRecord: Boolean = false) {
@@ -373,7 +373,7 @@ fun AgentTileRow(agents: List<AgentStats>, catalog: ContentCatalog, showRecord: 
         // 한 칸이라도 승률이 판 수 옆에 안 들어가면 모든 칸의 승률을 아래로 내린다
         val lines = shown.map { agent ->
             val first = agentFirstLine(agent, showRecord)
-            AnnotatedString(if (agent.isMeasurable) first + TILE_SEPARATOR + percentText(agent.winRate) else first)
+            AnnotatedString(first + TILE_SEPARATOR + percentText(agent.winRate))
         }
         val stacked = !rememberFitsOnOneLine(lines, caption, tileWidth)
         Row(horizontalArrangement = Arrangement.spacedBy(TileGap)) {
@@ -398,7 +398,7 @@ private fun AgentTile(agent: AgentStats, catalog: ContentCatalog, stacked: Boole
     val colors = OvalitTheme.colors
     val name = catalog.agentName(agent.agent)
     val matches = agentFirstLine(agent, showRecord)
-    val winRate = if (agent.isMeasurable) percentText(agent.winRate) else null
+    val winRate = percentText(agent.winRate)
     val winColor = winRateColor(agent.winRate)
 
     Column(modifier = modifier.semantics(mergeDescendants = true) {}) {
@@ -411,21 +411,21 @@ private fun AgentTile(agent: AgentStats, catalog: ContentCatalog, stacked: Boole
         SeparatedRow(
             items = listOfNotNull<@Composable () -> Unit>(
                 { OvalitText(text = matches, style = caption, color = colors.t3) },
-                winRate?.let { rate -> { OvalitText(text = rate, style = caption, color = winColor) } },
+                { OvalitText(text = winRate, style = caption, color = winColor) },
             ),
             separator = { OvalitText(text = TILE_SEPARATOR, style = caption, color = colors.t5) },
             stacked = stacked,
         )
         // 합계까지 적으면 칸이 무거워서 KDA만 둔다(사용자 결정)
-        agent.metrics.kda?.takeIf { showRecord || agent.isMeasurable }?.let { kda ->
+        agent.metrics.kda?.let { kda ->
             OvalitText(text = kdaRatioText(kda), style = caption, color = colors.t3, maxLines = 1)
         }
     }
 }
 
 /**
- * S6 위쪽 세 줄과 같은 무기입니다. 이번 액트 킬 수, 헤드샷, 라운드당 피해량을 적습니다. 헤드샷과 피해량은 S6처럼 표본을
- * 넘길 때만 띄웁니다. [onOpen]이 있으면 섹션 전체가 눌리고 S6으로 갑니다.
+ * S6 위쪽 세 줄과 같은 무기입니다. 이번 액트 킬 수, 헤드샷, 라운드당 피해량을 적습니다. [onOpen]이 있으면 섹션 전체가
+ * 눌리고 S6으로 갑니다.
  */
 @Composable
 fun ProfileWeaponsSection(report: WeaponReport, catalog: ContentCatalog, onOpen: (() -> Unit)? = null) {
@@ -465,10 +465,10 @@ private class WeaponLine(val kills: String, val headshot: String, val damage: St
 @Composable
 private fun weaponLine(weapon: WeaponStats) = WeaponLine(
     kills = stringResource(Res.string.profile_weapon_kills, weapon.kills.withThousands()),
-    headshot = stringResource(Res.string.profile_weapon_headshot, percentText(weapon.headshotRate?.takeIf { weapon.isMeasurable })),
+    headshot = stringResource(Res.string.profile_weapon_headshot, percentText(weapon.headshotRate)),
     damage = stringResource(
         Res.string.profile_weapon_damage,
-        weapon.damagePerRound?.takeIf { weapon.isCarriedMeasurable }?.let { MetricFormat.INTEGER.format(it) } ?: NO_VALUE,
+        weapon.damagePerRound?.let { MetricFormat.INTEGER.format(it) } ?: NO_VALUE,
     ),
 )
 

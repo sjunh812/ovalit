@@ -150,15 +150,15 @@ class ProfileScreensTest {
         onNodeWithText("K/D · 피해량").assertExists()
     }
 
-    // 승률처럼 5판에 못 미친 요원은 KDA도 띄우지 않는다
+    // 사용자 요청(2026-10-03): 견주는 숫자가 아니라 내 기록이라 판 수가 적어도 가리지 않는다
     @Test
-    fun `5판에 못 미친 요원 칸에는 KDA를 적지 않는다`() = runComposeUiTest {
+    fun `판 수가 적은 요원 칸에도 승률과 KDA를 적는다`() = runComposeUiTest {
         val base = ProfilePreviewData.success
         val thin = base.copy(agents = base.agents.copy(agents = base.agents.agents.filterNot { it.isMeasurable }))
         setContent { Themed { ProfileScreen(thin, {}, {}, {}, {}, {}) } }
 
         onNodeWithText("3판", useUnmergedTree = true).performScrollTo().assertExists()
-        onAllNodesWithText("KDA ", substring = true, useUnmergedTree = true).assertCountEquals(0)
+        onAllNodesWithText("KDA ", substring = true, useUnmergedTree = true).assertCountEquals(thin.agents.agents.take(3).size)
     }
 
     @Test
@@ -237,22 +237,20 @@ class ProfileScreensTest {
         onNodeWithText("60킬", useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 5판 이상 뛴 네 요원만 KDA를 적는다. 미리보기 요원은 킬·데스·어시가 라운드에 비례해서 모두 1.77이다.
     @Test
-    fun `요원 표의 줄마다 5판을 넘긴 요원에게 KDA를 적는다`() = runComposeUiTest {
+    fun `요원 표의 줄마다 판 수와 상관없이 KDA를 적는다`() = runComposeUiTest {
         setContent { Themed { AgentsScreen(ProfilePreviewData.records, onBack = {}) } }
 
-        onAllNodesWithText("KDA 1.77", useUnmergedTree = true).assertCountEquals(4)
-        // 3판뿐인 킬조이에게는 적지 않는다
-        onAllNodesWithText("KDA ", substring = true, useUnmergedTree = true).assertCountEquals(4)
+        // 3판뿐인 킬조이에게도 적어 다섯 요원 모두다
+        onAllNodesWithText("KDA ", substring = true, useUnmergedTree = true).assertCountEquals(5)
     }
 
     @Test
-    fun `5판에 못 미친 요원은 숫자 대신 표본 부족이라고 적는다`() = runComposeUiTest {
+    fun `판 수가 적은 요원도 표본 부족 대신 숫자를 적는다`() = runComposeUiTest {
         setContent { Themed { AgentsScreen(ProfilePreviewData.records, onBack = {}) } }
 
         onNodeWithText("킬조이", substring = true).assertExists()
-        onNodeWithText("표본 부족").assertExists()
+        onNodeWithText("표본 부족").assertDoesNotExist()
     }
 
     // 카탈로그는 패치 뒤에 사람이 갱신해서 새 요원이 한동안 빠져 있을 수 있다
@@ -287,33 +285,33 @@ class ProfileScreensTest {
     @Test
     fun `그 밖의 무기도 다른 계열처럼 펼쳤다가 접는다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
-        val unknownWeapon = "22/4/3"
+        val unknownWeapon = "(22/4/3)"
 
         onNodeWithText("소총").performScrollTo().performClick()
-        onNodeWithText(unknownWeapon, useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText(unknownWeapon, substring = true, useUnmergedTree = true).assertDoesNotExist()
 
         onNodeWithText("그 밖의 무기").performScrollTo().performClick()
-        onNodeWithText(unknownWeapon, useUnmergedTree = true).assertExists()
+        onNodeWithText(unknownWeapon, substring = true, useUnmergedTree = true).assertExists()
 
         onNodeWithText("그 밖의 무기").performScrollTo().performClick()
-        onNodeWithText(unknownWeapon, useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText(unknownWeapon, substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 들고 시작한 라운드가 모자라면 데스와 어시가 그 무기 몫이라고 보기 어렵다
+    // 사용자 요청(2026-10-03): 견주는 숫자가 아니라 내 기록이라 라운드가 적어도 KDA와 합계를 같이 적는다
     @Test
-    fun `들고 시작한 라운드가 모자란 무기는 KDA 없이 합계만 적는다`() = runComposeUiTest {
+    fun `들고 시작한 라운드가 적은 무기도 KDA와 합계를 적는다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
         onNodeWithText("권총").performClick()
 
-        onNodeWithText("5/7/4", useUnmergedTree = true).assertExists()
+        onNodeWithText("(5/7/4)", substring = true, useUnmergedTree = true).assertExists()
     }
 
     @Test
-    fun `두 표본이 모두 모자란 무기는 숫자 대신 표본 부족이라고 적는다`() = runComposeUiTest {
+    fun `표본이 적은 무기도 표본 부족 대신 숫자를 적는다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
         onNodeWithText("권총").performClick()
 
-        onNodeWithText("표본 부족").assertExists()
+        onAllNodesWithText("표본 부족").assertCountEquals(0)
     }
 
     // S5에서 연 친구 기록은 누구 것인지 제목에 적는다

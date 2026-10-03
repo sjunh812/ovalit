@@ -100,7 +100,6 @@ import com.ovalit.feature.profile.resources.column_first_duel_win
 import com.ovalit.feature.profile.resources.column_kast
 import com.ovalit.feature.profile.resources.column_survival
 import com.ovalit.feature.profile.resources.no_matches
-import com.ovalit.feature.profile.resources.not_enough_sample
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -390,9 +389,9 @@ private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: 
 @Composable
 private fun roleText(agent: AgentStats): String = agent.role?.let { stringResource(it.label) } ?: NO_VALUE
 
-// 승률처럼 5판 이상 뛴 요원만 KDA를 적는다
+// 사용자 요청(2026-10-03): 견주는 숫자가 아니라 내 기록이라 판 수와 상관없이 적는다
 @Composable
-private fun rowKda(agent: AgentStats): AnnotatedString? = agent.metrics.kda?.takeIf { agent.isMeasurable }?.let { kdaRatioText(it) }
+private fun rowKda(agent: AgentStats): AnnotatedString? = agent.metrics.kda?.let { kdaRatioText(it) }
 
 @Composable
 private fun HeaderCell(text: String, width: Dp, style: TextStyle) {
@@ -436,16 +435,6 @@ private fun AgentRow(agent: AgentStats, columns: List<MetricColumnSpec>, catalog
             if (stackKda && kda != null) {
                 OvalitText(text = kda, style = caption, color = OvalitTheme.colors.t3, maxLines = 1)
             }
-        }
-        if (!agent.isMeasurable) {
-            OvalitText(
-                text = stringResource(Res.string.not_enough_sample),
-                modifier = Modifier.width(WinColumn + MetricColumn * columns.size),
-                style = OvalitTheme.typography.caption,
-                color = OvalitTheme.colors.t3,
-                textAlign = TextAlign.End,
-            )
-            return@Row
         }
         val winStyle = OvalitTheme.typography.metricS.copy(fontWeight = FontWeight.Bold)
         OvalitText(

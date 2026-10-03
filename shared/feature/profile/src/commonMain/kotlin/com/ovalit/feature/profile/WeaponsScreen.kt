@@ -449,7 +449,7 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
             ) {
                 // 줄마다 KDA 줄을 따로 줄이면 킬이 많은 총만 작아진다. 계열 안의 줄이 같은 크기를 쓴다.
                 val caption = OvalitTheme.typography.caption
-                val lines = weapons.map { weapon -> kdaText(weapon.kda?.takeIf { weapon.isCarriedMeasurable }, weapon.kills, weapon.deaths, weapon.assists).annotated() }
+                val lines = weapons.map { weapon -> kdaText(weapon.kda, weapon.kills, weapon.deaths, weapon.assists).annotated() }
                 val nameWidth = currentMaxWidth - WeaponThumbWidth - OvalitSpacing.md
                 val beside = rememberFittingStyle(lines.map { it.text }, caption, nameWidth - KdColumn - DamageColumn - HeadshotColumn)
                 val below = rememberFittingStyle(lines.map { it.text }, caption, nameWidth)
@@ -591,25 +591,15 @@ private fun WeaponRow(weapon: WeaponStats, catalog: ContentCatalog, line: Annota
     }
 }
 
-// K/D와 피해량은 들고 시작한 라운드, 헤드샷은 한 무기만 쓴 라운드가 표본이다. 둘 다 모자라면 칸을 합쳐 "표본 부족"을
-// 한 번만 적고, 하나만 모자라면 그 표본을 쓰는 칸만 비운다.
+// K/D와 피해량은 들고 시작한 라운드, 헤드샷은 한 무기만 쓴 라운드로 센다. 표본이 적어도 내 기록이라 그대로 적는다(사용자
+// 요청, 2026-10-03). 계산할 라운드가 하나도 없을 때만 비운다.
 @Composable
 private fun WeaponCells(weapon: WeaponStats, modifier: Modifier = Modifier) {
     val colors = OvalitTheme.colors
     val metric = OvalitTheme.typography.metricS
-    if (!weapon.isCarriedMeasurable && !weapon.isMeasurable) {
-        OvalitText(
-            text = stringResource(Res.string.not_enough_sample),
-            modifier = modifier.width(KdColumn + DamageColumn + HeadshotColumn),
-            style = OvalitTheme.typography.caption,
-            color = colors.t3,
-            textAlign = TextAlign.End,
-        )
-        return
-    }
     Row(modifier = modifier) {
         OvalitText(
-            text = weapon.value(WeaponMetric.KD)?.let { MetricFormat.TWO_DECIMALS.format(it) } ?: NO_VALUE,
+            text = weapon.kd?.let { MetricFormat.TWO_DECIMALS.format(it) } ?: NO_VALUE,
             modifier = Modifier.width(KdColumn),
             style = metric,
             color = colors.t2,
@@ -617,7 +607,7 @@ private fun WeaponCells(weapon: WeaponStats, modifier: Modifier = Modifier) {
             maxLines = 1,
         )
         OvalitText(
-            text = weapon.damagePerRound?.takeIf { weapon.isCarriedMeasurable }?.let { MetricFormat.INTEGER.format(it) } ?: NO_VALUE,
+            text = weapon.damagePerRound?.let { MetricFormat.INTEGER.format(it) } ?: NO_VALUE,
             modifier = Modifier.width(DamageColumn),
             style = metric,
             color = colors.t2,
@@ -625,7 +615,7 @@ private fun WeaponCells(weapon: WeaponStats, modifier: Modifier = Modifier) {
             maxLines = 1,
         )
         OvalitText(
-            text = weapon.headshotRate?.takeIf { weapon.isMeasurable }?.let { percentText(it) } ?: NO_VALUE,
+            text = weapon.headshotRate?.let { percentText(it) } ?: NO_VALUE,
             modifier = Modifier.width(HeadshotColumn),
             style = metric,
             color = colors.t1,

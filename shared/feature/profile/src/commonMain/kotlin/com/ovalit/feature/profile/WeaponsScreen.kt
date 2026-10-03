@@ -458,7 +458,8 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
                 val below = rememberFittingStyle(lines.map { it.text }, caption, nameWidth)
                 // 세 칸 옆에 맞춘 KDA 줄 크기가 원래의 80%보다 작으면 계열 안의 모든 줄에서 세 칸을 이름 밑으로 내린다
                 val stacked = beside.fontSize.value < caption.fontSize.value * MIN_KDA_SCALE
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                // 이름과 KDA 두 줄짜리 줄이라 10dp로는 붙어 보였다(사용자 요청, 2026-10-03)
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     WeaponColumns()
                     weapons.forEachIndexed { index, weapon ->
                         WeaponRow(weapon, catalog, lines[index], if (stacked) below else beside, stacked)

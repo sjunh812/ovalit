@@ -46,6 +46,7 @@ class DataStoreUserPreferencesRepository(
                 notifyWeeklyReport = stored[Keys.notifyWeeklyReport] ?: default.notifyWeeklyReport,
                 notifyPing = stored[Keys.notifyPing] ?: default.notifyPing,
                 focus = stored[Keys.focus].toEnumOr(default.focus),
+                seenProfileHint = stored[Keys.seenProfileHint] ?: default.seenProfileHint,
             )
         }
 
@@ -63,6 +64,8 @@ class DataStoreUserPreferencesRepository(
 
     override suspend fun setFocus(focus: Focus) = set(Keys.focus, focus.name)
 
+    override suspend fun setSeenProfileHint() = set(Keys.seenProfileHint, true)
+
     private suspend fun <T> set(key: Preferences.Key<T>, value: T) {
         dataStore.edit { it[key] = value }
     }
@@ -76,6 +79,7 @@ class DataStoreUserPreferencesRepository(
         val notifyWeeklyReport = booleanPreferencesKey("notify_weekly_report")
         val notifyPing = booleanPreferencesKey("notify_ping")
         val focus = stringPreferencesKey("focus")
+        val seenProfileHint = booleanPreferencesKey("seen_profile_hint")
     }
 }
 

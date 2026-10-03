@@ -52,6 +52,7 @@ class DataStoreUserPreferencesRepositoryTest {
         repository.setNotifyAnalysisDone(false)
         repository.setNotifyWeeklyReport(false)
         repository.setFocus(Focus.ROUND_PLAY)
+        repository.setSeenProfileHint()
 
         assertEquals(
             UserPreferences(
@@ -61,6 +62,7 @@ class DataStoreUserPreferencesRepositoryTest {
                 notifyAnalysisDone = false,
                 notifyWeeklyReport = false,
                 focus = Focus.ROUND_PLAY,
+                seenProfileHint = true,
             ),
             repository.preferences.first(),
         )

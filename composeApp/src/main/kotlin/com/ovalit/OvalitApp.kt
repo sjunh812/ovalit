@@ -243,6 +243,7 @@ fun OvalitApp(appVersion: String, openPing: Flow<String> = emptyFlow()) {
                         SettingsRoute(
                             appVersion = appVersion,
                             onUnlinked = { backStack.replaceAllWith(Intro) },
+                            onOpenProfile = { backStack.openProfile() },
                         )
                     }
                 }

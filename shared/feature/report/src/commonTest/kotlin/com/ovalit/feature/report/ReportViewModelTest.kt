@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -84,6 +85,17 @@ class ReportViewModelTest {
         val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
 
         assertEquals(ReportUiState.Loading, viewModel.uiState.value)
+    }
+
+    @Test
+    fun `내 프로필 안내는 띄웠다고 적으면 다시 띄우지 않는다`() = runTest {
+        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.profileHint.collect() }
+
+        assertTrue(viewModel.profileHint.value)
+        viewModel.markProfileHintSeen()
+        advanceUntilIdle()
+        assertFalse(viewModel.profileHint.value)
     }
 
     // 메인 스레드에서 세면 첫 수집 뒤 홈으로 넘어가는 전환이 멈춘다
@@ -404,4 +416,6 @@ private class StubPreferences(initial: UserPreferences = UserPreferences.Default
     override suspend fun setNotifyPing(enabled: Boolean) = Unit
 
     override suspend fun setFocus(focus: Focus) = Unit
+
+    override suspend fun setSeenProfileHint() = preferences.update { it.copy(seenProfileHint = true) }
 }

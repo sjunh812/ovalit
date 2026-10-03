@@ -418,6 +418,44 @@ class ReportScreenTest {
         assertTrue(widths.max() - widths.min() <= 1.dp, "$widths")
     }
 
+    // 사용자 요청(2026-10-03): 오른쪽 위 아바타 하나로는 누르면 내 프로필이 열린다는 걸 알기 어렵다
+    @Test
+    fun `내 프로필 안내는 한 번 띄우고 누르면 닫는다`() = runComposeUiTest {
+        var shown = 0
+        setContent {
+            OvalitTheme {
+                ReportScreen(
+                    uiState = ReportUiState.Success(QueueFilter.COMPETITIVE_AND_UNRATED, ReportPreviewData.moved),
+                    onSelectQueue = {},
+                    badge = PlayerBadge("오발러#KR1", tier = 16, tierName = "플래티넘 2"),
+                    profileHint = true,
+                    onProfileHintShown = { shown++ },
+                )
+            }
+        }
+
+        onNodeWithText("내 프로필은 여기서 볼 수 있어요").assertExists()
+        assertEquals(1, shown)
+
+        onNodeWithText("내 프로필은 여기서 볼 수 있어요").performClick()
+        onNodeWithText("내 프로필은 여기서 볼 수 있어요").assertDoesNotExist()
+    }
+
+    @Test
+    fun `내 프로필 안내를 띄운 적이 있으면 두지 않는다`() = runComposeUiTest {
+        setContent {
+            OvalitTheme {
+                ReportScreen(
+                    uiState = ReportUiState.Success(QueueFilter.COMPETITIVE_AND_UNRATED, ReportPreviewData.moved),
+                    onSelectQueue = {},
+                    badge = PlayerBadge("오발러#KR1", tier = 16, tierName = "플래티넘 2"),
+                )
+            }
+        }
+
+        onNodeWithText("내 프로필은 여기서 볼 수 있어요").assertDoesNotExist()
+    }
+
     @Test
     fun `오른쪽 위 아바타를 누르면 내 프로필을 연다`() = runComposeUiTest {
         var opened = false

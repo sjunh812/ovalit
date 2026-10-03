@@ -53,6 +53,8 @@ object OvalitIcons {
 
     val Plus: ImageVector by lazy { strokeIcon("M10 4v12M4 10h12", strokeWidth = 1.8f) }
 
+    val Close: ImageVector by lazy { strokeIcon("M5 5l10 10M15 5L5 15", strokeWidth = 1.8f) }
+
     val Back: ImageVector by lazy { strokeIcon("M12 4l-6 6 6 6", strokeWidth = 1.8f) }
 
     val Check: ImageVector by lazy { strokeIcon("M4 10.5l4 4 8-9", strokeWidth = 2f) }

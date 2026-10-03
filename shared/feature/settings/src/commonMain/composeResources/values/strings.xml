@@ -4,6 +4,8 @@
 
     <string name="account_linked">Riot 계정 연동됨 · %1$d월 %2$d일</string>
     <string name="account_unlinked">Riot 계정이 연동되지 않았어요</string>
+    <string name="view_profile">프로필 보기</string>
+    <string name="open_profile">내 프로필 열기</string>
 
     <string name="section_public">공개</string>
     <string name="stats_public">전적 공개</string>

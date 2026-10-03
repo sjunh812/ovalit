@@ -148,4 +148,6 @@ internal class StubPreferences(initial: UserPreferences = UserPreferences.Defaul
     override suspend fun setNotifyPing(enabled: Boolean) = Unit
 
     override suspend fun setFocus(focus: Focus) = Unit
+
+    override suspend fun setSeenProfileHint() = Unit
 }

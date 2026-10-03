@@ -15,6 +15,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -58,7 +60,12 @@ private val TierEmblemSize = 16.dp
 private val ProfileTouchSize = 44.dp
 
 @Composable
-internal fun ReportTopBar(badge: PlayerBadge?, onOpenProfile: () -> Unit, modifier: Modifier = Modifier) {
+internal fun ReportTopBar(
+    badge: PlayerBadge?,
+    onOpenProfile: () -> Unit,
+    modifier: Modifier = Modifier,
+    onAvatarPositioned: ((LayoutCoordinates) -> Unit)? = null,
+) {
     val appName = stringResource(DesignSystemRes.string.app_name)
 
     OvalitTabHeader(
@@ -83,7 +90,11 @@ internal fun ReportTopBar(badge: PlayerBadge?, onOpenProfile: () -> Unit, modifi
                         emblemSize = TierEmblemSize,
                         modifier = Modifier.padding(end = 10.dp),
                     )
-                    PlayerAvatar(riotId = badge.riotId, size = AvatarSize)
+                    PlayerAvatar(
+                        riotId = badge.riotId,
+                        size = AvatarSize,
+                        modifier = if (onAvatarPositioned != null) Modifier.onGloballyPositioned(onAvatarPositioned) else Modifier,
+                    )
                 }
             }
         },

@@ -184,4 +184,6 @@
     <string name="record_draw">무</string>
     <string name="picks_agents">%1$s 요원</string>
     <string name="picks_weapons">%1$s 무기</string>
+    <string name="profile_hint">내 프로필은 여기서 볼 수 있어요</string>
+    <string name="profile_hint_close">안내 닫기</string>
 </resources>

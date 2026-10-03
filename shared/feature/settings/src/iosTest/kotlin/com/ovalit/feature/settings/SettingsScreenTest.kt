@@ -46,6 +46,17 @@ class SettingsScreenTest {
         onNodeWithText("Riot 계정 연동됨 · 9월 19일").assertExists()
     }
 
+    // 사용자 요청(2026-10-03): 홈 오른쪽 위 말고도 내 프로필로 가는 길을 둔다
+    @Test
+    fun `맨 위 계정 줄을 누르면 내 프로필을 연다`() = runComposeUiTest {
+        var opened = false
+        setContent { Settings(actions = SettingsActions(onOpenProfile = { opened = true })) }
+
+        onNodeWithText("프로필 보기").performClick()
+
+        assertTrue(opened)
+    }
+
     @Test
     fun `전적 공개는 켜져 있고 누르면 끈다`() = runComposeUiTest {
         var statsPublic: Boolean? = null

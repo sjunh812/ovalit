@@ -170,4 +170,6 @@ private class InMemoryPreferences : UserPreferencesRepository {
     override suspend fun setNotifyPing(enabled: Boolean) = preferences.update { it.copy(notifyPing = enabled) }
 
     override suspend fun setFocus(focus: Focus) = preferences.update { it.copy(focus = focus) }
+
+    override suspend fun setSeenProfileHint() = preferences.update { it.copy(seenProfileHint = true) }
 }

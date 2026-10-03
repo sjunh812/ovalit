@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -106,7 +107,7 @@ data class FriendStanding(
 class ReportViewModel(
     private val matchRepository: MatchRepository,
     accountRepository: AccountRepository,
-    preferencesRepository: UserPreferencesRepository,
+    private val preferencesRepository: UserPreferencesRepository,
     private val friendRepository: FriendRepository,
     contentRepository: ContentRepository,
     private val clock: Clock,
@@ -185,6 +186,18 @@ class ReportViewModel(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = ReportUiState.Loading,
     )
+
+    /**
+     * 오른쪽 위에 "내 프로필은 여기서 볼 수 있어요"를 띄울지입니다. 한 번 띄우면 [markProfileHintSeen]으로 적어 두고 다시 띄우지
+     * 않습니다. 오른쪽 위 아바타 하나로는 내 프로필을 찾기 어려웠습니다(사용자 요청, 2026-10-03).
+     */
+    val profileHint: StateFlow<Boolean> = preferencesRepository.preferences
+        .map { !it.seenProfileHint }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initialValue = false)
+
+    fun markProfileHintSeen() {
+        viewModelScope.launch { preferencesRepository.setSeenProfileHint() }
+    }
 
     /** 요원과 무기 이름을 찾는 카탈로그입니다. 받기 전에는 비어 있어 "알 수 없는 요원", "알 수 없는 무기"가 뜹니다. */
     val catalog: StateFlow<ContentCatalog> =

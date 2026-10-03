@@ -36,6 +36,13 @@ android {
                 "proguard-rules.pro",
             )
         }
+        // 릴리스처럼 줄이고 최적화하되 디버그 키로 서명한다. 개발 기기에서 사용자가 느낄 속도를 볼 때 Build Variants에서
+        // 고른다. 디버그 빌드는 Compose가 몇 배 느려서 릴리스에 없는 끊김이 보인다.
+        create("benchmark") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+        }
     }
 }
 

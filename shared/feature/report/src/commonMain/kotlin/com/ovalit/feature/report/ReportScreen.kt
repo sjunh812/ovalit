@@ -1,7 +1,6 @@
 package com.ovalit.feature.report
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitPullToRefresh
+import com.ovalit.core.designsystem.component.OvalitStage
+import com.ovalit.core.designsystem.component.OvalitStaged
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.rememberContentShown
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -107,49 +108,52 @@ internal fun ReportScreen(
     onOpenWeapons: () -> Unit = {},
 ) {
     // 첫 수집 뒤 홈으로 넘어오면 리포트가 전환 한가운데 도착한다. 그때 홈 전체를 그리면 밀려 들어오던 화면이 한 번
-    // 멈춰서, 다 들어올 때까지 스켈레톤을 둔다.
+    // 멈춰서, 다 들어올 때까지 스켈레톤을 둔다. 다 들어온 뒤에도 한 프레임에 다 그리면 그 프레임이 200ms 가까이 걸려 묶음마다
+    // 나눠 그린다.
     val shown = rememberContentShown(loaded = uiState is ReportUiState.Success)
-    Box(
+    OvalitStaged(
+        ready = uiState is ReportUiState.Success && shown,
         modifier = modifier
             .fillMaxSize()
             .background(OvalitTheme.colors.bg),
-    ) {
-        when {
-            // 빈 화면 대신 홈 모양대로 자리만 잡아 둔다
-            uiState !is ReportUiState.Success || !shown -> Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+        // 빈 화면 대신 홈 모양대로 자리만 잡아 둔다
+        placeholder = {
+            Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
                 ReportTopBar(badge = badge, onOpenProfile = onOpenProfile)
                 Spacer(Modifier.height(OvalitSpacing.xs))
                 ReportSkeleton()
             }
-            else -> OvalitPullToRefresh(
-                isRefreshing = isRefreshing,
-                onRefresh = onRefresh,
-                modifier = Modifier.fillMaxSize().safeDrawingPadding(),
-            ) {
-                Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                    ReportTopBar(badge = badge, onOpenProfile = onOpenProfile)
-                    Spacer(Modifier.height(OvalitSpacing.xs))
-                    QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
-                    Spacer(Modifier.height(OvalitSpacing.md))
+        },
+    ) {
+        if (uiState !is ReportUiState.Success) return@OvalitStaged
+        OvalitPullToRefresh(
+            isRefreshing = isRefreshing,
+            onRefresh = onRefresh,
+            modifier = Modifier.fillMaxSize().safeDrawingPadding(),
+        ) {
+            Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                ReportTopBar(badge = badge, onOpenProfile = onOpenProfile)
+                Spacer(Modifier.height(OvalitSpacing.xs))
+                QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
+                Spacer(Modifier.height(OvalitSpacing.md))
 
-                    when (val report = uiState.report) {
-                        is WeeklyReport.Ready -> ReportContent(
-                            report = report,
-                            queueFilter = uiState.queueFilter,
-                            rival = uiState.rival,
-                            friends = uiState.friends,
-                            nudge = uiState.nudge,
-                            onShareInvite = onShareInvite,
-                            onSelectRival = onSelectRival,
-                            catalog = catalog,
-                            onOpenAgents = onOpenAgents,
-                            onOpenWeapons = onOpenWeapons,
-                        )
-                        is WeeklyReport.NotEnoughMatches -> NotEnoughMatches(played = report.played)
-                    }
-
-                    Spacer(Modifier.height(OvalitSpacing.xxl))
+                when (val report = uiState.report) {
+                    is WeeklyReport.Ready -> ReportContent(
+                        report = report,
+                        queueFilter = uiState.queueFilter,
+                        rival = uiState.rival,
+                        friends = uiState.friends,
+                        nudge = uiState.nudge,
+                        onShareInvite = onShareInvite,
+                        onSelectRival = onSelectRival,
+                        catalog = catalog,
+                        onOpenAgents = onOpenAgents,
+                        onOpenWeapons = onOpenWeapons,
+                    )
+                    is WeeklyReport.NotEnoughMatches -> NotEnoughMatches(played = report.played)
                 }
+
+                Spacer(Modifier.height(OvalitSpacing.xxl))
             }
         }
     }
@@ -173,45 +177,54 @@ private fun ReportContent(
     var openDynamic by rememberSaveable { mutableStateOf<DynamicMetric?>(null) }
     var pickingRival by rememberSaveable { mutableStateOf(false) }
 
-    PeriodHeader(report)
-    Spacer(Modifier.height(OvalitSpacing.md))
-    RecordStrip(report)
+    // 한 프레임에 한 묶음씩 그린다. 무거운 칸(고정 칸, 달라진 점, 요원·무기)은 따로 묶는다.
+    OvalitStage {
+        PeriodHeader(report)
+        Spacer(Modifier.height(OvalitSpacing.md))
+        RecordStrip(report)
+    }
     Spacer(Modifier.height(OvalitSpacing.lg))
-    FixedMetricRow(
-        metrics = report.metrics,
-        baseline = report.baseline,
-        fixedMetrics = queueFilter.fixedMetrics,
-        onOpenMetric = { openMetric = it },
-    )
-    Spacer(Modifier.height(10.dp))
-    FixedMetricSummary(baseline = report.baseline)
+    OvalitStage {
+        FixedMetricRow(
+            metrics = report.metrics,
+            baseline = report.baseline,
+            fixedMetrics = queueFilter.fixedMetrics,
+            onOpenMetric = { openMetric = it },
+        )
+        Spacer(Modifier.height(10.dp))
+        FixedMetricSummary(baseline = report.baseline)
+    }
     // 짚을 점과 개선 포인트는 바로 위 숫자를 풀어 말하는 문장이라 선과 제목 없이 붙인다. 선은 큰 묶음 사이에만
     // 긋는다(CLAUDE.md 화면).
     if (queueFilter.hasDynamicMetrics) {
         // 보이는 차이가 0이면 짚을 점이 그려지지 않으니 띄우는 것도 그 안에서 한다
-        report.note?.let { note -> WeekNoteLines(note = note, catalog = catalog, modifier = Modifier.padding(top = 18.dp)) }
+        report.note?.let { note ->
+            OvalitStage { WeekNoteLines(note = note, catalog = catalog, modifier = Modifier.padding(top = 18.dp)) }
+        }
     }
     // 짚을 점은 바로 위 숫자를 풀어 말해서 숫자에 붙여 두고, 흐름을 보는 입구는 그 뒤에 둔다
-    TrendEntry(
-        report = report,
-        metric = queueFilter.fixedMetrics.first(),
-        onClick = { openTrend = true },
-        modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = 16.dp),
-    )
+    OvalitStage {
+        TrendEntry(
+            report = report,
+            metric = queueFilter.fixedMetrics.first(),
+            onClick = { openTrend = true },
+            modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = 16.dp),
+        )
+    }
     Spacer(Modifier.height(22.dp))
 
     if (queueFilter.hasDynamicMetrics) {
-        DynamicMetricSection(report, onOpenMetric = { openDynamic = it })
+        OvalitStage { DynamicMetricSection(report, onOpenMetric = { openDynamic = it }) }
         report.insight?.let { insight ->
-            InsightSection(insight = insight, role = report.mainRole, period = report.period, catalog = catalog)
+            OvalitStage { InsightSection(insight = insight, role = report.mainRole, period = report.period, catalog = catalog) }
         }
         // S6과 S7이 경쟁 + 일반만 보니 기타 모드에는 두지 않는다
-        PeriodPicksSection(report, catalog, onOpenAgents = onOpenAgents, onOpenWeapons = onOpenWeapons)
+        OvalitStage { PeriodPicksSection(report, catalog, onOpenAgents = onOpenAgents, onOpenWeapons = onOpenWeapons) }
         rival?.let {
             Spacer(Modifier.height(20.dp))
             HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
             Spacer(Modifier.height(18.dp))
-            RivalSection(report = report, mine = report.metrics, rival = it)
+            OvalitStage { RivalSection(report = report, mine = report.metrics, rival = it) }
         }
         nudge?.let {
             Spacer(Modifier.height(24.dp))
@@ -230,7 +243,7 @@ private fun ReportContent(
             Spacer(Modifier.height(20.dp))
             HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
             Spacer(Modifier.height(18.dp))
-            FriendRankingSection(mine = report.metrics, friends = friends)
+            OvalitStage { FriendRankingSection(mine = report.metrics, friends = friends) }
         }
     } else {
         HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))

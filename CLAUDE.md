@@ -559,14 +559,16 @@ MaterialTheme은 `OvalitTheme` 안에 우리 토큰을 옮겨 담아 같이 깐�
 
 ### 로고
 
-초성 `ㅇㅂㅇ`. 획 11, ㅂ 아래 모서리 반경 8, ㅇ 기준으로 ㅂ을 8.5 내린다.
+초성 `ㅇㅂㅇ`. 획 10, 끝은 자르고(butt) 꺾이는 곳만 살짝 둥글린다(round join). ㅇ은 폭 34, 높이 36에 모서리를 8씩 깎은
+팔각이고, ㅂ은 아래 두 모서리를 ㅇ처럼 8씩 깎는다. 한쪽만 깎으면 잘린 것처럼 보였다. ㅂ은 ㅇ보다 4 내린다. 둥근 획과 동그라미 ㅇ은 귀엽게 읽혀서 발로란트 화면의 각진
+선을 따랐다(사용자 결정, 2026-10-03). 다섯 시안 가운데 고른 각진 안에서 기울임을 빼고 획을 13에서 10으로 줄였다.
 
 ```
-viewBox 0 0 160 74, stroke-width 11, linecap/linejoin round
-circle cx=27  cy=32.5 r=17.5
-path   M61.5 23v28a8 8 0 0 0 8 8h21a8 8 0 0 0 8-8V23
-path   M61.5 37.5h37
-circle cx=133 cy=32.5 r=17.5
+viewBox 0 0 160 76, stroke-width 10, linecap butt, linejoin round
+path M18 18H36L44 26V46L36 54H18L10 46V26Z
+path M63 17V50L71 58H89L97 50V17
+path M63 38H97
+path M124 18H142L150 26V46L142 54H124L116 46V26Z
 ```
 
 적응형 아이콘은 `--accent` 바탕에 `--on-accent` 마크다. 아이콘은 면을 칠하는 자리라 버튼과

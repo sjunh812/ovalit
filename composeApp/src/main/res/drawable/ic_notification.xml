@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   알림 작은 아이콘입니다. 시스템이 모양만 쓰고 색은 덮어써서 흰색 한 가지로 그립니다.
-  24dp 캔버스에 마크 폭 22dp. scale = 22 / 160 = 0.1375, translate = (1, (24 - 74*0.1375)/2)
+  24dp 캔버스에 마크 폭 22dp. scale = 22 / 160 = 0.1375, translate = (1, (24 - 76*0.1375)/2)
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
@@ -13,34 +13,34 @@
         android:scaleX="0.1375"
         android:scaleY="0.1375"
         android:translateX="1"
-        android:translateY="6.91">
+        android:translateY="6.78">
 
         <path
-            android:pathData="M9.5,32.5a17.5,17.5 0 1,0 35,0a17.5,17.5 0 1,0 -35,0"
+            android:pathData="M18,18H36L44,26V46L36,54H18L10,46V26Z"
             android:strokeColor="#FFFFFFFF"
-            android:strokeLineCap="round"
+            android:strokeLineCap="butt"
             android:strokeLineJoin="round"
-            android:strokeWidth="11" />
+            android:strokeWidth="10" />
 
         <path
-            android:pathData="M61.5,23v28a8,8 0 0 0 8,8h21a8,8 0 0 0 8,-8V23"
+            android:pathData="M63,17V50L71,58H89L97,50V17"
             android:strokeColor="#FFFFFFFF"
-            android:strokeLineCap="round"
+            android:strokeLineCap="butt"
             android:strokeLineJoin="round"
-            android:strokeWidth="11" />
+            android:strokeWidth="10" />
 
         <path
-            android:pathData="M61.5,37.5h37"
+            android:pathData="M63,38H97"
             android:strokeColor="#FFFFFFFF"
-            android:strokeLineCap="round"
+            android:strokeLineCap="butt"
             android:strokeLineJoin="round"
-            android:strokeWidth="11" />
+            android:strokeWidth="10" />
 
         <path
-            android:pathData="M115.5,32.5a17.5,17.5 0 1,0 35,0a17.5,17.5 0 1,0 -35,0"
+            android:pathData="M124,18H142L150,26V46L142,54H124L116,46V26Z"
             android:strokeColor="#FFFFFFFF"
-            android:strokeLineCap="round"
+            android:strokeLineCap="butt"
             android:strokeLineJoin="round"
-            android:strokeWidth="11" />
+            android:strokeWidth="10" />
     </group>
 </vector>

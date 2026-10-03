@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -19,89 +18,56 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 // 같은 마크를 네 군데서 따로 그린다. 여기, 런처 아이콘(ic_launcher_foreground.xml), 스플래시(ic_splash_mark.xml),
 // 알림 작은 아이콘(ic_notification.xml). 하나를 고치면 나머지도 같이 고친다.
 private const val VIEW_BOX_WIDTH = 160f
-private const val VIEW_BOX_HEIGHT = 74f
-private const val STROKE_WIDTH = 11f
+private const val VIEW_BOX_HEIGHT = 76f
+private const val STROKE_WIDTH = 10f
 
-private const val CIRCLE_RADIUS = 17.5f
-private const val CIRCLE_CENTER_Y = 32.5f
-private const val LEFT_CIRCLE_X = 27f
-private const val RIGHT_CIRCLE_X = 133f
-
-private const val BIEUP_LEFT = 61.5f
-private const val BIEUP_RIGHT = 98.5f
-private const val BIEUP_TOP = 23f
-private const val BIEUP_BAR_Y = 37.5f
-private const val BIEUP_BOTTOM = 59f
-private const val BIEUP_CORNER = 8f
-
+/**
+ * 초성 ㅇㅂㅇ입니다. ㅇ은 모서리를 깎은 팔각이고 ㅂ은 아래 두 모서리를 ㅇ처럼 깎아 ㅇ보다 4 내립니다. 획 끝은 자르고 꺾이는
+ * 곳만 살짝 둥글립니다. 둥근 획과 동그라미 ㅇ은 귀엽게 읽혀서 발로란트 화면의 각진 선을 따랐습니다(사용자 결정, 2026-10-03).
+ */
 @Composable
 fun OvalitLogo(
     modifier: Modifier = Modifier,
     color: Color = OvalitTheme.colors.t1,
 ) {
-    val bieup = remember { buildBieupPath() }
+    val paths = remember { logoPaths() }
 
     Canvas(modifier = modifier.aspectRatio(VIEW_BOX_WIDTH / VIEW_BOX_HEIGHT)) {
         val ratio = size.width / VIEW_BOX_WIDTH
-        val stroke = Stroke(
-            width = STROKE_WIDTH,
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round,
-        )
-
+        val stroke = Stroke(width = STROKE_WIDTH, cap = StrokeCap.Butt, join = StrokeJoin.Round)
         scale(scaleX = ratio, scaleY = ratio, pivot = Offset.Zero) {
-            drawCircle(
-                color = color,
-                radius = CIRCLE_RADIUS,
-                center = Offset(LEFT_CIRCLE_X, CIRCLE_CENTER_Y),
-                style = stroke,
-            )
-            drawPath(path = bieup, color = color, style = stroke)
-            drawLine(
-                color = color,
-                start = Offset(BIEUP_LEFT, BIEUP_BAR_Y),
-                end = Offset(BIEUP_RIGHT, BIEUP_BAR_Y),
-                strokeWidth = STROKE_WIDTH,
-                cap = StrokeCap.Round,
-            )
-            drawCircle(
-                color = color,
-                radius = CIRCLE_RADIUS,
-                center = Offset(RIGHT_CIRCLE_X, CIRCLE_CENTER_Y),
-                style = stroke,
-            )
+            paths.forEach { drawPath(path = it, color = color, style = stroke) }
         }
     }
 }
 
-private fun buildBieupPath(): Path {
-    val cornerTop = BIEUP_BOTTOM - BIEUP_CORNER
-    return Path().apply {
-        moveTo(BIEUP_LEFT, BIEUP_TOP)
-        lineTo(BIEUP_LEFT, cornerTop)
-        arcTo(
-            rect = Rect(
-                left = BIEUP_LEFT,
-                top = cornerTop - BIEUP_CORNER,
-                right = BIEUP_LEFT + BIEUP_CORNER * 2,
-                bottom = BIEUP_BOTTOM,
-            ),
-            startAngleDegrees = 180f,
-            sweepAngleDegrees = -90f,
-            forceMoveTo = false,
-        )
-        lineTo(BIEUP_RIGHT - BIEUP_CORNER, BIEUP_BOTTOM)
-        arcTo(
-            rect = Rect(
-                left = BIEUP_RIGHT - BIEUP_CORNER * 2,
-                top = cornerTop - BIEUP_CORNER,
-                right = BIEUP_RIGHT,
-                bottom = BIEUP_BOTTOM,
-            ),
-            startAngleDegrees = 90f,
-            sweepAngleDegrees = -90f,
-            forceMoveTo = false,
-        )
-        lineTo(BIEUP_RIGHT, BIEUP_TOP)
-    }
+private fun logoPaths(): List<Path> = listOf(
+    octagon(left = 10f),
+    // ㅂ: 위가 열린 세로 두 획과 밑 획. 아래 두 모서리를 ㅇ처럼 8씩 깎는다. 한쪽만 깎으면 잘린 것처럼 보였다.
+    Path().apply {
+        moveTo(63f, 17f)
+        lineTo(63f, 50f)
+        lineTo(71f, 58f)
+        lineTo(89f, 58f)
+        lineTo(97f, 50f)
+        lineTo(97f, 17f)
+    },
+    Path().apply {
+        moveTo(63f, 38f)
+        lineTo(97f, 38f)
+    },
+    octagon(left = 116f),
+)
+
+// 폭 34, 높이 36에 모서리를 8씩 깎은 ㅇ이다
+private fun octagon(left: Float): Path = Path().apply {
+    moveTo(left + 8f, 18f)
+    lineTo(left + 26f, 18f)
+    lineTo(left + 34f, 26f)
+    lineTo(left + 34f, 46f)
+    lineTo(left + 26f, 54f)
+    lineTo(left + 8f, 54f)
+    lineTo(left, 46f)
+    lineTo(left, 26f)
+    close()
 }

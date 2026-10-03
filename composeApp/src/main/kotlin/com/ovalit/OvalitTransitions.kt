@@ -4,7 +4,7 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -24,6 +24,11 @@ import androidx.navigation3.ui.NavDisplay
 private const val SLIDE_MILLIS = 300
 private const val PARALLAX_DIVISOR = 4
 
+// 들어갈 때와 나갈 때 같은 곡선을 쓴다. 빠르게 출발해 부드럽게 멈춘다. 처음에는 FastOutSlowIn이었는데, 천천히 출발하는 곡선이라
+// 나가는 화면은 움직임이 보이는 출발 구간이 느려 들어올 때보다 굼뜨게 느껴졌다(사용자 요청, 2026-10-03). 들어오는 화면은 멈추는
+// 끝 구간이 보여서 몰랐다.
+private val SlideEasing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
+
 // 다크 바탕은 검은색에 가까워 조금 어둡게 해서는 두 화면이 갈리지 않는다. 그래서 글자까지 눈에 띄게 어둡게 한다.
 private const val LIGHT_DIMMED_ALPHA = 0.9f
 private const val DARK_DIMMED_ALPHA = 0.6f
@@ -33,8 +38,8 @@ internal fun dimmedAlpha(isDark: Boolean): Float = if (isDark) DARK_DIMMED_ALPHA
 
 /** 새 화면을 쌓을 때의 전환입니다. */
 internal fun <T : Any> pushTransition(dimmedAlpha: Float): AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform = {
-    val spec = tween<Float>(SLIDE_MILLIS, easing = FastOutSlowInEasing)
-    val offset = tween<IntOffset>(SLIDE_MILLIS, easing = FastOutSlowInEasing)
+    val spec = tween<Float>(SLIDE_MILLIS, easing = SlideEasing)
+    val offset = tween<IntOffset>(SLIDE_MILLIS, easing = SlideEasing)
     ContentTransform(
         targetContentEnter = slideInHorizontally(offset) { it },
         initialContentExit = slideOutHorizontally(offset) { -it / PARALLAX_DIVISOR } + fadeOut(spec, targetAlpha = dimmedAlpha),
@@ -57,7 +62,7 @@ internal fun <T : Any> predictivePopTransition(dimmedAlpha: Float):
 }
 
 private fun slideBack(easedSpec: Boolean, dimmedAlpha: Float): ContentTransform {
-    val easing = if (easedSpec) FastOutSlowInEasing else LinearEasing
+    val easing = if (easedSpec) SlideEasing else LinearEasing
     val spec = tween<Float>(SLIDE_MILLIS, easing = easing)
     val offset = tween<IntOffset>(SLIDE_MILLIS, easing = easing)
     return ContentTransform(

@@ -72,7 +72,8 @@ fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Co
     val colors = OvalitTheme.colors
     val top = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding()
     Box(modifier = modifier.fillMaxWidth()) {
-        Box(modifier = Modifier.fillMaxWidth().height(top + BannerHeight).background(colors.card)) {
+        // 카드 그림이 올 자리라 다른 그림 자리처럼 `--fill`로 칠한다. 카드 색을 쓰면 라이트에서 흰 띠로 보였다(사용자 요청, 2026-10-03).
+        Box(modifier = Modifier.fillMaxWidth().height(top + BannerHeight).background(colors.fill)) {
             Box(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)), content = topBar)
         }
         PlayerAvatar(

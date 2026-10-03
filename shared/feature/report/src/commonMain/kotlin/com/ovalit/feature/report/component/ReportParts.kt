@@ -3,24 +3,34 @@ package com.ovalit.feature.report.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.LineBreak
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.ui.MetricFormat
+import com.ovalit.core.ui.rememberFittingStyle
+import com.ovalit.core.ui.shrinkToFit
 
 @Composable
 internal fun VerticalLine() {
@@ -90,6 +100,72 @@ internal fun TitleWithCaption(
                 style = OvalitTheme.typography.caption,
                 color = OvalitTheme.colors.t3,
             )
+        }
+    }
+}
+
+// 목업은 옆으로 밀지만 세 번째 칸이 화면 끝에서 잘려 숫자가 끊긴다. 한 줄에 세 칸씩 폭을 나누고 넘치면 다음 줄로
+// 넘긴다(DECISIONS 2026-09-25). 고정 칸도 같은 격자다(사용자 결정, 2026-10-03). 두 카드의 칸 경계가 위아래로 맞는다.
+internal const val MetricColumns = 3
+internal val MetricColumnGap = 14.dp
+internal val MetricRowGap = 20.dp
+
+// 이름 뒤 간격 3dp와 화살표 10dp를 더한 폭이다
+internal val ChevronSpace = 13.dp
+
+/**
+ * 칸 숫자 밑 한 줄의 글꼴입니다. 변화량과 "평소 177"을 나란히 두고, 한 칸이라도 안 들어가면 모든 칸에서 두 줄로 내립니다.
+ * 한 칸만 내리면 그 칸만 높아져 줄이 어긋납니다.
+ */
+internal class MetricSubLineStyle(val change: TextStyle, val usual: TextStyle, val stacked: Boolean)
+
+/** @param cells 칸마다 변화량과 평소 값 글자입니다. */
+@Composable
+internal fun rememberSubLineStyle(cells: List<Pair<String?, String>>, width: Dp): MetricSubLineStyle {
+    val typography = OvalitTheme.typography
+    // 사용자 요청(2026-10-03): 변화량이 숫자 옆에서 크게 보였다. 숫자 밑에 평소 값보다 한 단계 작게 둔다.
+    val change = typography.metricS.copy(fontSize = 11.sp, lineHeight = 16.sp)
+    val usual = rememberFittingStyle(cells.map { it.second }, typography.caption, width)
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val stacked = remember(cells, change, usual, width, density, measurer) {
+        val available = with(density) { width.toPx() }
+        val gap = with(density) { SubLineGap.toPx() }
+        cells.any { (delta, normal) ->
+            if (delta == null) return@any false
+            val deltaWidth = measurer.measure(delta, change, softWrap = false, maxLines = 1).size.width
+            val normalWidth = measurer.measure(normal, usual, softWrap = false, maxLines = 1).size.width
+            deltaWidth + gap + normalWidth > available
+        }
+    }
+    return MetricSubLineStyle(change, usual, stacked)
+}
+
+private val SubLineGap = 6.dp
+
+/** 고정 칸과 달라진 점 칸의 숫자 밑 한 줄입니다. 변화량이 없으면 평소 값만 둡니다. */
+@Composable
+internal fun MetricSubLine(change: String?, changeColor: Color, usual: String, style: MetricSubLineStyle) {
+    val usualText: @Composable (Modifier) -> Unit = { modifier ->
+        OvalitText(
+            text = usual,
+            modifier = modifier,
+            style = style.usual,
+            color = OvalitTheme.colors.t3,
+            maxLines = 1,
+            autoSize = shrinkToFit(style.usual.fontSize),
+        )
+    }
+    when {
+        change == null -> usualText(Modifier)
+        style.stacked -> Column {
+            OvalitText(text = change, style = style.change, color = changeColor, maxLines = 1)
+            usualText(Modifier)
+        }
+        else -> Row {
+            OvalitText(text = change, modifier = Modifier.alignByBaseline(), style = style.change, color = changeColor, maxLines = 1)
+            Spacer(Modifier.width(SubLineGap))
+            usualText(Modifier.alignByBaseline())
         }
     }
 }

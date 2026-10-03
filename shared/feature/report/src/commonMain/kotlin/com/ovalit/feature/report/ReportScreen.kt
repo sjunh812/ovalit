@@ -199,7 +199,6 @@ private fun ReportContent(
                 fixedMetrics = queueFilter.fixedMetrics,
                 onOpenMetric = { openMetric = it },
             )
-            Spacer(Modifier.height(10.dp))
             FixedMetricSummary(baseline = report.baseline)
         }
         // 짚을 점은 바로 위 숫자를 풀어 말하는 문장이라 고정 칸과 한 카드에 둔다(CLAUDE.md 화면)

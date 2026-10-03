@@ -1,11 +1,13 @@
 package com.ovalit.feature.report.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -77,12 +79,12 @@ import com.ovalit.feature.report.resources.note_up_kda
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-// 무기 실루엣은 길어서 폭을 넉넉히 둔다. 요원 얼굴도 같은 칸에 넣어 두 줄의 이름이 같은 자리에서 시작한다.
-private val LeadWidth = 40.dp
-private val LeadHeight = 24.dp
-private val WeaponHeight = 16.dp
-private val FaceSize = 24.dp
-private val LeadGap = 8.dp
+// 무기 실루엣과 요원 얼굴을 같은 타일에 담는다. 틀이 다르면 줄마다 다른 물건처럼 보여 어수선했다(사용자 요청, 2026-10-03).
+// 무기는 가로로 길어서 타일 안에 양옆을 조금 띄워 눕힌다.
+private val LeadSize = 36.dp
+private val LeadShape = RoundedCornerShape(10.dp)
+private val WeaponInset = 5.dp
+private val LeadGap = 10.dp
 
 // 이름과 숫자가 붙어 보이지 않을 만큼만 띄운다
 private val ValueGap = 12.dp
@@ -138,7 +140,7 @@ internal fun WeekNoteLines(note: WeekNote, catalog: ContentCatalog, modifier: Mo
         )
         if (rows.isNotEmpty()) {
             // 헤드라인과 첫 줄 사이는 줄끼리보다 넓게 띄워 문장과 근거가 갈려 보이게 한다
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(10.dp))
             NoteRows(rows)
         }
     }
@@ -173,14 +175,14 @@ private fun NoteRows(rows: List<NoteRow>) {
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         // 한 줄이라도 이름 옆에 숫자가 안 들어가면 모든 줄의 숫자를 이름 밑으로 내린다. 한 줄만 내리면 숫자 열이 어긋난다.
         val stacked = with(LocalDensity.current) {
-            val leadSpace = if (hasLead) (LeadWidth + LeadGap).roundToPx() else 0
+            val leadSpace = if (hasLead) (LeadSize + LeadGap).roundToPx() else 0
             labels.indices.any { index ->
                 val label = measurer.measure(labels[index], nameStyle, maxLines = 1).size.width
                 val value = measurer.measure(values[index], valueStyle, maxLines = 1).size.width
                 leadSpace + label + ValueGap.roundToPx() + value > constraints.maxWidth
             }
         }
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             rows.forEachIndexed { index, row ->
                 NoteRowLine(row, labels[index], values[index], nameStyle, valueStyle, hasLead, stacked)
             }
@@ -204,7 +206,7 @@ private fun NoteRowLine(
         verticalAlignment = if (stacked) Alignment.Top else Alignment.CenterVertically,
     ) {
         if (hasLead) {
-            Box(modifier = Modifier.width(LeadWidth).height(LeadHeight), contentAlignment = Alignment.CenterStart) {
+            Box(modifier = Modifier.size(LeadSize)) {
                 row.lead?.let { NoteLeadImage(it) }
             }
             Spacer(Modifier.width(LeadGap))
@@ -225,15 +227,18 @@ private fun NoteRowLine(
 // 그림은 이름 옆에 붙는 장식이라 낭독기가 읽지 않는다. 이름은 바로 옆에 있다.
 @Composable
 private fun NoteLeadImage(lead: NoteLead) {
+    val tile = Modifier.size(LeadSize).clip(LeadShape)
     when (lead) {
-        is NoteLead.Weapon -> WeaponImage(
-            weapon = lead.weapon,
-            name = lead.name,
-            modifier = Modifier.width(LeadWidth).height(WeaponHeight),
-            tint = OvalitTheme.colors.t2,
-            alignment = Alignment.CenterStart,
-        )
-        is NoteLead.Agent -> AgentImage(lead.agent, lead.name, Modifier.size(FaceSize).clip(RoundedCornerShape(7.dp)))
+        is NoteLead.Weapon -> Box(modifier = tile.background(OvalitTheme.colors.fill), contentAlignment = Alignment.Center) {
+            WeaponImage(
+                weapon = lead.weapon,
+                name = lead.name,
+                modifier = Modifier.padding(horizontal = WeaponInset).fillMaxSize(),
+                tint = OvalitTheme.colors.t2,
+            )
+        }
+        // 요원 얼굴은 타일을 꽉 채운다. 그림을 받기 전에는 같은 --fill 면이 보인다.
+        is NoteLead.Agent -> AgentImage(lead.agent, lead.name, tile)
     }
 }
 

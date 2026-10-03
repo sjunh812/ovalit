@@ -33,6 +33,7 @@ import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.kdaColor
 import com.ovalit.core.ui.label
+import com.ovalit.core.ui.perMatchKda
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.valueText
 import com.ovalit.core.ui.withThousands
@@ -61,6 +62,8 @@ import com.ovalit.feature.report.resources.sheet_kda_formula
 import com.ovalit.feature.report.resources.sheet_kda_method
 import com.ovalit.feature.report.resources.sheet_kda_no_deaths
 import com.ovalit.feature.report.resources.sheet_method_title
+import com.ovalit.feature.report.resources.sheet_per_match_kd
+import com.ovalit.feature.report.resources.sheet_per_match_kda
 import com.ovalit.feature.report.resources.sheet_sample_rounds
 import com.ovalit.feature.report.resources.sheet_usual_average
 import com.ovalit.feature.report.resources.sheet_usual_missing
@@ -105,6 +108,11 @@ internal fun MetricSheetBody(metric: FixedMetric, report: WeeklyReport.Ready, mo
                 color = OvalitTheme.colors.t2,
             )
         }
+        // 사용자 결정(2026-10-03): 판당 킬·데스·어시는 홈 칸에서 빼고 여기서 푼다. K/D에도 똑같이 필요한 풀이다.
+        perMatchText(metric, report.metrics)?.let { text ->
+            Spacer(Modifier.height(OvalitSpacing.xs))
+            OvalitText(text = text, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t2)
+        }
         Spacer(Modifier.height(OvalitSpacing.xl))
         TrendBars(metric, report)
         Spacer(Modifier.height(22.dp))
@@ -115,6 +123,16 @@ internal fun MetricSheetBody(metric: FixedMetric, report: WeeklyReport.Ready, mo
         HorizontalLine()
         Spacer(Modifier.height(18.dp))
         MethodSection(metric, report.metrics)
+    }
+}
+
+@Composable
+private fun perMatchText(metric: FixedMetric, metrics: MatchMetrics): String? {
+    val perMatch = metrics.perMatchKda() ?: return null
+    return when (metric) {
+        FixedMetric.KD -> stringResource(Res.string.sheet_per_match_kd, perMatch[0], perMatch[1])
+        FixedMetric.KDA -> stringResource(Res.string.sheet_per_match_kda, perMatch[0], perMatch[1], perMatch[2])
+        else -> null
     }
 }
 

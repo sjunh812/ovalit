@@ -22,12 +22,7 @@
     <string name="metric_traded_death">트레이드 받은 데스</string>
 
     <!-- KDA 넓은 칸 오른쪽의 판당 킬·데스·어시 표. "판당"은 줄 머리, 나머지는 열 머리다 -->
-    <string name="kda_per_match">판당</string>
-    <string name="kda_kills">킬</string>
-    <string name="kda_deaths">데스</string>
-    <string name="kda_assists">어시</string>
     <string name="baseline_missing">비교할 기록이 모자라요</string>
-    <string name="summary_compared">변화량은 지난 %1$d주 평균과 비교했어요</string>
     <string name="dynamic_usual">평소 %1$s</string>
 
     <!-- 이번 주 짚을 점. 움직인 숫자만 적고 "쓰세요", "추천"은 쓰지 않는다 -->
@@ -117,6 +112,9 @@
     <string name="sheet_usual_missing">이번 액트 기록이 %1$d주 이상 쌓이면 평소 범위를 알려드려요.</string>
     <string name="sheet_method_title">어떻게 계산하나요?</string>
     <string name="sheet_usual_average">지난 %1$d주 평균 %2$s</string>
+    <!-- K/D와 KDA 시트에서 숫자가 몇 킬 몇 데스에서 나왔는지 푼다 -->
+    <string name="sheet_per_match_kd">판당 %1$s킬 · %2$s데스</string>
+    <string name="sheet_per_match_kda">판당 %1$s킬 · %2$s데스 · %3$s어시</string>
     <!-- 달라진 점 칸을 누르면 뜨는 시트 -->
     <string name="dynamic_sheet_kast_name">KAST</string>
     <string name="dynamic_sheet_kast_body">킬, 어시스트, 생존, 트레이드 중 하나라도 해낸 라운드의 비율이에요.</string>

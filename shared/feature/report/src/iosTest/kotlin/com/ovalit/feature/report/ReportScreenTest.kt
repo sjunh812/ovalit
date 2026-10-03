@@ -109,14 +109,20 @@ class ReportScreenTest {
         onNodeWithText("전투점수").assertExists()
     }
 
+    // 사용자 결정(2026-10-03): 달라진 점과 같은 격자로 한 줄에 세 칸씩 둔다
     @Test
-    fun `고정 지표는 전투점수 K_D 피해량 헤드샷 순서로 한 줄에 놓는다`() = runComposeUiTest {
+    fun `고정 지표는 한 줄에 세 칸씩 전투점수 K_D 피해량 헤드샷 KDA 순서로 놓는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        val bounds = listOf("전투점수", "K/D", "피해량", "헤드샷").map { onNodeWithText(it).getBoundsInRoot() }
+        val (combat, kd, damage, headshot, kda) = listOf("전투점수", "K/D", "피해량", "헤드샷", "KDA")
+            .map { onNodeWithText(it).getUnclippedBoundsInRoot() }
 
-        assertTrue(bounds.all { it.top == bounds.first().top })
-        assertEquals(bounds.sortedBy { it.left }, bounds)
+        val first = listOf(combat, kd, damage)
+        assertTrue(first.all { it.top == combat.top })
+        assertEquals(first.sortedBy { it.left }, first)
+        assertTrue(headshot.top >= combat.bottom && kda.top == headshot.top, "헤드샷과 KDA가 둘째 줄에 없다")
+        assertEquals(combat.left, headshot.left)
+        assertEquals(kd.left, kda.left)
     }
 
     @Test
@@ -227,42 +233,51 @@ class ReportScreenTest {
         onNodeWithText("이번 주 무기").assertDoesNotExist()
     }
 
-    // 사용자 결정(2026-09-27): KDA를 먼저, 한 단계 크게 두고 판당 K/D/A를 옆에 둔다. (118 + 30) ÷ 88 = 1.68
-    // 사용자 결정(2026-09-29): 어시스트가 킬만큼 중요해져 KDA를 고정 칸과 같은 숫자 크기로 올렸다. 목업의 네 칸 한 줄은 둔다.
+    // 사용자 결정(2026-09-29): 어시스트가 킬만큼 중요해져 KDA를 다른 고정 칸과 같은 숫자 크기로 둔다
     @Test
-    fun `KDA는 네 칸 밑 넓은 칸에 고정 칸과 같은 숫자 크기로 둔다`() = runComposeUiTest {
+    fun `KDA는 다른 고정 칸과 같은 숫자 크기로 둔다`() = runComposeUiTest {
         val report = ReportPreviewData.moved
         setContent { Report(report) }
 
-        val combat = onNodeWithText("전투점수", useUnmergedTree = true).getUnclippedBoundsInRoot()
-        val headshot = onNodeWithText("헤드샷", useUnmergedTree = true).getUnclippedBoundsInRoot()
-        val kdaLabel = onNodeWithText("KDA", useUnmergedTree = true).getUnclippedBoundsInRoot()
-        assertTrue(kdaLabel.top > combat.bottom, "KDA가 네 칸과 같은 줄에 있다")
-        assertEquals(combat.left, kdaLabel.left)
-        assertTrue(headshot.top == combat.top, "네 칸이 한 줄이 아니다")
         val kda = MetricFormat.TWO_DECIMALS.valueTextFor(assertNotNull(report.metrics.kda))
         val combatValue = MetricFormat.INTEGER.valueTextFor(assertNotNull(report.metrics.acs))
         assertEquals(fontSizeOf(combatValue), fontSizeOf(kda))
     }
 
-    // KDA만으로는 몇 킬 몇 데스인지 몰라 판당 킬·데스·어시를 옆에 풀어 둔다
+    // 사용자 결정(2026-10-03): 판당 K/D/A는 K/D에도 똑같이 필요한 풀이라 홈 칸에서 빼고 시트에서 푼다
     @Test
-    fun `KDA 칸 오른쪽에 판당 킬 데스 어시를 적는다`() = runComposeUiTest {
+    fun `판당 킬 데스 어시는 홈 대신 K_D와 KDA 시트에 적는다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved
+        val metrics = report.metrics
+        var sheet by mutableStateOf<FixedMetric?>(null)
+        setContent { sheet?.let { Sheet(it, report) } ?: Report(report) }
+        fun perMatch(count: Int) = MetricFormat.ONE_DECIMAL.format(count.toDouble() / metrics.matches)
+
+        onNodeWithText("판당", substring = true, useUnmergedTree = true).assertDoesNotExist()
+        sheet = FixedMetric.KD
+        onNodeWithText("판당 ${perMatch(metrics.kills)}킬 · ${perMatch(metrics.deaths)}데스").assertExists()
+        sheet = FixedMetric.KDA
+        onNodeWithText("판당 ${perMatch(metrics.kills)}킬 · ${perMatch(metrics.deaths)}데스 · ${perMatch(metrics.assists)}어시").assertExists()
+    }
+
+    // 사용자 요청(2026-10-03): 변화량은 숫자 밑에 작게 두고, 무엇과 견줬는지 평소 값을 옆에 붙인다
+    @Test
+    fun `고정 칸 숫자 밑에 변화량과 평소 값을 나란히 둔다`() = runComposeUiTest {
         val report = ReportPreviewData.moved
         setContent { Report(report) }
 
-        val kda = onNodeWithText(MetricFormat.TWO_DECIMALS.valueTextFor(assertNotNull(report.metrics.kda)), useUnmergedTree = true)
+        val (change, usual) = combatSubLine(report)
+        val changeBounds = onNodeWithText(change, useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val usualBounds = onNodeWithText(usual, useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val value = onNodeWithText(MetricFormat.INTEGER.valueTextFor(assertNotNull(report.metrics.acs)), useUnmergedTree = true)
             .getUnclippedBoundsInRoot()
-        val perMatch = onNodeWithText("판당", useUnmergedTree = true).getUnclippedBoundsInRoot()
-        listOf("킬", "데스", "어시").forEach { onNodeWithText(it, useUnmergedTree = true).assertExists() }
-        val kills = MetricFormat.ONE_DECIMAL.format(report.metrics.kills.toDouble() / report.metrics.matches)
-        onNodeWithText(kills, useUnmergedTree = true).assertExists()
-        assertTrue(perMatch.left > kda.right, "판당 표가 KDA 숫자 오른쪽에 없다")
+        assertTrue(changeBounds.top >= value.bottom, "변화량이 숫자 밑에 없다")
+        assertTrue(usualBounds.left > changeBounds.right && usualBounds.top < changeBounds.bottom, "평소 값이 변화량 옆에 없다")
     }
 
-    // 좁은 화면이나 큰 글꼴에서 판당 표가 KDA 숫자를 덮지 않게 숫자 밑으로 내린다
+    // 한 칸만 두 줄이 되면 그 칸만 높아져 줄이 어긋난다
     @Test
-    fun `KDA 칸이 좁으면 판당 표를 숫자 밑으로 내린다`() = runComposeUiTest {
+    fun `칸이 좁으면 변화량과 평소 값을 모든 칸에서 두 줄로 내린다`() = runComposeUiTest {
         val report = ReportPreviewData.moved
         setContent {
             CompositionLocalProvider(LocalDensity provides Density(density = 2f, fontScale = 2f)) {
@@ -270,10 +285,10 @@ class ReportScreenTest {
             }
         }
 
-        val kda = onNodeWithText(MetricFormat.TWO_DECIMALS.valueTextFor(assertNotNull(report.metrics.kda)), useUnmergedTree = true)
-            .getUnclippedBoundsInRoot()
-        val perMatch = onNodeWithText("판당", useUnmergedTree = true).getUnclippedBoundsInRoot()
-        assertTrue(perMatch.top >= kda.bottom, "판당 표가 KDA 숫자 옆에 끼었다")
+        val (change, usual) = combatSubLine(report)
+        val changeBounds = onNodeWithText(change, useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val usualBounds = onNodeWithText(usual, useUnmergedTree = true).getUnclippedBoundsInRoot()
+        assertTrue(usualBounds.top >= changeBounds.bottom, "좁은데 평소 값이 변화량 옆에 끼었다")
     }
 
     @Test
@@ -297,7 +312,7 @@ class ReportScreenTest {
     }
 
     @Test
-    fun `기타 모드는 K_D와 헤드샷 칸 밑에 KDA 칸을 둔다`() = runComposeUiTest {
+    fun `기타 모드는 K_D 헤드샷 KDA 세 칸을 둔다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.otherQueue, QueueFilter.OTHER) }
 
         onNodeWithText("전투점수", useUnmergedTree = true).assertDoesNotExist()
@@ -394,10 +409,10 @@ class ReportScreenTest {
 
     // 칸 폭에 간격을 넣으면 가운데 칸만 좁아져 첫 칸이 넓어 보인다
     @Test
-    fun `고정 칸은 네 칸 모두 폭이 같다`() = runComposeUiTest {
+    fun `고정 칸은 모든 칸 폭이 같다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        val widths = listOf("전투점수", "K/D", "피해량", "헤드샷").map { onNodeWithText(it).getBoundsInRoot().let { bounds -> bounds.right - bounds.left } }
+        val widths = listOf("전투점수", "K/D", "피해량", "헤드샷", "KDA").map { onNodeWithText(it).getBoundsInRoot().let { bounds -> bounds.right - bounds.left } }
 
         // 남는 픽셀 하나는 어느 칸엔가 붙는다
         assertTrue(widths.max() - widths.min() <= 1.dp, "$widths")
@@ -523,14 +538,18 @@ class ReportScreenTest {
         onNodeWithText("어떻게 계산하나요?").assertExists()
     }
 
-    // 사용자 결정(2026-09-27): 칸 밑 작은 글씨는 한 줄만 둔다. 네 칸의 평균을 늘어놓으면 어느 숫자가 어느 칸 것인지 읽히지 않았다.
+    // 사용자 요청(2026-10-03): 칸 밖 "변화량은 지난 4주 평균과 비교했어요"는 무엇의 설명인지 붕 떠 보였다. 칸마다 평소 값이
+    // 대신 말한다. 비교할 기록이 없을 때만 그 까닭을 칸 밑에 적는다.
     @Test
-    fun `고정 칸 밑에는 무엇과 견준 변화량인지만 적는다`() = runComposeUiTest {
-        setContent { Report(ReportPreviewData.moved.copy(note = null)) }
+    fun `고정 칸 밖에는 견준 기준을 따로 적지 않고 기준이 없을 때만 까닭을 적는다`() = runComposeUiTest {
+        var report by mutableStateOf(ReportPreviewData.moved.copy(note = null))
+        setContent { Report(report) }
 
-        onNodeWithText("변화량은 지난 4주 평균과 비교했어요").assertExists()
+        onNodeWithText("변화량은", substring = true).assertDoesNotExist()
         onNodeWithText("146라운드", substring = true, useUnmergedTree = true).assertDoesNotExist()
-        onNodeWithText("4주 평균 ", substring = true, useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("비교할 기록이 모자라요").assertDoesNotExist()
+        report = report.copy(baseline = null)
+        onNodeWithText("비교할 기록이 모자라요").assertExists()
     }
 
     @Test
@@ -545,7 +564,9 @@ class ReportScreenTest {
     fun `달라진 점 칸에는 평소 값만 두고 표본은 적지 않는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved.copy(note = null)) }
 
-        onAllNodesWithText("평소 ", substring = true, useUnmergedTree = true).assertCountEquals(3)
+        // 고정 칸 다섯과 달라진 점 칸마다 하나씩이다
+        onAllNodesWithText("평소 ", substring = true, useUnmergedTree = true)
+            .assertCountEquals(FixedMetric.entries.size + ReportPreviewData.moved.dynamic.size)
         onNodeWithText("146라운드", substring = true, useUnmergedTree = true).assertDoesNotExist()
         onNodeWithText("4주 평균 ", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
@@ -801,15 +822,15 @@ class ReportScreenTest {
 
     // 헤드라인과 첫 줄이 붙으면 문장과 근거가 한 덩어리로 뭉개진다
     @Test
-    fun `짚을 점 헤드라인과 첫 줄은 8dp 줄끼리는 6dp 띄운다`() = runComposeUiTest {
+    fun `짚을 점 헤드라인과 첫 줄은 10dp 줄끼리는 8dp 띄운다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
 
         val headline = onNodeWithText("피해량이 평소보다 10 올랐어요").getUnclippedBoundsInRoot()
         val first = onNode(noteRow("밴달", "118 → 140", "44라운드")).getUnclippedBoundsInRoot()
         val second = onNode(noteRow("제트", "124 → 146", "4판")).getUnclippedBoundsInRoot()
-        assertEquals(8.dp, first.top - headline.bottom)
+        assertEquals(10.dp, first.top - headline.bottom)
         // 줄끼리는 한 묶음으로 읽히게 덜 띄운다
-        assertEquals(6.dp, second.top - first.bottom)
+        assertEquals(8.dp, second.top - first.bottom)
     }
 
     // 사용자 요청(2026-09-28): 무기 실루엣과 요원 얼굴을 이름 앞에 둔다. 그림 폭이 달라도 이름은 같은 자리에서 시작하고,
@@ -884,10 +905,10 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved) }
 
         onNodeWithText("짚을 점", substring = true).assertDoesNotExist()
-        val summary = onNodeWithText("변화량은 지난 4주 평균과 비교했어요").getUnclippedBoundsInRoot()
+        val kda = onNodeWithText("KDA").getUnclippedBoundsInRoot()
         val note = onNodeWithText("피해량이 평소보다 10 올랐어요").getUnclippedBoundsInRoot()
         val dynamic = onNodeWithText("달라진 점").getUnclippedBoundsInRoot()
-        assertTrue(summary.bottom <= note.top && note.bottom <= dynamic.top)
+        assertTrue(kda.bottom <= note.top && note.bottom <= dynamic.top)
     }
 
     @Test
@@ -1257,6 +1278,13 @@ private fun SemanticsNodeInteractionsProvider.fontSizeOf(text: String): TextUnit
     val layouts = mutableListOf<TextLayoutResult>()
     onNodeWithText(text, useUnmergedTree = true).fetchSemanticsNode().config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
     return layouts.single().layoutInput.style.fontSize
+}
+
+// 전투점수 칸 숫자 밑 한 줄의 변화량과 평소 값이다
+private fun combatSubLine(report: WeeklyReport.Ready): Pair<String, String> {
+    val current = assertNotNull(report.metrics.acs)
+    val usual = assertNotNull(report.baseline?.metrics?.acs)
+    return MetricFormat.INTEGER.formatChange(current, usual) to "평소 ${MetricFormat.INTEGER.format(usual)}"
 }
 
 // 화면에 뜨는 자릿수로 적은 값이다. valueText는 컴포저블이라 테스트에서는 format으로 같은 글자를 만든다.

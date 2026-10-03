@@ -71,7 +71,14 @@ internal fun TrendEntry(report: WeeklyReport.Ready, metric: FixedMetric, onClick
             .padding(horizontal = 12.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TrendBarRow(metric, report, Modifier.size(width = EntryBarsWidth, height = EntryBarsHeight), gap = 2.dp)
+        // 입구 줄은 --fill 면 위라 막대를 한 단계 더 진하게 둔다
+        TrendBarRow(
+            metric = metric,
+            report = report,
+            modifier = Modifier.size(width = EntryBarsWidth, height = EntryBarsHeight),
+            gap = 2.dp,
+            restColor = colors.t4,
+        )
         Spacer(Modifier.width(10.dp))
         OvalitText(text = title, modifier = Modifier.weight(1f), style = OvalitTheme.typography.label)
         Spacer(Modifier.width(OvalitSpacing.sm))

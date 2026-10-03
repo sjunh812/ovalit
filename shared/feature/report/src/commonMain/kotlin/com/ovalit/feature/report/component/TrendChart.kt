@@ -76,6 +76,7 @@ private const val DIMMED_BAR = 0.35f
  * @param selected 고른 주의 자리입니다. 고르면 그 막대만 밝게 두고 나머지는 흐리게 합니다.
  * @param onSelect 막대를 누르거나 옆으로 끌면 고른 주를 알립니다. 고른 막대를 다시 누르면 `null`입니다. 없으면 누를 수 없습니다.
  * @param baseline 지난 4주 평균입니다. 있으면 그 높이에 점선을 긋습니다.
+ * @param restColor 기간 밖 막대 색입니다. 면 위에 그릴 때는 면과 갈리게 진하게 넘깁니다.
  */
 @Composable
 internal fun TrendBarRow(
@@ -86,6 +87,7 @@ internal fun TrendBarRow(
     selected: Int? = null,
     onSelect: ((Int?) -> Unit)? = null,
     baseline: Double? = null,
+    restColor: Color = OvalitTheme.colors.t5,
 ) {
     val colors = OvalitTheme.colors
     val values = report.trend.map { week -> week.metrics?.let(metric.value) }
@@ -151,7 +153,7 @@ internal fun TrendBarRow(
             }
             Bar(
                 fraction = values[index]?.let { barFraction(it, low, high) },
-                color = barColor(week, index, selected),
+                color = barColor(week, index, selected, restColor),
                 sparse = week.sparse,
                 modifier = Modifier.weight(1f),
             )
@@ -159,15 +161,16 @@ internal fun TrendBarRow(
     }
 }
 
-// 위의 큰 숫자는 기간에 든 주들의 합계로 낸 값이라 그 주들만 --accent다
+// 위의 큰 숫자는 기간에 든 주들의 합계로 낸 값이라 그 주들만 --accent다. 나머지는 --bar로 두니 카드와 시트 위에서 거의 안
+// 보여 금색만 떠 보였다(사용자 요청, 2026-10-03).
 @Composable
-private fun barColor(week: TrendWeek, index: Int, selected: Int?): Color {
+private fun barColor(week: TrendWeek, index: Int, selected: Int?, rest: Color): Color {
     val colors = OvalitTheme.colors
-    // 라운드가 모자란 주는 테두리만 그려서 --bar로는 거의 안 보인다. 한 단계 밝힌다.
+    // 라운드가 모자란 주는 테두리만 그려서 면을 칠한 막대보다 한 단계 진하게 둔다
     val base = when {
         week.inPeriod -> colors.accent
-        week.sparse -> colors.t5
-        else -> colors.bar
+        week.sparse -> colors.t4
+        else -> rest
     }
     return when (selected) {
         null -> base

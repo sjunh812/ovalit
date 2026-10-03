@@ -115,7 +115,7 @@ internal fun ImportScreen(
 private fun FocusOption(focus: Focus, selected: Boolean, onClick: () -> Unit) {
     val colors = OvalitTheme.colors
     val shape = RoundedCornerShape(12.dp)
-    // 목업처럼 고른 칸만 금색 테두리와 체크로 표시한다
+    // 목업처럼 고른 칸만 액센트 테두리와 체크로 표시한다
     val border by animateColorAsState(if (selected) colors.accent else colors.line)
 
     Row(

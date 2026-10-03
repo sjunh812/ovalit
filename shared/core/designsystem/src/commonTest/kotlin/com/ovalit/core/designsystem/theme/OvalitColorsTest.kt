@@ -39,15 +39,17 @@ class OvalitColorsTest {
         }
     }
 
+    // 발로란트 빨강 위 흰 글자는 3.4:1이라 본문 기준(4.5)에 못 미친다. 사용자 결정(2026-10-03)으로 흰색을 쓰고, 더 내려가지
+    // 않게 3:1을 바닥으로 둔다.
     @Test
-    fun `버튼 글자는 accent 면 위에서 4_5 대 1을 넘는다`() {
+    fun `버튼 글자는 accent 면 위에서 3 대 1을 넘는다`() {
         forEachTheme { name, colors ->
-            assertContrast(name, "onAccent", colors.onAccent, colors.accent, atLeast = 4.5)
+            assertContrast(name, "onAccent", colors.onAccent, colors.accent, atLeast = 3.0)
         }
     }
 
     @Test
-    fun `금색을 글자로 쓸 때는 accentInk를 쓴다`() {
+    fun `액센트를 글자로 쓸 때는 accentInk를 쓴다`() {
         // 라이트에서 accent를 그대로 글자로 올리면 대비가 모자란다. accentInk가 그 대안이다.
         assertContrast("라이트", "accentInk", OvalitLightColors.accentInk, OvalitLightColors.bg, atLeast = 4.5)
         assertContrast("다크", "accentInk", OvalitDarkColors.accentInk, OvalitDarkColors.bg, atLeast = 4.5)

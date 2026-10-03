@@ -370,7 +370,7 @@ private fun StatusAvatar(member: PingMember, size: Dp, modifier: Modifier = Modi
 }
 
 /**
- * 갈게요, 다른 시간, 못 가요를 한 덩어리로 둔 버튼입니다. 고른 답은 금색 면입니다. 다른 시간을 골랐으면 그 칸에 낸 시각을
+ * 갈게요, 다른 시간, 못 가요를 한 덩어리로 둔 버튼입니다. 고른 답은 액센트 면입니다. 다른 시간을 골랐으면 그 칸에 낸 시각을
  * 적습니다("15:00 제안").
  */
 @Composable
@@ -416,7 +416,7 @@ internal fun AnsweredLine(text: String, attending: Boolean, onChange: () -> Unit
     }
 }
 
-/** 보낸 초대 맨 밑 버튼입니다. 받은 초대의 답 버튼과 같은 모양이고 고르는 게 아니라서 금색 면이 없습니다. */
+/** 보낸 초대 맨 밑 버튼입니다. 받은 초대의 답 버튼과 같은 모양이고 고르는 게 아니라서 액센트 면이 없습니다. */
 @Composable
 internal fun ActionBar(vararg items: Pair<String, () -> Unit>) {
     Row(modifier = barModifier()) {
@@ -549,7 +549,7 @@ internal fun PingComposeSheet(
     }
 }
 
-// 고른 친구는 금색 테두리와 체크를 단다. S0-4에서 관심사를 고르는 칸과 같은 표시다.
+// 고른 친구는 액센트 테두리와 체크를 단다. S0-4에서 관심사를 고르는 칸과 같은 표시다.
 @Composable
 private fun FriendPick(friend: Friend, selected: Boolean, enabled: Boolean, onToggle: (Boolean) -> Unit) {
     val colors = OvalitTheme.colors

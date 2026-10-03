@@ -99,8 +99,8 @@
     <!-- 홈 고정 칸 밑 8주 흐름 입구와 시트 -->
     <string name="trend_entry">지난 8주 흐름 한눈에 보기</string>
     <string name="trend_title">지난 8주 흐름</string>
-    <string name="trend_body">금색 막대가 리포트 기간이에요. 막대를 누르면 그 주 값을 볼 수 있어요.</string>
-    <string name="trend_body_baseline">금색 막대가 리포트 기간이고 점선은 지난 %1$d주 평균이에요. 막대를 누르면 그 주 값을 볼 수 있어요.</string>
+    <string name="trend_body">빨간 막대가 리포트 기간이에요. 막대를 누르면 그 주 값을 볼 수 있어요.</string>
+    <string name="trend_body_baseline">빨간 막대가 리포트 기간이고 점선은 지난 %1$d주 평균이에요. 막대를 누르면 그 주 값을 볼 수 있어요.</string>
     <!-- 고른 주의 표본이다 -->
     <string name="trend_week_sample">%1$d경기 · %2$d라운드</string>
     <string name="trend_week_empty">경기 없음</string>

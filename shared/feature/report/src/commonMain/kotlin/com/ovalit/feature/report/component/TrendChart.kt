@@ -159,7 +159,7 @@ internal fun TrendBarRow(
 }
 
 // 위의 큰 숫자는 기간에 든 주들의 합계로 낸 값이라 그 주들만 --accent다. 나머지는 --bar로 두니 카드와 시트 위에서 거의 안
-// 보여 금색만 떠 보였다(사용자 요청, 2026-10-03).
+// 보여 액센트 막대만 떠 보였다(사용자 요청, 2026-10-03).
 @Composable
 private fun barColor(week: TrendWeek, index: Int, selected: Int?, rest: Color): Color {
     val colors = OvalitTheme.colors

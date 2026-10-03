@@ -47,7 +47,7 @@ publicRoutes.get("/i/:code", (c) => {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>오발있 친구 초대</title>
 <style>
-:root { --bg: #100E0C; --t1: #F5F2ED; --t2: #9A9289; --accent: #E0B252; --on-accent: #100E0C; }
+:root { --bg: #100E0C; --t1: #F5F2ED; --t2: #9A9289; --accent: #FF4655; --on-accent: #FFFFFF; }
 @media (prefers-color-scheme: light) { :root { --bg: #FDFCFA; --t1: #191510; --t2: #6E675E; } }
 body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
   background: var(--bg); color: var(--t1); font-family: system-ui, sans-serif; }

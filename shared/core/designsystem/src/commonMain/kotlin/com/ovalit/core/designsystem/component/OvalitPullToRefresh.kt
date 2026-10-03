@@ -11,7 +11,7 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 
 /**
  * 당겨서 새로고침입니다. 안에는 세로로 스크롤되는 것을 둡니다. 동그라미는 `--raised` 위에 `--t1`로 돌아서
- * 금색 버튼과 헷갈리지 않습니다.
+ * 액센트 버튼과 헷갈리지 않습니다.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -27,7 +27,7 @@ import org.jetbrains.compose.resources.stringResource
 
 // 값 없는 칸 글자, 퍼센트, 승률 색, 무기 이름과 실루엣은 S5와 같이 쓰려고 core/ui의 ProfileParts.kt에 있다.
 
-// 목업대로 강조할 한 줄만 금색이고 나머지는 흐리게 칠한다
+// 목업대로 강조할 한 줄만 액센트로 칠하고 나머지는 흐리게 둔다
 @Composable
 internal fun ShareBar(fraction: Float, highlighted: Boolean, modifier: Modifier = Modifier) {
     val colors = OvalitTheme.colors

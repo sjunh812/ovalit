@@ -15,7 +15,7 @@
       런처는 앱의 다크 설정을 모르고, 스플래시는 아이콘에서 이어지는 화면입니다.
     -->
     <!-- OvalitColors.accent -->
-    <color name="brand_surface">#E0B252</color>
-    <!-- OvalitColors.onAccent -->
-    <color name="brand_mark">#100E0C</color>
+    <color name="brand_surface">#FF4655</color>
+    <!-- OvalitColors.onAccent. 아이콘의 흰 말풍선입니다. -->
+    <color name="brand_mark">#FFFFFF</color>
 </resources>

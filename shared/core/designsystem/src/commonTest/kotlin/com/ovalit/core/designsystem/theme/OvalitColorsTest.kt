@@ -97,7 +97,7 @@ class OvalitColorsTest {
     }
 
     // 사용자 요청(2026-09-29): 1~2 구간 청록이 오르내림의 초록처럼 보였다. OKLab 거리 15 밑이면 색으로 가르기 어렵다.
-    // 주황(kda3)은 등급 맨 위라 빨강과 가까운 걸 알고 두었다.
+    // 맨 위 칸(kda3)은 빨강 액센트와 멀리 두려고 호박색을 골랐다(2026-10-03). 라이트의 neg와는 15에 조금 못 미친다.
     @Test
     fun `KDA 1에서 3 사이 구간 색은 오르내림 색이나 액센트와 섞여 보이지 않는다`() {
         forEachTheme { name, colors ->
@@ -110,6 +110,8 @@ class OvalitColorsTest {
             }
             val bands = oklabDistance(colors.kda1, colors.kda2)
             assertTrue(bands >= 15.0, "$name kda1 과 kda2 의 OKLab 거리가 ${bands.rounded()}라 15에 못 미친다")
+            val top = oklabDistance(colors.kda3, colors.accentInk)
+            assertTrue(top >= 15.0, "$name kda3 와 accentInk 의 OKLab 거리가 ${top.rounded()}라 15에 못 미친다")
         }
     }
 

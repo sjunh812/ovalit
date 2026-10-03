@@ -48,7 +48,7 @@ internal fun ProfileHint(avatar: Rect?, onDismiss: () -> Unit, modifier: Modifie
     if (avatar == null) return
     val colors = OvalitTheme.colors
     // 아바타 가운데를 가리킨다. 말풍선 오른쪽 끝에서 화살표 가운데까지다.
-    val arrowEnd = with(LocalDensity.current) { (avatar.width / 2).toDp() } + BubbleOverhang - ArrowWidth / 2
+    val arrowEnd = (with(LocalDensity.current) { (avatar.width / 2).toDp() } + BubbleOverhang - ArrowWidth / 2).coerceAtLeast(0.dp)
 
     Layout(
         modifier = modifier,

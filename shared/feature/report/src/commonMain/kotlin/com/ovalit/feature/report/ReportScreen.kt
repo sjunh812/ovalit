@@ -21,10 +21,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitCard
 import com.ovalit.core.designsystem.component.OvalitCardGap
@@ -163,7 +163,8 @@ internal fun ReportScreen(
                 onProfileHintShown()
             }
         }
-        // 머리 줄이 스크롤되면 아바타 자리가 바뀐다. 둘 다 화면 기준으로 적어 두고 그 차이로 안내를 둔다.
+        // 머리 줄이 스크롤되면 아바타 자리가 바뀐다. 둘 다 화면 기준으로 적어 두고 그 차이로 안내를 둔다. 아바타는 잘리지 않은
+        // 크기로 잰다. 잘린 자리(boundsInRoot)는 위로 스크롤돼 가려지는 동안 폭이 0까지 줄어 화살표 자리가 음수가 됐다.
         var screenOrigin by remember { mutableStateOf(Offset.Zero) }
         var avatarInRoot by remember { mutableStateOf<Rect?>(null) }
         val openProfile = {
@@ -180,7 +181,7 @@ internal fun ReportScreen(
                     ReportTopBar(
                         badge = badge,
                         onOpenProfile = openProfile,
-                        onAvatarPositioned = { avatarInRoot = it.boundsInRoot() },
+                        onAvatarPositioned = { avatarInRoot = Rect(it.positionInRoot(), it.size.toSize()) },
                     )
                     Spacer(Modifier.height(OvalitSpacing.xs))
                     QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)

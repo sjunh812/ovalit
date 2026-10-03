@@ -26,10 +26,12 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipe
+import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontWeight
@@ -439,6 +441,28 @@ class ReportScreenTest {
 
         onNodeWithText("내 프로필은 여기서 볼 수 있어요").performClick()
         onNodeWithText("내 프로필은 여기서 볼 수 있어요").assertDoesNotExist()
+    }
+
+    // 아바타가 위로 스크롤돼 가려지는 동안 잘린 폭이 0까지 줄어 화살표 자리가 음수가 되며 앱이 죽었다
+    @Test
+    fun `내 프로필 안내를 띄운 채 스크롤해도 머리 줄을 따라간다`() = runComposeUiTest {
+        setContent {
+            OvalitTheme {
+                ReportScreen(
+                    uiState = ReportUiState.Success(QueueFilter.COMPETITIVE_AND_UNRATED, ReportPreviewData.moved),
+                    onSelectQueue = {},
+                    badge = PlayerBadge("오발러#KR1", tier = 16, tierName = "플래티넘 2"),
+                    profileHint = true,
+                )
+            }
+        }
+        val before = onNodeWithText("내 프로필은 여기서 볼 수 있어요").getUnclippedBoundsInRoot().top
+
+        repeat(3) { onRoot().performTouchInput { swipeUp() } }
+        waitForIdle()
+
+        val after = onNodeWithText("내 프로필은 여기서 볼 수 있어요").getUnclippedBoundsInRoot().top
+        assertTrue(after < before, "안내가 머리 줄을 따라 올라가지 않았다")
     }
 
     @Test

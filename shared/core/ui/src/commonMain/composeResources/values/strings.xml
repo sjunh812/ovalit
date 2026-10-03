@@ -59,6 +59,9 @@
     <string name="match_result_win">승리</string>
     <string name="match_result_loss">패배</string>
     <string name="match_result_draw">무승부</string>
+    <string name="match_result_short_win">승</string>
+    <string name="match_result_short_loss">패</string>
+    <string name="match_result_short_draw">무</string>
 
     <!-- S0-4 관심사. 설정에서도 같은 이름을 쓴다 -->
     <string name="focus_aim">에임 올리기</string>

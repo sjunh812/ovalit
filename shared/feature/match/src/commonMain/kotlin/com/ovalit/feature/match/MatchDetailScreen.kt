@@ -60,6 +60,7 @@ import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.mapName
 import com.ovalit.core.ui.resultColor
+import com.ovalit.core.ui.resultText
 import com.ovalit.feature.match.resources.Res
 import com.ovalit.feature.match.resources.detail_caption
 import com.ovalit.feature.match.resources.detail_date
@@ -239,6 +240,13 @@ private fun ScoreHeadline(uiState: MatchDetailUiState.Success, modifier: Modifie
                 OvalitText(text = score.myTeam.toString(), style = big, color = resultColor(match.myTeamWon))
                 OvalitText(text = "–", style = OvalitTheme.typography.titleM, color = colors.t4, modifier = Modifier.padding(bottom = 6.dp))
                 OvalitText(text = score.enemyTeam.toString(), style = big, color = colors.t4)
+                // 색만으로는 승패를 못 읽어서 결과를 글자로도 적는다(사용자 요청, 2026-10-03)
+                OvalitText(
+                    text = resultText(match.myTeamWon),
+                    modifier = Modifier.padding(bottom = 6.dp),
+                    style = OvalitTheme.typography.label.copy(fontWeight = FontWeight.SemiBold),
+                    color = resultColor(match.myTeamWon),
+                )
             }
             Spacer(Modifier.weight(1f))
             OvalitText(

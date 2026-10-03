@@ -44,6 +44,15 @@ class MatchScreensTest {
         onAllNodes(hasStateDescription("패배")).fetchSemanticsNodes().let { assertTrue(it.isNotEmpty()) }
     }
 
+    // 사용자 요청(2026-10-03): 색만으로는 승패가 갈리지 않아 스코어 앞에 글자로도 적는다
+    @Test
+    fun `경기 줄은 스코어 앞에 승패를 글자로 적는다`() = runComposeUiTest {
+        setContent { Themed { MatchesScreen(MatchPreviewData.matches, {}, {}, {}) } }
+
+        onNode(hasText("ADR 174") and hasText("승")).assertExists()
+        assertTrue(onAllNodesWithText("패").fetchSemanticsNodes().isNotEmpty())
+    }
+
     @Test
     fun `필터 시트에서 요원을 고르면 필터가 바뀐다`() = runComposeUiTest {
         var filter: MatchFilter? = null
@@ -61,6 +70,7 @@ class MatchScreensTest {
 
         onNodeWithContentDescription("13 대 9").assertExists()
         onNodeWithText("전반 8–4 · 후반 5–5").assertExists()
+        onNodeWithText("승리").assertExists()
     }
 
     // CLAUDE.md: 프로필은 서로 수락한 친구끼리만 본다

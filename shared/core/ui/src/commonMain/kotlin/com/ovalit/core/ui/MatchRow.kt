@@ -1,5 +1,6 @@
 package com.ovalit.core.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +37,9 @@ import com.ovalit.core.ui.resources.match_adr
 import com.ovalit.core.ui.resources.match_kda
 import com.ovalit.core.ui.resources.match_result_draw
 import com.ovalit.core.ui.resources.match_result_loss
+import com.ovalit.core.ui.resources.match_result_short_draw
+import com.ovalit.core.ui.resources.match_result_short_loss
+import com.ovalit.core.ui.resources.match_result_short_win
 import com.ovalit.core.ui.resources.match_result_win
 import com.ovalit.core.ui.resources.match_score
 import org.jetbrains.compose.resources.stringResource
@@ -72,13 +76,7 @@ fun MatchRow(
         val digits = MetricFormat.INTEGER.format(value)
         if (style == MatchRowStyle.LIST) stringResource(Res.string.match_adr, digits) else digits
     }
-    val result = stringResource(
-        when (match.myTeamWon) {
-            true -> Res.string.match_result_win
-            false -> Res.string.match_result_loss
-            null -> Res.string.match_result_draw
-        },
-    )
+    val result = resultText(match.myTeamWon)
     val compact = style == MatchRowStyle.COMPACT
     val caption = OvalitTheme.typography.caption
     val small = OvalitTheme.typography.metricS
@@ -120,13 +118,20 @@ fun MatchRow(
             verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 4.dp),
         ) {
             val scoreStyle = OvalitTheme.typography.metricS.copy(fontSize = 15.sp, fontWeight = FontWeight.Bold)
-            OvalitText(
-                text = stringResource(Res.string.match_score, score.myTeam, score.enemyTeam),
-                style = scoreStyle,
-                color = resultColor(match.myTeamWon),
-                maxLines = 1,
-                autoSize = shrinkToFit(scoreStyle.fontSize),
-            )
+            // 색만으로는 승패를 못 읽어서 스코어 앞에 "승", "패"를 결과 색을 옅게 깐 칸에 적는다(사용자 요청, 2026-10-03). op.gg처럼
+            // 줄 전체를 칠하면 목록이 빨강과 초록 띠가 된다.
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                ResultTile(match.myTeamWon)
+                Spacer(Modifier.width(7.dp))
+                OvalitText(
+                    text = stringResource(Res.string.match_score, score.myTeam, score.enemyTeam),
+                    modifier = Modifier.weight(1f, fill = false),
+                    style = scoreStyle,
+                    color = resultColor(match.myTeamWon),
+                    maxLines = 1,
+                    autoSize = shrinkToFit(scoreStyle.fontSize),
+                )
+            }
             if (kda != null) {
                 SeparatedRow(
                     items = listOfNotNull(
@@ -140,6 +145,49 @@ fun MatchRow(
         }
     }
 }
+
+// 결과 색을 옅게 깐 작은 네모다. 알약 모양은 쓰지 않는다(CLAUDE.md 디자인).
+@Composable
+private fun ResultTile(won: Boolean?) {
+    val color = resultColor(won)
+    Box(
+        modifier = Modifier
+            .size(ResultTileSize)
+            .clip(RoundedCornerShape(6.dp))
+            .background(color.copy(alpha = RESULT_TILE_ALPHA)),
+        contentAlignment = Alignment.Center,
+    ) {
+        OvalitText(
+            text = resultShortText(won),
+            style = OvalitTheme.typography.caption.copy(fontWeight = FontWeight.Bold),
+            color = color,
+            maxLines = 1,
+        )
+    }
+}
+
+private val ResultTileSize = 22.dp
+private const val RESULT_TILE_ALPHA = 0.14f
+
+/** 경기 줄 스코어 앞의 "승", "패", "무"입니다. */
+@Composable
+fun resultShortText(won: Boolean?): String = stringResource(
+    when (won) {
+        true -> Res.string.match_result_short_win
+        false -> Res.string.match_result_short_loss
+        null -> Res.string.match_result_short_draw
+    },
+)
+
+/** 결과를 다 쓴 "승리", "패배", "무승부"입니다. S3 머리와 낭독기에 씁니다. */
+@Composable
+fun resultText(won: Boolean?): String = stringResource(
+    when (won) {
+        true -> Res.string.match_result_win
+        false -> Res.string.match_result_loss
+        null -> Res.string.match_result_draw
+    },
+)
 
 /** 이기면 `--pos`, 지면 `--neg`, 비기면 `--t2`입니다. 경기 결과라 변화량 색 규칙과 같은 쌍을 씁니다. */
 @Composable

@@ -87,9 +87,11 @@ class FriendScreensTest {
 
         val compare = onNodeWithText("나와 비교", useUnmergedTree = true).getUnclippedBoundsInRoot()
         val hitShots = onNodeWithText("맞힌 부위", useUnmergedTree = true).getUnclippedBoundsInRoot()
-        val kdaRows = onAllNodesWithText("KDA", useUnmergedTree = true).fetchSemanticsNodes()
-            .map { it.boundsInRoot.top }
-            .filter { it > compare.bottom.value && it < hitShots.top.value }
+        // 칸이 카드에 잘려 화면 밖 줄은 잘린 자리가 0이 되므로 잘리기 전 자리로 본다
+        val kda = onAllNodesWithText("KDA", useUnmergedTree = true)
+        val kdaRows = kda.fetchSemanticsNodes().indices
+            .map { kda[it].getUnclippedBoundsInRoot().top }
+            .filter { it > compare.bottom && it < hitShots.top }
         assertEquals(1, kdaRows.size, "나와 비교에 KDA 줄이 없다")
     }
 

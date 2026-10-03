@@ -50,8 +50,6 @@ import com.ovalit.feature.report.resources.insight_other_agents
 import com.ovalit.feature.report.resources.insight_other_maps
 import com.ovalit.feature.report.resources.insight_other_roles
 import com.ovalit.feature.report.resources.insight_other_weapons
-import com.ovalit.feature.report.resources.insight_title
-import com.ovalit.feature.report.resources.insight_title_matches
 import com.ovalit.feature.report.resources.insight_played_as
 import com.ovalit.feature.report.resources.insight_reason_focus
 import com.ovalit.feature.report.resources.insight_reason_role
@@ -62,6 +60,8 @@ import com.ovalit.feature.report.resources.insight_session_late
 import com.ovalit.feature.report.resources.insight_side
 import com.ovalit.feature.report.resources.insight_side_attack
 import com.ovalit.feature.report.resources.insight_side_defense
+import com.ovalit.feature.report.resources.insight_title
+import com.ovalit.feature.report.resources.insight_title_matches
 import com.ovalit.feature.report.resources.insight_weapon
 import com.ovalit.feature.report.resources.metric_eco_win
 import com.ovalit.feature.report.resources.metric_first_duel_win
@@ -143,10 +143,7 @@ internal fun InsightSection(
         else -> null
     }
 
-    // 위 칸들은 모두 이번 주 숫자라 선과 제목으로 떼어 이번 액트 이야기임을 밝힌다
-    Spacer(Modifier.height(20.dp))
-    HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
-    Spacer(Modifier.height(18.dp))
+    // 위 칸들은 모두 이번 주 숫자라 묶음을 떼고 제목을 달아 이번 액트 이야기임을 밝힌다
     Column(
         modifier = modifier.padding(horizontal = OvalitSpacing.gutter),
         verticalArrangement = Arrangement.spacedBy(6.dp),

@@ -61,6 +61,28 @@ class OvalitColorsTest {
         }
     }
 
+    // 홈, 내 프로필, S5의 글자는 대부분 카드 위에 놓인다
+    @Test
+    fun `카드 위 글자색도 배경 위와 같은 대비를 넘는다`() {
+        forEachTheme { name, colors ->
+            assertContrast(name, "t1", colors.t1, colors.card, atLeast = 4.5)
+            assertContrast(name, "t2", colors.t2, colors.card, atLeast = 4.5)
+            assertContrast(name, "t3", colors.t3, colors.card, atLeast = 3.0)
+            assertContrast(name, "pos", colors.pos, colors.card, atLeast = 3.0)
+            assertContrast(name, "neg", colors.neg, colors.card, atLeast = 3.0)
+            listOf("kda1" to colors.kda1, "kda2" to colors.kda2, "kda3" to colors.kda3).forEach { (token, color) ->
+                assertContrast(name, token, color, colors.card, atLeast = 4.5)
+            }
+        }
+    }
+
+    @Test
+    fun `카드는 캔버스보다 밝아 묶음이 갈린다`() {
+        forEachTheme { name, colors ->
+            assertTrue(relativeLuminance(colors.card) > relativeLuminance(colors.canvas), "$name 카드가 캔버스보다 밝지 않다")
+        }
+    }
+
     // KDA는 리스트의 작은 글자로도 뜬다. 두 바탕 어디서든 본문 대비를 넘겨야 한다.
     @Test
     fun `KDA 구간 색은 두 바탕 모두에서 4_5 대 1을 넘는다`() {

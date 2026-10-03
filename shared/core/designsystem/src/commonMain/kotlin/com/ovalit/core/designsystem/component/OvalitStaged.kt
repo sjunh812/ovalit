@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import com.ovalit.core.designsystem.theme.OvalitTheme
@@ -32,6 +33,7 @@ private const val FADE_MILLIS = 220
  * 나눠 그리는 동안 내용은 보이지 않고 낭독기에도 읽히지 않습니다. 내용은 바탕을 칠한 채 위에서 서서히 나타나서, 두 쪽에 똑같이
  * 있는 머리 줄은 바뀌는 동안에도 흐려지지 않습니다.
  *
+ * @param contentBackground 내용 밑에 까는 바탕입니다. 화면 바탕과 같아야 나타나는 동안 틈이 보이지 않습니다.
  * @param ready 내용을 그려도 되는지입니다. 처음부터 `true`면 나누지 않고 한 번에 그립니다. 탭을 오가거나 뒤로 돌아온 경우라
  * 자리 틀을 보이면 깜빡입니다.
  */
@@ -40,6 +42,7 @@ fun OvalitStaged(
     ready: Boolean,
     placeholder: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    contentBackground: Color = OvalitTheme.colors.bg,
     content: @Composable () -> Unit,
 ) {
     val staging = remember { Staging(done = ready) }
@@ -69,7 +72,7 @@ fun OvalitStaged(
                         .fillMaxSize()
                         .then(if (staging.done) Modifier else Modifier.clearAndSetSemantics {})
                         .graphicsLayer { this.alpha = alpha.value }
-                        .background(OvalitTheme.colors.bg),
+                        .background(contentBackground),
                 ) {
                     content()
                 }

@@ -1,7 +1,6 @@
 package com.ovalit.core.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -21,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.Role as SemanticsRole
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -32,7 +30,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ovalit.core.designsystem.component.OvalitDivider
+import com.ovalit.core.designsystem.component.OvalitCard
+import com.ovalit.core.designsystem.component.OvalitCardGap
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.currentMaxWidth
 import com.ovalit.core.designsystem.icon.OvalitIcon
@@ -88,56 +87,52 @@ private val TierEmblemSize = 42.dp
 private val AgentFaceSize = 48.dp
 private const val SHOWN_TILES = 3
 
-/**
- * 이번 액트 경쟁전의 지금 티어와 승패입니다. 목업처럼 한 단계 밝은 면에 올려 화면의 첫 덩어리로 둡니다. 이 화면에서
- * 면을 까는 곳은 여기뿐입니다.
- */
+/** 이번 액트 경쟁전의 지금 티어와 승패입니다. 화면의 첫 카드입니다. */
 @Composable
-fun ProfileTierCard(record: CompetitiveRecord, catalog: ContentCatalog, modifier: Modifier = Modifier) {
+fun ProfileTierCard(record: CompetitiveRecord, catalog: ContentCatalog) {
     val colors = OvalitTheme.colors
     val tier = record.currentTier
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(colors.raised, RoundedCornerShape(14.dp))
-            .padding(OvalitSpacing.lg),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        if (tier != null) {
-            Box(
-                modifier = Modifier.size(TierEmblemBoxSize).background(colors.fill, RoundedCornerShape(14.dp)),
-                contentAlignment = Alignment.Center,
-            ) {
-                TierEmblem(tier, Modifier.size(TierEmblemSize))
+    ProfileSection {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (tier != null) {
+                Box(
+                    modifier = Modifier.size(TierEmblemBoxSize).background(colors.fill, RoundedCornerShape(14.dp)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    TierEmblem(tier, Modifier.size(TierEmblemSize))
+                }
+                Spacer(Modifier.width(OvalitSpacing.lg))
             }
-            Spacer(Modifier.width(OvalitSpacing.lg))
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            OvalitText(
-                text = tier?.let { catalog.tiers[it] } ?: stringResource(Res.string.profile_competitive),
-                style = OvalitTheme.typography.titleM,
-            )
-            Spacer(Modifier.height(2.dp))
-            // 글자를 키워 한 줄에 안 들어가면 승패가 통째로 다음 줄로 내려간다. 점은 줄 끝에 두지 않는다.
-            val caption = OvalitTheme.typography.caption
-            SeparatedRow(
-                items = listOf(
-                    { OvalitText(stringResource(Res.string.profile_competitive_matches, record.matches), style = caption, color = colors.t2) },
-                    { OvalitText(stringResource(Res.string.record_wins_losses, record.wins, record.losses), style = caption, color = colors.t2) },
-                ),
-                separator = { SeparatorDot(caption, colors.t2) },
-            )
-        }
-        Spacer(Modifier.width(OvalitSpacing.md))
-        Column(horizontalAlignment = Alignment.End, modifier = Modifier.semantics(mergeDescendants = true) {}) {
-            OvalitText(text = stringResource(Res.string.column_win_rate), style = OvalitTheme.typography.caption, color = colors.t3)
-            // 승률을 티어 이름보다 크게 두면 티어보다 먼저 읽힌다. 같은 크기에 숫자 폭만 고정한다.
-            OvalitText(
-                text = percentText(record.winRate),
-                style = StatValueStyle(),
-                color = winRateColor(record.winRate),
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                OvalitText(
+                    text = tier?.let { catalog.tiers[it] } ?: stringResource(Res.string.profile_competitive),
+                    style = OvalitTheme.typography.titleM,
+                )
+                Spacer(Modifier.height(2.dp))
+                // 글자를 키워 한 줄에 안 들어가면 승패가 통째로 다음 줄로 내려간다. 점은 줄 끝에 두지 않는다.
+                val caption = OvalitTheme.typography.caption
+                SeparatedRow(
+                    items = listOf(
+                        { OvalitText(stringResource(Res.string.profile_competitive_matches, record.matches), style = caption, color = colors.t2) },
+                        { OvalitText(stringResource(Res.string.record_wins_losses, record.wins, record.losses), style = caption, color = colors.t2) },
+                    ),
+                    separator = { SeparatorDot(caption, colors.t2) },
+                )
+            }
+            Spacer(Modifier.width(OvalitSpacing.md))
+            Column(horizontalAlignment = Alignment.End, modifier = Modifier.semantics(mergeDescendants = true) {}) {
+                OvalitText(text = stringResource(Res.string.column_win_rate), style = OvalitTheme.typography.caption, color = colors.t3)
+                // 승률을 티어 이름보다 크게 두면 티어보다 먼저 읽힌다. 같은 크기에 숫자 폭만 고정한다.
+                OvalitText(
+                    text = percentText(record.winRate),
+                    style = StatValueStyle(),
+                    color = winRateColor(record.winRate),
+                )
+            }
         }
     }
 }
@@ -147,7 +142,7 @@ fun ProfileTierCard(record: CompetitiveRecord, catalog: ContentCatalog, modifier
  * 놓습니다. 좁은 화면에서 글자를 키우면 같은 순서로 두 칸씩 놓습니다. 내 프로필과 S5가 같이 씁니다.
  */
 @Composable
-fun ProfileStatsSection(summary: ProfileSummary, modifier: Modifier = Modifier, divider: Boolean = false) {
+fun ProfileStatsSection(summary: ProfileSummary) {
     val metrics = summary.metrics
     val main = listOf(FixedMetric.DAMAGE, FixedMetric.KD, FixedMetric.COMBAT_SCORE).map { metric ->
         StatCell(stringResource(metric.label), metric.value(metrics)?.let { metric.format.valueText(it) })
@@ -173,7 +168,7 @@ fun ProfileStatsSection(summary: ProfileSummary, modifier: Modifier = Modifier, 
         ),
     )
 
-    ProfileSection(modifier = modifier, divider = divider) {
+    ProfileSection {
         ProfileSectionTitle(title = stringResource(Res.string.profile_stats_title))
         Spacer(Modifier.height(12.dp))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
@@ -356,7 +351,7 @@ fun ProfileAgentsSection(report: AgentReport, catalog: ContentCatalog, onOpen: (
     if (shown.isEmpty()) return
 
     // 역할 비중("타격대 78%")은 머리에 이미 있어서 여기 다시 적지 않는다
-    ProfileSection(modifier = Modifier.openable(onOpen)) {
+    ProfileSection(onClick = onOpen) {
         ProfileSectionTitle(title = stringResource(Res.string.profile_agents), chevron = onOpen != null)
         Spacer(Modifier.height(12.dp))
         AgentTileRow(shown, catalog)
@@ -437,7 +432,7 @@ fun ProfileWeaponsSection(report: WeaponReport, catalog: ContentCatalog, onOpen:
     val shown = report.highlights.map { it.act }
     if (shown.isEmpty()) return
 
-    ProfileSection(modifier = Modifier.openable(onOpen)) {
+    ProfileSection(onClick = onOpen) {
         ProfileSectionTitle(title = stringResource(Res.string.profile_weapons), chevron = onOpen != null)
         Spacer(Modifier.height(12.dp))
         WeaponTileRow(shown, catalog)
@@ -500,22 +495,16 @@ private fun WeaponTile(weapon: WeaponStats, line: WeaponLine, stacked: Boolean, 
     }
 }
 
-private fun Modifier.openable(onOpen: (() -> Unit)?): Modifier =
-    if (onOpen != null) clickable(role = SemanticsRole.Button, onClick = onOpen) else this
-
 /**
- * 프로필 화면의 한 덩어리입니다. 위에 선을 긋습니다. 누를 수 있는 섹션은 [modifier]로 clickable을 넘깁니다. 그러면 선
- * 아래 전체가 눌립니다. 티어 카드 바로 아래 통계는 카드가 경계를 대신해서 선을 긋지 않습니다.
+ * 프로필 화면의 한 덩어리입니다. 카드 하나에 담고 위 덩어리와는 카드 간격만큼 띄웁니다(사용자 결정, 2026-10-03). [onClick]이
+ * 있으면 카드 전체가 눌립니다.
  */
 @Composable
-fun ProfileSection(modifier: Modifier = Modifier, divider: Boolean = true, content: @Composable ColumnScope.() -> Unit) {
-    if (divider) OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = 18.dp, bottom = 20.dp),
-        content = content,
-    )
+fun ProfileSection(onClick: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
+    Spacer(Modifier.height(OvalitCardGap))
+    OvalitCard(onClick = onClick) {
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter), content = content)
+    }
 }
 
 @Composable

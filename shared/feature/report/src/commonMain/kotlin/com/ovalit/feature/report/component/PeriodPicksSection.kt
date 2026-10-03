@@ -1,6 +1,5 @@
 package com.ovalit.feature.report.component
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,8 +7,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.unit.dp
+import com.ovalit.core.designsystem.component.OvalitCard
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.WeeklyReport
@@ -35,29 +33,26 @@ internal fun PeriodPicksSection(
     onOpenWeapons: () -> Unit,
 ) {
     val period = periodLabel(report.period)
+    // 카드 전체가 눌린다
     if (report.agents.isNotEmpty()) {
-        PickSection(title = stringResource(Res.string.picks_agents, period), onOpen = onOpenAgents) {
-            AgentTileRow(report.agents, catalog, showRecord = true)
+        OvalitCard(onClick = onOpenAgents) {
+            PickSection(title = stringResource(Res.string.picks_agents, period)) {
+                AgentTileRow(report.agents, catalog, showRecord = true)
+            }
         }
     }
     if (report.weapons.isNotEmpty()) {
-        PickSection(title = stringResource(Res.string.picks_weapons, period), onOpen = onOpenWeapons) {
-            WeaponTileRow(report.weapons, catalog)
+        OvalitCard(onClick = onOpenWeapons) {
+            PickSection(title = stringResource(Res.string.picks_weapons, period)) {
+                WeaponTileRow(report.weapons, catalog)
+            }
         }
     }
 }
 
-// 섹션 전체가 눌린다. 위 여백까지 눌림 영역에 넣어 면이 선 바로 밑부터 깔린다.
 @Composable
-private fun PickSection(title: String, onOpen: () -> Unit, content: @Composable () -> Unit) {
-    Spacer(Modifier.height(20.dp))
-    HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(role = Role.Button, onClick = onOpen)
-            .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = 18.dp, bottom = 4.dp),
-    ) {
+private fun PickSection(title: String, content: @Composable () -> Unit) {
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter)) {
         ProfileSectionTitle(title = title, chevron = true)
         Spacer(Modifier.height(SectionTitleGap))
         content()

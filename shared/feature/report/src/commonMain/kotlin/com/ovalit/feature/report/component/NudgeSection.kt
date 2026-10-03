@@ -14,19 +14,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
+import com.ovalit.core.designsystem.component.OvalitCard
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitText
-import com.ovalit.core.designsystem.component.pressIndication
 import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
@@ -50,7 +48,6 @@ import com.ovalit.feature.report.resources.rival_pick_title
 import org.jetbrains.compose.resources.stringResource
 
 private val LeadingSize = 40.dp
-private val NudgeShape = RoundedCornerShape(14.dp)
 private val StackedAvatarSize = 32.dp
 private val StackedAvatarOverlap = 8.dp
 private const val STACKED_AVATARS = 2
@@ -69,39 +66,30 @@ internal fun NudgeBanner(
         HomeNudge.PICK_RIVAL -> Res.string.nudge_rival_title to Res.string.nudge_rival_body
     }
 
-    Row(
-        modifier = modifier
-            .padding(horizontal = OvalitSpacing.gutter)
-            .fillMaxWidth()
-            // 누르면 칸 면까지 같이 줄어야 해서 면을 칠하기 전에 단다
-            .clickable(
-                interactionSource = null,
-                indication = pressIndication(NudgeShape),
-                role = Role.Button,
-                onClick = onClick,
-            )
-            .clip(NudgeShape)
-            .background(colors.raised)
-            .padding(horizontal = OvalitSpacing.lg, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        when (nudge) {
-            HomeNudge.INVITE_FRIEND -> Box(
-                modifier = Modifier.size(LeadingSize).background(colors.fill, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                OvalitIcon(OvalitIcons.Friends, contentDescription = null, tint = colors.t1)
+    // 유도 칸은 카드 하나가 통째로 눌린다
+    OvalitCard(modifier = modifier, onClick = onClick) {
+        Row(
+            modifier = Modifier.padding(horizontal = OvalitSpacing.gutter).fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            when (nudge) {
+                HomeNudge.INVITE_FRIEND -> Box(
+                    modifier = Modifier.size(LeadingSize).background(colors.fill, CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    OvalitIcon(OvalitIcons.Friends, contentDescription = null, tint = colors.t1)
+                }
+                HomeNudge.PICK_RIVAL -> StackedAvatars(candidates.take(STACKED_AVATARS).map { it.riotId })
             }
-            HomeNudge.PICK_RIVAL -> StackedAvatars(candidates.take(STACKED_AVATARS).map { it.riotId })
+            Spacer(Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                OvalitText(text = stringResource(title), style = OvalitTheme.typography.bodyStrong)
+                Spacer(Modifier.height(2.dp))
+                OvalitText(text = stringResource(body), style = OvalitTheme.typography.caption, color = colors.t2)
+            }
+            Spacer(Modifier.width(OvalitSpacing.sm))
+            OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = colors.t4, size = 16.dp)
         }
-        Spacer(Modifier.width(14.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            OvalitText(text = stringResource(title), style = OvalitTheme.typography.bodyStrong)
-            Spacer(Modifier.height(2.dp))
-            OvalitText(text = stringResource(body), style = OvalitTheme.typography.caption, color = colors.t2)
-        }
-        Spacer(Modifier.width(OvalitSpacing.sm))
-        OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = colors.t4, size = 16.dp)
     }
 }
 
@@ -118,7 +106,8 @@ private fun StackedAvatars(riotIds: List<String>) {
                 size = StackedAvatarSize,
                 modifier = Modifier
                     .padding(start = step * index)
-                    .border(2.dp, colors.raised, CircleShape),
+                    // 겹친 아바타 사이를 카드 색 테두리로 띄운다
+                    .border(2.dp, colors.card, CircleShape),
             )
         }
     }

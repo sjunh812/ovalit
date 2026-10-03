@@ -72,7 +72,7 @@ fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Co
     val colors = OvalitTheme.colors
     val top = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding()
     Box(modifier = modifier.fillMaxWidth()) {
-        Box(modifier = Modifier.fillMaxWidth().height(top + BannerHeight).background(colors.raised)) {
+        Box(modifier = Modifier.fillMaxWidth().height(top + BannerHeight).background(colors.card)) {
             Box(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)), content = topBar)
         }
         PlayerAvatar(
@@ -80,7 +80,7 @@ fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Co
             size = AvatarSize,
             modifier = Modifier
                 .padding(start = OvalitSpacing.gutter, top = top + BannerHeight - AvatarSize / 2)
-                .border(3.dp, colors.bg, CircleShape),
+                .border(3.dp, colors.canvas, CircleShape),
         )
     }
 }
@@ -103,7 +103,7 @@ fun BoxScope.ProfileStatusBarScrim(scrollState: ScrollState) {
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
                 .windowInsetsTopHeight(WindowInsets.statusBars)
-                .background(OvalitTheme.colors.bg),
+                .background(OvalitTheme.colors.canvas),
         )
     }
 }

@@ -1,14 +1,15 @@
 package com.ovalit.feature.profile
 
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.ovalit.core.designsystem.component.OvalitCard
+import com.ovalit.core.designsystem.component.OvalitCardGap
 import com.ovalit.core.designsystem.component.OvalitDivider
+import com.ovalit.core.designsystem.component.OvalitPickerTitle
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTextButton
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -32,31 +33,27 @@ internal fun RecentMatchesSection(
     onOpenMatches: () -> Unit,
 ) {
     if (uiState.recentMatches.isEmpty()) return
-    OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 52.dp)
-            .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.sm, top = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        OvalitText(
-            text = stringResource(Res.string.profile_recent),
-            modifier = Modifier.weight(1f),
-            style = OvalitTheme.typography.bodyStrong,
+    Spacer(Modifier.height(OvalitCardGap))
+    OvalitCard {
+        // 줄 높이는 제목에 맞추고 전체 보기 버튼의 눌리는 영역만 위아래로 넘친다. 다른 카드와 제목 자리가 같아진다.
+        OvalitPickerTitle(
+            title = { OvalitText(text = stringResource(Res.string.profile_recent), style = OvalitTheme.typography.bodyStrong) },
+            picker = {
+                if (uiState.hasMoreMatches) {
+                    OvalitTextButton(text = stringResource(Res.string.profile_recent_all), onClick = onOpenMatches)
+                }
+            },
+            modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.sm),
         )
-        if (uiState.hasMoreMatches) {
-            OvalitTextButton(text = stringResource(Res.string.profile_recent_all), onClick = onOpenMatches)
+        uiState.recentMatches.forEachIndexed { index, match ->
+            if (index > 0) OvalitDivider(Modifier.padding(start = 67.dp), color = OvalitTheme.colors.lineWeak)
+            MatchRow(
+                match = match,
+                catalog = uiState.catalog,
+                timeLabel = recentMatchTimeLabel(match.startedAt, uiState.now, uiState.timeZone),
+                style = MatchRowStyle.COMPACT,
+                onClick = { onOpenMatch(match.id) },
+            )
         }
-    }
-    uiState.recentMatches.forEachIndexed { index, match ->
-        if (index > 0) OvalitDivider(Modifier.padding(start = 67.dp), color = OvalitTheme.colors.lineWeak)
-        MatchRow(
-            match = match,
-            catalog = uiState.catalog,
-            timeLabel = recentMatchTimeLabel(match.startedAt, uiState.now, uiState.timeZone),
-            style = MatchRowStyle.COMPACT,
-            onClick = { onOpenMatch(match.id) },
-        )
     }
 }

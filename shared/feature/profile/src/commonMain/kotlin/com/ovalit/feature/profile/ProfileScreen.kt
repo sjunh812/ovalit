@@ -26,6 +26,7 @@ import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.core.ui.ProfileAgentsSection
 import com.ovalit.core.ui.ProfileBanner
 import com.ovalit.core.ui.ProfileIdentity
+import com.ovalit.core.ui.ProfileSection
 import com.ovalit.core.ui.ProfileShotsSection
 import com.ovalit.core.ui.ProfileStatsSection
 import com.ovalit.core.ui.ProfileStatusBarScrim
@@ -66,7 +67,7 @@ internal fun ProfileScreen(
 ) {
     val colors = OvalitTheme.colors
 
-    Box(modifier = modifier.fillMaxSize().background(colors.bg)) {
+    Box(modifier = modifier.fillMaxSize().background(colors.canvas)) {
         if (uiState !is ProfileUiState.Success) return@Box
         val badge = uiState.badge ?: PlayerBadge(riotId = "", tier = null, tierName = null)
         val competitive = uiState.summary.competitive
@@ -86,21 +87,15 @@ internal fun ProfileScreen(
                 modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
             )
 
+            // 머리 밑으로 덩어리마다 카드 하나다
+            Spacer(Modifier.height(OvalitSpacing.sm))
             if (uiState.agents.matches == 0) {
-                Spacer(Modifier.height(20.dp))
-                OvalitText(
-                    text = stringResource(Res.string.no_matches),
-                    modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
-                    style = OvalitTheme.typography.body,
-                    color = colors.t2,
-                )
-                Spacer(Modifier.height(20.dp))
-            } else {
-                if (competitive != null) {
-                    Spacer(Modifier.height(20.dp))
-                    ProfileTierCard(competitive, uiState.catalog, Modifier.padding(horizontal = OvalitSpacing.gutter))
+                ProfileSection {
+                    OvalitText(text = stringResource(Res.string.no_matches), style = OvalitTheme.typography.body, color = colors.t2)
                 }
-                ProfileStatsSection(uiState.summary, Modifier.padding(top = 6.dp))
+            } else {
+                competitive?.let { ProfileTierCard(it, uiState.catalog) }
+                ProfileStatsSection(uiState.summary)
                 ProfileShotsSection(uiState.summary.metrics.shots)
                 ProfileAgentsSection(uiState.agents, uiState.catalog, onOpenAgents)
                 ProfileWeaponsSection(uiState.weapons, uiState.catalog, onOpenWeapons)

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,8 +32,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBackTopBar
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
+import com.ovalit.core.designsystem.component.OvalitCard
+import com.ovalit.core.designsystem.component.OvalitCardGap
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitIconButton
+import com.ovalit.core.designsystem.component.OvalitPickerTitle
 import com.ovalit.core.designsystem.component.OvalitPrimaryButton
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTextButton
@@ -42,7 +44,6 @@ import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
-import com.ovalit.core.model.CompetitiveRecord
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.WeeklyReport
@@ -135,7 +136,7 @@ internal fun FriendProfileScreen(
     val haptics = rememberOvalitHaptics()
     var confirmUnfriend by rememberSaveable { mutableStateOf(false) }
 
-    Box(modifier = modifier.fillMaxSize().background(colors.bg)) {
+    Box(modifier = modifier.fillMaxSize().background(colors.canvas)) {
         if (uiState !is FriendProfileUiState.Success) return@Box
         val friend = uiState.friend
         val name = friend.riotId.substringBefore('#')
@@ -175,7 +176,8 @@ internal fun FriendProfileScreen(
                     )
                 }
             }
-            Spacer(Modifier.height(20.dp))
+            // 머리 밑으로 덩어리마다 카드 하나다
+            Spacer(Modifier.height(OvalitSpacing.sm))
 
             // 친구 기반 앱만 낼 수 있는 숫자라 머리 바로 밑에 둔다
             ProfileSection {
@@ -207,9 +209,8 @@ internal fun FriendProfileScreen(
                 // 내 프로필과 같은 칸을 같은 순서로 쓰고 통계 다음에만 나와 비교를 끼운다. 요원과 무기를 누르면 친구 기록으로
                 // S7과 S6이 열린다.
                 if (hasActMatches) {
-                    competitive?.let { TierCard(it, uiState) }
-                    // 티어 카드가 없으면 바로 위가 같이 한 경기라 선을 그어 나눈다
-                    ProfileStatsSection(profile.summary, Modifier.padding(top = 6.dp), divider = competitive == null)
+                    competitive?.let { ProfileTierCard(it, uiState.catalog) }
+                    ProfileStatsSection(profile.summary)
                 } else {
                     ProfileSection {
                         OvalitText(text = stringResource(Res.string.no_act_matches), style = OvalitTheme.typography.body, color = colors.t2)
@@ -254,11 +255,6 @@ internal fun FriendProfileScreen(
     }
 }
 
-@Composable
-private fun TierCard(record: CompetitiveRecord, uiState: FriendProfileUiState.Success) {
-    ProfileTierCard(record, uiState.catalog, Modifier.padding(horizontal = OvalitSpacing.gutter))
-}
-
 // 내 리포트 기간으로 센 친구 숫자를 내 숫자와 나란히 둔다
 @Composable
 private fun CompareSection(mine: WeeklyReport.Ready, uiState: FriendProfileUiState.Success, name: String) {
@@ -290,31 +286,27 @@ private fun CompareSection(mine: WeeklyReport.Ready, uiState: FriendProfileUiSta
 private fun RecentMatches(uiState: FriendProfileUiState.Success, name: String, onOpenMatches: () -> Unit) {
     val matches = uiState.friend.matches.sortedByDescending { it.startedAt }
     if (matches.isEmpty()) return
-    OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 52.dp)
-            .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.sm, top = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        OvalitText(
-            text = stringResource(Res.string.recent_title, name),
-            modifier = Modifier.weight(1f),
-            style = OvalitTheme.typography.bodyStrong,
+    Spacer(Modifier.height(OvalitCardGap))
+    OvalitCard {
+        // 줄 높이는 제목에 맞추고 전체 보기 버튼의 눌리는 영역만 위아래로 넘친다. 다른 카드와 제목 자리가 같아진다.
+        OvalitPickerTitle(
+            title = { OvalitText(text = stringResource(Res.string.recent_title, name), style = OvalitTheme.typography.bodyStrong) },
+            picker = {
+                if (matches.size > RECENT_MATCHES) {
+                    OvalitTextButton(text = stringResource(Res.string.recent_all), onClick = onOpenMatches)
+                }
+            },
+            modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.sm),
         )
-        if (matches.size > RECENT_MATCHES) {
-            OvalitTextButton(text = stringResource(Res.string.recent_all), onClick = onOpenMatches)
+        matches.take(RECENT_MATCHES).forEachIndexed { index, match ->
+            if (index > 0) OvalitDivider(Modifier.padding(start = 67.dp), color = OvalitTheme.colors.lineWeak)
+            MatchRow(
+                match = match,
+                catalog = uiState.catalog,
+                timeLabel = recentMatchTimeLabel(match.startedAt, uiState.now, uiState.timeZone),
+                style = MatchRowStyle.COMPACT,
+            )
         }
-    }
-    matches.take(RECENT_MATCHES).forEachIndexed { index, match ->
-        if (index > 0) OvalitDivider(Modifier.padding(start = 67.dp), color = OvalitTheme.colors.lineWeak)
-        MatchRow(
-            match = match,
-            catalog = uiState.catalog,
-            timeLabel = recentMatchTimeLabel(match.startedAt, uiState.now, uiState.timeZone),
-            style = MatchRowStyle.COMPACT,
-        )
     }
 }
 

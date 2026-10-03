@@ -79,8 +79,6 @@ internal fun DynamicMetricSection(
     if (columns.isEmpty()) return
 
     Column(modifier = modifier) {
-        HorizontalLine(Modifier.padding(horizontal = OvalitSpacing.gutter))
-        Spacer(Modifier.height(18.dp))
         DynamicSectionTitle(report)
         Spacer(Modifier.height(SectionTitleGap))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {

@@ -8,6 +8,8 @@ import androidx.compose.ui.graphics.Color
 data class OvalitColors(
     val bg: Color,
     val raised: Color,
+    val canvas: Color,
+    val card: Color,
     val lineWeak: Color,
     val line: Color,
     val fill: Color,
@@ -28,6 +30,9 @@ data class OvalitColors(
     val isDark: Boolean,
 )
 
+// 카드(card)는 홈, 내 프로필, S5에서 큰 묶음을 담는 면이고 캔버스(canvas)는 그 뒤 바탕이다(사용자 결정, 2026-10-03). 다크는
+// 바탕보다 한 단계 밝은 면을, 라이트는 토스처럼 옅은 바탕 위 흰 면을 쓴다. 라이트에서 bg 위에 raised를 올리는 식으로 뒤집지
+// 않은 건 bg가 이미 흰색에 가까워 카드가 바탕보다 어두워지기 때문이다.
 // KDA 구간 색(kda1~3)은 파랑, 보라, 주황이다. 게임 아이템 등급처럼 올라갈수록 뜨거운 색으로 읽힌다. 처음 쓴 청록은
 // 오르내림의 pos와 OKLab 거리가 10이 안 돼 "지난주보다 올랐다"는 초록으로 보였다(사용자 요청, 2026-09-29). 파랑과 보라는
 // pos, neg, 액센트와 모두 15 넘게 떨어진다. 주황은 라이트에서 neg와 8 남짓이라 가깝지만 등급의 맨 위를 알리는 색이라 두었고,
@@ -35,6 +40,8 @@ data class OvalitColors(
 internal val OvalitDarkColors = OvalitColors(
     bg = Color(0xFF100E0C),
     raised = Color(0xFF1A1714),
+    canvas = Color(0xFF100E0C),
+    card = Color(0xFF1A1714),
     lineWeak = Color(0xFF1C1917),
     line = Color(0xFF23201C),
     fill = Color(0xFF2A2621),
@@ -62,6 +69,8 @@ internal val OvalitDarkColors = OvalitColors(
 internal val OvalitLightColors = OvalitColors(
     bg = Color(0xFFFDFCFA),
     raised = Color(0xFFF7F4F0),
+    canvas = Color(0xFFF7F4F0),
+    card = Color(0xFFFFFFFF),
     lineWeak = Color(0xFFEFEAE4),
     line = Color(0xFFE5DFD7),
     fill = Color(0xFFF2EDE7),

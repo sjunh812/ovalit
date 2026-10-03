@@ -66,7 +66,8 @@ internal fun TrendEntry(report: WeeklyReport.Ready, metric: FixedMetric, onClick
             // 면까지 같이 줄도록 누름 효과를 면보다 앞에 단다(CLAUDE.md 디자인)
             .clickable(role = Role.Button, onClick = onClick)
             .clip(RoundedCornerShape(12.dp))
-            .background(colors.raised)
+            // 카드 위라 한 단계 더 올린 면이다. --raised는 다크에서 카드와 같은 색이다.
+            .background(colors.fill)
             .padding(horizontal = 12.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

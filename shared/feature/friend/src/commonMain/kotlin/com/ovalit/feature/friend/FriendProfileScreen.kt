@@ -38,8 +38,10 @@ import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitIconButton
 import com.ovalit.core.designsystem.component.OvalitPickerTitle
 import com.ovalit.core.designsystem.component.OvalitPrimaryButton
+import com.ovalit.core.designsystem.component.OvalitStaged
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTextButton
+import com.ovalit.core.designsystem.component.rememberContentShown
 import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -55,6 +57,7 @@ import com.ovalit.core.ui.ProfileBanner
 import com.ovalit.core.ui.ProfileIdentity
 import com.ovalit.core.ui.ProfileSection
 import com.ovalit.core.ui.ProfileShotsSection
+import com.ovalit.core.ui.ProfileSkeleton
 import com.ovalit.core.ui.ProfileStatsSection
 import com.ovalit.core.ui.ProfileStatusBarScrim
 import com.ovalit.core.ui.ProfileTierCard
@@ -136,99 +139,108 @@ internal fun FriendProfileScreen(
     val haptics = rememberOvalitHaptics()
     var confirmUnfriend by rememberSaveable { mutableStateOf(false) }
 
-    Box(modifier = modifier.fillMaxSize().background(colors.canvas)) {
-        if (uiState !is FriendProfileUiState.Success) return@Box
-        val friend = uiState.friend
-        val name = friend.riotId.substringBefore('#')
+    // 내 프로필과 같다. 밀려 들어오는 중에 도착하면 다 들어올 때까지 자리 틀을 두고 서서히 바꾼다(사용자 요청, 2026-10-03).
+    val shown = rememberContentShown(loaded = uiState is FriendProfileUiState.Success)
+    OvalitStaged(
+        ready = uiState is FriendProfileUiState.Success && shown,
+        modifier = modifier.fillMaxSize().background(colors.canvas),
+        contentBackground = colors.canvas,
+        placeholder = { ProfileSkeleton { OvalitBackTopBar(onBack = onBack) } },
+    ) {
+        if (uiState !is FriendProfileUiState.Success) return@OvalitStaged
+        Box(modifier = Modifier.fillMaxSize()) {
+            val friend = uiState.friend
+            val name = friend.riotId.substringBefore('#')
 
-        val scrollState = rememberScrollState()
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-            ProfileBanner(uiState.badge) {
-                OvalitBackTopBar(onBack = onBack) {
-                    OvalitIconButton(OvalitIcons.More, stringResource(Res.string.more), onClick = { confirmUnfriend = true })
-                }
-            }
-            val profile = uiState.theirProfile
-            val competitive = profile?.summary?.competitive
-            val hasActMatches = profile != null && profile.agents.matches > 0
-            Spacer(Modifier.height(10.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter),
-                verticalAlignment = Alignment.Top,
-            ) {
-                ProfileIdentity(
-                    badge = uiState.badge,
-                    showTier = competitive == null,
-                    mainRole = profile?.agents?.mainRole,
-                    mainRoleShare = profile?.agents?.mainRoleShare,
-                    trailing = profile?.let { stringResource(CoreUiRes.string.act_matches, it.agents.matches) },
-                    modifier = Modifier.weight(1f),
-                )
-                // 라이벌로 둔 친구가 전적을 비공개로 바꿔도 해제할 수 있어야 한다
-                if (friend.statsPublic || uiState.isRival) {
-                    SmallButton(
-                        text = stringResource(if (uiState.isRival) Res.string.unset_rival else Res.string.set_rival),
-                        filled = false,
-                        onClick = {
-                            if (!uiState.isRival) haptics.confirm()
-                            onToggleRival()
-                        },
-                    )
-                }
-            }
-            // 머리 밑으로 덩어리마다 카드 하나다
-            Spacer(Modifier.height(OvalitSpacing.sm))
-
-            // 친구 기반 앱만 낼 수 있는 숫자라 머리 바로 밑에 둔다
-            ProfileSection {
-                Row(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically) {
-                    OvalitText(
-                        text = stringResource(Res.string.shared_matches),
-                        modifier = Modifier.weight(1f),
-                        style = OvalitTheme.typography.body,
-                        color = colors.t2,
-                    )
-                    OvalitText(
-                        text = stringResource(Res.string.shared_count, uiState.shared.matches),
-                        style = OvalitTheme.typography.metricS,
-                        color = colors.t3,
-                    )
-                    Spacer(Modifier.width(OvalitSpacing.md))
-                    OvalitText(
-                        text = stringResource(Res.string.shared_record, uiState.shared.wins, uiState.shared.losses),
-                        style = OvalitTheme.typography.bodyStrong,
-                    )
-                }
-            }
-
-            if (profile == null) {
-                ProfileSection {
-                    OvalitText(text = stringResource(Res.string.private_body), style = OvalitTheme.typography.body, color = colors.t2)
-                }
-            } else {
-                // 내 프로필과 같은 칸을 같은 순서로 쓰고 통계 다음에만 나와 비교를 끼운다. 요원과 무기를 누르면 친구 기록으로
-                // S7과 S6이 열린다.
-                if (hasActMatches) {
-                    competitive?.let { ProfileTierCard(it, uiState.catalog) }
-                    ProfileStatsSection(profile.summary)
-                } else {
-                    ProfileSection {
-                        OvalitText(text = stringResource(Res.string.no_act_matches), style = OvalitTheme.typography.body, color = colors.t2)
+            val scrollState = rememberScrollState()
+            Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
+                ProfileBanner(uiState.badge) {
+                    OvalitBackTopBar(onBack = onBack) {
+                        OvalitIconButton(OvalitIcons.More, stringResource(Res.string.more), onClick = { confirmUnfriend = true })
                     }
                 }
-                (uiState.myReport as? WeeklyReport.Ready)?.let { mine -> CompareSection(mine, uiState, name) }
-                if (hasActMatches) {
-                    ProfileShotsSection(profile.summary.metrics.shots)
-                    ProfileAgentsSection(profile.agents, uiState.catalog, onOpen = onOpenAgents)
-                    ProfileWeaponsSection(profile.weapons, uiState.catalog, onOpen = onOpenWeapons)
+                val profile = uiState.theirProfile
+                val competitive = profile?.summary?.competitive
+                val hasActMatches = profile != null && profile.agents.matches > 0
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    ProfileIdentity(
+                        badge = uiState.badge,
+                        showTier = competitive == null,
+                        mainRole = profile?.agents?.mainRole,
+                        mainRoleShare = profile?.agents?.mainRoleShare,
+                        trailing = profile?.let { stringResource(CoreUiRes.string.act_matches, it.agents.matches) },
+                        modifier = Modifier.weight(1f),
+                    )
+                    // 라이벌로 둔 친구가 전적을 비공개로 바꿔도 해제할 수 있어야 한다
+                    if (friend.statsPublic || uiState.isRival) {
+                        SmallButton(
+                            text = stringResource(if (uiState.isRival) Res.string.unset_rival else Res.string.set_rival),
+                            filled = false,
+                            onClick = {
+                                if (!uiState.isRival) haptics.confirm()
+                                onToggleRival()
+                            },
+                        )
+                    }
                 }
-                RecentMatches(uiState, name, onOpenMatches)
+                // 머리 밑으로 덩어리마다 카드 하나다
+                Spacer(Modifier.height(OvalitSpacing.sm))
+
+                // 친구 기반 앱만 낼 수 있는 숫자라 머리 바로 밑에 둔다
+                ProfileSection {
+                    Row(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically) {
+                        OvalitText(
+                            text = stringResource(Res.string.shared_matches),
+                            modifier = Modifier.weight(1f),
+                            style = OvalitTheme.typography.body,
+                            color = colors.t2,
+                        )
+                        OvalitText(
+                            text = stringResource(Res.string.shared_count, uiState.shared.matches),
+                            style = OvalitTheme.typography.metricS,
+                            color = colors.t3,
+                        )
+                        Spacer(Modifier.width(OvalitSpacing.md))
+                        OvalitText(
+                            text = stringResource(Res.string.shared_record, uiState.shared.wins, uiState.shared.losses),
+                            style = OvalitTheme.typography.bodyStrong,
+                        )
+                    }
+                }
+
+                if (profile == null) {
+                    ProfileSection {
+                        OvalitText(text = stringResource(Res.string.private_body), style = OvalitTheme.typography.body, color = colors.t2)
+                    }
+                } else {
+                    // 내 프로필과 같은 칸을 같은 순서로 쓰고 통계 다음에만 나와 비교를 끼운다. 요원과 무기를 누르면 친구 기록으로
+                    // S7과 S6이 열린다.
+                    if (hasActMatches) {
+                        competitive?.let { ProfileTierCard(it, uiState.catalog) }
+                        ProfileStatsSection(profile.summary)
+                    } else {
+                        ProfileSection {
+                            OvalitText(text = stringResource(Res.string.no_act_matches), style = OvalitTheme.typography.body, color = colors.t2)
+                        }
+                    }
+                    (uiState.myReport as? WeeklyReport.Ready)?.let { mine -> CompareSection(mine, uiState, name) }
+                    if (hasActMatches) {
+                        ProfileShotsSection(profile.summary.metrics.shots)
+                        ProfileAgentsSection(profile.agents, uiState.catalog, onOpen = onOpenAgents)
+                        ProfileWeaponsSection(profile.weapons, uiState.catalog, onOpen = onOpenWeapons)
+                    }
+                    RecentMatches(uiState, name, onOpenMatches)
+                }
+                Spacer(Modifier.height(OvalitSpacing.xxl))
+                // 탭바 밖 화면이라 시스템 내비게이션 바 높이만큼 더 띄운다. 안 그러면 마지막 줄이 내비게이션 바에 덮인다.
+                Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
-            Spacer(Modifier.height(OvalitSpacing.xxl))
-            // 탭바 밖 화면이라 시스템 내비게이션 바 높이만큼 더 띄운다. 안 그러면 마지막 줄이 내비게이션 바에 덮인다.
-            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+            ProfileStatusBarScrim(scrollState)
         }
-        ProfileStatusBarScrim(scrollState)
     }
 
     if (confirmUnfriend && uiState is FriendProfileUiState.Success) {

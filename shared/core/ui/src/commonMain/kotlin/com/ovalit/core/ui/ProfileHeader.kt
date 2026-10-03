@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
@@ -45,12 +46,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import com.ovalit.core.designsystem.component.OvalitSkeleton
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.SkeletonBlock
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Role
 import com.ovalit.core.ui.resources.Res
 import com.ovalit.core.ui.resources.main_role
+import com.ovalit.core.ui.resources.profile_loading
 import org.jetbrains.compose.resources.stringResource
 
 // 상태 표시줄 밑의 배너 높이다. 머리 줄이 64dp라 아바타는 그보다 8dp 아래에서 시작한다.
@@ -83,6 +87,35 @@ fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Co
                 .padding(start = OvalitSpacing.gutter, top = top + BannerHeight - AvatarSize / 2)
                 .border(3.dp, colors.canvas, CircleShape),
         )
+    }
+}
+
+/**
+ * 내 프로필과 S5를 세는 동안의 모양입니다. 배너와 머리 줄은 그대로 두고 이름과 첫 카드 자리만 잡습니다. 빈 바탕으로 밀려
+ * 들어오면 전환 한가운데서 배너와 카드가 한꺼번에 튀어나와 번쩍였습니다(사용자 요청, 2026-10-03).
+ */
+@Composable
+fun ProfileSkeleton(topBar: @Composable BoxScope.() -> Unit) {
+    val description = stringResource(Res.string.profile_loading)
+    Column(modifier = Modifier.fillMaxSize()) {
+        ProfileBanner(PlayerBadge(riotId = "", tier = null, tierName = null), topBar = topBar)
+        Spacer(Modifier.height(10.dp))
+        OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                SkeletonBlock(width = 140.dp, height = 24.dp)
+                SkeletonBlock(width = 180.dp, height = 14.dp)
+            }
+        }
+        Spacer(Modifier.height(OvalitSpacing.sm))
+        ProfileSection {
+            OvalitSkeleton(description = description) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SkeletonBlock(width = 96.dp, height = 18.dp)
+                    SkeletonBlock(width = 200.dp, height = 28.dp)
+                    SkeletonBlock(width = 150.dp, height = 12.dp)
+                }
+            }
+        }
     }
 }
 

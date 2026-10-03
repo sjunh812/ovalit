@@ -18,7 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBackTopBar
+import com.ovalit.core.designsystem.component.OvalitStage
+import com.ovalit.core.designsystem.component.OvalitStaged
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.rememberContentShown
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
@@ -28,6 +31,7 @@ import com.ovalit.core.ui.ProfileBanner
 import com.ovalit.core.ui.ProfileIdentity
 import com.ovalit.core.ui.ProfileSection
 import com.ovalit.core.ui.ProfileShotsSection
+import com.ovalit.core.ui.ProfileSkeleton
 import com.ovalit.core.ui.ProfileStatsSection
 import com.ovalit.core.ui.ProfileStatusBarScrim
 import com.ovalit.core.ui.ProfileTierCard
@@ -66,45 +70,59 @@ internal fun ProfileScreen(
     modifier: Modifier = Modifier,
 ) {
     val colors = OvalitTheme.colors
+    // 프로필은 뒤에서 센다. 밀려 들어오는 중에 도착하면 다 들어올 때까지 자리 틀을 두고, 묶음마다 한 프레임씩 그린 뒤
+    // 서서히 바꾼다. 빈 바탕으로 들어오다 전환 한가운데서 배너와 카드가 튀어나와 번쩍였다(사용자 요청, 2026-10-03).
+    val shown = rememberContentShown(loaded = uiState is ProfileUiState.Success)
 
-    Box(modifier = modifier.fillMaxSize().background(colors.canvas)) {
-        if (uiState !is ProfileUiState.Success) return@Box
+    OvalitStaged(
+        ready = uiState is ProfileUiState.Success && shown,
+        modifier = modifier.fillMaxSize().background(colors.canvas),
+        contentBackground = colors.canvas,
+        placeholder = { ProfileSkeleton { OvalitBackTopBar(onBack = onBack) } },
+    ) {
+        if (uiState !is ProfileUiState.Success) return@OvalitStaged
         val badge = uiState.badge ?: PlayerBadge(riotId = "", tier = null, tierName = null)
         val competitive = uiState.summary.competitive
         val scrollState = rememberScrollState()
 
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-            ProfileBanner(badge) {
-                OvalitBackTopBar(onBack = onBack)
-            }
-            Spacer(Modifier.height(10.dp))
-            ProfileIdentity(
-                badge = badge,
-                showTier = competitive == null,
-                mainRole = uiState.agents.mainRole,
-                mainRoleShare = uiState.agents.mainRoleShare,
-                trailing = stringResource(CoreUiRes.string.act_matches, uiState.agents.matches),
-                modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
-            )
-
-            // 머리 밑으로 덩어리마다 카드 하나다
-            Spacer(Modifier.height(OvalitSpacing.sm))
-            if (uiState.agents.matches == 0) {
-                ProfileSection {
-                    OvalitText(text = stringResource(Res.string.no_matches), style = OvalitTheme.typography.body, color = colors.t2)
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
+                OvalitStage {
+                    ProfileBanner(badge) {
+                        OvalitBackTopBar(onBack = onBack)
+                    }
+                    Spacer(Modifier.height(10.dp))
+                    ProfileIdentity(
+                        badge = badge,
+                        showTier = competitive == null,
+                        mainRole = uiState.agents.mainRole,
+                        mainRoleShare = uiState.agents.mainRoleShare,
+                        trailing = stringResource(CoreUiRes.string.act_matches, uiState.agents.matches),
+                        modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
+                    )
                 }
-            } else {
-                competitive?.let { ProfileTierCard(it, uiState.catalog) }
-                ProfileStatsSection(uiState.summary)
-                ProfileShotsSection(uiState.summary.metrics.shots)
-                ProfileAgentsSection(uiState.agents, uiState.catalog, onOpenAgents)
-                ProfileWeaponsSection(uiState.weapons, uiState.catalog, onOpenWeapons)
+
+                // 머리 밑으로 덩어리마다 카드 하나다
+                Spacer(Modifier.height(OvalitSpacing.sm))
+                if (uiState.agents.matches == 0) {
+                    ProfileSection {
+                        OvalitText(text = stringResource(Res.string.no_matches), style = OvalitTheme.typography.body, color = colors.t2)
+                    }
+                } else {
+                    OvalitStage {
+                        competitive?.let { ProfileTierCard(it, uiState.catalog) }
+                        ProfileStatsSection(uiState.summary)
+                    }
+                    OvalitStage { ProfileShotsSection(uiState.summary.metrics.shots) }
+                    OvalitStage { ProfileAgentsSection(uiState.agents, uiState.catalog, onOpenAgents) }
+                    OvalitStage { ProfileWeaponsSection(uiState.weapons, uiState.catalog, onOpenWeapons) }
+                }
+                OvalitStage { RecentMatchesSection(uiState, onOpenMatch, onOpenMatches) }
+                Spacer(Modifier.height(OvalitSpacing.xxl))
+                // 탭바 밖 화면이라 시스템 내비게이션 바 높이만큼 더 띄운다. 안 그러면 마지막 줄이 내비게이션 바에 덮인다.
+                Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
-            RecentMatchesSection(uiState, onOpenMatch, onOpenMatches)
-            Spacer(Modifier.height(OvalitSpacing.xxl))
-            // 탭바 밖 화면이라 시스템 내비게이션 바 높이만큼 더 띄운다. 안 그러면 마지막 줄이 내비게이션 바에 덮인다.
-            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+            ProfileStatusBarScrim(scrollState)
         }
-        ProfileStatusBarScrim(scrollState)
     }
 }

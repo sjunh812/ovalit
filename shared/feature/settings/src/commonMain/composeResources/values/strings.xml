@@ -13,8 +13,8 @@
     <string name="notify_analysis_done">분석 완료</string>
     <string name="notify_weekly_report">주간 리포트</string>
     <string name="notify_weekly_report_time">월요일 오전</string>
-    <string name="notify_ping">게임 초대</string>
-    <string name="notify_ping_description">친구가 같이 하자고 부르거나 내가 부른 친구가 답하면 알려 드려요</string>
+    <string name="notify_ping">오발있?</string>
+    <string name="notify_ping_description">친구가 파티를 모집하거나 내 모집에 답하면 알려 드려요</string>
 
     <string name="section_display">표시</string>
     <string name="theme">테마</string>

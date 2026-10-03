@@ -73,6 +73,7 @@ import com.ovalit.feature.friend.resources.ping_compose_open
 import com.ovalit.feature.friend.resources.ping_compose_title
 import com.ovalit.feature.friend.resources.ping_compose_when
 import com.ovalit.feature.friend.resources.ping_compose_who
+import com.ovalit.feature.friend.resources.ping_empty_hint
 import com.ovalit.feature.friend.resources.ping_count_no
 import com.ovalit.feature.friend.resources.ping_count_other
 import com.ovalit.feature.friend.resources.ping_count_pending
@@ -94,6 +95,7 @@ import com.ovalit.feature.friend.resources.ping_time_move_title
 import com.ovalit.feature.friend.resources.ping_time_reply_confirm
 import com.ovalit.feature.friend.resources.ping_time_reply_title
 import com.ovalit.feature.friend.resources.ping_title
+import com.ovalit.feature.friend.resources.ping_title_note
 import com.ovalit.feature.friend.resources.ping_too_many
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
@@ -111,7 +113,7 @@ private val BarInset = 3.dp
 private val BarItemHeight = 40.dp
 
 /**
- * 친구 탭 맨 위의 ㅇㅂㅇ 카드입니다. 받은 초대와 보낸 초대를 한 줄씩 두고, 누르면 초대 화면으로 들어가 답하거나 시각을
+ * 친구 탭 맨 위의 "오발있?" 카드입니다. 받은 초대와 보낸 초대를 한 줄씩 두고, 누르면 초대 화면으로 들어가 답하거나 시각을
  * 옮깁니다. 카드 안에 시각, 참석자, 버튼을 다 펼치면 친구 탭이 초대로 꽉 차서 한 단계 들어가게 했습니다(사용자 요청,
  * 2026-10-03). 줄은 홈 카드와 같은 [PingSummaryRow]입니다.
  *
@@ -129,8 +131,22 @@ internal fun PingListCard(
     onCompose: () -> Unit,
 ) {
     OvalitCard {
+        // "오발있?"은 앱 이름이라 처음 보는 사람은 무슨 기능인지 모른다. 옆에 작게 "파티 모집"을 붙여 알려 준다.
         val title = @Composable {
-            OvalitText(text = stringResource(Res.string.ping_title), style = OvalitTheme.typography.bodyStrong)
+            Row {
+                OvalitText(
+                    text = stringResource(Res.string.ping_title),
+                    modifier = Modifier.alignByBaseline(),
+                    style = OvalitTheme.typography.bodyStrong,
+                )
+                Spacer(Modifier.width(6.dp))
+                OvalitText(
+                    text = stringResource(Res.string.ping_title_note),
+                    modifier = Modifier.alignByBaseline(),
+                    style = OvalitTheme.typography.caption,
+                    color = OvalitTheme.colors.t3,
+                )
+            }
         }
         Box(modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
             if (canCompose) {
@@ -144,7 +160,7 @@ internal fun PingListCard(
         }
         if (pings.isEmpty()) {
             OvalitText(
-                text = stringResource(Res.string.ping_compose_hint, MAX_PING_FRIENDS),
+                text = stringResource(Res.string.ping_empty_hint, MAX_PING_FRIENDS),
                 modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.sm),
                 style = OvalitTheme.typography.caption,
                 color = OvalitTheme.colors.t3,

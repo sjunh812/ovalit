@@ -115,10 +115,10 @@ fun pingWhenText(ping: Ping, now: Instant, timeZone: TimeZone): String {
 }
 
 /**
- * 카드 머리의 "민석의 초대"나 "내 초대"입니다. 받은 것과 보낸 것이 여기서 갈립니다.
+ * 카드 머리의 "민석의 오발있?"이나 "내 오발있?"입니다. 받은 것과 보낸 것이 여기서 갈립니다.
  *
  * 닉네임 뒤에는 받침에 따라 바뀌는 조사를 붙이지 않습니다. "봉봉이"는 "봉봉이이"로 읽히고 "Tom"은 받침을 알 수 없습니다(사용자
- * 요청, 2026-10-03). "의"와 "에게"처럼 늘 같은 조사만 씁니다.
+ * 요청, 2026-10-03). "의"와 "에게"처럼 늘 같은 조사만 씁니다. "오발있?" 뒤에도 조사를 붙이지 않습니다.
  */
 @Composable
 fun pingCalledBy(ping: Ping, me: PlayerId): String =
@@ -128,7 +128,7 @@ fun pingCalledBy(ping: Ping, me: PlayerId): String =
         stringResource(Res.string.ping_called_by, ping.host.riotId.substringBefore('#'))
     }
 
-/** 홈 한 줄의 "민석의 초대 · 21:00"이나 "내 초대 · 지금"입니다. */
+/** 홈 한 줄의 "민석의 오발있? · 21:00"이나 "내 오발있? · 지금"입니다. */
 @Composable
 fun pingHomeTitle(ping: Ping, me: PlayerId, now: Instant, timeZone: TimeZone): String {
     val time = pingClockText(ping.startsAt, now, timeZone)

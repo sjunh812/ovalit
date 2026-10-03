@@ -47,8 +47,8 @@ class PingScreenTest {
         var opened: PingId? = null
         setContent { Friends(pings = listOf(received(), sent()), actions = PingActions(open = { opened = it })) }
 
-        onNodeWithText("내 초대 · 21:00").assertExists()
-        onNodeWithText("민석의 초대 · 21:00").performClick()
+        onNodeWithText("내 오발있? · 21:00").assertExists()
+        onNodeWithText("민석의 오발있? · 21:00").performClick()
 
         assertEquals(received().id, opened)
     }
@@ -66,7 +66,7 @@ class PingScreenTest {
     fun `닉네임 뒤에는 받침에 따라 바뀌는 조사를 붙이지 않는다`() = runComposeUiTest {
         setContent { Friends(pings = listOf(received().copy(host = PingPerson(PlayerId("bong"), "봉봉이#KR1")))) }
 
-        onNodeWithText("봉봉이의 초대 · 21:00").assertExists()
+        onNodeWithText("봉봉이의 오발있? · 21:00").assertExists()
     }
 
     @Test
@@ -74,7 +74,8 @@ class PingScreenTest {
         setContent { Friends(pings = emptyList()) }
 
         onNodeWithText("오발있?").assertExists()
-        onNodeWithText("친구 4명까지 시간을 정해 한 번에 불러요").assertExists()
+        onNodeWithText("파티 모집").assertExists()
+        onNodeWithText("친구 4명까지 한 번에 모아요").assertExists()
     }
 
     // 사용자 요청(2026-10-03): 친구 탭을 크게 차지하지 않게 부르기는 시트로 띄운다
@@ -90,13 +91,13 @@ class PingScreenTest {
             )
         }
 
-        onNodeWithText("누구랑 할까요?").assertDoesNotExist()
-        onNodeWithText("부르기").performClick()
+        onNodeWithText("누구랑 파티할까요?").assertDoesNotExist()
+        onNodeWithText("보내기").performClick()
 
         onNodeWithText("친구를 골라 주세요").assertIsNotEnabled()
         onNodeWithText("준호").performClick()
         onNodeWithText("21:30").performClick()
-        onNodeWithText("1명 부르기").performScrollTo().performClick()
+        onNodeWithText("1명에게 오발있?").performScrollTo().performClick()
 
         assertEquals(listOf(PlayerId("junho")), sentTo)
         assertEquals(NineThirty, at)
@@ -104,10 +105,12 @@ class PingScreenTest {
 
     // 한 번에 하나만 보낸다
     @Test
-    fun `보낸 초대가 끝나기 전에는 부르기 버튼을 두지 않는다`() = runComposeUiTest {
+    fun `보낸 초대가 끝나기 전에는 보내기 버튼을 두지 않는다`() = runComposeUiTest {
         setContent { Friends(pings = listOf(sent())) }
 
-        onNodeWithText("부르기").assertDoesNotExist()
+        onNodeWithText("보내기").assertDoesNotExist()
+        // 버튼이 없어도 무슨 기능인지는 제목 옆에서 알린다
+        onNodeWithText("파티 모집").assertExists()
     }
 
     @Test
@@ -121,7 +124,7 @@ class PingScreenTest {
     fun `받은 초대 화면은 시각과 친구마다 답을 적는다`() = runComposeUiTest {
         setContent { Detail(received()) }
 
-        onNodeWithText("민석의 초대").assertExists()
+        onNodeWithText("민석의 오발있?").assertExists()
         onNodeWithText("21:00").assertExists()
         onNodeWithText("오늘 · 35분 뒤").assertExists()
         // 부른 친구는 참석으로 치고 나는 세지 않는다. 내 답은 맨 밑 버튼에 있다.
@@ -195,7 +198,7 @@ class PingScreenTest {
         var moved: Instant? = null
         setContent { Detail(sent(), PingDetailActions(moveTo = { moved = it })) }
 
-        onNodeWithText("내 초대").assertExists()
+        onNodeWithText("내 오발있?").assertExists()
         onNodeWithText("21:30 어때요?").assertExists()
         onNodeWithText("준호, 재현의 제안").assertExists()
         onNodeWithText("1명 참석 · 2명 시간 제안").assertExists()
@@ -249,7 +252,7 @@ class PingScreenTest {
     fun `없어진 초대는 끝났다고 적는다`() = runComposeUiTest {
         setContent { OvalitTheme { PingDetailScreen(PingDetailUiState.Gone, onBack = {}, timeZone = Seoul) } }
 
-        onNodeWithText("끝났거나 취소된 초대예요").assertExists()
+        onNodeWithText("이미 끝났거나 취소됐어요").assertExists()
     }
 }
 

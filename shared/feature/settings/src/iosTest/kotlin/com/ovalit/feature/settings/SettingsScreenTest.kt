@@ -65,7 +65,7 @@ class SettingsScreenTest {
 
     // 서버가 월요일 9시에 FCM 토픽으로 보내게 되어 목업의 줄을 되살렸다(2026-10-03)
     @Test
-    fun `알림에는 분석 완료 주간 리포트 게임 초대 스위치를 둔다`() = runComposeUiTest {
+    fun `알림에는 분석 완료 주간 리포트 오발있 스위치를 둔다`() = runComposeUiTest {
         var weekly: Boolean? = null
         var ping: Boolean? = null
         setContent {
@@ -74,7 +74,7 @@ class SettingsScreenTest {
 
         onNodeWithText("분석 완료", substring = true).assertExists()
         onNodeWithText("주간 리포트", substring = true).performScrollTo().performClick()
-        onNodeWithText("게임 초대", substring = true).performScrollTo().performClick()
+        onNodeWithText("파티를 모집하거나", substring = true).performScrollTo().performClick()
 
         assertEquals(false, weekly)
         assertEquals(false, ping)

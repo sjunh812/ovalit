@@ -30,14 +30,14 @@ fun OvalitPickerButton(text: String, onClickLabel: String, onClick: () -> Unit, 
     Row(
         modifier = modifier
             .heightIn(min = PickerHeight)
+            // 오른쪽 끝을 본문 선에 맞추느라 안쪽 여백을 못 둔다. 누른 면을 양옆으로 넓혀 화살표에 붙지 않게 한다.
             .clickable(
                 interactionSource = null,
-                indication = pressIndication(),
+                indication = pressIndication(horizontalOutset = OvalitSpacing.sm),
                 onClickLabel = onClickLabel,
                 role = Role.Button,
                 onClick = onClick,
-            )
-            .padding(start = OvalitSpacing.sm),
+            ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         OvalitText(
@@ -93,7 +93,14 @@ fun OvalitSheetOption(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 52.dp)
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            // 글자와 체크가 시트 여백 선에 붙어 있어 누른 면을 양옆으로 넓힌다
+            .selectable(
+                selected = selected,
+                interactionSource = null,
+                indication = pressIndication(horizontalOutset = OvalitPressOutset),
+                role = Role.RadioButton,
+                onClick = onClick,
+            )
             .padding(vertical = OvalitSpacing.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {

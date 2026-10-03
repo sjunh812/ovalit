@@ -11,20 +11,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.invalidateDraw
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitTheme
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.min
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 private const val PRESS_MILLIS = 80
 private const val RELEASE_MILLIS = 180
@@ -42,6 +45,12 @@ private val MaxShrink = 8.dp
 val OvalitPressShape: Shape = RoundedCornerShape(12.dp)
 
 /**
+ * 글자나 그림에 딱 붙은 칸을 누를 때 면을 밖으로 넓히는 폭입니다. 홈 지표 칸처럼 칸 자체에 여백이 없으면 면이 글자 끝에 맞춰
+ * 잘린 것처럼 보입니다(사용자 요청, 2026-10-03). 배치는 그대로 두고 면만 넓힙니다.
+ */
+val OvalitPressOutset = 10.dp
+
+/**
  * 누르는 즉시 옅은 면을 깔고 누른 것을 살짝 줄입니다. 손을 떼면 제 크기로 돌아옵니다.
  *
  * 물결은 쓰지 않습니다. 누른 뒤에 천천히 퍼져서 앱이 늦게 반응하는 것처럼 느껴집니다.
@@ -51,25 +60,42 @@ val OvalitPressShape: Shape = RoundedCornerShape(12.dp)
 class OvalitPressIndication(
     private val color: Color,
     private val shape: Shape = OvalitPressShape,
+    private val horizontalOutset: Dp = 0.dp,
+    private val verticalOutset: Dp = 0.dp,
 ) : IndicationNodeFactory {
     override fun create(interactionSource: InteractionSource): DelegatableNode =
-        PressNode(interactionSource, color, shape)
+        PressNode(interactionSource, color, shape, horizontalOutset, verticalOutset)
 
     override fun equals(other: Any?): Boolean =
-        other is OvalitPressIndication && other.color == color && other.shape == shape
+        other is OvalitPressIndication && other.color == color && other.shape == shape &&
+            other.horizontalOutset == horizontalOutset && other.verticalOutset == verticalOutset
 
-    override fun hashCode(): Int = 31 * color.hashCode() + shape.hashCode()
+    override fun hashCode(): Int =
+        ((31 * color.hashCode() + shape.hashCode()) * 31 + horizontalOutset.hashCode()) * 31 + verticalOutset.hashCode()
 }
 
-/** 버튼처럼 제 모양이 따로 있는 곳에 씁니다. 이때는 `clip`보다 앞에 둡니다. */
+/**
+ * 버튼처럼 제 모양이 따로 있는 곳에 씁니다. 이때는 `clip`보다 앞에 둡니다.
+ *
+ * 내용에 딱 붙은 칸이면 [horizontalOutset]과 [verticalOutset]만큼 면을 칸 밖으로 넓힙니다. 넓힌 면이 잘리지 않게 바깥에
+ * 그만한 자리가 있어야 합니다. 화면 폭만 한 줄처럼 안쪽에 여백이 있는 칸은 넓히지 않습니다.
+ */
 @Composable
-fun pressIndication(shape: Shape = OvalitPressShape, color: Color = OvalitTheme.colors.t2): Indication =
-    remember(shape, color) { OvalitPressIndication(color, shape) }
+fun pressIndication(
+    shape: Shape = OvalitPressShape,
+    color: Color = OvalitTheme.colors.t2,
+    horizontalOutset: Dp = 0.dp,
+    verticalOutset: Dp = 0.dp,
+): Indication = remember(shape, color, horizontalOutset, verticalOutset) {
+    OvalitPressIndication(color, shape, horizontalOutset, verticalOutset)
+}
 
 private class PressNode(
     private val interactionSource: InteractionSource,
     private val color: Color,
     private val shape: Shape,
+    private val horizontalOutset: Dp,
+    private val verticalOutset: Dp,
 ) : Modifier.Node(), DrawModifierNode {
     private var pressed = Animatable(0f)
     private var pressing: Job? = null
@@ -117,14 +143,19 @@ private class PressNode(
             drawContent()
             return
         }
-        val shrink = min(MAX_SHRINK_RATIO, MaxShrink.toPx() / max(size.width, size.height))
+        val dx = horizontalOutset.toPx()
+        val dy = verticalOutset.toPx()
+        val surface = Size(size.width + dx * 2, size.height + dy * 2)
+        val shrink = min(MAX_SHRINK_RATIO, MaxShrink.toPx() / max(surface.width, surface.height))
         scale(1f - shrink * amount, pivot = center) {
             this@draw.drawContent()
-            drawOutline(
-                outline = shape.createOutline(size, layoutDirection, this),
-                color = color,
-                alpha = HIGHLIGHT_ALPHA * amount,
-            )
+            translate(-dx, -dy) {
+                drawOutline(
+                    outline = shape.createOutline(surface, layoutDirection, this),
+                    color = color,
+                    alpha = HIGHLIGHT_ALPHA * amount,
+                )
+            }
         }
     }
 }

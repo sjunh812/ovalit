@@ -53,9 +53,9 @@ fun OvalitBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = OvalitSpacing.xl)
+                // 양옆 여백은 스크롤 안에 둔다. 밖에 두면 스크롤이 글자 끝에서 잘라서 줄을 누른 면이 글자에 딱 붙는다.
                 .verticalScroll(rememberScrollState())
-                .padding(top = OvalitSpacing.lg, bottom = OvalitSpacing.lg),
+                .padding(horizontal = OvalitSpacing.xl, vertical = OvalitSpacing.lg),
             horizontalAlignment = Alignment.Start,
         ) {
             // 제목이 길면 정식 약어를 다음 줄로 넘긴다. 한 줄에 우겨 넣으면 약어가 글자 단위로 꺾인다.

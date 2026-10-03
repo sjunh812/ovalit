@@ -45,8 +45,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBackTopBar
 import com.ovalit.core.designsystem.component.OvalitDivider
+import com.ovalit.core.designsystem.component.OvalitPressOutset
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTopBarCaption
+import com.ovalit.core.designsystem.component.pressIndication
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
@@ -288,7 +290,14 @@ private fun Tabs(tabs: List<DetailTab>, selected: DetailTab, onSelect: (DetailTa
                     modifier = Modifier
                         .width(IntrinsicSize.Max)
                         .heightIn(min = TouchSize)
-                        .selectable(selected = isSelected, role = Role.Tab, onClick = { onSelect(tab) }),
+                        // 탭 폭이 글자 폭이라 누른 면을 양옆으로 넓힌다. 탭 사이 간격의 절반이다.
+                        .selectable(
+                            selected = isSelected,
+                            interactionSource = null,
+                            indication = pressIndication(horizontalOutset = OvalitPressOutset),
+                            role = Role.Tab,
+                            onClick = { onSelect(tab) },
+                        ),
                     verticalArrangement = Arrangement.Bottom,
                 ) {
                     OvalitText(

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitRollingText
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.currentMaxWidth
+import com.ovalit.core.designsystem.component.pressIndication
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -140,7 +141,10 @@ private class FixedCellStyles(val label: TextStyle, val value: TextStyle, val su
 private fun FixedMetricCell(cell: FixedCell, styles: FixedCellStyles, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = OvalitTheme.colors
     Column(
+        // 칸에 여백이 없어서 누른 면만 칸 밖으로 넓힌다
         modifier = modifier.clickable(
+            interactionSource = null,
+            indication = pressIndication(horizontalOutset = CellPressOutset, verticalOutset = CellPressOutset),
             onClickLabel = stringResource(Res.string.sheet_open, cell.label),
             role = Role.Button,
             onClick = onClick,

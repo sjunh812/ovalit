@@ -24,7 +24,9 @@ import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitCard
 import com.ovalit.core.designsystem.component.OvalitDivider
+import com.ovalit.core.designsystem.component.OvalitPressOutset
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.pressIndication
 import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
@@ -138,7 +140,11 @@ internal fun RivalPickerSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 60.dp)
-                    .clickable(role = Role.Button) {
+                    .clickable(
+                        interactionSource = null,
+                        indication = pressIndication(horizontalOutset = OvalitPressOutset),
+                        role = Role.Button,
+                    ) {
                         haptics.confirm()
                         onPick(friend.id)
                     }

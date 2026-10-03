@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitRollingText
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.currentMaxWidth
+import com.ovalit.core.designsystem.component.pressIndication
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -209,6 +210,8 @@ private fun DynamicMetricColumn(
     val colors = OvalitTheme.colors
     Column(
         modifier = modifier.clickable(
+            interactionSource = null,
+            indication = pressIndication(horizontalOutset = CellPressOutset, verticalOutset = CellPressOutset),
             onClickLabel = stringResource(Res.string.sheet_open, column.label),
             role = Role.Button,
             onClick = onClick,

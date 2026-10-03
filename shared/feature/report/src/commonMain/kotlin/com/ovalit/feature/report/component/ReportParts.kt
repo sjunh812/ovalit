@@ -110,6 +110,9 @@ internal const val MetricColumns = 3
 internal val MetricColumnGap = 14.dp
 internal val MetricRowGap = 20.dp
 
+// 칸을 누르면 면을 이만큼 칸 밖으로 넓힌다. 칸 사이 간격의 절반을 조금 넘겨 옆 칸 글자와 6dp 떨어진다.
+internal val CellPressOutset = 8.dp
+
 // 이름 뒤 간격 3dp와 화살표 10dp를 더한 폭이다
 internal val ChevronSpace = 13.dp
 

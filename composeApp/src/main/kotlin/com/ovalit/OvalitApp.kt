@@ -31,13 +31,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
 import com.ovalit.core.data.FakeAccountRepository
@@ -131,14 +129,14 @@ fun OvalitApp(appVersion: String) {
         NavDisplay(
             backStack = backStack,
             onBack = { backStack.removeLastOrNull() },
-            entryDecorators = listOf(
-                rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator(),
-                rememberOpaqueEntryDecorator(),
-            ),
+            entryDecorators = listOf(tabState.decorator, rememberOpaqueEntryDecorator()),
             transitionSpec = pushTransition(dimmedAlpha),
             popTransitionSpec = popTransition(dimmedAlpha),
             predictivePopTransitionSpec = predictivePopTransition(dimmedAlpha),
+    // 탭을 바꿀 때는 홈이 스택에 남는다. 연동을 해제하면 홈까지 빠지니 그때 남겨 둔 탭 화면도 지운다.
+    val linked = Report in backStack
+    val tabState = rememberTabStateDecorator(keepTabs = { Report in backStack })
+    LaunchedEffect(linked) { if (!linked) tabState.clearKept() }
             entryProvider = entryProvider {
                 entry<Intro> {
                     IntroScreen(onStart = { backStack.add(Consent) })
@@ -179,7 +177,7 @@ fun OvalitApp(appVersion: String) {
                         onOpenMatches = { backStack.selectTab(Matches) },
                     )
                 }
-                entry<Matches>(metadata = TabTransitions) {
+                entry<Matches>(clazzContentKey = ::tabContentKey, metadata = TabTransitions) {
                     TabScaffold(selected = Matches, onSelect = backStack::selectTab) {
                         MatchesRoute(onOpenMatch = { backStack.add(MatchDetail(it.value)) })
                     }
@@ -192,7 +190,7 @@ fun OvalitApp(appVersion: String) {
                         onShareInvite = { context.shareInvite(friends.inviteLink()) },
                     )
                 }
-                entry<Friends>(metadata = TabTransitions) {
+                entry<Friends>(clazzContentKey = ::tabContentKey, metadata = TabTransitions) {
                     TabScaffold(selected = Friends, onSelect = backStack::selectTab) {
                         FriendsRoute(
                             onOpenFriend = { backStack.add(FriendProfile(it.value)) },
@@ -220,7 +218,7 @@ fun OvalitApp(appVersion: String) {
                 }
                 entry<Agents> { AgentsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }) }
                 entry<Weapons> { WeaponsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }) }
-                entry<Settings>(metadata = TabTransitions) {
+                entry<Settings>(clazzContentKey = ::tabContentKey, metadata = TabTransitions) {
                     TabScaffold(selected = Settings, onSelect = backStack::selectTab) {
                         SettingsRoute(
                             appVersion = appVersion,
@@ -286,7 +284,7 @@ private fun rememberOpaqueEntryDecorator(): NavEntryDecorator<NavKey> {
 private val EdgeWidth = 1.dp
 
 // 홈은 늘 스택 맨 아래에 두고 다른 탭은 그 위에 하나만 둔다. 그래야 어느 탭에서 뒤로 가도 홈이 나오고 홈에서
-// 뒤로 가면 앱이 닫힌다. 홈은 새로 띄우지 않아서 스크롤과 칩이 남는다.
+// 뒤로 가면 앱이 닫힌다. 홈은 새로 띄우지 않아서 스크롤과 칩이 남고, 다른 탭은 빠져도 TabStateDecorator가 남겨 둔다.
 private fun NavBackStack<NavKey>.selectTab(tab: NavKey) {
     if (last() == tab) return
     while (size > 1) removeAt(lastIndex)

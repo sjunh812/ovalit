@@ -30,7 +30,6 @@ import androidx.compose.ui.semantics.Role as SemanticsRole
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -197,15 +196,17 @@ private fun Highlights(report: WeaponReport, catalog: ContentCatalog) {
 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter)) {
         // 칸마다 따로 줄이면 자릿수가 많은 칸만 작아진다. 표 전체가 같은 크기를 쓰고, 옆 칸과 붙지 않게 폭을 조금 남긴다.
+        // 숫자는 무기 이름과 같은 15sp, 변화량은 홈 칸처럼 한 단계 작은 11sp다. 17sp로 두니 아홉 칸 숫자와 색 칠한 변화량이
+        // 이름보다 커서 표가 무거웠다(사용자 요청, 2026-10-03).
         val cellWidth = HighlightColumn - HighlightCellGap
         val valueStyle = rememberFittingStyle(
             rows.flatMap { row -> row.cells.orEmpty().map { it.value } },
-            typography.metricM.copy(fontSize = typography.titleM.fontSize, lineHeight = typography.titleM.lineHeight),
+            typography.metricM.copy(fontSize = typography.bodyStrong.fontSize, lineHeight = typography.bodyStrong.lineHeight),
             cellWidth,
         )
         val changeStyle = rememberFittingStyle(
             rows.flatMap { row -> row.cells.orEmpty().mapNotNull { it.change } },
-            typography.metricS.copy(fontWeight = FontWeight.SemiBold),
+            typography.metricS.copy(fontSize = 11.sp, lineHeight = 16.sp),
             cellWidth,
         )
         val labelStyle = rememberFittingStyle(labels, typography.caption, cellWidth)
@@ -445,7 +446,9 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = OvalitSpacing.gutter + OvalitSpacing.md, end = OvalitSpacing.gutter, bottom = 10.dp),
+                    // 계열 이름과 같은 자리에서 시작한다. 한 단계 들여 쓰니 무기 그림이 왼쪽에서 떨어져 떠 보였다(사용자 요청,
+                    // 2026-10-03).
+                    .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = 10.dp),
             ) {
                 // 줄마다 KDA 줄을 따로 줄이면 킬이 많은 총만 작아진다. 계열 안의 줄이 같은 크기를 쓴다.
                 val caption = OvalitTheme.typography.caption

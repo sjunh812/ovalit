@@ -44,9 +44,8 @@
     <string name="ping_title">오발있?</string>
     <string name="ping_gone">끝났거나 취소된 초대예요</string>
     <string name="ping_proposals_title">다른 시간 제안</string>
-    <string name="ping_title_note">파티 모집</string>
         <string name="ping_compose_hint">친구 %1$d명까지 시간을 정해 한 번에 불러요</string>
-    <string name="ping_compose_open">부르기</string>
+    <string name="ping_compose_open">파티 모집</string>
     <string name="ping_compose_title">누구랑 할까요?</string>
     <string name="ping_reply_yes">갈게요</string>
     <string name="ping_reply_other">다른 시간</string>

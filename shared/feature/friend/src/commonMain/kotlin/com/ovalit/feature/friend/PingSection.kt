@@ -94,7 +94,6 @@ import com.ovalit.feature.friend.resources.ping_time_move_title
 import com.ovalit.feature.friend.resources.ping_time_reply_confirm
 import com.ovalit.feature.friend.resources.ping_time_reply_title
 import com.ovalit.feature.friend.resources.ping_title
-import com.ovalit.feature.friend.resources.ping_title_note
 import com.ovalit.feature.friend.resources.ping_too_many
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
@@ -130,22 +129,10 @@ internal fun PingListCard(
     onCompose: () -> Unit,
 ) {
     OvalitCard {
-        // "오발있?"은 앱 이름이라 처음 보는 사람은 무슨 기능인지 모른다. 옆에 작게 "파티 모집"을 붙여 알려 준다.
+        // "오발있?"은 앱 이름이라 처음 보는 사람은 무슨 기능인지 모른다. 버튼을 "파티 모집"으로 적어 알려 준다(사용자 요청,
+        // 2026-10-03). 제목 옆에 작게 붙이던 "파티 모집"은 버튼과 같은 말이 두 번 떠서 뺐다.
         val title = @Composable {
-            Row {
-                OvalitText(
-                    text = stringResource(Res.string.ping_title),
-                    modifier = Modifier.alignByBaseline(),
-                    style = OvalitTheme.typography.bodyStrong,
-                )
-                Spacer(Modifier.width(6.dp))
-                OvalitText(
-                    text = stringResource(Res.string.ping_title_note),
-                    modifier = Modifier.alignByBaseline(),
-                    style = OvalitTheme.typography.caption,
-                    color = OvalitTheme.colors.t3,
-                )
-            }
+            OvalitText(text = stringResource(Res.string.ping_title), style = OvalitTheme.typography.bodyStrong)
         }
         Box(modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
             if (canCompose) {

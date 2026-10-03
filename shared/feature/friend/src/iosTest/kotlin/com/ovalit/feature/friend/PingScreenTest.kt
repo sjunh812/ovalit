@@ -75,12 +75,13 @@ class PingScreenTest {
 
         onNodeWithText("오발있?").assertExists()
         onNodeWithText("파티 모집").assertExists()
+        onNodeWithText("부르기").assertDoesNotExist()
         onNodeWithText("친구 4명까지 시간을 정해 한 번에 불러요").assertExists()
     }
 
     // 사용자 요청(2026-10-03): 친구 탭을 크게 차지하지 않게 부르기는 시트로 띄운다
     @Test
-    fun `부르기를 누르면 시트에서 친구와 시각을 골라 부른다`() = runComposeUiTest {
+    fun `파티 모집을 누르면 시트에서 친구와 시각을 골라 부른다`() = runComposeUiTest {
         var sentTo: List<PlayerId>? = null
         var at: Instant? = null
         val slots = listOf(Nine, NineThirty)
@@ -92,7 +93,7 @@ class PingScreenTest {
         }
 
         onNodeWithText("누구랑 할까요?").assertDoesNotExist()
-        onNodeWithText("부르기").performClick()
+        onNodeWithText("파티 모집").performClick()
 
         onNodeWithText("친구를 골라 주세요").assertIsNotEnabled()
         onNodeWithText("준호").performClick()
@@ -105,12 +106,11 @@ class PingScreenTest {
 
     // 한 번에 하나만 보낸다
     @Test
-    fun `보낸 초대가 끝나기 전에는 부르기 버튼을 두지 않는다`() = runComposeUiTest {
+    fun `보낸 초대가 끝나기 전에는 파티 모집 버튼을 두지 않는다`() = runComposeUiTest {
         setContent { Friends(pings = listOf(sent())) }
 
-        onNodeWithText("부르기").assertDoesNotExist()
-        // 버튼이 없어도 무슨 기능인지는 제목 옆에서 알린다
-        onNodeWithText("파티 모집").assertExists()
+        onNodeWithText("오발있?").assertExists()
+        onNodeWithText("파티 모집").assertDoesNotExist()
     }
 
     @Test

@@ -88,6 +88,18 @@ class MatchScreensTest {
         assertEquals(MatchPreviewData.bloom, requested)
     }
 
+    // 사용자 요청(2026-10-03): 홈 오른쪽 위 아바타만으로는 내 프로필을 찾기 어렵다
+    @Test
+    fun `내 줄을 누르면 내 프로필을 연다`() = runComposeUiTest {
+        var opened = false
+        setContent { Themed { Detail(onOpenMe = { opened = true }) } }
+
+        onNodeWithText("나").performClick()
+
+        assertTrue(opened)
+        onNodeWithText("친구 요청 보내기").assertDoesNotExist()
+    }
+
     @Test
     fun `앱을 안 쓰는 사람에게는 요청 대신 초대 링크를 권한다`() = runComposeUiTest {
         var invited = false
@@ -151,8 +163,9 @@ class MatchScreensTest {
         onOpenFriend: (PlayerId) -> Unit = {},
         onSendRequest: (PlayerId) -> Unit = {},
         onShareInvite: () -> Unit = {},
+        onOpenMe: () -> Unit = {},
     ) {
-        MatchDetailScreen(MatchPreviewData.detail, {}, onOpenFriend, onSendRequest, {}, onShareInvite)
+        MatchDetailScreen(MatchPreviewData.detail, {}, onOpenFriend, onSendRequest, {}, onShareInvite, onOpenMe = onOpenMe)
     }
 
     @Test

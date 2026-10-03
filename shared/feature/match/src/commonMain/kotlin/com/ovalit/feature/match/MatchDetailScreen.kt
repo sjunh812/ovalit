@@ -85,6 +85,7 @@ internal enum class DetailTab { SCOREBOARD, ROUNDS, ECONOMY }
 /**
  * S3 경기 상세입니다.
  *
+ * @param onOpenMe 스코어보드에서 내 줄을 누르면 부릅니다. 홈 오른쪽 위 말고도 내 프로필로 가는 길입니다(사용자 요청, 2026-10-03).
  * @param onShareInvite 앱을 안 쓰거나 쓰는지 모르는 플레이어에게 초대 링크를 보낼 때 부릅니다. 공유 시트는 앱 모듈이 띄웁니다.
  */
 @Composable
@@ -92,6 +93,7 @@ fun MatchDetailRoute(
     matchId: MatchId,
     onBack: () -> Unit,
     onOpenFriend: (PlayerId) -> Unit,
+    onOpenMe: () -> Unit,
     onShareInvite: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MatchDetailViewModel = koinViewModel(key = matchId.value) { parametersOf(matchId.value) },
@@ -104,6 +106,7 @@ fun MatchDetailRoute(
         uiState = uiState,
         onBack = onBack,
         onOpenFriend = onOpenFriend,
+        onOpenMe = onOpenMe,
         onSendRequest = viewModel::sendRequest,
         onAccept = viewModel::accept,
         onShareInvite = onShareInvite,
@@ -120,6 +123,7 @@ internal fun MatchDetailScreen(
     onAccept: (PlayerId) -> Unit,
     onShareInvite: () -> Unit,
     modifier: Modifier = Modifier,
+    onOpenMe: () -> Unit = {},
 ) {
     val colors = OvalitTheme.colors
     var tab by rememberSaveable { mutableStateOf(DetailTab.SCOREBOARD) }
@@ -148,7 +152,11 @@ internal fun MatchDetailScreen(
                     DetailTab.SCOREBOARD -> Scoreboard(
                         uiState = uiState,
                         onOpenPlayer = { row ->
-                            if (row.relation == PlayerRelation.FRIEND) onOpenFriend(row.line.player) else sheetFor = row.line.player.value
+                            when (row.relation) {
+                                PlayerRelation.ME -> onOpenMe()
+                                PlayerRelation.FRIEND -> onOpenFriend(row.line.player)
+                                else -> sheetFor = row.line.player.value
+                            }
                         },
                     )
                     DetailTab.ROUNDS -> RoundList(uiState)

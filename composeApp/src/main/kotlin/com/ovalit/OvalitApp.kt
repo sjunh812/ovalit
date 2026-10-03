@@ -202,6 +202,7 @@ fun OvalitApp(appVersion: String, openPing: Flow<String> = emptyFlow()) {
                         matchId = MatchId(key.id),
                         onBack = { backStack.removeLastOrNull() },
                         onOpenFriend = { backStack.add(FriendProfile(it.value)) },
+                        onOpenMe = { backStack.openProfile() },
                         onShareInvite = { context.shareInvite(friends.inviteLink()) },
                     )
                 }
@@ -308,6 +309,12 @@ private fun NavBackStack<NavKey>.selectTab(tab: NavKey) {
     if (last() == tab) return
     while (size > 1) removeAt(lastIndex)
     if (tab != Report) add(tab)
+}
+
+// 내 프로필 → 최근 경기 → 나를 누르면 프로필이 또 쌓이지 않게 아래에 있던 프로필로 돌아간다
+private fun NavBackStack<NavKey>.openProfile() {
+    val index = lastIndexOf(Profile)
+    if (index < 0) add(Profile) else while (lastIndex > index) removeAt(lastIndex)
 }
 
 // NavDisplay에 빈 스택을 넘기면 예외가 난다. 그래서 새 화면을 먼저 넣고 나머지를 뺀다.

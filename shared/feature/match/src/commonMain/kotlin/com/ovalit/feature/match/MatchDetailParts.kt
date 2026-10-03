@@ -172,7 +172,8 @@ private fun PlayerRow(row: ScoreboardRow, uiState: MatchDetailUiState.Success, o
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 46.dp)
-            .then(if (isMe) Modifier.background(colors.raised) else Modifier.clickable(role = Role.Button) { onOpenPlayer(row) })
+            .then(if (isMe) Modifier.background(colors.raised) else Modifier)
+            .clickable(role = Role.Button) { onOpenPlayer(row) }
             .semantics(mergeDescendants = true) {}
             .padding(horizontal = OvalitSpacing.gutter, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -216,7 +217,8 @@ private fun PlayerRow(row: ScoreboardRow, uiState: MatchDetailUiState.Success, o
             textAlign = TextAlign.End,
         )
         Box(modifier = Modifier.width(ChevronWidth), contentAlignment = Alignment.CenterEnd) {
-            if (isFriend) OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = colors.t3, size = 14.dp)
+            // 누르면 프로필로 가는 줄만 화살표를 단다. 나머지는 시트가 뜬다.
+            if (emphasized) OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = colors.t3, size = 14.dp)
         }
     }
 }

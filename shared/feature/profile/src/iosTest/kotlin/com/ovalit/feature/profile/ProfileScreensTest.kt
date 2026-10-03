@@ -218,13 +218,24 @@ class ProfileScreensTest {
         onNodeWithText("+6", useUnmergedTree = true).assertExists()
     }
 
-    // 한 줄 안에서 이번 주 헤드샷과 이번 액트 K/D가 섞이면 어느 숫자가 언제 것인지 모른다
+    // 사용자 요청(2026-10-03): 표본이 모자란 줄만 이번 액트 값을 띄우니 어느 숫자가 언제 것인지 알기 어려웠다
     @Test
-    fun `이번 기간 표본이 모자란 셋째 무기는 줄 전체를 이번 액트 값으로 띄운다`() = runComposeUiTest {
+    fun `이번 기간 표본이 적은 셋째 무기도 그 기간 숫자를 띄우고 변화량은 비운다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
 
-        onNodeWithText("이번 액트 기준", useUnmergedTree = true).assertExists()
-        onNodeWithText("1.53", useUnmergedTree = true).assertExists()
+        onNodeWithText("0.75", useUnmergedTree = true).assertExists()
+        onNodeWithText("97", useUnmergedTree = true).assertExists()
+        onNodeWithText("35%", useUnmergedTree = true).assertExists()
+        onNodeWithText("이번 액트 기준", useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun `그 기간에 안 쓴 무기는 숫자 대신 안 썼다고 적는다`() = runComposeUiTest {
+        val records = ProfilePreviewData.records
+        val unused = records.weapons.copy(highlights = records.weapons.highlights.mapIndexed { index, it -> if (index == 2) it.copy(current = null) else it })
+        setContent { Themed { WeaponsScreen(records.copy(weapons = unused), onBack = {}) } }
+
+        onNodeWithText("이번 주엔 안 썼어요", useUnmergedTree = true).assertExists()
     }
 
     // 순서는 이번 액트 킬이다. 이번 주를 띄운 줄에 이번 주 킬을 적으면 킬이 적은 무기가 위에 있는 것처럼 보인다.
@@ -232,8 +243,11 @@ class ProfileScreensTest {
     fun `위쪽 세 무기에는 순서를 정한 이번 액트 킬을 적는다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
 
-        onNodeWithText("이번 액트 254킬", useUnmergedTree = true).assertExists()
-        onNodeWithText("이번 액트 198킬", useUnmergedTree = true).assertExists()
+        // 이번 액트 킬 순이라는 건 제목 줄이 한 번 말한다
+        onNodeWithText("이번 액트 주력 무기", useUnmergedTree = true).assertExists()
+        onNodeWithText("킬 순", useUnmergedTree = true).assertExists()
+        onNodeWithText("254킬", useUnmergedTree = true).assertExists()
+        onNodeWithText("198킬", useUnmergedTree = true).assertExists()
         onNodeWithText("60킬", useUnmergedTree = true).assertDoesNotExist()
     }
 

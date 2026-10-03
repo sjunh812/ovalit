@@ -41,11 +41,14 @@ data class WeaponStats(
     /** K/D와 라운드당 피해량을 보여줄 만큼 이 무기를 들고 시작했는지입니다. 헤드샷과 같은 최소 라운드를 씁니다. */
     val isCarriedMeasurable: Boolean get() = carriedRounds >= MIN_WEAPON_ROUNDS
 
-    /** 표본을 넘긴 값만 돌려줍니다. 모자라면 `null`입니다. */
-    fun value(metric: WeaponMetric): Double? = when (metric) {
-        WeaponMetric.KD -> kd.takeIf { isCarriedMeasurable }
-        WeaponMetric.DAMAGE_PER_ROUND -> damagePerRound.takeIf { isCarriedMeasurable }
-        WeaponMetric.HEADSHOT_RATE -> headshotRate.takeIf { isMeasurable }
+    /** 표본을 넘긴 값만 돌려줍니다. 모자라면 `null`입니다. 달라졌는지 볼 때 씁니다. */
+    fun value(metric: WeaponMetric): Double? = recorded(metric)?.takeIf { if (metric == WeaponMetric.HEADSHOT_RATE) isMeasurable else isCarriedMeasurable }
+
+    /** 표본과 상관없이 센 값입니다. 내 기록이라 표본이 적어도 그대로 띄울 때 씁니다. 셀 라운드가 없으면 `null`입니다. */
+    fun recorded(metric: WeaponMetric): Double? = when (metric) {
+        WeaponMetric.KD -> kd
+        WeaponMetric.DAMAGE_PER_ROUND -> damagePerRound
+        WeaponMetric.HEADSHOT_RATE -> headshotRate
     }
 }
 
@@ -55,9 +58,9 @@ enum class WeaponMetric { KD, DAMAGE_PER_ROUND, HEADSHOT_RATE }
 /**
  * S6 무기 화면 위쪽 표의 한 줄입니다.
  *
- * @property current 홈 리포트와 같은 기간의 성적입니다. 세 지표 중 하나라도 표본이 모자라면 `null`이고 화면은 [act]를
- * 띄웁니다. 한 줄 안에서 기간이 섞이면 어느 숫자가 언제 것인지 알 수 없습니다. 리포트를 만들 만큼 경기가 없어도
- * `null`입니다.
+ * @property current 홈 리포트와 같은 기간의 성적입니다. 표본이 적어도 그 기간 숫자를 띄웁니다(사용자 요청, 2026-10-03).
+ * 표본이 모자라 이번 액트 값을 대신 띄우면 한 줄만 기간이 달라 어느 숫자가 언제 것인지 알기 어려웠습니다. 그 기간에 이 무기를
+ * 안 썼거나 리포트를 만들 만큼 경기가 없으면 `null`입니다.
  * @property baseline 기간 바로 앞 [baselineWeeks]주의 성적입니다. 그동안 이 무기를 안 썼으면 `null`입니다.
  * @property movements 지표마다 동적 칸과 같은 규칙으로 봅니다. 화면은 [Movement.MOVED]인 변화량만 칠합니다.
  */

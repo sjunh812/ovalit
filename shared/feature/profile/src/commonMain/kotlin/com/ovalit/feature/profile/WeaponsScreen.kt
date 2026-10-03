@@ -30,6 +30,7 @@ import androidx.compose.ui.semantics.Role as SemanticsRole
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -73,9 +74,6 @@ import com.ovalit.feature.profile.resources.column_damage
 import com.ovalit.feature.profile.resources.column_headshot
 import com.ovalit.feature.profile.resources.column_kda
 import com.ovalit.feature.profile.resources.no_matches
-import com.ovalit.feature.profile.resources.not_enough_sample
-import com.ovalit.feature.profile.resources.weapons_act_basis
-import com.ovalit.feature.profile.resources.weapons_act_kills
 import com.ovalit.feature.profile.resources.weapons_act_value
 import com.ovalit.feature.profile.resources.weapons_by_category
 import com.ovalit.feature.profile.resources.weapons_category_unknown
@@ -89,6 +87,9 @@ import com.ovalit.feature.profile.resources.weapons_owner_suffix
 import com.ovalit.feature.profile.resources.weapons_sample_kills
 import com.ovalit.feature.profile.resources.weapons_single_round_note
 import com.ovalit.feature.profile.resources.weapons_title
+import com.ovalit.feature.profile.resources.weapons_top_order
+import com.ovalit.feature.profile.resources.weapons_top_title
+import com.ovalit.feature.profile.resources.weapons_unused
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -164,98 +165,118 @@ private val WeaponMetric.fixed: FixedMetric
         WeaponMetric.HEADSHOT_RATE -> FixedMetric.HEADSHOT_RATE
     }
 
-// 위쪽 세 무기 표의 한 칸이다. change는 이번 액트 값을 띄운 줄이면 null이고, 비교할 값이 없으면 빈 글자다. 빈 글자로
+// 위쪽 세 무기 표의 한 칸이다. change는 이번 액트 값을 띄운 표면 null이고, 비교할 값이 없으면 빈 글자다. 빈 글자로
 // 두어야 줄 안의 칸 높이가 맞는다. rise는 움직였다고 판단한 변화의 방향이다. 오르면 1, 내리면 -1, 평소 범위 안이거나
 // 모르면 0이다.
 private class HighlightCell(val value: String, val change: String?, val rise: Int)
 
-// 위쪽 세 무기의 표다. 홈 리포트와 같은 기간의 K/D, 라운드당 피해량, 헤드샷을 바로 앞 최대 4주 평균과 견준다. 기간
-// 표본이 모자란 무기는 그 줄만 이번 액트 값을 띄우고 "이번 액트 기준"이라고 적는다. 무기끼리 같은 지표를 위아래로
-// 견주도록 열을 맞추고, 열 제목은 맨 위에 한 번만 둔다.
+// 위쪽 세 무기의 표다. 이번 액트에 킬을 많이 낸 세 무기를 두고, 숫자는 홈 리포트와 같은 기간의 K/D, 라운드당 피해량,
+// 헤드샷을 바로 앞 최대 4주 평균과 견준다. 어떤 세 무기인지는 제목 줄이, 숫자가 언제 것인지는 열 제목 줄이 말한다(사용자
+// 요청, 2026-10-03). 표본이 적어도 그 기간 숫자를 그대로 띄우고 변화량은 표본을 넘긴 칸에만 적는다. 그 기간에 안 쓴 무기는
+// 숫자 대신 안 썼다고 적는다. 리포트를 만들 만큼 경기가 없으면 표 전체가 이번 액트 값이다.
 @Composable
 private fun Highlights(report: WeaponReport, catalog: ContentCatalog) {
     val colors = OvalitTheme.colors
     val typography = OvalitTheme.typography
-    val period = report.period?.takeIf { report.highlights.any { it.current != null } }
+    val period = report.period
     val baselineWeeks = report.highlights.firstOrNull { highlight ->
-        highlight.current != null && WeaponMetric.entries.any { highlight.baseline?.value(it) != null }
+        WeaponMetric.entries.any { highlight.current?.value(it) != null && highlight.baseline?.value(it) != null }
     }?.baselineWeeks
 
     val labels = WeaponMetric.entries.map { stringResource(it.fixed.label) }
+    val periodText = period?.let { periodLabel(it) }
+    val unusedText = periodText?.let { stringResource(Res.string.weapons_unused, it) }
     val rows = report.highlights.map { highlight ->
         HighlightLine(
             highlight = highlight,
             name = catalog.weaponName(highlight.act.weapon),
-            cells = highlightCells(highlight),
-            comparesPeriod = period != null,
+            cells = highlightCells(highlight, comparesPeriod = period != null),
         )
     }
     val moveUp = stringResource(Res.string.weapons_moved_up)
     val moveDown = stringResource(Res.string.weapons_moved_down)
     val actLabel = stringResource(Res.string.weapons_act_value)
 
-    BoxWithConstraints(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter)) {
-        // 칸마다 따로 줄이면 자릿수가 많은 칸만 작아진다. 표 전체가 같은 크기를 쓰고, 옆 칸과 붙지 않게 폭을 조금 남긴다.
-        // 숫자는 무기 이름과 같은 15sp, 변화량은 홈 칸처럼 한 단계 작은 11sp다. 17sp로 두니 아홉 칸 숫자와 색 칠한 변화량이
-        // 이름보다 커서 표가 무거웠다(사용자 요청, 2026-10-03).
-        val cellWidth = HighlightColumn - HighlightCellGap
-        val valueStyle = rememberFittingStyle(
-            rows.flatMap { row -> row.cells.orEmpty().map { it.value } },
-            typography.metricM.copy(fontSize = typography.bodyStrong.fontSize, lineHeight = typography.bodyStrong.lineHeight),
-            cellWidth,
-        )
-        val changeStyle = rememberFittingStyle(
-            rows.flatMap { row -> row.cells.orEmpty().mapNotNull { it.change } },
-            typography.metricS.copy(fontSize = 11.sp, lineHeight = 16.sp),
-            cellWidth,
-        )
-        val labelStyle = rememberFittingStyle(labels, typography.caption, cellWidth)
-
-        // 이름의 가장 긴 어절이나 "요즘 잘 맞아요", 킬 수가 숫자 옆 폭에 안 들어가면 세 줄 모두 숫자를 이름 밑으로
-        // 내린다. 한 줄만 내리면 열이 어긋난다. 문구를 통째로 재서 "요즘 잘 / 맞아요"처럼 가운데서 갈리는 것도 막는다.
-        val nameWords = rows.flatMap { it.name.split(' ') }
-        val captions = rows.flatMap { row ->
-            listOfNotNull(
-                row.tag?.let { if (it > 0) moveUp else moveDown },
-                killsText(row),
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter)) {
+        Row(verticalAlignment = Alignment.Bottom) {
+            OvalitText(
+                text = stringResource(Res.string.weapons_top_title),
+                modifier = Modifier.weight(1f),
+                style = typography.bodyStrong,
             )
+            OvalitText(text = stringResource(Res.string.weapons_top_order), style = typography.caption, color = colors.t3)
         }
-        val besideCells = currentMaxWidth - HighlightThumbWidth - OvalitSpacing.md - HighlightColumn * WeaponMetric.entries.size
-        val needed = maxOf(rememberWidestWidth(nameWords, typography.bodyStrong), rememberWidestWidth(captions, typography.caption))
-        val stacked = needed > besideCells
-        val nameWidth = if (stacked) currentMaxWidth - HighlightThumbWidth - OvalitSpacing.md else besideCells
-        // 이름은 어절 단위로 꺾이게 두고, 가장 긴 어절이 한 줄에 들어가는 크기로 셋을 같이 줄인다
-        val styles = HighlightStyles(
-            name = rememberFittingStyle(nameWords, typography.bodyStrong, nameWidth, min = 11.sp),
-            value = valueStyle,
-            change = changeStyle,
-        )
+        Spacer(Modifier.height(OvalitSpacing.md))
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            // 칸마다 따로 줄이면 자릿수가 많은 칸만 작아진다. 표 전체가 같은 크기를 쓰고, 옆 칸과 붙지 않게 폭을 조금 남긴다.
+            // 숫자는 무기 이름과 같은 15sp, 변화량은 홈 칸처럼 한 단계 작은 11sp다. 17sp로 두니 아홉 칸 숫자와 색 칠한 변화량이
+            // 이름보다 커서 표가 무거웠다(사용자 요청, 2026-10-03).
+            val cellWidth = HighlightColumn - HighlightCellGap
+            val valueStyle = rememberFittingStyle(
+                rows.flatMap { row -> row.cells.orEmpty().map { it.value } },
+                typography.metricM.copy(fontSize = typography.bodyStrong.fontSize, lineHeight = typography.bodyStrong.lineHeight),
+                cellWidth,
+            )
+            val changeStyle = rememberFittingStyle(
+                rows.flatMap { row -> row.cells.orEmpty().mapNotNull { it.change } },
+                typography.metricS.copy(fontSize = 11.sp, lineHeight = 16.sp),
+                cellWidth,
+            )
+            val labelStyle = rememberFittingStyle(labels, typography.caption, cellWidth)
 
-        Column(verticalArrangement = Arrangement.spacedBy(OvalitSpacing.lg)) {
-            Row(verticalAlignment = Alignment.Bottom) {
-                val caption = typography.caption
-                SeparatedRow(
-                    items = listOfNotNull(
-                        { OvalitText(text = period?.let { periodLabel(it) } ?: actLabel, style = caption, color = colors.t3) },
-                        baselineWeeks?.takeIf { period != null }?.let { weeks ->
-                            { OvalitText(text = stringResource(Res.string.weapons_compared, weeks), style = caption, color = colors.t3) }
-                        },
-                    ),
-                    separator = { SeparatorDot(caption, colors.t3) },
-                    modifier = Modifier.weight(1f),
+            // 이름의 가장 긴 어절이나 "요즘 잘 맞아요", 킬 수가 숫자 옆 폭에 안 들어가면 세 줄 모두 숫자를 이름 밑으로
+            // 내린다. 한 줄만 내리면 열이 어긋난다. 문구를 통째로 재서 "요즘 잘 / 맞아요"처럼 가운데서 갈리는 것도 막는다.
+            val nameWords = rows.flatMap { it.name.split(' ') }
+            val captions = rows.flatMap { row ->
+                listOfNotNull(
+                    row.tag?.let { if (it > 0) moveUp else moveDown },
+                    killsText(row),
                 )
-                labels.forEach { label ->
-                    OvalitText(
-                        text = label,
-                        modifier = Modifier.width(HighlightColumn),
-                        style = labelStyle,
-                        color = colors.t3,
-                        textAlign = TextAlign.End,
-                        maxLines = 1,
-                    )
-                }
             }
-            rows.forEach { HighlightRow(it, styles, stacked) }
+            val besideCells = currentMaxWidth - HighlightThumbWidth - OvalitSpacing.md - HighlightColumn * WeaponMetric.entries.size
+            val needed = maxOf(rememberWidestWidth(nameWords, typography.bodyStrong), rememberWidestWidth(captions, typography.caption))
+            val stacked = needed > besideCells
+            val nameWidth = if (stacked) currentMaxWidth - HighlightThumbWidth - OvalitSpacing.md else besideCells
+            // 이름은 어절 단위로 꺾이게 두고, 가장 긴 어절이 한 줄에 들어가는 크기로 셋을 같이 줄인다
+            val styles = HighlightStyles(
+                name = rememberFittingStyle(nameWords, typography.bodyStrong, nameWidth, min = 11.sp),
+                value = valueStyle,
+                change = changeStyle,
+            )
+
+            Column(verticalArrangement = Arrangement.spacedBy(OvalitSpacing.lg)) {
+                Row(verticalAlignment = Alignment.Bottom) {
+                    val caption = typography.caption
+                    // 숫자가 언제 것인지가 이 표에서 가장 헷갈리는 자리라 기간만 한 단계 밝고 굵게 둔다
+                    SeparatedRow(
+                        items = listOfNotNull(
+                            {
+                                OvalitText(
+                                    text = periodText ?: actLabel,
+                                    style = caption.copy(fontWeight = FontWeight.SemiBold),
+                                    color = colors.t2,
+                                )
+                            },
+                            baselineWeeks?.let { weeks ->
+                                { OvalitText(text = stringResource(Res.string.weapons_compared, weeks), style = caption, color = colors.t3) }
+                            },
+                        ),
+                        separator = { SeparatorDot(caption, colors.t3) },
+                        modifier = Modifier.weight(1f),
+                    )
+                    labels.forEach { label ->
+                        OvalitText(
+                            text = label,
+                            modifier = Modifier.width(HighlightColumn),
+                            style = labelStyle,
+                            color = colors.t3,
+                            textAlign = TextAlign.End,
+                            maxLines = 1,
+                        )
+                    }
+                }
+                rows.forEach { HighlightRow(it, styles, stacked, unusedText) }
+            }
         }
     }
 }
@@ -268,43 +289,29 @@ private class HighlightLine(
     val highlight: WeaponHighlight,
     val name: String,
     val cells: List<HighlightCell>?,
-    val comparesPeriod: Boolean,
 ) {
-    // 표는 이번 기간을 보는데 이 줄만 표본이 모자라 이번 액트 값을 띄운다
-    val fallsBackToAct: Boolean get() = comparesPeriod && highlight.current == null
-
     // "요즘 잘 맞아요"는 맞히는 얘기라 헤드샷이 움직였을 때만 붙인다
     val tag: Int? get() = cells?.get(WeaponMetric.HEADSHOT_RATE.ordinal)?.rise?.takeIf { it != 0 }
 }
 
-// 순서를 정한 이번 액트 킬이다. 기간 킬을 적으면 킬이 적은 무기가 위에 있는 것처럼 보인다. 머리에 기간이 적혀 있을
-// 때만 "이번 액트"를 붙인다.
+// 순서를 정한 이번 액트 킬이다. 기간 킬을 적으면 킬이 적은 무기가 위에 있는 것처럼 보인다. 이번 액트라는 건 제목 줄이 말한다.
 @Composable
-private fun killsText(line: HighlightLine): String {
-    val kills = line.highlight.act.kills.withThousands()
-    return if (line.comparesPeriod) {
-        stringResource(Res.string.weapons_act_kills, kills)
-    } else {
-        stringResource(Res.string.weapons_sample_kills, kills)
-    }
-}
+private fun killsText(line: HighlightLine): String = stringResource(Res.string.weapons_sample_kills, line.highlight.act.kills.withThousands())
 
-// 이번 기간을 띄울 수 없으면 이번 액트 값을 띄운다. 이번 액트로도 세 칸이 다 비면 null이고 줄에 "표본 부족"을 적는다.
+// 기간을 보는 표인데 그 기간에 이 무기를 안 썼으면 null이고 줄에 안 썼다고 적는다
 @Composable
-private fun highlightCells(highlight: WeaponHighlight): List<HighlightCell>? {
-    val current = highlight.current
-    val shown = current ?: highlight.act
-    if (current == null && WeaponMetric.entries.all { shown.value(it) == null }) return null
+private fun highlightCells(highlight: WeaponHighlight, comparesPeriod: Boolean): List<HighlightCell>? {
+    val shown = if (comparesPeriod) highlight.current ?: return null else highlight.act
 
     return WeaponMetric.entries.map { metric ->
         val format = metric.fixed.format
-        val now = shown.value(metric)
-        val usual = highlight.baseline?.value(metric)?.takeIf { current != null }
+        // 변화량은 두 기간 모두 표본을 넘긴 값끼리, 보이는 자릿수로 반올림해 뺀다
+        val now = highlight.current?.value(metric)
+        val usual = highlight.baseline?.value(metric)
         HighlightCell(
-            value = now?.let { format.valueText(it) } ?: NO_VALUE,
-            // 변화량은 보이는 자릿수로 반올림한 값끼리 뺀다
+            value = shown.recorded(metric)?.let { format.valueText(it) } ?: NO_VALUE,
             change = when {
-                current == null -> null
+                !comparesPeriod -> null
                 now != null && usual != null -> format.formatChange(now, usual)
                 else -> ""
             },
@@ -316,7 +323,7 @@ private fun highlightCells(highlight: WeaponHighlight): List<HighlightCell>? {
 
 // stacked면 숫자 세 칸을 이름 밑 오른쪽에 둔다. 열 위치는 그대로라 머리의 열 제목과 맞는다.
 @Composable
-private fun HighlightRow(line: HighlightLine, styles: HighlightStyles, stacked: Boolean) {
+private fun HighlightRow(line: HighlightLine, styles: HighlightStyles, stacked: Boolean, unusedText: String?) {
     val weapon = line.highlight.act.weapon
     if (stacked) {
         Column(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -325,14 +332,14 @@ private fun HighlightRow(line: HighlightLine, styles: HighlightStyles, stacked: 
                 Spacer(Modifier.width(OvalitSpacing.md))
                 HighlightName(line, styles.name, Modifier.weight(1f))
             }
-            HighlightCells(line, styles, Modifier.align(Alignment.End))
+            HighlightCells(line, styles, unusedText, Modifier.align(Alignment.End))
         }
     } else {
         Row(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically) {
             WeaponThumb(weapon, line.name, width = HighlightThumbWidth, height = 28.dp)
             Spacer(Modifier.width(OvalitSpacing.md))
             HighlightName(line, styles.name, Modifier.weight(1f))
-            HighlightCells(line, styles)
+            HighlightCells(line, styles, unusedText)
         }
     }
 }
@@ -363,31 +370,24 @@ private fun HighlightName(line: HighlightLine, nameStyle: TextStyle, modifier: M
 }
 
 @Composable
-private fun HighlightCells(line: HighlightLine, styles: HighlightStyles, modifier: Modifier = Modifier) {
-    val caption = OvalitTheme.typography.caption
+private fun HighlightCells(line: HighlightLine, styles: HighlightStyles, unusedText: String?, modifier: Modifier = Modifier) {
     val cells = line.cells
     if (cells == null) {
         OvalitText(
-            text = stringResource(Res.string.not_enough_sample),
+            text = unusedText.orEmpty(),
             modifier = modifier.width(HighlightColumn * WeaponMetric.entries.size),
-            style = caption,
+            style = OvalitTheme.typography.caption,
             color = OvalitTheme.colors.t3,
             textAlign = TextAlign.End,
         )
         return
     }
-    Column(modifier = modifier, horizontalAlignment = Alignment.End) {
-        Row {
-            cells.forEach { cell ->
-                Column(modifier = Modifier.width(HighlightColumn), horizontalAlignment = Alignment.End) {
-                    OvalitText(text = cell.value, style = styles.value, maxLines = 1)
-                    cell.change?.let { OvalitText(text = it, style = styles.change, color = riseColor(cell.rise), maxLines = 1) }
-                }
+    Row(modifier = modifier) {
+        cells.forEach { cell ->
+            Column(modifier = Modifier.width(HighlightColumn), horizontalAlignment = Alignment.End) {
+                OvalitText(text = cell.value, style = styles.value, maxLines = 1)
+                cell.change?.let { OvalitText(text = it, style = styles.change, color = riseColor(cell.rise), maxLines = 1) }
             }
-        }
-        // 변화량 자리에 이 줄의 숫자가 이번 액트 것임을 적는다. 머리에는 이번 기간이라고 적혀 있다.
-        if (line.fallsBackToAct) {
-            OvalitText(text = stringResource(Res.string.weapons_act_basis), style = caption, color = OvalitTheme.colors.t3, maxLines = 1)
         }
     }
 }

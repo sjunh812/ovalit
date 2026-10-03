@@ -201,15 +201,16 @@ class AgentWeaponReportTest {
         assertEquals(2.0, listOf(match(died)).weaponStats().single().kda)
     }
 
-    // 한 줄에 이번 기간 헤드샷과 이번 액트 K/D가 섞이면 어느 숫자가 언제 것인지 모른다
+    // 사용자 요청(2026-10-03): 표본이 모자란 줄만 이번 액트 값을 띄우니 어느 숫자가 언제 것인지 알기 어려웠다
     @Test
-    fun `기간에 들고 시작한 라운드가 모자라면 줄 전체를 이번 액트로 띄운다`() {
+    fun `기간에 들고 시작한 라운드가 모자라도 그 기간 숫자를 두고 달라졌는지는 보지 않는다`() {
         val thisWeek = phantomWeek(weeksAgo = 0, head = 40, carried = 15)
 
         val phantom = thisWeek.weaponReport(now = Now, timeZone = Seoul).highlights.single()
 
-        assertEquals(null, phantom.current)
-        assertEquals(Movement.UNKNOWN, phantom.movement(WeaponMetric.HEADSHOT_RATE))
+        assertEquals(140.0, phantom.current?.recorded(WeaponMetric.DAMAGE_PER_ROUND))
+        assertEquals(null, phantom.current?.value(WeaponMetric.DAMAGE_PER_ROUND))
+        assertEquals(Movement.UNKNOWN, phantom.movement(WeaponMetric.DAMAGE_PER_ROUND))
     }
 
     @Test

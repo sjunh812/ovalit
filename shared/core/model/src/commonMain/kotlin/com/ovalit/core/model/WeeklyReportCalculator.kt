@@ -259,8 +259,8 @@ private fun Map<LocalDate, List<Match>>.highlight(act: WeaponStats, period: Repo
     if (period == null) return WeaponHighlight(act, null, null, baselineWeeks = 0, movements = emptyMap())
     fun List<Match>.stats() = weaponStats().firstOrNull { it.weapon == act.weapon }
 
-    // 헤드샷과 K/D·피해량은 표본이 다르다. 하나라도 모자라면 줄 전체를 이번 액트로 띄운다.
-    val current = between(period.firstDay, period.end).stats()?.takeIf { it.isMeasurable && it.isCarriedMeasurable }
+    // 표본이 적어도 그 기간 숫자를 띄운다. 달라졌는지는 아래에서 표본을 넘긴 값끼리만 본다.
+    val current = between(period.firstDay, period.end).stats()
     val start = baselineStart(period.firstDay)
     val baseline = between(start, period.firstDay).stats()
     val weeks = weeksBefore(period.firstDay).mapNotNull { it.stats() }

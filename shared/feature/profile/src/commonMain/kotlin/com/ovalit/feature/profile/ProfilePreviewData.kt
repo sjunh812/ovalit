@@ -146,10 +146,10 @@ internal object ProfilePreviewData {
                 baselineWeeks = 4,
                 movements = WeaponMetric.entries.associateWith { Movement.STEADY },
             ),
-            // 이번 주에 들고 시작한 라운드가 모자라서 이번 액트 값을 띄운다
+            // 이번 주에 몇 라운드만 들어서 숫자만 있고 달라졌는지는 보지 않는다
             WeaponHighlight(
                 act = weapon(ghost, kills = 46, rounds = 12, head = 30, carried = 36, deaths = 30, adr = 88),
-                current = null,
+                current = weapon(ghost, kills = 3, rounds = 2, head = 7, total = 20, carried = 5, deaths = 4, adr = 97),
                 baseline = null,
                 baselineWeeks = 4,
                 movements = emptyMap(),

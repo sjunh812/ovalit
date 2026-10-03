@@ -37,7 +37,7 @@ import com.ovalit.feature.onboarding.resources.intro_subtitle_what
 import com.ovalit.feature.onboarding.resources.intro_subtitle_when
 import org.jetbrains.compose.resources.stringResource
 
-private val LogoWidth = 104.dp
+private val LogoWidth = 88.dp
 
 // 괄호 안 글자 크기. em이라 바깥 글자 크기에 따라간다. titleL을 키워도 비율이 유지된다.
 private val ParenthesisScale = 0.7.em

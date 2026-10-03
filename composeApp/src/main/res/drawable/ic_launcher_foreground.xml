@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  초성 ㅇㅂㅇ. 좌표는 CLAUDE.md의 로고 항목을 그대로 옮긴 것입니다.
+  흰 말풍선 안의 ㅇㅂㅇ입니다. 좌표는 사용자가 고른 1024 정사각 아이콘 그림의 픽셀이고, CLAUDE.md의 로고
+  항목에 같은 경로를 적어 뒀습니다. 글자는 말풍선에서 파내서(evenOdd) 바탕의 brand_surface가 비칩니다.
+  테마 아이콘(monochrome)도 이 파일을 쓰는데, 글자를 따로 칠하지 않아서 한 가지 색으로 덮여도 글자가 남습니다.
 
-  108dp 캔버스지만 런처가 실제로 보여주는 건 가운데 지름 72dp뿐입니다. 마크 폭을 50dp로
-  두면 획 바깥까지 포함한 마크가 그 원의 70% 정도를 차지합니다. 여기서 더 키우면 잘리지는
-  않아도 원에 꽉 차서 답답해 보입니다.
+  108dp 캔버스 중 런처가 보여주는 건 가운데 지름 72dp라 그림 1024를 그 72dp에 맞춥니다. 말풍선 폭은 그 원의 70%입니다.
 
-  scale = 50 / 160 = 0.3125
-  translate = ((108-50)/2, (108 - 76*0.3125)/2)
+  scale = 72 / 1024 = 0.0703125
+  translate = (108 - 72) / 2 = 18
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
@@ -16,37 +16,14 @@
     android:viewportHeight="108">
 
     <group
-        android:scaleX="0.3125"
-        android:scaleY="0.3125"
-        android:translateX="29"
-        android:translateY="42.13">
+        android:scaleX="0.0703125"
+        android:scaleY="0.0703125"
+        android:translateX="18"
+        android:translateY="18">
 
         <path
-            android:pathData="M18,18H36L44,26V46L36,54H18L10,46V26Z"
-            android:strokeColor="@color/brand_mark"
-            android:strokeLineCap="butt"
-            android:strokeLineJoin="round"
-            android:strokeWidth="10" />
-
-        <path
-            android:pathData="M63,17V50L71,58H89L97,50V17"
-            android:strokeColor="@color/brand_mark"
-            android:strokeLineCap="butt"
-            android:strokeLineJoin="round"
-            android:strokeWidth="10" />
-
-        <path
-            android:pathData="M63,38H97"
-            android:strokeColor="@color/brand_mark"
-            android:strokeLineCap="butt"
-            android:strokeLineJoin="round"
-            android:strokeWidth="10" />
-
-        <path
-            android:pathData="M124,18H142L150,26V46L142,54H124L116,46V26Z"
-            android:strokeColor="@color/brand_mark"
-            android:strokeLineCap="butt"
-            android:strokeLineJoin="round"
-            android:strokeWidth="10" />
+            android:fillColor="@color/brand_mark"
+            android:fillType="evenOdd"
+            android:pathData="M272,280H752A120,120 0,0 1,872,400V598A120,120 0,0 1,752,718H432L322.5,813.8Q312,823 312,809V718H272A120,120 0,0 1,152,598V400A120,120 0,0 1,272,280ZM228,499a88,88 0,1 0,176,0a88,88 0,1 0,-176,0ZM272,499a44,44 0,1 0,88,0a44,44 0,1 0,-88,0ZM430,422A8,8 0,0 1,438,414H466A8,8 0,0 1,474,422V463H550V422A8,8 0,0 1,558,414H586A8,8 0,0 1,594,422V573A10,10 0,0 1,584,583H440A10,10 0,0 1,430,573ZM474,499H550V548H474ZM620,499a88,88 0,1 0,176,0a88,88 0,1 0,-176,0ZM664,499a44,44 0,1 0,88,0a44,44 0,1 0,-88,0Z" />
     </group>
 </vector>

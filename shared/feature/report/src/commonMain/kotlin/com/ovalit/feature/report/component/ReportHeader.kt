@@ -51,8 +51,8 @@ import com.ovalit.feature.report.resources.period_no_matches_this_week
 import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
 
-// 목업의 글자 로고(18px)와 높이가 비슷해지는 폭
-private val TopBarLogoWidth = 46.dp
+// 말풍선 높이가 오른쪽 위 아바타(30dp)와 비슷해지는 폭
+private val TopBarLogoWidth = 38.dp
 private val AvatarSize = 30.dp
 private val TierEmblemSize = 16.dp
 private val ProfileTouchSize = 44.dp

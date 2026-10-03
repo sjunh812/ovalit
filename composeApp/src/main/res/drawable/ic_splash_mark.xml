@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  스플래시 아이콘은 288dp 캔버스에 가운데 192dp만 보입니다. 런처 아이콘과 규격이 달라
-  드로어블을 따로 둡니다.
+  스플래시 아이콘은 288dp 캔버스에 가운데 192dp만 보입니다. 런처와 규격이 달라 드로어블을 따로 두고, 그림은
+  런처와 같은 비율로 보이는 원에 맞춥니다. 경로는 ic_launcher_foreground.xml과 같습니다.
 
-  scale = 132 / 160 = 0.825
-  translate = ((288-132)/2, (288 - 76*0.825)/2)
+  scale = 192 / 1024 = 0.1875
+  translate = (288 - 192) / 2 = 48
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="288dp"
@@ -13,37 +13,14 @@
     android:viewportHeight="288">
 
     <group
-        android:scaleX="0.825"
-        android:scaleY="0.825"
-        android:translateX="78"
-        android:translateY="112.65">
+        android:scaleX="0.1875"
+        android:scaleY="0.1875"
+        android:translateX="48"
+        android:translateY="48">
 
         <path
-            android:pathData="M18,18H36L44,26V46L36,54H18L10,46V26Z"
-            android:strokeColor="@color/brand_mark"
-            android:strokeLineCap="butt"
-            android:strokeLineJoin="round"
-            android:strokeWidth="10" />
-
-        <path
-            android:pathData="M63,17V50L71,58H89L97,50V17"
-            android:strokeColor="@color/brand_mark"
-            android:strokeLineCap="butt"
-            android:strokeLineJoin="round"
-            android:strokeWidth="10" />
-
-        <path
-            android:pathData="M63,38H97"
-            android:strokeColor="@color/brand_mark"
-            android:strokeLineCap="butt"
-            android:strokeLineJoin="round"
-            android:strokeWidth="10" />
-
-        <path
-            android:pathData="M124,18H142L150,26V46L142,54H124L116,46V26Z"
-            android:strokeColor="@color/brand_mark"
-            android:strokeLineCap="butt"
-            android:strokeLineJoin="round"
-            android:strokeWidth="10" />
+            android:fillColor="@color/brand_mark"
+            android:fillType="evenOdd"
+            android:pathData="M272,280H752A120,120 0,0 1,872,400V598A120,120 0,0 1,752,718H432L322.5,813.8Q312,823 312,809V718H272A120,120 0,0 1,152,598V400A120,120 0,0 1,272,280ZM228,499a88,88 0,1 0,176,0a88,88 0,1 0,-176,0ZM272,499a44,44 0,1 0,88,0a44,44 0,1 0,-88,0ZM430,422A8,8 0,0 1,438,414H466A8,8 0,0 1,474,422V463H550V422A8,8 0,0 1,558,414H586A8,8 0,0 1,594,422V573A10,10 0,0 1,584,583H440A10,10 0,0 1,430,573ZM474,499H550V548H474ZM620,499a88,88 0,1 0,176,0a88,88 0,1 0,-176,0ZM664,499a44,44 0,1 0,88,0a44,44 0,1 0,-88,0Z" />
     </group>
 </vector>

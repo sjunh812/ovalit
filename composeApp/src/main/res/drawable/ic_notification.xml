@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  알림 작은 아이콘입니다. 시스템이 모양만 쓰고 색은 덮어써서 흰색 한 가지로 그립니다.
-  24dp 캔버스에 마크 폭 22dp. scale = 22 / 160 = 0.1375, translate = (1, (24 - 76*0.1375)/2)
+  알림 작은 아이콘입니다. 시스템이 모양만 쓰고 색은 덮어써서 흰색 한 가지로 그립니다. 경로는
+  ic_launcher_foreground.xml과 같고, 말풍선(가로 152~872, 세로 280~823)을 24dp 캔버스에 폭 22dp로 놓습니다.
+
+  scale = 22 / 720 = 0.030556
+  translate = (12 - 512 * scale, 12 - 551.5 * scale)
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
@@ -10,37 +13,14 @@
     android:viewportHeight="24">
 
     <group
-        android:scaleX="0.1375"
-        android:scaleY="0.1375"
-        android:translateX="1"
-        android:translateY="6.78">
+        android:scaleX="0.030556"
+        android:scaleY="0.030556"
+        android:translateX="-3.6444"
+        android:translateY="-4.8514">
 
         <path
-            android:pathData="M18,18H36L44,26V46L36,54H18L10,46V26Z"
-            android:strokeColor="#FFFFFFFF"
-            android:strokeLineCap="butt"
-            android:strokeLineJoin="round"
-            android:strokeWidth="10" />
-
-        <path
-            android:pathData="M63,17V50L71,58H89L97,50V17"
-            android:strokeColor="#FFFFFFFF"
-            android:strokeLineCap="butt"
-            android:strokeLineJoin="round"
-            android:strokeWidth="10" />
-
-        <path
-            android:pathData="M63,38H97"
-            android:strokeColor="#FFFFFFFF"
-            android:strokeLineCap="butt"
-            android:strokeLineJoin="round"
-            android:strokeWidth="10" />
-
-        <path
-            android:pathData="M124,18H142L150,26V46L142,54H124L116,46V26Z"
-            android:strokeColor="#FFFFFFFF"
-            android:strokeLineCap="butt"
-            android:strokeLineJoin="round"
-            android:strokeWidth="10" />
+            android:fillColor="#FFFFFFFF"
+            android:fillType="evenOdd"
+            android:pathData="M272,280H752A120,120 0,0 1,872,400V598A120,120 0,0 1,752,718H432L322.5,813.8Q312,823 312,809V718H272A120,120 0,0 1,152,598V400A120,120 0,0 1,272,280ZM228,499a88,88 0,1 0,176,0a88,88 0,1 0,-176,0ZM272,499a44,44 0,1 0,88,0a44,44 0,1 0,-88,0ZM430,422A8,8 0,0 1,438,414H466A8,8 0,0 1,474,422V463H550V422A8,8 0,0 1,558,414H586A8,8 0,0 1,594,422V573A10,10 0,0 1,584,583H440A10,10 0,0 1,430,573ZM474,499H550V548H474ZM620,499a88,88 0,1 0,176,0a88,88 0,1 0,-176,0ZM664,499a44,44 0,1 0,88,0a44,44 0,1 0,-88,0Z" />
     </group>
 </vector>

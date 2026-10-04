@@ -99,28 +99,6 @@ fun OvalitOutlinedButton(
 }
 
 /**
- * 면만 칠한 한 단계 낮은 버튼입니다. 바탕을 한 단계 다르게 깐 영역 위에 둡니다. 그 위에 테두리 버튼을 두면 선이 겹쳐 보입니다.
- */
-@Composable
-fun OvalitFilledButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    contentColor: Color = OvalitTheme.colors.t1,
-    background: Color = OvalitTheme.colors.bg,
-) {
-    OvalitButtonSurface(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        enabled = true,
-        background = background,
-        pressColor = contentColor,
-    ) {
-        OvalitText(text = text, style = OvalitTheme.typography.bodyStrong, color = contentColor)
-    }
-}
-
-/**
  * 버튼이 같이 쓰는 눌리는 영역, 최소 높이, 누름 효과입니다. `clickable`이 안의 글자를 묶어 읽으니 [Role.Button]만
  * 달면 낭독기가 "○○, 버튼"으로 한 번에 읽습니다.
  */

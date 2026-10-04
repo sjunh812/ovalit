@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitDisclaimer
 import com.ovalit.core.designsystem.component.OvalitDivider
-import com.ovalit.core.designsystem.component.OvalitOutlinedButton
+import com.ovalit.core.designsystem.component.OvalitFilledButton
 import com.ovalit.core.designsystem.component.OvalitSwitch
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
@@ -240,24 +240,29 @@ internal fun SettingsScreen(
                 onClick = { openSheet = SettingsSheet.DELETE_DATA },
             )
 
+            // 연동 해제와 고지, 버전은 맨 밑에 바탕을 한 단계 다르게 깐 영역으로 묶는다(사용자 요청, 2026-10-04). 선으로만 나누니
+            // 테두리 버튼과 고지가 위 목록에 붙은 것처럼 어색했다.
             Spacer(Modifier.height(OvalitSpacing.xl))
-            OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))
-            Spacer(Modifier.height(OvalitSpacing.xl))
-            UnlinkSection(onClick = { openSheet = SettingsSheet.UNLINK })
-
-            Spacer(Modifier.height(OvalitSpacing.xxl))
             Column(
-                modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
-                verticalArrangement = Arrangement.spacedBy(OvalitSpacing.sm),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(OvalitTheme.colors.raised)
+                    .padding(top = OvalitSpacing.xl, bottom = OvalitSpacing.xxl),
             ) {
-                OvalitDisclaimer(textAlign = TextAlign.Start)
-                OvalitText(
-                    text = stringResource(Res.string.version, appVersion),
-                    style = OvalitTheme.typography.caption,
-                    color = OvalitTheme.colors.t3,
-                )
+                UnlinkSection(onClick = { openSheet = SettingsSheet.UNLINK })
+                Spacer(Modifier.height(OvalitSpacing.xxl))
+                Column(
+                    modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
+                    verticalArrangement = Arrangement.spacedBy(OvalitSpacing.sm),
+                ) {
+                    OvalitDisclaimer(textAlign = TextAlign.Start)
+                    OvalitText(
+                        text = stringResource(Res.string.version, appVersion),
+                        style = OvalitTheme.typography.caption,
+                        color = OvalitTheme.colors.t3,
+                    )
+                }
             }
-            Spacer(Modifier.height(OvalitSpacing.xl))
         }
 
         openSheet?.let { sheet ->
@@ -424,7 +429,7 @@ private fun UnlinkSection(onClick: () -> Unit) {
         modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        OvalitOutlinedButton(
+        OvalitFilledButton(
             text = stringResource(Res.string.unlink),
             onClick = onClick,
             contentColor = OvalitTheme.colors.neg,

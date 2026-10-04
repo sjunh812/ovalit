@@ -18,9 +18,9 @@ private const val TABULAR_FIGURES = "tnum"
 // 플랫폼마다 따로 정한다.
 private val KoreanLineBreak = LineBreak.Heading
 
-// 위 줄바꿈 규칙은 "이 글자는 한국어"라고 알려줘야만 동작한다. 안 알려주면 기기 설정
-// 언어를 따라가는데, 폰을 영어로 쓰는 한국 유저가 흔해서 그 경우 다시 깨진다.
-// Riot 고지 말고는 문구가 전부 한국어라 여기서 못박는다. 다른 언어를 넣을 때 바꾼다.
+// 위 줄바꿈 규칙은 "이 글자는 한국어"라고 알려줘야만 동작한다. 안 알려주면 기기 설정 언어를 따라가는데, 폰을 영어로 쓰는 한국
+// 유저가 흔해서 그 경우 다시 깨진다. 그래서 기기 언어가 아니라 실제로 보이는 문구의 언어(text_locale 리소스)를 넘겨받는다. 일본어면
+// 한자를 일본 자형으로 그리고 문절 단위로 끊는다.
 private val KoreanLocale = LocaleList("ko-KR")
 
 @Immutable
@@ -38,7 +38,7 @@ data class OvalitTypography(
     val caption: TextStyle,
 )
 
-fun ovalitTypography(fontFamily: FontFamily = FontFamily.Default): OvalitTypography {
+fun ovalitTypography(fontFamily: FontFamily = FontFamily.Default, locale: LocaleList = KoreanLocale): OvalitTypography {
     fun metric(size: Int, lineHeight: Int, tracking: Double) = TextStyle(
         fontFamily = fontFamily,
         fontWeight = FontWeight.SemiBold,
@@ -47,7 +47,7 @@ fun ovalitTypography(fontFamily: FontFamily = FontFamily.Default): OvalitTypogra
         letterSpacing = tracking.sp,
         fontFeatureSettings = TABULAR_FIGURES,
         lineBreak = KoreanLineBreak,
-        localeList = KoreanLocale,
+        localeList = locale,
     )
 
     fun text(size: Int, lineHeight: Int, tracking: Double, weight: FontWeight, lineBreak: LineBreak = BodyLineBreak) = TextStyle(
@@ -57,7 +57,7 @@ fun ovalitTypography(fontFamily: FontFamily = FontFamily.Default): OvalitTypogra
         lineHeight = lineHeight.sp,
         letterSpacing = tracking.sp,
         lineBreak = lineBreak,
-        localeList = KoreanLocale,
+        localeList = locale,
     )
 
     return OvalitTypography(

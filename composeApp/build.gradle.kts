@@ -54,6 +54,12 @@ android {
         resValue("string", "com.google.firebase.crashlytics.mapping_file_id", "0".repeat(32))
     }
 
+    // 안드로이드 13부터 앱 설정에서 앱만 따로 일본어로 고를 수 있게 지원 언어 목록을 만든다. 기본 values는 한국어다
+    // (src/main/res/resources.properties).
+    androidResources {
+        generateLocaleConfig = true
+    }
+
     buildFeatures {
         compose = true
         buildConfig = true

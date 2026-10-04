@@ -63,4 +63,6 @@
     <string name="feedback_subject">오발있 피드백</string>
     <string name="feedback_body">\n\n\n앱 버전 %1$s · %2$s · Android %3$s</string>
     <string name="feedback_no_mail_app">메일 앱이 없어요 · %1$s로 보내 주세요</string>
+    <!-- 이름을 늘어놓을 때 쓰는 구분자다. 앞뒤 공백을 지키려고 따옴표로 감싼다. -->
+    <string name="list_separator">", "</string>
 </resources>

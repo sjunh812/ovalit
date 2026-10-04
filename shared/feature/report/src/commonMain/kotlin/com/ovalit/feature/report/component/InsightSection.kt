@@ -38,7 +38,7 @@ import com.ovalit.core.ui.resources.metric_damage
 import com.ovalit.core.ui.resources.metric_headshot
 import com.ovalit.core.ui.valueText
 import com.ovalit.core.ui.weaponName
-import com.ovalit.core.ui.withJosa
+import com.ovalit.core.ui.withLocalJosa
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.gap_percent
 import com.ovalit.feature.report.resources.insight_higher
@@ -105,11 +105,11 @@ internal fun InsightSection(
             else -> Res.string.insight_side
         },
         when (lead.subject) {
-            is InsightSubject.OnAgent, is InsightSubject.OnRole -> leadName.withJosa(Josa.EURO_RO)
-            is InsightSubject.WithWeapon -> leadName.withJosa(Josa.EUL_REUL)
+            is InsightSubject.OnAgent, is InsightSubject.OnRole -> leadName.withLocalJosa(Josa.EURO_RO)
+            is InsightSubject.WithWeapon -> leadName.withLocalJosa(Josa.EUL_REUL)
             else -> leadName
         },
-        metric.withJosa(Josa.I_GA),
+        metric.withLocalJosa(Josa.I_GA),
         otherName,
         gapText,
         stringResource(if (insight.leadIsHigher) Res.string.insight_higher else Res.string.insight_lower),
@@ -134,11 +134,11 @@ internal fun InsightSection(
     }
     val focus = insight.focus
     val reason = when {
-        focus != null -> stringResource(Res.string.insight_reason_focus, stringResource(focus.label).withJosa(Josa.EUL_REUL))
+        focus != null -> stringResource(Res.string.insight_reason_focus, stringResource(focus.label).withLocalJosa(Josa.EUL_REUL))
         insight.isRolePriority && role != null -> stringResource(
             Res.string.insight_reason_role,
             stringResource(role.label),
-            metric.withJosa(Josa.EUN_NEUN),
+            metric.withLocalJosa(Josa.EUN_NEUN),
         )
         else -> null
     }

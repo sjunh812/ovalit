@@ -48,6 +48,7 @@ import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.ui.FailureNoticesEffect
 import com.ovalit.core.ui.LocalAdRenderer
 import com.ovalit.core.ui.PlayerAvatar
+import com.ovalit.core.ui.clockText
 import com.ovalit.core.ui.label
 import com.ovalit.feature.settings.resources.Res
 import com.ovalit.feature.settings.resources.account_linked
@@ -442,7 +443,7 @@ private fun ValueRow(
 @Composable
 private fun adFreeUntilText(until: Instant, now: Instant, timeZone: TimeZone): String {
     val end = until.toLocalDateTime(timeZone)
-    val time = "${end.hour.toString().padStart(2, '0')}:${end.minute.toString().padStart(2, '0')}"
+    val time = clockText(end)
     val today = now.toLocalDateTime(timeZone).date
     return stringResource(if (end.date == today) Res.string.ad_free_until_today else Res.string.ad_free_until_tomorrow, time)
 }

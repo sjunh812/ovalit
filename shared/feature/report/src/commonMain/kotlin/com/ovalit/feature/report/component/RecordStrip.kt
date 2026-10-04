@@ -26,6 +26,7 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.SEPARATOR
+import com.ovalit.core.ui.joinedForDisplay
 import com.ovalit.core.ui.percentText
 import com.ovalit.core.ui.rememberWidestWidth
 import com.ovalit.core.ui.resources.Res as CoreUiRes
@@ -66,7 +67,7 @@ internal fun RecordStrip(report: WeeklyReport.Ready, modifier: Modifier = Modifi
     // 칸 색만으로는 화면 읽기 프로그램이 알 수 없어서 순서대로 말해 준다
     val description = stringResource(
         Res.string.record_cells_description,
-        cells.joinToString(", ") { won -> if (won == true) win else if (won == false) loss else draw },
+        cells.map { won -> if (won == true) win else if (won == false) loss else draw }.joinedForDisplay(),
     )
 
     val recent = if (cells.size < results.size) stringResource(Res.string.record_recent, cells.size) else null

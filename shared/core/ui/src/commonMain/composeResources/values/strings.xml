@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 요원·맵·무기 이름 뒤에 받침에 따라 조사를 붙일지다. 한국어만 붙이고, 다른 언어는 문장 틀에 조사를 직접 쓴다. -->
+    <string name="josa_enabled">true</string>
+    <!-- 이름을 늘어놓을 때 쓰는 구분자다. 일본어는 「、」다. -->
+    <string name="list_separator">, </string>
     <string name="period_this_week">이번 주</string>
     <string name="period_recent_weeks">최근 %1$d주</string>
     <string name="period_last_week">지난주</string>

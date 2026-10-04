@@ -141,10 +141,31 @@ internal val FakeFriendProfiles = FakeFriendPlayers.associateBy { it.id }
 internal val StrangersUsingApp = setOf(Strangers[1].id, Strangers[3].id, Strangers[5].id)
 
 /** 서버가 내려줄 티어 이름을 대신합니다. 번호는 경기 응답의 `competitiveTier`입니다. */
-internal val FakeTiers: Map<Int, String> = buildMap {
-    val ranks = listOf("아이언", "브론즈", "실버", "골드", "플래티넘", "다이아몬드", "초월자", "불멸")
+internal val FakeTiers: Map<Int, String> = tiers(listOf("아이언", "브론즈", "실버", "골드", "플래티넘", "다이아몬드", "초월자", "불멸"), radiant = "레디언트")
+
+internal val FakeTiersJa: Map<Int, String> =
+    tiers(listOf("アイアン", "ブロンズ", "シルバー", "ゴールド", "プラチナ", "ダイヤモンド", "アセンダント", "イモータル"), radiant = "レディアント")
+
+private fun tiers(ranks: List<String>, radiant: String): Map<Int, String> = buildMap {
     ranks.forEachIndexed { rank, name ->
         (1..3).forEach { division -> put(3 + rank * 3 + division - 1, "$name $division") }
     }
-    put(27, "레디언트")
+    put(27, radiant)
 }
+
+/**
+ * 일본어 카탈로그(`locale=ja-JP`)가 줄 이름을 대신합니다. 한국어 이름을 열쇠로 둡니다. 실제 저장소는 서버가 기기 언어에 맞는
+ * 카탈로그를 내려주니 이 표가 필요 없습니다.
+ */
+internal val FakeNamesJa: Map<String, String> = mapOf(
+    "제트" to "ジェット", "레이즈" to "レイズ", "레이나" to "レイナ", "피닉스" to "フェニックス", "네온" to "ネオン",
+    "요루" to "ヨル", "아이소" to "アイソ", "소바" to "ソーヴァ", "브리치" to "ブリーチ", "스카이" to "スカイ",
+    "케이/오" to "KAY/O", "페이드" to "フェイド", "게코" to "ゲッコー", "오멘" to "オーメン", "브림스톤" to "ブリムストーン",
+    "바이퍼" to "ヴァイパー", "아스트라" to "アストラ", "하버" to "ハーバー", "클로브" to "クローヴ", "킬조이" to "キルジョイ",
+    "사이퍼" to "サイファー", "세이지" to "セージ", "체임버" to "チェンバー", "데드록" to "デッドロック", "바이스" to "ヴァイス",
+    "어센트" to "アセント", "헤이븐" to "ヘイヴン", "바인드" to "バインド", "로터스" to "ロータス", "스플릿" to "スプリット",
+    "아이스박스" to "アイスボックス", "펄" to "パール", "선셋" to "サンセット", "어비스" to "アビス", "코로드" to "カロード",
+    "팬텀" to "ファントム", "밴달" to "ヴァンダル", "가디언" to "ガーディアン", "불독" to "ブルドッグ", "스펙터" to "スペクター",
+    "오퍼레이터" to "オペレーター", "저지" to "ジャッジ", "오딘" to "オーディン", "고스트" to "ゴースト", "셰리프" to "シェリフ",
+    "클래식" to "クラシック",
+)

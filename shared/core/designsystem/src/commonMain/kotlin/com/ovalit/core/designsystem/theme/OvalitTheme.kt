@@ -9,7 +9,11 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.intl.LocaleList
 import com.ovalit.core.designsystem.component.OvalitPressIndication
+import com.ovalit.core.designsystem.resources.Res
+import com.ovalit.core.designsystem.resources.text_locale
+import org.jetbrains.compose.resources.stringResource
 
 // 화면은 OvalitTheme.colors와 typography만 쓴다. 안쪽의 MaterialTheme은 바텀시트처럼 Material 컴포넌트가 스스로
 // 고르는 색과 글꼴을 우리 것에 맞추려고 깐다(MaterialBridge.kt).
@@ -20,7 +24,8 @@ fun OvalitTheme(
     content: @Composable () -> Unit,
 ) {
     val colors = if (darkTheme) OvalitDarkColors else OvalitLightColors
-    val typography = remember(fontFamily) { ovalitTypography(fontFamily) }
+    val textLocale = stringResource(Res.string.text_locale)
+    val typography = remember(fontFamily, textLocale) { ovalitTypography(fontFamily, LocaleList(textLocale)) }
     val materialColors = remember(colors) { colors.toMaterial() }
     val materialTypography = remember(typography) { typography.toMaterial() }
 

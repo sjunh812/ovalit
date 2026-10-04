@@ -83,7 +83,7 @@ internal object PingNotifications {
             }
             "ping_remind" -> pingNotification(context, pingId) {
                 setContentTitle(remindTitle(context, data))
-                setContentText(context.getString(R.string.ping_remind_body, data["names"].orEmpty().split(",").joinToString(", ")))
+                setContentText(context.getString(R.string.ping_remind_body, data["names"].orEmpty().split(",").joinToString(context.getString(R.string.list_separator))))
             }
             "weekly_report" -> NotificationCompat.Builder(context, channel(context, WEEKLY_CHANNEL, R.string.notification_channel_weekly, NotificationManager.IMPORTANCE_DEFAULT))
                 .setSmallIcon(R.drawable.ic_notification)
@@ -139,7 +139,7 @@ internal object PingNotifications {
         return if (names.isEmpty()) {
             context.getString(R.string.ping_new_body)
         } else {
-            context.getString(R.string.ping_new_body_others, names.joinToString(", "))
+            context.getString(R.string.ping_new_body_others, names.joinToString(context.getString(R.string.list_separator)))
         }
     }
 

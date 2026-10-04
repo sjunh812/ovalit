@@ -30,8 +30,9 @@ val ApplicationScope = named("application")
 /**
  * @param preferencesPath 설정 파일을 둘 절대 경로입니다. 플랫폼마다 앱 전용 폴더가 달라서 밖에서 받습니다.
  * `.preferences_pb`로 끝나야 합니다.
+ * @param language 화면 언어의 ISO 639 코드입니다("ko", "ja"). 요원·맵·무기·티어 이름을 이 언어로 받습니다.
  */
-fun dataModule(preferencesPath: () -> String) = module {
+fun dataModule(preferencesPath: () -> String, language: () -> String = { "ko" }) = module {
     // 여기서 도는 일은 실패를 스스로 다룬다. 놓친 실패가 있어도 앱을 죽이지 않는다.
     single(ApplicationScope) { CoroutineScope(SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, _ -> }) }
     // 프로덕션 키가 나오면 Fake로 시작하는 저장소를 실제 구현으로 바꾼다.
@@ -40,7 +41,7 @@ fun dataModule(preferencesPath: () -> String) = module {
     single { FakePingRepository(get()) } bind PingRepository::class
     single<PushRepository> { FakePushRepository() }
     single { FakeAccountRepository(get(), friendRepository = get(), pingRepository = get()) } bind AccountRepository::class
-    single<ContentRepository> { FakeContentRepository() }
+    single<ContentRepository> { FakeContentRepository(language()) }
     // ImportScheduler는 앱 모듈이 넣는다
     single { NewMatchesWatcher(get(), get(), get(), get(ApplicationScope), analytics = get()) }
     single<UserPreferencesRepository> {

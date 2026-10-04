@@ -36,7 +36,11 @@ class OvalitApplication : Application() {
             androidContext(this@OvalitApplication)
             modules(
                 appModule,
-                dataModule(preferencesPath = { filesDir.resolve("ovalit.preferences_pb").absolutePath }),
+                dataModule(
+                    preferencesPath = { filesDir.resolve("ovalit.preferences_pb").absolutePath },
+                    // 앱별 언어를 고르면 리소스 설정의 언어가 바뀐다. 기기 언어가 아니라 이 값을 따라야 화면 문구와 이름의 언어가 맞는다.
+                    language = { resources.configuration.locales[0].language },
+                ),
                 onboardingModule,
                 reportModule,
                 matchModule,

@@ -60,6 +60,7 @@ import com.ovalit.core.model.PingAnswer
 import com.ovalit.core.model.PingMember
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.ui.PingSummaryRow
+import com.ovalit.core.ui.joinedForDisplay
 import com.ovalit.core.ui.pingAnswerText
 import com.ovalit.core.ui.pingClockText
 import com.ovalit.core.ui.resources.Res as CoreUiRes
@@ -194,7 +195,7 @@ internal fun crowdCounts(crowd: List<PingMember>): String = listOfNotNull(
 @Composable
 internal fun ProposalRow(members: List<PingMember>, time: String, onAccept: () -> Unit) {
     val colors = OvalitTheme.colors
-    val names = members.joinToString(", ") { it.person.riotId.substringBefore('#') }
+    val names = members.map { it.person.riotId.substringBefore('#') }.joinedForDisplay()
     Row(modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
         val step = RowAvatarSize - StackOverlap
         Box(modifier = Modifier.width(RowAvatarSize + step * (members.size - 1)).height(RowAvatarSize)) {

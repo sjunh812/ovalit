@@ -10,6 +10,7 @@ import com.ovalit.core.ui.resources.Res
 import com.ovalit.core.ui.resources.day_date
 import com.ovalit.core.ui.resources.day_today
 import com.ovalit.core.ui.resources.day_yesterday
+import com.ovalit.core.ui.resources.list_separator
 import com.ovalit.core.ui.resources.queue_competitive
 import com.ovalit.core.ui.resources.queue_filter_competitive
 import com.ovalit.core.ui.resources.queue_filter_competitive_and_unrated
@@ -37,6 +38,7 @@ import kotlin.time.Instant
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.number
@@ -75,10 +77,18 @@ fun ContentCatalog.mapName(id: MapId): String = maps[id] ?: stringResource(Res.s
 fun matchTimeLabel(startedAt: Instant, now: Instant, timeZone: TimeZone): String {
     val start = startedAt.toLocalDateTime(timeZone)
     if (start.date != now.toLocalDateTime(timeZone).date) {
-        return stringResource(Res.string.time_clock, start.hour.twoDigits(), start.minute.twoDigits())
+        return clockText(start)
     }
     return agoLabel(startedAt, now)
 }
+
+/** "23:40"처럼 시와 분만 적습니다. */
+@Composable
+fun clockText(at: LocalDateTime): String = stringResource(Res.string.time_clock, at.hour.twoDigits(), at.minute.twoDigits())
+
+/** 이름을 늘어놓을 때 씁니다. 한국어는 ", ", 일본어는 "、"입니다. */
+@Composable
+fun List<String>.joinedForDisplay(): String = joinToString(stringResource(Res.string.list_separator))
 
 /** 날짜 머리 없이 몇 줄만 보여줄 때의 시각입니다. "2시간 전", "어제", "9/22" 순으로 씁니다. */
 @Composable

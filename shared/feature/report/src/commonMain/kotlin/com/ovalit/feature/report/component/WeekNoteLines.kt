@@ -50,7 +50,7 @@ import com.ovalit.core.ui.keepTogether
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.valueText
 import com.ovalit.core.ui.weaponName
-import com.ovalit.core.ui.withJosa
+import com.ovalit.core.ui.withLocalJosa
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.gap_percent
 import com.ovalit.feature.report.resources.note_best_combat_score
@@ -299,8 +299,8 @@ private fun steadyRow(moved: MovedMetric, steady: SteadyPart, catalog: ContentCa
         lead = steady.group.lead(catalog),
         name = when (steady.group) {
             is MixGroup.Buy -> stringResource(Res.string.note_steady_buy, name)
-            is MixGroup.Weapon -> stringResource(Res.string.note_steady_weapon, name.withJosa(Josa.EUL_REUL))
-            is MixGroup.Agent -> stringResource(Res.string.note_steady_agent, name.withJosa(Josa.EURO_RO))
+            is MixGroup.Weapon -> stringResource(Res.string.note_steady_weapon, name.withLocalJosa(Josa.EUL_REUL))
+            is MixGroup.Agent -> stringResource(Res.string.note_steady_agent, name.withLocalJosa(Josa.EURO_RO))
         },
         usual = format.valueText(steady.usual),
         current = format.valueText(steady.current),

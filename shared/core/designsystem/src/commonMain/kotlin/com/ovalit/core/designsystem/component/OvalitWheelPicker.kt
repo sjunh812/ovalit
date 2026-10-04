@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -47,6 +48,9 @@ private const val VISIBLE_ITEMS = 5
  * 벽처럼 보였습니다.
  *
  * 멈췄을 때만 [onSelect]를 부릅니다. 돌리는 동안 지나가는 줄마다 부르면 고른 값이 계속 바뀝니다.
+ *
+ * @param enabled 고를 수 없는 줄은 흐리게 두고 낭독기에 비활성으로 읽힙니다. 이미 정해진 값을 보여 주되 다시 고르지 못하게
+ * 할 때 씁니다. 그 줄에 멈춰도 [onSelect]는 부르므로 확인 버튼에서 막습니다.
  */
 @Composable
 fun OvalitWheelPicker(
@@ -54,6 +58,7 @@ fun OvalitWheelPicker(
     selected: Int,
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: (Int) -> Boolean = { true },
 ) {
     val colors = OvalitTheme.colors
     val state = rememberLazyListState(initialFirstVisibleItemIndex = selected.coerceIn(0, (items.size - 1).coerceAtLeast(0)))
@@ -103,6 +108,7 @@ fun OvalitWheelPicker(
                         .semantics {
                             role = Role.RadioButton
                             this.selected = index == center
+                            if (!enabled(index)) disabled()
                         },
                     contentAlignment = Alignment.Center,
                 ) {
@@ -110,9 +116,10 @@ fun OvalitWheelPicker(
                     OvalitText(
                         text = text,
                         style = OvalitTheme.typography.body.copy(fontWeight = if (distance == 0) FontWeight.SemiBold else FontWeight.Normal),
-                        color = when (distance) {
-                            0 -> colors.t1
-                            1 -> colors.t2
+                        color = when {
+                            !enabled(index) -> colors.t4
+                            distance == 0 -> colors.t1
+                            distance == 1 -> colors.t2
                             else -> colors.t4
                         },
                         maxLines = 1,

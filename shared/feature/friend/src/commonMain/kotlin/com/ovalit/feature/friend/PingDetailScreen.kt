@@ -218,6 +218,7 @@ private fun ColumnScope.PingDetailContent(
         DetailSheet.REPLY, DetailSheet.MOVE -> PingTimeSheet(
             moving = open == DetailSheet.MOVE,
             current = ping.startsAt,
+            proposed = ping.memberOf(me)?.takeIf { open == DetailSheet.REPLY && it.answer == PingAnswer.OTHER_TIME }?.proposedAt,
             slots = remember(open) { actions.slots() },
             now = now,
             timeZone = timeZone,

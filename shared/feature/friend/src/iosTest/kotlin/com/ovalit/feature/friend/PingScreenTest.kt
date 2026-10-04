@@ -192,6 +192,24 @@ class PingScreenTest {
         onNodeWithText("21:30 제안").assertExists()
     }
 
+    // 사용자 요청(2026-10-04): 정해진 시간을 휠에서 빼면 지금 몇 시로 잡혀 있는지 안 보인다
+    @Test
+    fun `다른 시간 휠은 정해진 시간을 흐리게 두고 그다음 시간부터 고른다`() = runComposeUiTest {
+        var reply: Pair<PingAnswer, Instant?>? = null
+        setContent {
+            Detail(
+                received(),
+                PingDetailActions(slots = { listOf(Nine, NineThirty) }, reply = { answer, at -> reply = answer to at }),
+            )
+        }
+
+        onNodeWithText("다른 시간").performClick()
+        onNodeWithText("21:00 · 정해진 시간").assertIsNotEnabled()
+        onNodeWithText("이 시간으로 답하기").performClick()
+
+        assertEquals(PingAnswer.OTHER_TIME to NineThirty, reply)
+    }
+
     // 사용자 요청(2026-10-03): 제안이 여럿 와도 줄이 사람 수만큼 쌓이지 않게 같은 시각끼리 모은다
     @Test
     fun `보낸 초대 화면은 같은 시각을 낸 친구를 한 줄에 모아 수락받는다`() = runComposeUiTest {

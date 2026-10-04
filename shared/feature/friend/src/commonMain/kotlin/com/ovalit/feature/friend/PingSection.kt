@@ -89,8 +89,11 @@ import com.ovalit.feature.friend.resources.ping_reply_no
 import com.ovalit.feature.friend.resources.ping_reply_other
 import com.ovalit.feature.friend.resources.ping_reply_yes
 import com.ovalit.feature.friend.resources.ping_send_to
+import com.ovalit.feature.friend.resources.ping_time_current
+import com.ovalit.feature.friend.resources.ping_time_mine
 import com.ovalit.feature.friend.resources.ping_time_move_confirm
 import com.ovalit.feature.friend.resources.ping_time_move_title
+import com.ovalit.feature.friend.resources.ping_time_pick_other
 import com.ovalit.feature.friend.resources.ping_time_reply_confirm
 import com.ovalit.feature.friend.resources.ping_time_reply_title
 import com.ovalit.feature.friend.resources.ping_title
@@ -595,7 +598,13 @@ private fun PickLabel(text: String) {
     )
 }
 
-/** 다른 시간으로 답하거나 보낸 초대의 시각을 옮길 때 띄우는 시트입니다. 지금 시각은 빼고 띄웁니다. */
+/**
+ * 다른 시간으로 답하거나 보낸 초대의 시각을 옮길 때 띄우는 시트입니다. 정해진 시간과 내가 이미 낸 시간도 휠에 두되 흐리게 두고
+ * 고르지 못하게 합니다(사용자 요청, 2026-10-04). 빼 버리면 지금 몇 시로 잡혀 있는지 휠에서 안 보였습니다. 휠은 정해진 시간
+ * 바로 다음 줄에서 시작합니다.
+ *
+ * @param proposed 내가 다른 시간으로 답해 둔 시각입니다. 같은 시각을 또 낼 일은 없어서 막습니다.
+ */
 @Composable
 internal fun PingTimeSheet(
     moving: Boolean,
@@ -605,22 +614,45 @@ internal fun PingTimeSheet(
     timeZone: TimeZone,
     onPick: (Instant) -> Unit,
     onDismiss: () -> Unit,
+    proposed: Instant? = null,
 ) {
     val haptics = rememberOvalitHaptics()
-    val choices = remember(slots, current) { slots.filterNot { it == current } }
-    var index by remember { mutableStateOf(0) }
+    val choices = remember(slots, current, proposed) { (slots + listOfNotNull(current, proposed)).distinct().sorted() }
+    val blocked = setOfNotNull(current, proposed)
+    var index by remember(choices) {
+        val start = choices.indexOf(current) + 1
+        mutableStateOf((start until choices.size).firstOrNull { choices[it] !in blocked } ?: choices.indexOfFirst { it !in blocked }.coerceAtLeast(0))
+    }
+    val labels = choices.map { time ->
+        val clock = pingClockText(time, now, timeZone)
+        when (time) {
+            current -> stringResource(Res.string.ping_time_current, clock)
+            proposed -> stringResource(Res.string.ping_time_mine, clock)
+            else -> clock
+        }
+    }
+    val picked = choices.getOrNull(index)?.takeIf { it !in blocked }
     OvalitBottomSheet(
         title = stringResource(if (moving) Res.string.ping_time_move_title else Res.string.ping_time_reply_title),
         onDismiss = onDismiss,
     ) {
-        OvalitWheelPicker(items = choices.map { pingClockText(it, now, timeZone) }, selected = index, onSelect = { index = it })
+        OvalitWheelPicker(
+            items = labels,
+            selected = index,
+            onSelect = { index = it },
+            enabled = { choices[it] !in blocked },
+        )
         Spacer(Modifier.height(OvalitSpacing.xl))
         OvalitPrimaryButton(
-            text = stringResource(if (moving) Res.string.ping_time_move_confirm else Res.string.ping_time_reply_confirm),
-            enabled = choices.isNotEmpty(),
+            text = when {
+                picked == null -> stringResource(Res.string.ping_time_pick_other)
+                moving -> stringResource(Res.string.ping_time_move_confirm)
+                else -> stringResource(Res.string.ping_time_reply_confirm)
+            },
+            enabled = picked != null,
             onClick = {
                 haptics.confirm()
-                choices.getOrNull(index)?.let(onPick)
+                picked?.let(onPick)
             },
         )
     }

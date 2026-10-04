@@ -74,4 +74,7 @@
     <string name="ping_time_reply_confirm">이 시간으로 답하기</string>
     <string name="ping_time_move_title">언제로 바꿀까요?</string>
     <string name="ping_time_move_confirm">이 시간으로 바꾸기</string>
+    <string name="ping_time_current">%1$s · 정해진 시간</string>
+    <string name="ping_time_mine">%1$s · 내가 낸 시간</string>
+    <string name="ping_time_pick_other">다른 시간을 골라 주세요</string>
 </resources>

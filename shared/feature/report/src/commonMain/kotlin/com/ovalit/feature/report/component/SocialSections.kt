@@ -56,9 +56,9 @@ import com.ovalit.feature.report.resources.rival_no_matches
 import com.ovalit.feature.report.resources.rival_title
 import org.jetbrains.compose.resources.stringResource
 
-// 목업의 세 지표는 역할이 달라도 나란히 놓을 수 있는 것이다. 사용자 결정(2026-09-29)으로 KDA를 더했다. 어시스트가 들어가
-// 척후대·전략가도 제 몫이 드러나서 역할이 달라도 견줄 만하다. 순서는 홈 고정 칸을 따른다.
-private val RivalMetrics = listOf(FixedMetric.DAMAGE, FixedMetric.KD, FixedMetric.KDA, FixedMetric.HEADSHOT_RATE)
+// 홈 고정 칸을 모두 같은 순서로 겨룬다(사용자 요청, 2026-10-04). 친구 비교는 다섯 지표를 다 고를 수 있는데 라이벌만 전투점수가
+// 빠져 있었다. 고정 칸에 Performance Score가 들어오면 여기에도 같이 붙는다.
+private val RivalMetrics = FixedMetric.entries
 private val NameWidth = 72.dp
 
 private class RankWidths(val rank: Dp, val name: Dp, val value: Dp)

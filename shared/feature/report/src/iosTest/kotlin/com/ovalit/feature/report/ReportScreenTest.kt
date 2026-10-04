@@ -1155,15 +1155,14 @@ class ReportScreenTest {
         onNodeWithText("이번 액트 돌아보기", useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 화면에 보이는 자릿수로 겨룬다. 나는 K/D 1.34, 피해량 138, 헤드샷 21%다. 사용자 결정(2026-09-29)으로 목업의 세 지표에 KDA를
-    // 더해 넷을 겨룬다.
+    // 화면에 보이는 자릿수로 겨룬다. 나는 K/D 1.34, 피해량 138, 헤드샷 21%다. 전투점수는 같아서 앞서지 않는다.
     @Test
-    fun `라이벌 칸은 KDA까지 네 지표 중 앞선 개수를 센다`() = runComposeUiTest {
+    fun `라이벌 칸은 홈 고정 칸 다섯 지표 중 앞선 개수를 센다`() = runComposeUiTest {
         val rival = ReportPreviewData.moved.metrics.let { it.copy(kills = 100, damage = 21_000, shots = it.shots.copy(head = 60)) }
         setContent { Social(rival = FriendStanding(PlayerId("junho"), "준호#KR1", rival)) }
 
         onNodeWithText("라이벌 · 준호#KR1").assertExists()
-        onNodeWithText("4개 중 3개 앞섬").assertExists()
+        onNodeWithText("5개 중 3개 앞섬").assertExists()
         // 고정 칸의 KDA와 라이벌 줄의 KDA다
         onAllNodesWithText("KDA", useUnmergedTree = true).assertCountEquals(2)
     }

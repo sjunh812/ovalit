@@ -21,7 +21,6 @@
     <string name="metric_multi_kill">멀티킬 라운드</string>
     <string name="metric_traded_death">트레이드 받은 데스</string>
 
-    <!-- KDA 넓은 칸 오른쪽의 판당 킬·데스·어시 표. "판당"은 줄 머리, 나머지는 열 머리다 -->
     <string name="baseline_missing">비교할 기록이 모자라요</string>
     <string name="dynamic_usual">평소 %1$s</string>
 
@@ -60,7 +59,7 @@
 
     <!-- 시트 문장 안에서 "이코 / 15라운드"처럼 갈리지 않게 줄바꿈 없는 공백을 넣었다 -->
     <string name="sample_rounds">%1$d라운드</string>
-    <string name="sample_first_kills">첫 킬&#160;%1$d번</string>
+    <string name="sample_first_kills">첫&#160;킬&#160;%1$d번</string>
     <string name="sample_first_duels">첫&#160;교전&#160;%1$d번</string>
     <string name="sample_eco_rounds">이코&#160;%1$d라운드</string>
     <string name="sample_force_buy_rounds">포스바이&#160;%1$d라운드</string>
@@ -156,7 +155,6 @@
     <string name="insight_other_weapons">다른 %1$s</string>
     <string name="insight_session_late">세 번째 판부터</string>
     <string name="insight_session_early">첫 두 판</string>
-    <!-- "레이즈 2판 50%" -->
     <string name="insight_title">이번 액트 돌아보기</string>
     <string name="insight_title_matches">%1$d경기</string>
     <string name="insight_matches">%1$d판</string>

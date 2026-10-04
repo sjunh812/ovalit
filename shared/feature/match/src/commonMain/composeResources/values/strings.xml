@@ -49,11 +49,6 @@
     <string name="round_ace">에이스</string>
     <string name="round_clutch">1대%1$d 클러치</string>
     <string name="round_not_played">튕겨서 못 뛴 라운드</string>
-    <string name="round_won">승</string>
-    <string name="round_lost">패</string>
-    <string name="section_first_half">전반</string>
-    <string name="section_second_half">후반</string>
-    <string name="section_overtime">연장</string>
 
     <string name="buy_record">%1$d라운드 %2$d승</string>
     <string name="buy_title">구매 유형</string>

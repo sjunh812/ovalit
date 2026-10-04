@@ -26,6 +26,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -103,9 +106,9 @@ fun MatchRow(
                 modifier = Modifier.size(34.dp).clip(RoundedCornerShape(9.dp)),
             )
         }
-        Spacer(Modifier.width(if (compact) 13.dp else 17.dp))
+        Spacer(Modifier.width(13.dp))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 5.dp)) {
-            // 윗줄은 맵 이름과 그 판의 자리(MVP, 팀 MVP, 등수), 에이스와 클러치 칩이고 아랫줄은 큐와 시각이다. 오른쪽 칸과 같이 윗줄이
+            // 윗줄은 맵 이름과 그 판의 자리(MVP, 팀 MVP, 등수), 에이스와 클러치 칩이고 아랫줄은 승패와 큐, 시각이다. 오른쪽 칸과 같이 윗줄이
             // 결과, 아랫줄이 풀이다(사용자 요청, 2026-10-04). 칩만 아랫줄에 따로 두니 왼쪽이 무거워 보였다. 폭이 모자라면 뒤 칩부터 뺀다.
             Row(verticalAlignment = Alignment.CenterVertically) {
                 OvalitText(text = mapName, style = OvalitTheme.typography.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -115,8 +118,14 @@ fun MatchRow(
                     modifier = Modifier.weight(1f, fill = false).padding(start = 6.dp),
                 )
             }
+            // 아랫줄 맨 앞에 "승리", "패배"를 결과 색으로 적는다(사용자 요청, 2026-10-04). 줄마다 같은 자리라 위아래로 훑으면 승패가
+            // 한눈에 보인다. 큐와 시각 뒤에 두니 시각 길이에 따라 자리가 들쭉날쭉했다.
+            val resultStyle = SpanStyle(color = resultColor(match.myTeamWon), fontWeight = FontWeight.SemiBold)
             OvalitText(
-                text = stringResource(match.queue.label) + SEPARATOR + timeLabel,
+                text = buildAnnotatedString {
+                    withStyle(resultStyle) { append(result) }
+                    append(SEPARATOR + stringResource(match.queue.label) + SEPARATOR + timeLabel)
+                },
                 style = caption,
                 color = colors.t3,
                 maxLines = 1,
@@ -132,9 +141,8 @@ fun MatchRow(
             verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 4.dp),
         ) {
             val scoreStyle = OvalitTheme.typography.metricS.copy(fontSize = 15.sp, fontWeight = FontWeight.Bold)
-            // 승패는 스코어 색과 썸네일의 점으로 보인다. 내 팀 점수가 앞이라 색을 못 가려도 숫자로 읽히고, 낭독기는 승패를 말로
-            // 읽는다. 스코어 앞에 승패 칸이나 "승리"를 두니 MVP·등수 칩과 겹쳐 산만했다(사용자 요청, 2026-10-04). op.gg처럼 줄 전체를
-            // 칠하면 목록이 빨강과 초록 띠가 된다.
+            // 스코어도 결과 색으로 칠한다. 스코어 앞에 승패 칸이나 "승리"를 두니 MVP·등수 칩과 겹쳐 산만했다(사용자 요청,
+            // 2026-10-04). op.gg처럼 줄 전체를 칠하면 목록이 빨강과 초록 띠가 된다.
             Row(verticalAlignment = Alignment.Bottom) {
                 OvalitText(
                     text = stringResource(Res.string.match_score, score.myTeam, score.enemyTeam),
@@ -189,8 +197,7 @@ fun resultColor(won: Boolean?): Color = when (won) {
     null -> OvalitTheme.colors.t2
 }
 
-// 맵 썸네일 왼쪽 위에 승패 점을, 오른쪽 아래에 요원 얼굴을 걸쳐 둔다(사용자 요청, 2026-10-04). 왼쪽 끝을 위아래로 훑으면 승패가
-// 보인다. 점을 오른쪽 위에 두니 새 알림 배지처럼 읽혔다. 바탕색 테두리로 썸네일과 떼어 놓는다.
+// 목업처럼 맵 썸네일 왼쪽 아래에 요원 얼굴을 걸쳐 둔다. 바탕색 테두리로 둘을 떼어 놓는다.
 @Composable
 private fun MapWithAgent(match: Match, catalog: ContentCatalog) {
     Box(modifier = Modifier.size(width = 54.dp, height = 38.dp)) {
@@ -199,22 +206,11 @@ private fun MapWithAgent(match: Match, catalog: ContentCatalog) {
             agent = match.myAgent,
             name = catalog.agentName(match.myAgent),
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .offset(x = 5.dp, y = 4.dp)
+                .align(Alignment.BottomStart)
+                .offset(x = (-5).dp, y = 4.dp)
                 .size(24.dp)
                 .clip(CircleShape)
                 .border(2.dp, OvalitTheme.colors.bg, CircleShape),
-        )
-        Box(
-            Modifier
-                .align(Alignment.TopStart)
-                .offset(x = (-3).dp, y = (-3).dp)
-                .size(12.dp)
-                .clip(CircleShape)
-                .background(OvalitTheme.colors.bg)
-                .padding(2.dp)
-                .clip(CircleShape)
-                .background(resultColor(match.myTeamWon)),
         )
     }
 }

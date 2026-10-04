@@ -34,7 +34,7 @@ class SettingsScreenTest {
         val ads = CountingAds()
         setContent { Settings(ads = ads) }
 
-        onNodeWithText("광고 한 편 보고 24시간").performScrollTo().performClick()
+        onNodeWithText("광고 보고 24시간").performScrollTo().performClick()
 
         assertEquals(1, ads.offered)
     }
@@ -46,7 +46,7 @@ class SettingsScreenTest {
         setContent { Settings(uiState = hidden, ads = CountingAds()) }
 
         onNodeWithText("내일 16:30까지").performScrollTo().assertExists()
-        onNodeWithText("광고 한 편 보고 24시간").assertDoesNotExist()
+        onNodeWithText("광고 보고 24시간").assertDoesNotExist()
     }
 
     @Test

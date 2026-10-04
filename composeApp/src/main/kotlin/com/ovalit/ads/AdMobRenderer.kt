@@ -92,12 +92,12 @@ internal class AdMobRenderer(
             }
             if (ads[key] == null) load(key)
         }
-        // 홈은 카드 안쪽 여백이 있어서 줄 여백을 빼야 다른 카드와 높이가 맞는다
+        // 카드에 담는 자리는 카드 안쪽 여백이 있어서 줄 여백을 빼야 다른 카드와 높이가 맞는다
         if (loaded != null) {
             frame {
                 NativeAdRow(
                     ad = loaded.ad,
-                    verticalPadding = if (placement == AdPlacement.HOME) 0.dp else 16.dp,
+                    verticalPadding = if (placement.inCard) 0.dp else 16.dp,
                     onClose = { onClose(key) },
                 )
             }

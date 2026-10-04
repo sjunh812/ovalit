@@ -54,6 +54,8 @@ import com.ovalit.core.model.FriendRequestSource
 import com.ovalit.core.model.PingId
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.ui.AdPlacement
+import com.ovalit.core.ui.AdSlot
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.loading
@@ -241,6 +243,9 @@ internal fun FriendsScreen(
                             )
                         }
                     }
+                    // 광고는 맨 아래 카드 하나로 둔다. 오발있?과 받은 요청은 누르는 버튼이 있어 그 사이에 끼우면 초대처럼 읽히고 잘못
+                    // 누르기 쉽다(사용자 요청, 2026-10-04).
+                    AdSlot(AdPlacement.FRIENDS) { ad -> OvalitCard { ad() } }
                 }
                 Spacer(Modifier.height(OvalitSpacing.xxl))
             }

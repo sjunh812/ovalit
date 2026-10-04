@@ -4,7 +4,8 @@ Play에 올릴 때마다 하는 일이다. 서버 배포는 `server/README.md`�
 
 ## local.properties
 
-비밀값은 저장소에 넣지 않고 `local.properties`에만 둔다. 없으면 그 기능 없이 빌드된다. 키만 적고 값을 비워 둔 것도 없는 것으로
+비밀값은 저장소에 넣지 않고 `local.properties`에만 둔다. Firebase 콘솔이 주는 `google-services.json`은 빌드에 쓰지 않는다. 그 안의
+`mobilesdk_app_id`, `current_key`, `project_id`, `project_number`를 아래 `firebase.*` 네 키에 옮기고, 파일은 `.gitignore`에 있다. 없으면 그 기능 없이 빌드된다. 키만 적고 값을 비워 둔 것도 없는 것으로
 친다.
 
 | 키 | 쓰는 곳 | 없으면 |

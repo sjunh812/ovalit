@@ -168,6 +168,8 @@ Google 서비스 셋은 무료로 쓰는 독점 라이선스 SDK라 라이선스
 `docs/RELEASE.md`에 있다.
 
 - 푸시는 Firebase Cloud Messaging이다. 보내는 양에 한도도 요금도 없다. `firebase.*` 값으로 띄운다.
+- `firebase.*` 값은 빌드가 플러그인이 만들던 리소스(`google_app_id` 등)로 넣어 Firebase가 앱 시작 때 스스로 뜬다. Analytics는
+  코드로 넘긴 옵션이 아니라 이 리소스를 읽어서, 빠지면 Firebase는 떠도 사용 통계만 꺼진다.
 - 사용 통계와 비정상 종료 보고는 Firebase Analytics와 Crashlytics다(Spark 무료 요금제). google-services 플러그인이 없어
   Crashlytics Gradle 플러그인도 쓰지 않는다. 매핑 ID는 `resValue`로 넣고 릴리스 때 Firebase CLI로 매핑 파일을 올린다.
   - 수집은 매니페스트에서 꺼 둔 채 시작해 설정의 "사용 통계 보내기"(기본 켬)를 읽은 뒤 켜고, 연동을 해제하면 쌓인 기록과

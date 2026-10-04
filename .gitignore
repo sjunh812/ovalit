@@ -18,3 +18,6 @@ xcuserdata/
 
 # 에이전트가 만드는 작업 공간
 .claude/worktrees/
+
+# Firebase 설정 파일. 값은 local.properties의 firebase.*로 옮겨 쓰고 이 파일은 빌드에 쓰지 않는다.
+google-services.json

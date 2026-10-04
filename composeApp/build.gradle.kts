@@ -44,6 +44,14 @@ android {
         ).forEach { (field, key) ->
             buildConfigField("String", field, "\"${localProperty(key).orEmpty()}\"")
         }
+        // google-services 플러그인이 만들던 리소스다. Analytics는 넘긴 옵션이 아니라 google_app_id 리소스를 따로 읽어서, 없으면
+        // Firebase는 떠도 사용 통계만 꺼진다. 값이 있으면 Firebase가 앱 시작 때 이 리소스로 스스로 뜬다.
+        localProperty("firebase.appId")?.let { appId ->
+            resValue("string", "google_app_id", appId)
+            resValue("string", "google_api_key", localProperty("firebase.apiKey").orEmpty())
+            resValue("string", "gcm_defaultSenderId", localProperty("firebase.senderId").orEmpty())
+            resValue("string", "project_id", localProperty("firebase.projectId").orEmpty())
+        }
         // 광고 단위 ID가 없으면 광고를 요청하지 않는다. 제품이 승인되기 전에는 수익을 낼 수 없어 실제 ID를 넣지 않는다
         // (CLAUDE.md 지켜야 할 선). SDK는 앱 ID가 없으면 시작하지 않아서 그때는 Google 테스트 앱 ID를 넣는다.
         manifestPlaceholders["admobAppId"] = localProperty("admob.appId") ?: ADMOB_TEST_APP_ID

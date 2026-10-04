@@ -16,8 +16,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
- * Firebase를 띄웁니다. google-services 플러그인 대신 `local.properties`의 네 값으로 직접 띄우고, 값이 없으면 아무것도 하지 않아
- * 푸시, 사용 통계, 비정상 종료 보고 없이 돕니다. 비정상 종료를 놓치지 않게 [android.app.Application.onCreate] 맨 앞에서 부릅니다.
+ * Firebase를 띄웁니다. google-services 플러그인 대신 `local.properties`의 네 값을 빌드가 리소스로 넣어 앱 시작 때 Firebase가 스스로
+ * 뜨고, 값이 없으면 아무것도 하지 않아 푸시, 사용 통계, 비정상 종료 보고 없이 돕니다. [start]는 스스로 뜨지 못했을 때를 대비해
+ * [android.app.Application.onCreate] 맨 앞에서 부릅니다.
  */
 internal object OvalitFirebase {
 

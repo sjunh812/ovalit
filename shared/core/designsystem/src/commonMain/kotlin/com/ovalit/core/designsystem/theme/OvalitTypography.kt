@@ -63,7 +63,8 @@ fun ovalitTypography(fontFamily: FontFamily = FontFamily.Default): OvalitTypogra
     return OvalitTypography(
         metricXl = metric(size = 44, lineHeight = 48, tracking = -1.4),
         metricL = metric(size = 30, lineHeight = 34, tracking = -0.8),
-        metricM = metric(size = 24, lineHeight = 28, tracking = -0.6),
+        // 홈 고정 칸과 달라진 점 숫자다. 24에서는 한 화면에 여덟 개가 모여 무거웠다(사용자 결정, 2026-10-04). 제목(20)보다는 크다.
+        metricM = metric(size = 22, lineHeight = 26, tracking = -0.5),
         metricS = metric(size = 12, lineHeight = 16, tracking = 0.0),
         // 화면 제목, 홈 기간, 프로필 이름은 목업처럼 20이다(사용자 요청, 2026-10-04). 24로 두니 카드 제목과 숫자보다 커서 위계가
         // 흐렸다. 온보딩 헤드라인, S3 맵 이름, S7 주 역할처럼 목업에서도 그보다 큰 곳만 display다.

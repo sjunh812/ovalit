@@ -99,6 +99,7 @@ import com.ovalit.feature.friend.resources.ping_time_reply_confirm
 import com.ovalit.feature.friend.resources.ping_time_reply_title
 import com.ovalit.feature.friend.resources.ping_title
 import com.ovalit.feature.friend.resources.ping_too_many
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import org.jetbrains.compose.resources.stringResource
@@ -614,8 +615,11 @@ internal fun PingTimeSheet(
     proposed: Instant? = null,
 ) {
     val haptics = rememberOvalitHaptics()
-    val choices = remember(slots, current, proposed) { (slots + listOfNotNull(current, proposed)).distinct().sorted() }
     val blocked = setOfNotNull(current, proposed)
+    // 정해진 시간이 "지금"으로 잡혀 초가 붙어 있으면 같은 분의 칸과 겹쳐 보인다. 같은 분으로 보이는 칸은 한 번만 띄운다.
+    val choices = remember(slots, current, proposed) {
+        (slots.filterNot { slot -> blocked.any { (slot - it).absoluteValue < 1.minutes } } + blocked).sorted()
+    }
     var index by remember(choices) {
         val start = choices.indexOf(current) + 1
         mutableStateOf((start until choices.size).firstOrNull { choices[it] !in blocked } ?: choices.indexOfFirst { it !in blocked }.coerceAtLeast(0))

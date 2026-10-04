@@ -2,8 +2,9 @@ package com.ovalit.core.model
 
 import kotlin.jvm.JvmInline
 import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -113,8 +114,9 @@ fun List<Ping>.forHome(me: PlayerId): Ping? =
  */
 fun pingSlots(now: Instant, timeZone: TimeZone): List<Instant> {
     val local = now.toLocalDateTime(timeZone)
-    // 지난 30분 칸의 시작으로 내린 뒤 한 칸 올린다
-    val passed = (local.minute % 30 * 60_000L + local.second * 1_000L + local.nanosecond / 1_000_000).milliseconds
+    // 지난 30분 칸의 시작으로 내린 뒤 한 칸 올린다. 나노초까지 다 빼야 언제 불러도 같은 칸이 같은 시각이 된다. 1ms보다 작은
+    // 자투리가 남으면 초대를 만들 때의 17:00과 휠을 열 때의 17:00이 서로 다른 시각이 되어 휠에 두 번 뜬다.
+    val passed = (local.minute % 30).minutes + local.second.seconds + local.nanosecond.nanoseconds
     val first = now - passed + SlotStep
     return List(SLOT_COUNT) { index -> first + SlotStep * index }
 }

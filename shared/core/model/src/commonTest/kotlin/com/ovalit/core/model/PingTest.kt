@@ -7,6 +7,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.nanoseconds
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -108,6 +109,15 @@ class PingTest {
         val again = ping().invited(listOf(ping().members.first().person))
 
         assertEquals(ping().members, again.members)
+    }
+
+    @Test
+    fun `언제 불러도 같은 칸은 같은 시각이다`() {
+        val base = LocalDateTime(2026, 10, 3, 13, 12, 40).toInstant(Seoul)
+        val later = base + 3.minutes + 123_456.nanoseconds
+
+        assertEquals(pingSlots(base, Seoul), pingSlots(later, Seoul))
+        assertEquals(0, pingSlots(later, Seoul).first().nanosecondsOfSecond)
     }
 
     @Test

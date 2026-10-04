@@ -149,13 +149,18 @@ class MatchScreensTest {
     }
 
     @Test
-    fun `라운드 탭은 전반과 후반으로 나눠 보여준다`() = runComposeUiTest {
+    // 사용자 요청(2026-10-04): op.gg처럼 판의 흐름을 요약하고 라운드를 골라 그 라운드의 장비와 킬 순서를 본다
+    fun `라운드 탭은 흐름을 요약하고 고른 라운드의 킬 순서를 보여준다`() = runComposeUiTest {
         setContent { Themed { Detail() } }
 
         onNodeWithText("라운드").performClick()
 
-        onNodeWithText("전반").assertExists()
-        onNodeWithText("후반").assertExists()
+        onNodeWithText("우리 팀이 퍼블을 딴 라운드").assertExists()
+        onNodeWithText("1라운드").assertExists()
+        onNodeWithText("킬 순서").assertExists()
+
+        onNodeWithContentDescription("2라운드").performClick()
+        onNodeWithText("2라운드").assertExists()
     }
 
     // CLAUDE.md S3: 진 클러치는 적지 않는다. 이 테스트는 적는 쪽만 본다.
@@ -166,17 +171,19 @@ class MatchScreensTest {
         onNodeWithText("라운드").performClick()
 
         onNodeWithText("에이스", useUnmergedTree = true).assertExists()
+        onNodeWithContentDescription("2라운드").performClick()
         onNodeWithText("1대4 클러치", useUnmergedTree = true).assertExists()
     }
 
     @Test
-    fun `이코노미 탭은 유형마다 몇 라운드 이겼는지와 라운드별 장비를 보여준다`() = runComposeUiTest {
+    fun `이코노미 탭은 라운드별 장비와 두 팀의 구매 유형별 승을 보여준다`() = runComposeUiTest {
         setContent { Themed { Detail() } }
 
         onNodeWithText("이코노미").performClick()
 
+        onNodeWithText("라운드별 한 사람당 평균 장비").assertExists()
         onNodeWithText("13라운드 9승", substring = true).assertExists()
-        onAllNodesWithText("피스톨", substring = true).assertCountEquals(2)
+        onAllNodesWithText("상대 팀").fetchSemanticsNodes().let { assertTrue(it.isNotEmpty()) }
     }
 
     @Composable

@@ -46,9 +46,9 @@ class RoundSummaryTest {
 
         assertEquals(
             listOf(
-                BuyRecord(BuyType.FULL_BUY, rounds = 2, wins = 1),
-                BuyRecord(BuyType.FORCE_BUY, rounds = 1, wins = 1),
-                BuyRecord(BuyType.ECO, rounds = 1, wins = 0),
+                BuyRecord(BuyType.FULL_BUY, rounds = 2, wins = 1, enemyRounds = 2, enemyWins = 1),
+                BuyRecord(BuyType.FORCE_BUY, rounds = 1, wins = 1, enemyRounds = 1, enemyWins = 0),
+                BuyRecord(BuyType.ECO, rounds = 1, wins = 0, enemyRounds = 1, enemyWins = 1),
             ),
             game.buyRecords(),
         )

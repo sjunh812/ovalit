@@ -63,6 +63,17 @@ fun Match.highlights(): List<RoundHighlight> {
 }
 
 /**
+ * 경기 줄의 칩으로 띄우는 그 판의 에이스와 이긴 클러치 수입니다(사용자 요청, 2026-10-04). op.gg처럼 목록에서 큰 장면이 있던 판을
+ * 고를 수 있습니다. 진 클러치는 세지 않습니다.
+ */
+data class MatchHighlights(val aces: Int, val clutches: Int)
+
+val Match.myHighlights: MatchHighlights
+    get() = highlights().let { rounds ->
+        MatchHighlights(aces = rounds.count { it.ace }, clutches = rounds.count { it.clutch?.won == true })
+    }
+
+/**
  * 프로필 통계의 에이스와 클러치입니다. 내 프로필과 S5가 같이 씁니다.
  *
  * @property clutchAttempts 나만 남은 채 상대가 남아 있던 라운드 수입니다. 클러치 성공률의 분모입니다.

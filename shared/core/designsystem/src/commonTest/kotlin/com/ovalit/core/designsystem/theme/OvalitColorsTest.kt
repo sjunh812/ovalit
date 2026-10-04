@@ -115,6 +115,16 @@ class OvalitColorsTest {
         }
     }
 
+    // MVP 칩은 옅은 금색 면에 짙은 금색 글자를 올린다. 작은 굵은 글자라 본문 기준을 넘겨야 한다.
+    @Test
+    fun `MVP 칩 글자는 칩 면 위에서 4_5 대 1을 넘는다`() {
+        forEachTheme { name, colors ->
+            assertContrast(name, "mvp", colors.mvp, colors.mvpContainer, atLeast = 4.5)
+            assertContrast(name, "teamMvp", colors.teamMvp, colors.teamMvpContainer, atLeast = 4.5)
+            assertContrast(name, "highlight", colors.highlight, colors.highlightContainer, atLeast = 4.5)
+        }
+    }
+
     @Test
     fun `라이트와 다크는 서로 다른 값을 쓴다`() {
         assertTrue(OvalitLightColors.bg != OvalitDarkColors.bg)

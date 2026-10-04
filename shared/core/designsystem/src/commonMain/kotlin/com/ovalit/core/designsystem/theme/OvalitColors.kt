@@ -27,6 +27,12 @@ data class OvalitColors(
     val kda1: Color,
     val kda2: Color,
     val kda3: Color,
+    val mvp: Color,
+    val mvpContainer: Color,
+    val teamMvp: Color,
+    val teamMvpContainer: Color,
+    val highlight: Color,
+    val highlightContainer: Color,
     val isDark: Boolean,
 )
 
@@ -35,6 +41,10 @@ data class OvalitColors(
 // 카드(card)는 홈, 내 프로필, S5에서 큰 묶음을 담는 면이고 캔버스(canvas)는 그 뒤 바탕이다(사용자 결정, 2026-10-03). 다크는
 // 바탕보다 한 단계 밝은 면을, 라이트는 토스처럼 옅은 바탕 위 흰 면을 쓴다. 라이트에서 bg 위에 raised를 올리는 식으로 뒤집지
 // 않은 건 bg가 흰색이라 카드가 바탕보다 어두워지기 때문이다.
+// MVP 칩은 옅은 금색 면(mvpContainer)에 짙은 금색 글자(mvp)를 올린 톤온톤이다. op.gg처럼 MVP 칩을 다른 칩과 갈라 달라는 요청이었고
+// (사용자 요청, 2026-10-04), 빨강은 패배와 겹쳐서 1등 메달처럼 읽히는 금색을 골랐다. 갈색을 옅게 깐 면은 탁했고 금색 면을 그대로
+// 깔면 너무 진해서(사용자 요청), 면은 노란 기가 도는 옅은 색으로 따로 정했다. 팀 MVP(teamMvp)는 은메달처럼 푸른 기가 도는 회색,
+// 에이스와 클러치(highlight)는 잘한 장면이라 보라 톤온톤이다(사용자 요청). 등수는 칩마다 같은 --fill이라 셋과 갈린다.
 // 액센트는 발로란트 빨강이다(사용자 결정, 2026-10-03). 패배와 하락을 뜻하는 neg와 OKLab 거리가 5 남짓이라 거의 같은 색으로
 // 보인다는 걸 알고 골랐다. 그 위 글자(onAccent)는 발로란트처럼 흰색이고 대비는 3.4:1이다(사용자 결정).
 // KDA 구간 색(kda1~3)은 파랑, 보라, 호박색이다. op.gg와 tracker.gg처럼 게임 아이템 등급 순서로 올라가되 채도를 낮춰 옆의
@@ -63,6 +73,12 @@ internal val OvalitDarkColors = OvalitColors(
     kda1 = Color(0xFF86C5FA),
     kda2 = Color(0xFFBA87D2),
     kda3 = Color(0xFFFCB26F),
+    mvp = Color(0xFFF5C04F),
+    mvpContainer = Color(0xFF3A3020),
+    teamMvp = Color(0xFFC3CDD9),
+    teamMvpContainer = Color(0xFF2B3139),
+    highlight = Color(0xFFC9A8F5),
+    highlightContainer = Color(0xFF302840),
     isDark = true,
 )
 
@@ -92,5 +108,11 @@ internal val OvalitLightColors = OvalitColors(
     kda1 = Color(0xFF3573A4),
     kda2 = Color(0xFF683C7B),
     kda3 = Color(0xFF956510),
+    mvp = Color(0xFF8A5A00),
+    mvpContainer = Color(0xFFFFF1CC),
+    teamMvp = Color(0xFF3B4A5C),
+    teamMvpContainer = Color(0xFFE4E9F0),
+    highlight = Color(0xFF6A3FB0),
+    highlightContainer = Color(0xFFF0E9FB),
     isDark = false,
 )

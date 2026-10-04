@@ -152,4 +152,8 @@
     <string name="placement_team_mvp">팀 MVP</string>
     <string name="placement_rank">%1$d등</string>
     <string name="placement_rank_of">%2$d명 중 %1$d등</string>
+    <string name="highlight_ace">에이스</string>
+    <string name="highlight_aces">에이스 %1$d번</string>
+    <string name="highlight_clutch">클러치</string>
+    <string name="highlight_clutches">클러치 %1$d번</string>
 </resources>

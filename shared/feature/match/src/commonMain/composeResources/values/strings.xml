@@ -56,8 +56,21 @@
     <string name="section_overtime">연장</string>
 
     <string name="buy_record">%1$d라운드 %2$d승</string>
-    <string name="economy_rounds_title">라운드별 장비</string>
-    <string name="economy_versus">%1$s vs %2$s</string>
+    <string name="economy_chart_title">라운드별 한 사람당 평균 장비</string>
+    <string name="economy_upsets">장비가 상대보다 1,000 넘게 적었는데 %1$d라운드를 이겼어요</string>
+    <string name="overview_first_blood_ours">우리 팀이 퍼블을 딴 라운드</string>
+    <string name="overview_first_blood_theirs">상대 팀이 퍼블을 딴 라운드</string>
+    <string name="overview_attack">공격</string>
+    <string name="overview_defense">수비</string>
+    <string name="overview_win_of">%1$d번 중 %2$d번 이김</string>
+    <string name="overview_record">%1$d승 %2$d패</string>
+    <string name="round_title">%1$d라운드</string>
+    <string name="round_pick">%1$d라운드 보기</string>
+    <string name="round_loadout">우리 %1$s %2$s · 상대 %3$s %4$s</string>
+    <string name="round_my_damage">내 피해 %1$s</string>
+    <string name="round_kill_order">킬 순서</string>
+    <string name="round_no_kills">이 라운드에는 킬이 없었어요</string>
+    <string name="round_kill_ability">스킬</string>
     <string name="economy_note">우리 팀 한 사람당 평균 장비 가치로 나눠요. 2,000 미만은 이코, 3,900 이상은 풀바이, 그 사이는 포스바이예요.</string>
 
     <!-- 스코어보드에서 친구가 아닌 사람을 눌렀을 때 -->

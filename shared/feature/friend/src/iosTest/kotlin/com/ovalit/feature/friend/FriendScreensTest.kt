@@ -204,7 +204,7 @@ class FriendScreensTest {
 
         onNodeWithText("민석의 최근 경기").assertExists()
         onNodeWithText("로터스").assertExists()
-        onAllNodesWithText("어제").assertCountEquals(2)
+        onAllNodesWithText("어제", substring = true).assertCountEquals(2)
         onAllNodesWithText("어센트").assertCountEquals(1)
         onNodeWithText("전체 보기").performScrollTo().performClick()
 

@@ -4,11 +4,11 @@
 
 changed=$(git diff --cached --name-only)
 touched_rules=$(echo "$changed" | grep -E '^(shared|composeApp)/.*(DesignSystem|Theme|Color|Metric|Report|Role)' || true)
-touched_docs=$(echo "$changed" | grep -E '^(CLAUDE\.md|docs/DECISIONS\.md)$' || true)
+touched_docs=$(echo "$changed" | grep -E '^(CLAUDE\.md|docs/(DECISIONS|screens|design|backend|i18n-ja)\.md)$' || true)
 
 if [ -n "$touched_rules" ] && [ -z "$touched_docs" ]; then
   echo ""
-  echo "  규칙에 걸리는 파일이 바뀌었는데 CLAUDE.md와 docs/DECISIONS.md는 그대로입니다."
+  echo "  규칙에 걸리는 파일이 바뀌었는데 규칙 문서(CLAUDE.md, docs/)는 그대로입니다."
   echo ""
   echo "$touched_rules" | sed 's/^/    /'
   echo ""

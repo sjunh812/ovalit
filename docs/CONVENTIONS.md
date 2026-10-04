@@ -7,9 +7,10 @@
 
 ### 어디에 어떤 말투를 쓰나
 
-`CLAUDE.md`만 단정형입니다. 매 세션 에이전트가 제일 먼저 읽는 규칙집이라 "만들지 않는다",
-"묻지 않는다"처럼 짧게 끊어야 규칙으로 읽힙니다. 존댓말로 쓰면 어미가 길어지면서 지시가
-흐려집니다.
+규칙집은 단정형입니다. `CLAUDE.md`와 거기서 나눈 `docs/screens.md`, `docs/design.md`,
+`docs/backend.md`, `docs/i18n-ja.md`가 여기 해당합니다. 에이전트가 코드를 쓰기 전에 읽는 문서라
+"만들지 않는다", "묻지 않는다"처럼 짧게 끊어야 규칙으로 읽힙니다. 존댓말로 쓰면 어미가 길어지면서
+지시가 흐려집니다.
 
 나머지는 존댓말입니다. `docs/` 아래 문서, README, PR 설명, 이슈, 리뷰 코멘트가 여기
 해당합니다. `docs/DECISIONS.md`는 한 줄짜리 기록이라 예외로 명사형으로 끝냅니다.
@@ -194,13 +195,18 @@ Refs: CLAUDE.md#지표-규칙
 
 | 문서 | 담는 것 | 안 담는 것 |
 | --- | --- | --- |
-| `CLAUDE.md` | 코드 쓸 때마다 필요한 규칙 | 배경 설명, 회의록, 지난 경위 |
+| `CLAUDE.md` | 코드 쓸 때마다 필요한 규칙. 지켜야 할 선, 구조, 데이터와 지표, 용어 | 배경 설명, 회의록, 지난 경위 |
+| `docs/screens.md` | 화면마다의 배치와 동작 | 여러 화면에 걸친 규칙 |
+| `docs/design.md` | 색 토큰, 글자, 면, 움직임, 로고, 에셋 | 화면 하나에만 쓰는 배치 |
+| `docs/backend.md` | 서버가 지키는 규칙 | 실행과 배포 순서(`server/README.md`) |
+| `docs/i18n-ja.md` | 일본어 용어와 말투 | 한국어 문구 규칙 |
+| `docs/RELEASE.md` | 출시 전에 채울 값과 순서 | 개발 중 설정 |
 | `docs/DECISIONS.md` | 기획과 달라진 결정. 날짜·무엇·왜 | 안 바뀐 결정, 긴 논의 |
-| `docs/CONVENTIONS.md` | 글과 커밋 규칙 | 코드 스타일 세부. ktlint가 할 일 |
-| `docs/FIRST-TASK.md` | 첫 세션 작업 순서 | 그 뒤의 계획 |
+| `docs/CONVENTIONS.md` | 글, 커밋, 테스트, 프리뷰, 주석 규칙 | 코드 스타일 세부. ktlint가 할 일 |
 
-`CLAUDE.md`가 길어지면 규칙 사이에 배경 설명이 섞인 겁니다. 배경은 `DECISIONS.md`로 옮기고
-결론만 남깁니다.
+규칙 문서가 길어지면 규칙 사이에 배경 설명이 섞인 겁니다. 배경은 `DECISIONS.md`로 옮기고 결론과
+지키는 까닭만 남깁니다. "처음에는 ~했는데 ~해서 바꿨다"는 DECISIONS에 씁니다. 사용자가 다른 안과
+견줘 고른 규칙에는 "(사용자 결정)"만 붙입니다. 날짜는 DECISIONS에 있습니다.
 
 ### 코드와 문서가 어긋났을 때
 
@@ -304,7 +310,8 @@ UI는 시뮬레이터에서 돌립니다. 처음 한 번은 시뮬레이터를 �
 ## 화면 문구
 
 Kotlin 상수로 두지 않습니다. 모듈별 `src/commonMain/composeResources/values/strings.xml`에
-넣고 `stringResource`로 읽습니다. 로케일을 늘릴 때 `values-en`을 옆에 두면 끝나야 합니다.
+넣고 `stringResource`로 읽습니다. 일본어는 옆의 `values-ja`이고, 다른 언어도 그렇게 옆에 두면
+끝나야 합니다. 일본어 용어와 말투는 `docs/i18n-ja.md`를 봅니다.
 
 문구를 추가하거나 지웠는데 `Unresolved reference '...'`나
 `Unresolved reference '_collectCommonMainString0Resources'`가 나오면 생성된 접근자가 낡은

@@ -29,18 +29,27 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 private enum class AdFreeStep { ASK, LOADING, FAILED }
 
 /**
- * "광고 없이 볼까요?" 시트입니다. 광고 줄의 "숨기기"나 설정 줄을 눌렀을 때만 뜹니다. 저절로 띄우지 않습니다.
+ * 광고를 없애는 시트입니다. 광고 줄의 ×나 설정 줄을 눌렀을 때만 뜹니다. 저절로 띄우지 않습니다.
+ *
+ * [onCloseOne]이 있으면 광고 줄의 ×에서 연 것이라 "광고를 닫을까요?"로 묻고 그 광고만 닫는 길도 둡니다. ×를 눌렀는데 광고를
+ * 봐야만 닫힌다면 닫기 버튼으로 속이는 셈이라 바로 닫는 길을 같이 둡니다. 설정 줄에서 열면 "광고 없이 볼까요?"만 묻습니다.
  *
  * AdMob 보상형 광고 정책을 따릅니다. 보기 전에 무엇을 보고 무엇을 받는지 적고, 사용자가 "광고 보기"를 눌러야 광고를 받아
  * 띄웁니다. 끝까지 봐서 보상이 났을 때만 [onEarned]를 부르고, 괜찮다고 하거나 중간에 닫아도 앱은 평소처럼 씁니다.
  */
 @Composable
-internal fun AdFreeSheet(activity: Activity, unitId: String, onEarned: () -> Unit, onDismiss: () -> Unit) {
+internal fun AdFreeSheet(
+    activity: Activity,
+    unitId: String,
+    onEarned: () -> Unit,
+    onDismiss: () -> Unit,
+    onCloseOne: (() -> Unit)? = null,
+) {
     var step by remember { mutableStateOf(AdFreeStep.ASK) }
 
     OvalitBottomSheet(
-        title = stringResource(R.string.ad_free_title),
-        body = stringResource(R.string.ad_free_body),
+        title = stringResource(if (onCloseOne != null) R.string.ad_close_title else R.string.ad_free_title),
+        body = stringResource(if (onCloseOne != null) R.string.ad_close_body else R.string.ad_free_body),
         onDismiss = onDismiss,
     ) {
         Column(
@@ -57,7 +66,13 @@ internal fun AdFreeSheet(activity: Activity, unitId: String, onEarned: () -> Uni
                 )
             }
             OvalitPrimaryButton(
-                text = stringResource(if (step == AdFreeStep.LOADING) R.string.ad_free_loading else R.string.ad_free_watch),
+                text = stringResource(
+                    when {
+                        step == AdFreeStep.LOADING -> R.string.ad_free_loading
+                        onCloseOne != null -> R.string.ad_close_watch
+                        else -> R.string.ad_free_watch
+                    },
+                ),
                 enabled = step != AdFreeStep.LOADING,
                 onClick = {
                     step = AdFreeStep.LOADING
@@ -85,7 +100,17 @@ internal fun AdFreeSheet(activity: Activity, unitId: String, onEarned: () -> Uni
                     )
                 },
             )
-            OvalitTextButton(text = stringResource(R.string.ad_free_cancel), onClick = onDismiss)
+            if (onCloseOne != null) {
+                OvalitTextButton(
+                    text = stringResource(R.string.ad_close_one),
+                    onClick = {
+                        onCloseOne()
+                        onDismiss()
+                    },
+                )
+            } else {
+                OvalitTextButton(text = stringResource(R.string.ad_free_cancel), onClick = onDismiss)
+            }
         }
     }
 }

@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -56,18 +57,32 @@ internal class AdMobRenderer(
         .map { it.adFreeUntil?.toEpochMilliseconds() ?: NOT_HIDDEN }
         .stateIn(scope, SharingStarted.Eagerly, UNKNOWN)
 
-    private var offering by mutableStateOf(false)
+    // 이 화면이 사는 동안 ×로 닫은 광고 자리다. 다시 스크롤해 와도 그 자리는 비워 둔다.
+    private val closed = mutableStateListOf<String>()
+
+    // 띄울 시트다. closeKey가 있으면 광고 줄의 ×에서 연 것이다.
+    private var sheet by mutableStateOf<AdSheet?>(null)
 
     override val canOfferAdFree: Boolean get() = BuildConfig.ADMOB_REWARDED_UNIT_ID.isNotBlank()
 
     override fun offerAdFree() {
-        if (canOfferAdFree) offering = true
+        if (canOfferAdFree) sheet = AdSheet(closeKey = null)
+    }
+
+    // 보상형 광고가 없으면 물을 게 없어 바로 닫는다
+    private fun onClose(key: String) {
+        if (canOfferAdFree) sheet = AdSheet(closeKey = key) else close(key)
+    }
+
+    private fun close(key: String) {
+        closed += key
+        ads.remove(key)?.ad?.destroy()
     }
 
     @Composable
     override fun Render(placement: AdPlacement, key: String, frame: @Composable (content: @Composable () -> Unit) -> Unit) {
         val hiddenUntil by adFreeUntilMillis.collectAsState()
-        if (hiddenUntil == UNKNOWN || System.currentTimeMillis() < hiddenUntil) return
+        if (hiddenUntil == UNKNOWN || System.currentTimeMillis() < hiddenUntil || key in closed) return
         val loaded = ads[key]
         LaunchedEffect(key) {
             val current = ads[key]
@@ -83,7 +98,7 @@ internal class AdMobRenderer(
                 NativeAdRow(
                     ad = loaded.ad,
                     verticalPadding = if (placement == AdPlacement.HOME) 0.dp else 13.dp,
-                    onHide = if (canOfferAdFree) ::offerAdFree else null,
+                    onClose = { onClose(key) },
                 )
             }
         }
@@ -92,17 +107,17 @@ internal class AdMobRenderer(
     /** 앱 맨 위에 까는 시트입니다. [offerAdFree]를 부르면 뜹니다. */
     @Composable
     fun Sheets() {
-        if (offering) {
-            AdFreeSheet(
-                activity = activity,
-                unitId = BuildConfig.ADMOB_REWARDED_UNIT_ID,
-                onEarned = {
-                    val until = Instant.fromEpochMilliseconds(System.currentTimeMillis() + AD_FREE.inWholeMilliseconds)
-                    scope.launch { preferences.setAdFreeUntil(until) }
-                },
-                onDismiss = { offering = false },
-            )
-        }
+        val shown = sheet ?: return
+        AdFreeSheet(
+            activity = activity,
+            unitId = BuildConfig.ADMOB_REWARDED_UNIT_ID,
+            onEarned = {
+                val until = Instant.fromEpochMilliseconds(System.currentTimeMillis() + AD_FREE.inWholeMilliseconds)
+                scope.launch { preferences.setAdFreeUntil(until) }
+            },
+            onDismiss = { sheet = null },
+            onCloseOne = shown.closeKey?.let { key -> { close(key) } },
+        )
     }
 
     fun destroy() {
@@ -130,7 +145,8 @@ internal class AdMobRenderer(
             // 큰 그림이나 영상은 쓰지 않는다. 경기 줄과 같은 높이의 한 줄이라 아이콘, 제목, 버튼만 둔다.
             .withNativeAdOptions(
                 NativeAdOptions.Builder()
-                    .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_RIGHT)
+                    // 오른쪽 끝에 우리 ×가 있어서 AdChoices 표시는 왼쪽 위 여백에 둔다. 겹치면 무엇을 눌렀는지 헷갈린다.
+                    .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_LEFT)
                     .setReturnUrlsForImageAssets(false)
                     .build(),
             )
@@ -148,6 +164,8 @@ internal class AdMobRenderer(
     }
 
     private class LoadedAd(val ad: NativeAd, val loadedAt: Long)
+
+    private data class AdSheet(val closeKey: String?)
 
     companion object {
         val enabled: Boolean get() = BuildConfig.ADMOB_NATIVE_UNIT_ID.isNotBlank()

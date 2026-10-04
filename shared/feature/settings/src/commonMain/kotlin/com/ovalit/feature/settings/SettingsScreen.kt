@@ -217,7 +217,7 @@ internal fun SettingsScreen(
                 value = stringResource(preferences.focus.label),
                 onClick = { openSheet = SettingsSheet.FOCUS },
             )
-            // 보상형 광고로 24시간 광고를 숨긴다. 광고 줄의 "숨기기"와 같은 시트다. 숨기는 동안에는 언제까지인지만 적는다.
+            // 보상형 광고로 24시간 광고를 숨긴다. 광고 줄의 ×로도 같은 광고를 본다. 숨기는 동안에는 언제까지인지만 적는다.
             val ads = LocalAdRenderer.current
             if (ads != null && ads.canOfferAdFree) {
                 RowDivider()

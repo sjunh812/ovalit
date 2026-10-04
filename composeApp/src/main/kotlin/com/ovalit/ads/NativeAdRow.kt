@@ -40,23 +40,26 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdView
 import com.ovalit.R
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.icon.OvalitIcon
+import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 
 /**
  * 네이티브 광고 한 줄입니다. 경기 줄처럼 왼쪽에 아이콘, 가운데 제목과 광고주, 오른쪽에 버튼을 둡니다. 제목 밑 줄 맨 앞에 "광고"를
- * 적어 경기 기록과 헷갈리지 않게 합니다. AdChoices 표시는 SDK가 오른쪽 위에 얹습니다.
+ * 적어 경기 기록과 헷갈리지 않게 합니다. 오른쪽 끝에 광고를 닫는 ×를 두고, AdChoices 표시는 SDK가 왼쪽 위 여백에 얹습니다.
  *
  * AdMob은 광고 요소마다 안드로이드 뷰를 등록해야 눌림을 셉니다. 바탕까지 눌리게 하면 정책 위반이라 요소마다 따로 등록합니다.
  */
 @Composable
-internal fun NativeAdRow(ad: NativeAd, verticalPadding: Dp, onHide: (() -> Unit)?) {
+internal fun NativeAdRow(ad: NativeAd, verticalPadding: Dp, onClose: () -> Unit) {
     val colors = OvalitTheme.colors
     NativeAdFrame(ad) { adView ->
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = OvalitSpacing.gutter, vertical = verticalPadding),
+                // ×의 눌리는 영역(36dp) 안쪽 여백만큼 오른쪽을 덜 띄워, × 그림의 오른쪽 끝이 다른 줄의 스코어 끝선에 맞는다
+                .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter - CloseInset, top = verticalPadding, bottom = verticalPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             ad.icon?.drawable?.let { drawable ->
@@ -100,19 +103,6 @@ internal fun NativeAdRow(ad: NativeAd, verticalPadding: Dp, onHide: (() -> Unit)
                             )
                         }
                     }
-                    // 보상형 광고로 24시간 광고를 숨기는 입구다. 광고 요소로 등록하지 않아서 눌러도 광고가 열리지 않는다.
-                    if (onHide != null) {
-                        Spacer(Modifier.width(6.dp))
-                        OvalitText(
-                            text = stringResource(R.string.ad_hide),
-                            modifier = Modifier
-                                .clickable(role = Role.Button, onClick = onHide)
-                                .padding(horizontal = 2.dp, vertical = 2.dp),
-                            style = OvalitTheme.typography.caption.copy(fontWeight = FontWeight.Medium),
-                            color = colors.t2,
-                            maxLines = 1,
-                        )
-                    }
                 }
             }
             ad.callToAction?.let { action ->
@@ -132,9 +122,24 @@ internal fun NativeAdRow(ad: NativeAd, verticalPadding: Dp, onHide: (() -> Unit)
                     }
                 }
             }
+            // 광고 오른쪽 끝의 ×다(사용자 요청, 2026-10-04). 인스타그램의 "⋯"처럼 광고를 닫는 자리로 익숙한 곳이다. 둘째 줄 끝에
+            // 작은 "숨기기" 글자로 두니 눈에 띄지 않았다. 광고 요소로 등록하지 않아 눌러도 광고가 열리지 않는다.
+            Spacer(Modifier.width(2.dp))
+            Box(
+                modifier = Modifier
+                    .size(CloseTouch)
+                    .clickable(role = Role.Button, onClick = onClose),
+                contentAlignment = Alignment.Center,
+            ) {
+                OvalitIcon(OvalitIcons.Close, contentDescription = stringResource(R.string.ad_close), tint = colors.t3, size = CloseIcon)
+            }
         }
     }
 }
+
+private val CloseTouch = 36.dp
+private val CloseIcon = 16.dp
+private val CloseInset = (CloseTouch - CloseIcon) / 2
 
 // 경기 줄의 등수 칩처럼 --fill 면에 흐린 글자로 "광고"를 적는다
 @Composable

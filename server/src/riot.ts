@@ -149,11 +149,13 @@ export class Riot {
       throw err;
     }
     const data = parse(raw);
-    // 끝났다고 적힌 경기만 담고 적는다. 진행 중이거나 matchInfo가 없으면 참가자와 결과가 아직 바뀔 수 있다.
+    // 끝났다고 적힌 경기만 담고 적는다. 진행 중이거나 matchInfo가 없으면 참가자와 결과가 아직 바뀔 수 있다. 참가자는 부른 사람이
+    // 뛴 경기일 때만 적는다. 남의 경기 ID를 마구 물어 D1 쓰기 한도(하루 10만 행)를 쓰게 할 수 없다.
     if (data.matchInfo?.isCompleted === true) {
+      const record = !recorded && playersIn(data).has(this.caller.puuid);
       await Promise.all([
         this.remember(memory.matches, path, raw, MATCH_TTL).catch(logFailure("match_cache")),
-        recorded ? undefined : this.recordPlayers(matchId, data).catch(logFailure("match_players")),
+        record ? this.recordPlayers(matchId, data).catch(logFailure("match_players")) : undefined,
       ]);
     }
     return new RiotMatch(raw, data, recorded);

@@ -46,6 +46,11 @@
                     android:scheme="https"
                     android:host="${ovalitServerHost}"
                     android:path="/auth/done" />
+                <!-- 친구 초대 링크다. 앱이 있으면 바로 열린다. 코드를 받아 요청을 보내는 일은 실제 친구 저장소와 함께 붙인다. -->
+                <data
+                    android:scheme="https"
+                    android:host="${ovalitServerHost}"
+                    android:pathPrefix="/i/" />
             </intent-filter>
         </activity>
 

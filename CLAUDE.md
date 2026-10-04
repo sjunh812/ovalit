@@ -146,7 +146,8 @@ WorkManager는 S0-4 첫 수집과, 오래 쉬었다 와서 쌓인 새 경기 둘
   (`ovalit://`)은 다른 앱이 같은 이름을 등록해 남이 시작한 로그인의 코드를 받아 갈 수 있어서 쓰지 않는다(2026-09-27). App
   Link는 서버의 `/.well-known/assetlinks.json`(서명 지문은 `ANDROID_CERT_SHA256`)으로 검증하고, 매니페스트의 호스트는
   `local.properties`의 `ovalit.server.host`에서 받는다. 앱이 안 열린 기기에서는 `/auth/done`이 `package=com.ovalit`을
-  지정한 intent 버튼을 띄운다. iOS Universal Link는 유료 개발자 계정이 있어야 해서 iOS에 RSO를 붙일 때 따로 정한다.
+  지정한 intent 버튼을 띄운다. 친구 초대 링크(`/i/{코드}`)도 같은 App Link이고, 앱이 없는 기기에서 보이는 페이지의 "앱에서 열기"도
+  같은 intent다. 초대 코드를 받아 요청을 보내는 일은 실제 친구 저장소와 함께 붙인다. iOS Universal Link는 유료 개발자 계정이 있어야 해서 iOS에 RSO를 붙일 때 따로 정한다.
 - `/auth/dev`는 RSO 없이 친구 흐름을 돌려 보는 문이다. `DEV_LOGIN=true`이고 로컬 주소로 들어왔을 때만 열린다.
   배포 환경에는 넣지 않는다. 로컬 주소 확인은 Host 헤더라 꾸밀 수 있어서 실제로 막는 건 `DEV_LOGIN`이고,
   `wrangler dev`는 localhost에만 붙인다.
@@ -155,7 +156,8 @@ WorkManager는 S0-4 첫 수집과, 오래 쉬었다 와서 쌓인 새 경기 둘
   가린다. PUUID는 값이든 객체 키든 `anon-N`으로 바꾸고 이름·카드·칭호·계정 레벨을 지우며, 파티 ID도 경기 안에서만
   통하는 값으로 바꾼다. 계정 레벨과 파티 ID는 느리게 바뀌거나 경기마다 같아서 다른 경기의 같은 사람을 잇는 실마리가 된다.
 - 친구 요청은 같이 뛴 경기를 확인한 뒤에만 받는다. 상대가 앱을 쓰는지는 같이 뛴 사람에게만 알려준다.
-- 끝난 경기의 참가자는 D1 `match_players`에 한 번 적어 두고 친구 요청과 앱 사용자 확인에 쓴다. Cache API는
+- 끝난 경기의 참가자는 D1 `match_players`에 한 번 적어 두고 친구 요청과 앱 사용자 확인에 쓴다. 부른 사람이 뛴 경기만 적는다.
+  남의 경기 ID를 마구 물어 D1 쓰기 한도를 쓰게 할 수 없다. Cache API는
   `*.workers.dev`에서 담기지 않아서 isolate 메모리를 먼저 본다. 둘 다 있으면 쓰는 정도이고 앱이 경기를 저장한다.
 - 플레이어 카드는 정적 에셋 `/cards/{소문자 uuid}_{small|wide}.png`다. 저장소에 넣지 않고
   `server/scripts/prepare-assets.mjs`가 카탈로그에서 채운다.

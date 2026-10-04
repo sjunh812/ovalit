@@ -396,8 +396,8 @@ async function pingById(db: D1Database, id: string, viewerId: number): Promise<P
 }
 
 /**
- * 같이 불린 사람 중 보는 사람과 서로 수락한 친구가 아닌 사람은 PUUID를 `anon-N`으로 바꿉니다. N은 그 사람이 불린
- * 순서라 같은 오발있 안에서는 늘 같고, 다른 오발있의 같은 이름과는 이어지지 않습니다. 이름과 대답은 그대로 둡니다.
+ * 같이 불린 사람 중 보는 사람과 서로 수락한 친구가 아닌 사람은 PUUID를 `anon-N`으로 바꾸고 태그를 비웁니다. N은 그 사람이
+ * 불린 순서라 같은 오발있 안에서는 늘 같고, 다른 오발있의 같은 이름과는 이어지지 않습니다. 이름과 대답은 그대로 둡니다.
  * 호스트와 나 자신은 가리지 않습니다.
  */
 function toPings(rows: PingRow[], viewerId: number): Ping[] {
@@ -417,10 +417,11 @@ function toPings(rows: PingRow[], viewerId: number): Ping[] {
     }
     if (row.puuid === null) continue;
     const known = row.user_id === viewerId || row.friend === 1;
+    // 친구가 아닌 사람은 이름만 준다(CLAUDE.md 백엔드). 태그까지 주면 이름#태그로 그 사람을 찾을 수 있다.
     ping.members.push({
       puuid: known ? row.puuid : `anon-${row.position}`,
       gameName: row.game_name!,
-      tagLine: row.tag_line!,
+      tagLine: known ? row.tag_line! : "",
       answer: row.answer!,
       proposedAt: row.proposed_at,
       updatedAt: row.updated_at!,

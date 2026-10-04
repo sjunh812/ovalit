@@ -94,6 +94,16 @@ describe("경기 참가자 기록", () => {
     expect(new Set(await recordedPlayers(id))).toEqual(new Set(players.map((p) => p.puuid)));
   });
 
+  it("내가 뛰지 않은 경기는 받아도 참가자를 적지 않는다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const id = crypto.randomUUID();
+    t.upstream.json(matchUrl(id), matchFixture(id, strangers(10)));
+
+    expect((await t.call("GET", `/riot/matches/${id}`, me.token)).status).toBe(403);
+    expect(await recordedPlayers(id)).toEqual([]);
+  });
+
   it("참가자를 D1에 적지 못해도 경기는 내려보내고 에러 이름만 남긴다", async () => {
     const t = setup();
     const me = await t.login();

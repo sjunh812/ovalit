@@ -37,6 +37,10 @@ publicRoutes.get("/.well-known/assetlinks.json", (c) => {
 publicRoutes.get("/i/:code", (c) => {
   const code = c.req.param("code").toUpperCase();
   if (!INVITE_CODE.test(code)) return c.notFound();
+  // 커스텀 스킴(ovalit://)은 다른 앱이 같은 이름을 등록해 가로챌 수 있어 쓰지 않는다(CLAUDE.md 백엔드). /auth/done처럼 이 주소를
+  // com.ovalit에만 넘기는 intent로 연다.
+  const url = new URL(c.req.url);
+  const intent = `intent://${url.host}/i/${code}#Intent;scheme=${url.protocol.replace(":", "")};package=${ANDROID_PACKAGE};end`;
   c.header("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'");
   c.header("Referrer-Policy", "no-referrer");
   c.header("X-Robots-Tag", "noindex");
@@ -62,7 +66,7 @@ a { display: inline-block; padding: 14px 28px; border-radius: 12px; background: 
 <main>
 <h1>오발있?</h1>
 <p>친구가 오발있에서 같이 기록을 보자고 초대했어요.</p>
-<a href="ovalit://invite/${code}">앱에서 열기</a>
+<a href="${intent}">앱에서 열기</a>
 </main>
 </body>
 </html>`);

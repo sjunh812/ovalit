@@ -138,7 +138,8 @@ describe("초대 링크", () => {
     expect(res.headers.get("Content-Type")).toContain("text/html");
     expect(res.headers.get("Content-Security-Policy")).toContain("default-src 'none'");
     const page = await res.text();
-    expect(page).toContain(`href="ovalit://invite/${code}"`);
+    expect(page).toContain(`href="intent://localhost/i/${code}#Intent;scheme=http;package=com.ovalit;end"`);
+    expect(page).not.toContain("ovalit://");
     expect(page).not.toMatch(/https?:\/\//);
     expect(page).not.toMatch(/<script|<img|<link/i);
   });

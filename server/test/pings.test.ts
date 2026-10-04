@@ -555,7 +555,7 @@ describe("친구 끊기와 연동 해제", () => {
 });
 
 describe("같이 불린 사람 가리기", () => {
-  it("나와 친구가 아닌 사람은 PUUID만 가리고 이름과 대답은 보여 준다", async () => {
+  it("나와 친구가 아닌 사람은 PUUID와 태그를 가리고 이름과 대답은 보여 준다", async () => {
     const t = setup();
     const host = await t.login("host");
     const me = await friendOf(t, host, "me");
@@ -573,7 +573,7 @@ describe("같이 불린 사람 가리기", () => {
     expect(seen!.members.map(({ puuid, gameName, tagLine, answer, proposedAt }) => ({ puuid, gameName, tagLine, answer, proposedAt }))).toEqual([
       { puuid: me.puuid, gameName: "me", tagLine: "KR1", answer: "pending", proposedAt: null },
       { puuid: myFriend.puuid, gameName: "myFriend", tagLine: "KR1", answer: "pending", proposedAt: null },
-      { puuid: "anon-3", gameName: "stranger", tagLine: "KR1", answer: "other_time", proposedAt: later },
+      { puuid: "anon-3", gameName: "stranger", tagLine: "", answer: "other_time", proposedAt: later },
     ]);
     const replied = await (await reply(t, me, ping, "yes")).json<{ ping: Ping }>();
     expect(replied.ping.members.map((member) => member.puuid)).toEqual([me.puuid, myFriend.puuid, "anon-3"]);

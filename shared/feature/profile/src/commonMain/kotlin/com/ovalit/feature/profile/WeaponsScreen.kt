@@ -40,8 +40,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitDisclosureIcon
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitExpandable
+import com.ovalit.core.designsystem.component.OvalitStaged
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.currentMaxWidth
+import com.ovalit.core.designsystem.component.rememberContentShown
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ContentCatalog
@@ -90,6 +92,7 @@ import com.ovalit.feature.profile.resources.weapons_title
 import com.ovalit.feature.profile.resources.weapons_top_order
 import com.ovalit.feature.profile.resources.weapons_top_title
 import com.ovalit.feature.profile.resources.weapons_unused
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -103,12 +106,31 @@ fun WeaponsRoute(
     viewModel: RecordsViewModel = koinViewModel { parametersOf(owner) },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    WeaponsScreen(uiState, onBack, modifier)
+    WeaponsScreen(uiState, onBack, modifier, loadingTitle = Res.string.weapons_title.takeIf { owner == RecordsOwner.Me })
 }
 
 @Composable
-internal fun WeaponsScreen(uiState: RecordsUiState, onBack: () -> Unit, modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize().background(OvalitTheme.colors.bg)) {
+internal fun WeaponsScreen(
+    uiState: RecordsUiState,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    loadingTitle: StringResource? = Res.string.weapons_title,
+) {
+    // 뒤에서 센다. 밀려 들어오는 중에 도착하면 다 들어올 때까지 자리 틀을 두고 서서히 바꾼다.
+    val loaded = uiState != RecordsUiState.Loading
+    val shown = rememberContentShown(loaded = loaded)
+    OvalitStaged(
+        ready = loaded && shown,
+        placeholder = { RecordsSkeleton(loadingTitle, onBack) },
+        modifier = modifier.fillMaxSize().background(OvalitTheme.colors.bg),
+    ) {
+        WeaponsContent(uiState, onBack)
+    }
+}
+
+@Composable
+private fun WeaponsContent(uiState: RecordsUiState, onBack: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize()) {
         when (uiState) {
             RecordsUiState.Loading -> return@Box
             RecordsUiState.Hidden -> {

@@ -40,8 +40,10 @@ import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitExpandable
 import com.ovalit.core.designsystem.component.OvalitOutlinedButton
 import com.ovalit.core.designsystem.component.OvalitPullToRefresh
+import com.ovalit.core.designsystem.component.OvalitSkeleton
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.SkeletonBlock
 import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
@@ -53,6 +55,8 @@ import com.ovalit.core.model.PingId
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.periodLabel
+import com.ovalit.core.ui.resources.Res as CoreUiRes
+import com.ovalit.core.ui.resources.loading
 import com.ovalit.feature.friend.resources.Res
 import com.ovalit.feature.friend.resources.accept
 import com.ovalit.feature.friend.resources.decline
@@ -139,7 +143,28 @@ internal fun FriendsScreen(
     var tooMany by remember { mutableStateOf(false) }
 
     Box(modifier = modifier.fillMaxSize().background(colors.canvas)) {
-        if (uiState !is FriendsUiState.Success) return@Box
+        // 처음 열 때 머리 줄까지 비었다가 한꺼번에 뜨지 않게 머리는 바로 그리고 친구 줄 자리만 잡아 둔다
+        if (uiState !is FriendsUiState.Success) {
+            Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+                OvalitTabHeader(title = stringResource(Res.string.friends_title))
+                Spacer(Modifier.height(OvalitSpacing.xs))
+                OvalitCard {
+                    OvalitSkeleton(stringResource(CoreUiRes.string.loading), Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(OvalitSpacing.lg)) {
+                            SkeletonBlock(width = 72.dp, height = 18.dp)
+                            repeat(4) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    SkeletonBlock(width = 40.dp, height = 40.dp, radius = 20.dp)
+                                    Spacer(Modifier.width(12.dp))
+                                    SkeletonBlock(width = 110.dp, height = 15.dp)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return@Box
+        }
         val me = uiState.me
         val now = uiState.now
         val outgoing = me?.let { id -> uiState.pings.firstOrNull { it.isHostedBy(id) } }

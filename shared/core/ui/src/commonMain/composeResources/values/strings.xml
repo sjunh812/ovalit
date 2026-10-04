@@ -144,6 +144,7 @@
     <string name="ping_my_answer_other">%1$s 제안했어요</string>
     <string name="ping_my_answer_pending">아직 답하지 않았어요</string>
     <string name="profile_loading">프로필을 불러오고 있어요</string>
+    <string name="loading">불러오고 있어요</string>
     <!-- 그 판 스코어보드에서의 자리. 게임이 붙이는 이름을 따른다. -->
     <string name="placement_mvp">MVP</string>
     <string name="placement_team_mvp">팀 MVP</string>

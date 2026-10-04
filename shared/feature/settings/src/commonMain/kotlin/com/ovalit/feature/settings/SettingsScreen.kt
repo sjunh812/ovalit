@@ -142,7 +142,11 @@ internal fun SettingsScreen(
             .fillMaxSize()
             .background(OvalitTheme.colors.bg),
     ) {
-        if (uiState !is SettingsUiState.Success) return@Box
+        // 처음 열 때 머리 줄까지 비었다가 한꺼번에 뜨지 않게 머리는 바로 그린다. 설정은 기기에 있어 곧 뜬다.
+        if (uiState !is SettingsUiState.Success) {
+            OvalitTabHeader(title = stringResource(Res.string.settings_title), modifier = Modifier.safeDrawingPadding())
+            return@Box
+        }
         val preferences = uiState.preferences
 
         Column(

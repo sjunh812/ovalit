@@ -19,21 +19,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ovalit.core.designsystem.component.OvalitSkeleton
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.SkeletonBlock
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ContentCatalog
@@ -41,6 +43,7 @@ import com.ovalit.core.model.Match
 import com.ovalit.core.model.myHighlights
 import com.ovalit.core.model.myPlacement
 import com.ovalit.core.ui.resources.Res
+import com.ovalit.core.ui.resources.loading
 import com.ovalit.core.ui.resources.match_acs
 import com.ovalit.core.ui.resources.match_kda
 import com.ovalit.core.ui.resources.match_result_draw
@@ -237,6 +240,38 @@ private fun ChipsThatFit(chips: List<@Composable () -> Unit>, modifier: Modifier
         val height = shown.maxOfOrNull { it.first.height } ?: 0
         layout(x.coerceAtMost(constraints.maxWidth), height) {
             shown.forEach { (chip, at) -> chip.place(at, (height - chip.height) / 2) }
+        }
+    }
+}
+
+/**
+ * 경기 줄을 받기 전의 모양입니다. [MatchRow]와 같은 높이로 [rows]줄을 잡아 두어 내용이 나타날 때 줄이 움직이지 않습니다.
+ * 밀려 들어오는 화면이 빈 바탕으로 들어오다 전환 한가운데서 목록이 튀어나오지 않게 둡니다.
+ */
+@Composable
+fun MatchRowsSkeleton(rows: Int, style: MatchRowStyle, modifier: Modifier = Modifier) {
+    val compact = style == MatchRowStyle.COMPACT
+    OvalitSkeleton(description = stringResource(Res.string.loading), modifier = modifier) {
+        Column {
+            repeat(rows) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = OvalitSpacing.gutter, vertical = if (compact) 11.dp else 13.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (compact) SkeletonBlock(width = 34.dp, height = 34.dp, radius = 9.dp) else SkeletonBlock(width = 54.dp, height = 38.dp, radius = 8.dp)
+                    Spacer(Modifier.width(13.dp))
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        SkeletonBlock(width = 64.dp, height = 15.dp)
+                        SkeletonBlock(width = 96.dp, height = 12.dp)
+                    }
+                    Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        SkeletonBlock(width = 52.dp, height = 15.dp)
+                        SkeletonBlock(width = 84.dp, height = 12.dp)
+                    }
+                }
+            }
         }
     }
 }

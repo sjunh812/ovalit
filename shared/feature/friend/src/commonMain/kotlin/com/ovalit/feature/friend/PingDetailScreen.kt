@@ -23,10 +23,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBackTopBar
 import com.ovalit.core.designsystem.component.OvalitDivider
+import com.ovalit.core.designsystem.component.OvalitSkeleton
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.SkeletonBlock
+import com.ovalit.core.designsystem.component.rememberContentShown
 import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
@@ -41,6 +45,8 @@ import com.ovalit.core.ui.pingHeroDay
 import com.ovalit.core.ui.pingHeroTime
 import com.ovalit.core.ui.pingSummary
 import com.ovalit.core.ui.pingWhenText
+import com.ovalit.core.ui.resources.Res as CoreUiRes
+import com.ovalit.core.ui.resources.loading
 import com.ovalit.feature.friend.resources.Res
 import com.ovalit.feature.friend.resources.ping_cancel
 import com.ovalit.feature.friend.resources.ping_change_time
@@ -100,20 +106,48 @@ internal fun PingDetailScreen(
     actions: PingDetailActions = PingDetailActions(),
 ) {
     val colors = OvalitTheme.colors
+    // 밀려 들어오는 중에 도착하면 다 들어올 때까지 자리 틀을 둔다. 빈 바탕으로 들어오다 전환 한가운데서 시각과 친구 줄이 튀어나왔다.
+    val shown = rememberContentShown(loaded = uiState != PingDetailUiState.Loading)
     Column(modifier = modifier.fillMaxSize().background(colors.bg).safeDrawingPadding()) {
         OvalitBackTopBar(
             onBack = onBack,
-            title = (uiState as? PingDetailUiState.Success)?.let { pingCalledBy(it.ping, it.me) },
+            title = (uiState as? PingDetailUiState.Success)?.takeIf { shown }?.let { pingCalledBy(it.ping, it.me) },
         )
-        when (uiState) {
-            PingDetailUiState.Loading -> Unit
-            PingDetailUiState.Gone -> OvalitText(
+        when {
+            !shown || uiState == PingDetailUiState.Loading -> PingDetailSkeleton()
+            uiState == PingDetailUiState.Gone -> OvalitText(
                 text = stringResource(Res.string.ping_gone),
                 modifier = Modifier.padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.xl),
                 style = OvalitTheme.typography.body,
                 color = colors.t2,
             )
-            is PingDetailUiState.Success -> PingDetailContent(uiState.ping, uiState.me, uiState.now, uiState.invitable, timeZone, actions)
+            uiState is PingDetailUiState.Success -> PingDetailContent(uiState.ping, uiState.me, uiState.now, uiState.invitable, timeZone, actions)
+        }
+    }
+}
+
+// 맨 위 큰 시각과 친구 줄 셋의 자리다
+@Composable
+private fun PingDetailSkeleton() {
+    OvalitSkeleton(
+        description = stringResource(CoreUiRes.string.loading),
+        modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
+    ) {
+        Column {
+            Spacer(Modifier.height(OvalitSpacing.lg))
+            SkeletonBlock(width = 150.dp, height = 40.dp)
+            Spacer(Modifier.height(10.dp))
+            SkeletonBlock(width = 110.dp, height = 14.dp)
+            Spacer(Modifier.height(32.dp))
+            repeat(3) {
+                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    SkeletonBlock(width = 40.dp, height = 40.dp, radius = 20.dp)
+                    Spacer(Modifier.width(12.dp))
+                    SkeletonBlock(width = 90.dp, height = 15.dp)
+                    Spacer(Modifier.weight(1f))
+                    SkeletonBlock(width = 44.dp, height = 15.dp)
+                }
+            }
         }
     }
 }

@@ -34,9 +34,11 @@ import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitChip
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitPullToRefresh
+import com.ovalit.core.designsystem.component.OvalitSkeleton
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTextButton
+import com.ovalit.core.designsystem.component.SkeletonBlock
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -47,11 +49,14 @@ import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdSlot
 import com.ovalit.core.ui.MatchRow
 import com.ovalit.core.ui.MatchRowStyle
+import com.ovalit.core.ui.MatchRowsSkeleton
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.dayLabel
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.mapName
 import com.ovalit.core.ui.matchTimeLabel
+import com.ovalit.core.ui.resources.Res as CoreUiRes
+import com.ovalit.core.ui.resources.loading
 import com.ovalit.feature.match.resources.Res
 import com.ovalit.feature.match.resources.empty_filter
 import com.ovalit.feature.match.resources.empty_queue
@@ -103,7 +108,22 @@ internal fun MatchesScreen(
     var filtering by rememberSaveable { mutableStateOf(false) }
 
     Box(modifier = modifier.fillMaxSize().background(colors.bg)) {
-        if (uiState !is MatchesUiState.Success) return@Box
+        // 처음 열 때 머리 줄까지 비었다가 한꺼번에 뜨지 않게 머리는 바로 그리고 칩과 줄 자리만 잡아 둔다
+        if (uiState !is MatchesUiState.Success) {
+            Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+                OvalitTabHeader(title = stringResource(Res.string.matches_title))
+                Spacer(Modifier.height(OvalitSpacing.xs))
+                OvalitSkeleton(stringResource(CoreUiRes.string.loading), Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.xs)) {
+                        SkeletonBlock(width = 88.dp, height = 34.dp, radius = 10.dp)
+                        repeat(3) { SkeletonBlock(width = 52.dp, height = 34.dp, radius = 10.dp) }
+                    }
+                }
+                Spacer(Modifier.height(OvalitSpacing.md + OvalitSpacing.lg))
+                MatchRowsSkeleton(rows = 8, style = MatchRowStyle.LIST)
+            }
+            return@Box
+        }
 
         OvalitPullToRefresh(
             isRefreshing = isRefreshing,

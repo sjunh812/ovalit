@@ -55,9 +55,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBackTopBar
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitPressOutset
+import com.ovalit.core.designsystem.component.OvalitStaged
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTopBarCaption
 import com.ovalit.core.designsystem.component.pressIndication
+import com.ovalit.core.designsystem.component.rememberContentShown
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
@@ -140,54 +142,63 @@ internal fun MatchDetailScreen(
     var tab by rememberSaveable { mutableStateOf(DetailTab.SCOREBOARD) }
     var sheetFor by rememberSaveable { mutableStateOf<String?>(null) }
 
-    Box(modifier = modifier.fillMaxSize().background(colors.bg)) {
-        if (uiState !is MatchDetailUiState.Success) return@Box
-        val match = uiState.match
-        val tabs = buildList {
-            add(DetailTab.SCOREBOARD)
-            if (match.queue.halfRounds != null) add(DetailTab.ROUNDS)
-            add(DetailTab.REPORT)
-        }
+    // 뒤에서 센다. 밀려 들어오는 중에 도착하면 다 들어올 때까지 자리 틀을 두고 서서히 바꾼다.
+    val loaded = uiState is MatchDetailUiState.Success
+    val shown = rememberContentShown(loaded = loaded)
+    OvalitStaged(
+        ready = loaded && shown,
+        placeholder = { MatchDetailSkeleton(bannerHeight = BannerHeight, onBack = onBack) },
+        modifier = modifier.fillMaxSize().background(colors.bg),
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (uiState !is MatchDetailUiState.Success) return@Box
+            val match = uiState.match
+            val tabs = buildList {
+                add(DetailTab.SCOREBOARD)
+                if (match.queue.halfRounds != null) add(DetailTab.ROUNDS)
+                add(DetailTab.REPORT)
+            }
 
-        val scrollState = rememberScrollState()
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-            Banner(uiState, onBack)
-            if (match.queue.halfRounds != null) {
-                RoundStrip(uiState)
-            }
-            Spacer(Modifier.height(22.dp))
-            if (tabs.size > 1) {
-                Tabs(tabs, selected = tab, onSelect = { tab = it })
-            }
-            Crossfade(targetState = tab.takeIf { it in tabs } ?: DetailTab.SCOREBOARD, animationSpec = tween(180)) { shown ->
-                when (shown) {
-                    DetailTab.SCOREBOARD -> Scoreboard(
-                        uiState = uiState,
-                        onOpenPlayer = { row ->
-                            when (row.relation) {
-                                PlayerRelation.ME -> onOpenMe()
-                                PlayerRelation.FRIEND -> onOpenFriend(row.line.player)
-                                else -> sheetFor = row.line.player.value
-                            }
-                        },
-                    )
-                    DetailTab.ROUNDS -> RoundList(uiState)
-                    DetailTab.REPORT -> MatchReport(uiState)
+            val scrollState = rememberScrollState()
+            Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
+                Banner(uiState, onBack)
+                if (match.queue.halfRounds != null) {
+                    RoundStrip(uiState)
                 }
-            }
-            // 광고는 탭 내용을 다 본 맨 밑에 선을 긋고 둔다
-            AdSlot(AdPlacement.MATCH_DETAIL) { ad ->
-                Column {
-                    Spacer(Modifier.height(OvalitSpacing.lg))
-                    OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter), color = colors.lineWeak)
-                    ad()
+                Spacer(Modifier.height(22.dp))
+                if (tabs.size > 1) {
+                    Tabs(tabs, selected = tab, onSelect = { tab = it })
                 }
+                Crossfade(targetState = tab.takeIf { it in tabs } ?: DetailTab.SCOREBOARD, animationSpec = tween(180)) { shown ->
+                    when (shown) {
+                        DetailTab.SCOREBOARD -> Scoreboard(
+                            uiState = uiState,
+                            onOpenPlayer = { row ->
+                                when (row.relation) {
+                                    PlayerRelation.ME -> onOpenMe()
+                                    PlayerRelation.FRIEND -> onOpenFriend(row.line.player)
+                                    else -> sheetFor = row.line.player.value
+                                }
+                            },
+                        )
+                        DetailTab.ROUNDS -> RoundList(uiState)
+                        DetailTab.REPORT -> MatchReport(uiState)
+                    }
+                }
+                // 광고는 탭 내용을 다 본 맨 밑에 선을 긋고 둔다
+                AdSlot(AdPlacement.MATCH_DETAIL) { ad ->
+                    Column {
+                        Spacer(Modifier.height(OvalitSpacing.lg))
+                        OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter), color = colors.lineWeak)
+                        ad()
+                    }
+                }
+                Spacer(Modifier.height(OvalitSpacing.xxl))
+                // 탭바 밖 화면이라 시스템 내비게이션 바 높이만큼 더 띄운다. 안 그러면 마지막 줄이 내비게이션 바에 덮인다.
+                Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
-            Spacer(Modifier.height(OvalitSpacing.xxl))
-            // 탭바 밖 화면이라 시스템 내비게이션 바 높이만큼 더 띄운다. 안 그러면 마지막 줄이 내비게이션 바에 덮인다.
-            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+            StatusBarScrim(scrollState)
         }
-        StatusBarScrim(scrollState)
     }
 
     val success = uiState as? MatchDetailUiState.Success

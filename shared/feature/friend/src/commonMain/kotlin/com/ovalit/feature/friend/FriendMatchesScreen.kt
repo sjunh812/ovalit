@@ -21,11 +21,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBackTopBar
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.rememberContentShown
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.ui.MatchRow
 import com.ovalit.core.ui.MatchRowStyle
+import com.ovalit.core.ui.MatchRowsSkeleton
 import com.ovalit.core.ui.dayLabel
 import com.ovalit.core.ui.matchTimeLabel
 import com.ovalit.feature.friend.resources.Res
@@ -55,7 +57,16 @@ fun FriendMatchesRoute(
 internal fun FriendMatchesScreen(uiState: FriendProfileUiState, onBack: () -> Unit, modifier: Modifier = Modifier) {
     val colors = OvalitTheme.colors
     Box(modifier = modifier.fillMaxSize().background(colors.bg)) {
-        if (uiState !is FriendProfileUiState.Success) return@Box
+        // 밀려 들어오는 중에 도착하면 다 들어올 때까지 줄 자리만 잡아 둔다
+        val shown = rememberContentShown(loaded = uiState is FriendProfileUiState.Success)
+        if (uiState !is FriendProfileUiState.Success || !shown) {
+            Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+                OvalitBackTopBar(onBack = onBack)
+                Spacer(Modifier.height(OvalitSpacing.lg))
+                MatchRowsSkeleton(rows = 8, style = MatchRowStyle.COMPACT)
+            }
+            return@Box
+        }
         val name = uiState.friend.riotId.substringBefore('#')
         val today = uiState.now.toLocalDateTime(uiState.timeZone).date
         val days = uiState.friend.matches

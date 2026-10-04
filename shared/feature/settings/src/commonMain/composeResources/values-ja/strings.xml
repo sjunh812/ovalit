@@ -19,7 +19,7 @@
     <string name="notify_weekly_report_time">月曜日 午前9時</string>
     <string name="notify_ping">今日やる？</string>
     <string name="notify_ping_description">フレンドがパーティーを募集したときや、自分の募集にフレンドが答えたときにお知らせします。</string>
-    <string name="ping_reminder">パーティー開始前の通知</string>
+    <string name="ping_reminder">開始前の通知</string>
     <string name="ping_reminder_description">自分が募集したパーティーや「行きます」と答えたパーティーが始まる前に、一度お知らせします。</string>
     <string name="ping_reminder_10">10分前</string>
     <string name="ping_reminder_30">30分前</string>

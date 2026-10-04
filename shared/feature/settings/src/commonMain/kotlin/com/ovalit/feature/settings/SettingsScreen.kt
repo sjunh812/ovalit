@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitDisclaimer
 import com.ovalit.core.designsystem.component.OvalitDivider
+import com.ovalit.core.designsystem.component.OvalitExpandable
 import com.ovalit.core.designsystem.component.OvalitOutlinedButton
 import com.ovalit.core.designsystem.component.OvalitSwitch
 import com.ovalit.core.designsystem.component.OvalitTabHeader
@@ -216,13 +217,13 @@ internal fun SettingsScreen(
                 checked = preferences.notifyPing,
                 onCheckedChange = actions.onNotifyPingChange,
             )
-            // 오발있 알림을 껐으면 시작 전 알림도 오지 않아 줄을 두지 않는다. 이름만으로는 무엇이 시작하기 전인지 몰라 설명을 단다.
-            if (preferences.notifyPing) {
-                RowDivider()
+            // 오발있?에 딸린 설정이라 선을 긋지 않고 들여 써서 붙인다. 오발있?을 끄면 시작 전 알림도 오지 않아 접는다.
+            OvalitExpandable(visible = preferences.notifyPing) {
                 ValueRow(
                     title = stringResource(Res.string.ping_reminder),
                     description = stringResource(Res.string.ping_reminder_description),
                     value = stringResource(preferences.pingReminder.label),
+                    nested = true,
                     onClick = { openSheet = SettingsSheet.PING_REMINDER },
                 )
             }
@@ -420,14 +421,22 @@ private fun ValueRow(
     title: String,
     value: String? = null,
     description: String? = null,
+    nested: Boolean = false,
     onClick: (() -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = RowMinHeight)
+            .then(if (nested) Modifier else Modifier.heightIn(min = RowMinHeight))
             .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
-            .padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.md),
+            .then(
+                // 위 줄에 딸린 줄은 한 단계 들여 쓰고 위 여백을 줄여 위 줄에 붙인다
+                if (nested) {
+                    Modifier.padding(start = OvalitSpacing.gutter + OvalitSpacing.lg, end = OvalitSpacing.gutter, bottom = OvalitSpacing.md)
+                } else {
+                    Modifier.padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.md)
+                },
+            ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(

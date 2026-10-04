@@ -68,7 +68,7 @@
     <string name="focus_consistency">기복 줄이기</string>
     <string name="focus_consistency_description">관여율, 생존율</string>
     <string name="focus_none">특별히 없어요</string>
-    <string name="focus_none_description">그 주에 제일 많이 움직인 것부터 보여드릴게요</string>
+    <string name="focus_none_description">그 주에 가장 많이 달라진 지표부터 보여드릴게요</string>
 
     <!-- 내 프로필, S5, 홈 요원·무기 칸이 같이 쓴다 -->
     <string name="act_matches">이번 액트 %1$d경기</string>
@@ -85,7 +85,7 @@
     <string name="weapon_category_machine_gun">기관총</string>
     <string name="weapon_category_melee">근접 무기</string>
     <string name="profile_competitive">경쟁전</string>
-    <string name="profile_competitive_matches">경쟁 %1$d판</string>
+    <string name="profile_competitive_matches">경쟁전 %1$d판</string>
     <string name="profile_stats_title">통계</string>
     <string name="profile_most_kills">최다 킬</string>
     <string name="profile_kda">KDA</string>
@@ -155,16 +155,16 @@
     <string name="highlight_clutch">클러치</string>
     <string name="highlight_clutches">클러치 %1$d번</string>
     <!-- 오래 쉬었다 와서 새 경기를 여러 판 받는 동안 홈과 경기 탭 맨 위에 두는 줄 -->
-    <string name="new_matches_receiving">새 경기를 받고 있어요</string>
+    <string name="new_matches_receiving">새 경기를 불러오고 있어요</string>
     <string name="new_matches_count">%1$d / %2$d</string>
-    <string name="new_matches_description">새 경기 %2$d경기 중 %1$d경기를 받았어요</string>
-    <string name="new_matches_in_background">앱을 닫아도 이어 받아요</string>
+    <string name="new_matches_description">새 경기 %2$d판 중 %1$d판을 불러왔어요</string>
+    <string name="new_matches_in_background">앱을 닫아도 계속 불러와요</string>
     <!-- 사용자가 한 일이 실패했을 때 화면 아래에 잠깐 띄우는 한 줄. 까닭을 알면 까닭을, 모르면 무엇을 못 했는지 적는다 -->
     <string name="error_offline">인터넷에 연결되어 있지 않아요</string>
     <string name="error_session_expired">로그인이 풀렸어요 · 다시 로그인해 주세요</string>
     <string name="error_riot_busy">Riot 서버가 붐벼요 · 잠시 뒤 다시 해 주세요</string>
     <string name="error_riot_down">Riot 서버가 응답하지 않아요</string>
-    <string name="failed_refresh">새 경기를 받지 못했어요</string>
+    <string name="failed_refresh">새 경기를 불러오지 못했어요</string>
     <string name="failed_friends_refresh">친구 목록을 새로 받지 못했어요</string>
     <string name="failed_accept_friend">친구 요청을 수락하지 못했어요</string>
     <string name="failed_decline_friend">친구 요청을 거절하지 못했어요</string>

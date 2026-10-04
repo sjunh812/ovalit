@@ -279,7 +279,7 @@ private fun RoundDetail(round: RoundSummary, uiState: MatchDetailUiState.Success
     }
 }
 
-// "내 피해 187 · 2킬 · 첫 킬"이다. 에이스와 이긴 클러치는 앞에 굵게 적는다.
+// "준 피해 187 · 2킬 · 첫 킬"이다. 에이스와 이긴 클러치는 앞에 굵게 적는다.
 @Composable
 private fun MyRoundLine(round: RoundSummary) {
     val colors = OvalitTheme.colors

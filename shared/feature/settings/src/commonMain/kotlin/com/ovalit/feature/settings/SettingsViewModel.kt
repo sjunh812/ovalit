@@ -76,7 +76,7 @@ class SettingsViewModel(
 
     fun setDefaultQueue(queue: QueueFilter) = launch { preferencesRepository.setDefaultQueue(queue) }
 
-    // 기다리던 새 경기 이어 받기도 멈춘다. 지운 뒤에 "새 경기를 다 받았어요" 알림이 가면 안 된다.
+    // 기다리던 새 경기 이어 받기도 멈춘다. 지운 뒤에 "새 경기를 다 불러왔어요" 알림이 가면 안 된다.
     fun deleteData() = launch(FailedAction.DELETE_DATA) {
         importScheduler.cancel()
         matchRepository.deleteAll()

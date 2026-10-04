@@ -49,7 +49,7 @@ class ProfileScreensTest {
         setContent { Themed { ProfileScreen(ProfilePreviewData.success, {}, {}, {}, {}, {}) } }
 
         onNodeWithText("플래티넘 2").assertExists()
-        onNodeWithText("경쟁 32판", useUnmergedTree = true).assertExists()
+        onNodeWithText("경쟁전 32판", useUnmergedTree = true).assertExists()
         onNodeWithText("18승 14패", useUnmergedTree = true).assertExists()
         onNodeWithText("56%", useUnmergedTree = true).assertExists()
     }
@@ -110,7 +110,7 @@ class ProfileScreensTest {
 
         onNodeWithText("관여율").assertExists()
         onNodeWithText("생존율").assertExists()
-        onNodeWithText("첫 교전 관여").assertDoesNotExist()
+        onNodeWithText("첫 교전 관여율").assertDoesNotExist()
     }
 
     @Test
@@ -119,7 +119,7 @@ class ProfileScreensTest {
             Themed { AgentsScreen(ProfilePreviewData.records.copy(agents = ProfilePreviewData.duelistAgents), onBack = {}) }
         }
 
-        onNodeWithText("첫 교전 관여").assertExists()
+        onNodeWithText("첫 교전 관여율").assertExists()
         onNodeWithText("첫 교전 승률").assertExists()
         onNodeWithText("생존율").assertDoesNotExist()
     }

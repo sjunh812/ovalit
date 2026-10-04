@@ -18,7 +18,7 @@
     <string name="ad_free_body">광고를 끝까지 보면 내일 이 시간까지 광고가 안 보여요. 광고는 1~2편이고 한 편에 30초를 넘지 않아요.</string>
     <string name="ad_free_watch">광고 보기</string>
     <string name="ad_free_loading">광고를 불러오고 있어요</string>
-    <string name="ad_free_failed">지금은 광고를 불러오지 못했어요. 잠시 뒤 다시 해 주세요.</string>
+    <string name="ad_free_failed">지금은 광고를 불러오지 못했어요. 잠시 뒤 다시 눌러 주세요.</string>
     <string name="ad_free_cancel">괜찮아요</string>
     <string name="share_invite">초대 링크 보내기</string>
     <string name="notification_channel_analysis">분석 완료</string>
@@ -26,8 +26,8 @@
     <!-- 다섯 판이 안 되면 리포트가 없으니 불러온 것까지만 말한다 -->
     <string name="notification_analysis_body">최근 %1$d경기를 다 불러왔어요</string>
     <string name="notification_analysis_body_none">최근 8주 동안 뛴 경기가 없어요</string>
-    <string name="notification_new_matches_title">새 경기를 다 받았어요</string>
-    <string name="notification_new_matches_body">그사이 끝난 %1$d경기로 리포트를 다시 셌어요</string>
+    <string name="notification_new_matches_title">새 경기를 다 불러왔어요</string>
+    <string name="notification_new_matches_body">그사이 끝난 %1$d경기로 리포트를 새로 만들었어요</string>
     <!-- ㅇㅂㅇ와 주간 리포트 알림. 받는 쪽 이름은 서버가 Riot ID의 이름 부분만 보낸다. 친구의 답은 앱 화면처럼 "참석, 불참"으로,
          내가 누르는 버튼은 해요체로 쓴다. -->
     <string name="notification_channel_ping">오발있? 파티 모집</string>
@@ -37,7 +37,7 @@
     <string name="ping_time_dawn">새벽 %1$s</string>
     <string name="ping_new_title">%1$s의 초대 · %2$s</string>
     <string name="ping_new_title_now">%1$s의 초대 · 지금</string>
-    <string name="ping_new_body">같이 할 수 있는지 알림에서 바로 답할 수 있어요</string>
+    <string name="ping_new_body">갈 수 있는지 알림에서 바로 답할 수 있어요</string>
     <string name="ping_new_body_others">%1$s도 같이 불렀어요</string>
     <string name="ping_reply_yes_title">%1$s · 참석</string>
     <string name="ping_reply_no_title">%1$s · 불참</string>

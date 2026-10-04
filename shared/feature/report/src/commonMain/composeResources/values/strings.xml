@@ -102,8 +102,8 @@
     <!-- 홈 고정 칸 밑 8주 흐름 입구와 시트 -->
     <string name="trend_entry">지난 8주 흐름 한눈에 보기</string>
     <string name="trend_title">지난 8주 흐름</string>
-    <string name="trend_body">빨간 막대가 리포트 기간이에요. 막대를 누르면 그 주 값을 볼 수 있어요.</string>
-    <string name="trend_body_baseline">빨간 막대가 리포트 기간이고 점선은 지난 %1$d주 평균이에요. 막대를 누르면 그 주 값을 볼 수 있어요.</string>
+    <string name="trend_body">진하게 칠한 막대가 리포트 기간이에요. 막대를 누르면 그 주 값을 볼 수 있어요.</string>
+    <string name="trend_body_baseline">진하게 칠한 막대가 리포트 기간이고 점선은 지난 %1$d주 평균이에요. 막대를 누르면 그 주 값을 볼 수 있어요.</string>
     <!-- 고른 주의 표본이다 -->
     <string name="trend_week_sample">%1$d경기 · %2$d라운드</string>
     <string name="trend_week_empty">경기 없음</string>
@@ -125,11 +125,11 @@
     <string name="dynamic_sheet_first_duel_involvement_body">라운드 첫 교전에 내가 낀 비율이에요. 첫 킬과 첫 데스를 더해 뛴 라운드 수로 나눠요.</string>
     <string name="dynamic_sheet_first_duel_win_body">내가 낀 첫 교전에서 이긴 비율이에요. 첫 킬 수를 첫 킬과 첫 데스를 합친 수로 나눠요.</string>
     <string name="dynamic_sheet_assists_body">한 라운드에 어시스트를 몇 번 했는지예요.</string>
-    <string name="dynamic_sheet_eco_body">우리 팀 평균 장비 가치가 2,000 미만인 이코 라운드 중 이긴 비율이에요. 피스톨 라운드는 넣지 않아요.</string>
-    <string name="dynamic_sheet_force_buy_body">우리 팀 평균 장비 가치가 2,000 이상 3,900 미만인 포스바이 라운드 중 이긴 비율이에요. 피스톨 라운드는 넣지 않아요.</string>
+    <string name="dynamic_sheet_eco_body">우리 팀 평균 장비 가치가 2,000크레드 미만인 이코 라운드 중 이긴 비율이에요. 피스톨 라운드는 넣지 않아요.</string>
+    <string name="dynamic_sheet_force_buy_body">우리 팀 평균 장비 가치가 2,000크레드 이상 3,900크레드 미만인 포스바이 라운드 중 이긴 비율이에요. 피스톨 라운드는 넣지 않아요.</string>
     <string name="dynamic_sheet_multi_kill_body">뛴 라운드 중 내가 적을 둘 이상 잡은 라운드의 비율이에요. 이긴 교전을 다음 교전까지 이어 갔는지 봐요.</string>
     <string name="dynamic_sheet_traded_death_body">내가 죽은 뒤 5초 안에 우리 팀이 나를 죽인 적을 잡은 데스의 비율이에요. 혼자 떨어져 죽었는지, 팀과 붙어 싸우다 죽었는지 봐요. 우리 팀이 얼마나 따라와 줬는지도 같이 들어가요.</string>
-    <string name="dynamic_sheet_full_buy_body">우리 팀 평균 장비 가치가 3,900 이상인 풀바이 라운드 중 이긴 비율이에요. 피스톨 라운드는 넣지 않아요.</string>
+    <string name="dynamic_sheet_full_buy_body">우리 팀 평균 장비 가치가 3,900크레드 이상인 풀바이 라운드 중 이긴 비율이에요. 피스톨 라운드는 넣지 않아요.</string>
     <string name="dynamic_sheet_sample_title">몇 번으로 셌나요?</string>
     <string name="dynamic_sheet_sample_body">위 숫자는 이 비율을 셀 때 쓴 횟수예요. 이번 기간과 견주는 주가 모두 %1$s 이상이어야 비교해요.</string>
     <string name="dynamic_sheet_movement_title">어떻게 판단하나요?</string>

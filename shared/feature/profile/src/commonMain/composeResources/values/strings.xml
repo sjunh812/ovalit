@@ -25,7 +25,7 @@
     <string name="agents_by_agent">요원별</string>
     <string name="column_kast">관여율</string>
     <string name="column_survival">생존율</string>
-    <string name="column_first_duel_involvement">첫 교전 관여</string>
+    <string name="column_first_duel_involvement">첫 교전 관여율</string>
     <string name="column_first_duel_win">첫 교전 승률</string>
     <string name="agents_columns_note">처음에는 주 역할에 맞춘 두 지표를 보여드려요. 표 위 버튼으로 다른 지표를 볼 수 있어요.</string>
     <string name="agents_columns_first_duel">첫 교전 관여율 · 첫 교전 승률</string>

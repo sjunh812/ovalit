@@ -16,19 +16,19 @@
     <!-- %1$s 자리의 지표 이름은 밝고 굵게 띄운다 -->
     <string name="agents_role_duelist">타격대는 %1$s부터 봐요. 타격대는 원래 어시스트가 적은 편이에요.</string>
     <string name="agents_role_initiator">척후대는 %1$s부터 봐요. 척후대는 원래 K/D가 낮은 편이에요.</string>
-    <string name="agents_role_controller">전략가는 %1$s부터 봐요. 전략가는 원래 퍼블이 적은 편이에요.</string>
-    <string name="agents_role_sentinel">감시자는 %1$s부터 봐요. 감시자는 원래 퍼블이 적은 편이에요.</string>
-    <string name="agents_focus_duelist">퍼블 관여율과 첫 교전 승률</string>
+    <string name="agents_role_controller">전략가는 %1$s부터 봐요. 전략가는 원래 첫 킬이 적은 편이에요.</string>
+    <string name="agents_role_sentinel">감시자는 %1$s부터 봐요. 감시자는 원래 첫 킬이 적은 편이에요.</string>
+    <string name="agents_focus_duelist">첫 교전 관여율과 첫 교전 승률</string>
     <string name="agents_focus_initiator">어시스트와 관여율</string>
     <string name="agents_focus_controller">관여율과 생존율</string>
     <string name="agents_focus_sentinel">생존율</string>
     <string name="agents_by_agent">요원별</string>
     <string name="column_kast">관여율</string>
     <string name="column_survival">생존율</string>
-    <string name="column_first_duel_involvement">퍼블 관여</string>
-    <string name="column_first_duel_win">첫 교전</string>
+    <string name="column_first_duel_involvement">첫 교전 관여</string>
+    <string name="column_first_duel_win">첫 교전 승률</string>
     <string name="agents_columns_note">처음에는 주 역할에 맞춘 두 지표를 보여드려요. 표 위 버튼으로 다른 지표를 볼 수 있어요.</string>
-    <string name="agents_columns_first_duel">퍼블 관여율 · 첫 교전 승률</string>
+    <string name="agents_columns_first_duel">첫 교전 관여율 · 첫 교전 승률</string>
     <string name="agents_columns_kast">관여율 · 생존율</string>
     <string name="agents_columns_fight">K/D · 피해량</string>
     <string name="agents_columns_score">전투점수 · 헤드샷</string>

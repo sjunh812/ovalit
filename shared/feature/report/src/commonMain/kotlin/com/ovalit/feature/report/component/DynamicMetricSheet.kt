@@ -170,7 +170,7 @@ private fun SheetBlock(title: String, body: String) {
     }
 }
 
-// 최소 표본을 위에 적은 표본과 같은 꼴("40라운드", "퍼블 10번")로 적는다
+// 최소 표본을 위에 적은 표본과 같은 꼴("40라운드", "첫 킬 10번")로 적는다
 @Composable
 private fun DynamicMetric.minSampleText(): String {
     val sample = minSample

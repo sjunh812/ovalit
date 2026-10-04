@@ -11,8 +11,8 @@
 
     <string name="metric_kast">관여율</string>
     <string name="metric_survival">생존율</string>
-    <string name="metric_first_kill_win">퍼블 승률</string>
-    <string name="metric_first_duel_involvement">퍼블 관여율</string>
+    <string name="metric_first_kill_win">첫 킬 승률</string>
+    <string name="metric_first_duel_involvement">첫 교전 관여율</string>
     <string name="metric_first_duel_win">첫 교전 승률</string>
     <string name="metric_assists_per_round">라운드당 어시스트</string>
     <string name="metric_eco_win">이코 승률</string>
@@ -60,7 +60,7 @@
 
     <!-- 시트 문장 안에서 "이코 / 15라운드"처럼 갈리지 않게 줄바꿈 없는 공백을 넣었다 -->
     <string name="sample_rounds">%1$d라운드</string>
-    <string name="sample_first_kills">퍼블&#160;%1$d번</string>
+    <string name="sample_first_kills">첫 킬&#160;%1$d번</string>
     <string name="sample_first_duels">첫&#160;교전&#160;%1$d번</string>
     <string name="sample_eco_rounds">이코&#160;%1$d라운드</string>
     <string name="sample_force_buy_rounds">포스바이&#160;%1$d라운드</string>
@@ -118,9 +118,9 @@
     <string name="dynamic_sheet_kast_name">KAST</string>
     <string name="dynamic_sheet_kast_body">킬, 어시스트, 생존, 트레이드 중 하나라도 해낸 라운드의 비율이에요.</string>
     <string name="dynamic_sheet_survival_body">라운드가 끝날 때까지 살아남은 라운드의 비율이에요.</string>
-    <string name="dynamic_sheet_first_kill_win_body">내가 퍼블을 딴 라운드 중 이긴 라운드의 비율이에요. 우리 팀 다른 사람이 딴 퍼블은 넣지 않아요.</string>
-    <string name="dynamic_sheet_first_duel_involvement_body">라운드 첫 교전에 내가 낀 비율이에요. 퍼블과 퍼데를 더해 뛴 라운드 수로 나눠요.</string>
-    <string name="dynamic_sheet_first_duel_win_body">내가 낀 첫 교전에서 이긴 비율이에요. 퍼블 수를 퍼블과 퍼데를 합친 수로 나눠요.</string>
+    <string name="dynamic_sheet_first_kill_win_body">내가 첫 킬을 낸 라운드 중 이긴 라운드의 비율이에요. 우리 팀 다른 사람이 낸 첫 킬은 넣지 않아요.</string>
+    <string name="dynamic_sheet_first_duel_involvement_body">라운드 첫 교전에 내가 낀 비율이에요. 첫 킬과 첫 데스를 더해 뛴 라운드 수로 나눠요.</string>
+    <string name="dynamic_sheet_first_duel_win_body">내가 낀 첫 교전에서 이긴 비율이에요. 첫 킬 수를 첫 킬과 첫 데스를 합친 수로 나눠요.</string>
     <string name="dynamic_sheet_assists_body">한 라운드에 어시스트를 몇 번 했는지예요.</string>
     <string name="dynamic_sheet_eco_body">우리 팀 평균 장비 가치가 2,000 미만인 이코 라운드 중 이긴 비율이에요. 피스톨 라운드는 넣지 않아요.</string>
     <string name="dynamic_sheet_force_buy_body">우리 팀 평균 장비 가치가 2,000 이상 3,900 미만인 포스바이 라운드 중 이긴 비율이에요. 피스톨 라운드는 넣지 않아요.</string>

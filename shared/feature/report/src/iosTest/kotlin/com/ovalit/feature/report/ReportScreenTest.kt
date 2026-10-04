@@ -530,7 +530,7 @@ class ReportScreenTest {
 
         val first = onNodeWithText("포스바이 승률", useUnmergedTree = true).getBoundsInRoot()
         val third = onNodeWithText("풀바이 승률", useUnmergedTree = true).getBoundsInRoot()
-        val fourth = onNodeWithText("퍼블 관여율", useUnmergedTree = true).getBoundsInRoot()
+        val fourth = onNodeWithText("첫 교전 관여율", useUnmergedTree = true).getBoundsInRoot()
         val fifth = onNodeWithText("생존율", useUnmergedTree = true).getBoundsInRoot()
 
         assertEquals(first.top, third.top)
@@ -646,13 +646,13 @@ class ReportScreenTest {
         onNodeWithText("이번 변화가 지난 8주 동안 주마다 흔들린 폭의 1.5배를 넘어서 달라졌다고 봤어요.").assertExists()
     }
 
-    // 판단을 보류한 칸은 달라졌다고도, 그대로라고도 하지 않는다. 퍼블 승률은 moved의 동적 칸에 없는 지표라 판단 보류로 연다.
+    // 판단을 보류한 칸은 달라졌다고도, 그대로라고도 하지 않는다. 첫 킬 승률은 moved의 동적 칸에 없는 지표라 판단 보류로 연다.
     @Test
     fun `판단하지 않은 칸의 시트는 기록이 모자라다고 적는다`() = runComposeUiTest {
         setContent { OvalitTheme { DynamicMetricSheetBody(DynamicMetric.FIRST_KILL_WIN_RATE, ReportPreviewData.moved) } }
 
         onNodeWithText("달라졌는지 판단하지 않았어요", substring = true).assertExists()
-        onNodeWithText("퍼블\u00a010번 이상이어야", substring = true).assertExists()
+        onNodeWithText("첫 킬\u00a010번 이상이어야", substring = true).assertExists()
     }
 
     // 분모가 데스라 라운드가 아니라 데스 수를 표본으로 적는다. 우리 팀 움직임도 들어가는 숫자라는 걸 밝힌다.

@@ -111,7 +111,7 @@ internal fun RoundList(uiState: MatchDetailUiState.Success) {
     }
 }
 
-// 퍼블을 딴 쪽이 라운드를 얼마나 가져갔는지와 공수 성적이다. 두 칸씩 두 줄이다.
+// 첫 킬을 낸 쪽이 라운드를 얼마나 가져갔는지와 공수 성적이다. 두 칸씩 두 줄이다.
 @Composable
 private fun Overview(uiState: MatchDetailUiState.Success) {
     val overview = uiState.match.roundsOverview()
@@ -278,7 +278,7 @@ private fun RoundDetail(round: RoundSummary, uiState: MatchDetailUiState.Success
     }
 }
 
-// "내 피해 187 · 2킬 · 퍼블"이다. 에이스와 이긴 클러치는 앞에 굵게 적는다.
+// "내 피해 187 · 2킬 · 첫 킬"이다. 에이스와 이긴 클러치는 앞에 굵게 적는다.
 @Composable
 private fun MyRoundLine(round: RoundSummary) {
     val colors = OvalitTheme.colors

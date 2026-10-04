@@ -74,7 +74,7 @@ internal fun Round.analyze(me: PlayerId, allies: Set<PlayerId>): RoundResult {
 
     val myKills = enemyKills.count { it.killer == me }
     val myAssists = enemyKills.count { me in it.assistants }
-    // 세이지 부활로 한 라운드에 두 번 죽을 수 있다. 퍼블처럼 목록 순서가 아니라 시각으로 첫 데스를 고른다.
+    // 세이지 부활로 한 라운드에 두 번 죽을 수 있다. 첫 킬처럼 목록 순서가 아니라 시각으로 첫 데스를 고른다.
     val myDeath = kills.filter { it.victim == me }.minByOrNull { it.atMillis }
     val firstBlood = enemyKills.minByOrNull { it.atMillis }
 

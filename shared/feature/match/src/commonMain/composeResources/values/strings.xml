@@ -32,8 +32,8 @@
     <string name="player_stats_expand">그 판 기록 펼치기</string>
     <string name="player_stats_collapse">그 판 기록 접기</string>
     <string name="player_open_profile">프로필 열기</string>
-    <string name="player_stat_first_kills">퍼블</string>
-    <string name="player_stat_first_deaths">퍼데</string>
+    <string name="player_stat_first_kills">첫 킬</string>
+    <string name="player_stat_first_deaths">첫 데스</string>
     <string name="player_stat_multi_kills">멀티킬</string>
 
     <string name="side_attack">공격</string>
@@ -44,8 +44,8 @@
     <string name="ending_time_expired">시간 초과</string>
     <string name="ending_surrendered">항복</string>
     <string name="round_kills">%1$d킬</string>
-    <string name="round_first_kill">퍼블</string>
-    <string name="round_first_death">퍼데</string>
+    <string name="round_first_kill">첫 킬</string>
+    <string name="round_first_death">첫 데스</string>
     <string name="round_ace">에이스</string>
     <string name="round_clutch">1대%1$d 클러치</string>
     <string name="round_not_played">튕겨서 못 뛴 라운드</string>
@@ -68,8 +68,8 @@
     <string name="report_headshot">헤드샷</string>
     <string name="report_weapons_note">킬은 마무리한 무기로 세요. 피해량은 그 무기를 들고 시작한 라운드의 라운드당 피해량이고, 헤드샷은 킬을 모두 그 무기로 낸 라운드만 세요.</string>
     <string name="economy_upsets">장비가 상대보다 1,000 넘게 적었는데 %1$d라운드를 이겼어요</string>
-    <string name="overview_first_blood_ours">우리 팀이 퍼블을 딴 라운드</string>
-    <string name="overview_first_blood_theirs">상대 팀이 퍼블을 딴 라운드</string>
+    <string name="overview_first_blood_ours">우리 팀이 첫 킬을 낸 라운드</string>
+    <string name="overview_first_blood_theirs">상대 팀이 첫 킬을 낸 라운드</string>
     <string name="overview_attack">공격</string>
     <string name="overview_defense">수비</string>
     <string name="overview_win_of">%1$d번 중 %2$d번 이김</string>

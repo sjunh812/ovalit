@@ -13,7 +13,7 @@ class MatchPlayerStatsTest {
     )
 
     @Test
-    fun `라운드에서 처음 나온 적 처치로 퍼블과 퍼데를 센다`() {
+    fun `라운드에서 처음 나온 적 처치로 첫 킬과 첫 데스를 센다`() {
         val match = match(
             round(kill(20.0, Ally, OtherEnemy), kill(12.0, Enemy, Me)),
             round(kill(8.0, Me, Enemy)),
@@ -28,9 +28,9 @@ class MatchPlayerStatsTest {
         assertEquals(0, stats.getValue(Ally).firstKills)
     }
 
-    // 리포트와 같은 규칙이다. 스킬로 자기를 죽였거나 팀킬은 퍼블이 아니다.
+    // 리포트와 같은 규칙이다. 스킬로 자기를 죽였거나 팀킬은 첫 킬이 아니다.
     @Test
-    fun `자기 스킬 사망과 팀킬은 퍼블과 퍼데로 세지 않는다`() {
+    fun `자기 스킬 사망과 팀킬은 첫 킬과 첫 데스로 세지 않는다`() {
         val match = match(
             round(kill(3.0, Enemy, Enemy), kill(5.0, Ally, Me), kill(9.0, Me, OtherEnemy)),
             players = board,

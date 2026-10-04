@@ -20,7 +20,7 @@ class RoundSummaryTest {
     }
 
     @Test
-    fun `라운드마다 내 킬과 퍼블을 센다`() {
+    fun `라운드마다 내 킬과 첫 킬을 센다`() {
         val game = match(
             round(kill(10.0, killer = Me, victim = Enemy), kill(30.0, killer = Me, victim = OtherEnemy), number = 1),
             round(kill(12.0, killer = Enemy, victim = Me), number = 2),

@@ -17,7 +17,7 @@ class RoundsOverviewTest {
     }
 
     @Test
-    fun `퍼블을 딴 쪽마다 라운드를 몇 번 이겼는지 센다`() {
+    fun `첫 킬을 낸 쪽마다 라운드를 몇 번 이겼는지 센다`() {
         val match = match(
             round(kill(5.0, Me, Enemy), won = true, number = 1),
             round(kill(5.0, Ally, Enemy), won = false, number = 2),

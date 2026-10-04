@@ -262,7 +262,7 @@ class WeeklyReportTest {
         assertNull(report.mainRoleShare)
     }
 
-    // 역할을 모르면 기본 3개(관여율, 생존율, 퍼블 승률)가 뜨지만 전략가는 퍼블 승률 대신 라운드당 어시스트로 채운다
+    // 역할을 모르면 기본 3개(관여율, 생존율, 첫 킬 승률)가 뜨지만 전략가는 첫 킬 승률 대신 라운드당 어시스트로 채운다
     @Test
     fun `동적 칸은 주로 뛴 역할에 맞춰 고른다`() {
         val report = ready(List(5) { gameAt(LocalDateTime(2026, 9, 22, 21, 0), role = Role.CONTROLLER) })

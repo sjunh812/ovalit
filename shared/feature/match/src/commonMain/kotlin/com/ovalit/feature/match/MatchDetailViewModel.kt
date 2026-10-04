@@ -57,7 +57,7 @@ sealed interface MatchDetailUiState {
 
 /**
  * @property placement 그 판 스코어보드에서의 자리입니다. MVP와 팀 MVP를 이름 옆에 적습니다.
- * @property stats 줄을 펼치면 보이는 퍼블, 퍼데, 멀티킬입니다.
+ * @property stats 줄을 펼치면 보이는 첫 킬, 첫 데스, 멀티킬입니다.
  */
 data class ScoreboardRow(
     val line: Scoreline,

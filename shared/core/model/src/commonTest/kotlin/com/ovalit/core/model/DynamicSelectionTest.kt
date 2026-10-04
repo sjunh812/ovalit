@@ -32,7 +32,7 @@ class DynamicSelectionTest {
         )
     }
 
-    // 평소 변동폭 대비 관여율 13배, 생존율 6.6배, 어시 5.3배, 퍼블 승률 4배
+    // 평소 변동폭 대비 관여율 13배, 생존율 6.6배, 어시 5.3배, 첫 킬 승률 4배
     @Test
     fun `움직인 지표가 3개를 넘으면 많이 움직인 순으로 모두 둔다`() {
         val current = stats(kast = 0.90, survival = 0.40, assistsPerRound = 0.48, firstKillWins = 18)
@@ -43,7 +43,7 @@ class DynamicSelectionTest {
         )
     }
 
-    // 관여율 13배, 퍼블 관여율 9.3배, 포스바이 승률 7.9배, 첫 교전 승률 6.6배, 어시 5.3배, 퍼블 승률 4배
+    // 관여율 13배, 첫 교전 관여율 9.3배, 포스바이 승률 7.9배, 첫 교전 승률 6.6배, 어시 5.3배, 첫 킬 승률 4배
     @Test
     fun `움직인 지표는 5개까지만 둔다`() {
         val current = stats(kast = 0.90, assistsPerRound = 0.48, firstDeaths = 30, firstKillWins = 18, forceBuyWins = 14)
@@ -68,9 +68,9 @@ class DynamicSelectionTest {
         )
     }
 
-    // 퍼데가 늘어 퍼블 관여율과 첫 교전 승률이 조금 움직였다. 관여율이 훨씬 크게 움직였어도 뒤로 간다.
+    // 첫 데스가 늘어 첫 교전 관여율과 첫 교전 승률이 조금 움직였다. 관여율이 훨씬 크게 움직였어도 뒤로 간다.
     @Test
-    fun `타격대는 퍼블 관여율과 첫 교전 승률을 먼저 띄운다`() {
+    fun `타격대는 첫 교전 관여율과 첫 교전 승률을 먼저 띄운다`() {
         val current = stats(kast = 0.90, survival = 0.40, firstDeaths = 20)
 
         assertEquals(
@@ -109,7 +109,7 @@ class DynamicSelectionTest {
     }
 
     @Test
-    fun `전략가에게는 퍼블 계열을 띄우지 않고 빈칸도 다른 지표로 채운다`() {
+    fun `전략가에게는 첫 킬 계열을 띄우지 않고 빈칸도 다른 지표로 채운다`() {
         val current = stats(firstDeaths = 26, firstKillWins = 18)
 
         assertEquals(
@@ -119,7 +119,7 @@ class DynamicSelectionTest {
     }
 
     @Test
-    fun `감시자는 생존율을 먼저 띄우고 퍼블 계열은 띄우지 않는다`() {
+    fun `감시자는 생존율을 먼저 띄우고 첫 킬 계열은 띄우지 않는다`() {
         val current = stats(kast = 0.90, survival = 0.33, firstKillWins = 18)
 
         assertEquals(
@@ -198,7 +198,7 @@ class DynamicSelectionTest {
         assertEquals(true, select(current, Role.SENTINEL).any { it.metric == MULTI_KILL_RATE })
     }
 
-    // 전략가에게 퍼블 계열은 크게 띄우지 않는 지표지만, 사용자가 에임을 보겠다고 골랐다
+    // 전략가에게 첫 킬 계열은 크게 띄우지 않는 지표지만, 사용자가 에임을 보겠다고 골랐다
     @Test
     fun `역할이 크게 띄우지 않는 지표라도 관심사로 고르면 넣는다`() {
         assertEquals(

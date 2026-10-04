@@ -101,7 +101,7 @@ class ProfileScreensTest {
     fun `요원 화면은 주 역할을 무엇으로 보는지 알려준다`() = runComposeUiTest {
         setContent { Themed { AgentsScreen(ProfilePreviewData.records, onBack = {}) } }
 
-        onNodeWithText("전략가는 관여율과 생존율부터 봐요. 전략가는 원래 퍼블이 적은 편이에요.").assertExists()
+        onNodeWithText("전략가는 관여율과 생존율부터 봐요. 전략가는 원래 첫 킬이 적은 편이에요.").assertExists()
     }
 
     @Test
@@ -110,17 +110,17 @@ class ProfileScreensTest {
 
         onNodeWithText("관여율").assertExists()
         onNodeWithText("생존율").assertExists()
-        onNodeWithText("퍼블 관여").assertDoesNotExist()
+        onNodeWithText("첫 교전 관여").assertDoesNotExist()
     }
 
     @Test
-    fun `주 역할이 타격대면 퍼블 쪽 열로 바꾼다`() = runComposeUiTest {
+    fun `주 역할이 타격대면 첫 교전 열로 바꾼다`() = runComposeUiTest {
         setContent {
             Themed { AgentsScreen(ProfilePreviewData.records.copy(agents = ProfilePreviewData.duelistAgents), onBack = {}) }
         }
 
-        onNodeWithText("퍼블 관여").assertExists()
-        onNodeWithText("첫 교전").assertExists()
+        onNodeWithText("첫 교전 관여").assertExists()
+        onNodeWithText("첫 교전 승률").assertExists()
         onNodeWithText("생존율").assertDoesNotExist()
     }
 

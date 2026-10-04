@@ -395,8 +395,8 @@ private fun Random.fakeRound(
  * 가끔 에이스와 클러치가 나오게 킬 기록을 바꿉니다. 승패는 그대로 둬서 스코어가 바뀌지 않습니다. 난수를 따로 써서
  * 나머지 가짜 숫자가 흔들리지 않게 합니다.
  *
- * 관여율, 생존율, 퍼블 쪽 지표가 그대로인 라운드만 고릅니다. 홈 동적 칸이 이 장면 때문에 움직이면 가짜 데이터로
- * "움직인 칸과 그대로인 칸"을 같이 보여줄 수 없습니다. 이긴 장면은 내가 퍼블을 따고 살아남은 라운드에, 진 장면은
+ * 관여율, 생존율, 첫 킬 쪽 지표가 그대로인 라운드만 고릅니다. 홈 동적 칸이 이 장면 때문에 움직이면 가짜 데이터로
+ * "움직인 칸과 그대로인 칸"을 같이 보여줄 수 없습니다. 이긴 장면은 내가 첫 킬을 내고 살아남은 라운드에, 진 장면은
  * 킬도 어시스트도 트레이드도 없이 죽은 라운드에만 넣습니다. 피해량과 맞힌 탄은 그대로라 그 라운드만 조금 어긋납니다.
  */
 private fun Match.withHighlights(random: Random): Match {
@@ -429,7 +429,7 @@ private fun Round.lostQuietly(me: PlayerId, allies: Set<PlayerId>): Boolean {
 private fun Match.aceKills(weapon: WeaponId): List<KillEvent> =
     EnemySlots.mapIndexed { index, enemy -> KillEvent(12_000L + 9_000L * index, me, enemy, emptySet(), weapon) }
 
-// 내가 퍼블을 딴 뒤 우리 팀 넷이 차례로 쓰러지고, 나 혼자 남은 1~3명을 모두 잡는다
+// 내가 첫 킬을 낸 뒤 우리 팀 넷이 차례로 쓰러지고, 나 혼자 남은 1~3명을 모두 잡는다
 private fun Match.wonClutchKills(random: Random, team: List<PlayerId>, weapon: WeaponId): List<KillEvent> {
     val enemies = EnemySlots.shuffled(random)
     val left = random.nextInt(1, 4)

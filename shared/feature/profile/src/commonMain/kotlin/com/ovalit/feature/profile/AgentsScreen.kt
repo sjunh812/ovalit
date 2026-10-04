@@ -308,7 +308,7 @@ private enum class AgentColumns(val label: StringResource, private val specs: ()
     val columns: List<MetricColumnSpec> get() = specs()
 
     companion object {
-        // 타격대는 퍼블 쪽으로 보고 나머지 역할은 관여율과 생존율로 본다
+        // 타격대는 첫 킬 쪽으로 보고 나머지 역할은 관여율과 생존율로 본다
         fun defaultFor(role: Role): AgentColumns = if (role == Role.DUELIST) FIRST_DUEL else KAST
     }
 }

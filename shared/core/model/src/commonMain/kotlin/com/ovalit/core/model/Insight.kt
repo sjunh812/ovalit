@@ -31,7 +31,7 @@ enum class InsightMetric(
     MULTI_KILL_RATE(DynamicMetric.MULTI_KILL_RATE),
 
     /**
-     * 경기 승률입니다. 요원, 역할, 맵끼리 견줄 때 봅니다. 관여율이나 퍼블과 달리 역할에 따라 뜻이 뒤집히지 않아서 역할이
+     * 경기 승률입니다. 요원, 역할, 맵끼리 견줄 때 봅니다. 관여율이나 첫 킬과 달리 역할에 따라 뜻이 뒤집히지 않아서 역할이
      * 다른 것끼리도 견줄 수 있습니다. 두 쪽 모두 승패가 갈린 판이 [MIN_AGENT_MATCHES]판을 넘겨야 합니다.
      */
     WIN_RATE(dynamic = null),
@@ -349,7 +349,7 @@ private fun List<Match>.sideCandidates(scale: Scale): List<Candidate> {
     return (MatchInsightMetrics - InsightMetric.WIN_RATE).mapNotNull { compare(it, attack, defense, scale) }
 }
 
-// 역할이 다르면 관여율이나 퍼블 같은 숫자는 뜻이 뒤집힌다. 역할끼리는 승률만 견준다.
+// 역할이 다르면 관여율이나 첫 킬 같은 숫자는 뜻이 뒤집힌다. 역할끼리는 승률만 견준다.
 private fun List<Match>.roleCandidates(scale: Scale): List<Candidate> {
     val byRole = filter { it.myRole != null }.groupBy { it.myRole!! }
     if (byRole.size < 2) return emptyList()
@@ -580,7 +580,7 @@ private val Role.priorityInsightMetric: InsightMetric
         Role.CONTROLLER, Role.SENTINEL -> InsightMetric.SURVIVAL_RATE
     }
 
-// 동적 칸과 같다. 전략가와 감시자는 퍼블을, 척후대와 전략가는 멀티킬을 크게 띄우지 않는다.
+// 동적 칸과 같다. 전략가와 감시자는 첫 킬을, 척후대와 전략가는 멀티킬을 크게 띄우지 않는다.
 private val Role.mutedInsightMetrics: Set<InsightMetric>
     get() = when (this) {
         Role.CONTROLLER -> setOf(InsightMetric.FIRST_DUEL_WIN_RATE, InsightMetric.MULTI_KILL_RATE)

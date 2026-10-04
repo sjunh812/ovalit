@@ -102,7 +102,7 @@ class InsightTest {
         assertEquals(false, insight.isRolePriority)
     }
 
-    // CLAUDE.md 역할군 표: 전략가와 감시자는 퍼블을 크게 띄우지 않는다
+    // CLAUDE.md 역할군 표: 전략가와 감시자는 첫 킬을 크게 띄우지 않는다
     @Test
     fun `전략가는 첫 교전 승률로 문장을 만들지 않는다`() {
         val matches = sides(attack = 0 to 40, defense = 0 to 40, attackOpenedByMe = 20)
@@ -191,7 +191,7 @@ class InsightTest {
         assertEquals(InsightRecent(lead = 0.3, other = 0.1), insight.during(matches.take(2) + matches.takeLast(2), rifles).recent)
     }
 
-    // 감시자는 퍼블 쪽을 크게 띄우지 않지만, 에임 올리기를 골랐으면 첫 교전 승률부터 본다
+    // 감시자는 첫 킬 쪽을 크게 띄우지 않지만, 에임 올리기를 골랐으면 첫 교전 승률부터 본다
     @Test
     fun `관심사 지표가 기준을 넘으면 역할 기준보다 먼저 고른다`() {
         val insight = assertNotNull(aimGap().insight(Role.SENTINEL, Focus.AIM))
@@ -406,7 +406,7 @@ class InsightTest {
 /**
  * 경기 [games]개에 똑같은 공수 라운드를 담습니다. 판마다 같아서 흔들림은 라운드가 서로 따로 논다고 쳤을 때의 값만 남습니다.
  * [attack]과 [defense]는 (살아남은 라운드, 죽은 라운드)입니다. 공격에서 죽는 라운드 중 앞의 [attackOpenedByMe]라운드는
- * 내가 퍼블을 딴 뒤 죽고, 나머지는 퍼데입니다. 피해량은 라운드마다 평균 위아래로 20씩 오갑니다.
+ * 내가 첫 킬을 낸 뒤 죽고, 나머지는 첫 데스입니다. 피해량은 라운드마다 평균 위아래로 20씩 오갑니다.
  */
 private fun sides(
     attack: Pair<Int, Int>,
@@ -438,7 +438,7 @@ private fun side(side: Side?, survived: Int, died: Int, openedByMe: Int, damage:
 }
 
 /**
- * 공격에서는 퍼블 20번에 퍼데 10번, 수비에서는 퍼블 5번에 퍼데 25번인 경기들입니다. 첫 교전 승률이 67%와 17%로 벌어지고,
+ * 공격에서는 첫 킬 20번에 첫 데스 10번, 수비에서는 첫 킬 5번에 첫 데스 25번인 경기들입니다. 첫 교전 승률이 67%와 17%로 벌어지고,
  * 관여율도 75%와 38%로 벌어집니다. 생존율은 두 진영 모두 25%입니다.
  */
 private fun aimGap(games: Int = 4) = sides(attack = 10 to 30, defense = 10 to 30, games = games, attackOpenedByMe = 20, defenseOpenedByMe = 5)

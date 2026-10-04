@@ -59,13 +59,13 @@ data class MatchMetrics(
 
     val assistsPerRound: Double? get() = assists over rounds
 
-    /** 퍼블 승률. 내가 퍼블을 딴 라운드 중 이긴 비율입니다. 우리 팀 누군가의 퍼블은 세지 않습니다. */
+    /** 첫 킬 승률. 내가 첫 킬을 낸 라운드 중 이긴 비율입니다. 우리 팀 누군가의 첫 킬은 세지 않습니다. */
     val firstKillWinRate: Double? get() = firstKillRoundsWon over firstKills
 
-    /** 퍼블 관여율. 라운드 첫 교전에 내가 들어간 비율입니다. 퍼블과 퍼데를 모두 셉니다. */
+    /** 첫 교전 관여율. 라운드 첫 교전에 내가 들어간 비율입니다. 첫 킬과 첫 데스를 모두 셉니다. */
     val firstDuelInvolvement: Double? get() = (firstKills + firstDeaths) over rounds
 
-    /** 첫 교전 승률. 첫 교전에 들어갔을 때 내가 퍼블을 딴 비율입니다. 라운드 승패와는 무관합니다. */
+    /** 첫 교전 승률. 첫 교전에 들어갔을 때 내가 첫 킬을 낸 비율입니다. 라운드 승패와는 무관합니다. */
     val firstDuelWinRate: Double? get() = firstKills over (firstKills + firstDeaths)
 
     /** 이코·포스바이·풀바이 승률은 우리 팀 평균 장비 가치로 라운드를 가른 뒤 그중 이긴 비율입니다. 가르는 기준은 [buyType]에 있습니다. */

@@ -41,7 +41,7 @@ private fun AgentsLightPreview() {
     OvalitThemePreview(darkTheme = false) { AgentsScreen(ProfilePreviewData.records, onBack = {}) }
 }
 
-// 타격대가 주 역할이면 오른쪽 두 열이 퍼블 쪽 지표로 바뀐다
+// 타격대가 주 역할이면 오른쪽 두 열이 첫 킬 쪽 지표로 바뀐다
 @Preview(widthDp = 390, heightDp = 1000)
 @Composable
 private fun AgentsDuelistPreview() {

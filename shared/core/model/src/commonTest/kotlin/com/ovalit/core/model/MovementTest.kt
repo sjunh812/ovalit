@@ -73,7 +73,7 @@ class MovementTest {
     }
 
     @Test
-    fun `퍼블 승률은 내 퍼블이 10번은 돼야 판단한다`() {
+    fun `첫 킬 승률은 내 첫 킬이 10번은 돼야 판단한다`() {
         val nine = stats(firstKills = 9, firstKillWins = 5)
         val ten = stats(firstKills = 10, firstKillWins = 6)
 

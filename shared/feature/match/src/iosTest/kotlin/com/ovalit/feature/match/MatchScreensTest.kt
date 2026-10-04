@@ -110,15 +110,15 @@ class MatchScreensTest {
         val first = MatchPreviewData.detail.myTeam.first().line
         val kda = "${first.kills}/${first.deaths}/${first.assists}"
 
-        onNodeWithText("퍼블").assertDoesNotExist()
+        onNodeWithText("첫 킬").assertDoesNotExist()
         onNodeWithText(kda, substring = true).performClick()
-        onNodeWithText("퍼블").assertExists()
+        onNodeWithText("첫 킬").assertExists()
         onNodeWithText("멀티킬").assertExists()
         assertEquals(null, friend)
 
         onNodeWithText(kda, substring = true).performClick()
         waitForIdle()
-        onNodeWithText("퍼블").assertDoesNotExist()
+        onNodeWithText("첫 킬").assertDoesNotExist()
     }
 
     @Test
@@ -155,7 +155,7 @@ class MatchScreensTest {
 
         onNodeWithText("라운드").performClick()
 
-        onNodeWithText("우리 팀이 퍼블을 딴 라운드").assertExists()
+        onNodeWithText("우리 팀이 첫 킬을 낸 라운드").assertExists()
         onNodeWithText("1라운드").assertExists()
         onNodeWithText("킬 순서").assertExists()
 

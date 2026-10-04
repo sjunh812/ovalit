@@ -108,7 +108,7 @@ data class Scoreline(
  * [Match.roundOutcomes]의 몇 번째 라운드인지 찾습니다. 응답의 `roundResults[].roundNum`이 0부터 온다면 1을 더해
  * 담습니다(실데이터로 확인해야 합니다).
  * @property kills 라운드에서 일어난 킬 전부입니다. 나와 무관한 킬도 들어갑니다. 트레이드와
- * 퍼블을 가르려면 누가 먼저 죽었는지 알아야 합니다.
+ * 첫 킬을 가르려면 누가 먼저 죽었는지 알아야 합니다.
  * @property myShots 내가 맞힌 부위별 횟수입니다. 킬 수가 아니라 적중 수입니다.
  * @property mySide 그 라운드에 내가 공격이었는지 수비였는지입니다. 모르면 `null`이고, 공수를 나눠 셀 때
  * 양쪽 다 빠집니다.

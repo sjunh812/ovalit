@@ -1,6 +1,8 @@
 package com.ovalit.core.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
+import kotlin.math.PI
+import kotlin.math.atan2
 import kotlin.math.cbrt
 import kotlin.math.max
 import kotlin.math.min
@@ -97,7 +99,8 @@ class OvalitColorsTest {
     }
 
     // 사용자 요청(2026-09-29): 1~2 구간 청록이 오르내림의 초록처럼 보였다. 그때 거리는 10이 안 됐다.
-    // 사용자 결정(2026-10-04): 초록·파랑·빨강을 쓰되 톤을 낮춰 오르내림 색과 가른다. 같은 계열이라 15까지는 못 떼고 11을 바닥으로 본다.
+    // 사용자 결정(2026-10-04): 초록·파랑·빨강을 쓰되 채도를 낮추고 색상(연두, 산호)으로 오르내림 색과 가른다. 흰 바탕에서 읽히는
+    // 초록과 빨강은 오르내림 색과 거리가 5 안팎이라 거리로는 같은 색만 막고, 색상이 정말 옮겨 갔는지 따로 본다.
     @Test
     fun `KDA 구간 색은 오르내림 색이나 액센트와 섞여 보이지 않는다`() {
         forEachTheme { name, colors ->
@@ -105,9 +108,11 @@ class OvalitColorsTest {
             tokens.forEach { (token, color) ->
                 mapOf("pos" to colors.pos, "neg" to colors.neg).forEach { (other, otherColor) ->
                     val distance = oklabDistance(color, otherColor)
-                    assertTrue(distance >= 11.0, "$name $token 와 $other 의 OKLab 거리가 ${distance.rounded()}라 11에 못 미친다")
+                    assertTrue(distance >= 4.0, "$name $token 와 $other 의 OKLab 거리가 ${distance.rounded()}라 4에 못 미친다")
                 }
             }
+            assertTrue(oklabHue(colors.pos) - oklabHue(colors.kda1) >= 15.0, "$name kda1 이 pos보다 연두 쪽으로 15도 넘게 옮겨 가지 않았다")
+            assertTrue(oklabHue(colors.kda3) - oklabHue(colors.neg) >= 4.0, "$name kda3 이 neg보다 산호 쪽으로 옮겨 가지 않았다")
             listOf("kda1" to colors.kda1, "kda2" to colors.kda2).forEach { (token, color) ->
                 mapOf("accentInk" to colors.accentInk, "kda3" to colors.kda3).forEach { (other, otherColor) ->
                     val distance = oklabDistance(color, otherColor)
@@ -116,8 +121,9 @@ class OvalitColorsTest {
             }
             val bands = oklabDistance(colors.kda1, colors.kda2)
             assertTrue(bands >= 15.0, "$name kda1 과 kda2 의 OKLab 거리가 ${bands.rounded()}라 15에 못 미친다")
+            // 맨 위 칸은 빨강이라 액센트와 같은 계열이다. 라이트에서는 산호 쪽으로 옮겨 8 남짓만 뗀다.
             val top = oklabDistance(colors.kda3, colors.accentInk)
-            assertTrue(top >= 15.0, "$name kda3 와 accentInk 의 OKLab 거리가 ${top.rounded()}라 15에 못 미친다")
+            assertTrue(top >= 8.0, "$name kda3 와 accentInk 의 OKLab 거리가 ${top.rounded()}라 8에 못 미친다")
         }
     }
 
@@ -180,6 +186,13 @@ private fun oklabDistance(a: Color, b: Color): Double {
     val (l1, a1, b1) = oklab(a)
     val (l2, a2, b2) = oklab(b)
     return 100 * sqrt((l1 - l2).pow(2) + (a1 - a2).pow(2) + (b1 - b2).pow(2))
+}
+
+/** OKLab 색상각(도)입니다. 0이 분홍빨강, 90 남짓이 노랑, 150 남짓이 초록입니다. */
+private fun oklabHue(color: Color): Double {
+    val (_, a, b) = oklab(color)
+    val degrees = atan2(b, a) * 180 / PI
+    return if (degrees < 0) degrees + 360 else degrees
 }
 
 private fun oklab(color: Color): Triple<Double, Double, Double> {

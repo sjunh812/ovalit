@@ -51,8 +51,9 @@ data class OvalitColors(
 // 액센트는 발로란트 빨강이다(사용자 결정, 2026-10-03). 패배와 하락을 뜻하는 neg와 OKLab 거리가 5 남짓이라 거의 같은 색으로
 // 보인다는 걸 알고 골랐다. 그 위 글자(onAccent)는 발로란트처럼 흰색이고 대비는 3.4:1이다(사용자 결정).
 // KDA 구간 색(kda1~3)은 초록, 파랑, 빨강이다(사용자 결정, 2026-10-04). fow.kr와 op.gg의 옛 KDA 색과 같은 순서다. 파랑·보라는
-// 둘 다 차가운 색이라 어느 쪽이 높은지 헷갈렸다. 오르내림의 초록·빨강과 섞이지 않게 톤을 낮췄다. 다크는 밝고 옅게, 라이트는
-// 짙고 탁하게 두어 pos, neg와 OKLab 11~18 떨어진다. 빨강은 액센트 글자색과 15 넘게 떨어뜨렸다.
+// 둘 다 차가운 색이라 어느 쪽이 높은지 헷갈렸다. 오르내림의 초록·빨강과는 색상으로 가른다. 초록은 연두 쪽, 빨강은 산호 쪽으로
+// 옮기고 채도를 한 단계 낮췄다. 라이트에서 짙게 내려 거리를 벌렸더니 거의 검정처럼 보여 숫자 색이 안 읽혔다(사용자 요청).
+// 흰 바탕에서 4.5:1을 넘는 초록과 빨강은 밝기를 어떻게 잡아도 오르내림 색과 OKLab 5 안팎이라 거리 대신 색상으로 가른다.
 internal val OvalitDarkColors = OvalitColors(
     bg = Color(0xFF101012),
     raised = Color(0xFF1C1C1F),
@@ -72,9 +73,9 @@ internal val OvalitDarkColors = OvalitColors(
     accent = Color(0xFFFF4655),
     accentInk = Color(0xFFFF4655),
     onAccent = Color(0xFFFFFFFF),
-    kda1 = Color(0xFFB4E3B4),
-    kda2 = Color(0xFF8AB5E6),
-    kda3 = Color(0xFFF19E9B),
+    kda1 = Color(0xFFADDB88),
+    kda2 = Color(0xFF7FB9F9),
+    kda3 = Color(0xFFF69C8D),
     mvp = Color(0xFFF5C04F),
     mvpContainer = Color(0xFF3A3020),
     teamMvp = Color(0xFFC3CDD9),
@@ -109,9 +110,9 @@ internal val OvalitLightColors = OvalitColors(
     accent = Color(0xFFFF4655),
     accentInk = Color(0xFFDA1638),
     onAccent = Color(0xFFFFFFFF),
-    kda1 = Color(0xFF25532E),
-    kda2 = Color(0xFF315C92),
-    kda3 = Color(0xFF89312F),
+    kda1 = Color(0xFF447924),
+    kda2 = Color(0xFF336ABB),
+    kda3 = Color(0xFFB24133),
     mvp = Color(0xFF8A5A00),
     mvpContainer = Color(0xFFFFF1CC),
     teamMvp = Color(0xFF3B4A5C),

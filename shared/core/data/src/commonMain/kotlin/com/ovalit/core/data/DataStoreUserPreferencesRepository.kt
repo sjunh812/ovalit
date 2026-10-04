@@ -7,11 +7,13 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.ovalit.core.model.Focus
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.model.UserPreferences
+import kotlin.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -47,6 +49,7 @@ class DataStoreUserPreferencesRepository(
                 notifyPing = stored[Keys.notifyPing] ?: default.notifyPing,
                 focus = stored[Keys.focus].toEnumOr(default.focus),
                 seenProfileHint = stored[Keys.seenProfileHint] ?: default.seenProfileHint,
+                adFreeUntil = stored[Keys.adFreeUntil]?.let(Instant::fromEpochMilliseconds),
             )
         }
 
@@ -66,6 +69,8 @@ class DataStoreUserPreferencesRepository(
 
     override suspend fun setSeenProfileHint() = set(Keys.seenProfileHint, true)
 
+    override suspend fun setAdFreeUntil(until: Instant) = set(Keys.adFreeUntil, until.toEpochMilliseconds())
+
     private suspend fun <T> set(key: Preferences.Key<T>, value: T) {
         dataStore.edit { it[key] = value }
     }
@@ -80,6 +85,7 @@ class DataStoreUserPreferencesRepository(
         val notifyPing = booleanPreferencesKey("notify_ping")
         val focus = stringPreferencesKey("focus")
         val seenProfileHint = booleanPreferencesKey("seen_profile_hint")
+        val adFreeUntil = longPreferencesKey("ad_free_until")
     }
 }
 

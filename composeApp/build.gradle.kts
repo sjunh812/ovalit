@@ -10,6 +10,7 @@ plugins {
 // Google이 공개한 테스트용 ID다. 실제 광고가 아니라 노출과 클릭이 계정에 잡히지 않는다.
 val ADMOB_TEST_APP_ID = "ca-app-pub-3940256099942544~3347511713"
 val ADMOB_TEST_NATIVE_UNIT_ID = "ca-app-pub-3940256099942544/2247696110"
+val ADMOB_TEST_REWARDED_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
 
 android {
     namespace = "com.ovalit"
@@ -39,6 +40,8 @@ android {
         // 앱 ID가 없으면 Google 테스트 앱 ID를 넣어 둔다.
         manifestPlaceholders["admobAppId"] = localProperties.getProperty("admob.appId") ?: ADMOB_TEST_APP_ID
         buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", "\"${localProperties.getProperty("admob.nativeUnitId").orEmpty()}\"")
+        // "24시간 광고 없이 보기"에 쓰는 보상형 광고다. 없으면 광고 줄의 "숨기기"와 설정 줄이 없다.
+        buildConfigField("String", "ADMOB_REWARDED_UNIT_ID", "\"${localProperties.getProperty("admob.rewardedUnitId").orEmpty()}\"")
     }
 
     buildFeatures {
@@ -57,6 +60,7 @@ android {
             if (testAds) {
                 manifestPlaceholders["admobAppId"] = ADMOB_TEST_APP_ID
                 buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", "\"$ADMOB_TEST_NATIVE_UNIT_ID\"")
+                buildConfigField("String", "ADMOB_REWARDED_UNIT_ID", "\"$ADMOB_TEST_REWARDED_UNIT_ID\"")
             }
         }
         release {

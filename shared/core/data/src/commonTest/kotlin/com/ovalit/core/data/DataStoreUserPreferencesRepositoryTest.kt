@@ -7,6 +7,7 @@ import com.ovalit.core.model.UserPreferences
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.time.Instant
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import okio.FileSystem
@@ -53,6 +54,7 @@ class DataStoreUserPreferencesRepositoryTest {
         repository.setNotifyWeeklyReport(false)
         repository.setFocus(Focus.ROUND_PLAY)
         repository.setSeenProfileHint()
+        repository.setAdFreeUntil(Instant.parse("2026-10-05T08:20:00Z"))
 
         assertEquals(
             UserPreferences(
@@ -63,6 +65,7 @@ class DataStoreUserPreferencesRepositoryTest {
                 notifyWeeklyReport = false,
                 focus = Focus.ROUND_PLAY,
                 seenProfileHint = true,
+                adFreeUntil = Instant.parse("2026-10-05T08:20:00Z"),
             ),
             repository.preferences.first(),
         )

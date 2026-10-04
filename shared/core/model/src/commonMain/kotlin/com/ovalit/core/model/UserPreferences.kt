@@ -1,5 +1,7 @@
 package com.ovalit.core.model
 
+import kotlin.time.Instant
+
 enum class ThemePreference {
     SYSTEM,
     DARK,
@@ -14,6 +16,8 @@ enum class ThemePreference {
  * @property focus S0-4와 설정에서 고른 관심사입니다. 동적 칸 순서와 개선 포인트 문장을 고를 때 씁니다.
  * @property seenProfileHint 홈 오른쪽 위에 "내 프로필은 여기서 볼 수 있어요"를 한 번 띄웠는지입니다. 고르는 설정이 아니라
  * 한 번만 띄우려고 적어 둡니다.
+ * @property adFreeUntil 보상형 광고를 끝까지 보고 받은 "광고 없이 보기"가 끝나는 시각입니다. 그때까지 광고 자리가 비어
+ * 있습니다. 한 번 보면 24시간이라 그동안은 다시 볼 수 없어 하루 한 번이 저절로 지켜집니다.
  */
 data class UserPreferences(
     val theme: ThemePreference,
@@ -24,6 +28,7 @@ data class UserPreferences(
     val focus: Focus,
     val notifyPing: Boolean = true,
     val seenProfileHint: Boolean = false,
+    val adFreeUntil: Instant? = null,
 ) {
     companion object {
         val Default = UserPreferences(

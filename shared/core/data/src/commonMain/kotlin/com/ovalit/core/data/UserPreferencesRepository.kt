@@ -4,6 +4,7 @@ import com.ovalit.core.model.Focus
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.model.UserPreferences
+import kotlin.time.Instant
 import kotlinx.coroutines.flow.Flow
 
 interface UserPreferencesRepository {
@@ -26,4 +27,7 @@ interface UserPreferencesRepository {
 
     /** 홈의 내 프로필 안내를 띄웠다고 적습니다. 다시 띄우지 않습니다. */
     suspend fun setSeenProfileHint()
+
+    /** 보상형 광고를 끝까지 봐서 [until]까지 광고를 숨깁니다. */
+    suspend fun setAdFreeUntil(until: Instant)
 }

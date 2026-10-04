@@ -1,6 +1,7 @@
 package com.ovalit.feature.settings
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertHasNoClickAction
@@ -13,14 +14,47 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Focus
 import com.ovalit.core.model.ThemePreference
+import com.ovalit.core.ui.AdPlacement
+import com.ovalit.core.ui.AdRenderer
+import com.ovalit.core.ui.LocalAdRenderer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Instant
+import kotlinx.datetime.TimeZone
 
 @OptIn(ExperimentalTestApi::class)
 class SettingsScreenTest {
+
+    // 사용자 결정(2026-10-04): 보상형 광고 한 편으로 24시간 광고를 숨긴다. 광고가 꺼져 있으면 줄이 없다.
+    @Test
+    fun `광고 없이 보기 줄은 광고가 있을 때만 두고 누르면 시트를 띄운다`() = runComposeUiTest {
+        val ads = CountingAds()
+        setContent { Settings(ads = ads) }
+
+        onNodeWithText("광고 한 편 보고 24시간").performScrollTo().performClick()
+
+        assertEquals(1, ads.offered)
+    }
+
+    @Test
+    fun `광고를 숨기는 동안에는 끝나는 시각만 적고 누를 수 없다`() = runComposeUiTest {
+        val linked = SettingsPreviewData.linked as SettingsUiState.Success
+        val hidden = linked.copy(preferences = linked.preferences.copy(adFreeUntil = Instant.parse("2026-10-05T07:30:00Z")))
+        setContent { Settings(uiState = hidden, ads = CountingAds()) }
+
+        onNodeWithText("내일 16:30까지").performScrollTo().assertExists()
+        onNodeWithText("광고 한 편 보고 24시간").assertDoesNotExist()
+    }
+
+    @Test
+    fun `광고가 꺼져 있으면 광고 없이 보기 줄이 없다`() = runComposeUiTest {
+        setContent { Settings() }
+
+        onNodeWithText("광고 없이 보기").assertDoesNotExist()
+    }
 
     @Test
     fun `불러오는 중에는 아무 줄도 그리지 않는다`() = runComposeUiTest {
@@ -169,6 +203,26 @@ class SettingsScreenTest {
 private fun Settings(
     uiState: SettingsUiState = SettingsPreviewData.linked,
     actions: SettingsActions = SettingsActions(),
+    ads: AdRenderer? = null,
+    now: Instant = Instant.parse("2026-10-04T08:00:00Z"),
 ) {
-    OvalitTheme { SettingsScreen(uiState = uiState, appVersion = "1.0.0", actions = actions) }
+    OvalitTheme {
+        CompositionLocalProvider(LocalAdRenderer provides ads) {
+            SettingsScreen(uiState = uiState, appVersion = "1.0.0", actions = actions, now = now, timeZone = TimeZone.of("Asia/Seoul"))
+        }
+    }
+}
+
+// 광고는 그리지 않고 "광고 없이 보기" 시트를 띄웠는지만 센다
+private class CountingAds : AdRenderer {
+    var offered = 0
+
+    @Composable
+    override fun Render(placement: AdPlacement, key: String, frame: @Composable (content: @Composable () -> Unit) -> Unit) = Unit
+
+    override val canOfferAdFree = true
+
+    override fun offerAdFree() {
+        offered++
+    }
 }

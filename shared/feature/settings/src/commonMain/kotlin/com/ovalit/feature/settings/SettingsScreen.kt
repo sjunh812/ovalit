@@ -44,11 +44,16 @@ import com.ovalit.core.model.Account
 import com.ovalit.core.model.Focus
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
+import com.ovalit.core.ui.LocalAdRenderer
 import com.ovalit.core.ui.PlayerAvatar
 import com.ovalit.core.ui.label
 import com.ovalit.feature.settings.resources.Res
 import com.ovalit.feature.settings.resources.account_linked
 import com.ovalit.feature.settings.resources.account_unlinked
+import com.ovalit.feature.settings.resources.ad_free
+import com.ovalit.feature.settings.resources.ad_free_offer
+import com.ovalit.feature.settings.resources.ad_free_until_today
+import com.ovalit.feature.settings.resources.ad_free_until_tomorrow
 import com.ovalit.feature.settings.resources.default_queue
 import com.ovalit.feature.settings.resources.delete_data
 import com.ovalit.feature.settings.resources.focus
@@ -72,7 +77,11 @@ import com.ovalit.feature.settings.resources.unlink
 import com.ovalit.feature.settings.resources.unlink_note
 import com.ovalit.feature.settings.resources.version
 import com.ovalit.feature.settings.resources.view_profile
+import kotlin.time.Clock
+import kotlin.time.Instant
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -134,6 +143,8 @@ internal fun SettingsScreen(
     appVersion: String,
     actions: SettingsActions,
     modifier: Modifier = Modifier,
+    now: Instant = Clock.System.now(),
+    timeZone: TimeZone = TimeZone.currentSystemDefault(),
 ) {
     var openSheet by rememberSaveable { mutableStateOf<SettingsSheet?>(null) }
 
@@ -206,6 +217,17 @@ internal fun SettingsScreen(
                 value = stringResource(preferences.focus.label),
                 onClick = { openSheet = SettingsSheet.FOCUS },
             )
+            // 보상형 광고로 24시간 광고를 숨긴다. 광고 줄의 "숨기기"와 같은 시트다. 숨기는 동안에는 언제까지인지만 적는다.
+            val ads = LocalAdRenderer.current
+            if (ads != null && ads.canOfferAdFree) {
+                RowDivider()
+                val until = preferences.adFreeUntil?.takeIf { it > now }
+                ValueRow(
+                    title = stringResource(Res.string.ad_free),
+                    value = until?.let { adFreeUntilText(it, now, timeZone) } ?: stringResource(Res.string.ad_free_offer),
+                    onClick = if (until == null) ads::offerAdFree else null,
+                )
+            }
 
             SectionHeader(stringResource(Res.string.section_data))
             ValueRow(
@@ -377,6 +399,15 @@ private fun ValueRow(
             OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = OvalitTheme.colors.t4, size = 16.dp)
         }
     }
+}
+
+// 끝나는 시각이 오늘이면 "오늘 23:00까지", 내일이면 "내일 16:20까지"다
+@Composable
+private fun adFreeUntilText(until: Instant, now: Instant, timeZone: TimeZone): String {
+    val end = until.toLocalDateTime(timeZone)
+    val time = "${end.hour.toString().padStart(2, '0')}:${end.minute.toString().padStart(2, '0')}"
+    val today = now.toLocalDateTime(timeZone).date
+    return stringResource(if (end.date == today) Res.string.ad_free_until_today else Res.string.ad_free_until_tomorrow, time)
 }
 
 @Composable

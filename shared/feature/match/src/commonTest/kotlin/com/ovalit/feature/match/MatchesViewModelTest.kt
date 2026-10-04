@@ -150,4 +150,6 @@ internal class StubPreferences(initial: UserPreferences = UserPreferences.Defaul
     override suspend fun setFocus(focus: Focus) = Unit
 
     override suspend fun setSeenProfileHint() = Unit
+
+    override suspend fun setAdFreeUntil(until: Instant) = Unit
 }

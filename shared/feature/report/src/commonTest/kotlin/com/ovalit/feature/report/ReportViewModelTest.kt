@@ -418,4 +418,6 @@ private class StubPreferences(initial: UserPreferences = UserPreferences.Default
     override suspend fun setFocus(focus: Focus) = Unit
 
     override suspend fun setSeenProfileHint() = preferences.update { it.copy(seenProfileHint = true) }
+
+    override suspend fun setAdFreeUntil(until: Instant) = preferences.update { it.copy(adFreeUntil = until) }
 }

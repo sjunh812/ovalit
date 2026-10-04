@@ -4,6 +4,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,6 +28,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -48,7 +50,7 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
  * AdMob은 광고 요소마다 안드로이드 뷰를 등록해야 눌림을 셉니다. 바탕까지 눌리게 하면 정책 위반이라 요소마다 따로 등록합니다.
  */
 @Composable
-internal fun NativeAdRow(ad: NativeAd, verticalPadding: Dp) {
+internal fun NativeAdRow(ad: NativeAd, verticalPadding: Dp, onHide: (() -> Unit)?) {
     val colors = OvalitTheme.colors
     NativeAdFrame(ad) { adView ->
         Row(
@@ -84,7 +86,11 @@ internal fun NativeAdRow(ad: NativeAd, verticalPadding: Dp) {
                     val line = ad.advertiser ?: ad.body
                     if (line != null) {
                         Spacer(Modifier.width(6.dp))
-                        AdAsset(adView, register = { if (ad.advertiser != null) advertiserView = it else bodyView = it }) {
+                        AdAsset(
+                            adView = adView,
+                            register = { if (ad.advertiser != null) advertiserView = it else bodyView = it },
+                            modifier = Modifier.weight(1f, fill = false),
+                        ) {
                             OvalitText(
                                 text = line,
                                 style = OvalitTheme.typography.caption,
@@ -93,6 +99,19 @@ internal fun NativeAdRow(ad: NativeAd, verticalPadding: Dp) {
                                 overflow = TextOverflow.Ellipsis,
                             )
                         }
+                    }
+                    // 보상형 광고로 24시간 광고를 숨기는 입구다. 광고 요소로 등록하지 않아서 눌러도 광고가 열리지 않는다.
+                    if (onHide != null) {
+                        Spacer(Modifier.width(6.dp))
+                        OvalitText(
+                            text = stringResource(R.string.ad_hide),
+                            modifier = Modifier
+                                .clickable(role = Role.Button, onClick = onHide)
+                                .padding(horizontal = 2.dp, vertical = 2.dp),
+                            style = OvalitTheme.typography.caption.copy(fontWeight = FontWeight.Medium),
+                            color = colors.t2,
+                            maxLines = 1,
+                        )
                     }
                 }
             }
@@ -164,8 +183,14 @@ private fun NativeAdFrame(ad: NativeAd, content: @Composable (NativeAdView) -> U
 
 /** 광고 요소 하나를 안드로이드 뷰로 감싸 [register]로 [NativeAdView]에 등록합니다. */
 @Composable
-private fun AdAsset(adView: NativeAdView, register: NativeAdView.(View) -> Unit, content: @Composable () -> Unit) {
+private fun AdAsset(
+    adView: NativeAdView,
+    register: NativeAdView.(View) -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
     AndroidView(
+        modifier = modifier,
         factory = { context ->
             ComposeView(context).apply {
                 setContent(content)

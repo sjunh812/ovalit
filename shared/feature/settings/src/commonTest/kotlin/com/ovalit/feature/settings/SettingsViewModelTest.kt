@@ -17,6 +17,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -172,4 +173,6 @@ private class InMemoryPreferences : UserPreferencesRepository {
     override suspend fun setFocus(focus: Focus) = preferences.update { it.copy(focus = focus) }
 
     override suspend fun setSeenProfileHint() = preferences.update { it.copy(seenProfileHint = true) }
+
+    override suspend fun setAdFreeUntil(until: Instant) = preferences.update { it.copy(adFreeUntil = until) }
 }

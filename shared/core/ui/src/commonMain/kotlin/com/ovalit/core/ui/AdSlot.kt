@@ -24,9 +24,15 @@ enum class AdPlacement {
  * [frame]은 받은 광고를 감쌀 틀입니다. 홈은 카드에, S3는 위에 선을 긋고 담습니다. 광고가 없을 때 빈 카드나 선만 남지 않게
  * 틀까지 광고를 받은 뒤에 그립니다.
  */
-fun interface AdRenderer {
+interface AdRenderer {
     @Composable
     fun Render(placement: AdPlacement, key: String, frame: @Composable (content: @Composable () -> Unit) -> Unit)
+
+    /** 보상형 광고로 "24시간 광고 없이 보기"를 고를 수 있는지입니다. 보상형 광고 단위 ID가 없으면 `false`입니다. */
+    val canOfferAdFree: Boolean
+
+    /** "광고 없이 볼까요?" 시트를 띄웁니다. 광고 줄의 "숨기기"와 설정이 같이 씁니다. */
+    fun offerAdFree()
 }
 
 /** 광고를 그리는 쪽입니다. 없으면 광고 자리는 비어 있습니다. iOS와 UI 테스트가 그렇습니다. */

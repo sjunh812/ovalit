@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 일본어. 한국어 values/strings.xml과 키가 같다. 용어는 docs/i18n-ja.md -->
+<resources>
+    <string name="app_name">Ovalit</string>
+    <string name="back">戻る</string>
+    <string name="text_locale">ja-JP</string>
+    <!-- riot_disclaimer는 영문 원문 그대로라 여기 두지 않는다. 기본 values의 문구가 그대로 쓰인다. -->
+</resources>

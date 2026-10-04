@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 일본어. 한국어 values/strings.xml과 키가 같다. 용어는 docs/i18n-ja.md -->
+<resources>
+    <string name="josa_enabled">false</string>
+    <string name="list_separator">、</string>
+    <string name="period_this_week">今週</string>
+    <string name="period_recent_weeks">直近%1$d週間</string>
+    <string name="period_last_week">先週</string>
+    <string name="period_past_weeks">先週までの%1$d週間</string>
+
+    <string name="metric_combat_score">バトルスコア</string>
+    <string name="metric_kd">K/D</string>
+    <string name="metric_damage">ダメージ</string>
+    <string name="metric_headshot">ヘッドショット</string>
+
+    <string name="value_percent">%1$s%</string>
+
+    <string name="role_duelist">デュエリスト</string>
+    <string name="role_initiator">イニシエーター</string>
+    <string name="role_controller">コントローラー</string>
+    <string name="role_sentinel">センチネル</string>
+    <string name="main_role">%1$s %2$s</string>
+
+    <string name="queue_filter_competitive_and_unrated">コンペ + アンレート</string>
+    <string name="queue_filter_competitive">コンペ</string>
+    <string name="queue_filter_unrated">アンレート</string>
+    <string name="queue_filter_other">その他</string>
+
+    <string name="queue_competitive">コンペ</string>
+    <string name="queue_unrated">アンレート</string>
+    <string name="queue_spike_rush">スパイクラッシュ</string>
+    <string name="queue_swiftplay">スイフトプレイ</string>
+    <string name="queue_other">その他</string>
+
+    <string name="unknown_agent">不明なエージェント</string>
+    <string name="unknown_map">不明なマップ</string>
+
+    <string name="time_just_now">たった今</string>
+    <string name="time_minutes_ago">%1$d分前</string>
+    <string name="time_hours_ago">%1$d時間前</string>
+    <string name="time_clock">%1$s:%2$s</string>
+    <string name="time_short_date">%1$d/%2$d</string>
+
+    <string name="day_today">今日</string>
+    <string name="day_yesterday">昨日</string>
+    <string name="day_date">%1$d月%2$d日（%3$s）</string>
+    <string name="weekday_monday">月</string>
+    <string name="weekday_tuesday">火</string>
+    <string name="weekday_wednesday">水</string>
+    <string name="weekday_thursday">木</string>
+    <string name="weekday_friday">金</string>
+    <string name="weekday_saturday">土</string>
+    <string name="weekday_sunday">日</string>
+
+    <string name="match_score">%1$d – %2$d</string>
+    <string name="match_kda">%1$d/%2$d/%3$d</string>
+    <string name="match_acs">ACS %1$s</string>
+    <string name="match_result_win">勝利</string>
+    <string name="match_result_loss">敗北</string>
+    <string name="match_result_draw">引き分け</string>
+
+    <string name="focus_aim">エイムを磨く</string>
+    <string name="focus_aim_description">初動勝率、マルチキルラウンド</string>
+    <string name="focus_round_play">ラウンド運びを整える</string>
+    <string name="focus_round_play_description">エコ・フォースバイ・フルバイ勝率</string>
+    <string name="focus_consistency">ムラを減らす</string>
+    <string name="focus_consistency_description">KAST、生存率</string>
+    <string name="focus_none">特にありません</string>
+    <string name="focus_none_description">その週にいちばん大きく変わった指標からお見せします</string>
+
+    <string name="act_matches">今ACT %1$d試合</string>
+    <string name="unknown_weapon">不明な武器</string>
+    <string name="buy_pistol">ピストル</string>
+    <string name="buy_eco">エコ</string>
+    <string name="buy_force">フォースバイ</string>
+    <string name="buy_full">フルバイ</string>
+    <string name="weapon_category_rifle">ライフル</string>
+    <string name="weapon_category_pistol">サイドアーム</string>
+    <string name="weapon_category_smg">SMG</string>
+    <string name="weapon_category_sniper">スナイパー</string>
+    <string name="weapon_category_shotgun">ショットガン</string>
+    <string name="weapon_category_machine_gun">ヘヴィー</string>
+    <string name="weapon_category_melee">近接</string>
+    <string name="profile_competitive">コンペティティブ</string>
+    <string name="profile_competitive_matches">コンペ %1$d試合</string>
+    <string name="profile_stats_title">スタッツ</string>
+    <string name="profile_most_kills">最多キル</string>
+    <string name="profile_kda">KDA</string>
+    <string name="profile_per_match">1試合あたり %1$s</string>
+    <string name="profile_play_time">プレイ時間</string>
+    <string name="profile_aces">エース</string>
+    <string name="profile_clutches">クラッチ</string>
+    <string name="profile_count">%1$d回</string>
+    <string name="profile_clutch_value">%1$d回中%2$d回</string>
+    <string name="duration_hours_minutes">%1$d時間%2$d分</string>
+    <string name="duration_hours">%1$d時間</string>
+    <string name="duration_minutes">%1$d分</string>
+    <string name="profile_shots_title">命中部位</string>
+    <string name="profile_shots_caption">命中 %1$s発</string>
+    <string name="profile_shots_head">頭</string>
+    <string name="profile_shots_body">体</string>
+    <string name="profile_shots_leg">脚</string>
+    <string name="profile_agents">エージェント</string>
+    <string name="profile_weapons">武器</string>
+    <string name="agents_matches">%1$d試合</string>
+    <string name="record_wins_losses">%1$d勝%2$d敗</string>
+    <string name="column_win_rate">勝率</string>
+    <string name="profile_weapon_kills">%1$sキル</string>
+    <!-- 무기 세 칸의 좁은 줄이라 일본 유저가 흔히 쓰는 약칭 HS率로 줄였다 -->
+    <string name="profile_weapon_headshot">HS率 %1$s</string>
+    <string name="profile_weapon_damage">ダメージ %1$s</string>
+    <string name="kda_counts">%1$s/%2$s/%3$s</string>
+    <string name="kda_with_counts">%1$s (%2$s)</string>
+    <string name="kda_ratio">KDA %1$s</string>
+    <!-- ㅇㅂㅇ(今日やる？). 친구의 답은 「参加・不参加」 같은 상태 말로, 내가 누르는 버튼만 です・ます로 쓴다 -->
+    <string name="ping_time_now">今すぐ</string>
+    <string name="ping_time_tomorrow">明日 %1$s</string>
+    <string name="ping_time_dawn">深夜 %1$s</string>
+    <string name="ping_day_today">今日</string>
+    <string name="ping_day_tomorrow">明日</string>
+    <string name="ping_day_dawn">深夜</string>
+    <string name="ping_in_hours_minutes">%1$d時間%2$d分後</string>
+    <string name="ping_in_hours">%1$d時間後</string>
+    <string name="ping_in_minutes">%1$d分後</string>
+    <string name="ping_started">始まりました</string>
+    <string name="ping_called_just_now">たった今募集しました</string>
+    <string name="ping_called_minutes_ago">%1$d分前に募集しました</string>
+    <string name="ping_called_by">%1$sの募集</string>
+    <string name="ping_when">%1$s · %2$s</string>
+    <string name="ping_called_by_me">自分の募集</string>
+    <string name="ping_home_received">%1$sの募集 · %2$s</string>
+    <string name="ping_home_received_now">%1$sの募集 · 今すぐ</string>
+    <string name="ping_home_sent">自分の募集 · %1$s</string>
+    <string name="ping_home_sent_now">自分の募集 · 今すぐ</string>
+    <string name="ping_summary_outgoing">%1$d人中%2$d人参加</string>
+    <string name="ping_answer_yes">参加</string>
+    <string name="ping_answer_no">不参加</string>
+    <string name="ping_answer_pending">未回答</string>
+    <string name="ping_answer_other">%1$sを提案</string>
+    <string name="ping_my_answer_yes">参加で回答しました</string>
+    <string name="ping_my_answer_no">不参加で回答しました</string>
+    <string name="ping_my_answer_other">%1$sを提案しました</string>
+    <string name="ping_my_answer_pending">まだ回答していません</string>
+    <string name="profile_loading">プロフィールを読み込んでいます</string>
+    <string name="loading">読み込んでいます</string>
+    <string name="placement_mvp">MVP</string>
+    <string name="placement_team_mvp">チームMVP</string>
+    <string name="placement_rank">%1$d位</string>
+    <string name="placement_rank_of">%2$d人中%1$d位</string>
+    <string name="highlight_ace">エース</string>
+    <string name="highlight_aces">エース%1$d回</string>
+    <string name="highlight_clutch">クラッチ</string>
+    <string name="highlight_clutches">クラッチ%1$d回</string>
+    <string name="new_matches_receiving">新しい試合を読み込んでいます</string>
+    <string name="new_matches_count">%1$d / %2$d</string>
+    <string name="new_matches_description">新しい%2$d試合のうち%1$d試合を読み込みました</string>
+    <string name="new_matches_in_background">アプリを閉じても読み込みを続けます</string>
+    <string name="error_offline">インターネットに接続されていません</string>
+    <string name="error_session_expired">ログインが切れました · もう一度ログインしてください</string>
+    <string name="error_riot_busy">Riotサーバーが混み合っています · しばらくしてからもう一度お試しください</string>
+    <string name="error_riot_down">Riotサーバーが応答していません</string>
+    <string name="failed_refresh">新しい試合を読み込めませんでした</string>
+    <string name="failed_friends_refresh">フレンドリストを更新できませんでした</string>
+    <string name="failed_accept_friend">フレンド申請を承認できませんでした</string>
+    <string name="failed_decline_friend">フレンド申請を拒否できませんでした</string>
+    <string name="failed_friend_request">フレンド申請を送れませんでした</string>
+    <string name="failed_unfriend">フレンドを解除できませんでした</string>
+    <string name="failed_rival">ライバルを変更できませんでした</string>
+    <string name="failed_ping_send">募集を送れませんでした</string>
+    <string name="failed_ping_reply">回答を送れませんでした</string>
+    <string name="failed_ping_time">時間を変更できませんでした</string>
+    <string name="failed_ping_invite">フレンドを追加で誘えませんでした</string>
+    <string name="failed_ping_cancel">募集を取り消せませんでした</string>
+    <string name="failed_ping_already_active">送った募集が終わるまで次の募集はできません</string>
+    <string name="failed_ping_full">枠がいっぱいです</string>
+    <string name="failed_setting">設定を変更できませんでした</string>
+    <string name="failed_delete_data">保存したデータを削除できませんでした</string>
+    <string name="failed_unlink">連携を解除できませんでした</string>
+</resources>

@@ -14,6 +14,7 @@ import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.data.logRefresh
 import com.ovalit.core.data.settledMatches
 import com.ovalit.core.model.ContentCatalog
+import com.ovalit.core.model.Focus
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.NewMatchesProgress
@@ -178,7 +179,8 @@ class ReportViewModel(
 
     val uiState: StateFlow<ReportUiState> = combine(
         importedMatches,
-        preferencesRepository.preferences,
+        // 리포트를 세는 데 쓰는 두 값만 본다. 테마나 광고 끝 시각이 바뀔 때마다 리포트를 처음부터 다시 세지 않는다.
+        preferencesRepository.preferences.map { ReportPreferences(it.defaultQueue, it.focus) }.distinctUntilChanged(),
         selectedQueue,
         friendRepository.friends,
         friendRepository.rival,
@@ -281,6 +283,8 @@ class ReportViewModel(
         viewModelScope.launchNotifying(failures, FailedAction.RIVAL) { friendRepository.setRival(id) }
     }
 }
+
+private data class ReportPreferences(val defaultQueue: QueueFilter, val focus: Focus)
 
 private class ReportInputs(
     val matches: List<Match>,

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -95,20 +96,16 @@ internal fun RecordsHidden(title: StringResource, onBack: () -> Unit) {
 }
 
 /**
- * S6과 S7을 세는 동안의 모양입니다. 제목 밑에 맨 위 묶음 자리와 줄 다섯을 잡습니다. 빈 바탕으로 밀려 들어오다 전환 한가운데서
+ * S7을 세는 동안의 모양입니다. 제목 밑에 주 역할 묶음과 요원 줄 다섯을 잡습니다. 빈 바탕으로 밀려 들어오다 전환 한가운데서
  * 표가 튀어나와 번쩍였습니다.
  *
  * @param title 내 기록이면 제목을 그대로 둡니다. 친구 기록은 이름을 받기 전이라 `null`이고 제목 자리만 잡습니다.
  */
 @Composable
-internal fun RecordsSkeleton(title: StringResource?, onBack: () -> Unit) {
+internal fun AgentsSkeleton(title: StringResource?, onBack: () -> Unit) {
     val description = stringResource(CoreUiRes.string.loading)
     Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
-        if (title != null) {
-            OvalitBackTopBar(onBack = onBack, title = stringResource(title))
-        } else {
-            OvalitBackTopBar(onBack = onBack, title = { OvalitSkeleton(description) { SkeletonBlock(width = 120.dp, height = 24.dp) } })
-        }
+        SkeletonTopBar(title, onBack, description)
         OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
             Column {
                 Spacer(Modifier.height(22.dp))
@@ -131,5 +128,125 @@ internal fun RecordsSkeleton(title: StringResource?, onBack: () -> Unit) {
                 }
             }
         }
+    }
+}
+
+/**
+ * S6을 세는 동안의 모양입니다. 주력 무기 세 줄 표(무기 그림, 이름, 숫자 세 칸)와 계열별 막대 줄 자리를 실제 표와 같은 자리에
+ * 잡습니다. 요원 화면 틀을 같이 쓰니 무기 표가 나타날 때 줄 모양이 달라 어긋나 보였습니다(사용자 요청, 2026-10-04).
+ */
+@Composable
+internal fun WeaponsSkeleton(title: StringResource?, onBack: () -> Unit) {
+    val description = stringResource(CoreUiRes.string.loading)
+    Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+        SkeletonTopBar(title, onBack, description)
+        OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+            Column {
+                Spacer(Modifier.height(OvalitSpacing.lg))
+                Row(verticalAlignment = Alignment.Bottom) {
+                    SkeletonBlock(width = 120.dp, height = 18.dp)
+                    Spacer(Modifier.weight(1f))
+                    SkeletonBlock(width = 28.dp, height = 12.dp)
+                }
+                Spacer(Modifier.height(OvalitSpacing.md))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    SkeletonBlock(width = 120.dp, height = 12.dp)
+                    Spacer(Modifier.weight(1f))
+                    repeat(3) { SkeletonCell { SkeletonBlock(width = 30.dp, height = 12.dp) } }
+                }
+                repeat(3) {
+                    Spacer(Modifier.height(OvalitSpacing.lg))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        SkeletonBlock(width = 48.dp, height = 28.dp)
+                        Spacer(Modifier.width(OvalitSpacing.md))
+                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            SkeletonBlock(width = 52.dp, height = 15.dp)
+                            SkeletonBlock(width = 40.dp, height = 12.dp)
+                        }
+                        repeat(3) {
+                            SkeletonCell {
+                                Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    SkeletonBlock(width = 36.dp, height = 16.dp)
+                                    SkeletonBlock(width = 24.dp, height = 10.dp)
+                                }
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.height(OvalitSpacing.xl))
+                Box(Modifier.fillMaxWidth().height(1.dp).background(OvalitTheme.colors.fill))
+                Spacer(Modifier.height(18.dp))
+                Row(verticalAlignment = Alignment.Bottom) {
+                    SkeletonBlock(width = 56.dp, height = 18.dp)
+                    Spacer(Modifier.weight(1f))
+                    SkeletonBlock(width = 40.dp, height = 12.dp)
+                }
+                Spacer(Modifier.height(OvalitSpacing.sm))
+                // 계열별은 가장 많은 계열이 처음부터 펼쳐져 있어서 첫 줄 밑에 무기 줄 넷을 같이 잡는다
+                repeat(5) { index ->
+                    Row(modifier = Modifier.fillMaxWidth().height(48.dp), verticalAlignment = Alignment.CenterVertically) {
+                        SkeletonBlock(width = 44.dp, height = 16.dp)
+                        Spacer(Modifier.width(OvalitSpacing.lg))
+                        SkeletonBlock(width = 0.dp, height = 6.dp, modifier = Modifier.weight(1f), radius = 3.dp)
+                        Spacer(Modifier.width(OvalitSpacing.sm))
+                        SkeletonBlock(width = 44.dp, height = 14.dp)
+                        Spacer(Modifier.width(22.dp))
+                    }
+                    if (index == 0) {
+                        Column(modifier = Modifier.padding(bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Spacer(Modifier.width(44.dp + OvalitSpacing.md))
+                                SkeletonBlock(width = 28.dp, height = 12.dp)
+                                Spacer(Modifier.weight(1f))
+                                CategoryCells { SkeletonBlock(width = 26.dp, height = 12.dp) }
+                            }
+                            repeat(4) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    SkeletonBlock(width = 44.dp, height = 24.dp)
+                                    Spacer(Modifier.width(OvalitSpacing.md))
+                                    // 실제 줄은 이름(본문)과 KDA 줄(작은 글자) 두 줄이라 글자 줄 높이만큼 자리를 잡는다
+                                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                        Box(Modifier.height(18.dp), contentAlignment = Alignment.CenterStart) { SkeletonBlock(width = 44.dp, height = 14.dp) }
+                                        Box(Modifier.height(14.dp), contentAlignment = Alignment.CenterStart) { SkeletonBlock(width = 110.dp, height = 11.dp) }
+                                    }
+                                    CategoryCells { SkeletonBlock(width = 30.dp, height = 15.dp) }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// 펼친 계열의 숫자 세 칸이다. 실제 표의 K/D, 피해량, 헤드샷 열 폭(48, 52, 56dp)과 같다.
+@Composable
+private fun CategoryCells(block: @Composable () -> Unit) {
+    Row {
+        listOf(48.dp, 52.dp, 56.dp).forEach { width ->
+            Box(modifier = Modifier.width(width), contentAlignment = Alignment.CenterEnd) { block() }
+        }
+    }
+}
+
+// 무기 표의 숫자 칸 하나다. 실제 표처럼 54dp 폭에 오른쪽으로 붙인다.
+@Composable
+private fun SkeletonCell(content: @Composable () -> Unit) {
+    Box(modifier = Modifier.width(54.dp), contentAlignment = Alignment.CenterEnd) { content() }
+}
+
+// 오른쪽 "이번 액트 50경기" 자리도 잡는다. 없으면 나타날 때 그 글자만 툭 튄다.
+@Composable
+private fun SkeletonTopBar(title: StringResource?, onBack: () -> Unit, description: String) {
+    val caption: @Composable RowScope.() -> Unit = { OvalitSkeleton(description) { SkeletonBlock(width = 84.dp, height = 12.dp) } }
+    if (title != null) {
+        OvalitBackTopBar(onBack = onBack, title = stringResource(title), actions = caption)
+    } else {
+        OvalitBackTopBar(
+            onBack = onBack,
+            title = { OvalitSkeleton(description) { SkeletonBlock(width = 120.dp, height = 24.dp) } },
+            actions = caption,
+        )
     }
 }

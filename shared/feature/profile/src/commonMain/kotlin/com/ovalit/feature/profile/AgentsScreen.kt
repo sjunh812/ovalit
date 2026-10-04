@@ -137,7 +137,7 @@ internal fun AgentsScreen(
     val shown = rememberContentShown(loaded = loaded)
     OvalitStaged(
         ready = loaded && shown,
-        placeholder = { RecordsSkeleton(loadingTitle, onBack) },
+        placeholder = { AgentsSkeleton(loadingTitle, onBack) },
         modifier = modifier.fillMaxSize().background(OvalitTheme.colors.bg),
     ) {
         AgentsContent(uiState, onBack)

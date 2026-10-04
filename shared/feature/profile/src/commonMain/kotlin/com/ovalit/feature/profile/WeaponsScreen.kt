@@ -121,7 +121,7 @@ internal fun WeaponsScreen(
     val shown = rememberContentShown(loaded = loaded)
     OvalitStaged(
         ready = loaded && shown,
-        placeholder = { RecordsSkeleton(loadingTitle, onBack) },
+        placeholder = { WeaponsSkeleton(loadingTitle, onBack) },
         modifier = modifier.fillMaxSize().background(OvalitTheme.colors.bg),
     ) {
         WeaponsContent(uiState, onBack)

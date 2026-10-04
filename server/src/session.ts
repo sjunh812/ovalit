@@ -29,6 +29,7 @@ interface SessionRow {
   game_name: string;
   tag_line: string;
   stats_public: number;
+  remind_before: number;
   expires_at: number;
 }
 
@@ -38,7 +39,7 @@ export const requireSession = createMiddleware<AppEnv>(async (c, next) => {
   if (!match) throw new ApiError(401, "unauthorized");
   const hash = await sha256(match[1]!);
   const row = await c.env.DB.prepare(
-    `SELECT u.id, u.puuid, u.game_name, u.tag_line, u.stats_public, s.expires_at
+    `SELECT u.id, u.puuid, u.game_name, u.tag_line, u.stats_public, u.remind_before, s.expires_at
      FROM sessions s JOIN users u ON u.id = s.user_id
      WHERE s.token_hash = ?`,
   )
@@ -56,6 +57,7 @@ export const requireSession = createMiddleware<AppEnv>(async (c, next) => {
     gameName: row.game_name,
     tagLine: row.tag_line,
     statsPublic: row.stats_public === 1,
+    remindBefore: row.remind_before,
   });
   await next();
 });

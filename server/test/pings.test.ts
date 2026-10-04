@@ -934,6 +934,32 @@ describe("크론", () => {
     for (const message of reminders) expect(message.data.startsAt).toBe(String(later));
   });
 
+  it("사람마다 고른 시간에 한 번씩 알린다", async () => {
+    const t = withPush();
+    const sent = fakeFcm(t);
+    const host = await t.login("host");
+    const early = await friendOf(t, host, "early");
+    const off = await friendOf(t, host, "off");
+    const hostToken = await registerToken(t, host);
+    const earlyToken = await registerToken(t, early);
+    await registerToken(t, off);
+    await t.call("PATCH", "/me", early.token, { remindBefore: 60 });
+    await t.call("PATCH", "/me", off.token, { remindBefore: 0 });
+    const ping = await open(t, host, [early, off], Date.now() + 40 * MINUTE);
+    await reply(t, early, ping, "yes");
+    await reply(t, off, ping, "yes");
+    sent.length = 0;
+
+    // 40분 전에는 한 시간 전을 고른 친구만 받는다. 호스트는 기본값 10분이다.
+    await runCron(t, EVERY_FIVE_MINUTES);
+    expect(sent.filter((message) => message.data.type === "ping_remind").map((message) => message.token)).toEqual([earlyToken]);
+
+    sent.length = 0;
+    await env.DB.prepare("UPDATE pings SET starts_at = ? WHERE id = ?").bind(Date.now() + 5 * MINUTE, ping.id).run();
+    await runCron(t, EVERY_FIVE_MINUTES);
+    expect(sent.filter((message) => message.data.type === "ping_remind").map((message) => message.token)).toEqual([hostToken]);
+  });
+
   it("월요일 크론은 지난주 리포트 알림을 주제로 한 번 보낸다", async () => {
     const t = withPush();
     const sent = fakeFcm(t);

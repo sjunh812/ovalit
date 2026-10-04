@@ -46,7 +46,9 @@
     <string name="ping_time_title">%1$s의 초대 시간이 바뀌었어요</string>
     <string name="ping_time_body">%1$s · 갈 수 있는지 다시 답해 주세요</string>
     <string name="ping_cancel_title">%1$s의 초대가 취소됐어요</string>
-    <string name="ping_remind_title">10분 뒤 발로란트</string>
+    <string name="ping_remind_title">%1$d분 뒤 발로란트</string>
+    <string name="ping_remind_title_hour">1시간 뒤 발로란트</string>
+    <string name="ping_remind_title_soon">곧 발로란트</string>
     <string name="ping_remind_body">%1$s 참석</string>
     <string name="weekly_report_title">지난주 리포트가 나왔어요</string>
     <string name="weekly_report_body">무엇이 달라졌는지 짚어드려요</string>

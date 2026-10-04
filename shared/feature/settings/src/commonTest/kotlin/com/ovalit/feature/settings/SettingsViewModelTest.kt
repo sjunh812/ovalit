@@ -6,6 +6,7 @@ import com.ovalit.core.data.FakeMatchRepository
 import com.ovalit.core.data.ImportScheduler
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.Focus
+import com.ovalit.core.model.PingReminder
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.model.UserPreferences
@@ -171,6 +172,8 @@ private class InMemoryPreferences : UserPreferencesRepository {
         preferences.update { it.copy(notifyWeeklyReport = enabled) }
 
     override suspend fun setNotifyPing(enabled: Boolean) = preferences.update { it.copy(notifyPing = enabled) }
+
+    override suspend fun setPingReminder(reminder: PingReminder) = preferences.update { it.copy(pingReminder = reminder) }
 
     override suspend fun setFocus(focus: Focus) = preferences.update { it.copy(focus = focus) }
 

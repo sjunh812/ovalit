@@ -222,7 +222,7 @@ pings.post("/:id/time", async (c) => {
       db
         .prepare(
           `UPDATE ping_members
-           SET answer = CASE WHEN proposed_at = ?4 THEN 'yes' ELSE 'pending' END, proposed_at = NULL, updated_at = ?3
+           SET answer = CASE WHEN proposed_at = ?4 THEN 'yes' ELSE 'pending' END, proposed_at = NULL, reminded = 0, updated_at = ?3
            WHERE ping_id = ?1 AND EXISTS (${active})`,
         )
         .bind(id, me.id, now, startsAt),

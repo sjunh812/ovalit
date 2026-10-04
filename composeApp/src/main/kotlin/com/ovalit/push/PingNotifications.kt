@@ -16,6 +16,7 @@ import com.ovalit.R
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.math.roundToInt
 
 private const val PING_CHANNEL = "ping"
 private const val WEEKLY_CHANNEL = "weekly_report"
@@ -80,7 +81,7 @@ internal object PingNotifications {
                 setContentTitle(context.getString(R.string.ping_cancel_title, data["hostName"].orEmpty()))
             }
             "ping_remind" -> pingNotification(context, pingId) {
-                setContentTitle(context.getString(R.string.ping_remind_title))
+                setContentTitle(remindTitle(context, data))
                 setContentText(context.getString(R.string.ping_remind_body, data["names"].orEmpty().split(",").joinToString(", ")))
             }
             "weekly_report" -> NotificationCompat.Builder(context, channel(context, WEEKLY_CHANNEL, R.string.notification_channel_weekly, NotificationManager.IMPORTANCE_DEFAULT))
@@ -138,6 +139,17 @@ internal object PingNotifications {
     private fun isNow(data: Map<String, String>): Boolean {
         val startsAt = data["startsAt"]?.toLongOrNull() ?: return true
         return startsAt - System.currentTimeMillis() < NOW_WINDOW_MS
+    }
+
+    // 사람마다 고른 시간(10분, 30분, 1시간 전)에 오고 크론이 5분마다 돌아서, 고른 시간이 아니라 실제로 남은 시간을 적는다
+    private fun remindTitle(context: Context, data: Map<String, String>): String {
+        val startsAt = data["startsAt"]?.toLongOrNull() ?: return context.getString(R.string.ping_remind_title_soon)
+        val minutes = ((startsAt - System.currentTimeMillis()) / 60_000.0).roundToInt()
+        return when {
+            minutes >= 60 -> context.getString(R.string.ping_remind_title_hour)
+            minutes >= 1 -> context.getString(R.string.ping_remind_title, minutes)
+            else -> context.getString(R.string.ping_remind_title_soon)
+        }
     }
 
     private fun timeText(context: Context, data: Map<String, String>): String {

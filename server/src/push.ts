@@ -32,6 +32,8 @@ export interface Notice {
 export interface Message {
   token: string;
   data: PushData;
+  /** 받는 사람입니다. 보내기 전에 누구 몫인지 가를 때만 씁니다. */
+  userId?: number;
 }
 
 interface ServiceAccount {
@@ -90,7 +92,9 @@ export class Push {
       .bind(JSON.stringify(userIds))
       .all<{ token: string; user_id: number }>();
     return notices.flatMap((notice) =>
-      results.filter((row) => row.user_id === notice.userId).map((row) => ({ token: row.token, data: notice.data })),
+      results
+        .filter((row) => row.user_id === notice.userId)
+        .map((row) => ({ token: row.token, data: notice.data, userId: notice.userId })),
     );
   }
 

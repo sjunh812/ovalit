@@ -13,6 +13,7 @@ import com.ovalit.core.designsystem.component.OvalitSheetOption
 import com.ovalit.core.designsystem.component.OvalitTextButton
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.model.Focus
+import com.ovalit.core.model.PingReminder
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.ui.description
@@ -26,6 +27,12 @@ import com.ovalit.feature.settings.resources.delete_confirm
 import com.ovalit.feature.settings.resources.delete_title
 import com.ovalit.feature.settings.resources.focus
 import com.ovalit.feature.settings.resources.focus_description
+import com.ovalit.feature.settings.resources.ping_reminder
+import com.ovalit.feature.settings.resources.ping_reminder_10
+import com.ovalit.feature.settings.resources.ping_reminder_30
+import com.ovalit.feature.settings.resources.ping_reminder_60
+import com.ovalit.feature.settings.resources.ping_reminder_description
+import com.ovalit.feature.settings.resources.ping_reminder_off
 import com.ovalit.feature.settings.resources.theme
 import com.ovalit.feature.settings.resources.theme_dark
 import com.ovalit.feature.settings.resources.theme_light
@@ -36,7 +43,15 @@ import com.ovalit.feature.settings.resources.unlink_title
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-internal enum class SettingsSheet { THEME, DEFAULT_QUEUE, FOCUS, DELETE_DATA, UNLINK }
+internal enum class SettingsSheet { THEME, DEFAULT_QUEUE, FOCUS, PING_REMINDER, DELETE_DATA, UNLINK }
+
+internal val PingReminder.label: StringResource
+    get() = when (this) {
+        PingReminder.TEN_MINUTES -> Res.string.ping_reminder_10
+        PingReminder.THIRTY_MINUTES -> Res.string.ping_reminder_30
+        PingReminder.ONE_HOUR -> Res.string.ping_reminder_60
+        PingReminder.OFF -> Res.string.ping_reminder_off
+    }
 
 internal val ThemePreference.label: StringResource
     get() = when (this) {
@@ -80,6 +95,15 @@ internal fun SettingsSheetContent(
             onDismiss = onDismiss,
             // S0-4처럼 무엇을 먼저 보는지 밑에 적는다. 이름만으로는 어떤 지표가 올라오는지 모른다.
             caption = { it.description },
+        )
+        SettingsSheet.PING_REMINDER -> OptionSheet(
+            title = stringResource(Res.string.ping_reminder),
+            body = stringResource(Res.string.ping_reminder_description),
+            options = PingReminder.entries,
+            selected = uiState.preferences.pingReminder,
+            label = { it.label },
+            onSelect = actions.onPingReminderChange,
+            onDismiss = onDismiss,
         )
         SettingsSheet.DELETE_DATA -> ConfirmSheet(
             title = stringResource(Res.string.delete_title),

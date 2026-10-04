@@ -13,19 +13,38 @@ export const me = new Hono<AppEnv>();
 
 me.use(requireSession);
 
+// 오발있 미리 알림을 시작 몇 분 전에 받을지 고를 수 있는 값이다. 0은 받지 않는다. 스키마의 CHECK와 같아야 한다.
+const REMIND_BEFORE_CHOICES = [0, 10, 30, 60];
+
 function profile(user: User) {
-  return { puuid: user.puuid, gameName: user.gameName, tagLine: user.tagLine, statsPublic: user.statsPublic };
+  return {
+    puuid: user.puuid,
+    gameName: user.gameName,
+    tagLine: user.tagLine,
+    statsPublic: user.statsPublic,
+    remindBefore: user.remindBefore,
+  };
 }
 
 me.get("/", (c) => c.json(profile(c.var.user)));
 
+/** 보낸 값만 바꿉니다. 아무것도 보내지 않으면 400입니다. 두 요청이 겹쳐도 서로의 값을 되돌리지 않게 보낸 열만 씁니다. */
 me.patch("/", async (c) => {
-  const { statsPublic } = await jsonBody(c);
-  if (typeof statsPublic !== "boolean") throw new ApiError(400, "invalid_stats_public");
-  await c.env.DB.prepare("UPDATE users SET stats_public = ?, updated_at = ? WHERE id = ?")
-    .bind(statsPublic ? 1 : 0, Date.now(), c.var.user.id)
-    .run();
-  return c.json(profile({ ...c.var.user, statsPublic }));
+  const body = await jsonBody(c);
+  const hasStatsPublic = "statsPublic" in body;
+  const hasRemindBefore = "remindBefore" in body;
+  if (!hasStatsPublic && !hasRemindBefore) throw new ApiError(400, "invalid_body");
+  if (hasStatsPublic && typeof body.statsPublic !== "boolean") throw new ApiError(400, "invalid_stats_public");
+  if (hasRemindBefore && !REMIND_BEFORE_CHOICES.includes(body.remindBefore as number)) {
+    throw new ApiError(400, "invalid_remind_before");
+  }
+  const row = await c.env.DB.prepare(
+    `UPDATE users SET stats_public = COALESCE(?1, stats_public), remind_before = COALESCE(?2, remind_before), updated_at = ?3
+     WHERE id = ?4 RETURNING stats_public, remind_before`,
+  )
+    .bind(hasStatsPublic ? (body.statsPublic ? 1 : 0) : null, hasRemindBefore ? body.remindBefore : null, Date.now(), c.var.user.id)
+    .first<{ stats_public: number; remind_before: number }>();
+  return c.json(profile({ ...c.var.user, statsPublic: row!.stats_public === 1, remindBefore: row!.remind_before }));
 });
 
 /**

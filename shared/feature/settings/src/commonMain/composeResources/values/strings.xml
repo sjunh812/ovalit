@@ -18,6 +18,12 @@
     <string name="notify_weekly_report_time">월요일 오전 9시</string>
     <string name="notify_ping">오발있?</string>
     <string name="notify_ping_description">친구가 파티를 모집하거나 내 초대에 답하면 알려드려요.</string>
+    <string name="ping_reminder">미리 알림</string>
+    <string name="ping_reminder_description">내가 부르거나 간다고 답한 초대를 시작 전에 한 번 알려드려요.</string>
+    <string name="ping_reminder_10">10분 전</string>
+    <string name="ping_reminder_30">30분 전</string>
+    <string name="ping_reminder_60">1시간 전</string>
+    <string name="ping_reminder_off">받지 않기</string>
 
     <string name="section_display">표시</string>
     <string name="theme">테마</string>

@@ -8,6 +8,7 @@ import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.Account
 import com.ovalit.core.model.Focus
+import com.ovalit.core.model.PingReminder
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.model.UserPreferences
@@ -59,6 +60,9 @@ class SettingsViewModel(
     fun setNotifyWeeklyReport(enabled: Boolean) = launch { preferencesRepository.setNotifyWeeklyReport(enabled) }
 
     fun setNotifyPing(enabled: Boolean) = launch { preferencesRepository.setNotifyPing(enabled) }
+
+    /** 실제 저장소가 붙으면 서버(`PATCH /me`의 `remindBefore`)에도 맡깁니다. 미리 알림은 서버가 이 시간에 맞춰 보냅니다. */
+    fun setPingReminder(reminder: PingReminder) = launch { preferencesRepository.setPingReminder(reminder) }
 
     fun setTheme(theme: ThemePreference) = launch { preferencesRepository.setTheme(theme) }
 

@@ -74,7 +74,7 @@ describe("RSO 로그인", () => {
     expect(expiresAt).toBeGreaterThan(Date.now() + 89 * 24 * 60 * 60 * 1000);
 
     const me = await t.call("GET", "/me", token);
-    expect(await me.json()).toEqual({ puuid: account.puuid, gameName: "제트장인", tagLine: "KR1", statsPublic: true });
+    expect(await me.json()).toEqual({ puuid: account.puuid, gameName: "제트장인", tagLine: "KR1", statsPublic: true, remindBefore: 10 });
   });
 
   it("Riot 토큰은 어디에도 저장하지 않는다", async () => {

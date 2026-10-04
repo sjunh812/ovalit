@@ -42,6 +42,7 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Account
 import com.ovalit.core.model.Focus
+import com.ovalit.core.model.PingReminder
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.ui.LocalAdRenderer
@@ -63,6 +64,7 @@ import com.ovalit.feature.settings.resources.notify_ping_description
 import com.ovalit.feature.settings.resources.notify_weekly_report
 import com.ovalit.feature.settings.resources.notify_weekly_report_time
 import com.ovalit.feature.settings.resources.open_profile
+import com.ovalit.feature.settings.resources.ping_reminder
 import com.ovalit.feature.settings.resources.section_data
 import com.ovalit.feature.settings.resources.section_display
 import com.ovalit.feature.settings.resources.section_notifications
@@ -113,6 +115,7 @@ fun SettingsRoute(
             onNotifyAnalysisDoneChange = viewModel::setNotifyAnalysisDone,
             onNotifyWeeklyReportChange = viewModel::setNotifyWeeklyReport,
             onNotifyPingChange = viewModel::setNotifyPing,
+            onPingReminderChange = viewModel::setPingReminder,
             onThemeChange = viewModel::setTheme,
             onDefaultQueueChange = viewModel::setDefaultQueue,
             onFocusChange = viewModel::setFocus,
@@ -129,6 +132,7 @@ internal class SettingsActions(
     val onNotifyAnalysisDoneChange: (Boolean) -> Unit = {},
     val onNotifyWeeklyReportChange: (Boolean) -> Unit = {},
     val onNotifyPingChange: (Boolean) -> Unit = {},
+    val onPingReminderChange: (PingReminder) -> Unit = {},
     val onThemeChange: (ThemePreference) -> Unit = {},
     val onDefaultQueueChange: (QueueFilter) -> Unit = {},
     val onFocusChange: (Focus) -> Unit = {},
@@ -198,6 +202,15 @@ internal fun SettingsScreen(
                 checked = preferences.notifyPing,
                 onCheckedChange = actions.onNotifyPingChange,
             )
+            // 오발있 알림을 껐으면 미리 알림도 오지 않아 줄을 두지 않는다
+            if (preferences.notifyPing) {
+                RowDivider()
+                ValueRow(
+                    title = stringResource(Res.string.ping_reminder),
+                    value = stringResource(preferences.pingReminder.label),
+                    onClick = { openSheet = SettingsSheet.PING_REMINDER },
+                )
+            }
 
             SectionHeader(stringResource(Res.string.section_display))
             ValueRow(

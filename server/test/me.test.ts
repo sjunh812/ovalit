@@ -24,6 +24,23 @@ describe("내 계정", () => {
     expect((await t.call("PATCH", "/me", user.token, { statsPublic: "no" })).status).toBe(400);
   });
 
+  it("오발있 미리 알림 시간을 바꿔도 전적 공개는 그대로다", async () => {
+    const t = setup();
+    const user = await t.login();
+    await t.call("PATCH", "/me", user.token, { statsPublic: false });
+    const changed = await t.call("PATCH", "/me", user.token, { remindBefore: 30 });
+    expect(await changed.json()).toMatchObject({ statsPublic: false, remindBefore: 30 });
+    expect(await (await t.call("GET", "/me", user.token)).json()).toMatchObject({ statsPublic: false, remindBefore: 30 });
+  });
+
+  it("미리 알림은 0, 10, 30, 60분만 받는다", async () => {
+    const t = setup();
+    const user = await t.login();
+    expect((await t.call("PATCH", "/me", user.token, { remindBefore: 15 })).status).toBe(400);
+    expect((await t.call("PATCH", "/me", user.token, { remindBefore: "10" })).status).toBe(400);
+    expect((await t.call("PATCH", "/me", user.token, {})).status).toBe(400);
+  });
+
   it("연동을 해제하면 세션, 친구, 요청, 초대가 모두 지워진다", async () => {
     const t = setup();
     const me = await t.login("me");

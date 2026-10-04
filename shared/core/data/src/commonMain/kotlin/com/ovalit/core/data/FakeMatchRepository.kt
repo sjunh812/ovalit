@@ -496,8 +496,8 @@ private fun Match.withScoreboard(
 
     fun other(player: FakePlayer, onMyTeam: Boolean, index: Int): Scoreline {
         val won = if (onMyTeam) myTeamWon == true else myTeamWon == false
-        val kills = (roundCount * random.nextDouble(0.45, 0.95) + if (won) 2 else 0).toInt()
-        val adr = random.nextInt(95, 175)
+        val kills = (roundCount * random.nextDouble(0.5, 1.05) + if (won) 2 else 0).toInt()
+        val adr = random.nextInt(105, 215)
         return Scoreline(
             player = player.id,
             riotId = player.riotId,
@@ -508,9 +508,11 @@ private fun Match.withScoreboard(
             kills = kills,
             deaths = (roundCount * random.nextDouble(0.5, 0.85)).toInt(),
             assists = (roundCount * random.nextDouble(0.1, 0.45)).toInt(),
-            combatScore = (adr + kills * 60 / roundCount.coerceAtLeast(1)) * roundCount,
+            // 내 줄과 같은 식으로 센다. 식이 다르면 늘 내가 MVP가 된다.
+            combatScore = adr * roundCount + KILL_SCORE * kills,
             damage = adr * roundCount,
             roundsPlayed = roundCount,
+            shots = randomShots(random, roundCount),
         )
     }
 
@@ -527,6 +529,7 @@ private fun Match.withScoreboard(
         combatScore = myCombatScore,
         damage = mine.damage,
         roundsPlayed = rounds.size,
+        shots = renamed.fold(Shots.None) { total, round -> total + round.myShots },
     )
     return copy(
         rounds = renamed,
@@ -534,4 +537,12 @@ private fun Match.withScoreboard(
             allies.mapIndexed { index, player -> other(player, onMyTeam = true, index = index) } +
             enemies.mapIndexed { index, player -> other(player, onMyTeam = false, index = index + allies.size) },
     )
+}
+
+// 다른 사람의 맞힌 부위다. 라운드마다 여섯에서 열한 발쯤 맞히고 그중 헤드샷이 12~32%다.
+private fun randomShots(random: Random, rounds: Int): Shots {
+    val total = rounds * random.nextInt(6, 12)
+    val head = (total * random.nextDouble(0.12, 0.32)).toInt()
+    val leg = (total * random.nextDouble(0.03, 0.1)).toInt()
+    return Shots(head = head, body = total - head - leg, leg = leg)
 }

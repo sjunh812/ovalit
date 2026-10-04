@@ -26,11 +26,15 @@
 
     <string name="my_team">우리 팀</string>
     <string name="enemy_team">상대 팀</string>
-    <string name="column_kda">K / D / A</string>
-    <string name="column_adr">ADR</string>
     <string name="me">나</string>
     <string name="friend_badge">친구</string>
-    <string name="scoreboard_note">친구의 프로필만 열 수 있어요. 다른 플레이어를 누르면 친구 요청을 보낼 수 있어요.</string>
+    <string name="scoreboard_note">줄을 누르면 그 판 기록을 더 볼 수 있어요. 이름을 누르면 나와 친구는 프로필이 열리고, 다른 플레이어에게는 친구 요청이나 초대 링크를 보낼 수 있어요.</string>
+    <string name="player_stats_expand">그 판 기록 펼치기</string>
+    <string name="player_stats_collapse">그 판 기록 접기</string>
+    <string name="player_open_profile">프로필 열기</string>
+    <string name="player_stat_first_kills">퍼블</string>
+    <string name="player_stat_first_deaths">퍼데</string>
+    <string name="player_stat_multi_kills">멀티킬</string>
 
     <string name="side_attack">공격</string>
     <string name="side_defense">수비</string>

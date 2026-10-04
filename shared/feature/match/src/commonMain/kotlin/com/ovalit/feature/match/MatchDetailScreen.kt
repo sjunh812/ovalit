@@ -40,6 +40,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -56,11 +57,11 @@ import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.halfScores
 import com.ovalit.core.ui.MapImage
 import com.ovalit.core.ui.MapImageStyle
+import com.ovalit.core.ui.ResultTile
 import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.mapName
 import com.ovalit.core.ui.resultColor
-import com.ovalit.core.ui.resultText
 import com.ovalit.feature.match.resources.Res
 import com.ovalit.feature.match.resources.detail_caption
 import com.ovalit.feature.match.resources.detail_date
@@ -236,7 +237,18 @@ private fun ScoreHeadline(uiState: MatchDetailUiState.Success, modifier: Modifie
     val scoreDescription = stringResource(Res.string.score_description, score.myTeam, score.enemyTeam)
 
     Column(modifier = modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = 14.dp)) {
-        OvalitText(text = uiState.catalog.mapName(match.map), style = OvalitTheme.typography.titleL)
+        // 경기 목록 줄처럼 맵 이름 옆에 "승", "패" 칸을 둔다(사용자 요청, 2026-10-04). MVP와 순위는 바로 밑 스코어보드에 있다.
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            OvalitText(
+                text = uiState.catalog.mapName(match.map),
+                modifier = Modifier.weight(1f, fill = false),
+                style = OvalitTheme.typography.titleL,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(Modifier.width(OvalitSpacing.sm))
+            ResultTile(match.myTeamWon)
+        }
         Spacer(Modifier.height(6.dp))
         Row(verticalAlignment = Alignment.Bottom) {
             Row(
@@ -248,13 +260,6 @@ private fun ScoreHeadline(uiState: MatchDetailUiState.Success, modifier: Modifie
                 OvalitText(text = score.myTeam.toString(), style = big, color = resultColor(match.myTeamWon))
                 OvalitText(text = "–", style = OvalitTheme.typography.titleM, color = colors.t4, modifier = Modifier.padding(bottom = 6.dp))
                 OvalitText(text = score.enemyTeam.toString(), style = big, color = colors.t4)
-                // 색만으로는 승패를 못 읽어서 결과를 글자로도 적는다(사용자 요청, 2026-10-03)
-                OvalitText(
-                    text = resultText(match.myTeamWon),
-                    modifier = Modifier.padding(bottom = 6.dp),
-                    style = OvalitTheme.typography.label.copy(fontWeight = FontWeight.SemiBold),
-                    color = resultColor(match.myTeamWon),
-                )
             }
             Spacer(Modifier.weight(1f))
             OvalitText(

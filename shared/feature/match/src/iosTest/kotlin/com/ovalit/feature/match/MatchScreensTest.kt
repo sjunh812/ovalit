@@ -70,7 +70,8 @@ class MatchScreensTest {
 
         onNodeWithContentDescription("13 대 9").assertExists()
         onNodeWithText("전반 8–4 · 후반 5–5").assertExists()
-        onNodeWithText("승리").assertExists()
+        // 경기 목록 줄처럼 맵 이름 옆에 승패 칸을 둔다(사용자 요청, 2026-10-04)
+        onNodeWithText("승").assertExists()
     }
 
     // CLAUDE.md: 프로필은 서로 수락한 친구끼리만 본다
@@ -98,6 +99,26 @@ class MatchScreensTest {
 
         assertTrue(opened)
         onNodeWithText("친구 요청 보내기").assertDoesNotExist()
+    }
+
+    // 사용자 요청(2026-10-04): op.gg처럼 K/D/A와 ADR 밖의 기록도 그 자리에서 본다. 이름을 누르면 프로필은 그대로 열린다.
+    @Test
+    fun `이름 밖을 누르면 그 판 기록을 펼치고 다시 누르면 접는다`() = runComposeUiTest {
+        var friend: PlayerId? = null
+        setContent { Themed { Detail(onOpenFriend = { friend = it }) } }
+
+        val first = MatchPreviewData.detail.myTeam.first().line
+        val kda = "${first.kills}/${first.deaths}/${first.assists}"
+
+        onNodeWithText("퍼블").assertDoesNotExist()
+        onNodeWithText(kda, substring = true).performClick()
+        onNodeWithText("퍼블").assertExists()
+        onNodeWithText("멀티킬").assertExists()
+        assertEquals(null, friend)
+
+        onNodeWithText(kda, substring = true).performClick()
+        waitForIdle()
+        onNodeWithText("퍼블").assertDoesNotExist()
     }
 
     @Test

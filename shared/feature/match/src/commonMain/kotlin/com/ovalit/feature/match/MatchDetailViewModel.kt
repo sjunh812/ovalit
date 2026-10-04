@@ -9,10 +9,14 @@ import com.ovalit.core.model.BuyRecord
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.MatchId
+import com.ovalit.core.model.MatchPlacement
+import com.ovalit.core.model.MatchPlayerStats
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.RoundSummary
 import com.ovalit.core.model.Scoreline
 import com.ovalit.core.model.buyRecords
+import com.ovalit.core.model.placements
+import com.ovalit.core.model.playerStats
 import com.ovalit.core.model.roundSummaries
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -51,7 +55,16 @@ sealed interface MatchDetailUiState {
     ) : MatchDetailUiState
 }
 
-data class ScoreboardRow(val line: Scoreline, val relation: PlayerRelation)
+/**
+ * @property placement 그 판 스코어보드에서의 자리입니다. MVP와 팀 MVP를 이름 옆에 적습니다.
+ * @property stats 줄을 펼치면 보이는 퍼블, 퍼데, 멀티킬입니다.
+ */
+data class ScoreboardRow(
+    val line: Scoreline,
+    val relation: PlayerRelation,
+    val placement: MatchPlacement? = null,
+    val stats: MatchPlayerStats? = null,
+)
 
 /**
  * 스코어보드에서 그 사람과 나의 관계입니다. 프로필은 서로 수락한 친구만 열 수 있고, 친구가 아닌 사람을
@@ -118,10 +131,13 @@ class MatchDetailViewModel(
 
     val uiState: StateFlow<MatchDetailUiState> = combine(match, relations, contentRepository.catalog) { match, relations, catalog ->
         if (match == null) return@combine MatchDetailUiState.Gone
+        // 게임 스코어보드처럼 라운드당 전투점수 순이다. 합계로 세우면 튕겨서 덜 뛴 사람이 밀린다. 순위와 MVP도 같은 순서로 정한다.
+        val placements = match.placements()
+        val stats = match.playerStats()
         fun rows(onMyTeam: Boolean) = match.players
             .filter { it.onMyTeam == onMyTeam }
-            .sortedByDescending { it.combatScore }
-            .map { ScoreboardRow(it, relations.of(it.player, me = match.me)) }
+            .sortedBy { placements[it.player]?.rank ?: Int.MAX_VALUE }
+            .map { ScoreboardRow(it, relations.of(it.player, me = match.me), placements[it.player], stats[it.player]) }
         MatchDetailUiState.Success(
             match = match,
             catalog = catalog,

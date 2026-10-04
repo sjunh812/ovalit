@@ -36,17 +36,33 @@ fun OvalitExpandable(visible: Boolean, modifier: Modifier = Modifier, content: @
     }
 }
 
-/** 펼침 여부를 보여주는 화살표입니다. 오른쪽을 보다가 펼치면 아래로 돌아갑니다. */
+/**
+ * 펼침 여부를 보여주는 화살표입니다. 오른쪽을 보다가 펼치면 아래로 돌아갑니다.
+ *
+ * @param pointsDown 그 자리에서 밑으로 펼치는 줄이면 `true`입니다. 아래를 보다가 펼치면 위로 돕니다. 오른쪽 화살표는 다른
+ * 화면으로 넘어가는 줄에도 달려 있어서, 넘어가지 않고 펼치기만 하는 S3 스코어보드 줄은 아래를 보게 합니다(사용자 요청,
+ * 2026-10-04).
+ */
 @Composable
 fun OvalitDisclosureIcon(
     expanded: Boolean,
     modifier: Modifier = Modifier,
     tint: Color = OvalitTheme.colors.t3,
     size: Dp = 14.dp,
+    pointsDown: Boolean = false,
 ) {
     val rotation by animateFloatAsState(
-        targetValue = if (expanded) 90f else 0f,
+        targetValue = when {
+            pointsDown -> if (expanded) 180f else 0f
+            else -> if (expanded) 90f else 0f
+        },
         animationSpec = tween(if (expanded) EXPAND_MILLIS else COLLAPSE_MILLIS, easing = FastOutSlowInEasing),
     )
-    OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, modifier = modifier.rotate(rotation), tint = tint, size = size)
+    OvalitIcon(
+        if (pointsDown) OvalitIcons.ChevronDown else OvalitIcons.ChevronRight,
+        contentDescription = null,
+        modifier = modifier.rotate(rotation),
+        tint = tint,
+        size = size,
+    )
 }

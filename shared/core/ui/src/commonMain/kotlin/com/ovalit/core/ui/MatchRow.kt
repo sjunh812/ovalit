@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +33,7 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Match
+import com.ovalit.core.model.myPlacement
 import com.ovalit.core.ui.resources.Res
 import com.ovalit.core.ui.resources.match_adr
 import com.ovalit.core.ui.resources.match_kda
@@ -78,6 +80,7 @@ fun MatchRow(
     }
     val result = resultText(match.myTeamWon)
     val compact = style == MatchRowStyle.COMPACT
+    val placement = remember(match) { match.myPlacement }
     val caption = OvalitTheme.typography.caption
     val small = OvalitTheme.typography.metricS
 
@@ -99,7 +102,19 @@ fun MatchRow(
         }
         Spacer(Modifier.width(13.dp))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 4.dp)) {
-            OvalitText(text = mapName, style = OvalitTheme.typography.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            // 색만으로는 승패를 못 읽어서 맵 이름 옆에 "승", "패"를 결과 색을 옅게 깐 칸에 적는다(사용자 요청, 2026-10-03). op.gg처럼
+            // 줄 전체를 칠하면 목록이 빨강과 초록 띠가 된다.
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                OvalitText(
+                    text = mapName,
+                    modifier = Modifier.weight(1f, fill = false),
+                    style = OvalitTheme.typography.bodyStrong,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Spacer(Modifier.width(6.dp))
+                ResultTile(match.myTeamWon)
+            }
             // 글자를 키워 한 줄에 안 들어가면 시각이 다음 줄로 내려간다. 점은 줄 맨 앞에 두지 않는다.
             SeparatedRow(
                 items = listOf(
@@ -118,11 +133,12 @@ fun MatchRow(
             verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 4.dp),
         ) {
             val scoreStyle = OvalitTheme.typography.metricS.copy(fontSize = 15.sp, fontWeight = FontWeight.Bold)
-            // 색만으로는 승패를 못 읽어서 스코어 앞에 "승", "패"를 결과 색을 옅게 깐 칸에 적는다(사용자 요청, 2026-10-03). op.gg처럼
-            // 줄 전체를 칠하면 목록이 빨강과 초록 띠가 된다.
+            // 스코어 앞에 그 판의 자리("MVP", "3등")를 둔다. 목록만 봐도 얼마나 보탰는지 보인다(사용자 요청, 2026-10-04).
             Row(verticalAlignment = Alignment.CenterVertically) {
-                ResultTile(match.myTeamWon)
-                Spacer(Modifier.width(7.dp))
+                placement?.let {
+                    PlacementLabel(it)
+                    Spacer(Modifier.width(7.dp))
+                }
                 OvalitText(
                     text = stringResource(Res.string.match_score, score.myTeam, score.enemyTeam),
                     modifier = Modifier.weight(1f, fill = false),
@@ -146,12 +162,12 @@ fun MatchRow(
     }
 }
 
-// 결과 색을 옅게 깐 작은 네모다. 알약 모양은 쓰지 않는다(CLAUDE.md 디자인).
+/** 결과 색을 옅게 깐 작은 네모에 "승", "패", "무"를 적습니다. 알약 모양은 쓰지 않습니다(CLAUDE.md 디자인). */
 @Composable
-private fun ResultTile(won: Boolean?) {
+fun ResultTile(won: Boolean?, modifier: Modifier = Modifier) {
     val color = resultColor(won)
     Box(
-        modifier = Modifier
+        modifier = modifier
             .size(ResultTileSize)
             .clip(RoundedCornerShape(6.dp))
             .background(color.copy(alpha = RESULT_TILE_ALPHA)),

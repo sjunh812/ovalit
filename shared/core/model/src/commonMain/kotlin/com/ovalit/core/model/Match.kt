@@ -78,6 +78,8 @@ fun Iterable<Match>.latestTier(): Int? = this
  *
  * @property tier 경기 당시 티어 번호(`competitiveTier`)입니다. 배치를 안 끝냈으면 `null`입니다.
  * @property damage 이 경기에서 입힌 피해 합계입니다. 응답에는 라운드별로만 있어서 더해서 담습니다.
+ * @property shots 이 경기에서 맞힌 부위별 횟수입니다. 응답에는 라운드별 `damage[]`에만 있어서 더해서 담습니다. 모르면
+ * `null`이고 S3에서 펼친 줄의 헤드샷을 비웁니다.
  */
 data class Scoreline(
     val player: PlayerId,
@@ -92,6 +94,7 @@ data class Scoreline(
     val combatScore: Int,
     val damage: Int,
     val roundsPlayed: Int,
+    val shots: Shots? = null,
 ) {
     val acs: Double? get() = combatScore over roundsPlayed
 

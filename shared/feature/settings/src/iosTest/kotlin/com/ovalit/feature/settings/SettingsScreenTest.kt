@@ -34,7 +34,7 @@ class SettingsScreenTest {
         val ads = CountingAds()
         setContent { Settings(ads = ads) }
 
-        onNodeWithText("광고 보고 24시간").performScrollTo().performClick()
+        onNodeWithText("광고 없이 보기").performScrollTo().performClick()
 
         assertEquals(1, ads.offered)
     }
@@ -46,7 +46,7 @@ class SettingsScreenTest {
         setContent { Settings(uiState = hidden, ads = CountingAds()) }
 
         onNodeWithText("내일 16:30까지").performScrollTo().assertExists()
-        onNodeWithText("광고 보고 24시간").assertDoesNotExist()
+        onNodeWithText("광고 없이 보기").assertHasNoClickAction()
     }
 
     @Test
@@ -110,7 +110,7 @@ class SettingsScreenTest {
 
     // 주간 리포트는 서버가 월요일 9시에 FCM 토픽으로 보낸다
     @Test
-    fun `알림에는 분석 완료 주간 리포트 오발있 스위치를 둔다`() = runComposeUiTest {
+    fun `알림에는 분석 완료와 주간 리포트를 두고 오발있 카드에는 파티 모집 알림을 둔다`() = runComposeUiTest {
         var weekly: Boolean? = null
         var ping: Boolean? = null
         setContent {
@@ -119,7 +119,7 @@ class SettingsScreenTest {
 
         onNodeWithText("분석 완료", substring = true).assertExists()
         onNodeWithText("주간 리포트", substring = true).performScrollTo().performClick()
-        onNodeWithText("파티를 모집하거나", substring = true).performScrollTo().performClick()
+        onNodeWithText("파티 모집 알림", substring = true).performScrollTo().performClick()
 
         assertEquals(false, weekly)
         assertEquals(false, ping)
@@ -153,7 +153,7 @@ class SettingsScreenTest {
         var focus: Focus? = null
         setContent { Settings(actions = SettingsActions(onFocusChange = { focus = it })) }
 
-        onNodeWithText("관심사").performClick()
+        onNodeWithText("관심사").performScrollTo().performClick()
         onNodeWithText("기복 줄이기").performClick()
 
         assertEquals(Focus.CONSISTENCY, focus)
@@ -164,7 +164,7 @@ class SettingsScreenTest {
     fun `관심사 시트는 고르면 먼저 볼 지표를 적는다`() = runComposeUiTest {
         setContent { Settings() }
 
-        onNodeWithText("관심사").performClick()
+        onNodeWithText("관심사").performScrollTo().performClick()
 
         onNodeWithText("첫 교전 승률, 멀티킬 라운드", useUnmergedTree = true).assertExists()
         onNodeWithText("관여율, 생존율", useUnmergedTree = true).assertExists()
@@ -190,12 +190,12 @@ class SettingsScreenTest {
         var deleted: Boolean? = null
         setContent { Settings(actions = SettingsActions(onDeleteData = { deleted = true })) }
 
-        onNodeWithText("저장된 데이터 삭제").performClick()
+        onNodeWithText("저장된 데이터 삭제").performScrollTo().performClick()
         onNodeWithText("127경기와 리포트가 지워져요. Riot 계정 연동은 그대로예요.").assertExists()
         onNodeWithText("취소").performClick()
 
         assertNull(deleted)
-        onNodeWithText("저장된 경기를 지울까요?").assertDoesNotExist()
+        onNodeWithText("저장된 데이터를 지울까요?").assertDoesNotExist()
     }
 }
 

@@ -17,9 +17,10 @@
     <string name="notify_weekly_report">주간 리포트</string>
     <string name="notify_weekly_report_time">월요일 오전 9시</string>
     <string name="notify_ping">오발있?</string>
-    <string name="notify_ping_description">친구가 파티를 모집하거나 내 초대에 답하면 알려드려요.</string>
+    <string name="notify_ping_invites">파티 모집 알림</string>
+    <string name="notify_ping_description">친구가 나를 부르거나 내 초대에 답하면 알려드려요.</string>
     <string name="ping_reminder">시작 전 알림</string>
-    <string name="ping_reminder_description">내가 모집했거나 간다고 답한 파티가 시작하기 전에 한 번 알려드려요.</string>
+    <string name="ping_reminder_description">내가 모집했거나 가기로 한 파티가 시작하기 전에 알려드려요.</string>
     <string name="ping_reminder_10">10분 전</string>
     <string name="ping_reminder_30">30분 전</string>
     <string name="ping_reminder_60">1시간 전</string>
@@ -58,7 +59,7 @@
     <string name="version">버전 %1$s</string>
     <!-- 보상형 광고로 24시간 광고를 숨기는 줄이다. 숨기는 동안에는 끝나는 시각을 적는다. -->
     <string name="ad_free">광고 없이 보기</string>
-    <string name="ad_free_offer">광고 보고 24시간</string>
+    <string name="ad_free_description">광고 한 편을 끝까지 보면 24시간 동안 광고가 나오지 않아요.</string>
     <string name="ad_free_until_today">오늘 %1$s까지</string>
     <string name="ad_free_until_tomorrow">내일 %1$s까지</string>
 </resources>

@@ -63,6 +63,9 @@ enum class MatchRowStyle {
     COMPACT,
 }
 
+// 경기 목록 줄은 위아래로 16dp를 띄운다(사용자 요청, 2026-10-04). 13dp일 때는 줄마다 글자가 여섯 덩이라 다닥다닥 붙어 보였다.
+private fun rowPadding(style: MatchRowStyle) = if (style == MatchRowStyle.COMPACT) 11.dp else 16.dp
+
 /**
  * 경기 한 줄입니다. 스코어는 이겼으면 `--pos`, 졌으면 `--neg`로 칠하고, 낭독기에는 승패를 말로 읽어 줍니다. 숫자는 게임
  * 스코어보드와 같게 응답의 K/D/A와 전투점수를 그대로 씁니다.
@@ -101,7 +104,7 @@ fun MatchRow(
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
             .semantics(mergeDescendants = true) { stateDescription = result }
-            .padding(horizontal = OvalitSpacing.gutter, vertical = if (compact) 11.dp else 13.dp),
+            .padding(horizontal = OvalitSpacing.gutter, vertical = rowPadding(style)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         when (style) {
@@ -113,7 +116,7 @@ fun MatchRow(
             )
         }
         Spacer(Modifier.width(13.dp))
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 5.dp)) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 6.dp)) {
             // 윗줄은 맵 이름, 아랫줄은 승패와 큐, 시각이다
             OvalitText(text = mapName, style = OvalitTheme.typography.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis)
             // 아랫줄 맨 앞에 "승리", "패배"를 결과 색으로 적는다(사용자 요청, 2026-10-04). 줄마다 같은 자리라 위아래로 훑으면 승패가
@@ -136,7 +139,8 @@ fun MatchRow(
         Column(
             modifier = Modifier.weight(RIGHT_COLUMN_WEIGHT),
             horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 4.dp),
+            // 칩이 스코어보다 높아 왼쪽보다 넓게 띄워야 두 칸의 아랫줄이 같은 높이에 온다
+            verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 7.dp),
         ) {
             val scoreStyle = OvalitTheme.typography.metricS.copy(fontSize = 15.sp, fontWeight = FontWeight.Bold)
             // 스코어도 결과 색으로 칠한다. 스코어 앞에 승패 칸이나 "승리"를 두니 MVP·등수 칩과 겹쳐 산만했다(사용자 요청,
@@ -159,12 +163,15 @@ fun MatchRow(
                 )
             }
             if (kda != null) {
+                // K/D/A는 진한 글자로만 올리고 굵기는 Medium이다. 한 줄에 맵 이름, 승패, 칩, 스코어가 이미 굵어서 K/D/A와 ACS까지
+                // 굵으면 눈이 머물 곳이 없었다(사용자 요청, 2026-10-04). ACS는 숫자 글꼴의 기본 SemiBold를 보통 굵기로 내린다.
+                val regular = small.copy(fontWeight = FontWeight.Normal)
                 SeparatedRow(
                     items = listOfNotNull(
-                        { OvalitText(text = kda, style = small.copy(fontWeight = FontWeight.SemiBold), color = colors.t1) },
-                        acs?.let { { OvalitText(text = it, style = small, color = colors.t2) } },
+                        { OvalitText(text = kda, style = small.copy(fontWeight = FontWeight.Medium), color = colors.t1) },
+                        acs?.let { { OvalitText(text = it, style = regular, color = colors.t2) } },
                     ),
-                    separator = { SeparatorDot(small, colors.t2) },
+                    separator = { SeparatorDot(regular, colors.t2) },
                     alignEnd = true,
                 )
             }
@@ -259,7 +266,7 @@ fun MatchRowsSkeleton(rows: Int, style: MatchRowStyle, modifier: Modifier = Modi
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = OvalitSpacing.gutter, vertical = if (compact) 11.dp else 13.dp),
+                        .padding(horizontal = OvalitSpacing.gutter, vertical = rowPadding(style)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     if (compact) SkeletonBlock(width = 34.dp, height = 34.dp, radius = 9.dp) else SkeletonBlock(width = 54.dp, height = 38.dp, radius = 8.dp)

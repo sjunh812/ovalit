@@ -192,7 +192,7 @@ private fun ColumnScope.PingDetailContent(
         Row(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.Bottom) {
             // 오늘이 아니면 "내일"을 시각과 같이 크게 둔다. 숫자보다 한 단계 작게 해서 시각이 먼저 읽힌다.
             pingHeroDay(ping, now, timeZone)?.let { day ->
-                OvalitText(text = day, modifier = Modifier.alignByBaseline(), style = OvalitTheme.typography.titleL)
+                OvalitText(text = day, modifier = Modifier.alignByBaseline(), style = OvalitTheme.typography.display)
                 Spacer(Modifier.width(OvalitSpacing.sm))
             }
             OvalitText(text = pingHeroTime(ping, timeZone), modifier = Modifier.alignByBaseline(), style = OvalitTheme.typography.metricXl)

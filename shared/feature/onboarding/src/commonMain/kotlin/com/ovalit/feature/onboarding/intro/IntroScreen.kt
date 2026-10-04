@@ -112,12 +112,12 @@ fun IntroScreen(
                 // 둬서 두 줄이 한 덩어리로 읽히게 한다.
                 OvalitText(
                     text = dimParentheses(stringResource(Res.string.intro_hook)),
-                    style = OvalitTheme.typography.titleL,
+                    style = OvalitTheme.typography.display,
                 )
 
                 OvalitText(
                     text = stringResource(Res.string.intro_headline),
-                    style = OvalitTheme.typography.titleL,
+                    style = OvalitTheme.typography.display,
                 )
 
                 Spacer(Modifier.height(OvalitSpacing.md))

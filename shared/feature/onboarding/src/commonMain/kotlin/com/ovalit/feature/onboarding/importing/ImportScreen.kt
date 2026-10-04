@@ -94,7 +94,7 @@ internal fun ImportScreen(
                 OvalitText(
                     text = stringResource(Res.string.import_title),
                     modifier = Modifier.semantics { heading() },
-                    style = OvalitTheme.typography.titleL,
+                    style = OvalitTheme.typography.display,
                 )
                 Spacer(Modifier.height(14.dp))
                 OvalitText(text = stringResource(Res.string.import_subtitle), style = OvalitTheme.typography.label, color = colors.t3)

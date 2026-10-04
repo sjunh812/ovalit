@@ -225,7 +225,7 @@ private fun MainRole(report: AgentReport, role: Role, catalog: ContentCatalog) {
         Spacer(Modifier.height(9.dp))
         Row(verticalAlignment = Alignment.Bottom) {
             // 프로필 머리처럼 역할 아이콘을 이름 바로 앞에 둔다. 아이콘 크기를 글자 크기에서 잡아 글씨를 키워도 같이 커진다.
-            val titleStyle = OvalitTheme.typography.titleL
+            val titleStyle = OvalitTheme.typography.display
             val iconSize = with(LocalDensity.current) { titleStyle.fontSize.toDp() }
             Row(modifier = Modifier.alignByBaseline(), verticalAlignment = Alignment.CenterVertically) {
                 RoleIcon(role, tint = colors.t1, modifier = Modifier.size(iconSize))

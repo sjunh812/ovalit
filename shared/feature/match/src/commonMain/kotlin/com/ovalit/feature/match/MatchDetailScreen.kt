@@ -294,7 +294,7 @@ private fun ScoreHeadline(uiState: MatchDetailUiState.Success, modifier: Modifie
             OvalitText(
                 text = uiState.catalog.mapName(match.map),
                 modifier = Modifier.weight(1f, fill = false),
-                style = OvalitTheme.typography.titleL,
+                style = OvalitTheme.typography.display,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )

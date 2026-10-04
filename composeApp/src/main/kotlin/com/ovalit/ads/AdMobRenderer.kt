@@ -97,7 +97,7 @@ internal class AdMobRenderer(
             frame {
                 NativeAdRow(
                     ad = loaded.ad,
-                    verticalPadding = if (placement == AdPlacement.HOME) 0.dp else 13.dp,
+                    verticalPadding = if (placement == AdPlacement.HOME) 0.dp else 16.dp,
                     onClose = { onClose(key) },
                 )
             }

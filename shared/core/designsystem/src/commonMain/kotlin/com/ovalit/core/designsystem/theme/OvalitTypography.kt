@@ -29,6 +29,7 @@ data class OvalitTypography(
     val metricL: TextStyle,
     val metricM: TextStyle,
     val metricS: TextStyle,
+    val display: TextStyle,
     val titleL: TextStyle,
     val titleM: TextStyle,
     val body: TextStyle,
@@ -64,7 +65,10 @@ fun ovalitTypography(fontFamily: FontFamily = FontFamily.Default): OvalitTypogra
         metricL = metric(size = 30, lineHeight = 34, tracking = -0.8),
         metricM = metric(size = 24, lineHeight = 28, tracking = -0.6),
         metricS = metric(size = 12, lineHeight = 16, tracking = 0.0),
-        titleL = text(size = 24, lineHeight = 32, tracking = -0.6, weight = FontWeight.SemiBold, lineBreak = KoreanLineBreak),
+        // 화면 제목, 홈 기간, 프로필 이름은 목업처럼 20이다(사용자 요청, 2026-10-04). 24로 두니 카드 제목과 숫자보다 커서 위계가
+        // 흐렸다. 온보딩 헤드라인, S3 맵 이름, S7 주 역할처럼 목업에서도 그보다 큰 곳만 display다.
+        display = text(size = 24, lineHeight = 32, tracking = -0.6, weight = FontWeight.SemiBold, lineBreak = KoreanLineBreak),
+        titleL = text(size = 20, lineHeight = 28, tracking = -0.4, weight = FontWeight.SemiBold, lineBreak = KoreanLineBreak),
         titleM = text(size = 17, lineHeight = 24, tracking = -0.3, weight = FontWeight.SemiBold, lineBreak = KoreanLineBreak),
         body = text(size = 15, lineHeight = 23, tracking = -0.1, weight = FontWeight.Normal),
         bodyStrong = text(size = 15, lineHeight = 23, tracking = -0.1, weight = FontWeight.SemiBold),

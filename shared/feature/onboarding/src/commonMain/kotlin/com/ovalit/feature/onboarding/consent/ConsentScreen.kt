@@ -71,7 +71,7 @@ fun ConsentScreen(onBack: () -> Unit, onContinue: () -> Unit, modifier: Modifier
             OvalitText(
                 text = stringResource(Res.string.consent_title),
                 modifier = Modifier.semantics { heading() },
-                style = OvalitTheme.typography.titleL,
+                style = OvalitTheme.typography.display,
             )
             Spacer(Modifier.height(40.dp))
             OvalitDivider()

@@ -52,6 +52,9 @@ import com.ovalit.core.ui.resources.match_result_win
 import com.ovalit.core.ui.resources.match_score
 import org.jetbrains.compose.resources.stringResource
 
+// 왼쪽 칸을 1로 볼 때 오른쪽 칸의 몫이다. MVP와 클러치 칩, 스코어가 보통 폭 기기에서 한 줄에 들어간다.
+private const val RIGHT_COLUMN_WEIGHT = 1.3f
+
 enum class MatchRowStyle {
     /** S2 경기 목록. 맵 썸네일에 요원 얼굴을 겹쳐 둡니다. */
     LIST,
@@ -111,16 +114,8 @@ fun MatchRow(
         }
         Spacer(Modifier.width(13.dp))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 5.dp)) {
-            // 윗줄은 맵 이름과 그 판의 자리(MVP, 팀 MVP, 등수), 에이스와 클러치 칩이고 아랫줄은 승패와 큐, 시각이다. 오른쪽 칸과 같이 윗줄이
-            // 결과, 아랫줄이 풀이다(사용자 요청, 2026-10-04). 칩만 아랫줄에 따로 두니 왼쪽이 무거워 보였다. 폭이 모자라면 뒤 칩부터 뺀다.
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                OvalitText(text = mapName, style = OvalitTheme.typography.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                ChipsThatFit(
-                    chips = listOfNotNull<@Composable () -> Unit>(placement?.let { { PlacementLabel(it) } }) +
-                        highlightChips(highlights).map { (text, tone) -> { MatchChip(text, tone) } },
-                    modifier = Modifier.weight(1f, fill = false).padding(start = 6.dp),
-                )
-            }
+            // 윗줄은 맵 이름, 아랫줄은 승패와 큐, 시각이다
+            OvalitText(text = mapName, style = OvalitTheme.typography.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis)
             // 아랫줄 맨 앞에 "승리", "패배"를 결과 색으로 적는다(사용자 요청, 2026-10-04). 줄마다 같은 자리라 위아래로 훑으면 승패가
             // 한눈에 보인다. 큐와 시각 뒤에 두니 시각 길이에 따라 자리가 들쭉날쭉했다.
             val resultStyle = SpanStyle(color = resultColor(match.myTeamWon), fontWeight = FontWeight.SemiBold)
@@ -136,17 +131,24 @@ fun MatchRow(
             )
         }
         Spacer(Modifier.width(OvalitSpacing.sm))
-        // 글자를 키우면 오른쪽 숫자가 폭을 다 가져가 맵 이름이 잘린다. 폭을 반씩 나눠 갖는다. 자기 몫을 다 채워야
-        // 숫자가 오른쪽 여백에 붙는다. 채우지 않으면 왼쪽 칸 바로 뒤에 붙어 줄 가운데에 뜬다.
+        // 글자를 키우면 오른쪽 숫자가 폭을 다 가져가 맵 이름이 잘린다. 폭을 정해 나눠 갖는다. 오른쪽은 칩과 스코어가 같이 서서
+        // 조금 더 가져간다. 자기 몫을 다 채워야 숫자가 오른쪽 여백에 붙는다. 채우지 않으면 왼쪽 칸 바로 뒤에 붙어 줄 가운데에 뜬다.
         Column(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(RIGHT_COLUMN_WEIGHT),
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 4.dp),
         ) {
             val scoreStyle = OvalitTheme.typography.metricS.copy(fontSize = 15.sp, fontWeight = FontWeight.Bold)
             // 스코어도 결과 색으로 칠한다. 스코어 앞에 승패 칸이나 "승리"를 두니 MVP·등수 칩과 겹쳐 산만했다(사용자 요청,
             // 2026-10-04). op.gg처럼 줄 전체를 칠하면 목록이 빨강과 초록 띠가 된다.
-            Row(verticalAlignment = Alignment.Bottom) {
+            // 그 판의 자리(MVP, 팀 MVP, 등수)와 에이스·클러치 칩은 스코어 앞에 둔다(사용자 요청, 2026-10-04). 자리는 바로 밑 전투점수로
+            // 정해져서 같이 읽힌다. 맵 이름 옆에 두니 이름과 칩이 붙어 왼쪽만 무거웠다. 폭이 모자라면 뒤 칩부터 뺀다.
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                ChipsThatFit(
+                    chips = listOfNotNull<@Composable () -> Unit>(placement?.let { { PlacementLabel(it) } }) +
+                        highlightChips(highlights).map { (text, tone) -> { MatchChip(text, tone) } },
+                    modifier = Modifier.weight(1f, fill = false).padding(end = 6.dp),
+                )
                 OvalitText(
                     text = stringResource(Res.string.match_score, score.myTeam, score.enemyTeam),
                     modifier = Modifier.weight(1f, fill = false),

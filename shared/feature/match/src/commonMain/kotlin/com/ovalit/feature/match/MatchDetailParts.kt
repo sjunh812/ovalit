@@ -53,14 +53,13 @@ import com.ovalit.core.model.RoundEnding
 import com.ovalit.core.model.RoundSummary
 import com.ovalit.core.model.Side
 import com.ovalit.core.ui.AgentImage
-import com.ovalit.core.ui.AwardTile
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.NO_VALUE
+import com.ovalit.core.ui.PlacementLabel
 import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.TierEmblem
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.annotated
-import com.ovalit.core.ui.awardText
 import com.ovalit.core.ui.kdaText
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.percentText
@@ -251,7 +250,8 @@ private fun PlayerRow(
                             overflow = TextOverflow.Ellipsis,
                             autoSize = shrinkToFit(OvalitTheme.typography.label.fontSize),
                         )
-                        awardText(row.placement?.award)?.let { AwardTile(it) }
+                        // MVP와 팀 MVP는 네모로, 나머지는 "3등"으로 적는다(사용자 요청, 2026-10-04)
+                        row.placement?.let { PlacementLabel(it) }
                         if (isFriend) {
                             OvalitText(text = stringResource(Res.string.friend_badge), style = OvalitTheme.typography.caption, color = colors.accentInk)
                         }

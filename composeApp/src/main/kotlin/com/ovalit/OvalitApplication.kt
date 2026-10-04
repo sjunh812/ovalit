@@ -1,6 +1,7 @@
 package com.ovalit
 
 import android.app.Application
+import android.content.res.Configuration
 import com.ovalit.ads.AdMobRenderer
 import com.ovalit.core.data.NewMatchesWatcher
 import com.ovalit.core.data.di.dataModule
@@ -30,6 +31,7 @@ class OvalitApplication : Application() {
         // 시작하다 죽어도 비정상 종료 보고를 놓치지 않게 무엇보다 먼저 띄운다.
         OvalitFirebase.start(this)
         registerActivityLifecycleCallbacks(AppVisibility)
+        AppLanguage.update(this)
 
         startKoin {
             androidLogger(if (BuildConfig.DEBUG) Level.INFO else Level.NONE)
@@ -38,8 +40,7 @@ class OvalitApplication : Application() {
                 appModule,
                 dataModule(
                     preferencesPath = { filesDir.resolve("ovalit.preferences_pb").absolutePath },
-                    // 기기 언어가 아니라 리소스 설정의 언어를 따라야 화면 문구와 이름의 언어가 맞는다. 앱별 언어를 고르면 이쪽만 바뀐다.
-                    language = { resources.configuration.locales[0].language },
+                    language = AppLanguage.current,
                 ),
                 onboardingModule,
                 reportModule,
@@ -55,6 +56,11 @@ class OvalitApplication : Application() {
         // 앱을 다시 열면 그사이 끝난 경기를 받고, 많이 남은 채로 떠나면 WorkManager가 이어 받는다
         val newMatches = get<NewMatchesWatcher>()
         AppVisibility.onChange = { visible -> if (visible) newMatches.onAppVisible() else newMatches.onAppHidden() }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        AppLanguage.update(this)
     }
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default + LogBackgroundFailure)

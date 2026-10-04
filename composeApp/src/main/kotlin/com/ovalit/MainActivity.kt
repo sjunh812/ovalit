@@ -41,6 +41,8 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        // 앱별 언어를 바꾸면 이 화면이 새 언어로 다시 만들어진다. 이름 카탈로그도 그 언어로 바꾼다.
+        AppLanguage.update(this)
         if (savedInstanceState == null) intent.getStringExtra(EXTRA_OPEN_PING)?.let(openPing::trySend)
 
         setContent {

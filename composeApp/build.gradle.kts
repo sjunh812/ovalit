@@ -16,6 +16,14 @@ val ADMOB_TEST_APP_ID = "ca-app-pub-3940256099942544~3347511713"
 val ADMOB_TEST_NATIVE_UNIT_ID = "ca-app-pub-3940256099942544/2247696110"
 val ADMOB_TEST_REWARDED_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
 
+val localProperties = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+
+// local.properties의 값이다. 키만 적고 값을 비워 둔 것도 없는 것으로 친다. 빈 admob.appId가 그대로 들어가면 광고 SDK가 앱
+// 시작 때 죽는다.
+fun localProperty(key: String): String? = localProperties.getProperty(key)?.trim()?.takeIf { it.isNotEmpty() }
+
 android {
     namespace = "com.ovalit"
 
@@ -25,10 +33,7 @@ android {
         versionName = "0.1.0"
         // RSO 로그인을 마치면 서버가 돌려보내는 App Link의 호스트다(server/README.md). 비밀값은 아니지만 배포 주소가
         // 정해지기 전이라 local.properties에서 받는다. 없으면 아무 데도 이어지지 않는 예약 도메인을 쓴다.
-        val localProperties = Properties().apply {
-            rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
-        }
-        manifestPlaceholders["ovalitServerHost"] = localProperties.getProperty("ovalit.server.host") ?: "ovalit.invalid"
+        manifestPlaceholders["ovalitServerHost"] = localProperty("ovalit.server.host") ?: "ovalit.invalid"
         // FCM은 google-services.json 대신 이 네 값으로 띄운다. 비밀값은 아니지만 프로젝트마다 달라서 local.properties에서
         // 받는다. 없으면 빈 값이고 앱은 푸시 없이 돈다.
         listOf(
@@ -37,17 +42,17 @@ android {
             "FIREBASE_PROJECT_ID" to "firebase.projectId",
             "FIREBASE_SENDER_ID" to "firebase.senderId",
         ).forEach { (field, key) ->
-            buildConfigField("String", field, "\"${localProperties.getProperty(key).orEmpty()}\"")
+            buildConfigField("String", field, "\"${localProperty(key).orEmpty()}\"")
         }
         // 광고 단위 ID가 없으면 광고를 요청하지 않는다. 제품이 승인되기 전에는 수익을 낼 수 없어 실제 ID를 넣지 않는다
         // (CLAUDE.md 지켜야 할 선). SDK는 앱 ID가 없으면 시작하지 않아서 그때는 Google 테스트 앱 ID를 넣는다.
-        manifestPlaceholders["admobAppId"] = localProperties.getProperty("admob.appId") ?: ADMOB_TEST_APP_ID
-        buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", "\"${localProperties.getProperty("admob.nativeUnitId").orEmpty()}\"")
+        manifestPlaceholders["admobAppId"] = localProperty("admob.appId") ?: ADMOB_TEST_APP_ID
+        buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", "\"${localProperty("admob.nativeUnitId").orEmpty()}\"")
         // "24시간 광고 없이 보기"에 쓰는 보상형 광고다. 없으면 광고 줄의 ×가 그 광고만 바로 닫고 설정 줄이 없다.
-        buildConfigField("String", "ADMOB_REWARDED_UNIT_ID", "\"${localProperties.getProperty("admob.rewardedUnitId").orEmpty()}\"")
+        buildConfigField("String", "ADMOB_REWARDED_UNIT_ID", "\"${localProperty("admob.rewardedUnitId").orEmpty()}\"")
         // 설정의 "피드백 보내기"가 여는 메일의 받는 주소다. 개인 주소를 저장소에 넣지 않으려고 local.properties에서 받고, 없으면
         // 그 줄이 없다.
-        buildConfigField("String", "FEEDBACK_EMAIL", "\"${localProperties.getProperty("ovalit.feedback.email").orEmpty()}\"")
+        buildConfigField("String", "FEEDBACK_EMAIL", "\"${localProperty("ovalit.feedback.email").orEmpty()}\"")
         // Crashlytics SDK는 이 값이 없으면 시작하자마자 죽는다. google-services와 Crashlytics Gradle 플러그인 없이 쓰니(CLAUDE.md 비용)
         // 플러그인이 만들던 값을 직접 넣는다. 디버그는 난독화하지 않아 매핑 파일이 없으니 0으로 둔다.
         resValue("string", "com.google.firebase.crashlytics.mapping_file_id", "0".repeat(32))
@@ -70,10 +75,7 @@ android {
         // 디버그 빌드에서 광고 자리를 보려면 local.properties에 admob.test=true를 두거나 -Povalit.ads.test=true로 빌드한다.
         // Google 테스트 광고만 받는다. 릴리스는 이 값을 보지 않는다.
         debug {
-            val localProperties = Properties().apply {
-                rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
-            }
-            val testAds = (findProperty("ovalit.ads.test") ?: localProperties.getProperty("admob.test"))?.toString() == "true"
+            val testAds = (findProperty("ovalit.ads.test") ?: localProperty("admob.test"))?.toString() == "true"
             if (testAds) {
                 manifestPlaceholders["admobAppId"] = ADMOB_TEST_APP_ID
                 buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", "\"$ADMOB_TEST_NATIVE_UNIT_ID\"")

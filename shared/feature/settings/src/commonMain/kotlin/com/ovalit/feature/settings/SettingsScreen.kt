@@ -67,6 +67,7 @@ import com.ovalit.feature.settings.resources.notify_weekly_report
 import com.ovalit.feature.settings.resources.notify_weekly_report_time
 import com.ovalit.feature.settings.resources.open_profile
 import com.ovalit.feature.settings.resources.ping_reminder
+import com.ovalit.feature.settings.resources.ping_reminder_description
 import com.ovalit.feature.settings.resources.section_data
 import com.ovalit.feature.settings.resources.section_display
 import com.ovalit.feature.settings.resources.section_notifications
@@ -215,11 +216,12 @@ internal fun SettingsScreen(
                 checked = preferences.notifyPing,
                 onCheckedChange = actions.onNotifyPingChange,
             )
-            // 오발있 알림을 껐으면 미리 알림도 오지 않아 줄을 두지 않는다
+            // 오발있 알림을 껐으면 시작 전 알림도 오지 않아 줄을 두지 않는다. 이름만으로는 무엇이 시작하기 전인지 몰라 설명을 단다.
             if (preferences.notifyPing) {
                 RowDivider()
                 ValueRow(
                     title = stringResource(Res.string.ping_reminder),
+                    description = stringResource(Res.string.ping_reminder_description),
                     value = stringResource(preferences.pingReminder.label),
                     onClick = { openSheet = SettingsSheet.PING_REMINDER },
                 )
@@ -417,6 +419,7 @@ private fun ToggleRow(
 private fun ValueRow(
     title: String,
     value: String? = null,
+    description: String? = null,
     onClick: (() -> Unit)? = null,
 ) {
     Row(
@@ -427,7 +430,15 @@ private fun ValueRow(
             .padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        OvalitText(text = title, modifier = Modifier.weight(1f), style = OvalitTheme.typography.body)
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(OvalitSpacing.xs),
+        ) {
+            OvalitText(text = title, style = OvalitTheme.typography.body)
+            if (description != null) {
+                OvalitText(text = description, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t3)
+            }
+        }
         if (value != null) {
             Spacer(Modifier.width(OvalitSpacing.md))
             OvalitText(text = value, style = OvalitTheme.typography.body, color = OvalitTheme.colors.t2)

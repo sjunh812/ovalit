@@ -53,7 +53,7 @@ import com.ovalit.feature.report.resources.period_no_matches_this_week
 import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
 
-// 말풍선 높이가 오른쪽 위 아바타(30dp)와 비슷해지는 폭
+// 로고 말풍선 높이가 오른쪽 위 아바타(30dp)와 비슷해지는 폭
 private val TopBarLogoWidth = 38.dp
 private val AvatarSize = 30.dp
 private val TierEmblemSize = 16.dp
@@ -163,7 +163,7 @@ private fun periodCaption(report: WeeklyReport.Ready): AnnotatedString {
     val roleText = report.mainRole?.let { mainRoleText(it, report.mainRoleShare) }
     val emphasis = SpanStyle(color = OvalitTheme.colors.t2, fontWeight = FontWeight.SemiBold)
 
-    // 역할 이름만 한 단계 밝고 굵게 둔다. 기간 줄의 강조는 이 한 곳뿐이다(CLAUDE.md 화면). 좁으면 항목 사이에서만
+    // 역할 이름만 한 단계 밝고 굵게 둔다. 기간 줄의 강조는 이 한 곳뿐이다(docs/screens.md). 좁으면 항목 사이에서만
     // 줄이 바뀐다.
     return buildAnnotatedString {
         if (role != null && roleText != null) {

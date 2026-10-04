@@ -41,7 +41,7 @@ private val Jaehyun = PingPerson(PlayerId("jaehyun"), "재현#KR2")
 @OptIn(ExperimentalTestApi::class)
 class PingScreenTest {
 
-    // 사용자 요청(2026-10-03): 친구 탭에 초대를 펼쳐 두면 자리를 크게 차지해서 한 줄씩 두고 누르면 들어간다
+    // 초대를 친구 탭에 펼쳐 두면 자리를 크게 차지한다
     @Test
     fun `친구 탭은 초대마다 한 줄을 두고 누르면 그 초대를 연다`() = runComposeUiTest {
         var opened: PingId? = null
@@ -61,7 +61,7 @@ class PingScreenTest {
         onNodeWithText("3명 중 1명 참석").assertExists()
     }
 
-    // 사용자 요청(2026-10-03): "봉봉이"에 "이"를 붙이면 "봉봉이이"로 읽힌다. 닉네임 뒤에는 받침과 상관없는 조사만 쓴다.
+    // "봉봉이"에 "이"를 붙이면 "봉봉이이"로 읽힌다
     @Test
     fun `닉네임 뒤에는 받침에 따라 바뀌는 조사를 붙이지 않는다`() = runComposeUiTest {
         setContent { Friends(pings = listOf(received().copy(host = PingPerson(PlayerId("bong"), "봉봉이#KR1")))) }
@@ -79,7 +79,6 @@ class PingScreenTest {
         onNodeWithText("시간을 정해 친구를 4명까지 한 번에 불러요").assertExists()
     }
 
-    // 사용자 요청(2026-10-03): 친구 탭을 크게 차지하지 않게 부르기는 시트로 띄운다
     @Test
     fun `파티 모집을 누르면 시트에서 친구와 시각을 골라 부른다`() = runComposeUiTest {
         var sentTo: List<PlayerId>? = null
@@ -133,7 +132,7 @@ class PingScreenTest {
         onNodeWithText("오발러").assertDoesNotExist()
     }
 
-    // 사용자 요청(2026-10-03): 날짜를 작은 글자에만 두면 큰 시각이 오늘처럼 읽힌다
+    // 날짜를 작은 글자에만 두면 큰 시각이 오늘처럼 읽힌다
     @Test
     fun `오늘이 아니면 날짜를 큰 시각 앞에 두고 옆에는 남은 시간만 적는다`() = runComposeUiTest {
         setContent { Detail(received().copy(startsAt = LocalDateTime(2026, 10, 4, 16, 0).toInstant(Seoul))) }
@@ -152,7 +151,7 @@ class PingScreenTest {
         onNodeWithText("4시간 5분 뒤").assertExists()
     }
 
-    // 사용자 결정(2026-10-03): 누르면 확정하고 버튼 줄을 접는다. 남겨 두면 누를 때마다 알림이 간다.
+    // 버튼을 남겨 두면 누를 때마다 부른 친구에게 알림이 간다
     @Test
     fun `답하면 버튼 줄을 접고 바꾸기를 눌러야 다시 고른다`() = runComposeUiTest {
         val replies = mutableListOf<PingAnswer>()
@@ -192,7 +191,7 @@ class PingScreenTest {
         onNodeWithText("21:30 제안").assertExists()
     }
 
-    // 사용자 요청(2026-10-04): 정해진 시간을 휠에서 빼면 지금 몇 시로 잡혀 있는지 안 보인다
+    // 정해진 시간을 휠에서 빼면 지금 몇 시로 잡혀 있는지 안 보인다
     @Test
     fun `다른 시간 휠은 정해진 시간을 흐리게 두고 그다음 시간부터 고른다`() = runComposeUiTest {
         var reply: Pair<PingAnswer, Instant?>? = null
@@ -210,7 +209,7 @@ class PingScreenTest {
         assertEquals(PingAnswer.OTHER_TIME to NineThirty, reply)
     }
 
-    // 사용자 요청(2026-10-03): 제안이 여럿 와도 줄이 사람 수만큼 쌓이지 않게 같은 시각끼리 모은다
+    // 제안이 여럿 와도 줄이 사람 수만큼 쌓이지 않는다
     @Test
     fun `보낸 초대 화면은 같은 시각을 낸 친구를 한 줄에 모아 수락받는다`() = runComposeUiTest {
         var moved: Instant? = null
@@ -225,7 +224,6 @@ class PingScreenTest {
         assertEquals(NineThirty, moved)
     }
 
-    // 사용자 요청(2026-10-03): 누가 못 간다고 하거나 깜빡 빠뜨린 친구를 더 부른다
     @Test
     fun `보낸 초대 화면에서 부르지 않은 친구를 더 부른다`() = runComposeUiTest {
         var invited: List<PlayerId>? = null

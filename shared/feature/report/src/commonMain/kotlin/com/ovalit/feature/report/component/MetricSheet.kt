@@ -98,7 +98,6 @@ internal fun MetricSheet(
 internal fun MetricSheetBody(metric: FixedMetric, report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
         CurrentValue(metric, report)
-        // 홈 고정 칸 밑에는 평균이 없어서 변화량을 무엇과 견줬는지 여기서 숫자로 보여 준다
         val usual = report.baseline?.let { baseline -> metric.value(baseline.metrics)?.let { baseline.weeks to it } }
         if (usual != null) {
             Spacer(Modifier.height(OvalitSpacing.xs))
@@ -108,7 +107,7 @@ internal fun MetricSheetBody(metric: FixedMetric, report: WeeklyReport.Ready, mo
                 color = OvalitTheme.colors.t2,
             )
         }
-        // 사용자 결정(2026-10-03): 판당 킬·데스·어시는 홈 칸에서 빼고 여기서 푼다. K/D에도 똑같이 필요한 풀이다.
+        // 판당 킬·데스·어시는 홈 칸에 두지 않고 K/D와 KDA 시트에서 푼다
         perMatchText(metric, report.metrics)?.let { text ->
             Spacer(Modifier.height(OvalitSpacing.xs))
             OvalitText(text = text, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t2)
@@ -196,7 +195,7 @@ private fun CurrentValue(metric: FixedMetric, report: WeeklyReport.Ready) {
                 text = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
                 modifier = Modifier.alignByBaseline(),
                 style = OvalitTheme.typography.metricXl,
-                // KDA 숫자는 어디서나 구간 색이다(CLAUDE.md 디자인)
+                // KDA 숫자는 어디서나 구간 색이다(docs/design.md)
                 color = if (metric == FixedMetric.KDA && current != null) kdaColor(current, below = OvalitTheme.colors.t1) else OvalitTheme.colors.t1,
             )
             if (current != null && usual != null) {

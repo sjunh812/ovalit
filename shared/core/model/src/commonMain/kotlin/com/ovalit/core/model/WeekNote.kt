@@ -10,10 +10,9 @@ import kotlin.math.sqrt
  * @property moved 평소 주간 변동폭보다 크게 움직인 고정 지표 중 가장 크게 움직인 것입니다.
  * @property weapon [moved]를 같은 쪽으로 가장 많이 끌어간 무기입니다. 맞는 무기가 없으면 `null`입니다.
  * @property agent [moved]를 같은 쪽으로 가장 많이 끌어간 요원입니다. 맞는 요원이 없으면 `null`입니다.
- * @property mix [moved]의 절반 이상이 무엇을 얼마나 했는지가 바뀐 데서 왔으면 그 비중 변화입니다. 이때는 [weapon]과
- * [agent]를 비웁니다. 이코 라운드가 늘어 떨어진 피해량을 무기 하나가 끌어내린 것처럼 적으면 틀린 얘기가 됩니다.
- * @property previousBest [moved]가 올라 이번 액트 어느 주보다 높으면 그 앞 주들 중 가장 높았던 값입니다. 떨어진 쪽의 최저
- * 기록은 적지 않습니다. 떨어진 건 헤드라인이 이미 말합니다.
+ * @property mix [moved]의 절반 이상이 구매 유형, 들고 시작한 무기, 요원의 비중이 바뀐 데서 왔으면 그 변화입니다. 이때는
+ * [weapon]과 [agent]를 비웁니다. 이코 라운드가 늘어 떨어진 피해량을 무기 하나가 끌어내린 것처럼 적으면 틀린 말이 됩니다.
+ * @property previousBest [moved]가 올라 이번 액트 어느 주보다 높으면 그 앞 주들 중 가장 높았던 값이고, 아니면 `null`입니다.
  */
 data class WeekNote(
     val moved: MovedMetric,
@@ -60,7 +59,7 @@ internal const val MIN_MIX_SHARE_GAP = 5
 
 /**
  * 비중 차이가 우연히 벌어질 만한 폭의 이 배수를 넘어야 짚습니다. 여덟 판 중 레이즈가 한 판 줄면 비중이 12%p 떨어지지만
- * 우연으로 흔히 나오는 차이입니다. 한 경기 라운드들은 같이 움직여서 개선 포인트의 2배보다 넉넉히 둡니다.
+ * 우연으로 흔히 나오는 차이입니다. 한 경기 라운드들은 같이 움직여서 흔히 쓰는 2배보다 넉넉히 둡니다.
  */
 internal const val MIN_MIX_SHARE_Z = 2.5
 
@@ -103,7 +102,7 @@ internal class AgentTrend(
  * @param mixes 라운드 구매, 들고 시작한 무기, 요원으로 나눈 묶음들입니다. 나누는 방법마다 목록 하나입니다.
  * @param actWeeks 이번 액트에서 기간 앞의 주들입니다. 기간이 한 주일 때만 넘깁니다. 두 주를 합친 값을 한 주 값들과 견주면
  * 주간 최고라고 할 수 없습니다. 라운드가 [MIN_TREND_ROUNDS]에 못 미치는 주는 뺍니다.
- * @param history 기간 앞 주들의 주간 지표입니다. S1-a 막대처럼 라운드가 [MIN_TREND_ROUNDS]에 못 미치는 주는 변동폭에서
+ * @param history 기간 앞 주들의 주간 지표입니다. S1-a 평소 범위처럼 라운드가 [MIN_TREND_ROUNDS]에 못 미치는 주는 변동폭에서
  * 뺍니다.
  */
 internal fun chooseWeekNote(
@@ -159,8 +158,8 @@ private fun movedFixedMetric(
         ?.first
 }
 
-// 같은 쪽으로 움직인 무기 중 비중 × 차이가 가장 큰 것이다. 한쪽 표본만 넘긴 무기를 짚으면 S6에서는 그 무기가
-// "이번 액트 기준"으로 떠서 숫자가 맞지 않으니 S6 위쪽 표처럼 두 표본을 다 본다.
+// 같은 쪽으로 움직인 무기 중 비중 × 차이가 가장 큰 것이다. S6 위쪽 표가 변화량을 적는 기준과 맞춰, 두 기간 모두 표본을
+// 넘긴 무기만 본다.
 private fun movedWeapon(moved: MovedMetric, weapons: List<WeaponTrend>, rounds: Int): MovedWeapon? {
     // 전투점수와 KDA는 무기별로 짚을 값이 없다
     val metric = moved.metric.weaponMetric ?: return null
@@ -181,7 +180,7 @@ private fun movedWeapon(moved: MovedMetric, weapons: List<WeaponTrend>, rounds: 
         ?.first
 }
 
-// 요원도 무기처럼 비중 × 차이로 고른다. 이번 기간과 비교 기준 모두 S1-a 막대의 라운드 기준을 넘긴 요원만 본다.
+// 요원도 무기처럼 비중 × 차이로 고른다. 이번 기간과 비교 기준 모두 MIN_TREND_ROUNDS를 넘긴 요원만 본다.
 private fun movedAgent(moved: MovedMetric, agents: List<AgentTrend>, rounds: Int): MovedAgent? {
     if (rounds == 0) return null
     return agents
@@ -198,7 +197,8 @@ private fun movedAgent(moved: MovedMetric, agents: List<AgentTrend>, rounds: Int
 }
 
 /**
- * 비중 변화가 [moved]의 절반 이상을 설명하는 나누는 방법 가운데 가장 많이 설명하는 것입니다.
+ * 나누는 방법 가운데 비중 변화로 [moved]를 가장 많이 설명하는 것입니다. 변화의 [MIN_MIX_EXPLAINED] 이상을 설명하지 못하면
+ * `null`입니다.
  *
  * 이번 기간 묶음별 성적을 그대로 두고 비중만 비교 기준처럼 맞춘 값을 구합니다. 원래 값과 그 값의 차이가 비중이 바뀐 몫입니다.
  * 전투점수는 경기 합계뿐이라 라운드로 가른 묶음에는 0으로 들어가([roundMetrics]) 비중 몫이 없고, 요원으로만 짚힙니다.
@@ -262,7 +262,7 @@ private fun mixShift(moved: MovedMetric, slices: List<MixSlice>, weapons: List<W
         .maxByOrNull { it.pull }
         ?: return null
 
-    // 짚은 묶음은 뺀다. 오퍼레이터가 늘었을 때 오퍼레이터만 보면은 나머지가 평소와 같았는지 말해 주지 못한다.
+    // 짚은 묶음은 뺀다. 오퍼레이터가 늘었을 때 오퍼레이터 라운드만 봐서는 나머지가 평소와 같았는지 알 수 없다.
     val steady = slices
         .filter { it.group != named.group && it.current.rounds >= MIN_TREND_ROUNDS && it.usual.rounds >= MIN_TREND_ROUNDS }
         .maxByOrNull { it.current.rounds + it.usual.rounds }
@@ -306,7 +306,7 @@ private val FixedMetric.weaponMetric: WeaponMetric?
         FixedMetric.KDA -> null
     }
 
-// CLAUDE.md 역할군 표의 "크게 띄우지 않는 것" 중 고정 지표에 해당하는 것만 옮겼다
+// CLAUDE.md 역할군 표의 "크게 띄우지 않는 것" 중 고정 지표만 옮겼다
 private val Role.mutedFixedMetrics: Set<FixedMetric>
     get() = when (this) {
         Role.INITIATOR, Role.CONTROLLER -> setOf(FixedMetric.KD)

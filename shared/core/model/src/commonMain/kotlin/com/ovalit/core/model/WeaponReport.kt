@@ -1,8 +1,8 @@
 package com.ovalit.core.model
 
 /**
- * 한 무기만 쓴 라운드가 이만큼은 있어야 그 무기의 헤드샷 비율을, 들고 시작한 라운드가 이만큼은 있어야 K/D와
- * 피해량을 보여줍니다. 실데이터를 보고 조정할 시작값입니다.
+ * 무기 값을 견줄 만한 최소 라운드입니다. 헤드샷은 한 무기만 쓴 라운드로, K/D와 피해량은 들고 시작한 라운드로 셉니다. 숫자는
+ * 표본과 상관없이 띄우고, 변화량과 짚을 점만 이만큼 넘긴 값을 씁니다. 시작 기준선입니다.
  */
 const val MIN_WEAPON_ROUNDS = 20
 
@@ -32,13 +32,13 @@ data class WeaponStats(
     /** 이 무기로 낸 킬 ÷ 이 무기를 들고 시작한 라운드의 데스입니다. 데스가 없으면 `null`입니다. */
     val kd: Double? get() = kills over deaths
 
-    /** (이 무기로 낸 킬 + 이 무기를 들고 시작한 라운드의 어시스트) ÷ 그 라운드의 데스입니다. [MatchMetrics.kda]처럼 K/D/A 합계 옆에만 씁니다. */
+    /** (이 무기로 낸 킬 + 이 무기를 들고 시작한 라운드의 어시스트) ÷ 그 라운드의 데스입니다. */
     val kda: Double? get() = (kills + assists) over deaths
 
     /** 이 무기를 들고 시작한 라운드의 라운드당 피해량입니다. */
     val damagePerRound: Double? get() = damage over carriedRounds
 
-    /** K/D와 라운드당 피해량을 보여줄 만큼 이 무기를 들고 시작했는지입니다. 헤드샷과 같은 최소 라운드를 씁니다. */
+    /** K/D와 라운드당 피해량을 견줄 만큼 이 무기를 들고 시작했는지입니다. */
     val isCarriedMeasurable: Boolean get() = carriedRounds >= MIN_WEAPON_ROUNDS
 
     /** 표본을 넘긴 값만 돌려줍니다. 모자라면 `null`입니다. 달라졌는지 볼 때 씁니다. */
@@ -58,9 +58,8 @@ enum class WeaponMetric { KD, DAMAGE_PER_ROUND, HEADSHOT_RATE }
 /**
  * S6 무기 화면 위쪽 표의 한 줄입니다.
  *
- * @property current 홈 리포트와 같은 기간의 성적입니다. 표본이 적어도 그 기간 숫자를 띄웁니다(사용자 요청, 2026-10-03).
- * 표본이 모자라 이번 액트 값을 대신 띄우면 한 줄만 기간이 달라 어느 숫자가 언제 것인지 알기 어려웠습니다. 그 기간에 이 무기를
- * 안 썼거나 리포트를 만들 만큼 경기가 없으면 `null`입니다.
+ * @property current 홈 리포트와 같은 기간의 성적입니다. 세 줄의 기간이 어긋나지 않게 표본이 적어도 이 값을 띄웁니다. 그
+ * 기간에 이 무기를 안 썼거나 리포트를 만들 만큼 경기가 없으면 `null`입니다.
  * @property baseline 기간 바로 앞 [baselineWeeks]주의 성적입니다. 그동안 이 무기를 안 썼으면 `null`입니다.
  * @property movements 지표마다 동적 칸과 같은 규칙으로 봅니다. 화면은 [Movement.MOVED]인 변화량만 칠합니다.
  */

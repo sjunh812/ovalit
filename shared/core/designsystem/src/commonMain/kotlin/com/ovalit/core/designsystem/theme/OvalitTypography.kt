@@ -10,17 +10,15 @@ import androidx.compose.ui.unit.sp
 
 private const val TABULAR_FIGURES = "tnum"
 
-// 그냥 두면 한글이 글자 단위로 잘려서 "공식적으 / 로"처럼 어절 한가운데서 줄이 바뀐다. 그래서 두 가지를 나눠 쓴다.
+// 그냥 두면 한글이 "공식적으 / 로"처럼 어절 한가운데서 끊긴다. 그래서 둘로 나눠 쓴다.
 //
-// 제목과 숫자는 Heading이다. 어절 경계에서만 끊고 줄 길이를 고르게 나눠서, 마지막 한 단어만 다음 줄에 남는 걸
-// 막는다. 본문과 설명은 BodyLineBreak다. 두세 줄짜리 설명까지 고르게 나누면 첫 줄이 짧게 끊겨 "볼 / 수 없어요"처럼
-// 말이 어색하게 갈리므로, 줄을 끝까지 채우고 어절만 지킨다. 조합을 고르는 생성자가 안드로이드에만 있어서
-// 플랫폼마다 따로 정한다.
+// 제목과 숫자는 Heading이다. 어절 경계에서 끊고 줄 길이를 고르게 나눠 마지막 한 단어만 남는 걸 막는다.
+// 본문과 설명은 BodyLineBreak다. 두세 줄 설명까지 고르게 나누면 "볼 / 수 없어요"처럼 첫 줄이 짧게 갈려서, 줄을 끝까지
+// 채우고 어절만 지킨다. 이 조합을 고르는 생성자가 안드로이드에만 있어 플랫폼마다 따로 둔다.
 private val KoreanLineBreak = LineBreak.Heading
 
-// 위 줄바꿈 규칙은 "이 글자는 한국어"라고 알려줘야만 동작한다. 안 알려주면 기기 설정 언어를 따라가는데, 폰을 영어로 쓰는 한국
-// 유저가 흔해서 그 경우 다시 깨진다. 그래서 기기 언어가 아니라 실제로 보이는 문구의 언어(text_locale 리소스)를 넘겨받는다. 일본어면
-// 한자를 일본 자형으로 그리고 문절 단위로 끊는다.
+// 위 줄바꿈은 글자의 언어를 알려줘야 동작한다. 기기 언어를 따르면 폰을 영어로 쓰는 한국 유저에게서 다시 깨져서, 실제로
+// 보이는 문구의 언어(text_locale 리소스)를 받는다. 일본어면 한자를 일본 자형으로 그리고 문절 단위로 끊는다.
 private val KoreanLocale = LocaleList("ko-KR")
 
 @Immutable
@@ -63,11 +61,11 @@ fun ovalitTypography(fontFamily: FontFamily = FontFamily.Default, locale: Locale
     return OvalitTypography(
         metricXl = metric(size = 44, lineHeight = 48, tracking = -1.4),
         metricL = metric(size = 30, lineHeight = 34, tracking = -0.8),
-        // 홈 고정 칸과 달라진 점 숫자다. 24에서는 한 화면에 여덟 개가 모여 무거웠다(사용자 결정, 2026-10-04). 제목(20)보다는 크다.
+        // 홈 고정 칸과 달라진 점 숫자다. 한 화면에 여덟 개가 모여서 더 키우면 무겁고, 제목(titleL)보다는 커야 한다.
         metricM = metric(size = 22, lineHeight = 26, tracking = -0.5),
         metricS = metric(size = 12, lineHeight = 16, tracking = 0.0),
-        // 화면 제목, 홈 기간, 프로필 이름은 목업처럼 20이다(사용자 요청, 2026-10-04). 24로 두니 카드 제목과 숫자보다 커서 위계가
-        // 흐렸다. 온보딩 헤드라인, S3 맵 이름, S7 주 역할처럼 목업에서도 그보다 큰 곳만 display다.
+        // 화면 제목, 홈 기간, 프로필 이름은 목업처럼 titleL이다. 목업에서도 그보다 큰 곳(온보딩 헤드라인, S3 맵 이름,
+        // S7 주 역할)만 display를 쓴다.
         display = text(size = 24, lineHeight = 32, tracking = -0.6, weight = FontWeight.SemiBold, lineBreak = KoreanLineBreak),
         titleL = text(size = 20, lineHeight = 28, tracking = -0.4, weight = FontWeight.SemiBold, lineBreak = KoreanLineBreak),
         titleM = text(size = 17, lineHeight = 24, tracking = -0.3, weight = FontWeight.SemiBold, lineBreak = KoreanLineBreak),

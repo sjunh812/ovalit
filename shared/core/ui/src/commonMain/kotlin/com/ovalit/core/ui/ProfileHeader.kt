@@ -64,19 +64,18 @@ private val AvatarSize = 64.dp
 /**
  * 내 프로필과 S5 머리의 배너와 아바타입니다.
  *
- * 배너는 상태 표시줄 밑까지 깔리고, 그 높이만큼 길어집니다. 배너 높이를 고정하면 상태 표시줄이 높은 기기에서
- * 머리 줄이 내려오면서 아바타가 뒤로 가기 버튼을 덮습니다.
+ * 배너는 상태 표시줄 밑까지 깔리고 그 높이만큼 길어집니다. 높이를 고정하면 상태 표시줄이 높은 기기에서 아바타가 뒤로
+ * 가기 버튼을 덮습니다.
  *
- * 배너와 아바타 자리에는 플레이어 카드가 들어갈 예정입니다. 카드는 앱에 넣지 않고 서버에서 받으므로,
- * 그때까지 배너는 면만 칠하고 아바타는 Riot ID 첫 글자를 띄웁니다. 카드를 깔 때 목업처럼 아래쪽을 바탕색으로
- * 흐리게 잇습니다.
+ * 플레이어 카드는 서버에서 받으므로 그때까지 배너는 면만 칠하고 아바타는 Riot ID 첫 글자를 띄웁니다. 카드를 깔 때는
+ * 목업처럼 아래쪽을 바탕색 흐림막으로 잇습니다.
  */
 @Composable
 fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Composable BoxScope.() -> Unit) {
     val colors = OvalitTheme.colors
     val top = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding()
     Box(modifier = modifier.fillMaxWidth()) {
-        // 카드 그림이 올 자리라 다른 그림 자리처럼 `--fill`로 칠한다. 카드 색을 쓰면 라이트에서 흰 띠로 보였다(사용자 요청, 2026-10-03).
+        // 카드 그림이 올 자리라 다른 그림 자리처럼 `--fill`이다. `--card`는 라이트에서 흰 띠로 보인다.
         Box(modifier = Modifier.fillMaxWidth().height(top + BannerHeight).background(colors.fill)) {
             Box(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)), content = topBar)
         }
@@ -91,8 +90,8 @@ fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Co
 }
 
 /**
- * 내 프로필과 S5를 세는 동안의 모양입니다. 배너와 머리 줄은 그대로 두고 이름과 첫 카드 자리만 잡습니다. 빈 바탕으로 밀려
- * 들어오면 전환 한가운데서 배너와 카드가 한꺼번에 튀어나와 번쩍였습니다(사용자 요청, 2026-10-03).
+ * 내 프로필과 S5를 세는 동안의 모양입니다. 배너와 머리 줄은 그대로 그리고 이름과 첫 카드 자리만 잡아서, 밀려 들어오는
+ * 동안에도 머리가 보입니다.
  */
 @Composable
 fun ProfileSkeleton(topBar: @Composable BoxScope.() -> Unit) {

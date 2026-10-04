@@ -10,7 +10,7 @@ private val Seoul = TimeZone.of("Asia/Seoul")
 
 class PingDayTest {
 
-    // 사용자 요청(2026-10-03): 밤 11시에 고른 0시 30분을 "내일"이라고 하면 하루 뒤처럼 읽힌다
+    // 밤 11시에 고른 0시 30분을 "내일"이라고 하면 하루 뒤처럼 읽힌다
     @Test
     fun `자정을 넘긴 오늘 밤은 새벽이다`() {
         val now = at(3, 23, 0)

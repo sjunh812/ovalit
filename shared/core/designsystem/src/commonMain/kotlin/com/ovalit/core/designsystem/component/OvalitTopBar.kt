@@ -32,8 +32,8 @@ private val HeaderHeight = 56.dp
 private val IconTouchSize = 44.dp
 
 /**
- * 하단 탭 네 화면(홈, 경기, 친구, 설정)의 맨 위 줄입니다. 탭을 오갈 때 제목이 같은 자리에 있어야 해서 높이와 여백을
- * 여기 한곳에서 정합니다. 화면마다 따로 두면 몇 dp씩 어긋납니다.
+ * 하단 탭 네 화면(홈, 경기, 친구, 설정)의 맨 위 줄입니다. 탭을 오가도 제목이 같은 자리에 있게 높이와 여백을 여기서만
+ * 정합니다. [OvalitBackTopBar]와 높이가 같습니다.
  *
  * @param actions 오른쪽 버튼입니다. 44dp 누름 영역이 오른쪽 여백을 대신하므로 끝 여백이 왼쪽보다 좁습니다.
  */
@@ -74,8 +74,8 @@ fun OvalitTabHeader(
 }
 
 /**
- * 뒤로 가기가 있는 화면의 맨 위 줄입니다. 탭 머리 줄과 높이가 같아서 탭에서 들어가도 제목과 버튼이 같은 높이에
- * 있습니다. 화살표는 누름 영역 안쪽에 있어 왼쪽 여백을 좁게 둡니다. 그래야 화살표가 본문 왼쪽 선과 맞습니다.
+ * 뒤로 가기가 있는 화면의 맨 위 줄입니다. [OvalitTabHeader]와 높이가 같습니다. 화살표가 누름 영역 안쪽에 있어서 왼쪽
+ * 여백을 좁게 둬야 본문 왼쪽 선과 맞습니다.
  *
  * @param title `null`이면 버튼만 둡니다. 프로필처럼 제목을 본문이 대신하는 화면이 그렇습니다.
  * @param actions 오른쪽에 둘 것입니다. 아이콘은 [OvalitIconButton], 글자는 [OvalitTopBarCaption]을 씁니다.
@@ -103,8 +103,8 @@ fun OvalitBackTopBar(
 }
 
 /**
- * 길이를 모르는 이름만 줄이고 뒤를 남겨야 하는 제목에 씁니다("민석의 요원"). 안의 글자는 `titleL`로 맞추고, 낭독기는
- * 안에 둔 글자를 제목 하나로 읽습니다.
+ * 길이를 모르는 이름만 줄이고 뒤를 남겨야 하는 제목에 씁니다("민석의 요원"). [title] 안의 글자는 `titleL`로 쓰고,
+ * 화면 읽기 프로그램은 이를 제목 하나로 읽습니다.
  */
 @Composable
 fun OvalitBackTopBar(
@@ -144,7 +144,7 @@ private fun BackTopBarRow(
     }
 }
 
-/** 머리 줄에 두는 아이콘 버튼입니다. 누름 영역은 44dp이고 누르면 그만큼 둥근 사각형 면을 깝니다. */
+/** 머리 줄에 두는 44dp 아이콘 버튼입니다. */
 @Composable
 fun OvalitIconButton(icon: ImageVector, contentDescription: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Box(

@@ -20,7 +20,7 @@ private fun IntroScreenLightPreview() {
     }
 }
 
-// 작은 기기에서 헤드라인과 버튼이 서로 밀지 않는지 본다.
+// 작은 기기에서 헤드라인과 버튼이 서로 밀지 않는지 본다
 @Preview(widthDp = 320, heightDp = 568)
 @Composable
 private fun IntroScreenSmallPreview() {
@@ -29,7 +29,7 @@ private fun IntroScreenSmallPreview() {
     }
 }
 
-// 글자 크기를 키운 접근성 설정에서 줄이 넘치지 않는지 본다.
+// 글자 크기를 키운 접근성 설정에서 줄이 넘치지 않는지 본다
 @Preview(widthDp = 360, heightDp = 800, fontScale = 1.5f)
 @Composable
 private fun IntroScreenLargeFontPreview() {

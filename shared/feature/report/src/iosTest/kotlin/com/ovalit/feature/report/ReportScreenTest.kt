@@ -111,7 +111,7 @@ class ReportScreenTest {
         onNodeWithText("전투점수").assertExists()
     }
 
-    // 사용자 결정(2026-10-03): 달라진 점과 같은 격자로 한 줄에 세 칸씩 둔다
+    // 달라진 점 칸과 같은 격자다
     @Test
     fun `고정 지표는 한 줄에 세 칸씩 피해량 K_D KDA 전투점수 헤드샷 순서로 놓는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
@@ -145,7 +145,7 @@ class ReportScreenTest {
         onNodeWithText("20승 10패", useUnmergedTree = true).assertExists()
     }
 
-    // 글씨를 키운 좁은 화면에서 승패 글자가 먼저 자리를 잡으면 칸이 몇 dp만 남아 바코드처럼 보였다
+    // 글씨를 키운 좁은 화면에서 승패 글자가 먼저 자리를 잡으면 칸이 몇 dp만 남아 바코드처럼 보인다
     @Test
     fun `좁은 화면에서 칸이 너무 좁아지면 승패 글자를 칸 밑으로 내린다`() = runComposeUiTest {
         val many = ReportPreviewData.moved.copy(results = List(30) { it % 3 != 0 })
@@ -161,7 +161,7 @@ class ReportScreenTest {
         assertTrue(record.top >= cells.bottom)
     }
 
-    // 전략가·감시자의 빈칸을 채우는 "라운드당 어시스트"는 좁은 칸에서 가장 작은 글자로도 한 줄에 안 들어갔다.
+    // 전략가·감시자의 빈칸을 채우는 "라운드당 어시스트"는 좁은 칸에서 가장 작은 글자로도 한 줄에 안 들어간다.
     // 잘리지 않게 꺾고, 한 칸만 꺾여 그 칸 숫자만 내려가지 않게 모든 칸을 같이 꺾는다.
     @Test
     fun `달라진 점 칸 이름이 좁은 칸에 안 들어가면 모든 칸을 같이 꺾는다`() = runComposeUiTest {
@@ -235,7 +235,6 @@ class ReportScreenTest {
         onNodeWithText("이번 주 무기").assertDoesNotExist()
     }
 
-    // 사용자 결정(2026-09-29): 어시스트가 킬만큼 중요해져 KDA를 다른 고정 칸과 같은 숫자 크기로 둔다
     @Test
     fun `KDA는 다른 고정 칸과 같은 숫자 크기로 둔다`() = runComposeUiTest {
         val report = ReportPreviewData.moved
@@ -246,7 +245,7 @@ class ReportScreenTest {
         assertEquals(fontSizeOf(combatValue), fontSizeOf(kda))
     }
 
-    // 사용자 결정(2026-10-03): 판당 K/D/A는 K/D에도 똑같이 필요한 풀이라 홈 칸에서 빼고 시트에서 푼다
+    // 판당 K/D/A는 K/D에도 똑같이 필요한 풀이라 칸이 아니라 시트에 둔다
     @Test
     fun `판당 킬 데스 어시는 홈 대신 K_D와 KDA 시트에 적는다`() = runComposeUiTest {
         val report = ReportPreviewData.moved
@@ -262,7 +261,7 @@ class ReportScreenTest {
         onNodeWithText("판당 ${perMatch(metrics.kills)}킬 · ${perMatch(metrics.deaths)}데스 · ${perMatch(metrics.assists)}어시").assertExists()
     }
 
-    // 사용자 요청(2026-10-03): 변화량은 숫자 밑에 작게 두고, 무엇과 견줬는지 평소 값을 옆에 붙인다
+    // 변화량이 무엇과 견준 값인지 옆의 평소 값이 말한다
     @Test
     fun `고정 칸 숫자 밑에 변화량과 평소 값을 나란히 둔다`() = runComposeUiTest {
         val report = ReportPreviewData.moved
@@ -321,7 +320,6 @@ class ReportScreenTest {
         onNodeWithText("KDA", useUnmergedTree = true).assertExists()
     }
 
-    // 사용자 결정(2026-09-29): 여러 지표의 흐름을 홈에 늘어놓으면 복잡해서 입구 한 줄만 두고 시트로 연다
     @Test
     fun `8주 흐름 입구를 누르면 흐름 시트가 뜬다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
@@ -331,7 +329,7 @@ class ReportScreenTest {
         onNodeWithText("지난 8주 흐름").assertExists()
     }
 
-    // 사용자 요청(2026-10-03): 막대만으로는 전에 얼마였고 지금 얼마인지 안 보였다
+    // 막대만으로는 전에 얼마였고 지금 얼마인지 안 보인다
     @Test
     fun `흐름 시트는 처음에 리포트 기간 값과 평소 값을 띄운다`() = runComposeUiTest {
         setContent { TrendSheet(ReportPreviewData.moved) }
@@ -375,7 +373,7 @@ class ReportScreenTest {
         onNode(hasText("피해량") and hasText("133")).assertExists()
     }
 
-    // 사용자 요청(2026-10-03): 기록이 하나라도 있으면 그려야 견줄 수 있다. 내 기록이라 표본으로 가르지 않는다.
+    // 기록이 하나라도 있으면 그려야 견줄 수 있다. 내 기록이라 표본으로 가르지 않는다.
     @Test
     fun `라운드가 모자란 주도 다른 주처럼 그리고 고를 수 있다`() = runComposeUiTest {
         setContent { TrendSheet(ReportPreviewData.moved) }
@@ -420,7 +418,7 @@ class ReportScreenTest {
         assertTrue(widths.max() - widths.min() <= 1.dp, "$widths")
     }
 
-    // 사용자 요청(2026-10-03): 오른쪽 위 아바타 하나로는 누르면 내 프로필이 열린다는 걸 알기 어렵다
+    // 오른쪽 위 아바타 하나로는 누르면 내 프로필이 열린다는 걸 알기 어렵다
     @Test
     fun `내 프로필 안내는 한 번 띄우고 누르면 닫는다`() = runComposeUiTest {
         var shown = 0
@@ -443,7 +441,7 @@ class ReportScreenTest {
         onNodeWithText("내 프로필은 여기서 볼 수 있어요").assertDoesNotExist()
     }
 
-    // 아바타가 위로 스크롤돼 가려지는 동안 잘린 폭이 0까지 줄어 화살표 자리가 음수가 되며 앱이 죽었다
+    // 아바타가 위로 스크롤돼 가려지는 동안 잘린 폭이 0까지 줄면 화살표 자리가 음수가 되어 앱이 죽는다
     @Test
     fun `내 프로필 안내를 띄운 채 스크롤해도 머리 줄을 따라간다`() = runComposeUiTest {
         setContent {
@@ -600,8 +598,7 @@ class ReportScreenTest {
         onNodeWithText("어떻게 계산하나요?").assertExists()
     }
 
-    // 사용자 요청(2026-10-03): 칸 밖 "변화량은 지난 4주 평균과 비교했어요"는 무엇의 설명인지 붕 떠 보였다. 칸마다 평소 값이
-    // 대신 말한다. 비교할 기록이 없을 때만 그 까닭을 칸 밑에 적는다.
+    // 칸마다 평소 값이 무엇과 견줬는지 말하니 칸 밖 안내는 두지 않는다. 비교할 기록이 없을 때만 그 까닭을 칸 밑에 적는다.
     @Test
     fun `고정 칸 밖에는 견준 기준을 따로 적지 않고 기준이 없을 때만 까닭을 적는다`() = runComposeUiTest {
         var report by mutableStateOf(ReportPreviewData.moved.copy(note = null))
@@ -621,7 +618,7 @@ class ReportScreenTest {
         onNodeWithText("지난 4주 평균 128").assertExists()
     }
 
-    // 사용자 결정(2026-09-27): "라운드 153" 같은 표본은 칸에서 빼고 시트에서 풀어 적는다
+    // "라운드 153" 같은 표본은 칸에 두지 않고 시트에서 풀어 적는다
     @Test
     fun `달라진 점 칸에는 평소 값만 두고 표본은 적지 않는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved.copy(note = null)) }
@@ -679,17 +676,17 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
 
         onNodeWithText("피해량이 평소보다 10 올랐어요").assertExists()
-        // 사용자 요청(2026-09-27): 평균이 얼마였는지는 고정 칸에 이미 있어 다시 적지 않는다
+        // 평균이 얼마였는지는 고정 칸에 이미 있어 다시 적지 않는다
         onNodeWithText("→ 이번 주", substring = true).assertDoesNotExist()
         onNode(noteRow("밴달", "118 → 140", "44라운드")).assertExists()
         onNode(noteRow("제트", "124 → 146", "4판")).assertExists()
-        // 사용자 요청(2026-09-27): 줄마다 붙던 이름표와 지표 이름은 읽기만 어렵게 해서 뺐다
+        // 줄마다 "끌어올린 무기" 같은 이름표나 지표 이름을 붙이지 않는다
         onNodeWithText("끌어올린", substring = true, useUnmergedTree = true).assertDoesNotExist()
-        // 사용자 결정(2026-09-27): 이긴 판이 더 많았던 요원은 바로 밑 이번 주 요원 칸의 승패와 겹쳐 적지 않는다
+        // 이긴 판이 더 많았던 요원은 바로 밑 이번 주 요원 칸의 승패와 겹쳐 적지 않는다
         onNodeWithText("이긴 판이 더 많았던", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 사용자 요청(2026-09-27): "이번 액트 주간 최고 · 이전 최고 135" 줄은 읽기 어려워 헤드라인 한 문장에 넣었다
+    // 최고 기록은 따로 줄을 두지 않고 헤드라인 한 문장에 넣는다
     @Test
     fun `이번 액트 주간 최고면 헤드라인에 적는다`() = runComposeUiTest {
         val note = assertNotNull(ReportPreviewData.moved.note).copy(previousBest = 135.4)
@@ -751,7 +748,7 @@ class ReportScreenTest {
         onNodeWithText("만\u00a0보면", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 사용자 결정(2026-09-27): KDA에도 고정 칸처럼 보이는 두 자리끼리 뺀 변화량을 붙인다
+    // KDA에도 고정 칸처럼 보이는 두 자리끼리 뺀 변화량을 붙인다
     @Test
     fun `KDA 옆에 지난 평균과의 변화량을 적는다`() = runComposeUiTest {
         val report = ReportPreviewData.moved
@@ -783,8 +780,7 @@ class ReportScreenTest {
         onNodeWithText("에임 올리기를 고르셔서 먼저 봤어요").assertExists()
     }
 
-    // 사용자 요청(2026-09-27): 공수만 견주지 않는다. 두 쪽 모두 이름이 있으면 높은 쪽이 주어다. "10판 뛴 레이즈보다 5판
-    // 뛴 제트가 높을 때는 제트를 중심으로"
+    // 두 쪽 모두 이름이 있으면 판 수와 상관없이 높은 쪽이 주어다
     @Test
     fun `요원끼리 견준 개선 포인트는 높은 쪽을 주어로 판 수와 함께 적는다`() = runComposeUiTest {
         val insight = Insight(
@@ -814,7 +810,7 @@ class ReportScreenTest {
         onNodeWithText("레이즈로 뛴 판은 관여율이 다른 타격대 요원보다 14%p 낮아요").assertExists()
     }
 
-    // 사용자 결정(2026-09-27): 역할끼리는 승률만 견주고, 우연을 넘을 만큼 차이가 클 때만 나온다. "추천"은 쓰지 않는다.
+    // 역할끼리는 승률만 견주고, 우연을 넘을 만큼 차이가 클 때만 나온다. "추천"은 쓰지 않는다.
     @Test
     fun `역할끼리 견준 개선 포인트는 승률을 사실로만 적는다`() = runComposeUiTest {
         val insight = Insight(
@@ -830,7 +826,7 @@ class ReportScreenTest {
         onNodeWithText("추천", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 사용자 요청(2026-09-27): 연달아 뛸수록 어떤지 숫자로만 적는다. 쉬라고 하지 않는다.
+    // 연달아 뛸수록 어떤지 숫자로만 적는다. 쉬라고 하지 않는다.
     @Test
     fun `연달아 뛴 판을 견준 개선 포인트는 세 번째 판부터를 주어로 적는다`() = runComposeUiTest {
         val insight = Insight(
@@ -895,8 +891,7 @@ class ReportScreenTest {
         assertEquals(8.dp, second.top - first.bottom)
     }
 
-    // 사용자 요청(2026-09-28): 무기 실루엣과 요원 얼굴을 이름 앞에 둔다. 그림 폭이 달라도 이름은 같은 자리에서 시작하고,
-    // 숫자는 오른쪽 끝에 모은다.
+    // 그림 폭이 달라도 이름은 같은 자리에서 시작하고, 숫자는 오른쪽 끝에 모은다
     @Test
     fun `짚을 점 줄은 이름을 같은 자리에서 시작하고 숫자를 오른쪽에 모은다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
@@ -961,7 +956,7 @@ class ReportScreenTest {
         onNodeWithText("쓰세요", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 사용자 요청(2026-09-27): 짚을 점은 바로 위 숫자를 풀어 말하는 문장이라 제목과 선 없이 고정 칸 밑에 붙인다
+    // 짚을 점은 바로 위 숫자를 풀어 말하는 문장이라 제목과 선 없이 고정 칸 밑에 붙인다
     @Test
     fun `짚을 점은 제목 없이 고정 칸 바로 밑에 둔다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
@@ -1055,8 +1050,7 @@ class ReportScreenTest {
         onNodeWithText("킬 ÷", substring = true).assertDoesNotExist()
     }
 
-    // 사용자 결정(2026-09-27): 위 칸들은 모두 이번 주 숫자라, 이번 액트로 견준 문장이 이번 주 이야기처럼 읽혔다. 선과 제목으로
-    // 떼고 몇 경기로 견줬는지 적는다.
+    // 위 칸들은 모두 이번 주 숫자라, 이번 액트로 견준 문장은 제목으로 떼고 몇 경기로 견줬는지 적는다
     @Test
     fun `개선 포인트는 이번 액트 돌아보기 묶음으로 달라진 점과 이번 주 요원 사이에 둔다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
@@ -1079,7 +1073,7 @@ class ReportScreenTest {
         onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요").assertExists()
     }
 
-    // 사용자 요청(2026-09-27): 액트 동안의 차이가 이번 주에도 이어졌는지 숫자만 붙인다. 까닭 줄보다 앞, 액트 줄 바로 밑이다.
+    // 액트 동안의 차이가 이번 주에도 이어졌는지 숫자만 붙인다. 까닭 줄보다 앞, 액트 줄 바로 밑이다.
     @Test
     fun `개선 포인트 밑에 이번 주 값을 붙인다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
@@ -1193,8 +1187,7 @@ class ReportScreenTest {
         onNodeWithText("민석", substring = true).assertDoesNotExist()
     }
 
-    // 사용자 요청(2026-09-27): 친구 비교만 글자가 크고 줄이 넓었다. 라이벌 줄처럼 11dp씩 띄우고, 제목 옆 지표 버튼이 제목 줄을
-    // 높여도 제목에서 첫 줄까지는 다른 묶음처럼 12dp다.
+    // 라이벌 줄처럼 11dp씩 띄우고, 제목 옆에 지표 버튼이 있어도 제목에서 첫 줄까지는 다른 묶음처럼 12dp다
     @Test
     fun `친구 비교는 다른 묶음과 같은 간격으로 줄을 세운다`() = runComposeUiTest {
         val strong = ReportPreviewData.moved.metrics.copy(damage = 30_000)
@@ -1223,7 +1216,7 @@ class ReportScreenTest {
         onNodeWithText("비교할 지표").assertExists()
     }
 
-    // 사용자 결정(2026-09-29): 친구 비교도 홈 고정 칸 다섯 가운데 골라 줄을 세운다
+    // 친구 비교도 홈 고정 칸 다섯 가운데 골라 줄을 세운다
     @Test
     fun `친구 비교는 KDA로도 줄을 세운다`() = runComposeUiTest {
         val mine = ReportPreviewData.moved.metrics
@@ -1317,7 +1310,7 @@ private fun insightLine(period: String?, vararg parts: Triple<String, String, St
         name.keepTogether() + "\u00a0" + value + (sample?.let { "\u00a0" + it.keepTogether() } ?: "")
     }
 
-// 짚을 점 한 줄은 이름과 표본을 한 글자로, "평소 → 이번" 숫자를 또 한 글자로 둔다. 낭독기가 한 번에 읽게 한 줄로 묶었다.
+// 짚을 점 한 줄은 이름과 표본을 한 글자로, "평소 → 이번" 숫자를 또 한 글자로 둔다. 화면 읽기 프로그램이 한 번에 읽게 한 줄로 묶는다.
 private fun noteRow(name: String, change: String, sample: String? = null): SemanticsMatcher =
     hasText(noteLabel(name, sample)) and hasText(noteChange(change))
 

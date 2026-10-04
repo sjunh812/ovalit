@@ -102,19 +102,17 @@ data class Scoreline(
 }
 
 /**
- * 라운드 하나입니다.
- *
  * @property number 1부터 셉니다. 전반과 후반 첫 라운드(피스톨)를 이 번호로 가리고, S3 라운드 줄도 이 번호로
  * [Match.roundOutcomes]의 몇 번째 라운드인지 찾습니다. 응답의 `roundResults[].roundNum`이 0부터 온다면 1을 더해
  * 담습니다(실데이터로 확인해야 합니다).
- * @property kills 라운드에서 일어난 킬 전부입니다. 나와 무관한 킬도 들어갑니다. 트레이드와
+ * @property kills 라운드에서 일어난 킬 전부입니다. 나와 상관없는 킬도 들어갑니다. 트레이드와
  * 첫 킬을 가르려면 누가 먼저 죽었는지 알아야 합니다.
  * @property myShots 내가 맞힌 부위별 횟수입니다. 킬 수가 아니라 적중 수입니다.
  * @property mySide 그 라운드에 내가 공격이었는지 수비였는지입니다. 모르면 `null`이고, 공수를 나눠 셀 때
  * 양쪽 다 빠집니다.
  * @property ending 라운드가 어떻게 끝났는지입니다. 응답의 `roundResult`에서 옵니다.
  * @property myDamageTo 내가 상대마다 입힌 피해입니다. 응답의 `roundResults[].playerStats[내 것].damage[]`를 받는 사람마다 더해
- * 담습니다. S3 내 기록 탭의 상대별 맞대결에 씁니다.
+ * 담습니다.
  * @property myDamageFrom 상대마다 내가 받은 피해입니다. 다른 사람의 `damage[]` 중 받는 사람이 나인 것을 더해 담습니다.
  */
 data class Round(

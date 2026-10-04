@@ -63,11 +63,10 @@ enum class MatchRowStyle {
     COMPACT,
 }
 
-// 경기 목록 줄은 위아래로 16dp를 띄운다(사용자 요청, 2026-10-04). 13dp일 때는 줄마다 글자가 여섯 덩이라 다닥다닥 붙어 보였다.
 private fun rowPadding(style: MatchRowStyle) = if (style == MatchRowStyle.COMPACT) 11.dp else 16.dp
 
 /**
- * 경기 한 줄입니다. 스코어는 이겼으면 `--pos`, 졌으면 `--neg`로 칠하고, 낭독기에는 승패를 말로 읽어 줍니다. 숫자는 게임
+ * 경기 한 줄입니다. 스코어는 이겼으면 `--pos`, 졌으면 `--neg`로 칠하고, 화면 읽기 프로그램에는 승패를 말로 읽어 줍니다. 숫자는 게임
  * 스코어보드와 같게 응답의 K/D/A와 전투점수를 그대로 씁니다.
  *
  * @param onClick `null`이면 누를 수 없는 줄입니다. 친구 경기는 다른 사람 기록이 섞여 있어서 열지 않습니다.
@@ -86,8 +85,8 @@ fun MatchRow(
     val score = match.score
     val mapName = catalog.mapName(match.map)
     val kda = line?.let { stringResource(Res.string.match_kda, it.kills, it.deaths, it.assists) }
-    // K/D/A 옆은 그 판에서 얼마나 보탰는지 보이는 전투점수다(사용자 요청, 2026-10-04). 등수와 MVP도 전투점수로 센다. 목록은
-    // 폭이 좁아 예전 "ADR 174"처럼 약어로 적는다.
+    // K/D/A 옆은 ADR이 아니라 전투점수다. 등수와 MVP도 이걸로 센다. 목록은 폭이 좁아 한글 라벨 규칙의 예외로
+    // "ACS 243"처럼 약어를 쓴다.
     val acs = line?.acs?.let { value ->
         val digits = MetricFormat.INTEGER.format(value)
         if (style == MatchRowStyle.LIST) stringResource(Res.string.match_acs, digits) else digits
@@ -117,10 +116,8 @@ fun MatchRow(
         }
         Spacer(Modifier.width(13.dp))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 6.dp)) {
-            // 윗줄은 맵 이름, 아랫줄은 승패와 큐, 시각이다
             OvalitText(text = mapName, style = OvalitTheme.typography.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            // 아랫줄 맨 앞에 "승리", "패배"를 결과 색으로 적는다(사용자 요청, 2026-10-04). 줄마다 같은 자리라 위아래로 훑으면 승패가
-            // 한눈에 보인다. 큐와 시각 뒤에 두니 시각 길이에 따라 자리가 들쭉날쭉했다.
+            // 색만으로는 승패를 못 읽어서 글자로 적는다. 아랫줄 맨 앞이어야 줄마다 같은 자리라 위아래로 훑어 읽힌다.
             val resultStyle = SpanStyle(color = resultColor(match.myTeamWon), fontWeight = FontWeight.SemiBold)
             OvalitText(
                 text = buildAnnotatedString {
@@ -134,8 +131,8 @@ fun MatchRow(
             )
         }
         Spacer(Modifier.width(OvalitSpacing.sm))
-        // 글자를 키우면 오른쪽 숫자가 폭을 다 가져가 맵 이름이 잘린다. 폭을 정해 나눠 갖는다. 오른쪽은 칩과 스코어가 같이 서서
-        // 조금 더 가져간다. 자기 몫을 다 채워야 숫자가 오른쪽 여백에 붙는다. 채우지 않으면 왼쪽 칸 바로 뒤에 붙어 줄 가운데에 뜬다.
+        // 글자를 키우면 오른쪽 숫자가 폭을 다 가져가 맵 이름이 잘려서 weight로 나눠 갖는다. 오른쪽 칸은 제 몫을 다 채워야
+        // 숫자가 오른쪽 여백에 붙는다. 안 채우면 왼쪽 칸 바로 뒤에 붙어 줄 가운데에 뜬다.
         Column(
             modifier = Modifier.weight(RIGHT_COLUMN_WEIGHT),
             horizontalAlignment = Alignment.End,
@@ -143,10 +140,8 @@ fun MatchRow(
             verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 7.dp),
         ) {
             val scoreStyle = OvalitTheme.typography.metricS.copy(fontSize = 15.sp, fontWeight = FontWeight.Bold)
-            // 스코어도 결과 색으로 칠한다. 스코어 앞에 승패 칸이나 "승리"를 두니 MVP·등수 칩과 겹쳐 산만했다(사용자 요청,
-            // 2026-10-04). op.gg처럼 줄 전체를 칠하면 목록이 빨강과 초록 띠가 된다.
-            // 그 판의 자리(MVP, 팀 MVP, 등수)와 에이스·클러치 칩은 스코어 앞에 둔다(사용자 요청, 2026-10-04). 자리는 바로 밑 전투점수로
-            // 정해져서 같이 읽힌다. 맵 이름 옆에 두니 이름과 칩이 붙어 왼쪽만 무거웠다. 폭이 모자라면 뒤 칩부터 뺀다.
+            // 결과 색은 스코어에만 칠한다. 줄 전체를 칠하면 목록이 빨강과 초록 띠가 된다.
+            // 그 판의 자리와 에이스·클러치 칩은 스코어 앞에 둔다. 자리는 바로 밑 전투점수로 정해져 같이 읽힌다.
             Row(verticalAlignment = Alignment.CenterVertically) {
                 ChipsThatFit(
                     chips = listOfNotNull<@Composable () -> Unit>(placement?.let { { PlacementLabel(it) } }) +
@@ -163,8 +158,7 @@ fun MatchRow(
                 )
             }
             if (kda != null) {
-                // K/D/A는 진한 글자로만 올리고 굵기는 Medium이다. 한 줄에 맵 이름, 승패, 칩, 스코어가 이미 굵어서 K/D/A와 ACS까지
-                // 굵으면 눈이 머물 곳이 없었다(사용자 요청, 2026-10-04). ACS는 숫자 글꼴의 기본 SemiBold를 보통 굵기로 내린다.
+                // 맵 이름, 승패, 칩, 스코어가 이미 굵어서 K/D/A는 진한 색에 Medium으로만 올리고 ACS는 보통 굵기로 내린다
                 val regular = small.copy(fontWeight = FontWeight.Normal)
                 SeparatedRow(
                     items = listOfNotNull(
@@ -255,7 +249,6 @@ private fun ChipsThatFit(chips: List<@Composable () -> Unit>, modifier: Modifier
 
 /**
  * 경기 줄을 받기 전의 모양입니다. [MatchRow]와 같은 높이로 [rows]줄을 잡아 두어 내용이 나타날 때 줄이 움직이지 않습니다.
- * 밀려 들어오는 화면이 빈 바탕으로 들어오다 전환 한가운데서 목록이 튀어나오지 않게 둡니다.
  */
 @Composable
 fun MatchRowsSkeleton(rows: Int, style: MatchRowStyle, modifier: Modifier = Modifier) {

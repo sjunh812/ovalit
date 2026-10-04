@@ -99,7 +99,7 @@ internal enum class DetailTab { SCOREBOARD, ROUNDS, REPORT }
 /**
  * S3 경기 상세입니다.
  *
- * @param onOpenMe 스코어보드에서 내 줄을 누르면 부릅니다. 홈 오른쪽 위 말고도 내 프로필로 가는 길입니다(사용자 요청, 2026-10-03).
+ * @param onOpenMe 스코어보드에서 내 줄을 누르면 부릅니다.
  * @param onShareInvite 앱을 안 쓰거나 쓰는지 모르는 플레이어에게 초대 링크를 보낼 때 부릅니다. 공유 시트는 앱 모듈이 띄웁니다.
  */
 @Composable
@@ -144,7 +144,7 @@ internal fun MatchDetailScreen(
     var tab by rememberSaveable { mutableStateOf(DetailTab.SCOREBOARD) }
     var sheetFor by rememberSaveable { mutableStateOf<String?>(null) }
 
-    // 뒤에서 센다. 밀려 들어오는 중에 도착하면 다 들어올 때까지 자리 틀을 두고 서서히 바꾼다.
+    // 밀려 들어오는 중에 내용이 도착하면 다 들어올 때까지 스켈레톤을 두었다가 서서히 바꾼다.
     val loaded = uiState is MatchDetailUiState.Success
     val shown = rememberContentShown(loaded = loaded)
     OvalitStaged(
@@ -187,7 +187,6 @@ internal fun MatchDetailScreen(
                         DetailTab.REPORT -> MatchReport(uiState)
                     }
                 }
-                // 광고는 탭 내용을 다 본 맨 밑에 선을 긋고 둔다
                 AdSlot(AdPlacement.MATCH_DETAIL) { ad ->
                     Column {
                         Spacer(Modifier.height(OvalitSpacing.lg))
@@ -196,7 +195,7 @@ internal fun MatchDetailScreen(
                     }
                 }
                 Spacer(Modifier.height(OvalitSpacing.xxl))
-                // 탭바 밖 화면이라 시스템 내비게이션 바 높이만큼 더 띄운다. 안 그러면 마지막 줄이 내비게이션 바에 덮인다.
+                // 탭바가 없는 화면이라 마지막 줄이 내비게이션 바에 덮이지 않게 그 높이만큼 띄운다.
                 Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
             StatusBarScrim(scrollState)
@@ -217,8 +216,8 @@ internal fun MatchDetailScreen(
 }
 
 /**
- * 내리면 상태 표시줄 자리를 바탕색으로 덮습니다. 배너가 화면 맨 위까지 깔려 있고 맵 이름과 스코어가 배너 안에 있어서, 안 덮으면
- * 내린 글자가 시계와 겹칩니다. 상태 표시줄 높이만큼 내리는 동안 서서히 덮어 맨 위에서는 맵 그림이 그대로 보입니다.
+ * 내리면 상태 표시줄 자리를 바탕색으로 덮습니다. 배너가 화면 맨 위까지 깔려 있어서 안 덮으면 내린 글자가 시계와 겹칩니다.
+ * 상태 표시줄 높이만큼 내리는 동안 서서히 덮어서 맨 위에서는 맵 그림이 그대로 보입니다.
  */
 @Composable
 private fun BoxScope.StatusBarScrim(scrollState: ScrollState) {
@@ -291,7 +290,7 @@ private fun ScoreHeadline(uiState: MatchDetailUiState.Success, modifier: Modifie
     val scoreDescription = stringResource(Res.string.score_description, score.myTeam, score.enemyTeam)
 
     Column(modifier = modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = 14.dp)) {
-        // 경기 목록 줄처럼 맵 이름 옆에 "승리", "패배"를 적는다(사용자 요청, 2026-10-04). MVP와 순위는 바로 밑 스코어보드에 있다.
+        // 맵 이름 옆에는 승패만 적는다. MVP와 순위는 바로 밑 스코어보드에 있다.
         Row(verticalAlignment = Alignment.Bottom) {
             OvalitText(
                 text = uiState.catalog.mapName(match.map),
@@ -310,7 +309,7 @@ private fun ScoreHeadline(uiState: MatchDetailUiState.Success, modifier: Modifie
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.spacedBy(9.dp),
             ) {
-                // 목업처럼 내 팀 점수만 결과 색으로 칠하고 상대 점수는 흐리게 둔다
+                // 목업처럼 내 팀 점수만 결과 색이다
                 OvalitText(text = score.myTeam.toString(), style = big, color = resultColor(match.myTeamWon))
                 OvalitText(text = "–", style = OvalitTheme.typography.titleM, color = colors.t4, modifier = Modifier.padding(bottom = 6.dp))
                 OvalitText(text = score.enemyTeam.toString(), style = big, color = colors.t4)
@@ -365,7 +364,7 @@ private fun Tabs(tabs: List<DetailTab>, selected: DetailTab, onSelect: (DetailTa
                     modifier = Modifier
                         .width(IntrinsicSize.Max)
                         .heightIn(min = TouchSize)
-                        // 탭 폭이 글자 폭이라 누른 면을 양옆으로 넓힌다. 탭 사이 간격의 절반이다.
+                        // 탭 폭이 글자 폭이라 누른 면을 탭 사이 간격의 절반만큼 양옆으로 넓힌다
                         .selectable(
                             selected = isSelected,
                             interactionSource = null,

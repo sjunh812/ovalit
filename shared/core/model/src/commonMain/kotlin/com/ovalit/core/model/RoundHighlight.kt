@@ -49,7 +49,6 @@ fun Round.highlight(me: PlayerId, allies: Set<PlayerId>, enemies: Set<PlayerId>)
     return RoundHighlight(ace = ace, clutch = clutch)
 }
 
-/** 스코어보드에서 우리 팀이 아닌 사람들입니다. */
 val Match.enemies: Set<PlayerId>
     get() = players.filterNot { it.onMyTeam }.map { it.player }.toSet()
 
@@ -62,10 +61,7 @@ fun Match.highlights(): List<RoundHighlight> {
     return rounds.map { it.highlight(me = me, allies = allies, enemies = enemies) }
 }
 
-/**
- * 경기 줄의 칩으로 띄우는 그 판의 에이스와 이긴 클러치 수입니다(사용자 요청, 2026-10-04). op.gg처럼 목록에서 큰 장면이 있던 판을
- * 고를 수 있습니다. 진 클러치는 세지 않습니다.
- */
+/** 경기 줄 칩에 띄우는 그 판의 에이스와 이긴 클러치 수입니다. 진 클러치는 세지 않습니다. */
 data class MatchHighlights(val aces: Int, val clutches: Int)
 
 val Match.myHighlights: MatchHighlights

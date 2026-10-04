@@ -29,9 +29,9 @@ data class MatchMetrics(
     val forceBuyRoundsWon: Int,
     val fullBuyRounds: Int,
     val fullBuyRoundsWon: Int,
-    /** 내가 적을 둘 이상 잡은 라운드 수입니다. 뒤에 더한 값이라 프리뷰와 테스트가 모르면 0으로 둡니다. */
+    /** 내가 적을 둘 이상 잡은 라운드 수입니다. */
     val multiKillRounds: Int = 0,
-    /** 우리 팀이 트레이드해 준 내 데스 수입니다. 관여율의 트레이드와 같은 기준입니다. 뒤에 더한 값이라 모르면 0입니다. */
+    /** 우리 팀이 트레이드해 준 내 데스 수입니다. 관여율의 트레이드와 같은 기준입니다. */
     val tradedDeaths: Int = 0,
 ) {
     val acs: Double? get() = combatScore over rounds
@@ -42,46 +42,40 @@ data class MatchMetrics(
     val kd: Double? get() = kills over deaths
 
     /**
-     * (킬 + 어시스트) ÷ 데스입니다. 데스가 없으면 `null`입니다.
-     *
-     * 킬과 어시를 더한 값이라 K/D/A 옆에 "KDA"라는 이름으로만 씁니다. "평점"이라 부르거나 줄을 세우는 데 쓰지
-     * 않습니다. 신청서에 지표를 하나씩 따로 보여준다고 적었습니다.
+     * (킬 + 어시스트) ÷ 데스입니다. 데스가 없으면 `null`입니다. 킬과 어시를 더한 값이라 "평점"이라 부르지
+     * 않습니다(CLAUDE.md 지켜야 할 선).
      */
     val kda: Double? get() = (kills + assists) over deaths
 
     /** 맞힌 탄 중 머리에 맞은 비율입니다. 킬 중 헤드샷 킬 비율이 아닙니다. */
     val headshotRate: Double? get() = shots.head over shots.total
 
-    /** 관여율(KAST). 킬·어시스트·생존·트레이드 중 하나라도 있었던 라운드의 비율입니다. */
+    /** 관여율(KAST)입니다. 킬·어시스트·생존·트레이드 중 하나라도 있었던 라운드의 비율입니다. */
     val kast: Double? get() = kastRounds over rounds
 
     val survivalRate: Double? get() = survivedRounds over rounds
 
     val assistsPerRound: Double? get() = assists over rounds
 
-    /** 첫 킬 승률. 내가 첫 킬을 낸 라운드 중 이긴 비율입니다. 우리 팀 누군가의 첫 킬은 세지 않습니다. */
+    /** 내가 첫 킬을 낸 라운드 중 이긴 비율입니다. 우리 팀 누군가의 첫 킬은 세지 않습니다. */
     val firstKillWinRate: Double? get() = firstKillRoundsWon over firstKills
 
-    /** 첫 교전 관여율. 라운드 첫 교전에 내가 들어간 비율입니다. 첫 킬과 첫 데스를 모두 셉니다. */
+    /** 라운드 첫 교전에 내가 들어간 비율입니다. 첫 킬과 첫 데스를 모두 셉니다. */
     val firstDuelInvolvement: Double? get() = (firstKills + firstDeaths) over rounds
 
-    /** 첫 교전 승률. 첫 교전에 들어갔을 때 내가 첫 킬을 낸 비율입니다. 라운드 승패와는 무관합니다. */
+    /** 첫 교전에 들어갔을 때 내가 첫 킬을 낸 비율입니다. 라운드 승패와는 상관없습니다. */
     val firstDuelWinRate: Double? get() = firstKills over (firstKills + firstDeaths)
 
-    /** 이코·포스바이·풀바이 승률은 우리 팀 평균 장비 가치로 라운드를 가른 뒤 그중 이긴 비율입니다. 가르는 기준은 [buyType]에 있습니다. */
+    /** 이코·포스바이·풀바이 승률은 [buyType]으로 가른 라운드 중 이긴 비율입니다. */
     val ecoWinRate: Double? get() = ecoRoundsWon over ecoRounds
 
     val forceBuyWinRate: Double? get() = forceBuyRoundsWon over forceBuyRounds
 
     val fullBuyWinRate: Double? get() = fullBuyRoundsWon over fullBuyRounds
 
-    /** 멀티킬 라운드 비율. 뛴 라운드 중 내가 적을 둘 이상 잡은 비율입니다. 첫 교전을 이긴 뒤 다음 교전까지 이겨 냈는지를 봅니다. */
     val multiKillRate: Double? get() = multiKillRounds over rounds
 
-    /**
-     * 트레이드 받은 데스 비율. 내 데스 중 5초 안에 우리 팀이 내 킬러를 잡은 비율입니다. 혼자 떨어져 죽었는지, 팀과 붙어
-     * 싸우다 죽었는지를 봅니다. 우리 팀이 얼마나 따라와 주는지도 같이 들어갑니다.
-     */
+    /** 내 데스 중 [TRADE_WINDOW_MILLIS] 안에 우리 팀이 내 킬러를 잡은 비율입니다. */
     val tradedDeathRate: Double? get() = tradedDeaths over deaths
 
     operator fun plus(other: MatchMetrics) = MatchMetrics(

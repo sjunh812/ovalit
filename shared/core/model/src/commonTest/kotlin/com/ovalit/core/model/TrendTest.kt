@@ -49,7 +49,7 @@ class TrendTest {
         assertEquals(false, trend[5].inPeriod)
     }
 
-    // 사용자 요청(2026-10-03): 기록이 하나라도 있으면 그려야 견줄 수 있다
+    // 기록이 하나라도 있으면 그려야 견줄 수 있다
     @Test
     fun `라운드가 40에 못 미치는 주도 값을 두고 표본이 적다고 표시한다`() {
         val trend = ready(week(weeksAgo = 0) + week(weeksAgo = 1, rounds = 39, matches = 2)).trend

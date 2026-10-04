@@ -27,7 +27,7 @@ const val NO_VALUE = "–"
 @Composable
 fun percentText(rate: Double?): String = rate?.let { MetricFormat.PERCENT.valueText(it) } ?: NO_VALUE
 
-// 목업대로 50%를 넘으면 초록, 밑돌면 빨강이다. 색은 변화량에만 쓴다는 규칙의 예외로 CLAUDE.md에 적었다.
+// 목업대로 50%를 넘으면 초록, 밑돌면 빨강이다. 색은 변화량에만 쓴다는 규칙의 예외로 docs/design.md에 적었다.
 @Composable
 fun winRateColor(rate: Double?): Color {
     val steps = rate?.let { MetricFormat.PERCENT.steps(it) } ?: return OvalitTheme.colors.t3
@@ -41,7 +41,7 @@ fun winRateColor(rate: Double?): Color {
 @Composable
 fun ContentCatalog.weaponName(id: WeaponId): String = weapons[id]?.name ?: stringResource(Res.string.unknown_weapon)
 
-// CLAUDE.md 에셋 규칙대로 --t2 실루엣이고 면을 깔지 않는다. 총마다 길이가 달라서 왼쪽 끝을 아래 글자에 맞춘다.
+// docs/design.md 에셋 규칙대로 --t2 실루엣이고 면을 깔지 않는다. 총마다 길이가 달라서 왼쪽 끝을 아래 글자에 맞춘다.
 @Composable
 fun WeaponThumb(weapon: WeaponId, name: String, width: Dp, height: Dp) {
     WeaponImage(
@@ -54,9 +54,10 @@ fun WeaponThumb(weapon: WeaponId, name: String, width: Dp, height: Dp) {
 }
 
 /**
- * op.gg처럼 KDA를 구간마다 칠합니다. 1 미만은 [below] 그대로 두고 1~2는 파랑, 2~3은 보라, 3 이상은 호박색입니다. 보이는
- * 두 자리로 반올림한 값으로 가릅니다. 1.995가 "2.00"으로 보이는데 파랑이면 틀려 보입니다. 오르내림의 pos, neg와는
- * 다른 토큰이라 KDA가 "지난주보다 올랐다"로 읽히지 않습니다.
+ * KDA를 구간마다 칠합니다. 1 미만은 [below], 1~2는 `kda1`, 2~3은 `kda2`, 3 이상은 `kda3`입니다. 보이는 두 자리로 반올림한
+ * 값으로 가릅니다. 1.995가 "2.00"으로 보이는데 1~2 색이면 틀려 보입니다.
+ *
+ * 경계를 바꾸거나 구간에 이름을 붙이면 등급처럼 읽혀서 그 전에 묻습니다(CLAUDE.md 지켜야 할 선).
  */
 @Composable
 fun kdaColor(kda: Double, below: Color): Color {
@@ -108,7 +109,7 @@ fun KdaText.annotated(): AnnotatedString {
 }
 
 /**
- * "KDA 2.13"입니다. 숫자만 굵게 두고 구간 색을 칠합니다. 홈 고정 칸 밑 줄, 프로필과 홈의 요원 칸, S7이 같이 씁니다.
+ * "KDA 2.13"입니다. 숫자만 굵게 두고 구간 색을 칠합니다.
  *
  * @param below 1 미만일 때 숫자 색입니다.
  * @param label "KDA" 글자에 덧씌울 모양입니다. 홈처럼 숫자보다 글자를 작게 둘 때 씁니다.

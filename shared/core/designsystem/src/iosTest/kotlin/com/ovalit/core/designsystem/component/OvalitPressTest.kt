@@ -27,7 +27,7 @@ import kotlin.test.assertNotEquals
 @OptIn(ExperimentalTestApi::class)
 class OvalitPressTest {
 
-    // 사용자 요청(2026-10-03): 홈 K/D 칸처럼 글자에 딱 붙은 칸은 누른 면이 글자 끝에서 잘린 것처럼 보였다
+    // 홈 K/D 칸처럼 글자에 딱 붙은 칸은 면을 넓히지 않으면 글자 끝에서 잘린 것처럼 보인다
     @Test
     fun `넓힌 만큼 칸 밖에도 누른 면을 깐다`() = runComposeUiTest {
         setContent { PressedCell(outset = 10.dp) }

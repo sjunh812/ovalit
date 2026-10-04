@@ -139,15 +139,14 @@ class FriendsViewModel(
 
     fun now(): Instant = clock.now()
 
-    /** 보냈거나 정해 둔 까닭으로 막혔으면 [onResult]를 부릅니다. 보내다 실패하면 부르지 않고 안내를 띄워 시트를 그대로 둡니다. */
+    /** 서버가 답하면 막혔든 보냈든 [onResult]를 부릅니다. 보내다 실패하면 부르지 않고 안내만 띄워 시트를 그대로 둡니다. */
     fun sendPing(friends: List<PlayerId>, startsAt: Instant, onResult: (PingSendResult) -> Unit) {
         viewModelScope.launchNotifying(failures, FailedAction.PING_SEND) {
             val result = pingRepository.send(friends, startsAt)
             if (result == PingSendResult.SENT) analytics.log(AnalyticsEvents.PING_SEND, mapOf("friend_count" to friends.size.toString()))
-            // 보낸 것이 끝나기 전에는 "부르기"를 두지 않으니, 이 결과는 다른 기기에서 그사이 보낸 경우다
+            // 보낸 것이 끝나기 전에는 부르기 버튼이 없으니, 이 결과는 그사이 다른 기기에서 보낸 경우다
             if (result == PingSendResult.ALREADY_ACTIVE) failures.send(FailureNotice(FailedAction.PING_ALREADY_ACTIVE))
             onResult(result)
         }
     }
-
 }

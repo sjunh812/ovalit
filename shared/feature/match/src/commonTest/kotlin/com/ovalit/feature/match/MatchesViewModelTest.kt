@@ -88,7 +88,7 @@ class MatchesViewModelTest {
         assertTrue(filtered.all { it.myAgent == agent && it.map == map })
     }
 
-    // 고를 수 있는 요원은 많이 한 순이다. 필터 시트 첫 줄에 주로 하는 요원이 온다.
+    // 필터 시트 첫 줄에 주로 하는 요원이 온다
     @Test
     fun `필터의 요원은 그 큐에서 많이 한 순이다`() = runTest {
         val state = collect(viewModel())
@@ -112,7 +112,7 @@ class MatchesViewModelTest {
         assertEquals("fresh-1-0", state.days.first().matches.first().id.value)
     }
 
-    // 받는 중에 또 당겨서 한 번 더 받으면 레이트 리밋을 두 배로 쓴다.
+    // 받는 중에 또 받으면 레이트 리밋을 두 배로 쓴다
     @Test
     fun `받는 중에 또 당겨도 한 번만 받는다`() = runTest {
         val viewModel = viewModel()
@@ -125,7 +125,7 @@ class MatchesViewModelTest {
         assertEquals(before + 1, assertIs<MatchesUiState.Success>(viewModel.uiState.value).days.sumOf { it.matches.size })
     }
 
-    // 인터넷이 끊겨 받지 못하면 조용히 넘기지 않고 까닭을 알린다. 당김 표시도 거둔다.
+    // 안내를 넘기고 당김 표시도 거둔다
     @Test
     fun `새 경기를 받지 못하면 까닭을 안내로 넘긴다`() = runTest {
         val failing = object : MatchRepository by FakeMatchRepository(ThursdayClock, scope = this) {

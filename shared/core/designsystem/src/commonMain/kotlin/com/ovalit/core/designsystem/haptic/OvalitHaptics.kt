@@ -8,8 +8,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 
 /**
- * 무언가를 확정하는 동작에만 짧게 울립니다. 친구 수락·거절, 요청 보내기, 라이벌 지정, 설정 토글이 그렇습니다.
- * 스크롤, 탭 이동, 칩에는 쓰지 않습니다. 누를 때마다 울리면 알림처럼 느껴집니다.
+ * 확정하는 동작(친구 수락·거절, 요청 보내기, 라이벌 지정, 설정 토글)에만 씁니다. 스크롤, 탭 이동, 칩에는 쓰지 않습니다.
  */
 @Stable
 class OvalitHaptics internal constructor(private val feedback: HapticFeedback) {

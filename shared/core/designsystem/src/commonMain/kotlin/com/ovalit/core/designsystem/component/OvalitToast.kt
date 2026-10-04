@@ -33,7 +33,7 @@ import kotlinx.coroutines.sync.withLock
 
 /**
  * 화면 아래에 잠깐 띄우는 한 줄 안내입니다. 사용자가 한 일이 실패했을 때만 씁니다. 저절로 일어난 일(백그라운드 새 경기 확인,
- * 광고)은 조용히 넘깁니다. 안내가 이어지면 앞의 것이 사라진 뒤에 차례로 띄웁니다.
+ * 광고)은 조용히 넘깁니다. [show]를 겹쳐 부르면 앞의 안내가 사라진 뒤에 차례로 띄웁니다.
  */
 @Stable
 class OvalitToastState {
@@ -58,7 +58,7 @@ class OvalitToastState {
 
 private val ExitPause = 0.2.seconds
 
-/** 앱 맨 위가 깔아 줍니다. 없으면(프리뷰, UI 테스트) 안내를 띄우지 않습니다. */
+/** 앱 맨 위에서 채웁니다. `null`이면(프리뷰, UI 테스트) 안내를 띄우지 않습니다. */
 val LocalOvalitToast = staticCompositionLocalOf<OvalitToastState?> { null }
 
 @Composable

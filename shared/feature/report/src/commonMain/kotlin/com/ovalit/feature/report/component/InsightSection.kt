@@ -73,10 +73,11 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * 개선 포인트 문장입니다. 이번 액트 경기를 둘로 나눠 [insight]의 주어 쪽을 견준 쪽과 비교해 사실로만 적습니다. 두 쪽 모두 이름이 있으면 높은 쪽이
- * 주어라 "제트로 뛴 판은 승률이 레이즈보다 높아요"가 되고, 한쪽이 "다른 맵"처럼 묶음이면 이름 있는 쪽이 주어라 낮으면
- * "낮아요"가 됩니다. 무엇과 견줄지와 어느 지표를 적을지는 모델이 나에게 영향이 큰 순으로 고릅니다. "제트를 쓰세요"처럼
- * 게임 결정을 대신하는 말은 쓰지 않습니다(CLAUDE.md 지켜야 할 선).
+ * 개선 포인트 묶음입니다. 이번 액트 경기를 둘로 나눈 [insight]의 두 쪽 차이를 사실로만 적습니다. 두 쪽 모두 이름이 있으면
+ * 높은 쪽이 주어("제트로 뛴 판은 승률이 레이즈보다 높아요")이고, 한쪽이 "다른 맵"처럼 묶음이면 이름 있는 쪽이 주어라
+ * "낮아요"도 됩니다. 무엇을 견줄지는 모델이 고릅니다.
+ *
+ * "제트를 쓰세요"처럼 게임 결정을 대신하는 말은 쓰지 않습니다(CLAUDE.md 지켜야 할 선).
  */
 @Composable
 internal fun InsightSection(
@@ -114,9 +115,8 @@ internal fun InsightSection(
         gapText,
         stringResource(if (insight.leadIsHigher) Res.string.insight_higher else Res.string.insight_lower),
     )
-    // 몇 판, 몇 라운드로 센 숫자인지 같이 적는다. 적게 뛴 쪽의 숫자는 크게 흔들린다. 위 칸들과 달리 이번 액트 경기로 견줘서
-    // 기간을 맨 앞에 적는다.
-    // 묶음 제목에 "이번 액트"가 있어 이 줄에는 기간을 다시 적지 않는다
+    // 몇 판, 몇 라운드로 센 숫자인지 같이 적는다. 적게 뛴 쪽의 숫자는 크게 흔들린다. 기간은 묶음 제목("이번 액트")에 있어
+    // 다시 적지 않는다.
     val act = comparisonLine(
         period = null,
         parts = listOf(
@@ -124,8 +124,8 @@ internal fun InsightSection(
             LinePart(otherName, format.valueText(other.value), other.sampleText()),
         ),
     )
-    // 사용자 요청(2026-09-27): 액트 동안의 차이가 이번 주에도 이어졌는지 숫자만 붙인다. 한 주 표본이라 판단은 하지 않는다.
-    // 액트 줄과 같은 꼴로 두어 두 줄을 위아래로 견줘 읽게 한다.
+    // 액트 동안의 차이가 이번 주에도 이어졌는지 숫자만 붙인다. 한 주 표본이라 판단은 하지 않는다. 액트 줄과 같은 꼴로 두어
+    // 위아래로 견줘 읽게 한다.
     val recent = insight.recent?.let {
         comparisonLine(
             period = periodLabel(period),
@@ -143,7 +143,7 @@ internal fun InsightSection(
         else -> null
     }
 
-    // 위 칸들은 모두 이번 주 숫자라 묶음을 떼고 제목을 달아 이번 액트 이야기임을 밝힌다
+    // 위 칸들은 모두 이번 주 숫자라 제목을 달아 이번 액트 이야기임을 밝힌다
     Column(
         modifier = modifier.padding(horizontal = OvalitSpacing.gutter),
         verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -159,7 +159,7 @@ internal fun InsightSection(
             OvalitText(text = act, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t2)
             recent?.let { OvalitText(text = it, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t2) }
         }
-        // 왜 이 지표를 먼저 봤는지는 숫자 줄과 다른 이야기라 숫자 줄에 붙이지 않고 한 칸 띄운다
+        // 왜 이 지표를 먼저 봤는지는 숫자 줄과 다른 이야기라 붙이지 않고 띄운다
         reason?.let { OvalitText(text = it, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t3) }
     }
 }
@@ -194,8 +194,8 @@ private fun InsightPart.sampleText(): String = when (subject) {
 /** 견주는 한쪽입니다. "공격 58% 388라운드"처럼 이름, 값, 표본 순서입니다. */
 private class LinePart(val name: String, val value: String, val sample: String? = null)
 
-// 사용자 요청(2026-09-27): 짚을 점 줄처럼 이름을 가장 진하게, 값을 그다음, 기간과 표본을 가장 옅게 칠한다. 값을 이름 바로
-// 뒤에 두어 "공격 58%"로 읽힌다. 줄은 두 쪽 사이에서만 바뀐다.
+// 짚을 점 줄처럼 이름을 가장 진하게, 값을 그다음, 기간과 표본을 가장 옅게 칠한다. 값을 이름 바로 뒤에 두어 "공격 58%"로
+// 읽히게 하고, 줄은 두 쪽 사이에서만 바뀐다.
 @Composable
 private fun comparisonLine(period: String?, parts: List<LinePart>): AnnotatedString {
     val colors = OvalitTheme.colors

@@ -146,7 +146,7 @@ class InsightTest {
         assertEquals(InsightSubject.OnSide(Side.ATTACK), insight.lead.subject)
         assertEquals(24 * 15, insight.lead.rounds)
         assertEquals(15, insight.matches)
-        // 사용자 요청(2026-09-27): 액트 동안의 차이가 이번 주에도 이어졌는지 이번 주 값을 붙인다
+        // 액트 동안의 차이가 이번 주에도 이어졌는지 이번 주 값을 붙인다
         assertEquals(InsightRecent(lead = 100 / 120.0, other = 95 / 120.0), insight.recent)
     }
 
@@ -235,7 +235,7 @@ class InsightTest {
         assertEquals(InsightMetric.KAST, insight(Focus.CONSISTENCY)?.metric)
     }
 
-    // 사용자 요청(2026-09-27): 멀티킬 라운드 비율도 공수로 나눠 본다. 타격대의 우선 지표인 첫 교전 승률은 두 진영이 같다.
+    // 멀티킬 라운드 비율도 공수로 나눠 본다. 타격대의 우선 지표인 첫 교전 승률은 두 진영이 같다.
     @Test
     fun `멀티킬 라운드 비율이 공수로 벌어지면 문장을 만든다`() {
         val insight = assertNotNull(multiKillGap().insight(Role.DUELIST))
@@ -256,7 +256,7 @@ class InsightTest {
         assertEquals(InsightMetric.MULTI_KILL_RATE, multiKillGap().insight(Role.SENTINEL)?.metric)
     }
 
-    // 사용자 요청(2026-09-27): 두 쪽 모두 이름이 있으면 높은 쪽을 주어로 둔다. "제트로 뛴 판은 레이즈보다 높아요"
+    // 두 쪽 모두 이름이 있으면 높은 쪽을 주어로 둔다. "제트로 뛴 판은 레이즈보다 높아요"
     @Test
     fun `같은 역할의 요원끼리 견주고 높은 쪽을 주어로 둔다`() {
         val matches = agentMatches(Jett, Role.DUELIST, survived = 45, died = 15) + agentMatches(Raze, Role.DUELIST, survived = 20, died = 20)
@@ -288,7 +288,7 @@ class InsightTest {
         assertNull(matches.insight(role = null))
     }
 
-    // 사용자 결정(2026-09-27): 승률은 차이가 클 때만 나온다. 10판씩이면 100%와 20%쯤은 벌어져야 우연을 넘는다.
+    // 승률은 차이가 클 때만 나온다. 10판씩이면 100%와 20%쯤은 벌어져야 우연을 넘는다.
     @Test
     fun `역할끼리는 승률을 견주고 차이가 클 때만 문장을 만든다`() {
         fun games(role: Role, agent: AgentId, won: Int, lost: Int) = List(won + lost) { index ->
@@ -357,8 +357,7 @@ class InsightTest {
         assertNull(matches.insight(role = null, categories = mapOf(Vandal to WeaponCategory.RIFLE, Phantom to WeaponCategory.SMG)))
     }
 
-    // 사용자 요청(2026-09-27): 연달아 뛸수록 어떤지 본다. 첫 두 판을 주어로 두면 무엇을 짚는지 흐려져서 늘 세 번째 판부터가
-    // 주어다.
+    // 연달아 뛸수록 어떤지 본다. 첫 두 판을 주어로 두면 무엇을 짚는지 흐려져서 늘 세 번째 판부터가 주어다.
     @Test
     fun `연달아 뛴 세 번째 판부터를 첫 두 판과 견준다`() {
         val insight = assertNotNull(sessions(early = 30 to 10, late = 20 to 20).insight(role = null))

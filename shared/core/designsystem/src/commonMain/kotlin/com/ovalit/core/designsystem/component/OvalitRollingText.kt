@@ -29,14 +29,12 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 private const val ROLL_MILLIS = 240
 
 /**
- * 숫자가 바뀌면 바뀐 자리의 숫자만 굴러갑니다. "30%"가 "32%"가 되면 "0"만 "2"로 구르고 "3"과 "%"는 그대로 있습니다.
- * 커지면 아래에서 올라오고 작아지면 위에서 내려옵니다. 처음 그릴 때는 움직이지 않고, 기기에서 애니메이션을 끄면
- * 바로 바뀝니다.
+ * 숫자가 바뀌면 바뀐 자리의 숫자만 굴립니다. "30%"가 "32%"가 되면 "0"만 "2"로 구르고 "3"과 "%"는 그대로입니다.
+ * 커지면 아래에서 올라오고 작아지면 위에서 내려옵니다. 처음 그릴 때는 움직이지 않습니다.
  *
- * 큰 지표 숫자에만 씁니다. 옆에 붙는 변화량까지 움직이면 눈이 두 군데로 갈립니다.
+ * 큰 지표 숫자에만 씁니다. 옆의 변화량까지 움직이면 눈이 두 군데로 갈립니다.
  *
- * 같은 자리에 다른 지표가 올 수 있으면 부르는 쪽에서 지표로 `key`를 겁니다. 안 걸면 지표가 바뀔 때도 옛 지표 숫자에서
- * 새 지표 숫자로 굴러갑니다.
+ * 같은 자리에 다른 지표가 올 수 있으면 부르는 쪽에서 지표로 `key`를 겁니다. 안 걸면 지표를 바꿀 때도 숫자가 굴러갑니다.
  */
 @Composable
 fun OvalitRollingText(
@@ -47,8 +45,8 @@ fun OvalitRollingText(
     maxLines: Int = 1,
     autoSize: TextAutoSize? = null,
 ) {
-    // 배치는 BasicText 하나로 잡고 구르는 모습은 그리는 단계에서만 덧그린다. 배치까지 움직이면 기준선과 칸 폭,
-    // 좁은 칸에서 글자를 줄이는 규칙이 애니메이션 도중에 흔들린다.
+    // 배치는 BasicText 하나로 잡고 구르는 모습은 그리는 단계에서만 덧그린다. 배치까지 움직이면 기준선, 칸 폭,
+    // autoSize가 애니메이션 도중에 흔들린다.
     val last = remember { LastText(text) }
     val roll = remember(text) { Roll.between(last.value, text) }
     val progress = remember(text) { Animatable(if (roll.slots.isEmpty()) 1f else 0f) }
@@ -76,8 +74,8 @@ fun OvalitRollingText(
             drawContent()
             val laidOut = layout ?: return@drawWithContent
             if (!rolling) return@drawWithContent
-            // 굴러가는 글자를 한 글자씩 따로 재서 그리면 자간이 전체 글자와 달라서 1px쯤 옆으로 비껴 그려진다.
-            // 다 구른 뒤 제자리 글자로 바뀌는 순간 움찔하므로, 전체 글자를 같은 조건으로 한 번 더 그려 바뀐 칸만 잘라 보여 준다.
+            // 한 글자씩 따로 재면 자간이 전체 글자와 달라 1px쯤 비껴 그려지고, 다 구른 뒤 제자리 글자로 바뀔 때 움찔한다.
+            // 그래서 전체 글자를 같은 조건으로 한 번 더 재고 바뀐 칸만 잘라 그린다.
             val input = laidOut.layoutInput
             fun layoutOf(value: String) = measurer.measure(
                 text = AnnotatedString(value),
@@ -118,7 +116,7 @@ private class LastText(var value: String)
 /**
  * @property slots 새 글자에서 바뀐 자리입니다. 글자를 오른쪽 끝부터 맞춰 비교해서 "9%"가 "10%"가 되면 "%"는
  * 그대로이고 "9" 자리와 새로 생긴 "1" 자리가 굴러갑니다.
- * @property oldIndex 바뀐 자리마다 옛 글자에서 같은 자리의 순서입니다. 새로 생긴 자리는 키가 없습니다.
+ * @property oldIndex 바뀐 자리에 대응하는 옛 글자의 인덱스입니다. 새로 생긴 자리는 키가 없습니다.
  */
 private class Roll(val before: String, val slots: Set<Int>, val oldIndex: Map<Int, Int>, val direction: Float) {
     companion object {

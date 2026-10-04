@@ -1,6 +1,6 @@
 package com.ovalit.core.model
 
-/** 한 요원으로 이만큼은 뛰어야 승률과 비율을 보여줍니다. 실데이터를 보고 조정할 시작값입니다. */
+/** 승률을 견줄 만한 최소 판 수입니다. 시작 기준선입니다. */
 const val MIN_AGENT_MATCHES = 5
 
 /**

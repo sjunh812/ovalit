@@ -20,7 +20,7 @@ val Focus.label: StringResource
         Focus.NONE -> Res.string.focus_none
     }
 
-/** 고르면 무엇이 앞에 오는지입니다. 계산하는 지표만 적습니다. */
+/** 이 관심사를 고르면 먼저 보는 지표입니다. 지금 계산하는 지표만 적습니다. */
 val Focus.description: StringResource
     get() = when (this) {
         Focus.AIM -> Res.string.focus_aim_description

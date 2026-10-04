@@ -51,10 +51,8 @@ private val RowBarsHeight = 44.dp
 private val RowNameWidth = 88.dp
 
 /**
- * 홈 고정 칸 밑의 "지난 8주 흐름 한눈에 보기" 줄입니다. 누르면 [TrendSheet]가 뜹니다. 막대를 조금 그려 두어 누르면 무엇이
- * 나오는지 보이게 합니다.
- *
- * 사용자 결정(2026-09-29): 여러 지표의 흐름을 홈에 늘어놓으면 복잡해서 시트로 뺐다. 홈에는 입구 한 줄만 둔다.
+ * 홈 고정 칸 밑의 "지난 8주 흐름 한눈에 보기" 줄입니다. 누르면 [TrendSheet]가 뜹니다. [metric]의 막대를 작게 그려 무엇이
+ * 나오는지 보여 줍니다.
  */
 @Composable
 internal fun TrendEntry(report: WeeklyReport.Ready, metric: FixedMetric, onClick: () -> Unit, modifier: Modifier = Modifier) {
@@ -63,7 +61,7 @@ internal fun TrendEntry(report: WeeklyReport.Ready, metric: FixedMetric, onClick
     Row(
         modifier = modifier
             .fillMaxWidth()
-            // 면까지 같이 줄도록 누름 효과를 면보다 앞에 단다(CLAUDE.md 디자인)
+            // 면까지 같이 줄도록 누름 효과를 면보다 앞에 단다(docs/design.md)
             .clickable(role = Role.Button, onClick = onClick)
             .clip(RoundedCornerShape(12.dp))
             // 카드 위라 한 단계 더 올린 면이다. --raised는 다크에서 카드와 같은 색이다.
@@ -87,11 +85,10 @@ internal fun TrendEntry(report: WeeklyReport.Ready, metric: FixedMetric, onClick
 }
 
 /**
- * 고정 지표의 8주 막대를 한 시트에 모은 것입니다. 지표마다 자기 범위로 막대를 그립니다. 한 축에 겹치면 K/D 1.2와
- * 피해량 140을 같은 눈금에 올리게 됩니다.
+ * 고정 지표의 8주 막대를 한 시트에 모은 것입니다. 줄마다 지난 4주 평균 높이에 점선을 긋고, 막대를 누르거나 옆으로 끌면 모든
+ * 줄이 그 주 값으로 바뀝니다. 처음에는 리포트 기간 값입니다.
  *
- * 사용자 요청(2026-10-03): 막대만으로는 전에 얼마였고 지금 얼마인지 안 보였다. 줄마다 지난 4주 평균에 점선을 긋고, 막대를
- * 누르거나 옆으로 끌면 모든 줄이 그 주 값으로 바뀐다. 처음에는 리포트 기간 값이다.
+ * 지표마다 제 범위로 막대를 그립니다. 한 축에 겹치면 K/D 1.2와 피해량 140을 같은 눈금에 올리게 됩니다.
  */
 @Composable
 internal fun TrendSheet(
@@ -161,7 +158,7 @@ private fun TrendRow(report: WeeklyReport.Ready, metric: FixedMetric, selected: 
             OvalitText(
                 text = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
                 style = valueStyle,
-                // KDA 숫자는 어디서나 구간 색이다(CLAUDE.md 디자인)
+                // KDA 숫자는 어디서나 구간 색이다(docs/design.md)
                 color = if (metric == FixedMetric.KDA && current != null) kdaColor(current, below = colors.t1) else colors.t1,
                 maxLines = 1,
             )

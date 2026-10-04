@@ -57,8 +57,7 @@ invites.post("/:code/redeem", async (c) => {
   if (invite.expires_at <= Date.now()) throw new ApiError(410, "invite_expired");
 
   const related = (await relationsTo(c.env.DB, c.var.user.id, [invite.puuid])).get(invite.puuid);
-  // 단톡방에 올린 링크는 이미 친구인 사람도 누른다. 몇 번을 눌러도 에러 없이 같은 결과가 나오게 200으로 답한다.
-  // 스코어보드 요청은 친구가 아닌 사람에게만 버튼이 뜨니 거기서는 409로 앱의 관계가 낡았다고 알린다.
+  // 단톡방에 올린 링크는 이미 친구인 사람도 누르니 409 대신 200으로 답한다(스코어보드는 sendRequest가 409를 준다)
   if (related?.relation === "friend") return c.json({ status: "already_friends" });
   return sendRequest(c, invite.user_id, related?.relation ?? "app_user", "invite_link");
 });

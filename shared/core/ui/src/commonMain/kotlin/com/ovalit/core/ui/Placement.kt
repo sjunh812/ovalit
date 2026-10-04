@@ -45,10 +45,7 @@ fun rankText(placement: MatchPlacement, withPlayers: Boolean = false): String =
         stringResource(Res.string.placement_rank, placement.rank)
     }
 
-/**
- * 그 판에서의 자리입니다. MVP는 금색, 팀 MVP는 은색 칩, "3등"은 흐린 칩입니다(사용자 요청, 2026-10-04). op.gg처럼 셋이 한눈에
- * 갈립니다. 승패 칸과 같은 네모라 알약 모양은 쓰지 않습니다.
- */
+/** 그 판에서의 자리입니다. MVP와 팀 MVP는 색 칩, 나머지는 "3등"을 적은 흐린 칩입니다. */
 @Composable
 fun PlacementLabel(placement: MatchPlacement, modifier: Modifier = Modifier) {
     val award = awardText(placement.award)
@@ -61,23 +58,18 @@ fun PlacementLabel(placement: MatchPlacement, modifier: Modifier = Modifier) {
 
 /** 경기 줄과 스코어보드의 작은 칩 모양입니다. 등수 말고는 모두 옅은 면에 짙은 같은 계열 글자를 올린 톤온톤입니다. */
 enum class MatchChipTone {
-    /** 금색입니다. 경기 MVP입니다. */
     MVP,
-
-    /** 푸른 기가 도는 은색입니다. 팀 MVP입니다. */
     TEAM_MVP,
-
-    /** 주황입니다. 에이스입니다. */
     ACE,
 
-    /** 파랑입니다. 이긴 클러치입니다. */
+    /** 이긴 클러치입니다. */
     CLUTCH,
 
-    /** `--fill` 면에 흐린 글자입니다. 등수입니다. */
+    /** 등수입니다. `--fill` 면에 흐린 글자입니다. */
     QUIET,
 }
 
-/** 작은 네모 칩입니다. */
+/** 알약 모양 대신 모서리만 살짝 둥글린 네모 칩입니다. */
 @Composable
 fun MatchChip(text: String, tone: MatchChipTone, modifier: Modifier = Modifier) {
     val colors = OvalitTheme.colors
@@ -88,7 +80,7 @@ fun MatchChip(text: String, tone: MatchChipTone, modifier: Modifier = Modifier) 
         MatchChipTone.CLUTCH -> colors.clutchContainer to colors.clutch
         MatchChipTone.QUIET -> colors.fill to colors.t2
     }
-    // 맵 이름과 선수 이름 옆에 붙는 작은 표시라 글자보다 한 단계 작게 둔다(사용자 요청, 2026-10-04). 22dp로 두니 이름보다 칩이 먼저 보였다.
+    // 이름 옆에 붙는 작은 표시라 글자보다 한 단계 작게 둔다. 더 키우면 이름보다 칩이 먼저 보인다.
     Box(
         modifier = modifier
             .heightIn(min = 19.dp)

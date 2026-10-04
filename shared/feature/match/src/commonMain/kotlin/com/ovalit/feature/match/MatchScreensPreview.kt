@@ -22,7 +22,7 @@ private fun MatchesEmptyPreview() {
     OvalitThemePreview { MatchesScreen(MatchPreviewData.empty, {}, {}, {}) }
 }
 
-// 스코어와 K/D/A가 오른쪽에 두 줄로 붙어 가장 빡빡한 줄이다
+// 좁은 폭과 큰 글씨에서 경기 줄을 본다. 오른쪽에 칩, 스코어, K/D/A가 몰려 가장 빡빡하다.
 @Preview(widthDp = 320, heightDp = 568, fontScale = 1.5f)
 @Composable
 private fun MatchesSmallLargeFontPreview() {

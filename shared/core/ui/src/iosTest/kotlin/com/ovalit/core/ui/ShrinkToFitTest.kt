@@ -19,7 +19,7 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalTestApi::class)
 class ShrinkToFitTest {
 
-    // 칸마다 한 크기로 맞춘 23.7sp를 StepBased는 0.25sp 눈금으로 내려 23.5sp로 그렸다
+    // StepBased를 그대로 쓰면 0.25sp 눈금으로 내려서, 칸에 맞춰 둔 23.7sp가 23.5sp로 그려진다
     @Test
     fun `다 들어가는 글자는 맞춰 둔 크기 그대로 그린다`() = runComposeUiTest {
         var layout: TextLayoutResult? = null

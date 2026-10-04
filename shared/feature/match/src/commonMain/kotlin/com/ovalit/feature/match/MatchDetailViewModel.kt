@@ -48,7 +48,7 @@ sealed interface MatchDetailUiState {
     data object Gone : MatchDetailUiState
 
     /**
-     * @property myTeam 전투 점수 순입니다. 게임 스코어보드와 같은 순서입니다.
+     * @property myTeam 라운드당 전투점수 순입니다.
      * @property rounds 내가 못 뛴 라운드도 들어갑니다.
      */
     data class Success(
@@ -63,7 +63,7 @@ sealed interface MatchDetailUiState {
 }
 
 /**
- * @property placement 그 판 스코어보드에서의 자리입니다. MVP와 팀 MVP를 이름 옆에 적습니다.
+ * @property placement 그 판에서의 자리(MVP, 팀 MVP, 등수)입니다.
  * @property stats 줄을 펼치면 보이는 첫 킬, 첫 데스, 멀티킬입니다.
  */
 data class ScoreboardRow(
@@ -93,7 +93,7 @@ enum class PlayerRelation {
     /** 앱을 쓰지 않아서 요청을 받을 수 없습니다. */
     NOT_APP_USER,
 
-    /** 앱을 쓰는지 서버에 묻는 중이거나 묻지 못했습니다. 모르는데 앱을 안 쓴다고 하면 틀린 말이 됩니다. */
+    /** 앱을 쓰는지 서버에 묻는 중이거나 묻지 못했습니다. 모르는 사람을 [NOT_APP_USER]로 보이지 않으려고 따로 둡니다. */
     UNKNOWN,
 }
 
@@ -111,8 +111,7 @@ class MatchDetailViewModel(
         .map { matches -> matches.firstOrNull { it.id == matchId } }
         .distinctUntilChanged()
 
-    // 앱을 쓰는지는 서버에 물어야 안다. 경기를 불러올 때 한 번 묻는다. 답을 기다리는 동안과 묻지 못했을 때는 `null`로 두고
-    // 스코어보드부터 그린다. 답을 기다리느라 화면이 비거나, 실패해서 화면 전체가 깨지면 안 된다.
+    // 앱을 쓰는지는 경기를 불러올 때 서버에 한 번 묻는다. 답을 기다리는 동안과 실패했을 때는 `null`로 두고 스코어보드부터 그린다.
     private val appUsers: Flow<Set<PlayerId>?> = match.flatMapLatest { match ->
         if (match == null) {
             flowOf(emptySet())
@@ -139,7 +138,7 @@ class MatchDetailViewModel(
 
     val uiState: StateFlow<MatchDetailUiState> = combine(match, relations, contentRepository.catalog) { match, relations, catalog ->
         if (match == null) return@combine MatchDetailUiState.Gone
-        // 게임 스코어보드처럼 라운드당 전투점수 순이다. 합계로 세우면 튕겨서 덜 뛴 사람이 밀린다. 순위와 MVP도 같은 순서로 정한다.
+        // 라운드당 전투점수 순이다. 합계로 세우면 튕겨서 덜 뛴 사람이 밀린다.
         val placements = match.placements()
         val stats = match.playerStats()
         fun rows(onMyTeam: Boolean) = match.players

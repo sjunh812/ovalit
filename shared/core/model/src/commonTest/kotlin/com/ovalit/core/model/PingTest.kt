@@ -93,10 +93,10 @@ class PingTest {
         assertEquals(47, slots.size)
     }
 
-    // 사용자 요청(2026-10-03): 누가 못 간다고 하면 그 자리에 다른 친구를 부른다
+    // 누가 못 간다고 하면 그 자리에 다른 친구를 부를 수 있다
     @Test
     fun `못 간다고 한 친구는 자리를 비운 것으로 친다`() {
-        // 셋을 부른 데 하나를 더하면 넷이라 자리가 없다
+        // 셋을 불렀으니 하나를 더 부르면 넷이라 자리가 없다
         val full = ping().invited(listOf(PingPerson(PlayerId("c"), "c#KR1")))
 
         assertEquals(0, full.openSeats)

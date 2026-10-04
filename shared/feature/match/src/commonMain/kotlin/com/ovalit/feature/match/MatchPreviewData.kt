@@ -25,8 +25,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
-// 프리뷰와 UI 테스트가 같이 쓴다. 목업 S3의 어센트 13 – 9 경기에 맞췄다. ID는 번들한 이미지가 붙도록
-// 카탈로그의 UUID다.
+// 프리뷰와 UI 테스트가 같이 쓴다. 목업 S3의 어센트 13 – 9 경기에 맞췄다. ID는 번들 이미지가 붙도록 카탈로그 UUID를 쓴다.
 internal object MatchPreviewData {
 
     private val seoul = TimeZone.of("Asia/Seoul")
@@ -79,7 +78,7 @@ internal object MatchPreviewData {
         ),
     ).withScenes()
 
-    // 1라운드는 에이스, 2라운드는 준호가 첫 킬을 내고 쓰러진 뒤 혼자 넷을 상대한 클러치다
+    // 1라운드는 에이스, 2라운드는 준호가 첫 킬을 내고 쓰러진 뒤 내가 혼자 넷을 상대한 클러치다
     private fun Match.withScenes(): Match {
         val enemies = players.filterNot { it.onMyTeam }.map { it.player }
         val ace = enemies.mapIndexed { index, enemy -> KillEvent(12_000L + 8_000L * index, me, enemy, emptySet(), weapon = null) }

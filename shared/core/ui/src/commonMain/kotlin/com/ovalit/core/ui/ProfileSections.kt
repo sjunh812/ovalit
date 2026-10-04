@@ -172,8 +172,8 @@ fun ProfileStatsSection(summary: ProfileSummary) {
         ProfileSectionTitle(title = stringResource(Res.string.profile_stats_title))
         Spacer(Modifier.height(12.dp))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            // 모든 칸의 이름과 숫자를 한 크기로 맞춘다. 칸마다 따로 줄이면 "4번 중 2번"처럼 긴 칸만 작아진다.
-            // 세 칸에 가장 작게 줄여도 안 들어가면 두 칸씩 놓는다. 숫자가 잘리는 것보다 줄이 하나 느는 게 낫다.
+            // 칸마다 따로 줄이면 "4번 중 2번"처럼 긴 칸만 작아져서 모든 칸을 한 크기로 맞춘다.
+            // 세 칸에 가장 작게 줄여도 안 들어가면 두 칸씩 놓는다.
             val cells = main + records + scenes
             val labels = cells.map { it.label }
             val values = cells.map { it.value ?: NO_VALUE }
@@ -205,7 +205,7 @@ private class StatStyles(val label: TextStyle, val value: TextStyle, val detail:
  */
 private class StatCell(val label: String, val value: String?, val detail: String? = null, val kda: Double? = null)
 
-// 홈의 "판당 17.2 / 11.5 / 6.3"과 같은 자릿수다. 칸이 좁아서 빗금 양옆 공백만 뺐다.
+// 자릿수는 다른 화면의 판당 K/D/A와 같다(perMatchKda). 칸이 좁아 빗금 양옆에 공백을 두지 않는다.
 @Composable
 private fun perMatchText(metrics: MatchMetrics): String? {
     val (kills, deaths, assists) = metrics.perMatchKda() ?: return null
@@ -273,8 +273,7 @@ private fun playTimeText(millis: Long): String {
 }
 
 /**
- * 맞힌 탄이 머리, 몸, 다리에 어떻게 나뉘었는지입니다. 홈의 헤드샷과 같은 맞힌 탄 기준입니다. 강조는 색이 아니라
- * 밝기로 해서 머리가 가장 밝습니다.
+ * 맞힌 탄을 머리, 몸, 다리로 나눈 막대입니다. 홈 헤드샷과 같은 맞힌 탄 기준이고, 탄이 하나도 없으면 그리지 않습니다.
  */
 @Composable
 fun ProfileShotsSection(shots: Shots) {
@@ -368,8 +367,9 @@ fun ProfileAgentsSection(report: AgentReport, catalog: ContentCatalog, onOpen: (
 /**
  * 요원 세 칸입니다. 내 프로필, S5, 홈이 같이 씁니다.
  *
- * @param showRecord 판 수 대신 "2승 1패"를 적습니다. 홈처럼 기간이 짧은 곳에 씁니다. 승률과 KDA는 판 수와 상관없이
- * 적습니다. 견주는 숫자가 아니라 내 기록이라 표본이 적다고 가리지 않습니다(사용자 요청, 2026-10-03).
+ * 승률과 KDA는 표본이 적어도 그대로 적습니다. 견주는 숫자가 아니라 그 사람의 기록이라 표본으로 가리지 않습니다.
+ *
+ * @param showRecord 판 수 대신 "2승 1패"를 적습니다. 홈처럼 기간이 짧은 곳에 씁니다.
  */
 @Composable
 fun AgentTileRow(agents: List<AgentStats>, catalog: ContentCatalog, showRecord: Boolean = false) {
@@ -423,7 +423,7 @@ private fun AgentTile(agent: AgentStats, catalog: ContentCatalog, stacked: Boole
             separator = { OvalitText(text = TILE_SEPARATOR, style = caption, color = colors.t5) },
             stacked = stacked,
         )
-        // 합계까지 적으면 칸이 무거워서 KDA만 둔다(사용자 결정)
+        // 합계까지 적으면 칸이 무거워서 KDA만 둔다
         agent.metrics.kda?.let { kda ->
             OvalitText(text = kdaRatioText(kda), style = caption, color = colors.t3, maxLines = 1)
         }
@@ -503,8 +503,8 @@ private fun WeaponTile(weapon: WeaponStats, line: WeaponLine, stacked: Boolean, 
 }
 
 /**
- * 프로필 화면의 한 덩어리입니다. 카드 하나에 담고 위 덩어리와는 카드 간격만큼 띄웁니다(사용자 결정, 2026-10-03). [onClick]이
- * 있으면 카드 전체가 눌립니다.
+ * 프로필 화면의 한 덩어리입니다. 카드 하나에 담고 위 덩어리와 카드 간격만큼 띄웁니다. [onClick]이 있으면 카드 전체가
+ * 눌립니다.
  */
 @Composable
 fun ProfileSection(onClick: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {

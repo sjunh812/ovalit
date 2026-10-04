@@ -26,7 +26,7 @@ export interface User {
   gameName: string;
   tagLine: string;
   statsPublic: boolean;
-  /** 오발있 미리 알림을 시작 몇 분 전에 받을지입니다. 0이면 받지 않습니다. */
+  /** ㅇㅂㅇ 미리 알림을 시작 몇 분 전에 받을지입니다. 0이면 받지 않습니다. */
   remindBefore: number;
 }
 

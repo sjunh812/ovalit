@@ -82,8 +82,7 @@ sealed interface FriendProfileUiState {
 /**
  * S5 친구 프로필입니다.
  *
- * @param computation 경기를 모아 세는 곳입니다. 메인 스레드에서 세면 화면이 밀려 들어오는 동안 멈춰서 기본은
- * [Dispatchers.Default]입니다.
+ * @param computation 경기를 세는 디스패처입니다. 메인 스레드에서 세면 화면 전환이 멈춰서 기본은 [Dispatchers.Default]입니다.
  */
 class FriendProfileViewModel(
     private val friendId: PlayerId,

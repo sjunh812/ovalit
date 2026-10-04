@@ -141,7 +141,7 @@ internal fun FriendProfileScreen(
     val haptics = rememberOvalitHaptics()
     var confirmUnfriend by rememberSaveable { mutableStateOf(false) }
 
-    // 내 프로필과 같다. 밀려 들어오는 중에 도착하면 다 들어올 때까지 자리 틀을 두고 서서히 바꾼다(사용자 요청, 2026-10-03).
+    // 밀려 들어오는 중에 내용이 도착하면 다 들어올 때까지 스켈레톤을 두었다가 서서히 바꾼다.
     val shown = rememberContentShown(loaded = uiState is FriendProfileUiState.Success)
     OvalitStaged(
         ready = uiState is FriendProfileUiState.Success && shown,
@@ -189,7 +189,6 @@ internal fun FriendProfileScreen(
                         )
                     }
                 }
-                // 머리 밑으로 덩어리마다 카드 하나다
                 Spacer(Modifier.height(OvalitSpacing.sm))
 
                 // 친구 기반 앱만 낼 수 있는 숫자라 머리 바로 밑에 둔다
@@ -219,8 +218,7 @@ internal fun FriendProfileScreen(
                         OvalitText(text = stringResource(Res.string.private_body), style = OvalitTheme.typography.body, color = colors.t2)
                     }
                 } else {
-                    // 내 프로필과 같은 칸을 같은 순서로 쓰고 통계 다음에만 나와 비교를 끼운다. 요원과 무기를 누르면 친구 기록으로
-                    // S7과 S6이 열린다.
+                    // 내 프로필과 같은 칸을 같은 순서로 쓰고 통계 다음에만 나와 비교를 끼운다.
                     if (hasActMatches) {
                         competitive?.let { ProfileTierCard(it, uiState.catalog) }
                         ProfileStatsSection(profile.summary)
@@ -238,7 +236,7 @@ internal fun FriendProfileScreen(
                     RecentMatches(uiState, name, onOpenMatches)
                 }
                 Spacer(Modifier.height(OvalitSpacing.xxl))
-                // 탭바 밖 화면이라 시스템 내비게이션 바 높이만큼 더 띄운다. 안 그러면 마지막 줄이 내비게이션 바에 덮인다.
+                // 탭바가 없는 화면이라 마지막 줄이 내비게이션 바에 덮이지 않게 그 높이만큼 띄운다.
                 Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
             ProfileStatusBarScrim(scrollState)
@@ -294,15 +292,15 @@ private fun CompareSection(mine: WeeklyReport.Ready, uiState: FriendProfileUiSta
     }
 }
 
-// 친구 경기에는 내가 안 뛴 경기의 다른 사람 기록이 섞여 있다. 앱을 안 쓰는 사람의 기록은 내가 뛴 경기
-// 안에서만 보여줄 수 있어서 줄을 눌러도 열지 않는다.
+// 친구 경기에는 내가 안 뛴 경기의 다른 사람 기록이 섞여 있다. 앱을 안 쓰는 사람의 기록은 내가 뛴 경기 안에서만
+// 보여줄 수 있어서 줄을 눌러도 열지 않는다(CLAUDE.md 지켜야 할 선).
 @Composable
 private fun RecentMatches(uiState: FriendProfileUiState.Success, name: String, onOpenMatches: () -> Unit) {
     val matches = uiState.friend.matches.sortedByDescending { it.startedAt }
     if (matches.isEmpty()) return
     Spacer(Modifier.height(OvalitCardGap))
     OvalitCard {
-        // 줄 높이는 제목에 맞추고 전체 보기 버튼의 눌리는 영역만 위아래로 넘친다. 다른 카드와 제목 자리가 같아진다.
+        // 버튼 높이로 줄을 늘리지 않아 다른 카드와 제목 자리가 같다
         OvalitPickerTitle(
             title = { OvalitText(text = stringResource(Res.string.recent_title, name), style = OvalitTheme.typography.bodyStrong) },
             picker = {

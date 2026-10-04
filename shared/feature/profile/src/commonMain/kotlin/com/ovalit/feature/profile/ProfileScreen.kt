@@ -43,7 +43,7 @@ import com.ovalit.feature.profile.resources.no_matches
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-/** 내 프로필입니다. 홈 오른쪽 위 아바타에서 들어옵니다. */
+/** 내 프로필입니다. 홈 오른쪽 위 아바타, S3 스코어보드의 내 줄, S4 계정 줄에서 들어옵니다. */
 @Composable
 fun ProfileRoute(
     onBack: () -> Unit,
@@ -58,7 +58,7 @@ fun ProfileRoute(
     ProfileScreen(uiState, onBack, onOpenAgents, onOpenWeapons, onOpenMatch, onOpenMatches, modifier)
 }
 
-// 칸 순서는 CLAUDE.md의 내 프로필을 따른다. 최근 경기 말고는 모두 이번 액트의 경쟁 + 일반 경기로 센 숫자다.
+// 칸 순서는 docs/screens.md의 내 프로필을 따른다. 최근 경기 말고는 모두 이번 액트의 경쟁 + 일반 경기로 센 숫자다.
 @Composable
 internal fun ProfileScreen(
     uiState: ProfileUiState,
@@ -70,8 +70,7 @@ internal fun ProfileScreen(
     modifier: Modifier = Modifier,
 ) {
     val colors = OvalitTheme.colors
-    // 프로필은 뒤에서 센다. 밀려 들어오는 중에 도착하면 다 들어올 때까지 자리 틀을 두고, 묶음마다 한 프레임씩 그린 뒤
-    // 서서히 바꾼다. 빈 바탕으로 들어오다 전환 한가운데서 배너와 카드가 튀어나와 번쩍였다(사용자 요청, 2026-10-03).
+    // 밀려 들어오는 중에 내용이 도착하면 다 들어올 때까지 스켈레톤을 두고, 묶음마다 한 프레임씩 그린 뒤 서서히 바꾼다.
     val shown = rememberContentShown(loaded = uiState is ProfileUiState.Success)
 
     OvalitStaged(
@@ -102,7 +101,6 @@ internal fun ProfileScreen(
                     )
                 }
 
-                // 머리 밑으로 덩어리마다 카드 하나다
                 Spacer(Modifier.height(OvalitSpacing.sm))
                 if (uiState.agents.matches == 0) {
                     ProfileSection {
@@ -119,7 +117,7 @@ internal fun ProfileScreen(
                 }
                 OvalitStage { RecentMatchesSection(uiState, onOpenMatch, onOpenMatches) }
                 Spacer(Modifier.height(OvalitSpacing.xxl))
-                // 탭바 밖 화면이라 시스템 내비게이션 바 높이만큼 더 띄운다. 안 그러면 마지막 줄이 내비게이션 바에 덮인다.
+                // 탭바가 없는 화면이라 마지막 줄이 내비게이션 바에 덮이지 않게 그 높이만큼 띄운다.
                 Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
             ProfileStatusBarScrim(scrollState)

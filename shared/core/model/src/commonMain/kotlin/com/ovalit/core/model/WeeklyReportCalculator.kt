@@ -156,7 +156,7 @@ private fun List<Match>.trendWeeks(end: LocalDate, period: ReportPeriod, timeZon
         TrendWeek(
             firstDay = firstDay,
             act = act,
-            // 한 판이라도 뛰었으면 그린다. 라운드가 모자란 주는 화면이 테두리만 그린다(TrendWeek.sparse).
+            // 한 판이라도 뛰었으면 그린다. 라운드가 모자란 주도 막대는 같게 그리고 평소 범위에서만 뺀다(TrendWeek.sparse).
             metrics = metrics.takeIf { it.matches > 0 },
             startsNewAct = act != null && previousAct != null && act != previousAct,
             inPeriod = firstDay >= period.firstDay,
@@ -164,7 +164,6 @@ private fun List<Match>.trendWeeks(end: LocalDate, period: ReportPeriod, timeZon
     }
 }
 
-// 역할을 모르는 경기는 뺀다
 private fun List<Match>.roleRounds(): Map<Role, Int> = this
     .mapNotNull { match -> match.myRole?.let { it to match.rounds.size } }
     .groupBy({ it.first }, { it.second })

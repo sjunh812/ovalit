@@ -68,7 +68,6 @@ internal fun NudgeBanner(
         HomeNudge.PICK_RIVAL -> Res.string.nudge_rival_title to Res.string.nudge_rival_body
     }
 
-    // 유도 칸은 카드 하나가 통째로 눌린다
     OvalitCard(modifier = modifier, onClick = onClick) {
         Row(
             modifier = Modifier.padding(horizontal = OvalitSpacing.gutter).fillMaxWidth(),
@@ -95,7 +94,7 @@ internal fun NudgeBanner(
     }
 }
 
-// 아바타가 Riot ID 첫 글자라 많이 겹치면 글자가 가려진다. 둘까지만, 앞사람이 위로 오게 조금만 겹친다.
+// 아바타가 Riot ID 첫 글자라 많이 겹치면 글자가 가려져서 둘까지만 조금 겹친다. 앞사람이 위로 온다.
 @Composable
 private fun StackedAvatars(riotIds: List<String>) {
     val colors = OvalitTheme.colors

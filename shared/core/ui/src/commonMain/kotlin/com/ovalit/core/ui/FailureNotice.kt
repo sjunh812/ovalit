@@ -53,10 +53,10 @@ enum class FailedAction {
     PING_INVITE,
     PING_CANCEL,
 
-    /** 다른 기기에서 그사이 초대를 보내 하나 더 보낼 수 없었습니다. */
+    /** 그사이 다른 기기에서 초대를 보내 하나 더 보낼 수 없을 때입니다. */
     PING_ALREADY_ACTIVE,
 
-    /** 다른 기기에서 그사이 더 불러 자리가 찼습니다. */
+    /** 그사이 다른 기기에서 친구를 더 불러 자리가 찼을 때입니다. */
     PING_FULL,
     SETTING,
     DELETE_DATA,
@@ -70,7 +70,7 @@ enum class FailedAction {
 data class FailureNotice(val action: FailedAction, val error: OvalitError = OvalitError.Unknown)
 
 /**
- * ViewModel이 실패를 화면으로 넘기는 통로입니다. 화면이 잠깐 없을 때 생긴 안내는 몇 개까지 쌓아 두었다가 다시 붙으면
+ * ViewModel이 실패를 화면으로 넘기는 통로입니다. 화면이 잠깐 없을 때 생긴 안내는 최근 네 개까지 쌓아 두고 다시 붙으면
  * 띄웁니다. 화면은 [FailureNoticesEffect]로 받습니다.
  */
 class FailureNotices {
@@ -84,8 +84,8 @@ class FailureNotices {
 }
 
 /**
- * [block]을 띄우고, 실패하면 삼키지 않고 [notices]로 알립니다. 취소는 그대로 던집니다. 실패해도 앱이 죽지 않습니다.
- * `viewModelScope`에는 예외 처리기가 없어서 그냥 `launch`에서 던지면 앱이 죽습니다.
+ * [block]을 띄우고, 실패하면 [onFailure]를 부른 뒤 [notices]로 알립니다. 취소는 그대로 던집니다. `viewModelScope`에는
+ * 예외 처리기가 없어서 그냥 `launch`에서 던지면 앱이 죽습니다.
  */
 fun CoroutineScope.launchNotifying(
     notices: FailureNotices,

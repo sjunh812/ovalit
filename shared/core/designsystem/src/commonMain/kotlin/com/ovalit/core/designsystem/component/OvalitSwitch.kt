@@ -19,8 +19,8 @@ private val KnobSize = 19.dp
 private val KnobInset = 3.dp
 
 /**
- * 모양만 그립니다. 누르는 건 줄 전체에 `toggleable`을 걸어서 받습니다. 스위치에만 걸면 누를 곳이
- * 작고, 낭독기도 스위치와 설명을 따로 읽습니다.
+ * 모양만 그립니다. 누름은 줄 전체에 `toggleable`을 걸어 받습니다. 스위치에만 걸면 누를 곳이 작고 화면 읽기 프로그램이 스위치와
+ * 설명을 따로 읽습니다.
  */
 @Composable
 fun OvalitSwitch(

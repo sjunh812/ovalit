@@ -133,7 +133,7 @@ class MatchMetricsTest {
         assertRate(0.75, metrics.survivalRate)
     }
 
-    // 경기마다 ACS를 먼저 구해 평균을 내면 라운드가 적은 경기가 과하게 반영된다.
+    // 경기마다 ACS를 먼저 구해 평균을 내면 라운드가 적은 경기가 실제보다 무겁게 들어간다.
     @Test
     fun `여러 경기를 합치면 평균의 평균이 아니라 총량을 나눈 값이 나온다`() {
         val stomp = match(*Array(15) { quietRound() }, combatScore = 4_500)

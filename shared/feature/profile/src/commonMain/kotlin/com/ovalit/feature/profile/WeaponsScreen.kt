@@ -117,7 +117,7 @@ internal fun WeaponsScreen(
     modifier: Modifier = Modifier,
     loadingTitle: StringResource? = Res.string.weapons_title,
 ) {
-    // 뒤에서 센다. 밀려 들어오는 중에 도착하면 다 들어올 때까지 자리 틀을 두고 서서히 바꾼다.
+    // 밀려 들어오는 중에 내용이 도착하면 다 들어올 때까지 스켈레톤을 두었다가 서서히 바꾼다.
     val loaded = uiState != RecordsUiState.Loading
     val shown = rememberContentShown(loaded = loaded)
     OvalitStaged(
@@ -188,15 +188,13 @@ private val WeaponMetric.fixed: FixedMetric
         WeaponMetric.HEADSHOT_RATE -> FixedMetric.HEADSHOT_RATE
     }
 
-// 위쪽 세 무기 표의 한 칸이다. change는 이번 액트 값을 띄운 표면 null이고, 비교할 값이 없으면 빈 글자다. 빈 글자로
-// 두어야 줄 안의 칸 높이가 맞는다. rise는 움직였다고 판단한 변화의 방향이다. 오르면 1, 내리면 -1, 평소 범위 안이거나
-// 모르면 0이다.
+// 위쪽 세 무기 표의 한 칸이다. change는 이번 액트 값을 띄운 표면 null이고, 비교할 값이 없으면 칸 높이를 맞추려고 빈 글자다.
+// rise는 움직였다고 판단한 변화의 방향으로, 오르면 1, 내리면 -1, 평소 범위 안이거나 모르면 0이다.
 private class HighlightCell(val value: String, val change: String?, val rise: Int)
 
-// 위쪽 세 무기의 표다. 이번 액트에 킬을 많이 낸 세 무기를 두고, 숫자는 홈 리포트와 같은 기간의 K/D, 라운드당 피해량,
-// 헤드샷을 바로 앞 최대 4주 평균과 견준다. 어떤 세 무기인지는 제목 줄이, 숫자가 언제 것인지는 열 제목 줄이 말한다(사용자
-// 요청, 2026-10-03). 표본이 적어도 그 기간 숫자를 그대로 띄우고 변화량은 표본을 넘긴 칸에만 적는다. 그 기간에 안 쓴 무기는
-// 숫자 대신 안 썼다고 적는다. 리포트를 만들 만큼 경기가 없으면 표 전체가 이번 액트 값이다.
+// 위쪽 세 무기의 표다. 이번 액트에 킬을 많이 낸 세 무기를 두고, 홈 리포트와 같은 기간의 K/D, 라운드당 피해량, 헤드샷을
+// 바로 앞 최대 4주 평균과 견준다. 표본이 적어도 그 기간 숫자를 그대로 띄우고 변화량은 표본을 넘긴 칸에만 적는다. 그 기간에
+// 안 쓴 무기는 안 썼다고 적고, 리포트를 만들 만큼 경기가 없으면 표 전체가 이번 액트 값이다.
 @Composable
 private fun Highlights(report: WeaponReport, catalog: ContentCatalog) {
     val colors = OvalitTheme.colors
@@ -232,8 +230,7 @@ private fun Highlights(report: WeaponReport, catalog: ContentCatalog) {
         Spacer(Modifier.height(OvalitSpacing.md))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             // 칸마다 따로 줄이면 자릿수가 많은 칸만 작아진다. 표 전체가 같은 크기를 쓰고, 옆 칸과 붙지 않게 폭을 조금 남긴다.
-            // 숫자는 무기 이름과 같은 15sp, 변화량은 홈 칸처럼 한 단계 작은 11sp다. 17sp로 두니 아홉 칸 숫자와 색 칠한 변화량이
-            // 이름보다 커서 표가 무거웠다(사용자 요청, 2026-10-03).
+            // 숫자는 무기 이름과 같은 크기, 변화량은 홈 칸처럼 한 단계 작은 11sp다.
             val cellWidth = HighlightColumn - HighlightCellGap
             val valueStyle = rememberFittingStyle(
                 rows.flatMap { row -> row.cells.orEmpty().map { it.value } },
@@ -433,7 +430,7 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
     // 늘 펼쳐진 것으로 읽혀 접히지 않는다.
     fun WeaponCategory?.key(): String = this?.name ?: UNKNOWN_CATEGORY
     var expanded by rememberSaveable { mutableStateOf(byCategory.firstOrNull()?.key?.key()) }
-    // 계열 이름과 킬 수 칸은 가장 긴 글자에 맞춘다. 폭을 박아 두면 "그 밖의 무기"가 기본 글자 크기에서도 잘렸다.
+    // 계열 이름과 킬 수 칸은 가장 긴 글자에 맞춘다. 폭을 박아 두면 "그 밖의 무기"가 기본 글자 크기에서도 잘린다.
     val names = byCategory.map { (category, _) -> category?.let { stringResource(it.label) } ?: stringResource(Res.string.weapons_category_unknown) }
     val killTexts = byCategory.map { (_, weapons) -> stringResource(Res.string.weapons_kills, weapons.sumOf { it.kills }.withThousands()) }
     val nameWidth = rememberWidestWidth(names, OvalitTheme.typography.bodyStrong).coerceAtMost(MaxCategoryNameWidth)
@@ -469,8 +466,7 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxWidth()
-                    // 계열 이름과 같은 자리에서 시작한다. 한 단계 들여 쓰니 무기 그림이 왼쪽에서 떨어져 떠 보였다(사용자 요청,
-                    // 2026-10-03).
+                    // 계열 이름과 같은 자리에서 시작한다. 한 단계 들여 쓰면 무기 그림이 왼쪽에서 떨어져 떠 보인다.
                     .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = 10.dp),
             ) {
                 // 줄마다 KDA 줄을 따로 줄이면 킬이 많은 총만 작아진다. 계열 안의 줄이 같은 크기를 쓴다.
@@ -481,7 +477,7 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
                 val below = rememberFittingStyle(lines.map { it.text }, caption, nameWidth)
                 // 세 칸 옆에 맞춘 KDA 줄 크기가 원래의 80%보다 작으면 계열 안의 모든 줄에서 세 칸을 이름 밑으로 내린다
                 val stacked = beside.fontSize.value < caption.fontSize.value * MIN_KDA_SCALE
-                // 이름과 KDA 두 줄짜리 줄이라 10dp로는 붙어 보였다(사용자 요청, 2026-10-03)
+                // 이름과 KDA 두 줄짜리 줄이라 10dp로는 붙어 보인다
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     WeaponColumns()
                     weapons.forEachIndexed { index, weapon ->
@@ -618,8 +614,8 @@ private fun WeaponRow(weapon: WeaponStats, catalog: ContentCatalog, line: Annota
     }
 }
 
-// K/D와 피해량은 들고 시작한 라운드, 헤드샷은 한 무기만 쓴 라운드로 센다. 표본이 적어도 내 기록이라 그대로 적는다(사용자
-// 요청, 2026-10-03). 계산할 라운드가 하나도 없을 때만 비운다.
+// K/D와 피해량은 들고 시작한 라운드, 헤드샷은 한 무기만 쓴 라운드로 센다. 표본이 적어도 내 기록이라 그대로 적고, 계산할
+// 라운드가 하나도 없을 때만 비운다.
 @Composable
 private fun WeaponCells(weapon: WeaponStats, modifier: Modifier = Modifier) {
     val colors = OvalitTheme.colors

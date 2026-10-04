@@ -96,8 +96,7 @@ internal fun RecordsHidden(title: StringResource, onBack: () -> Unit) {
 }
 
 /**
- * S7을 세는 동안의 모양입니다. 제목 밑에 주 역할 묶음과 요원 줄 다섯을 잡습니다. 빈 바탕으로 밀려 들어오다 전환 한가운데서
- * 표가 튀어나와 번쩍였습니다.
+ * S7을 세는 동안 보이는 스켈레톤입니다. 제목 밑에 주 역할 묶음과 요원 줄 다섯 자리를 잡습니다.
  *
  * @param title 내 기록이면 제목을 그대로 둡니다. 친구 기록은 이름을 받기 전이라 `null`이고 제목 자리만 잡습니다.
  */
@@ -132,8 +131,8 @@ internal fun AgentsSkeleton(title: StringResource?, onBack: () -> Unit) {
 }
 
 /**
- * S6을 세는 동안의 모양입니다. 주력 무기 세 줄 표(무기 그림, 이름, 숫자 세 칸)와 계열별 막대 줄 자리를 실제 표와 같은 자리에
- * 잡습니다. 요원 화면 틀을 같이 쓰니 무기 표가 나타날 때 줄 모양이 달라 어긋나 보였습니다(사용자 요청, 2026-10-04).
+ * S6을 세는 동안 보이는 스켈레톤입니다. 주력 무기 세 줄 표(무기 그림, 이름, 숫자 세 칸)와 계열별 막대 줄을 실제 표와 같은 자리에
+ * 잡습니다. [AgentsSkeleton]을 같이 쓰면 무기 표가 나타날 때 줄 모양이 달라 어긋나 보입니다.
  */
 @Composable
 internal fun WeaponsSkeleton(title: StringResource?, onBack: () -> Unit) {

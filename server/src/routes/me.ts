@@ -13,7 +13,7 @@ export const me = new Hono<AppEnv>();
 
 me.use(requireSession);
 
-// 오발있 미리 알림을 시작 몇 분 전에 받을지 고를 수 있는 값이다. 0은 받지 않는다. 스키마의 CHECK와 같아야 한다.
+// ㅇㅂㅇ 미리 알림을 시작 몇 분 전에 받을지 고를 수 있는 값이다. 0은 받지 않는다. 스키마의 CHECK와 같아야 한다.
 const REMIND_BEFORE_CHOICES = [0, 10, 30, 60];
 
 function profile(user: User) {
@@ -48,7 +48,7 @@ me.patch("/", async (c) => {
 });
 
 /**
- * 연동 해제입니다. 사용자 한 줄을 지우면 세션, 친구, 요청, 초대, 오발있과 불려 간 자리, 기기 토큰이 스키마의
+ * 연동 해제입니다. 사용자 한 줄을 지우면 세션, 친구, 요청, 초대, ㅇㅂㅇ과 불려 간 자리, 기기 토큰이 스키마의
  * CASCADE로 같이 지워집니다.
  */
 me.delete("/", async (c) => {

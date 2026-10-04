@@ -17,7 +17,6 @@ val PingLength = 1.hours
 // 보낸 시각과 이만큼 안쪽이면 "지금"으로 적는다
 private val NowWindow = 5.minutes
 
-// 시간 고르기에 띄우는 칸의 간격이다
 private val SlotStep = 30.minutes
 // 다음 날 같은 시각 전까지다. 서버는 24시간 앞까지 받는다.
 private const val SLOT_COUNT = 47
@@ -26,11 +25,10 @@ private const val SLOT_COUNT = 47
 value class PingId(val value: String)
 
 /**
- * 친구에게 보낸 "오발있?"(ㅇㅂㅇ)입니다. 앱 이름 "오늘 발로란트 할 사람 있어?"를 그대로 묻는 기능입니다.
+ * 서로 수락한 친구를 시각을 정해 부르는 ㅇㅂㅇ입니다. 화면에서는 "오발있?"이라 부릅니다.
  *
- * 보낸 사람이 시각을 정하면 받은 친구는 갈게요, 다른 시간, 못 가요 중 하나로 답합니다. 다른 시간이 오면 보낸 사람이 그 시각으로
- * 옮길 수 있고, 그러면 모두에게 다시 묻습니다. 서로 수락한 친구에게만 보내고, 글을 적는 칸은 없습니다. 정해 둔 답만 오가서
- * 신고나 차단을 둘 글이 생기지 않습니다.
+ * 받은 친구는 갈게요, 다른 시간, 못 가요 중 하나로 답하고, 보낸 사람이 다른 시간으로 옮기면 모두에게 다시 묻습니다. 정해 둔
+ * 답만 오가고 글을 적는 칸이 없어서 신고나 차단을 둘 글이 생기지 않습니다.
  *
  * @property startsAt 하자고 한 시각입니다. "지금"으로 보내면 보낸 시각과 같습니다.
  * @property members 받은 친구들입니다. 보낸 사람은 들어 있지 않습니다.
@@ -103,10 +101,7 @@ fun Ping.movedTo(startsAt: Instant): Ping = copy(
     },
 )
 
-/**
- * 홈 맨 위에 하나만 띄울 ㅇㅂㅇ입니다. 아직 답하지 않은 받은 것, 내가 보낸 것, 답한 받은 것 순서입니다. 답해야 하는 게 먼저
- * 눈에 띄어야 합니다.
- */
+/** 홈 맨 위에 하나만 띄울 ㅇㅂㅇ입니다. 아직 답하지 않은 받은 것, 내가 보낸 것, 나머지 순서입니다. */
 fun List<Ping>.forHome(me: PlayerId): Ping? =
     firstOrNull { !it.isHostedBy(me) && it.memberOf(me)?.answer == PingAnswer.PENDING }
         ?: firstOrNull { it.isHostedBy(me) }
@@ -114,8 +109,7 @@ fun List<Ping>.forHome(me: PlayerId): Ping? =
 
 /**
  * 시간 고르기에 띄우는 시각입니다. [now] 뒤 첫 정각이나 30분부터 30분마다 다음 날 같은 시각 전까지입니다. "지금"은 따로
- * 둡니다. 13시 12분이면 13시 30분, 14시, … 다음 날 12시 30분입니다. 처음에는 여섯 시간 앞까지였는데 밤늦게 하는 사람은
- * 고를 시각이 없었습니다(사용자 요청, 2026-10-03).
+ * 둡니다. 13시 12분이면 13시 30분, 14시, … 다음 날 12시 30분입니다.
  */
 fun pingSlots(now: Instant, timeZone: TimeZone): List<Instant> {
     val local = now.toLocalDateTime(timeZone)

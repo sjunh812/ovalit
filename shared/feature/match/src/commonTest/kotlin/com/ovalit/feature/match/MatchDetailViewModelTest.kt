@@ -106,8 +106,7 @@ class MatchDetailViewModelTest {
         assertTrue(state.buys.isNotEmpty())
     }
 
-    // 앱 사용자 확인은 서버에 묻는다. 실패해도 스코어보드는 기기에 있는 경기라 그대로 그린다. 모르는 사람을 앱을 안 쓴다고
-    // 하면 틀린 말이라 따로 둔다.
+    // 스코어보드는 기기에 있는 경기라 서버에 묻지 못해도 그린다
     @Test
     fun `앱을 쓰는지 묻지 못해도 경기를 보여주고 앱을 안 쓴다고 하지 않는다`() = runTest {
         val broken = object : FriendRepository by friends {

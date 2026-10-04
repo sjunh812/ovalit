@@ -23,7 +23,7 @@ private const val PING_CHANNEL = "ping"
 private const val WEEKLY_CHANNEL = "weekly_report"
 private const val WEEKLY_TAG = "weekly_report"
 
-// 보낸 시각과 이만큼 안쪽이면 "지금"으로 적는다. 앱의 Ping.isNow와 같은 폭이다.
+// 시작까지 이보다 덜 남았으면 "지금"으로 적는다. 앱의 Ping.isNow와 같아야 한다.
 private const val NOW_WINDOW_MS = 5 * 60 * 1000L
 
 /** 알림을 눌러 열 초대의 ID입니다. MainActivity가 받아 그 초대 화면을 엽니다. */
@@ -31,13 +31,12 @@ internal const val EXTRA_OPEN_PING = "com.ovalit.OPEN_PING"
 private const val DAWN_END_HOUR = 6
 
 /**
- * 서버가 보낸 FCM 데이터 메시지를 알림으로 바꿉니다. 서버는 글자 없이 종류와 이름, 시각만 보내고 문구는 앱이 정합니다. 그래야
- * 문구를 고칠 때 서버를 다시 배포하지 않습니다.
+ * 서버가 보낸 FCM 데이터 메시지를 알림으로 바꿉니다. 서버는 종류, 이름, 시각만 보내고 문구는 앱이 정해서, 문구를 고쳐도 서버를
+ * 다시 배포하지 않습니다.
  *
- * 받은 ㅇㅂㅇ에는 갈게요, 다른 시간, 못 가요 버튼을 답니다. 갈게요와 못 가요는 앱을 열지 않고 [PingActionReceiver]가 답하고,
- * 다른 시간은 시각을 골라야 해서 그 초대 화면을 엽니다.
+ * 받은 ㅇㅂㅇ의 갈게요와 못 가요는 앱을 열지 않고 [PingActionReceiver]가 답하고, 다른 시간은 시각을 골라야 해서 초대 화면을 엽니다.
  *
- * 닉네임 뒤에는 받침에 따라 바뀌는 조사를 붙이지 않습니다("민석의 초대"). 앱 화면과 같은 규칙입니다.
+ * 닉네임 뒤에는 받침에 따라 바뀌는 조사를 붙이지 않습니다("민석의 초대", CLAUDE.md 용어).
  */
 internal object PingNotifications {
 
@@ -108,8 +107,7 @@ internal object PingNotifications {
         notify(context, pingTag(pingId), notification)
     }
 
-    // 같은 ㅇㅂㅇ의 알림은 한 자리에서 바뀐다. 답이 올 때마다 쌓이면 알림판이 지저분해진다. 초대 ID를 태그로 써서 다른 초대나
-    // 다른 종류의 알림과 겹치지 않는다.
+    // 같은 ㅇㅂㅇ의 알림은 쌓이지 않고 한 자리에서 바뀌게 초대 ID를 태그로 쓴다
     private fun pingTag(pingId: String?): String = "ping:${pingId.orEmpty()}"
 
     /**
@@ -164,13 +162,12 @@ internal object PingNotifications {
         return if (isNow(data)) context.getString(R.string.ping_time_now) else clockText(context, startsAt)
     }
 
-    // 앱 화면과 같이 "21:00"이고, 자정을 넘긴 오늘 밤이면 "새벽 00:30", 그보다 뒤면 "내일 09:00"이다
+    // 앱의 pingDayOf와 같게 "21:00", 자정을 넘긴 오늘 밤은 "새벽 00:30", 그보다 뒤는 "내일 09:00"으로 적는다
     private fun clockText(context: Context, epochMs: Long): String {
         val zone = ZoneId.systemDefault()
         val at = Instant.ofEpochMilli(epochMs).atZone(zone)
         val clock = at.format(DateTimeFormatter.ofPattern("HH:mm"))
         val now = Instant.now().atZone(zone)
-        // 앱 화면의 pingDayOf와 같다. 오늘 밤 자정을 넘긴 시각은 "새벽"이다.
         return when {
             at.toLocalDate() == now.toLocalDate() -> clock
             at.hour < DAWN_END_HOUR && now.hour >= DAWN_END_HOUR -> context.getString(R.string.ping_time_dawn, clock)

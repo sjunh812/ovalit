@@ -201,7 +201,7 @@ class AgentWeaponReportTest {
         assertEquals(2.0, listOf(match(died)).weaponStats().single().kda)
     }
 
-    // 사용자 요청(2026-10-03): 표본이 모자란 줄만 이번 액트 값을 띄우니 어느 숫자가 언제 것인지 알기 어려웠다
+    // 세 줄의 기간이 어긋나지 않게 표본이 모자라도 리포트 기간 값을 띄운다
     @Test
     fun `기간에 들고 시작한 라운드가 모자라도 그 기간 숫자를 두고 달라졌는지는 보지 않는다`() {
         val thisWeek = phantomWeek(weeksAgo = 0, head = 40, carried = 15)

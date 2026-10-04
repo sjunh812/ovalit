@@ -44,13 +44,12 @@ private const val VISIBLE_ITEMS = 5
 
 /**
  * 돌려서 하나를 고르는 휠입니다. 가운데 띠에 든 줄이 고른 것이고, 손을 떼면 가까운 줄에 멈춥니다. 줄을 눌러도 그 줄로
- * 돌아갑니다. 당근 약속 잡기처럼 고를 것이 많을 때 칩을 늘어놓는 대신 씁니다(사용자 요청, 2026-10-03). 칩 스물네 개는
- * 벽처럼 보였습니다.
+ * 돌아갑니다. 시각처럼 고를 것이 많아 칩으로 늘어놓기 어려울 때 씁니다.
  *
- * 멈췄을 때만 [onSelect]를 부릅니다. 돌리는 동안 지나가는 줄마다 부르면 고른 값이 계속 바뀝니다.
+ * [onSelect]는 멈췄을 때만 부릅니다.
  *
- * @param enabled 고를 수 없는 줄은 흐리게 두고 낭독기에 비활성으로 읽힙니다. 이미 정해진 값을 보여 주되 다시 고르지 못하게
- * 할 때 씁니다. 그 줄에 멈춰도 [onSelect]는 부르므로 확인 버튼에서 막습니다.
+ * @param enabled `false`인 줄은 흐리게 두고 화면 읽기 프로그램에 비활성으로 읽힙니다. 정해진 값을 보여 주되 다시 고르지 못하게 할 때
+ * 씁니다. 그 줄에 멈춰도 [onSelect]는 불리니 확인 버튼에서 막습니다.
  */
 @Composable
 fun OvalitWheelPicker(
@@ -112,7 +111,6 @@ fun OvalitWheelPicker(
                         },
                     contentAlignment = Alignment.Center,
                 ) {
-                    // 가운데에서 멀수록 옅게 둔다. 색이 아니라 밝기 단계로 가른다.
                     OvalitText(
                         text = text,
                         style = OvalitTheme.typography.body.copy(fontWeight = if (distance == 0) FontWeight.SemiBold else FontWeight.Normal),

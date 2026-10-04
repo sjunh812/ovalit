@@ -1,8 +1,8 @@
 package com.ovalit.core.data
 
 /**
- * 앱을 닫아도 경기를 이어 받게 맡깁니다. 안드로이드는 WorkManager에 맡기고, 다 받으면 알림을 보냅니다. 첫 수집과, 오래 쉬었다 와서
- * 쌓인 새 경기 둘뿐입니다. 주기적으로 다시 받는 동기화는 두지 않습니다.
+ * 앱을 닫아도 경기를 이어 받게 맡기는 곳입니다. 안드로이드는 WorkManager에 맡기고 다 받으면 알립니다. 맡기는 건 첫 수집과, 오래
+ * 쉬었다 와서 쌓인 새 경기 둘뿐이고 주기 동기화는 두지 않습니다.
  */
 interface ImportScheduler {
     fun start()
@@ -11,8 +11,9 @@ interface ImportScheduler {
     fun retry()
 
     /**
-     * 새 경기를 스무 판 이상 남긴 채 앱 화면이 가려지면 부릅니다([NewMatchesWatcher]). 앱이 살아 있으면 받던 것을 기다리고, 앱이 닫혔으면
-     * 남은 경기를 받습니다. 다 받으면 [total]판을 받았다고 알립니다. 작업이 시작되기 전에 앱에서 다 받았어도 알림은 갑니다.
+     * 새 경기를 [com.ovalit.core.model.NEW_MATCHES_IN_BACKGROUND_FROM]판 이상 남긴 채 앱 화면이 가려지면 부릅니다
+     * ([NewMatchesWatcher]). 앱이 살아 있으면 받던 것을 기다리고, 앱이 닫혔으면 남은 경기를 받습니다. 다 받으면 [total]판을
+     * 받았다고 알립니다. 작업이 시작되기 전에 앱에서 다 받았어도 알림은 갑니다.
      */
     fun continueNewMatches(total: Int)
 

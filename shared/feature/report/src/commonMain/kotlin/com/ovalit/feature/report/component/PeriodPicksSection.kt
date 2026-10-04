@@ -33,7 +33,6 @@ internal fun PeriodPicksSection(
     onOpenWeapons: () -> Unit,
 ) {
     val period = periodLabel(report.period)
-    // 카드 전체가 눌린다
     if (report.agents.isNotEmpty()) {
         OvalitCard(onClick = onOpenAgents) {
             PickSection(title = stringResource(Res.string.picks_agents, period)) {

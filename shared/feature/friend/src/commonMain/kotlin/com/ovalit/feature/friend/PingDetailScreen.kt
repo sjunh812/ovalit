@@ -108,7 +108,7 @@ internal fun PingDetailScreen(
     actions: PingDetailActions = PingDetailActions(),
 ) {
     val colors = OvalitTheme.colors
-    // 밀려 들어오는 중에 도착하면 다 들어올 때까지 자리 틀을 둔다. 빈 바탕으로 들어오다 전환 한가운데서 시각과 친구 줄이 튀어나왔다.
+    // 밀려 들어오는 중에 내용이 도착하면 다 들어올 때까지 스켈레톤을 둔다
     val shown = rememberContentShown(loaded = uiState != PingDetailUiState.Loading)
     Column(modifier = modifier.fillMaxSize().background(colors.bg).safeDrawingPadding()) {
         OvalitBackTopBar(
@@ -192,7 +192,7 @@ private fun ColumnScope.PingDetailContent(
         Spacer(Modifier.height(OvalitSpacing.sm))
         // 시각은 초대장의 주인공이다. 지표 숫자와 같은 글꼴로 크게 적는다.
         Row(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.Bottom) {
-            // 오늘이 아니면 "내일"을 시각과 같이 크게 둔다. 숫자보다 한 단계 작게 해서 시각이 먼저 읽힌다.
+            // 오늘이 아니면 "내일", "새벽"도 크게 둔다. 작은 글자에만 두면 큰 시각이 오늘처럼 읽힌다.
             pingHeroDay(ping, now, timeZone)?.let { day ->
                 OvalitText(text = day, modifier = Modifier.alignByBaseline(), style = OvalitTheme.typography.display)
                 Spacer(Modifier.width(OvalitSpacing.sm))
@@ -221,14 +221,14 @@ private fun ColumnScope.PingDetailContent(
         }
         SectionTitle(crowdCounts(crowd))
         crowd.forEach { MemberLine(it, now, timeZone) }
-        // 누가 못 간다고 했거나 깜빡 빠뜨린 친구를 더 부른다(사용자 요청, 2026-10-03)
+        // 못 간다고 한 친구 자리를 채우거나 빠뜨린 친구를 더 부른다
         if (hosting && ping.openSeats > 0 && invitable.isNotEmpty()) {
             InviteMoreRow(onClick = { sheet = DetailSheet.INVITE })
         }
         Spacer(Modifier.height(OvalitSpacing.xl))
     }
 
-    // 본문이 버튼 밑으로 이어질 때만 선을 긋는다(CLAUDE.md 디자인)
+    // 본문이 버튼 밑으로 이어질 때만 선을 긋는다(docs/design.md)
     OvalitDivider(color = if (scroll.canScrollForward) colors.line else Color.Transparent)
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.md)) {
         if (hosting) {
@@ -269,8 +269,8 @@ private fun ColumnScope.PingDetailContent(
 }
 
 /**
- * 받은 초대의 내 답입니다. 답은 누르는 즉시 보내고 버튼 줄을 "참석으로 답했어요 · 바꾸기" 한 줄로 접습니다(사용자 결정,
- * 2026-10-03). 버튼이 그대로 남아 있으면 누를 때마다 부른 친구에게 알림이 갑니다. 바꾸기를 눌러야 다시 고릅니다.
+ * 받은 초대의 내 답입니다. 누르는 즉시 보내고 버튼 줄을 "참석으로 답했어요 · 바꾸기" 한 줄로 접습니다. 버튼을 남겨 두면 누를
+ * 때마다 부른 친구에게 알림이 갑니다.
  */
 @Composable
 private fun MyAnswer(
@@ -313,7 +313,7 @@ private fun MyAnswer(
     }
 }
 
-// 묶음 제목이다. 내용과는 12dp를 둔다(CLAUDE.md 디자인). 줄마다 위아래 여백이 있어 그만큼 줄인다.
+// 묶음 제목이다. 내용과는 12dp를 둔다(docs/design.md). 줄마다 위아래 여백이 있어 그만큼 줄인다.
 @Composable
 private fun SectionTitle(text: String) {
     OvalitText(

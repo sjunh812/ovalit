@@ -81,8 +81,8 @@ internal fun RecordStrip(report: WeeklyReport.Ready, modifier: Modifier = Modifi
             .padding(horizontal = OvalitSpacing.gutter)
             .semantics(mergeDescendants = true) {},
     ) {
-        // 글자가 먼저 자리를 잡고 칸이 남은 폭을 나눠 갖는다. 글씨를 키운 좁은 화면에서는 칸 하나에 몇 dp만 남아
-        // 바코드처럼 보여서, 그때는 승패 글자를 칸 밑 줄로 내린다.
+        // 글자가 먼저 자리를 잡고 칸이 남은 폭을 나눠 갖는다. 칸이 [MinCellSlot]보다 좁아지면 바코드처럼 보여서 승패 글자를
+        // 칸 밑 줄로 내린다.
         val sideWidth = rememberWidestWidth(listOfNotNull(recent), caption).let { if (recent != null) it + OvalitSpacing.sm else it } +
             OvalitSpacing.md + rememberWidestWidth(listOf(record + SEPARATOR), caption) + rememberWidestWidth(listOf(rate), rateStyle)
         val stacked = currentMaxWidth - sideWidth < MinCellSlot * cells.size

@@ -26,16 +26,14 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 private const val FADE_MILLIS = 220
 
 /**
- * 긴 화면을 묶음마다 한 프레임씩 나눠 그리고, 다 그린 뒤에 [placeholder]에서 내용으로 천천히 바꿉니다. 묶음은 [OvalitStage]로
- * 감쌉니다.
+ * 긴 화면을 묶음마다 한 프레임씩 나눠 그리고, 다 그린 뒤 [placeholder]에서 내용으로 서서히 바꿉니다. 묶음은 [OvalitStage]로
+ * 감쌉니다. 한 프레임에 다 그리면 그 프레임이 길어져 스켈레톤이 멈췄다가 숫자가 툭 튀어나옵니다.
  *
- * 홈 전체를 한 프레임에 그리면 릴리스 빌드에서도 그 프레임이 200ms 가까이 걸려, 스켈레톤이 멈췄다가 숫자가 툭 튀어나왔습니다.
- * 나눠 그리는 동안 내용은 보이지 않고 낭독기에도 읽히지 않습니다. 내용은 바탕을 칠한 채 위에서 서서히 나타나서, 두 쪽에 똑같이
- * 있는 머리 줄은 바뀌는 동안에도 흐려지지 않습니다.
+ * 나눠 그리는 동안 내용은 보이지 않고 화면 읽기 프로그램에도 읽히지 않습니다. 내용은 바탕을 칠한 채 [placeholder] 위로 나타나서, 두
+ * 쪽에 똑같이 있는 머리 줄은 바뀌는 동안에도 흐려지지 않습니다.
  *
- * @param contentBackground 내용 밑에 까는 바탕입니다. 화면 바탕과 같아야 나타나는 동안 틈이 보이지 않습니다.
- * @param ready 내용을 그려도 되는지입니다. 처음부터 `true`면 나누지 않고 한 번에 그립니다. 탭을 오가거나 뒤로 돌아온 경우라
- * 자리 틀을 보이면 깜빡입니다.
+ * @param ready 내용을 그려도 되는지입니다. 처음부터 `true`면 탭을 오가거나 뒤로 돌아온 경우라 나누지 않고 한 번에 그립니다.
+ * @param contentBackground 내용 밑에 까는 바탕입니다. 화면 바탕과 같아야 나타나는 동안 틈이 안 보입니다.
  */
 @Composable
 fun OvalitStaged(
@@ -51,7 +49,7 @@ fun OvalitStaged(
     if (ready) {
         LaunchedEffect(staging) {
             if (!staging.done) {
-                // 프레임 안에서 늘려야 그 프레임에 바로 그린다. 늘리고 나서 기다리면 한 프레임씩 밀린다.
+                // 프레임 콜백 안에서 늘려야 그 프레임에 바로 그린다. 늘린 뒤에 기다리면 한 프레임씩 밀린다.
                 while (staging.revealed < staging.registered) {
                     withFrameNanos { staging.revealed++ }
                 }
@@ -89,7 +87,7 @@ fun OvalitStage(content: @Composable () -> Unit) {
         content()
         return
     }
-    // 처음 그릴 때 나온 순서대로 번호를 받는다. 위쪽 묶음부터 그려진다.
+    // 처음 그릴 때 나온 순서대로 번호를 받아서 위쪽 묶음부터 그린다
     val index = remember(staging) { staging.register() }
     val shown by remember(staging) { derivedStateOf { staging.done || index < staging.revealed } }
     if (shown) content()
@@ -99,7 +97,7 @@ private val LocalStaging = staticCompositionLocalOf<Staging?> { null }
 
 @Stable
 private class Staging(done: Boolean) {
-    // 번호를 나눠 줄 때만 늘어나고 화면에 그리지 않으므로 상태로 두지 않는다
+    // 번호를 나눠 줄 때만 늘고 화면에 쓰이지 않아서 상태로 두지 않는다
     var registered = 0
         private set
     var revealed by mutableIntStateOf(1)

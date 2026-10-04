@@ -101,7 +101,7 @@ private val AvatarSize = 44.dp
  *
  * @param appVersion 앱 모듈만 버전을 알아서 밖에서 받습니다.
  * @param onUnlinked 연동을 해제하고 데이터를 다 지운 뒤에 불립니다. 앱 모듈이 여기서 인트로로 돌려보냅니다.
- * @param onOpenProfile 맨 위 계정 줄을 누르면 부릅니다. 홈 오른쪽 위 말고도 내 프로필로 가는 길입니다(사용자 요청, 2026-10-03).
+ * @param onOpenProfile 맨 위 계정 줄을 누르면 내 프로필을 엽니다.
  * @param onSendFeedback 메일 앱을 엽니다. 받을 주소가 정해지지 않았으면 `null`이고 그 줄을 두지 않습니다.
  */
 @Composable

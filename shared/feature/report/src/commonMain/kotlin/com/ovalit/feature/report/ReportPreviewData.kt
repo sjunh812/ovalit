@@ -122,10 +122,8 @@ internal object ReportPreviewData {
         fullBuyRoundsWon = 55,
     )
 
-    // 타격대가 수비에서 첫 교전을 자주 졌다. 공격 71%, 수비 45%.
-    // 공격 첫 교전 22승 9패(71%), 수비 15승 18패(45%). 둘 다 이름이 있어 높은 공격이 주어다.
-    // 개선 포인트는 이번 액트 경기로 견준다. 이번 주 146라운드와 앞선 네 주 630라운드를 합친 서른세 판이다. 이번 주만 보면
-    // 공격 첫 교전 31번 중 22번, 수비 33번 중 15번을 이겼다.
+    // 타격대가 수비에서 첫 교전을 자주 졌다. 둘 다 이름이 있어 높은 공격이 주어다. 이번 액트 서른세 판(이번 주 146라운드와
+    // 앞선 네 주 630라운드)으로 견주면 공격 58%, 수비 44%이고, 이번 주만 보면 공격 31번 중 22번, 수비 33번 중 15번을 이겼다.
     private val firstDuelBySide = Insight(
         metric = InsightMetric.FIRST_DUEL_WIN_RATE,
         lead = InsightPart(InsightSubject.OnSide(Side.ATTACK), value = 128 / 221.0, matches = 33, rounds = 388),
@@ -139,7 +137,7 @@ internal object ReportPreviewData {
     private fun agentWeek(kills: Int, deaths: Int, assists: Int, matches: Int) =
         thisWeek.copy(matches = matches, kills = kills, deaths = deaths, assists = assists)
 
-    // 이번 주 일곱 판이다. 요원 칸은 판 수가 적어 승패로 적고, 무기는 한 무기만 쓴 라운드가 20을 넘긴 것만 헤드샷을 띄운다.
+    // 이번 주 일곱 판이다. 요원 칸은 판 수가 적어 승패로 적는다.
     private val periodAgents = listOf(
         AgentStats(AgentId("add6443a-41bd-e414-f6ad-e58d267f4e95"), Role.DUELIST, matches = 4, wins = 3, decided = 4,
             metrics = agentWeek(kills = 70, deaths = 48, assists = 18, matches = 4)),

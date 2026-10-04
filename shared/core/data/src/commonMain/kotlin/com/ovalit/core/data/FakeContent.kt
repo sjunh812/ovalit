@@ -154,7 +154,7 @@ private fun tiers(ranks: List<String>, radiant: String): Map<Int, String> = buil
 }
 
 /**
- * 일본어 카탈로그(`locale=ja-JP`)가 줄 이름을 대신합니다. 한국어 이름을 열쇠로 둡니다. 실제 저장소는 서버가 기기 언어에 맞는
+ * 일본어 카탈로그(`locale=ja-JP`)가 줄 이름을 대신합니다. 키는 한국어 이름입니다. 실제 저장소는 서버가 기기 언어에 맞는
  * 카탈로그를 내려주니 이 표가 필요 없습니다.
  */
 internal val FakeNamesJa: Map<String, String> = mapOf(

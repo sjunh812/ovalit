@@ -32,14 +32,13 @@ private val ArrowWidth = 12.dp
 private val ArrowHeight = 6.dp
 private val BubbleShape = RoundedCornerShape(10.dp)
 
-// 말풍선 오른쪽 끝을 아바타 오른쪽 끝보다 이만큼 밖에 둔다. 화살표가 아바타 가운데를 가리키도록 같은 값으로 띄운다.
+// 말풍선 오른쪽 끝을 아바타 오른쪽 끝보다 이만큼 밖에 둔다
 private val BubbleOverhang = 4.dp
 
 /**
- * 홈 오른쪽 위 아바타 밑에 한 번 띄우는 "내 프로필은 여기서 볼 수 있어요"입니다. 아바타 하나로는 누르면 내 프로필이 열린다는
- * 걸 알기 어려웠습니다(사용자 요청, 2026-10-03). 말풍선을 누르면 닫힙니다.
+ * 홈 오른쪽 위 아바타 밑에 한 번 띄우는 "내 프로필은 여기서 볼 수 있어요" 말풍선입니다. 누르면 닫힙니다.
  *
- * 머리 줄과 함께 스크롤되도록 아바타 자리를 받아 그 밑에 둡니다. 화면 전체를 덮지만 말풍선 밖의 터치는 밑으로 그대로 갑니다.
+ * 아바타 자리를 받아 그 밑에 두므로 머리 줄과 함께 스크롤됩니다. 화면 전체를 덮지만 말풍선 밖의 터치는 밑으로 그대로 갑니다.
  *
  * @param avatar 이 칸 안에서 아바타가 차지한 자리입니다. 아직 모르면 `null`이고 그리지 않습니다.
  */
@@ -47,7 +46,7 @@ private val BubbleOverhang = 4.dp
 internal fun ProfileHint(avatar: Rect?, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
     if (avatar == null) return
     val colors = OvalitTheme.colors
-    // 아바타 가운데를 가리킨다. 말풍선 오른쪽 끝에서 화살표 가운데까지다.
+    // 화살표가 아바타 가운데를 가리키도록 말풍선 오른쪽 끝에서 띄우는 폭이다
     val arrowEnd = (with(LocalDensity.current) { (avatar.width / 2).toDp() } + BubbleOverhang - ArrowWidth / 2).coerceAtLeast(0.dp)
 
     Layout(
@@ -77,7 +76,7 @@ internal fun ProfileHint(avatar: Rect?, onDismiss: () -> Unit, modifier: Modifie
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    // 바탕과 거꾸로 칠한다. 라이트에서는 어두운 말풍선, 다크에서는 밝은 말풍선이다.
+                    // 바탕과 반대로 칠해 라이트에서는 어둡고 다크에서는 밝다
                     OvalitText(text = stringResource(Res.string.profile_hint), style = OvalitTheme.typography.label, color = colors.bg)
                     OvalitIcon(OvalitIcons.Close, contentDescription = null, tint = colors.bg.copy(alpha = 0.7f), size = 14.dp)
                 }

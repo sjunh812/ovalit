@@ -70,7 +70,7 @@ class FriendScreensTest {
         onNodeWithText("아직 친구가 없어요").assertExists()
     }
 
-    // CLAUDE.md: S5는 나와의 관계에서 시작하는 친구 프로필이다. 머리 바로 밑에 같이 뛴 경기를 둔다.
+    // docs/screens.md: S5는 나와의 관계에서 시작하는 친구 프로필이다. 머리 바로 밑에 같이 뛴 경기를 둔다.
     @Test
     fun `친구 프로필은 같이 뛴 경기와 나와 비교를 보여준다`() = runComposeUiTest {
         setContent { Themed { FriendProfileScreen(FriendPreviewData.profile, {}, {}, {}) } }
@@ -80,7 +80,7 @@ class FriendScreensTest {
         onNodeWithText("이번 주 · 나와 민석").assertExists()
     }
 
-    // 사용자 결정(2026-09-29): 나와 비교도 홈 고정 칸처럼 KDA까지 다섯을 견준다
+    // 나와 비교도 홈 고정 칸처럼 다섯 지표를 다 견준다
     @Test
     fun `나와 비교는 KDA까지 견준다`() = runComposeUiTest {
         setContent { Themed { FriendProfileScreen(FriendPreviewData.profile, {}, {}, {}) } }
@@ -95,7 +95,7 @@ class FriendScreensTest {
         assertEquals(1, kdaRows.size, "나와 비교에 KDA 줄이 없다")
     }
 
-    // 사용자 요청: 같이 뛴 경기 다음에 내 프로필과 같은 칸을 두고, 나와 비교는 통계 다음이다
+    // 같이 뛴 경기 다음에 내 프로필과 같은 칸을 두고, 나와 비교는 통계 다음이다
     @Test
     fun `전적을 공개한 친구는 내 프로필과 같은 칸을 정한 순서로 보여준다`() = runComposeUiTest {
         setContent { Themed { FriendProfileScreen(FriendPreviewData.profile, {}, {}, {}) } }
@@ -118,7 +118,6 @@ class FriendScreensTest {
         onNodeWithText("헤드샷 28%", useUnmergedTree = true).assertExists()
     }
 
-    // 사용자 요청: 친구의 요원과 무기도 내 프로필처럼 눌러서 S7과 S6으로 들어간다
     @Test
     fun `친구의 요원과 무기 칸을 누르면 친구 기록으로 들어간다`() = runComposeUiTest {
         var agentsOpened = false

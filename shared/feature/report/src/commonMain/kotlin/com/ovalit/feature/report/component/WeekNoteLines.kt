@@ -79,8 +79,7 @@ import com.ovalit.feature.report.resources.note_up_kda
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-// 무기 실루엣과 요원 얼굴을 같은 타일에 담는다. 틀이 다르면 줄마다 다른 물건처럼 보여 어수선했다(사용자 요청, 2026-10-03).
-// 무기는 가로로 길어서 타일 안에 양옆을 조금 띄워 눕힌다.
+// 무기 실루엣과 요원 얼굴을 같은 타일에 담는다. 무기는 가로로 길어 양옆을 조금 띄워 눕힌다.
 private val LeadSize = 36.dp
 private val LeadShape = RoundedCornerShape(10.dp)
 private val WeaponInset = 5.dp
@@ -95,9 +94,8 @@ private val ValueGap = 12.dp
  * 요원 대신 그 비중과, 비중에 휘둘리지 않은 묶음의 성적을 붙입니다. 오른 값이 이번 액트 어느 주보다 높으면 헤드라인에
  * "이번 액트 최고"를 넣습니다. "쓰세요"나 "추천"은 쓰지 않습니다(CLAUDE.md 지켜야 할 선).
  *
- * 사용자 요청(2026-09-28): 줄마다 무기 실루엣과 요원 얼굴을 앞에 두고, 숫자는 오른쪽에 모아 평소 값보다 이번 값을 밝고
- * 굵게 둔다. 오르내림은 헤드라인이 말하고 줄은 모두 같은 쪽으로 움직인 것이라 색은 입히지 않는다. 비중 줄은 늘어난 게
- * 좋은지 나쁜지 정해져 있지 않고, 평소와 같았다는 줄에 빨강이 붙으면 틀린 말이 된다.
+ * 줄의 숫자에는 색을 입히지 않습니다. 오르내림은 헤드라인이 말하고, 비중 줄은 늘어난 게 좋은지 나쁜지 정해져 있지 않으며,
+ * 평소와 같았다는 줄에 빨강이 붙으면 틀린 말이 됩니다.
  */
 @Composable
 internal fun WeekNoteLines(note: WeekNote, catalog: ContentCatalog, modifier: Modifier = Modifier) {
@@ -112,7 +110,7 @@ internal fun WeekNoteLines(note: WeekNote, catalog: ContentCatalog, modifier: Mo
     val best = note.previousBest?.let { format.steps(moved.current) > format.steps(it) } == true
 
     Column(modifier = modifier.padding(horizontal = OvalitSpacing.gutter)) {
-        // 사용자 요청(2026-09-27): 평균이 얼마였는지는 위 고정 칸에 이미 있다. 그 변화를 무엇이 끌었는지를 적는다.
+        // 평균이 얼마에서 얼마가 됐는지는 바로 위 고정 칸에 있어 헤드라인에 다시 적지 않는다
         OvalitText(text = movedHeadline(moved, best), style = headlineStyle())
         val rows = listOfNotNull(
             note.mix?.let { mixRow(it, catalog) },
@@ -200,7 +198,7 @@ private fun NoteRowLine(
     hasLead: Boolean,
     stacked: Boolean,
 ) {
-    // 낭독기는 한 줄을 "팬텀 78라운드, 131 → 217"로 한 번에 읽는다
+    // 화면 읽기 프로그램이 한 줄을 "팬텀 78라운드, 131 → 217"로 한 번에 읽게 한다
     Row(
         modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
         verticalAlignment = if (stacked) Alignment.Top else Alignment.CenterVertically,
@@ -224,7 +222,7 @@ private fun NoteRowLine(
     }
 }
 
-// 그림은 이름 옆에 붙는 장식이라 낭독기가 읽지 않는다. 이름은 바로 옆에 있다.
+// 그림은 이름 옆에 붙는 장식이라 화면 읽기 프로그램이 읽지 않는다. 이름은 바로 옆에 있다.
 @Composable
 private fun NoteLeadImage(lead: NoteLead) {
     val tile = Modifier.size(LeadSize).clip(LeadShape)
@@ -322,7 +320,7 @@ private fun MixGroup.lead(catalog: ContentCatalog): NoteLead? = when (this) {
     is MixGroup.Agent -> NoteLead.Agent(agent, catalog.agentName(agent))
 }
 
-// 차이는 보이는 자릿수로 반올림한 값끼리 뺀다(CLAUDE.md 디자인)
+// 차이는 보이는 자릿수로 반올림한 값끼리 뺀다(CLAUDE.md 지표 규칙)
 @Composable
 private fun movedHeadline(moved: MovedMetric, best: Boolean): String {
     val format = moved.metric.format

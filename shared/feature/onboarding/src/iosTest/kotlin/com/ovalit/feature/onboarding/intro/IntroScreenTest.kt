@@ -40,7 +40,7 @@ class IntroScreenTest {
         assertEquals(1, started)
     }
 
-    // 낭독기가 "버튼"이라고 읽어야 눌러도 되는 자리인지 안다. clickable만 걸면 그냥 글자다.
+    // 화면 읽기 프로그램이 "버튼"이라고 읽어야 눌러도 되는 자리인지 안다. clickable만 걸면 그냥 글자다.
     @Test
     fun `시작 버튼을 낭독기가 버튼으로 읽는다`() = runComposeUiTest {
         setContent {

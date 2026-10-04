@@ -10,9 +10,7 @@ import com.ovalit.core.ui.PingSummaryRow
 import com.ovalit.feature.report.HomePing
 import kotlinx.datetime.TimeZone
 
-/**
- * 홈 맨 위의 ㅇㅂㅇ 한 줄입니다. 친구 탭 목록과 같은 줄이고, 누르면 그 초대 화면이 열려 바로 답하거나 시각을 옮깁니다.
- */
+/** 홈 맨 위의 ㅇㅂㅇ 한 줄입니다. 친구 탭 목록과 같은 줄이고 누르면 그 초대 화면을 엽니다. */
 @Composable
 internal fun PingHomeCard(home: HomePing, timeZone: TimeZone, onClick: () -> Unit, modifier: Modifier = Modifier) {
     OvalitCard(modifier = modifier, onClick = onClick) {

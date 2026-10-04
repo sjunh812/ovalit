@@ -45,12 +45,8 @@ import com.ovalit.feature.report.resources.sheet_open
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * 홈 위쪽 고정 칸입니다. 피해량, K/D, KDA / 전투점수, 헤드샷을 한 줄에 세 칸씩 놓고, 칸마다 이름, 숫자, 그 밑에
- * "+75 · 평소 177"을 둡니다. 달라진 점과 같은 격자, 같은 칸 모양이라 두 카드의 칸 경계가 위아래로 맞습니다.
- *
- * 사용자 결정(2026-10-03): 목업의 네 칸 한 줄 밑에 KDA 넓은 칸을 두니 KDA만 따로 놀아 보였다. 다섯 칸을 같은 모양으로
- * 둔다. 판당 킬·데스·어시는 K/D에도 똑같이 필요한 풀이라 칸에서 빼고 K/D와 KDA 시트에 둔다. 칸 밖에 "변화량은 지난 4주
- * 평균과 비교했어요"를 따로 두니 무엇의 설명인지 붕 떠 보여서, 칸마다 평소 값을 붙여 변화량이 무엇과 견준 것인지 보인다.
+ * 홈 위쪽 고정 칸입니다. 한 줄에 세 칸씩 두고 칸마다 이름, 숫자, 그 밑에 "+75 · 평소 177"을 둡니다. 달라진 점과 같은
+ * 격자라 두 카드의 칸 경계가 위아래로 맞습니다.
  */
 @Composable
 internal fun FixedMetricRow(
@@ -101,14 +97,13 @@ internal fun FixedMetricRow(
                         if (index > 0) {
                             // 간격은 구분선 양옆에만 준다. 칸 폭 안에 넣으면 칸마다 내용 폭이 달라진다.
                             Spacer(Modifier.width(MetricColumnGap))
-                            // 덜 찬 줄의 빈자리에는 구분선을 긋지 않는다
                             if (cell != null) VerticalLine() else Spacer(Modifier.width(1.dp))
                             Spacer(Modifier.width(MetricColumnGap))
                         }
                         if (cell == null) {
                             Spacer(Modifier.weight(1f))
                         } else {
-                            // 기타 모드로 바꾸면 첫 칸이 전투점수에서 K/D로 바뀐다. 자리로 묶으면 186이 1.34로 굴러가서 지표로 묶는다.
+                            // 기타 모드로 바꾸면 자리마다 지표가 바뀐다. 자리로 묶으면 피해량 숫자가 K/D로 굴러가서 지표로 묶는다.
                             key(cell.metric) {
                                 FixedMetricCell(
                                     cell = cell,

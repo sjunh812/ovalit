@@ -150,7 +150,7 @@ class ReportViewModelTest {
         assertIs<WeeklyReport.Ready>(state.report)
     }
 
-    // 설정에서 저장된 데이터를 지우면 경기도 첫 수집 진행도도 없다. 뛴 경기가 없는 게 아니라 지운 것이라 다시 불러오기를 권한다.
+    // 설정에서 저장된 데이터를 지우면 경기도 첫 수집 진행도도 없다. 안 뛴 게 아니라 지운 거라 다시 불러오기를 권한다.
     @Test
     fun `저장된 경기를 지웠으면 다시 불러오기를 권한다`() = runTest {
         val viewModel = ReportViewModel(StubRepository(flowOf(emptyList())), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
@@ -328,7 +328,7 @@ class ReportViewModelTest {
         assertEquals(listOf(before, matches.observeMatches().first().weeklyReport(clock.now, Seoul)), reports.distinct())
     }
 
-    // 일주일 넘게 쉬면 받기 전 경기로는 "지난주"를 센다. 그 숫자를 띄우면 다 받은 뒤 기간까지 바뀌어 틀린 말을 한 셈이다.
+    // 일주일 넘게 쉬면 받기 전 경기로는 "지난주"를 센다. 그 숫자를 띄우면 다 받은 뒤 기간까지 바뀌어 틀린 말이 된다.
     @Test
     fun `이번 주가 아닌 기간을 보던 중 여러 판을 받으면 리포트 자리를 비워 둔다`() = runTest {
         val clock = StepClock(Thursday)

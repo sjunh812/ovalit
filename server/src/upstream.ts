@@ -9,8 +9,8 @@ const blockedUntil = new Map<string, number>();
 
 /**
  * Riot으로 요청을 보내고 실패를 앱이 읽을 코드로 바꿉니다. 429는 `Retry-After`를 붙인 503 `riot_rate_limited`이고,
- * 401·403(우리 키 문제), 5xx, 연결 실패는 모두 502 `riot_unavailable`입니다. 429를 받은 호스트는 `Retry-After`가
- * 지날 때까지 Riot을 부르지 않고 바로 503 `riot_rate_limited`를 던집니다.
+ * 404는 404 `not_found`, 401·403(우리 키 문제), 5xx, 연결 실패는 모두 502 `riot_unavailable`입니다. 429를 받은 호스트는
+ * `Retry-After`가 지날 때까지 부르지 않고 바로 503을 던집니다.
  */
 export async function send(upstream: typeof fetch, url: string, init?: RequestInit): Promise<Response> {
   throwIfBlocked(url);

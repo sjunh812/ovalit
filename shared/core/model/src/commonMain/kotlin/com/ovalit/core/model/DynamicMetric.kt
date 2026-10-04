@@ -14,7 +14,8 @@ const val MOVEMENT_THRESHOLD = 1.5
 private const val FLAT_VOLATILITY = 1e-9
 
 /**
- * 홈의 동적 칸에 오를 수 있는 지표입니다. 고정 5개(피해량, K/D, KDA, 전투점수, 헤드샷)는 여기 없습니다.
+ * 홈의 동적 칸에 오를 수 있는 지표입니다. 고정 지표([FixedMetric])는 넣지 않습니다. 선언 순서가 빈칸을 채우는 순서라 새 지표는
+ * 맨 뒤에 붙입니다.
  */
 enum class DynamicMetric(
     val value: (MatchMetrics) -> Double?,
@@ -31,13 +32,10 @@ enum class DynamicMetric(
     ECO_WIN_RATE({ it.ecoWinRate }, { it.ecoRounds }, 15),
     FORCE_BUY_WIN_RATE({ it.forceBuyWinRate }, { it.forceBuyRounds }, 15),
     FULL_BUY_WIN_RATE({ it.fullBuyWinRate }, { it.fullBuyRounds }, 40),
-
-    // 사용자 결정(2026-09-27): 에임 올리기에 첫 교전 다음 교전까지 이겨 내는지를 더했다. 기본 칸을 채우는 순서가
-    // 바뀌지 않게 맨 뒤에 둔다.
     MULTI_KILL_RATE({ it.multiKillRate }, { it.rounds }, 40),
 
-    // 코치들이 가장 많이 보는 지표라 넣었다(2026-09-27). 역할마다 우선 지표나 크게 띄우지 않는 것에는 두지 않는다. 동적 칸은
-    // 내 지난 기록과 견주니 역할마다 원래 높고 낮은 건 상관없다. 기본 칸을 채우는 순서가 바뀌지 않게 맨 뒤에 둔다.
+    // 역할의 우선 지표에도, 크게 띄우지 않는 것에도 넣지 않는다. 동적 칸은 내 지난 기록과 견주니 역할마다 원래 높고 낮은 건
+    // 상관없다.
     TRADED_DEATH_RATE({ it.tradedDeathRate }, { it.deaths }, 40),
     ;
 
@@ -125,8 +123,8 @@ internal fun assessMovement(now: Double, usual: Double, weekly: List<Double>): A
 
     val change = abs(now - usual)
     val volatility = weekly.sampleStandardDeviation()
-    // 주마다 값이 똑같았으면 변동폭이 0이라 조금만 달라도 무한히 크게 움직인 것이 된다. 기준을 잴 수 없으니 판단하지 않는다.
-    // 같은 값을 평균 내도 부동소수 오차로 정확히 0이 나오지 않아서 아주 작은 값과 견준다.
+    // 주마다 값이 같으면 변동폭이 0이라 조금만 달라도 끝없이 크게 움직인 것이 되니 판단하지 않는다. 같은 값끼리도 부동소수
+    // 오차로 정확히 0이 안 나와서 아주 작은 값과 견준다.
     if (volatility < FLAT_VOLATILITY) return Assessment(Movement.UNKNOWN)
     val movement = if (change > MOVEMENT_THRESHOLD * volatility) Movement.MOVED else Movement.STEADY
     return Assessment(movement, strength = change / volatility)

@@ -3,14 +3,14 @@ package com.ovalit.core.model
 /**
  * 내가 죽은 뒤 이 시간 안에 우리 팀이 내 킬러를 잡으면 트레이드로 칩니다.
  *
- * 공식 값이 없어 흔히 쓰는 5초로 시작하고 실데이터를 보고 조정합니다. 바꾸면 KAST가 통째로 움직이니
- * CLAUDE.md도 같이 고칩니다.
+ * 공식 값이 없어 흔히 쓰는 5초로 시작하고 실데이터를 보고 조정합니다. 바꾸면 KAST와 트레이드 받은 데스 비율이 통째로
+ * 움직이니 CLAUDE.md도 같이 고칩니다.
  */
 const val TRADE_WINDOW_MILLIS: Long = 5_000
 
 /**
- * [side]를 주면 그 진영 라운드만 셉니다. 전투점수는 응답에 경기 합계로만 있어서 진영별로는 0으로 둡니다.
- * 그래서 진영별 값의 [MatchMetrics.acs]는 읽지 않습니다. 개선 포인트도 전투점수를 후보에 두지 않습니다.
+ * [side]를 주면 그 진영 라운드만 셉니다. 전투점수는 응답에 경기 합계로만 있어서 진영별 값에서는 0이니 [MatchMetrics.acs]를
+ * 읽지 않습니다.
  */
 fun Match.metrics(side: Side? = null): MatchMetrics =
     if (side == null) metricsOf(rounds, combatScore = myCombatScore) else metricsOf(rounds.filter { it.mySide == side }, combatScore = 0)
@@ -74,7 +74,7 @@ internal fun Round.analyze(me: PlayerId, allies: Set<PlayerId>): RoundResult {
 
     val myKills = enemyKills.count { it.killer == me }
     val myAssists = enemyKills.count { me in it.assistants }
-    // 세이지 부활로 한 라운드에 두 번 죽을 수 있다. 첫 킬처럼 목록 순서가 아니라 시각으로 첫 데스를 고른다.
+    // 세이지 부활로 한 라운드에 두 번 죽을 수 있어서, 목록 순서가 아니라 시각으로 먼저 죽은 것을 고른다.
     val myDeath = kills.filter { it.victim == me }.minByOrNull { it.atMillis }
     val firstBlood = enemyKills.minByOrNull { it.atMillis }
 

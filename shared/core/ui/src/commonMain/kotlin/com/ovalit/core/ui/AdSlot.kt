@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 
 /**
- * 광고를 두는 자리입니다. 오래 머물며 내려 보는 곳 사이사이에만 둡니다(CLAUDE.md 화면). 앱을 열거나 닫을 때, 탭바 옆, 온보딩과
+ * 광고를 두는 자리입니다. 오래 머물며 내려 보는 곳 사이사이에만 둡니다(docs/screens.md). 앱을 열거나 닫을 때, 탭바 옆, 온보딩과
  * 첫 수집, ㅇㅂㅇ 초대 화면, 설정, 바텀시트에는 두지 않습니다.
  *
  * @property inCard 카드 안에 담는 자리입니다. 카드에 위아래 안쪽 여백이 있어 광고 줄은 여백을 빼고 그립니다.
@@ -24,10 +24,10 @@ enum class AdPlacement(val inCard: Boolean) {
 }
 
 /**
- * 광고를 받아 그리는 쪽입니다. 앱 모듈이 AdMob으로 채웁니다. 광고를 받기 전이나 못 받았으면 아무것도 그리지 않습니다.
+ * 광고를 받아 그리는 쪽입니다. 앱 모듈이 AdMob으로 구현합니다. 광고를 받기 전이나 못 받았으면 아무것도 그리지 않습니다.
  *
- * [frame]은 받은 광고를 감쌀 틀입니다. 홈은 카드에, S3는 위에 선을 긋고 담습니다. 광고가 없을 때 빈 카드나 선만 남지 않게
- * 틀까지 광고를 받은 뒤에 그립니다.
+ * [frame]은 받은 광고를 감쌀 틀입니다(홈은 카드, S3는 위에 그은 선). 빈 카드나 선만 남지 않게 틀도 광고를 받은 뒤에
+ * 그립니다.
  */
 interface AdRenderer {
     @Composable
@@ -40,7 +40,7 @@ interface AdRenderer {
     fun offerAdFree()
 }
 
-/** 광고를 그리는 쪽입니다. 없으면 광고 자리는 비어 있습니다. iOS와 UI 테스트가 그렇습니다. */
+/** `null`이면(iOS, UI 테스트) 광고 자리를 비웁니다. */
 val LocalAdRenderer = staticCompositionLocalOf<AdRenderer?> { null }
 
 /**

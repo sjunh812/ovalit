@@ -115,9 +115,8 @@ private val BarInset = 3.dp
 private val BarItemHeight = 40.dp
 
 /**
- * 친구 탭 맨 위의 "오발있?" 카드입니다. 받은 초대와 보낸 초대를 한 줄씩 두고, 누르면 초대 화면으로 들어가 답하거나 시각을
- * 옮깁니다. 카드 안에 시각, 참석자, 버튼을 다 펼치면 친구 탭이 초대로 꽉 차서 한 단계 들어가게 했습니다(사용자 요청,
- * 2026-10-03). 줄은 홈 카드와 같은 [PingSummaryRow]입니다.
+ * 친구 탭 맨 위의 "오발있?" 카드입니다. 초대마다 홈 카드와 같은 [PingSummaryRow] 한 줄을 두고, 누르면 초대 화면으로 들어가
+ * 답하거나 시각을 옮깁니다.
  *
  * @param pings 받은 초대가 먼저이고 내가 보낸 것이 맨 뒤입니다.
  * @param canCompose 보낸 초대가 끝나기 전이면 `false`라 부르기 버튼을 두지 않습니다. 한 번에 하나만 보냅니다.
@@ -133,8 +132,7 @@ internal fun PingListCard(
     onCompose: () -> Unit,
 ) {
     OvalitCard {
-        // "오발있?"은 앱 이름이라 처음 보는 사람은 무슨 기능인지 모른다. 버튼을 "파티 모집"으로 적어 알려 준다(사용자 요청,
-        // 2026-10-03). 제목 옆에 작게 붙이던 "파티 모집"은 버튼과 같은 말이 두 번 떠서 뺐다.
+        // "오발있?"은 앱 이름이라 무슨 기능인지 버튼의 "파티 모집"이 알려 준다. 제목 옆에 같은 말을 또 붙이지 않는다.
         val title = @Composable {
             OvalitText(text = stringResource(Res.string.ping_title), style = OvalitTheme.typography.bodyStrong)
         }
@@ -457,8 +455,7 @@ private fun BarItem(
 }
 
 /**
- * 친구와 시각을 골라 부르는 시트입니다. 친구 탭을 크게 차지하지 않게 시트로 띄웁니다. 인스타그램 공유처럼 아바타를 눌러 고르고,
- * 시각은 휠로 고릅니다.
+ * 친구와 시각을 골라 부르는 시트입니다. 아바타를 눌러 친구를 고르고 시각은 휠로 고릅니다.
  *
  * @param tooMany 오늘 보낼 수 있는 만큼 이미 보냈으면 `true`입니다. 버튼 위에 그 말을 적습니다.
  */
@@ -485,7 +482,7 @@ internal fun PingComposeSheet(
         onDismiss = onDismiss,
     ) {
         PickLabel(stringResource(Res.string.ping_compose_who))
-        // 옆으로 미는 줄은 누른 면을 줄 끝에서 자른다. 친구가 많으면 다음 줄로 넘긴다.
+        // 친구가 많으면 다음 줄로 넘긴다. 옆으로 미는 줄은 누른 면이 줄 끝에서 잘린다.
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.md),
             verticalArrangement = Arrangement.spacedBy(OvalitSpacing.md),
@@ -510,7 +507,7 @@ internal fun PingComposeSheet(
         }
         Spacer(Modifier.height(OvalitSpacing.lg))
         PickLabel(stringResource(Res.string.ping_compose_when))
-        // 30분 단위면 약속 시각으로 충분하다. 다음 날 같은 시각 전까지라 칩으로 늘어놓으면 벽이 돼서 휠로 고른다.
+        // 30분마다 다음 날 같은 시각 전까지라 칩으로 늘어놓기엔 너무 많아 휠로 고른다
         OvalitWheelPicker(
             items = listOf(stringResource(CoreUiRes.string.ping_time_now)) + slots.map { pingClockText(it, now, timeZone) },
             selected = slotIndex,
@@ -600,9 +597,8 @@ private fun PickLabel(text: String) {
 }
 
 /**
- * 다른 시간으로 답하거나 보낸 초대의 시각을 옮길 때 띄우는 시트입니다. 정해진 시간과 내가 이미 낸 시간도 휠에 두되 흐리게 두고
- * 고르지 못하게 합니다(사용자 요청, 2026-10-04). 빼 버리면 지금 몇 시로 잡혀 있는지 휠에서 안 보였습니다. 휠은 정해진 시간
- * 바로 다음 줄에서 시작합니다.
+ * 다른 시간으로 답하거나 보낸 초대의 시각을 옮길 때 띄우는 시트입니다. 정해진 시간과 내가 이미 낸 시간도 휠에 흐리게 두고
+ * 고르지 못하게 합니다. 빼면 지금 몇 시로 잡혀 있는지 휠에서 안 보입니다. 휠은 정해진 시간 바로 다음 줄에서 시작합니다.
  *
  * @param proposed 내가 다른 시간으로 답해 둔 시각입니다. 같은 시각을 또 낼 일은 없어서 막습니다.
  */

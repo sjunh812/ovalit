@@ -33,10 +33,8 @@ import com.ovalit.core.ui.resources.loading
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * S3를 세는 동안의 모양입니다. 배너와 뒤로 가기, 맵 이름과 스코어, 라운드 막대, 탭, 스코어보드 줄 자리를 잡습니다. 빈 바탕으로
- * 밀려 들어오다 전환 한가운데서 배너와 스코어보드가 한꺼번에 튀어나왔습니다.
- *
- * 배너는 맵 그림이 올 자리라 다른 그림 자리처럼 `--fill`로 칠하고, 진짜 배너처럼 아래를 바탕색으로 흐리게 잇습니다.
+ * S3를 세는 동안 보이는 스켈레톤입니다. 배너와 뒤로 가기, 맵 이름과 스코어, 라운드 막대, 탭, 스코어보드 줄 자리를 잡습니다.
+ * 배너 자리는 다른 그림 자리처럼 `--fill`로 칠하고 아래를 바탕색으로 흐리게 잇습니다.
  */
 @Composable
 internal fun MatchDetailSkeleton(bannerHeight: Dp, onBack: () -> Unit) {

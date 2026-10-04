@@ -50,7 +50,7 @@ fun AgentImage(agent: AgentId?, name: String, modifier: Modifier = Modifier) {
  * 사람을 나타내는 동그란 아바타입니다. 플레이어 카드 자리인데 카드는 서버에서 받으므로, 그때까지는 Riot ID
  * 첫 글자를 띄웁니다. 요원 얼굴은 경기 기록에만 씁니다. 그 판에 고른 요원이지 그 사람 얼굴이 아닙니다.
  *
- * 첫 글자는 낭독기가 읽지 않습니다. 이름은 옆이나 밑에 따로 있습니다.
+ * 첫 글자는 화면 읽기 프로그램이 읽지 않습니다. 이름은 옆이나 밑에 따로 있습니다.
  */
 @Composable
 fun PlayerAvatar(riotId: String, size: Dp, modifier: Modifier = Modifier) {
@@ -86,7 +86,7 @@ fun MapImage(map: MapId, style: MapImageStyle, modifier: Modifier = Modifier) {
 
 /**
  * 무기는 기본 스킨 그림을 [tint] 한 가지로 칠한 실루엣입니다. 카탈로그의 무기 그림은 흰 선화라 밝은 바탕에서 안 보이고,
- * 스킨 그림을 그대로 두면 짙은 총이 다크 바탕에 묻힙니다(CLAUDE.md 에셋).
+ * 스킨 그림을 그대로 두면 짙은 총이 다크 바탕에 묻힙니다(docs/design.md 에셋).
  */
 @Composable
 fun WeaponImage(

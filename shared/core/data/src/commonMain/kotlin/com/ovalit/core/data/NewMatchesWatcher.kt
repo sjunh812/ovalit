@@ -35,7 +35,7 @@ class NewMatchesWatcher(
     private var checkedAt: Instant? = null
 
     init {
-        // 받는 중이던 첫 수집이 끝났을 때만 센다. 앱을 켤 때 이미 끝나 있던 첫 수집은 기기에 저장해 둔 경기뿐이라 켜자마자 확인한다.
+        // 받는 중이던 첫 수집이 끝났을 때만 확인한 것으로 친다. 앱을 켤 때 이미 끝나 있던 첫 수집은 저장해 둔 경기뿐이라 켜자마자 확인한다.
         scope.launch {
             matches.importProgress
                 .map { it?.isDone }

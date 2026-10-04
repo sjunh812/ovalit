@@ -66,16 +66,14 @@ private val MinNameWidth = 40.dp
 private val BaseCountColumn = 30.dp
 private val BaseDamageColumn = 60.dp
 
-// 글자를 키우면 열 제목끼리 붙어서 열 폭도 글자 크기만큼 넓힌다. 이름 칸이 남은 폭을 가져간다.
+// 큰 글씨에서 열 제목끼리 붙지 않게 열 폭도 글자 크기만큼 넓힌다. 이름 칸은 남은 폭을 쓴다.
 private val CountColumn: Dp
     @Composable get() = BaseCountColumn * LocalDensity.current.fontScale.coerceIn(1f, 1.6f)
 private val DamageColumn: Dp
     @Composable get() = BaseDamageColumn * LocalDensity.current.fontScale.coerceIn(1f, 1.6f)
 
 /**
- * S3 내 기록 탭입니다. op.gg의 매치 리포트처럼 맞힌 부위, 상대마다 누구를 잡고 누구에게 잡혔는지와 주고받은 피해, 이 판에서 쓴
- * 무기를 둡니다(사용자 요청, 2026-10-04). 이 자리에 있던 라운드별 평균 장비 그래프는 읽어 낼 것이 적어 이 탭으로 바꿨습니다. 내가 뛴
- * 라운드만 셉니다.
+ * S3 내 기록 탭입니다. 맞힌 부위, 상대마다 잡고 잡힌 수와 주고받은 피해, 이 판에서 쓴 무기를 둡니다. 내가 뛴 라운드만 셉니다.
  */
 @Composable
 internal fun MatchReport(uiState: MatchDetailUiState.Success) {
@@ -111,8 +109,7 @@ private fun Duels(duels: List<Duel>, uiState: MatchDetailUiState.Success) {
     val countColumn = CountColumn
     val damageColumn = DamageColumn
     BoxWithConstraints(Modifier.fillMaxWidth()) {
-        // 글자를 키워 이름 칸이 너무 좁아지면 이름을 빼고 얼굴만 둔다. 상대 팀 안에서는 요원이 겹치지 않아 얼굴로 가린다. "…"만
-        // 남은 이름은 아무것도 말하지 않는다.
+        // 이름 칸이 너무 좁아지면 "…"만 남기지 않고 이름을 빼고 얼굴만 둔다. 상대 팀 안에서는 요원이 겹치지 않아 얼굴로 가릴 수 있다.
         val nameRoom = currentMaxWidth - OvalitSpacing.gutter * 2 - FaceSize - OvalitSpacing.sm - countColumn * 3 - damageColumn * 2
         val showNames = nameRoom >= MinNameWidth
         Column {
@@ -148,7 +145,6 @@ private fun Duels(duels: List<Duel>, uiState: MatchDetailUiState.Success) {
                     } else {
                         Spacer(Modifier.weight(1f))
                     }
-                    // 내가 더 많이 잡았으면 킬을, 더 많이 잡혔으면 데스를 밝고 굵게 둔다
                     CountCell(duel.kills, emphasized = duel.kills > duel.deaths)
                     CountCell(duel.deaths, emphasized = duel.deaths > duel.kills)
                     CountCell(duel.assists, emphasized = false)

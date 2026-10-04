@@ -155,7 +155,7 @@ export class Push {
         headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
         body: JSON.stringify({ message }),
       });
-      // 액세스 토큰이 먼저 끊긴 것이다. 다음 알림은 새로 받아 보낸다.
+      // 액세스 토큰이 기한 전에 끊긴 것이다. 다음 알림은 새로 받아 보낸다.
       if (res.status === 401) accessTokens.delete(this.account.clientEmail);
       if (!res.ok && res.status !== 404) console.error("push_send", res.status);
       return res;

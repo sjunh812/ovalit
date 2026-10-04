@@ -134,7 +134,7 @@ private val TopLevel = listOf(Report, Matches, Friends, Settings)
 @Composable
 fun OvalitApp(appVersion: String, openPing: Flow<String> = emptyFlow()) {
     val backStack = rememberNavBackStack(Intro)
-    // ㅇㅂㅇ 알림을 누르면 친구 탭 위에 그 초대 화면을 연다. 뒤로 가면 친구 탭이다. 아직 연동 전이면 그대로 둔다.
+    // ㅇㅂㅇ 알림을 누르면 친구 탭 위에 그 초대 화면을 연다. 연동 전이면 무시한다.
     LaunchedEffect(openPing) {
         openPing.collect { id ->
             if (Report !in backStack || backStack.last() == PingDetail(id)) return@collect
@@ -283,7 +283,7 @@ fun OvalitApp(appVersion: String, openPing: Flow<String> = emptyFlow()) {
                 },
             )
         }
-        // 사용자가 한 일이 실패하면 화면 아래에 한 줄로 알린다. 탭 화면에서는 탭바를 가리지 않게 그 위에 띄운다.
+        // 탭 화면에서는 탭바를 가리지 않게 토스트를 그 위에 띄운다
         val onTab = backStack.lastOrNull() in TopLevel
         OvalitToastHost(
             state = toast,
@@ -295,13 +295,13 @@ fun OvalitApp(appVersion: String, openPing: Flow<String> = emptyFlow()) {
     }
 }
 
-// 탭바는 탭 화면마다 안에 둔다(CLAUDE.md 화면). 밖에 하나만 두면 새 화면으로 넘어갈 때 탭바가 먼저 사라져서
+// 탭바는 탭 화면마다 안에 둔다(docs/screens.md). 밖에 하나만 두면 새 화면으로 넘어갈 때 탭바가 먼저 사라져서
 // 밀려나는 화면이 탭바 높이만큼 늘어나고 목록이 튄다.
 @Composable
 private fun TabScaffold(selected: NavKey, onSelect: (NavKey) -> Unit, content: @Composable () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
-        // 탭바가 아래 내비게이션 바 높이만큼 여백을 두니 본문은 아래 여백을 또 두지 않는다. 가로 화면에서 옆에 붙는
-        // 내비게이션 바는 본문도 피해야 해서 아래쪽만 쓴 것으로 친다.
+        // 아래 내비게이션 바 여백은 탭바가 두니 본문은 또 두지 않는다. 가로 화면에서 옆에 붙는 내비게이션 바는 본문도 피해야
+        // 해서 아래쪽만 소비한다.
         Box(
             modifier = Modifier.weight(1f).consumeWindowInsets(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)),
         ) { content() }
@@ -318,8 +318,8 @@ private fun TabScaffold(selected: NavKey, onSelect: (NavKey) -> Unit, content: @
     }
 }
 
-// 화면마다 바탕을 깐다. 전환 중에 바탕이 빈 화면이 있으면 뒤의 검은 바탕이 그대로 보인다. 양옆 바깥에는 선을
-// 긋는다. 전환 중이 아닐 때는 화면 밖이라 안 보이고, 밀려 들어오거나 스와이프로 밀어낼 때만 두 화면 사이에 보인다.
+// 화면마다 바탕을 깐다. 바탕이 빈 화면이 있으면 전환 중에 뒤의 검은 바탕이 비친다. 양옆 바깥의 선은 평소에는 화면 밖이라
+// 안 보이고 전환 중에만 두 화면 사이에 보인다.
 @Composable
 private fun rememberOpaqueEntryDecorator(): NavEntryDecorator<NavKey> {
     val background = OvalitTheme.colors.bg
@@ -347,9 +347,6 @@ private fun rememberOpaqueEntryDecorator(): NavEntryDecorator<NavKey> {
 
 private val EdgeWidth = 1.dp
 
-// 홈은 늘 스택 맨 아래에 두고 다른 탭은 그 위에 하나만 둔다. 그래야 어느 탭에서 뒤로 가도 홈이 나오고 홈에서
-// 뒤로 가면 앱이 닫힌다. 홈은 새로 띄우지 않아서 스크롤과 칩이 남고, 다른 탭은 빠져도 TabStateDecorator가 남겨 둔다.
-// 전환 중에 같은 줄을 두 번 누르면 같은 화면이 두 번 쌓인다. 같은 키가 둘이면 저장 상태 키가 겹쳐 앱이 죽는다.
 // 사용 통계에 쓰는 화면 이름이다. 키를 그대로 쓰면 친구·경기 ID가 섞이고 릴리스에서는 난독화된 이름이 된다.
 private fun screenName(key: NavKey): String = when (key) {
     Intro -> "intro"
@@ -371,10 +368,13 @@ private fun screenName(key: NavKey): String = when (key) {
     else -> "other"
 }
 
+// 전환 중에 같은 줄을 두 번 누르면 같은 화면이 두 번 쌓인다. 같은 키가 둘이면 저장 상태 키가 겹쳐 앱이 죽는다.
 private fun NavBackStack<NavKey>.push(key: NavKey) {
     if (lastOrNull() != key) add(key)
 }
 
+// 홈은 늘 스택 맨 아래에 두고 다른 탭은 그 위에 하나만 둔다. 그래야 어느 탭에서 뒤로 가도 홈이 나오고 홈에서 뒤로 가면
+// 앱이 닫힌다(docs/screens.md).
 private fun NavBackStack<NavKey>.selectTab(tab: NavKey) {
     if (last() == tab) return
     while (size > 1) removeAt(lastIndex)
@@ -395,7 +395,7 @@ private fun NavBackStack<NavKey>.replaceAllWith(vararg keys: NavKey) {
 
 /**
  * 피드백 메일을 씁니다. 받는 주소와 제목, 앱 버전과 기기만 채우고 Riot ID나 전적은 넣지 않습니다. 메일 앱이 없으면 `false`입니다.
- * 본문은 화면에 그리는 글이 아니라 메일이라 줄바꿈을 넣어 둡니다.
+ * 본문은 화면 문구가 아니라 메일이라 줄바꿈을 넣어 둡니다.
  */
 private fun Context.sendFeedback(appVersion: String): Boolean {
     val body = getString(R.string.feedback_body, appVersion, "${Build.MANUFACTURER} ${Build.MODEL}", Build.VERSION.RELEASE)

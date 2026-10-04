@@ -53,8 +53,7 @@ sealed interface RecordsUiState {
 /**
  * S6 무기와 S7 요원이 같이 씁니다. 내 기록이든 친구 기록이든 이번 액트의 경쟁 + 일반 경기만 셉니다.
  *
- * @param computation 경기를 모아 세는 곳입니다. 메인 스레드에서 세면 화면이 밀려 들어오는 동안 멈춰서 기본은
- * [Dispatchers.Default]입니다.
+ * @param computation 경기를 세는 디스패처입니다. 메인 스레드에서 세면 화면 전환이 멈춰서 기본은 [Dispatchers.Default]입니다.
  */
 class RecordsViewModel(
     owner: RecordsOwner,

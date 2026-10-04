@@ -97,8 +97,7 @@ import org.jetbrains.compose.resources.stringResource
 
 private val ChevronWidth = 16.dp
 
-// 숫자 열은 글자 크기를 따라 넓힌다. 고정 폭이면 글자를 키웠을 때 "14/16/4"가 "14/1"로 잘린다.
-// 대신 이름 칸이 줄고 이름은 말줄임표로 끝난다.
+// 숫자 열은 글자 크기만큼 넓힌다. 고정 폭이면 큰 글씨에서 "14/16/4"가 "14/1"로 잘린다. 줄어든 폭은 이름 칸이 내준다.
 private class ColumnWidths(val kda: Dp, val acs: Dp)
 
 @Composable
@@ -161,9 +160,7 @@ private fun ColumnLabel(text: String, width: Dp) {
 }
 
 /**
- * 스코어보드 한 줄입니다. 얼굴과 이름을 누르면 나와 친구는 프로필, 다른 사람은 친구 요청이나 초대 시트가 뜨고, 나머지를
- * 누르면 그 판 기록을 펼칩니다(사용자 요청, 2026-10-04). op.gg처럼 K/D/A와 ADR 밖의 기록도 볼 수 있습니다. 오른쪽 끝 화살표는
- * 아래를 가리키고 펼치면 위로 돕니다.
+ * 스코어보드 한 줄입니다. 얼굴과 이름을 누르면 [onOpenPlayer]를 부르고, 줄의 나머지를 누르면 그 판 기록을 펼칩니다.
  */
 @Composable
 private fun PlayerRow(
@@ -210,7 +207,6 @@ private fun PlayerRow(
                         ) { onOpenPlayer(row) },
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    // 친구는 얼굴 오른쪽 아래에 작은 표시를 단다. 이름 옆 글자로 두니 칩 사이에서 떠 보였다(사용자 요청, 2026-10-04).
                     Box {
                         AgentImage(line.agent, uiState.catalog.agentName(line.agent), Modifier.size(32.dp).clip(RoundedCornerShape(9.dp)))
                         if (isFriend) FriendMark(Modifier.align(Alignment.BottomEnd).offset(x = 4.dp, y = 4.dp), border = if (isMe) colors.raised else colors.bg)
@@ -236,13 +232,12 @@ private fun PlayerRow(
                             overflow = TextOverflow.Ellipsis,
                             autoSize = shrinkToFit(OvalitTheme.typography.label.fontSize),
                         )
-                        // MVP와 팀 MVP는 네모로, 나머지는 "3등"으로 적는다(사용자 요청, 2026-10-04)
                         row.placement?.let { PlacementLabel(it) }
                         line.tier?.let { TierEmblem(it, Modifier.size(15.dp)) }
                     }
                 }
             }
-            // 무기 표처럼 KDA를 굵게 구간 색으로 두고 옆에 K/D/A 합계를 흐리게 붙인다("1.83 (17/15/3)", 사용자 요청, 2026-10-04)
+            // "1.83 (17/15/3)"처럼 KDA 뒤에 합계를 붙인다
             val kda = line.deaths.takeIf { it > 0 }?.let { (line.kills + line.assists).toDouble() / it }
             OvalitText(
                 text = kdaText(kda, line.kills, line.deaths, line.assists).annotated(),
@@ -253,7 +248,7 @@ private fun PlayerRow(
                 maxLines = 1,
                 autoSize = shrinkToFit(numberStyle.fontSize),
             )
-            // 게임 스코어보드처럼 K/D/A 옆에는 전투점수를 둔다. 줄도 이 숫자 순이다. ADR은 펼친 기록에 있다(사용자 요청, 2026-10-04).
+            // ADR이 아니라 전투점수를 둔다. 줄도 이 숫자 순이고 ADR은 펼친 기록에 있다.
             OvalitText(
                 text = line.acs?.let { MetricFormat.INTEGER.format(it) } ?: NO_VALUE,
                 modifier = Modifier.width(widths.acs),
@@ -269,8 +264,7 @@ private fun PlayerRow(
     }
 }
 
-// 펼친 줄의 그 판 기록이다. K/D/A, KDA, 전투점수는 줄에 있어 나머지 다섯을 한 줄에 놓는다. 이름 밑으로 들여 쓰면 왼쪽이
-// 비어 칸이 좁아져서 줄 왼쪽 끝부터 폭을 다 쓴다(사용자 요청, 2026-10-04).
+// 펼친 줄의 그 판 기록이다. 줄에 없는 다섯 가지를 한 줄에 놓는다. 이름 밑으로 들여 쓰면 칸이 좁아져서 줄 왼쪽 끝부터 쓴다.
 @Composable
 private fun PlayerStats(row: ScoreboardRow) {
     val colors = OvalitTheme.colors

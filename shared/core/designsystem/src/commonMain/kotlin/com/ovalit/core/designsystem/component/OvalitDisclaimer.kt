@@ -9,8 +9,8 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * 프로덕션 키 승인 조건입니다. 플레이어가 언제든 찾을 수 있는 자리에 있어야 해서 인트로와
- * 설정 화면 하단에 둡니다. 지우거나 접어 두지 않습니다.
+ * Riot 비공식 앱 고지입니다. 프로덕션 키 승인 조건이라 플레이어가 언제든 찾을 수 있게 인트로와 설정 하단에 둡니다.
+ * 지우거나 접어 두지 않습니다.
  */
 @Composable
 fun OvalitDisclaimer(

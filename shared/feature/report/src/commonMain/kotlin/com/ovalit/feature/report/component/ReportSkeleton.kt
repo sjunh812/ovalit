@@ -23,16 +23,15 @@ import com.ovalit.feature.report.resources.report_loading
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * 리포트를 만들기 전 홈의 모양입니다. 칩, 기간, 승패 줄, 세 칸씩 두 줄인 고정 칸과 그 밑 두 줄, 달라진 점 세 칸, 개선 포인트
- * 자리를 잡습니다.
- * 홈처럼 카드에 담아 내용이 나타날 때 카드 자리가 움직이지 않습니다. 카드 면은 깜빡이지 않고 안의 칸만 깜빡입니다.
+ * 리포트가 뜨기 전 홈의 자리를 잡는 스켈레톤입니다. 홈과 같은 카드에 담아 내용이 나타날 때 카드가 움직이지 않고, 카드 안의
+ * 칸만 깜빡입니다.
  *
  * @param withChips 칩 자리도 잡을지입니다. 새 경기를 받느라 리포트만 기다릴 때는 칩이 이미 있어 끕니다.
  */
 @Composable
 internal fun ReportSkeleton(modifier: Modifier = Modifier, withChips: Boolean = true) {
     val description = stringResource(Res.string.report_loading)
-    // 깜빡이는 덩어리가 여럿이어도 낭독기에는 한 줄만 읽힌다
+    // 깜빡이는 덩어리가 여럿이어도 화면 읽기 프로그램에는 한 줄만 읽히게 한다
     Column(modifier = modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = description }) {
         if (withChips) {
             OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
@@ -51,7 +50,7 @@ internal fun ReportSkeleton(modifier: Modifier = Modifier, withChips: Boolean = 
             Spacer(Modifier.height(OvalitSpacing.md))
             SkeletonBlock(width = 150.dp, height = 14.dp)
             Spacer(Modifier.height(OvalitSpacing.lg))
-            // 고정 칸은 세 칸씩 두 줄이다. 둘째 줄은 두 칸이고 남은 자리는 비운다.
+            // 고정 칸 다섯 개를 세 칸씩 두 줄로 둔다
             Column(verticalArrangement = Arrangement.spacedBy(OvalitSpacing.lg)) {
                 listOf(3, 2).forEach { cells ->
                     Row {

@@ -25,7 +25,7 @@ class DataStoreUserPreferencesRepositoryTest {
         assertEquals(UserPreferences.Default, repository().preferences.first())
     }
 
-    // CLAUDE.md: 전적 공개 토글은 기본으로 켜져 있다
+    // docs/screens.md: 전적 공개 토글은 기본으로 켜져 있다
     @Test
     fun `전적 공개는 기본으로 켜져 있다`() = runTest {
         assertEquals(true, repository().preferences.first().statsPublic)

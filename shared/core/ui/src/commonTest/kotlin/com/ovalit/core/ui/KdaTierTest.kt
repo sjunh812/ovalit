@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 
 class KdaTierTest {
 
-    // 사용자 결정: op.gg처럼 1 미만, 1~2, 2~3, 3 이상으로 나눠 칠한다
+    // 경계를 바꾸면 등급처럼 읽힐 수 있어 그 전에 묻는다(CLAUDE.md 지켜야 할 선)
     @Test
     fun `KDA는 1과 2와 3을 경계로 구간을 나눈다`() {
         assertEquals(KdaTier.BELOW_ONE, kdaTier(0.84))

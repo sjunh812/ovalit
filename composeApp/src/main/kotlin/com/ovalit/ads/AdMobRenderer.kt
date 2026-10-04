@@ -35,12 +35,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
- * AdMob 네이티브 광고를 받아 광고 자리에 그립니다. 광고 단위 ID가 없으면 [enabled]가 `false`라 앱이 이 렌더러를 깔지 않고,
- * 광고 자리는 비어 있습니다.
+ * AdMob 네이티브 광고를 받아 광고 자리에 그립니다. 광고 단위 ID가 없으면 [enabled]가 `false`라 앱이 이 렌더러를 깔지 않습니다.
  *
- * 받은 광고는 자리 키마다 하나를 들고 있다가 같은 키가 다시 보이면 그대로 씁니다. 경기 목록을 올렸다 내릴 때마다 새로 요청하지
- * 않으려는 것입니다. 들고 있는 건 [MAX_ADS]개까지이고, 한 시간이 지난 광고는 버리고 새로 받습니다. AdMob은 받은 광고를 한 시간
- * 넘게 두지 말라고 합니다. 못 받은 키는 이 화면이 사는 동안 다시 요청하지 않습니다.
+ * 받은 광고는 자리 키마다 하나씩 [MAX_ADS]개까지 들고 있다가 같은 키가 다시 보이면 그대로 써서, 목록을 오르내려도 새로 요청하지
+ * 않습니다. AdMob이 받은 광고를 한 시간 넘게 두지 말라고 해서 한 시간이 지나면 버리고 새로 받습니다. 못 받은 키는 이 렌더러가
+ * 사는 동안 다시 요청하지 않습니다.
  *
  * 보상형 광고를 끝까지 보면 24시간 동안 광고 자리를 비웁니다([offerAdFree]). 끝나는 시각은 설정에 적어 앱을 다시 켜도 이어집니다.
  */
@@ -60,7 +59,7 @@ internal class AdMobRenderer(
         .map { it.adFreeUntil?.toEpochMilliseconds() ?: NOT_HIDDEN }
         .stateIn(scope, SharingStarted.Eagerly, UNKNOWN)
 
-    // 이 화면이 사는 동안 ×로 닫은 광고 자리다. 다시 스크롤해 와도 그 자리는 비워 둔다.
+    // ×로 닫은 광고 자리다. 다시 스크롤해 와도 렌더러가 사는 동안은 비워 둔다.
     private val closed = mutableStateListOf<String>()
 
     // 띄울 시트다. closeKey가 있으면 광고 줄의 ×에서 연 것이다.
@@ -107,7 +106,7 @@ internal class AdMobRenderer(
         }
     }
 
-    /** 앱 맨 위에 까는 시트입니다. [offerAdFree]를 부르면 뜹니다. */
+    /** 앱 맨 위에 깔아 두는 시트 자리입니다. [offerAdFree]를 부르거나 광고 줄의 ×를 누르면 뜹니다. */
     @Composable
     fun Sheets() {
         val shown = sheet ?: return
@@ -146,10 +145,10 @@ internal class AdMobRenderer(
                     }
                 },
             )
-            // 큰 그림이나 영상은 쓰지 않는다. 경기 줄과 같은 높이의 한 줄이라 아이콘, 제목, 버튼만 둔다.
+            // 경기 줄과 같은 높이의 한 줄이라 큰 그림과 영상은 쓰지 않고 아이콘, 제목, 버튼만 둔다
             .withNativeAdOptions(
                 NativeAdOptions.Builder()
-                    // 오른쪽 끝에 우리 ×가 있어서 AdChoices 표시는 왼쪽 위 여백에 둔다. 겹치면 무엇을 눌렀는지 헷갈린다.
+                    // 오른쪽 끝에 우리 ×가 있어서 AdChoices 표시는 왼쪽 위에 둔다
                     .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_LEFT)
                     .setReturnUrlsForImageAssets(false)
                     .build(),
@@ -183,8 +182,8 @@ internal class AdMobRenderer(
         private const val MAX_ADS = 6
         private val AD_LIFETIME = 1.hours
 
-        // 보상형 광고 한 편으로 광고를 숨기는 시간이다(사용자 결정, 2026-10-04). 하루 몇 번 짧게 여는 앱이라 짧으면 남는 게 없다.
-        // 다시 보려면 끝날 때까지 기다려야 해서 하루 한 번이 저절로 지켜진다.
+        // 하루 몇 번 짧게 여는 앱이라 이보다 짧으면 다음에 열 때쯤 끝나 있다. 다시 보려면 끝날 때까지 기다려야 해서 하루 한 번이
+        // 저절로 지켜진다.
         private val AD_FREE = 24.hours
 
         private const val UNKNOWN = -1L

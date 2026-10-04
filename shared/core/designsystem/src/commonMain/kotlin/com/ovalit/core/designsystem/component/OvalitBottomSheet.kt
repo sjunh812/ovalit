@@ -53,7 +53,7 @@ fun OvalitBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                // 양옆 여백은 스크롤 안에 둔다. 밖에 두면 스크롤이 글자 끝에서 잘라서 줄을 누른 면이 글자에 딱 붙는다.
+                // 양옆 여백을 스크롤 안에 둬야 밖으로 넓힌 누름 면이 스크롤 경계에서 잘리지 않는다
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = OvalitSpacing.xl, vertical = OvalitSpacing.lg),
             horizontalAlignment = Alignment.Start,

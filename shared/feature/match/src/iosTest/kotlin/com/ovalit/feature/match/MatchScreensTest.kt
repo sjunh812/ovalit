@@ -35,7 +35,7 @@ class MatchScreensTest {
         assertEquals(MatchId("ascent"), opened)
     }
 
-    // 스코어 색만으로는 낭독기 사용자가 이겼는지 모른다
+    // 스코어 색만으로는 화면 읽기 프로그램 사용자가 이겼는지 모른다
     @Test
     fun `경기 줄은 낭독기에 승패를 말로 알린다`() = runComposeUiTest {
         setContent { Themed { MatchesScreen(MatchPreviewData.matches, {}, {}, {}) } }
@@ -44,7 +44,7 @@ class MatchScreensTest {
         onAllNodes(hasStateDescription("패배")).fetchSemanticsNodes().let { assertTrue(it.isNotEmpty()) }
     }
 
-    // 사용자 요청(2026-10-03, 2026-10-04): 색만으로는 승패가 갈리지 않아 글자로도 적는다. 줄마다 같은 자리라 훑어 보기 쉽게 아랫줄 맨 앞이다.
+    // 색만으로는 승패가 갈리지 않는다. 줄마다 같은 자리에 두어 위아래로 훑으면 보이게 한다.
     @Test
     fun `경기 줄은 아랫줄 맨 앞에 승패를 적는다`() = runComposeUiTest {
         setContent { Themed { MatchesScreen(MatchPreviewData.matches, {}, {}, {}) } }
@@ -70,7 +70,7 @@ class MatchScreensTest {
 
         onNodeWithContentDescription("13 대 9").assertExists()
         onNodeWithText("전반 8–4 · 후반 5–5").assertExists()
-        // 경기 목록 줄처럼 맵 이름 옆에 승패를 적는다(사용자 요청, 2026-10-04)
+        // 맵 이름 옆의 승패
         onNodeWithText("승리").assertExists()
     }
 
@@ -89,7 +89,6 @@ class MatchScreensTest {
         assertEquals(MatchPreviewData.bloom, requested)
     }
 
-    // 사용자 요청(2026-10-03): 홈 오른쪽 위 아바타만으로는 내 프로필을 찾기 어렵다
     @Test
     fun `내 줄을 누르면 내 프로필을 연다`() = runComposeUiTest {
         var opened = false
@@ -101,7 +100,6 @@ class MatchScreensTest {
         onNodeWithText("친구 요청 보내기").assertDoesNotExist()
     }
 
-    // 사용자 요청(2026-10-04): op.gg처럼 K/D/A와 ADR 밖의 기록도 그 자리에서 본다. 이름을 누르면 프로필은 그대로 열린다.
     @Test
     fun `이름 밖을 누르면 그 판 기록을 펼치고 다시 누르면 접는다`() = runComposeUiTest {
         var friend: PlayerId? = null
@@ -133,7 +131,7 @@ class MatchScreensTest {
         assertTrue(invited)
     }
 
-    // 서버에 묻지 못했으면 앱을 쓰는지 모른다. 안 쓴다고 하지 않고, 초대 링크는 누구에게나 통하니 그대로 권한다.
+    // 초대 링크는 앱을 쓰든 안 쓰든 통하니 그대로 권한다
     @Test
     fun `앱을 쓰는지 모르면 안 쓴다고 하지 않고 초대 링크를 권한다`() = runComposeUiTest {
         var invited = false
@@ -149,7 +147,6 @@ class MatchScreensTest {
     }
 
     @Test
-    // 사용자 요청(2026-10-04): op.gg처럼 판의 흐름을 요약하고 라운드를 골라 그 라운드의 장비와 킬 순서를 본다
     fun `라운드 탭은 흐름을 요약하고 고른 라운드의 킬 순서를 보여준다`() = runComposeUiTest {
         setContent { Themed { Detail() } }
 
@@ -163,7 +160,7 @@ class MatchScreensTest {
         onNodeWithText("2라운드").assertExists()
     }
 
-    // CLAUDE.md S3: 진 클러치는 적지 않는다. 이 테스트는 적는 쪽만 본다.
+    // docs/screens.md S3: 진 클러치는 적지 않는다. 이 테스트는 적는 쪽만 본다.
     @Test
     fun `라운드 탭에 에이스와 이긴 클러치를 적는다`() = runComposeUiTest {
         setContent { Themed { Detail() } }
@@ -175,7 +172,7 @@ class MatchScreensTest {
         onNodeWithText("1대4 클러치", useUnmergedTree = true).assertExists()
     }
 
-    // 사용자 요청(2026-10-04): 라운드별 평균 장비 그래프 대신 op.gg 매치 리포트처럼 그 판의 내 기록을 둔다
+    // 이코노미 탭은 내 기록 탭으로 바뀌었다
     @Test
     fun `내 기록 탭은 맞힌 부위와 상대별 맞대결을 보여준다`() = runComposeUiTest {
         setContent { Themed { Detail() } }

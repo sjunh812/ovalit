@@ -63,7 +63,7 @@ private fun ReportNothingPlayedPreview() {
     ReportPreview(ReportPreviewData.nothingPlayed)
 }
 
-// 고정 4칸이 한 줄이라 가장 빡빡하다. 숫자가 칸을 넘지 않는지 본다.
+// 가장 좁은 폭이다. 숫자가 칸을 넘지 않는지 본다.
 @Preview(widthDp = 320, heightDp = 568)
 @Composable
 private fun ReportSmallPreview() {

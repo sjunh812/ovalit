@@ -7,7 +7,7 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * 이름 뒤에 붙는 조사입니다. 받침이 있으면 [withBatchim], 없으면 [withoutBatchim]을 붙입니다. 요원, 맵, 무기 이름은
- * 카탈로그에서 오니 문장 틀에 조사를 박아 두면 "레이즈으로", "오퍼레이터을"처럼 틀립니다.
+ * 카탈로그에서 오니 문장 틀에 조사를 박아 두면 "레이즈으로", "오퍼레이터을"처럼 틀립니다. 닉네임에는 붙이지 않습니다.
  */
 enum class Josa(internal val withBatchim: String, internal val withoutBatchim: String) {
     I_GA("이", "가"),
@@ -31,8 +31,8 @@ fun String.withJosa(josa: Josa): String {
 private const val RIEUL = 8
 
 /**
- * 화면 언어가 한국어일 때만 [withJosa]로 조사를 붙입니다. 다른 언어의 문장 틀은 조사를 직접 써 두어 이름만 넘겨받습니다. 일본어
- * 이름 뒤에 "로"가 붙으면 "レイズ로"가 됩니다.
+ * 화면 언어가 한국어일 때만 [withJosa]로 조사를 붙입니다. 다른 언어는 문장 틀에 조사를 직접 써 두고 이름만 받습니다.
+ * 일본어 이름에 붙이면 "レイズ로"가 됩니다.
  */
 @Composable
 fun String.withLocalJosa(josa: Josa): String = if (stringResource(Res.string.josa_enabled) == "true") withJosa(josa) else this

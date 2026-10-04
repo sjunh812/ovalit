@@ -8,7 +8,7 @@ import * as validate from "../validate";
 
 const MINUTE_MS = 60 * 1000;
 const DAY_MS = 24 * 60 * MINUTE_MS;
-/** 오발있은 시작하고 한 시간 동안 살아 있습니다. `expires_at`은 늘 `starts_at`에 이만큼 더한 값입니다. */
+/** ㅇㅂㅇ은 시작하고 한 시간 동안 살아 있습니다. `expires_at`은 늘 `starts_at`에 이만큼 더한 값입니다. */
 export const PING_LENGTH_MS = 60 * MINUTE_MS;
 // 발로란트 파티는 다섯 명까지라 나를 빼면 넷이다.
 const MAX_FRIENDS = 4;
@@ -61,7 +61,7 @@ interface PingRow {
 }
 
 // ?1은 보는 사람이다. 부른 사람마다 나와 친구인지를 friendships 기본 키로 한 번씩 찾는다.
-// 친구가 모두 연동을 해제해도 호스트에게는 오발있이 보여야 해서 부른 사람 쪽은 LEFT JOIN이다.
+// 친구가 모두 연동을 해제해도 호스트에게는 ㅇㅂㅇ이 보여야 해서 부른 사람 쪽은 LEFT JOIN이다.
 const SELECT_PINGS = `
   SELECT p.id, p.starts_at, p.created_at, p.expires_at,
     h.puuid AS host_puuid, h.game_name AS host_name, h.tag_line AS host_tag,
@@ -76,7 +76,7 @@ export const pings = new Hono<AppEnv>();
 
 pings.use(requireSession);
 
-/** 내가 띄웠거나 불려 간 오발있 중 취소하지 않았고 끝나지 않은 것입니다. 최근에 띄운 것부터 옵니다. */
+/** 내가 띄웠거나 불려 간 ㅇㅂㅇ 중 취소하지 않았고 끝나지 않은 것입니다. 최근에 띄운 것부터 옵니다. */
 pings.get("/", async (c) => {
   const now = Date.now();
   // host와 user_id 색인을 하나씩 타게 나눠 찾는다. OR로 묶으면 표를 끝까지 읽는다.
@@ -114,8 +114,8 @@ pings.post("/", async (c) => {
   const invited = puuids.map((puuid) => friends.find((friend) => friend.puuid === puuid)!);
 
   const id = randomToken(16);
-  // 살아 있는 오발있과 하루 한도를 INSERT 조건으로 건다. 보내기를 두 번 눌러 요청이 겹쳐도 하나만 들어간다.
-  // 부른 사람은 오발있이 들어갔을 때만 넣는다. json_each의 key가 배열 순번이라 고른 순서가 position이 된다.
+  // 살아 있는 ㅇㅂㅇ과 하루 한도를 INSERT 조건으로 건다. 보내기를 두 번 눌러 요청이 겹쳐도 하나만 들어간다.
+  // 부른 사람은 ㅇㅂㅇ이 들어갔을 때만 넣는다. json_each의 key가 배열 순번이라 고른 순서가 position이 된다.
   const [created] = await db.batch([
     db
       .prepare(
@@ -397,7 +397,7 @@ async function pingById(db: D1Database, id: string, viewerId: number): Promise<P
 
 /**
  * 같이 불린 사람 중 보는 사람과 서로 수락한 친구가 아닌 사람은 PUUID를 `anon-N`으로 바꾸고 태그를 비웁니다. N은 그 사람이
- * 불린 순서라 같은 오발있 안에서는 늘 같고, 다른 오발있의 같은 이름과는 이어지지 않습니다. 이름과 대답은 그대로 둡니다.
+ * 불린 순서라 같은 ㅇㅂㅇ 안에서는 늘 같고, 다른 ㅇㅂㅇ의 같은 이름과는 이어지지 않습니다. 이름과 대답은 그대로 둡니다.
  * 호스트와 나 자신은 가리지 않습니다.
  */
 function toPings(rows: PingRow[], viewerId: number): Ping[] {
@@ -417,7 +417,7 @@ function toPings(rows: PingRow[], viewerId: number): Ping[] {
     }
     if (row.puuid === null) continue;
     const known = row.user_id === viewerId || row.friend === 1;
-    // 친구가 아닌 사람은 이름만 준다(CLAUDE.md 백엔드). 태그까지 주면 이름#태그로 그 사람을 찾을 수 있다.
+    // 친구가 아닌 사람은 이름만 준다(docs/backend.md). 태그까지 주면 이름#태그로 그 사람을 찾을 수 있다.
     ping.members.push({
       puuid: known ? row.puuid : `anon-${row.position}`,
       gameName: row.game_name!,

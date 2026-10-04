@@ -64,7 +64,7 @@ class PingActionReceiver : BroadcastReceiver(), KoinComponent {
     }
 
     companion object {
-        // 알림 버튼은 앱이 꺼져 있어도 눌린다. 받는 동안만 쓰는 범위라 따로 둔다.
+        // 리시버 객체는 onReceive가 끝나면 버려지니 범위는 여기 둔다. 프로세스는 goAsync가 붙잡는다.
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
         fun reply(context: Context, pingId: String, answer: String): PendingIntent = broadcast(

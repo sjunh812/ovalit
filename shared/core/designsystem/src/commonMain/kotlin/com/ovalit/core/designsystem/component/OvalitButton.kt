@@ -78,7 +78,7 @@ fun OvalitTextButton(
     }
 }
 
-/** 테두리만 있는 한 단계 낮은 버튼입니다. */
+/** [OvalitPrimaryButton]보다 한 단계 낮은 버튼입니다. */
 @Composable
 fun OvalitOutlinedButton(
     text: String,
@@ -98,10 +98,7 @@ fun OvalitOutlinedButton(
     }
 }
 
-/**
- * 버튼이 같이 쓰는 눌리는 영역, 최소 높이, 누름 효과입니다. `clickable`이 안의 글자를 묶어 읽으니 [Role.Button]만
- * 달면 낭독기가 "○○, 버튼"으로 한 번에 읽습니다.
- */
+// `clickable`이 안의 글자를 묶어 읽어서 Role.Button만 달면 화면 읽기 프로그램이 "○○, 버튼"으로 한 번에 읽는다
 @Composable
 private fun OvalitButtonSurface(
     onClick: () -> Unit,

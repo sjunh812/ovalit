@@ -39,16 +39,12 @@ import org.jetbrains.compose.resources.stringResource
 
 private val LogoWidth = 88.dp
 
-// 괄호 안 글자 크기. em이라 바깥 글자 크기에 따라간다. titleL을 키워도 비율이 유지된다.
+// 괄호 안 글자 크기. em이라 바깥 글자 크기를 따라간다.
 private val ParenthesisScale = 0.7.em
 
 /**
- * 괄호와 그 안의 글자를 한 단계 흐리고 작게 그립니다.
- *
- * "오발있? (오늘 발로란트 할 사람 있어?)"에서 앱 이름이 먼저 읽히게 합니다. 전부 같은 색과
- * 크기면 어디까지가 이름인지 구분이 안 됩니다.
- *
- * 문구는 리소스에 그대로 두고 보여주는 방법만 여기서 정합니다. 번역할 때도 괄호만 지키면 됩니다.
+ * 괄호와 그 안의 글자를 한 단계 흐리고 작게 그립니다. "오발있? (오늘 발로란트 할 사람 있어?)"에서 어디까지가 앱 이름인지
+ * 먼저 읽히게 합니다. 문구는 리소스에 그대로 두니 번역할 때도 괄호만 지키면 됩니다.
  */
 @Composable
 private fun dimParentheses(text: String): AnnotatedString {
@@ -83,8 +79,8 @@ fun IntroScreen(
     onStart: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // 고지는 빼면 키가 회수되는 문구라 어떤 기기에서도 끝까지 볼 수 있어야 한다. 작은 기기에서 글자를 키우면 한 화면에
-    // 다 안 들어가니 스크롤되게 두고, 화면이 넉넉하면 최소 높이를 화면 높이로 잡아 버튼과 고지를 아래에 붙인다.
+    // 고지는 빼면 키가 회수되는 문구라 어떤 기기에서도 끝까지 보여야 한다. 글자를 키운 작은 기기에서는 스크롤되게 두고,
+    // 화면이 넉넉하면 최소 높이를 화면 높이로 잡아 버튼과 고지를 아래에 붙인다.
     BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
@@ -122,8 +118,8 @@ fun IntroScreen(
 
                 Spacer(Modifier.height(OvalitSpacing.md))
 
-                // "움직였는지"에서 줄을 나눈다. 한 줄로 두면 기기 폭에 따라 "짚어드려요"만 다음 줄에 떨어진다. 문자열을
-                // 둘로 나눠 두어서 좁은 화면에서는 줄마다 알아서 꺾인다.
+                // "움직였는지"에서 줄을 나눈다. 한 문자열이면 기기 폭에 따라 "짚어드려요"만 다음 줄에 떨어져서 둘로 나눴다.
+                // 좁은 화면에서는 줄마다 알아서 꺾인다.
                 OvalitText(
                     text = stringResource(Res.string.intro_subtitle_what),
                     style = OvalitTheme.typography.body,

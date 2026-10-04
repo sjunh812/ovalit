@@ -125,7 +125,7 @@ async function count(sql: string, ...binds: unknown[]): Promise<number> {
   return (await env.DB.prepare(sql).bind(...binds).first<{ n: number }>())!.n;
 }
 
-/** 취소한 오발있을 `createdAts` 시각에 띄운 것처럼 바로 넣습니다. 하루 한도를 볼 때 씁니다. */
+/** 취소한 ㅇㅂㅇ을 `createdAts` 시각에 띄운 것처럼 바로 넣습니다. 하루 한도를 볼 때 씁니다. */
 async function pastPings(host: TestUser, createdAts: number[]): Promise<void> {
   const id = await userId(host.puuid);
   await env.DB.batch(
@@ -260,7 +260,7 @@ describe("오발있 띄우기", () => {
 
     const again = await t.call("POST", "/pings", host.token, { friends: [friend.puuid], startsAt: Date.now() + HOUR });
     expect(await failure(again)).toEqual({ status: 409, body: { error: "ping_active" } });
-    // 불려 간 친구는 자기 오발있을 따로 띄울 수 있다.
+    // 불려 간 친구는 자기 ㅇㅂㅇ을 따로 띄울 수 있다.
     await open(t, friend, [host]);
 
     vi.advanceTimersByTime(10 * MINUTE + HOUR);
@@ -549,7 +549,7 @@ describe("친구 끊기와 연동 해제", () => {
     expect(await count("SELECT COUNT(*) AS n FROM ping_members WHERE user_id = ?", hostId)).toBe(0);
     expect(await count("SELECT COUNT(*) AS n FROM push_tokens WHERE user_id = ?", hostId)).toBe(0);
     expect(await visible(t, other)).toEqual([]);
-    // 호스트가 남아 있는 오발있은 부른 사람만 빠진다.
+    // 호스트가 남아 있는 ㅇㅂㅇ은 부른 사람만 빠진다.
     expect(await visible(t, friend)).toEqual([{ ...friendPing, members: [] }]);
   });
 });
@@ -1002,7 +1002,7 @@ describe("크론", () => {
 
     await runCron(t, WEEKLY_CRON);
     expect(sent).toEqual([{ topic: "weekly_report", data: { type: "weekly_report" }, android: { priority: "NORMAL" } }]);
-    // 곧 시작하는 오발있은 5분 크론이 맡는다.
+    // 곧 시작하는 ㅇㅂㅇ은 5분 크론이 맡는다.
     expect(await reminded(ping)).toBe(0);
   });
 

@@ -11,7 +11,7 @@ import kotlinx.coroutines.test.runTest
 
 class FakeAccountRepositoryTest {
 
-    // CLAUDE.md: 연동을 해제하면 저장된 경기와 리포트를 모두 지운다
+    // docs/screens.md: 연동을 해제하면 저장된 경기와 리포트를 모두 지운다
     @Test
     fun `연동을 해제하면 저장한 경기도 모두 지운다`() = runTest {
         val matches = FakeMatchRepository()

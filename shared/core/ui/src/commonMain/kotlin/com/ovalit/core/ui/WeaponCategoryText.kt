@@ -11,7 +11,6 @@ import com.ovalit.core.ui.resources.weapon_category_smg
 import com.ovalit.core.ui.resources.weapon_category_sniper
 import org.jetbrains.compose.resources.StringResource
 
-// S6 무기 계열과 개선 포인트의 "다른 소총"이 같이 쓴다
 val WeaponCategory.label: StringResource
     get() = when (this) {
         WeaponCategory.RIFLE -> Res.string.weapon_category_rifle

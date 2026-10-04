@@ -6,9 +6,8 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
-// 우리 토큰을 Material 색 이름에 옮겨 담는다. 화면 코드는 계속 OvalitTheme.colors를 쓰고, 이 값은
-// 바텀시트나 글자 선택처럼 Material 컴포넌트가 스스로 색을 고를 때만 쓰인다. 면을 나누는 규칙은 토큰에
-// 있으니 여기서는 가장 가까운 자리에 넣기만 한다.
+// 우리 토큰을 Material 색 이름에 옮겨 담는다. 화면 코드는 OvalitTheme.colors만 쓰고, 이 값은 바텀시트나 글자
+// 선택처럼 Material 컴포넌트가 스스로 색을 고를 때만 쓰인다. 그래서 가장 가까운 자리에 넣기만 한다.
 internal fun OvalitColors.toMaterial(): ColorScheme {
     val scheme = if (isDark) darkColorScheme() else lightColorScheme()
     return scheme.copy(

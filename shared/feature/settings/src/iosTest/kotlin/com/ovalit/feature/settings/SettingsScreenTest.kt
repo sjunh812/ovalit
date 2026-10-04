@@ -28,7 +28,7 @@ import kotlinx.datetime.TimeZone
 @OptIn(ExperimentalTestApi::class)
 class SettingsScreenTest {
 
-    // 사용자 결정(2026-10-04): 보상형 광고 한 편으로 24시간 광고를 숨긴다. 광고가 꺼져 있으면 줄이 없다.
+    // 보상형 광고 한 편으로 24시간 광고를 숨긴다. 광고가 꺼져 있으면 줄이 없다.
     @Test
     fun `광고 없이 보기 줄은 광고가 있을 때만 두고 누르면 시트를 띄운다`() = runComposeUiTest {
         val ads = CountingAds()
@@ -80,7 +80,7 @@ class SettingsScreenTest {
         onNodeWithText("Riot 계정 연동됨 · 9월\u00a019일").assertExists()
     }
 
-    // 사용자 요청(2026-10-03): 홈 오른쪽 위 말고도 내 프로필로 가는 길을 둔다
+    // 홈 오른쪽 위 말고도 내 프로필로 가는 길을 둔다
     @Test
     fun `맨 위 계정 줄을 누르면 내 프로필을 연다`() = runComposeUiTest {
         var opened = false
@@ -108,7 +108,7 @@ class SettingsScreenTest {
         onNodeWithText("분석 완료").assertIsOff()
     }
 
-    // 서버가 월요일 9시에 FCM 토픽으로 보내게 되어 목업의 줄을 되살렸다(2026-10-03)
+    // 주간 리포트는 서버가 월요일 9시에 FCM 토픽으로 보낸다
     @Test
     fun `알림에는 분석 완료 주간 리포트 오발있 스위치를 둔다`() = runComposeUiTest {
         var weekly: Boolean? = null

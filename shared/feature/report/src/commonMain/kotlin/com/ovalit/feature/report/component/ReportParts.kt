@@ -44,12 +44,12 @@ internal fun VerticalLine() {
 
 /**
  * 짚을 점과 개선 포인트의 헤드라인 글꼴입니다. 한 문장이라 본문처럼 줄을 끝까지 채우면 "높아요"만 다음 줄에 남아서, 제목처럼
- * 줄 길이를 고르게 나눕니다(CLAUDE.md 디자인).
+ * 줄 길이를 고르게 나눕니다(docs/design.md).
  */
 @Composable
 internal fun headlineStyle(): TextStyle = OvalitTheme.typography.bodyStrong.copy(lineBreak = LineBreak.Heading)
 
-/** 묶음 제목과 내용 사이입니다. 홈의 묶음이 모두 같이 써서 어느 묶음이든 제목에서 같은 거리에 내용이 옵니다. */
+/** 묶음 제목과 내용 사이입니다. 홈의 모든 묶음이 같이 씁니다. */
 internal val SectionTitleGap = 12.dp
 
 /** 막대가 있는 줄(라이벌, 친구 비교) 사이입니다. 친구 프로필의 나와 비교와 같습니다. */
@@ -104,8 +104,8 @@ internal fun TitleWithCaption(
     }
 }
 
-// 목업은 옆으로 밀지만 세 번째 칸이 화면 끝에서 잘려 숫자가 끊긴다. 한 줄에 세 칸씩 폭을 나누고 넘치면 다음 줄로
-// 넘긴다(DECISIONS 2026-09-25). 고정 칸도 같은 격자다(사용자 결정, 2026-10-03). 두 카드의 칸 경계가 위아래로 맞는다.
+// 고정 칸과 달라진 점 칸이 같이 쓰는 격자다. 한 줄에 세 칸씩 폭을 나누고 넘치면 다음 줄로 넘긴다. 목업처럼 옆으로 밀면
+// 세 번째 칸이 화면 끝에서 잘린다(docs/DECISIONS.md).
 internal const val MetricColumns = 3
 internal val MetricColumnGap = 14.dp
 internal val MetricRowGap = 20.dp
@@ -126,7 +126,7 @@ internal class MetricSubLineStyle(val change: TextStyle, val usual: TextStyle, v
 @Composable
 internal fun rememberSubLineStyle(cells: List<Pair<String?, String>>, width: Dp): MetricSubLineStyle {
     val typography = OvalitTheme.typography
-    // 사용자 요청(2026-10-03): 변화량이 숫자 옆에서 크게 보였다. 숫자 밑에 평소 값보다 한 단계 작게 둔다.
+    // 변화량은 평소 값보다 한 단계 작게 둔다
     val change = typography.metricS.copy(fontSize = 11.sp, lineHeight = 16.sp)
     val usual = rememberFittingStyle(cells.map { it.second }, typography.caption, width)
     val measurer = rememberTextMeasurer()

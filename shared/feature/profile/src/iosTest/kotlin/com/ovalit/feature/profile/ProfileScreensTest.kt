@@ -150,7 +150,7 @@ class ProfileScreensTest {
         onNodeWithText("K/D · 피해량").assertExists()
     }
 
-    // 사용자 요청(2026-10-03): 견주는 숫자가 아니라 내 기록이라 판 수가 적어도 가리지 않는다
+    // 견주는 숫자가 아니라 내 기록이라 판 수가 적어도 가리지 않는다
     @Test
     fun `판 수가 적은 요원 칸에도 승률과 KDA를 적는다`() = runComposeUiTest {
         val base = ProfilePreviewData.success
@@ -168,7 +168,7 @@ class ProfileScreensTest {
         onAllNodesWithText("KDA ", substring = true, useUnmergedTree = true).assertCountEquals(3)
     }
 
-    // 같은 칸에 다른 무기가 오면 그림도 바뀌어야 한다. 예전에는 앞 무기 그림이 남았다.
+    // 같은 칸에 다른 무기가 오면 앞 무기 그림이 남지 않아야 한다
     @Test
     fun `칸의 무기가 바뀌면 그림도 새로 그린다`() = runComposeUiTest {
         var weapon by mutableStateOf(WeaponId("29A0CFAB-485B-F5D5-779A-B59F85E204A8"))
@@ -218,7 +218,7 @@ class ProfileScreensTest {
         onNodeWithText("+6", useUnmergedTree = true).assertExists()
     }
 
-    // 사용자 요청(2026-10-03): 표본이 모자란 줄만 이번 액트 값을 띄우니 어느 숫자가 언제 것인지 알기 어려웠다
+    // 한 줄만 이번 액트 값을 띄우면 어느 숫자가 언제 것인지 헷갈린다
     @Test
     fun `이번 기간 표본이 적은 셋째 무기도 그 기간 숫자를 띄우고 변화량은 비운다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
@@ -294,8 +294,7 @@ class ProfileScreensTest {
         onNodeWithText("그 밖의 무기").assertExists()
     }
 
-    // 카탈로그에 없는 무기는 계열이 null이다. 펼친 계열이 없다는 뜻의 null과 부딪쳐, 다른 계열을 접으면 이 계열이 펼쳐지고
-    // 다시 접히지 않았다.
+    // 카탈로그에 없는 무기는 계열이 null이라 "펼친 계열 없음"을 뜻하는 null과 부딪치기 쉽다
     @Test
     fun `그 밖의 무기도 다른 계열처럼 펼쳤다가 접는다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
@@ -311,7 +310,7 @@ class ProfileScreensTest {
         onNodeWithText(unknownWeapon, substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 사용자 요청(2026-10-03): 견주는 숫자가 아니라 내 기록이라 라운드가 적어도 KDA와 합계를 같이 적는다
+    // 견주는 숫자가 아니라 내 기록이라 라운드 수와 상관없이 적는다
     @Test
     fun `들고 시작한 라운드가 적은 무기도 KDA와 합계를 적는다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }

@@ -73,7 +73,7 @@ internal fun DynamicMetricSection(
         Spacer(Modifier.height(SectionTitleGap))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             // 이름, 숫자, 설명마다 모든 칸에 한 크기를 쓴다. 칸마다 따로 줄이면 긴 이름만 작아지고 그 칸의 숫자와
-            // 설명만 다른 높이에 놓인다. 둘째 줄도 첫 줄과 칸 폭이 같다.
+            // 설명만 다른 높이에 놓인다.
             val perRow = columns.size.coerceAtMost(MetricColumns)
             val gaps = (MetricColumnGap * 2 + 1.dp) * (perRow - 1)
             val columnWidth = (currentMaxWidth - OvalitSpacing.gutter * 2 - gaps) / perRow
@@ -104,15 +104,14 @@ internal fun DynamicMetricSection(
                             if (index > 0) {
                                 // 간격은 구분선 양옆에만 준다. 칸 폭 안에 넣으면 칸마다 내용 폭이 달라진다.
                                 Spacer(Modifier.width(MetricColumnGap))
-                                // 덜 찬 줄의 빈자리에는 구분선을 긋지 않는다
                                 if (column != null) VerticalLine() else Spacer(Modifier.width(1.dp))
                                 Spacer(Modifier.width(MetricColumnGap))
                             }
                             if (column == null) {
                                 Spacer(Modifier.weight(1f))
                             } else {
-                                // 큐를 바꾸면 칸의 지표가 아예 바뀌기도 한다. 그때 숫자를 굴리면 같은 지표가 변한 것처럼
-                                // 보여서 칸을 자리가 아니라 지표로 묶는다. 같은 지표일 때만 숫자가 구른다.
+                                // 큐를 바꾸면 자리마다 지표가 바뀌기도 한다. 자리로 묶으면 같은 지표가 변한 것처럼 숫자가
+                                // 굴러가서 지표로 묶는다.
                                 key(column.slot.metric) {
                                     DynamicMetricColumn(
                                         column = column,
@@ -194,8 +193,8 @@ private fun dynamicColumn(slot: DynamicSlot, metrics: MatchMetrics, baseline: Ba
         valueColor = if (judged) colors.t1 else colors.t2,
         change = if (judged) metric.format.formatChange(current, usual) else null,
         changeColor = if (judged) changeColor(slot, current, usual) else colors.t3,
-        // 칸 밑에는 평소 값만 둔다. 표본은 시트에 있다. 판단을 보류한 칸도 평균이 있으면 적고, 없으면 대시만 둔다.
-        // "비교할 기록이 모자라요"를 칸마다 쓰면 좁은 칸에서 잘리고 제목과 같은 말이 다섯 번 뜬다.
+        // 표본은 시트에 있어 칸에는 평소 값만 둔다. 판단을 보류한 칸도 평균이 있으면 적고 없으면 대시다. "비교할 기록이
+        // 모자라요"를 칸마다 쓰면 좁은 칸에서 잘리고 같은 말이 여러 번 뜬다.
         usual = stringResource(Res.string.dynamic_usual, usual?.let { metric.format.valueText(it) } ?: NO_VALUE),
     )
 }
@@ -239,13 +238,12 @@ private fun DynamicMetricColumn(
             color = column.valueColor,
             autoSize = shrinkToFit(styles.value.fontSize, min = 14.sp),
         )
-        // 고정 칸과 같이 숫자 밑에 변화량과 평소 값을 둔다
         Spacer(Modifier.height(2.dp))
         MetricSubLine(column.change, column.changeColor, column.usual, styles.subLine)
     }
 }
 
-// 움직였다고 판단한 칸만 오르내림 색을 칠한다(CLAUDE.md 디자인). 달라진 점 시트도 이 색을 쓴다.
+// 움직였다고 판단한 칸만 오르내림 색을 칠한다(CLAUDE.md 지표 규칙). 달라진 점 시트도 이 색을 쓴다.
 @Composable
 internal fun changeColor(slot: DynamicSlot, current: Double, usual: Double): Color = when {
     slot.movement != Movement.MOVED -> OvalitTheme.colors.t3

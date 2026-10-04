@@ -79,7 +79,7 @@ class MatchesViewModel(
     /** 사용자가 한 일이 실패했을 때 화면 아래에 띄울 안내입니다. */
     val notices: Flow<FailureNotice> = failures.flow
 
-    /** 새 경기를 여러 판 받는 중이면 몇 판 중 몇 판을 받았는지입니다. 목록 맨 위 진행 줄로 띄웁니다. 다섯 판보다 적으면 `null`입니다. */
+    /** 새 경기를 여러 판 받는 중이면 몇 판 중 몇 판을 받았는지입니다. 목록 맨 위 진행 줄로 띄우고, 띄울 만큼 많지 않으면 `null`입니다. */
     val newMatches: StateFlow<NewMatchesProgress?> = matchRepository.newMatchesProgress
         .map { progress -> progress?.takeIf { it.isShown } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -121,7 +121,6 @@ class MatchesViewModel(
     fun refresh() {
         if (refreshing.value || newMatches.value != null) return
         refreshing.value = true
-        // 받지 못해도 저장해 둔 경기와 그 숫자는 그대로 두고 안내만 띄운다
         viewModelScope.launchNotifying(failures, FailedAction.REFRESH) {
             val untilLineShows = launch {
                 matchRepository.newMatchesProgress.first { it?.isShown == true }

@@ -27,7 +27,7 @@ class OvalitApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // 비정상 종료 보고를 놓치지 않게 무엇보다 먼저 띄운다. 광고 SDK보다도 앞서야 동의 신호가 맞게 이어진다.
+        // 시작하다 죽어도 비정상 종료 보고를 놓치지 않게 무엇보다 먼저 띄운다.
         OvalitFirebase.start(this)
         registerActivityLifecycleCallbacks(AppVisibility)
 
@@ -38,7 +38,7 @@ class OvalitApplication : Application() {
                 appModule,
                 dataModule(
                     preferencesPath = { filesDir.resolve("ovalit.preferences_pb").absolutePath },
-                    // 앱별 언어를 고르면 리소스 설정의 언어가 바뀐다. 기기 언어가 아니라 이 값을 따라야 화면 문구와 이름의 언어가 맞는다.
+                    // 기기 언어가 아니라 리소스 설정의 언어를 따라야 화면 문구와 이름의 언어가 맞는다. 앱별 언어를 고르면 이쪽만 바뀐다.
                     language = { resources.configuration.locales[0].language },
                 ),
                 onboardingModule,
@@ -50,7 +50,6 @@ class OvalitApplication : Application() {
             )
         }
         OvalitFirebase.follow(this, appScope, preferences = get(), account = get())
-        // 앱이 살아 있는 동안 토큰을 서버에 맡기고 주간 리포트 토픽 구독을 설정에 맞춘다
         OvalitPush.start(this, appScope, account = get(), preferences = get(), push = get())
         AdMobRenderer.start(this, appScope)
         // 앱을 다시 열면 그사이 끝난 경기를 받고, 많이 남은 채로 떠나면 WorkManager가 이어 받는다

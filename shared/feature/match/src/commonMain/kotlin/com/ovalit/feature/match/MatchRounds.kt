@@ -87,8 +87,7 @@ import com.ovalit.feature.match.resources.round_title
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * S3 라운드 탭입니다. op.gg와 tracker.gg처럼 위에 그 판의 흐름을 요약하고, 라운드를 옆으로 넘겨 고르면 그 라운드의 장비와 킬
- * 순서를 보여 줍니다(사용자 요청, 2026-10-04). 줄마다 승패만 늘어놓으면 스물네 줄을 내려 봐도 무슨 일이 있었는지 알 수 없었습니다.
+ * S3 라운드 탭입니다. 위에 그 판의 흐름을 요약하고, 라운드를 옆으로 넘겨 고르면 그 라운드의 장비와 킬 순서를 보여 줍니다.
  * 상대 한 사람 한 사람의 라운드별 피해와 남은 크레드는 응답에 없어 두지 않습니다.
  */
 @Composable
@@ -362,9 +361,7 @@ private fun KillRow(kill: RoundKill, uiState: MatchDetailUiState.Success) {
 }
 
 /**
- * 라운드 탭 맨 밑의 구매 유형 표입니다. 구매 유형마다 두 팀이 몇 라운드를 사서 몇 번 이겼는지를 둡니다. 우리 팀만 적던 표로는
- * 상대가 언제 무너졌는지 안 보였습니다. 라운드마다 두 팀의 평균 장비를 그리던 그래프는 라운드 고르는 줄의 장비 막대와 겹쳐서
- * 뺐습니다(사용자 요청, 2026-10-04).
+ * 라운드 탭 맨 밑의 구매 유형 표입니다. 구매 유형마다 두 팀이 몇 라운드를 사서 몇 번 이겼는지 둡니다.
  */
 @Composable
 private fun BuyTable(uiState: MatchDetailUiState.Success) {
@@ -372,7 +369,6 @@ private fun BuyTable(uiState: MatchDetailUiState.Success) {
     val caption = OvalitTheme.typography.caption
     val overview = uiState.match.roundsOverview()
     Column {
-        // 열 제목은 맨 위에 한 번만 둔다.
         Row(
             modifier = Modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.lg, bottom = OvalitSpacing.xs),
         ) {

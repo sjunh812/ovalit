@@ -56,8 +56,7 @@ import com.ovalit.feature.report.resources.rival_no_matches
 import com.ovalit.feature.report.resources.rival_title
 import org.jetbrains.compose.resources.stringResource
 
-// 홈 고정 칸을 모두 같은 순서로 겨룬다(사용자 요청, 2026-10-04). 친구 비교는 다섯 지표를 다 고를 수 있는데 라이벌만 전투점수가
-// 빠져 있었다. 고정 칸에 Performance Score가 들어오면 여기에도 같이 붙는다.
+// 홈 고정 칸을 모두 같은 순서로 겨룬다. 고정 칸에 지표가 늘면 여기에도 같이 붙는다.
 private val RivalMetrics = FixedMetric.entries
 private val NameWidth = 72.dp
 
@@ -133,8 +132,8 @@ internal fun FriendRankingSection(mine: MatchMetrics, friends: List<FriendStandi
             },
         )
         Spacer(Modifier.height(SectionTitleGap))
-        // 순위와 값 칸은 가장 긴 글자에 맞추고, 이름은 넘치면 말줄임표로 자른다. 순위와 값 폭을 박아 두면 글씨를
-        // 키웠을 때 순위 "10"이 꺾이고 값이 잘렸다.
+        // 순위와 값 칸은 가장 긴 글자에 맞추고, 이름은 넘치면 말줄임표로 자른다. 폭을 고정하면 글씨를 키웠을 때 순위
+        // "10"이 꺾이고 값이 잘린다.
         val typography = OvalitTheme.typography
         val widths = RankWidths(
             rank = rememberWidestWidth(ranked.map { it.rank.toString() }, typography.metricS),
@@ -183,7 +182,7 @@ private fun RankRow(entry: Ranked, metric: FixedMetric, top: Double, widths: Ran
         OvalitText(
             text = entry.name,
             modifier = Modifier.width(widths.name),
-            // 사용자 요청(2026-09-27): 라이벌·나와 비교 줄처럼 작은 글자로 둔다. 본문 크기로 두면 이 칸만 줄이 크고 넓었다.
+            // 막대 줄은 라이벌·나와 비교처럼 작은 글자로 맞춘다(docs/design.md)
             style = OvalitTheme.typography.caption.copy(fontWeight = if (entry.isMe) FontWeight.SemiBold else FontWeight.Normal),
             color = strong,
             maxLines = 1,

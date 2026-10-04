@@ -14,7 +14,7 @@ const STATUS_TTL = 60;
 // 막 끝난 경기가 잠깐 404일 수도 있어서 길게 두지 않는다.
 const MISSING_TTL = 10 * 60;
 const MB = 1024 * 1024;
-// INSERT 하나에 쌍을 50개까지. 바인딩이 쿼리당 100개까지라서다.
+// D1은 쿼리당 바인딩을 100개까지 받아서 INSERT 하나에 50쌍까지 넣는다.
 const PLAYERS_PER_INSERT = 50;
 
 // isolate가 살아 있는 동안 요청끼리 나눠 쓴다. isolate 메모리는 128MB라 캐시는 모두 합쳐 40MB 안쪽으로 두고 나머지는

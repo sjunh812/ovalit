@@ -6,11 +6,11 @@ import { PING_LENGTH_MS } from "./routes/pings";
 /** 월요일 00:00 UTC, 한국 시각으로 월요일 오전 9시입니다. `wrangler.jsonc`의 `triggers`와 같은 문자열이어야 합니다. */
 export const WEEKLY_CRON = "0 0 * * 1";
 const MINUTE_MS = 60 * 1000;
-// 미리 알림으로 고를 수 있는 가장 긴 시간이다. 그보다 뒤에 시작하는 오발있은 아직 찾지 않는다.
+// 미리 알림으로 고를 수 있는 가장 긴 시간이다. 그보다 뒤에 시작하는 ㅇㅂㅇ은 아직 찾지 않는다.
 const MAX_REMIND_BEFORE_MS = 60 * MINUTE_MS;
 // 크론이 5분마다 도니, 몫이 모자라 이번에 못 보낸 것은 다음 크론에 다시 잡힌다.
 const REMIND_SCAN_LIMIT = 20;
-// 하루 열 번 한도를 띄운 줄로 세니 끝나고 하루는 둔다. 그보다 오래된 줄은 한도 계산에 들어가지 않는다.
+// 하루 열 번 한도를 pings 줄로 세니 끝나고도 하루는 남겨 둔다
 const KEEP_AFTER_EXPIRY_MS = 24 * 60 * 60 * 1000;
 const CLEANUP_LIMIT = 100;
 
@@ -38,7 +38,7 @@ async function cleanUp(db: D1Database, now: number): Promise<void> {
 }
 
 /**
- * 곧 시작하는 오발있을 호스트와 가기로 한 친구에게 알립니다. 사람마다 고른 시간(`users.remind_before`) 안에 들어오면 한 번만
+ * 곧 시작하는 ㅇㅂㅇ을 호스트와 가기로 한 친구에게 알립니다. 사람마다 고른 시간(`users.remind_before`) 안에 들어오면 한 번만
  * 보내고, 0을 고른 사람에게는 보내지 않습니다. 아무도 가기로 하지 않았으면 호스트에게도 알리지 않습니다.
  */
 async function remind(db: D1Database, push: Push, now: number): Promise<void> {
@@ -81,7 +81,7 @@ async function remind(db: D1Database, push: Push, now: number): Promise<void> {
   });
   const messages = await push.messagesFor(notices);
 
-  // 몫에 들어가는 오발있까지만 고른다. 기기가 없어 보낼 메시지가 없는 사람도 같이 표시해 다시 찾지 않는다.
+  // 몫에 들어가는 ㅇㅂㅇ까지만 고른다. 기기가 없어 보낼 메시지가 없는 사람도 같이 표시해 다시 찾지 않는다.
   const chosen = new Set<string>();
   let count = 0;
   for (const ping of due) {

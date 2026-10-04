@@ -75,7 +75,7 @@ private fun Line(progress: NewMatchesProgress) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = OvalitSpacing.gutter)
-            // 한 판 받을 때마다 낭독기가 읽으면 시끄럽다. 진행도로만 알려 사용자가 짚을 때 읽게 한다.
+            // 한 판 받을 때마다 화면 읽기 프로그램이 읽으면 시끄럽다. 진행도로만 알려 사용자가 짚을 때 읽게 한다.
             .clearAndSetSemantics {
                 contentDescription = description
                 progressBarRangeInfo = ProgressBarRangeInfo(progress.received.toFloat(), 0f..progress.total.toFloat())

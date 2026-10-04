@@ -119,7 +119,7 @@ friends.delete("/:puuid", async (c) => {
            AND user_b = (SELECT MAX(id, ?2) FROM users WHERE puuid = ?1)`,
       )
       .bind(other, c.var.user.id),
-    // 오발있은 친구만 부를 수 있으니 끊으면 서로 띄운 오발있에서도 빠진다.
+    // ㅇㅂㅇ은 친구만 부를 수 있으니 끊으면 서로 띄운 ㅇㅂㅇ에서도 빠진다.
     db
       .prepare(
         `DELETE FROM ping_members

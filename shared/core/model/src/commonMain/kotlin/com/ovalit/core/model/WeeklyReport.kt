@@ -8,8 +8,8 @@ import kotlinx.datetime.plus
 /**
  * 홈의 주간 리포트입니다. 한 액트 안에서 고른 큐의 경기만 담습니다.
  *
- * 액트가 바뀌면 랭크가 초기화되고 매칭 난이도가 달라집니다. 경계를 넘겨 합치면 비교가 의미를
- * 잃으니, 가장 최근 경기의 액트만 봅니다. [Ready.trend]만 앞 액트 주도 그리고 경계를 표시합니다.
+ * 액트가 바뀌면 랭크가 초기화되고 매칭 난이도가 달라져서 가장 최근 경기의 액트만 봅니다. [Ready.trend]만 앞 액트 주도 그리고
+ * 경계를 표시합니다.
  */
 sealed interface WeeklyReport {
 
@@ -20,8 +20,7 @@ sealed interface WeeklyReport {
      * 띄웁니다.
      * @property dynamic 동적 칸(3~5개)입니다. [Movement.MOVED]가 하나도 없고 [Movement.STEADY]가 있을 때만 "큰 변화
      * 없음"을 띄웁니다. 모두 [Movement.UNKNOWN]이면 판단을 보류했다고 적습니다. [QueueFilter.OTHER]면 빈 목록입니다.
-     * @property insight 개선 포인트 문장입니다. 공수, 요원, 맵, 무기 어디서도 격차가 기준을 넘지 않거나
-     * [QueueFilter.OTHER]면 `null`입니다.
+     * @property insight 개선 포인트 문장입니다. 기준을 넘는 격차가 없거나 [QueueFilter.OTHER]면 `null`입니다.
      * @property trend 지표 설명 시트의 주별 막대입니다. 기간 마지막 주에서 끝나는 [TREND_WEEKS]주이고
      * 오래된 주가 앞에 옵니다.
      * @property results 기간 경기의 승패입니다. 오래된 경기가 앞에 오고, 비겼거나 결과를 모르면 `null`입니다.
@@ -93,8 +92,8 @@ data class TrendWeek(
     val inPeriod: Boolean,
 ) {
     /**
-     * 라운드가 [MIN_TREND_ROUNDS]에 못 미치는 주입니다. 한두 판만 뛴 주라 값이 크게 흔들려서, 막대는 그리되 테두리만 두고
-     * 평소 범위에서는 뺍니다.
+     * 라운드가 [MIN_TREND_ROUNDS]에 못 미치는 주입니다. 값이 크게 흔들려서 평소 범위에서는 빼고, 막대는 다른 주와 같게
+     * 그립니다.
      */
     val sparse: Boolean get() = metrics != null && metrics.rounds < MIN_TREND_ROUNDS
 }

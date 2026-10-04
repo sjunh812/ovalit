@@ -1,6 +1,6 @@
 package com.ovalit.core.data
 
-/** 이 기기로 알림을 받을 FCM 토큰을 서버에 맡깁니다. 서버는 ㅇㅂㅇ을 이 토큰으로 보냅니다. */
+/** 이 기기로 알림을 받을 FCM 토큰을 서버에 맡깁니다. 서버는 ㅇㅂㅇ 알림을 이 토큰으로 보냅니다. */
 interface PushRepository {
 
     suspend fun register(token: String)

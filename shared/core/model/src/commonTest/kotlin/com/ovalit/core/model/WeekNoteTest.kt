@@ -98,8 +98,7 @@ class WeekNoteTest {
         assertEquals(WeaponMetric.HEADSHOT_RATE, note?.weapon?.metric)
     }
 
-    // S6 위쪽 표는 두 표본을 다 넘겨야 기간 값을 띄운다. 한쪽만 넘긴 무기를 짚으면 S6에서 "이번 액트 기준"으로 떠서
-    // 숫자가 맞지 않는다.
+    // S6 위쪽 표는 두 표본을 다 넘긴 무기에만 변화량을 적는다. 한쪽만 넘긴 무기를 짚으면 S6 숫자와 맞지 않는다.
     @Test
     fun `들고 시작한 라운드가 모자란 무기는 헤드샷이 올라도 붙이지 않는다`() {
         val note = note(current = fixed(head = 30), weapons = listOf(trend(Vandal, head = 30, carriedRounds = 12)))
@@ -115,7 +114,7 @@ class WeekNoteTest {
         assertNull(note?.weapon)
     }
 
-    // 사용자 요청(2026-09-27): 크게 달라진 무기보다 전체 변화를 많이 끌어간 무기를 붙인다. 밴달은 25%p 올랐지만 20라운드,
+    // 크게 달라진 무기보다 전체 변화를 많이 끌어간 무기를 붙인다. 밴달은 25%p 올랐지만 20라운드,
     // 팬텀은 15%p 올랐지만 60라운드라 팬텀이 헤드샷을 더 끌어올렸다.
     @Test
     fun `무기는 비중과 차이를 곱해 가장 많이 끌어간 것을 붙인다`() {
@@ -170,7 +169,7 @@ class WeekNoteTest {
         assertEquals(MixGroup.Buy(BuyType.ECO), note?.mix?.group)
         assertEquals(0.31, note?.mix?.share)
         assertEquals(0.16, note?.mix?.usualShare)
-        // 비중을 모르면 제트가 피해량을 끌어내린 것으로 적혔다
+        // 비중을 보지 않으면 제트가 피해량을 끌어내린 것으로 적힌다
         assertNull(note?.agent)
     }
 
@@ -210,7 +209,7 @@ class WeekNoteTest {
         assertEquals(Jett, note?.agent?.agent)
     }
 
-    // 풀바이 비중이 68%에서 52%로 줄어 피해량이 떨어졌다. 풀바이만 보면은 풀바이가 줄었다는 말을 되풀이할 뿐이라 그다음으로
+    // 풀바이 비중이 68%에서 52%로 줄어 피해량이 떨어졌다. 풀바이만 보면 풀바이가 줄었다는 말을 되풀이할 뿐이라 그다음으로
     // 많이 한 포스바이를 적는다.
     @Test
     fun `짚은 묶음이 가장 많이 한 묶음이어도 비교 묶음으로는 쓰지 않는다`() {
@@ -282,7 +281,7 @@ class WeekNoteTest {
         assertEquals(0.21, note?.mix?.steady?.usual)
     }
 
-    // 사용자 요청(2026-09-27): Strava와 Riot 13.06 Accolades처럼 내 과거 기록 가운데 최고를 짚는다. 평소 주들은 20~22%다.
+    // 내 과거 기록 가운데 최고를 짚는다. 평소 주들은 20~22%다.
     @Test
     fun `이번 액트 어느 주보다 높으면 이전 최고를 붙인다`() {
         assertEquals(0.22, note(current = fixed(head = 30), actWeeks = UsualWeeks)?.previousBest)
@@ -296,8 +295,8 @@ class WeekNoteTest {
         assertNull(note(current = fixed(head = 14), actWeeks = UsualWeeks)?.previousBest)
     }
 
-    // 평소(35%)에는 라운드가 모자라 막대에서 빠진 주가 섞여 앞선 주들(20~22%)보다 높다. 30%는 그 주들보다 높지만 평소보다
-    // 떨어졌다. 떨어진 달에 최고라고 적으면 헤드라인과 어긋난다.
+    // 평소(35%)에는 최고 기록을 셀 때 빠지는, 라운드가 모자란 주가 섞여 앞선 주들(20~22%)보다 높다. 30%는 그 주들보다
+    // 높지만 평소보다 떨어졌다. 떨어진 주에 최고라고 적으면 헤드라인과 어긋난다.
     @Test
     fun `떨어졌으면 앞선 주들보다 높아도 최고를 붙이지 않는다`() {
         val note = note(current = fixed(head = 30), baseline = fixed(head = 35), actWeeks = UsualWeeks)
@@ -306,7 +305,7 @@ class WeekNoteTest {
         assertNull(note?.previousBest)
     }
 
-    // 세 주 중 최고는 최고라고 부를 만하지 않다. 라운드가 모자란 주는 S1-a 막대처럼 뺀다.
+    // 세 주 중 최고는 최고라고 부를 만하지 않다. 라운드가 모자란 주는 S1-a 평소 범위처럼 뺀다.
     @Test
     fun `앞선 주가 넉 주에 못 미치면 최고를 붙이지 않는다`() {
         val short = fixed(head = 35).copy(rounds = 30)

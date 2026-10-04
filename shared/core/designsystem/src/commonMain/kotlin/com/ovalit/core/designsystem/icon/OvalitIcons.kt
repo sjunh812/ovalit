@@ -21,8 +21,7 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 object OvalitIcons {
     val Home: ImageVector by lazy { strokeIcon(HOME) }
 
-    // 하단 탭에서 고른 탭에만 쓴다. 색만 바꾸면 선이 가늘어서 어느 탭인지 한눈에 안 들어온다.
-    // 채운 아이콘도 같은 선을 한 번 더 그려 모서리를 선 아이콘처럼 둥글게 맞춘다.
+    // 채운 아이콘은 하단 탭의 고른 탭에만 쓴다. 같은 선을 한 번 더 그려 모서리를 선 아이콘처럼 둥글게 맞춘다.
     val HomeFilled: ImageVector by lazy { icon(fills = listOf(HOME), strokes = listOf(HOME)) }
 
     val Settings: ImageVector by lazy { strokeIcon(SETTINGS_RAILS, SETTINGS_KNOB_TOP, SETTINGS_KNOB_BOTTOM) }
@@ -59,10 +58,9 @@ object OvalitIcons {
 
     val Check: ImageVector by lazy { strokeIcon("M4 10.5l4 4 8-9", strokeWidth = 2f) }
 
-    // 다른 시간을 낸 친구 아바타에 붙는 시계다
     val Clock: ImageVector by lazy { strokeIcon("M10 3a7 7 0 1 1 0 14a7 7 0 1 1 0-14", "M10 6.5v3.8l2.6 1.6", strokeWidth = 1.8f) }
 
-    // 목업의 세 줄은 메뉴 버튼처럼 읽혀서 경기 기록 한 장을 뜻하는 카드로 바꿨다
+    // 목업의 세 줄은 메뉴 버튼처럼 읽혀서 경기 기록 한 장을 뜻하는 카드로 그린다
     val Matches: ImageVector by lazy { strokeIcon(MATCH_CARD, MATCH_LINES) }
 
     // 카드를 채우고 안쪽 두 줄은 구멍으로 뚫는다. 색 하나로 칠하는 아이콘이라 줄을 다른 색으로 그릴 수 없다.
@@ -86,7 +84,7 @@ object OvalitIcons {
     val ArrowRight: ImageVector by lazy { strokeIcon("M4 10h11M11 5.5l4.5 4.5L11 14.5", strokeWidth = 2f) }
 }
 
-/** @param contentDescription 옆에 같은 뜻의 글자가 있으면 `null`로 둡니다. 낭독기가 두 번 읽습니다. */
+/** @param contentDescription 옆에 같은 뜻의 글자가 있으면 `null`로 둡니다. 화면 읽기 프로그램이 두 번 읽습니다. */
 @Composable
 fun OvalitIcon(
     imageVector: ImageVector,

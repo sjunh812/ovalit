@@ -23,7 +23,7 @@ android {
         applicationId = "com.ovalit"
         versionCode = 1
         versionName = "0.1.0"
-        // RSO 로그인을 마치면 서버가 돌려보내는 App Link의 호스트다(server/README.md). 비밀값이 아니어도 배포 주소가
+        // RSO 로그인을 마치면 서버가 돌려보내는 App Link의 호스트다(server/README.md). 비밀값은 아니지만 배포 주소가
         // 정해지기 전이라 local.properties에서 받는다. 없으면 아무 데도 이어지지 않는 예약 도메인을 쓴다.
         val localProperties = Properties().apply {
             rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
@@ -39,9 +39,8 @@ android {
         ).forEach { (field, key) ->
             buildConfigField("String", field, "\"${localProperties.getProperty(key).orEmpty()}\"")
         }
-        // 광고는 AdMob 네이티브 광고 하나다. 광고 단위 ID가 없으면 광고 자리는 비고 광고를 요청하지 않는다. Riot 정책상 제품이
-        // 승인되기 전에는 수익을 낼 수 없어서 그때까지 실제 ID를 넣지 않는다(CLAUDE.md 비용). SDK가 앱 ID 없이는 시작하지 않아
-        // 앱 ID가 없으면 Google 테스트 앱 ID를 넣어 둔다.
+        // 광고 단위 ID가 없으면 광고를 요청하지 않는다. 제품이 승인되기 전에는 수익을 낼 수 없어 실제 ID를 넣지 않는다
+        // (CLAUDE.md 지켜야 할 선). SDK는 앱 ID가 없으면 시작하지 않아서 그때는 Google 테스트 앱 ID를 넣는다.
         manifestPlaceholders["admobAppId"] = localProperties.getProperty("admob.appId") ?: ADMOB_TEST_APP_ID
         buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", "\"${localProperties.getProperty("admob.nativeUnitId").orEmpty()}\"")
         // "24시간 광고 없이 보기"에 쓰는 보상형 광고다. 없으면 광고 줄의 ×가 그 광고만 바로 닫고 설정 줄이 없다.

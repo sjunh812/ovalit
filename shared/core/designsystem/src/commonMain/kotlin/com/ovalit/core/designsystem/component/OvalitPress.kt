@@ -38,23 +38,20 @@ private const val HIGHLIGHT_ALPHA = 0.12f
 private const val MAX_SHRINK_RATIO = 0.04f
 private val MaxShrink = 8.dp
 
-/**
- * 누른 면의 기본 모양입니다. 네모 그대로나 원은 쓰지 않고 모서리를 적당히 둥글린 사각형으로 깝니다. 화면 폭만 한 줄도
- * 누르면 양옆이 들어오면서 이 모양이 됩니다.
- */
+/** 누른 면의 기본 모양입니다. 네모 그대로나 원은 쓰지 않습니다. */
 val OvalitPressShape: Shape = RoundedCornerShape(12.dp)
 
 /**
- * 글자나 그림에 딱 붙은 칸을 누를 때 면을 밖으로 넓히는 폭입니다. 홈 지표 칸처럼 칸 자체에 여백이 없으면 면이 글자 끝에 맞춰
- * 잘린 것처럼 보입니다(사용자 요청, 2026-10-03). 배치는 그대로 두고 면만 넓힙니다.
+ * 글자에 딱 붙은 칸(홈 지표 칸, 시트의 고르기 줄)에서 누른 면을 칸 밖으로 넓히는 폭입니다. 안 넓히면 면이 글자 끝에서
+ * 잘린 것처럼 보입니다. 배치는 그대로입니다.
  */
 val OvalitPressOutset = 10.dp
 
 /**
- * 누르는 즉시 옅은 면을 깔고 누른 것을 살짝 줄입니다. 손을 떼면 제 크기로 돌아옵니다.
+ * 누르는 즉시 옅은 면을 깔고 누른 것을 살짝 줄였다가, 손을 떼면 되돌립니다.
  *
- * 물결은 쓰지 않습니다. 누른 뒤에 천천히 퍼져서 앱이 늦게 반응하는 것처럼 느껴집니다.
- * 면은 [shape] 모양으로 깝니다. 기본은 [OvalitPressShape]이고, 눌리는 영역보다 보이는 모양이 작으면 보이는 쪽에 답니다.
+ * 물결은 쓰지 않습니다. 누른 뒤에 천천히 퍼져서 늦게 반응하는 것처럼 보입니다. 눌리는 영역보다 보이는 모양이 작으면
+ * [shape]를 보이는 모양에 맞춥니다.
  */
 @Stable
 class OvalitPressIndication(
@@ -75,10 +72,10 @@ class OvalitPressIndication(
 }
 
 /**
- * 버튼처럼 제 모양이 따로 있는 곳에 씁니다. 이때는 `clip`보다 앞에 둡니다.
+ * [OvalitPressIndication]을 만들어 둡니다. 면을 칠한 버튼은 면까지 같이 줄도록 `clip`과 `background`보다 앞에 답니다.
  *
- * 내용에 딱 붙은 칸이면 [horizontalOutset]과 [verticalOutset]만큼 면을 칸 밖으로 넓힙니다. 넓힌 면이 잘리지 않게 바깥에
- * 그만한 자리가 있어야 합니다. 화면 폭만 한 줄처럼 안쪽에 여백이 있는 칸은 넓히지 않습니다.
+ * [horizontalOutset]과 [verticalOutset]은 내용에 딱 붙은 칸에만 줍니다. 넓힌 면이 잘리지 않게 바깥에 그만한 자리가
+ * 있어야 합니다.
  */
 @Composable
 fun pressIndication(

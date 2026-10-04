@@ -1,11 +1,10 @@
 package com.ovalit.core.model
 
 /**
- * 저장소가 실패한 까닭입니다. 화면은 이것으로 안내 문구를 고르고, 실패를 삼키지 않습니다. 실제 저장소가 HTTP 응답과 네트워크
- * 예외를 이것으로 바꿔 [OvalitException]으로 던집니다.
+ * 저장소가 실패한 까닭입니다. 실제 저장소는 HTTP 응답과 네트워크 예외를 이것으로 바꿔 [OvalitException]으로 던지고, 화면은
+ * 이것으로 안내 문구를 고릅니다.
  */
 sealed interface OvalitError {
-    /** 인터넷에 연결되어 있지 않습니다. */
     data object Offline : OvalitError
 
     /** 서버 세션이 끝났습니다(401). 다시 로그인해야 합니다. */
@@ -17,7 +16,6 @@ sealed interface OvalitError {
     /** Riot 서버가 응답하지 않습니다(502 `riot_unavailable`). */
     data object RiotDown : OvalitError
 
-    /** 그 밖의 실패입니다. */
     data object Unknown : OvalitError
 }
 

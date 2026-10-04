@@ -150,9 +150,8 @@ internal fun ReportScreen(
     newMatches: NewMatchesProgress? = null,
     onReimport: () -> Unit = {},
 ) {
-    // 첫 수집 뒤 홈으로 넘어오면 리포트가 전환 한가운데 도착한다. 그때 홈 전체를 그리면 밀려 들어오던 화면이 한 번
-    // 멈춰서, 다 들어올 때까지 스켈레톤을 둔다. 다 들어온 뒤에도 한 프레임에 다 그리면 그 프레임이 200ms 가까이 걸려 묶음마다
-    // 나눠 그린다.
+    // 첫 수집 뒤 홈으로 넘어오면 리포트가 전환 한가운데 도착한다. 그때 다 그리면 밀려 들어오던 화면이 멈춰서, 다 들어올
+    // 때까지 스켈레톤을 두고 그 뒤에도 묶음마다 한 프레임씩 나눠 그린다.
     val shown = rememberContentShown(loaded = uiState is ReportUiState.Success)
     val canvas = OvalitTheme.colors.canvas
     OvalitStaged(
@@ -161,7 +160,6 @@ internal fun ReportScreen(
             .fillMaxSize()
             .background(canvas),
         contentBackground = canvas,
-        // 빈 화면 대신 홈 모양대로 자리만 잡아 둔다
         placeholder = {
             Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
                 ReportTopBar(badge = badge, onOpenProfile = onOpenProfile)
@@ -171,7 +169,7 @@ internal fun ReportScreen(
         },
     ) {
         if (uiState !is ReportUiState.Success) return@OvalitStaged
-        // 내 프로필 안내는 한 번 띄우면 바로 봤다고 적고, 이번에 띄운 것은 누르거나 프로필을 열 때까지 둔다
+        // 안내는 띄우자마자 봤다고 적고, 이번에 띄운 것은 누르거나 프로필을 열 때까지 둔다
         var hintShown by rememberSaveable { mutableStateOf(false) }
         LaunchedEffect(profileHint, badge != null) {
             if (profileHint && badge != null) {
@@ -179,8 +177,8 @@ internal fun ReportScreen(
                 onProfileHintShown()
             }
         }
-        // 머리 줄이 스크롤되면 아바타 자리가 바뀐다. 둘 다 화면 기준으로 적어 두고 그 차이로 안내를 둔다. 아바타는 잘리지 않은
-        // 크기로 잰다. 잘린 자리(boundsInRoot)는 위로 스크롤돼 가려지는 동안 폭이 0까지 줄어 화살표 자리가 음수가 됐다.
+        // 머리 줄이 스크롤되면 아바타 자리가 바뀌어 화면과 아바타를 모두 루트 기준으로 재고 그 차이에 안내를 둔다. 아바타는
+        // 잘리지 않은 크기로 잰다. boundsInRoot는 위로 가려지는 동안 폭이 0까지 줄어 화살표 자리가 음수가 된다.
         var screenOrigin by remember { mutableStateOf(Offset.Zero) }
         var avatarInRoot by remember { mutableStateOf<Rect?>(null) }
         val openProfile = {
@@ -202,14 +200,12 @@ internal fun ReportScreen(
                     Spacer(Modifier.height(OvalitSpacing.xs))
                     QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
                     Spacer(Modifier.height(OvalitSpacing.md))
-                    // 오래 쉬었다 와서 여러 판을 받는 동안만 뜬다. 그동안 밑의 숫자가 왜 그대로인지 여기서 알 수 있다.
+                    // 여러 판을 받는 동안만 뜬다. 밑의 숫자가 왜 그대로인지 여기서 알린다.
                     NewMatchesLine(newMatches, bottomSpacing = OvalitSpacing.lg)
 
-                    // 큰 묶음마다 카드 하나다. 카드끼리는 화면 가장자리와 같은 간격을 둔다.
                     Column(verticalArrangement = Arrangement.spacedBy(OvalitCardGap)) {
                         // 답해야 하는 ㅇㅂㅇ이 리포트에 묻히지 않게 맨 위에 둔다
                         homePing?.let { home -> PingHomeCard(home = home, timeZone = timeZone, onClick = { onOpenPing(home.ping.id) }) }
-                        // 받기 전 숫자가 틀린 기간을 말할 수 있으면 다 받을 때까지 자리만 잡아 둔다
                         if (uiState.needsImport) {
                             Reimport(onClick = onReimport)
                         } else if (uiState.waitingForNewMatches) {
@@ -280,14 +276,14 @@ private fun ReportContent(
             )
             FixedMetricSummary(baseline = report.baseline)
         }
-        // 짚을 점은 바로 위 숫자를 풀어 말하는 문장이라 고정 칸과 한 카드에 둔다(CLAUDE.md 화면)
+        // 짚을 점은 바로 위 숫자를 풀어 말하는 문장이라 고정 칸과 한 카드에 둔다(docs/screens.md)
         if (queueFilter.hasDynamicMetrics) {
-            // 보이는 차이가 0이면 짚을 점이 그려지지 않으니 띄우는 것도 그 안에서 한다
+            // 보이는 차이가 0이면 WeekNoteLines가 아무것도 그리지 않으니 위 간격도 그 안에 준다
             report.note?.let { note ->
                 OvalitStage { WeekNoteLines(note = note, catalog = catalog, modifier = Modifier.padding(top = 18.dp)) }
             }
         }
-        // 짚을 점은 바로 위 숫자를 풀어 말해서 숫자에 붙여 두고, 흐름을 보는 입구는 그 뒤에 둔다
+        // 흐름 입구는 짚을 점 뒤에 둔다. 앞에 두면 숫자와 그 설명 사이가 벌어진다.
         OvalitStage {
             TrendEntry(
                 report = report,
@@ -309,7 +305,7 @@ private fun ReportContent(
         }
         // S6과 S7이 경쟁 + 일반만 보니 기타 모드에는 두지 않는다
         OvalitStage { PeriodPicksSection(report, catalog, onOpenAgents = onOpenAgents, onOpenWeapons = onOpenWeapons) }
-        // 광고는 이번 주 숫자를 다 본 뒤인 요원·무기 밑에 카드 하나로 둔다. 기간, 고정 칸, 달라진 점 사이에는 두지 않는다.
+        // 광고는 이번 주 숫자를 다 본 뒤에 둔다. 기간, 고정 칸, 달라진 점 사이에는 두지 않는다(docs/screens.md).
         AdSlot(AdPlacement.HOME) { ad -> OvalitCard { ad() } }
         rival?.let {
             OvalitStage { OvalitCard { RivalSection(report = report, mine = report.metrics, rival = it) } }

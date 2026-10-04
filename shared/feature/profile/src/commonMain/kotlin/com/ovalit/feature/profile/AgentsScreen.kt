@@ -109,7 +109,7 @@ import org.koin.core.parameter.parametersOf
 
 private val WinColumn = 48.dp
 private val MetricColumn = 58.dp
-// 글자를 키우면 옆 열 제목끼리 붙어서 왼쪽에 간격을 둔다
+// 큰 글씨에서 옆 열 제목끼리 붙지 않게 칸 왼쪽에 두는 간격이다
 private val ColumnGap = 6.dp
 private val ThumbnailSize = 34.dp
 
@@ -132,7 +132,7 @@ internal fun AgentsScreen(
     modifier: Modifier = Modifier,
     loadingTitle: StringResource? = Res.string.agents_title,
 ) {
-    // 뒤에서 센다. 밀려 들어오는 중에 도착하면 다 들어올 때까지 자리 틀을 두고 서서히 바꾼다.
+    // 밀려 들어오는 중에 내용이 도착하면 다 들어올 때까지 스켈레톤을 두었다가 서서히 바꾼다.
     val loaded = uiState != RecordsUiState.Loading
     val shown = rememberContentShown(loaded = loaded)
     OvalitStaged(
@@ -224,7 +224,7 @@ private fun MainRole(report: AgentReport, role: Role, catalog: ContentCatalog) {
         OvalitText(text = stringResource(Res.string.agents_main_role), style = OvalitTheme.typography.label, color = colors.t3)
         Spacer(Modifier.height(9.dp))
         Row(verticalAlignment = Alignment.Bottom) {
-            // 프로필 머리처럼 역할 아이콘을 이름 바로 앞에 둔다. 아이콘 크기를 글자 크기에서 잡아 글씨를 키워도 같이 커진다.
+            // 아이콘 크기를 글자 크기에서 잡아서 글씨를 키우면 같이 커진다
             val titleStyle = OvalitTheme.typography.display
             val iconSize = with(LocalDensity.current) { titleStyle.fontSize.toDp() }
             Row(modifier = Modifier.alignByBaseline(), verticalAlignment = Alignment.CenterVertically) {
@@ -329,7 +329,6 @@ private enum class AgentColumns(val label: StringResource, private val specs: ()
     val columns: List<MetricColumnSpec> get() = specs()
 
     companion object {
-        // 타격대는 첫 킬 쪽으로 보고 나머지 역할은 관여율과 생존율로 본다
         fun defaultFor(role: Role): AgentColumns = if (role == Role.DUELIST) FIRST_DUEL else KAST
     }
 }
@@ -410,7 +409,7 @@ private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: 
 @Composable
 private fun roleText(agent: AgentStats): String = agent.role?.let { stringResource(it.label) } ?: NO_VALUE
 
-// 사용자 요청(2026-10-03): 견주는 숫자가 아니라 내 기록이라 판 수와 상관없이 적는다
+// 견주는 숫자가 아니라 내 기록이라 판 수와 상관없이 적는다
 @Composable
 private fun rowKda(agent: AgentStats): AnnotatedString? = agent.metrics.kda?.let { kdaRatioText(it) }
 

@@ -1,4 +1,3 @@
-import java.security.MessageDigest
 import java.util.Properties
 
 plugins {
@@ -8,8 +7,13 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
-fun crashlyticsMappingId(version: String): String =
-    MessageDigest.getInstance("MD5").digest("com.ovalit:$version".toByteArray()).joinToString("") { "%02x".format(it) }
+// Firebase 콘솔이 주는 google-services.json이 있을 때만 Firebase를 붙인다. 공개 저장소라 이 파일은 올리지 않아서(.gitignore),
+// 없는 체크아웃에서도 빌드되고 앱은 푸시, 사용 통계, 비정상 종료 보고 없이 돈다.
+val firebaseConfigured = file("google-services.json").exists()
+if (firebaseConfigured) {
+    apply(plugin = libs.plugins.google.services.get().pluginId)
+    apply(plugin = libs.plugins.firebase.crashlytics.get().pluginId)
+}
 
 // Google이 공개한 테스트용 ID다. 실제 광고가 아니라 노출과 클릭이 계정에 잡히지 않는다.
 val ADMOB_TEST_APP_ID = "ca-app-pub-3940256099942544~3347511713"
@@ -34,24 +38,7 @@ android {
         // RSO 로그인을 마치면 서버가 돌려보내는 App Link의 호스트다(server/README.md). 비밀값은 아니지만 배포 주소가
         // 정해지기 전이라 local.properties에서 받는다. 없으면 아무 데도 이어지지 않는 예약 도메인을 쓴다.
         manifestPlaceholders["ovalitServerHost"] = localProperty("ovalit.server.host") ?: "ovalit.invalid"
-        // FCM은 google-services.json 대신 이 네 값으로 띄운다. 비밀값은 아니지만 프로젝트마다 달라서 local.properties에서
-        // 받는다. 없으면 빈 값이고 앱은 푸시 없이 돈다.
-        listOf(
-            "FIREBASE_APP_ID" to "firebase.appId",
-            "FIREBASE_API_KEY" to "firebase.apiKey",
-            "FIREBASE_PROJECT_ID" to "firebase.projectId",
-            "FIREBASE_SENDER_ID" to "firebase.senderId",
-        ).forEach { (field, key) ->
-            buildConfigField("String", field, "\"${localProperty(key).orEmpty()}\"")
-        }
-        // google-services 플러그인이 만들던 리소스다. Analytics는 넘긴 옵션이 아니라 google_app_id 리소스를 따로 읽어서, 없으면
-        // Firebase는 떠도 사용 통계만 꺼진다. 값이 있으면 Firebase가 앱 시작 때 이 리소스로 스스로 뜬다.
-        localProperty("firebase.appId")?.let { appId ->
-            resValue("string", "google_app_id", appId)
-            resValue("string", "google_api_key", localProperty("firebase.apiKey").orEmpty())
-            resValue("string", "gcm_defaultSenderId", localProperty("firebase.senderId").orEmpty())
-            resValue("string", "project_id", localProperty("firebase.projectId").orEmpty())
-        }
+        buildConfigField("boolean", "FIREBASE_ENABLED", firebaseConfigured.toString())
         // 광고 단위 ID가 없으면 광고를 요청하지 않는다. 제품이 승인되기 전에는 수익을 낼 수 없어 실제 ID를 넣지 않는다
         // (CLAUDE.md 지켜야 할 선). SDK는 앱 ID가 없으면 시작하지 않아서 그때는 Google 테스트 앱 ID를 넣는다.
         manifestPlaceholders["admobAppId"] = localProperty("admob.appId") ?: ADMOB_TEST_APP_ID
@@ -61,9 +48,6 @@ android {
         // 설정의 "피드백 보내기"가 여는 메일의 받는 주소다. 개인 주소를 저장소에 넣지 않으려고 local.properties에서 받고, 없으면
         // 그 줄이 없다.
         buildConfigField("String", "FEEDBACK_EMAIL", "\"${localProperty("ovalit.feedback.email").orEmpty()}\"")
-        // Crashlytics SDK는 이 값이 없으면 시작하자마자 죽는다. google-services와 Crashlytics Gradle 플러그인 없이 쓰니(CLAUDE.md 비용)
-        // 플러그인이 만들던 값을 직접 넣는다. 디버그는 난독화하지 않아 매핑 파일이 없으니 0으로 둔다.
-        resValue("string", "com.google.firebase.crashlytics.mapping_file_id", "0".repeat(32))
     }
 
     // 안드로이드 13부터 앱 설정에서 앱만 따로 일본어로 고를 수 있게 지원 언어 목록을 만든다. 기본 values는 한국어다
@@ -75,8 +59,6 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-        // Crashlytics 매핑 ID를 resValue로 넣는다
-        resValues = true
     }
 
     buildTypes {
@@ -93,9 +75,6 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            // 버전마다 다른 매핑 ID다. 릴리스를 올린 뒤 이 값을 담은 리소스와 매핑 파일을 Firebase CLI로 올려야 Crashlytics가
-            // 난독화된 스택을 풀어 준다(docs/RELEASE.md).
-            resValue("string", "com.google.firebase.crashlytics.mapping_file_id", crashlyticsMappingId("${defaultConfig.versionName}-${defaultConfig.versionCode}"))
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -107,6 +86,10 @@ android {
             initWith(getByName("release"))
             signingConfig = signingConfigs.getByName("debug")
             matchingFallbacks += listOf("release")
+            // 개발 기기에서 속도를 보는 빌드라 Crashlytics에 매핑 파일을 올리지 않는다. 올리는 건 릴리스뿐이다.
+            (this as ExtensionAware).extensions.findByName("firebaseCrashlytics")?.withGroovyBuilder {
+                setProperty("mappingFileUploadEnabled", false)
+            }
         }
     }
 }

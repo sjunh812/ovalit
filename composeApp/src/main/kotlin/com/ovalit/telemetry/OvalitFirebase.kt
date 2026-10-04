@@ -2,8 +2,6 @@ package com.ovalit.telemetry
 
 import android.content.Context
 import android.os.Bundle
-import com.google.firebase.FirebaseApp
-import com.google.firebase.FirebaseOptions
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.ovalit.BuildConfig
@@ -16,24 +14,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
- * Firebase를 띄웁니다. google-services 플러그인 대신 `local.properties`의 네 값을 빌드가 리소스로 넣어 앱 시작 때 Firebase가 스스로
- * 뜨고, 값이 없으면 아무것도 하지 않아 푸시, 사용 통계, 비정상 종료 보고 없이 돕니다. [start]는 스스로 뜨지 못했을 때를 대비해
- * [android.app.Application.onCreate] 맨 앞에서 부릅니다.
+ * Firebase는 google-services 플러그인이 넣은 값으로 앱 시작 때 스스로 뜹니다. `composeApp/google-services.json` 없이 빌드했으면
+ * [enabled]가 `false`이고 푸시, 사용 통계, 비정상 종료 보고 없이 돕니다.
  */
 internal object OvalitFirebase {
 
-    val enabled: Boolean get() = BuildConfig.FIREBASE_APP_ID.isNotBlank()
-
-    fun start(context: Context) {
-        if (!enabled || FirebaseApp.getApps(context).isNotEmpty()) return
-        val options = FirebaseOptions.Builder()
-            .setApplicationId(BuildConfig.FIREBASE_APP_ID)
-            .setApiKey(BuildConfig.FIREBASE_API_KEY)
-            .setProjectId(BuildConfig.FIREBASE_PROJECT_ID)
-            .setGcmSenderId(BuildConfig.FIREBASE_SENDER_ID)
-            .build()
-        FirebaseApp.initializeApp(context, options)
-    }
+    val enabled: Boolean get() = BuildConfig.FIREBASE_ENABLED
 
     /**
      * 설정의 "사용 통계 보내기"를 따라 수집을 켜고 끕니다. 매니페스트에서 꺼 둔 채 시작해서 설정을 읽기 전에는 보내지 않습니다.

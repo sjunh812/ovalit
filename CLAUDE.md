@@ -163,15 +163,15 @@ Google Play 개발자 등록 1회 25달러 하나다. 그 전까지 드는 돈�
 - Riot API는 개발용 키와 프로덕션 키 모두 무료다. 레이트 리밋이 유일한 제약이라 끝난 경기를 다시 요청하지 않는 규칙이 여기서도
   중요하다.
 
-Google 서비스 셋은 무료로 쓰는 독점 라이선스 SDK라 라이선스 규칙의 예외다(사용자 결정). 셋 다 카드 등록이 필요 없고,
-`google-services` 플러그인 없이 `local.properties` 값으로 띄우며 값이 없으면 그 기능 없이 돈다. 값과 출시 순서는
-`docs/RELEASE.md`에 있다.
+Google 서비스 셋은 무료로 쓰는 독점 라이선스 SDK라 라이선스 규칙의 예외다(사용자 결정). 셋 다 카드 등록이 필요 없다. 값과 출시
+순서는 `docs/RELEASE.md`에 있다.
 
-- 푸시는 Firebase Cloud Messaging이다. 보내는 양에 한도도 요금도 없다. `firebase.*` 값으로 띄운다.
-- `firebase.*` 값은 빌드가 플러그인이 만들던 리소스(`google_app_id` 등)로 넣어 Firebase가 앱 시작 때 스스로 뜬다. Analytics는
-  코드로 넘긴 옵션이 아니라 이 리소스를 읽어서, 빠지면 Firebase는 떠도 사용 통계만 꺼진다.
-- 사용 통계와 비정상 종료 보고는 Firebase Analytics와 Crashlytics다(Spark 무료 요금제). google-services 플러그인이 없어
-  Crashlytics Gradle 플러그인도 쓰지 않는다. 매핑 ID는 `resValue`로 넣고 릴리스 때 Firebase CLI로 매핑 파일을 올린다.
+- Firebase는 공식 방법대로 google-services와 Crashlytics Gradle 플러그인으로 붙인다(사용자 결정). 공개 저장소라
+  `composeApp/google-services.json`은 올리지 않고(`.gitignore`), 그 파일이 있을 때만 두 플러그인을 적용한다. 없는 체크아웃도 빌드되고
+  앱은 그 기능 없이 돈다(`BuildConfig.FIREBASE_ENABLED`).
+- 푸시는 Firebase Cloud Messaging이다. 보내는 양에 한도도 요금도 없다.
+- 사용 통계와 비정상 종료 보고는 Firebase Analytics와 Crashlytics다(Spark 무료 요금제). 릴리스 빌드 때 Crashlytics 플러그인이 매핑
+  파일을 올린다.
   - 수집은 매니페스트에서 꺼 둔 채 시작해 설정의 "사용 통계 보내기"(기본 켬)를 읽은 뒤 켜고, 연동을 해제하면 쌓인 기록과
     보내지 않은 보고를 지운다.
   - 화면 이름은 고정된 표로 보낸다(`screenName`). 경로 키를 그대로 쓰면 친구와 경기 ID가 섞인다. 이벤트는 `AnalyticsEvents`에

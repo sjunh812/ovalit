@@ -28,8 +28,6 @@ class OvalitApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // 시작하다 죽어도 비정상 종료 보고를 놓치지 않게 무엇보다 먼저 띄운다.
-        OvalitFirebase.start(this)
         registerActivityLifecycleCallbacks(AppVisibility)
         AppLanguage.update(this)
 

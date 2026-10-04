@@ -328,6 +328,20 @@ describe("대답", () => {
     expect(await visible(t, host)).toEqual([answered]);
   });
 
+  it("못 간다고 한 뒤 그 자리가 찼으면 다시 간다고 할 수 없다", async () => {
+    const t = setup();
+    const host = await t.login();
+    const friends = [];
+    for (const name of ["a", "b", "c", "d", "e"]) friends.push(await friendOf(t, host, name));
+    const ping = await open(t, host, friends.slice(0, 4));
+    await reply(t, friends[0]!, ping, "no");
+    await t.call("POST", `/pings/${ping.id}/members`, host.token, { friends: [friends[4]!.puuid] });
+
+    expect(await failure(await reply(t, friends[0]!, ping, "yes"))).toEqual({ status: 409, body: { error: "ping_full" } });
+    expect((await reply(t, friends[1]!, ping, "no")).status).toBe(200);
+    expect((await reply(t, friends[0]!, ping, "yes")).status).toBe(200);
+  });
+
   it("다른 시간은 제안 시각과 함께 보낸다", async () => {
     const t = setup();
     const host = await t.login();
@@ -378,6 +392,21 @@ describe("시간 바꾸기", () => {
       { gameName: "no", answer: "pending", proposedAt: null },
     ]);
     expect(await reminded(ping)).toBe(0);
+  });
+
+  it("못 간다고 한 친구 자리에 더 불렀으면 시간을 바꿔도 넷을 넘지 않는다", async () => {
+    const t = setup();
+    const host = await t.login();
+    const friends = [];
+    for (const name of ["a", "b", "c", "d", "e"]) friends.push(await friendOf(t, host, name));
+    const ping = await open(t, host, friends.slice(0, 4));
+    await reply(t, friends[0]!, ping, "no");
+    await t.call("POST", `/pings/${ping.id}/members`, host.token, { friends: [friends[4]!.puuid] });
+
+    const res = await t.call("POST", `/pings/${ping.id}/time`, host.token, { startsAt: Date.now() + 3 * HOUR });
+    const { ping: moved } = await res.json<{ ping: Ping }>();
+    expect(moved.members.filter((member) => member.answer !== "no")).toHaveLength(4);
+    expect(moved.members.find((member) => member.gameName === "a")).toMatchObject({ answer: "no" });
   });
 
   it("같은 시간으로 다시 바꾸면 대답을 건드리지 않는다", async () => {

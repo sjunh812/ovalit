@@ -176,10 +176,17 @@ pings.post("/:id/reply", async (c) => {
 
   // 같은 대답을 다시 누른 것이면 호스트에게 알림을 또 보내지 않는다.
   if (current.answer !== answer || current.proposed_at !== proposedAt) {
-    await db
-      .prepare("UPDATE ping_members SET answer = ?3, proposed_at = ?4, updated_at = ?5 WHERE ping_id = ?1 AND user_id = ?2")
-      .bind(id, me.id, answer, proposedAt, now)
+    // 못 간다고 한 사람은 자리를 비운 것이라, 다시 오겠다고 하면 그 사이 다른 친구로 넷이 찼는지 본다
+    const updated = await db
+      .prepare(
+        `UPDATE ping_members SET answer = ?3, proposed_at = ?4, updated_at = ?5
+         WHERE ping_id = ?1 AND user_id = ?2
+           AND (?3 = 'no' OR answer != 'no'
+             OR (SELECT COUNT(*) FROM ping_members WHERE ping_id = ?1 AND answer != 'no') < ?6)`,
+      )
+      .bind(id, me.id, answer, proposedAt, now, MAX_FRIENDS)
       .run();
+    if (updated.meta.changes === 0) throw new ApiError(409, "ping_full");
     notify(c, [
       {
         userId: current.host,
@@ -218,14 +225,19 @@ pings.post("/:id/time", async (c) => {
   // 같은 시각으로 다시 오면 그대로 둔다. 버튼을 두 번 눌렀을 때 방금 가기로 바뀐 친구가 다시 대기로 돌아가지 않게 한다.
   if (current.starts_at !== startsAt) {
     const active = "SELECT 1 FROM pings WHERE id = ?1 AND host = ?2 AND canceled = 0 AND expires_at > ?3";
+    // 못 간다고 한 친구에게도 다시 묻는다. 다만 그 뒤로 친구를 더 불러 다섯 명 이상이 됐으면 다시 물을 때 넷을 넘으니 그대로 둔다.
     await db.batch([
       db
         .prepare(
           `UPDATE ping_members
-           SET answer = CASE WHEN proposed_at = ?4 THEN 'yes' ELSE 'pending' END, proposed_at = NULL, reminded = 0, updated_at = ?3
+           SET answer = CASE
+                 WHEN answer = 'no' AND (SELECT COUNT(*) FROM ping_members WHERE ping_id = ?1) > ?5 THEN 'no'
+                 WHEN proposed_at = ?4 THEN 'yes'
+                 ELSE 'pending' END,
+               proposed_at = NULL, reminded = 0, updated_at = ?3
            WHERE ping_id = ?1 AND EXISTS (${active})`,
         )
-        .bind(id, me.id, now, startsAt),
+        .bind(id, me.id, now, startsAt, MAX_FRIENDS),
       db
         .prepare(
           `UPDATE pings SET starts_at = ?4, expires_at = ?5, reminded = 0

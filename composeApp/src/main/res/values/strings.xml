@@ -5,6 +5,8 @@
     <string name="tab_matches">경기</string>
     <string name="tab_friends">친구</string>
     <string name="tab_settings">설정</string>
+    <!-- 네이티브 광고 앞에 붙는 표시다. AdMob 정책상 광고인 줄 알아볼 수 있어야 한다. -->
+    <string name="ad_label">광고</string>
     <string name="share_invite">초대 링크 보내기</string>
     <string name="notification_channel_analysis">분석 완료</string>
     <string name="notification_analysis_title">분석을 마쳤어요</string>

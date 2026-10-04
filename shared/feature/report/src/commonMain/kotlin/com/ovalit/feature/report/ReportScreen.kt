@@ -44,6 +44,8 @@ import com.ovalit.core.model.PingId
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.ui.AdPlacement
+import com.ovalit.core.ui.AdSlot
 import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.feature.report.component.DynamicMetricSection
 import com.ovalit.feature.report.component.DynamicMetricSheet
@@ -286,6 +288,8 @@ private fun ReportContent(
         }
         // S6과 S7이 경쟁 + 일반만 보니 기타 모드에는 두지 않는다
         OvalitStage { PeriodPicksSection(report, catalog, onOpenAgents = onOpenAgents, onOpenWeapons = onOpenWeapons) }
+        // 광고는 이번 주 숫자를 다 본 뒤인 요원·무기 밑에 카드 하나로 둔다. 기간, 고정 칸, 달라진 점 사이에는 두지 않는다.
+        AdSlot(AdPlacement.HOME) { ad -> OvalitCard { ad() } }
         rival?.let {
             OvalitStage { OvalitCard { RivalSection(report = report, mine = report.metrics, rival = it) } }
         }

@@ -8,13 +8,17 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ovalit.ads.AdMobRenderer
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ThemePreference
+import com.ovalit.core.ui.LocalAdRenderer
 import com.ovalit.push.EXTRA_OPEN_PING
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.map
@@ -59,8 +63,14 @@ class MainActivity : ComponentActivity() {
                 onDispose {}
             }
 
+            // 광고 단위 ID가 없으면 렌더러를 깔지 않아 광고 자리가 비어 있다
+            val adRenderer = remember { if (AdMobRenderer.enabled) AdMobRenderer(this) else null }
+            DisposableEffect(adRenderer) { onDispose { adRenderer?.destroy() } }
+
             OvalitTheme(darkTheme = darkTheme) {
-                OvalitApp(appVersion = BuildConfig.VERSION_NAME, openPing = openPing.receiveAsFlow())
+                CompositionLocalProvider(LocalAdRenderer provides adRenderer) {
+                    OvalitApp(appVersion = BuildConfig.VERSION_NAME, openPing = openPing.receiveAsFlow())
+                }
             }
         }
     }

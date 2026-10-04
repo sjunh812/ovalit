@@ -49,6 +49,21 @@
             </intent-filter>
         </activity>
 
+        <!-- AdMob 앱 ID다. 실제 ID가 없으면 Google 테스트 ID가 들어간다(build.gradle.kts). 광고를 요청할 때까지 SDK가 일을
+             미루게 한다. 광고 단위 ID가 없으면 광고를 요청하지 않는다. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}" />
+        <meta-data
+            android:name="com.google.android.gms.ads.flag.OPTIMIZE_INITIALIZATION"
+            android:value="true" />
+        <meta-data
+            android:name="com.google.android.gms.ads.flag.OPTIMIZE_AD_LOADING"
+            android:value="true" />
+        <meta-data
+            android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT"
+            android:value="true" />
+
         <!-- ㅇㅂㅇ과 주간 리포트 알림을 받는다. Firebase는 local.properties 값으로 앱이 직접 띄운다(OvalitPush). -->
         <service
             android:name=".push.OvalitMessagingService"

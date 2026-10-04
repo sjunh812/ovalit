@@ -42,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -62,6 +63,8 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.halfScores
+import com.ovalit.core.ui.AdPlacement
+import com.ovalit.core.ui.AdSlot
 import com.ovalit.core.ui.MapImage
 import com.ovalit.core.ui.MapImageStyle
 import com.ovalit.core.ui.ResultLabel
@@ -172,6 +175,14 @@ internal fun MatchDetailScreen(
                     DetailTab.REPORT -> MatchReport(uiState)
                 }
             }
+            // 광고는 탭 내용을 다 본 맨 밑에 선을 긋고 둔다
+            AdSlot(AdPlacement.MATCH_DETAIL) { ad ->
+                Column {
+                    Spacer(Modifier.height(OvalitSpacing.lg))
+                    OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter), color = colors.lineWeak)
+                    ad()
+                }
+            }
             Spacer(Modifier.height(OvalitSpacing.xxl))
             // 탭바 밖 화면이라 시스템 내비게이션 바 높이만큼 더 띄운다. 안 그러면 마지막 줄이 내비게이션 바에 덮인다.
             Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
@@ -193,21 +204,21 @@ internal fun MatchDetailScreen(
 }
 
 /**
- * 배너가 상태 표시줄 밑을 벗어나면 그 자리를 바탕색으로 덮습니다. 배너가 화면 맨 위까지 깔려 있어서, 안 덮으면 내린 스코어보드가
- * 시계와 겹칩니다. 배너가 그 자리에 있을 때는 맵 그림이 보이게 비워 둡니다.
+ * 내리면 상태 표시줄 자리를 바탕색으로 덮습니다. 배너가 화면 맨 위까지 깔려 있고 맵 이름과 스코어가 배너 안에 있어서, 안 덮으면
+ * 내린 글자가 시계와 겹칩니다. 상태 표시줄 높이만큼 내리는 동안 서서히 덮어 맨 위에서는 맵 그림이 그대로 보입니다.
  */
 @Composable
 private fun BoxScope.StatusBarScrim(scrollState: ScrollState) {
     val density = LocalDensity.current
-    val statusBar = WindowInsets.statusBars.getTop(density)
-    val banner = with(density) { BannerHeight.roundToPx() }
-    val covered by remember(scrollState, statusBar, banner) { derivedStateOf { scrollState.value > banner - statusBar } }
-    if (covered) {
+    val statusBar = WindowInsets.statusBars.getTop(density).coerceAtLeast(1)
+    val cover by remember(scrollState, statusBar) { derivedStateOf { (scrollState.value.toFloat() / statusBar).coerceIn(0f, 1f) } }
+    if (cover > 0f) {
         Box(
             Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
                 .windowInsetsTopHeight(WindowInsets.statusBars)
+                .graphicsLayer { alpha = cover }
                 .background(OvalitTheme.colors.bg),
         )
     }

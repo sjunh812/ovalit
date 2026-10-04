@@ -81,8 +81,8 @@ class RecordsViewModel(
         val (ownerName, matches) = source ?: return@combine RecordsUiState.Hidden
         RecordsUiState.Success(
             ownerName = ownerName,
-            agents = matches.currentActMatches(QUEUE).agentReport(),
-            weapons = matches.weaponReport(now = clock.now(), timeZone = timeZone, queueFilter = QUEUE),
+            agents = matches.currentActMatches(QueueFilter.PROFILE).agentReport(),
+            weapons = matches.weaponReport(now = clock.now(), timeZone = timeZone, queueFilter = QueueFilter.PROFILE),
             catalog = catalog,
         )
     }.flowOn(computation).stateIn(
@@ -90,8 +90,4 @@ class RecordsViewModel(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = RecordsUiState.Loading,
     )
-
-    private companion object {
-        val QUEUE = QueueFilter.COMPETITIVE_AND_UNRATED
-    }
 }

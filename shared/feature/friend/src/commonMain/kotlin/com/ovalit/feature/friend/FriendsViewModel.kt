@@ -84,7 +84,7 @@ class FriendsViewModel(
                 FriendRow(
                     friend = friend,
                     report = friend.takeIf { it.statsPublic }?.matches
-                        ?.weeklyReport(now = clock.now(), timeZone = timeZone, queueFilter = QUEUE),
+                        ?.weeklyReport(now = clock.now(), timeZone = timeZone, queueFilter = QueueFilter.PROFILE),
                 )
             },
             rivalId = rival,
@@ -151,5 +151,3 @@ class FriendsViewModel(
     }
 
 }
-
-internal val QUEUE = QueueFilter.COMPETITIVE_AND_UNRATED

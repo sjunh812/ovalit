@@ -71,14 +71,14 @@ class ProfileViewModel(
         matchRepository.settledMatches(),
         contentRepository.catalog,
     ) { account, matches, catalog ->
-        val actMatches = matches.currentActMatches(QUEUE)
+        val actMatches = matches.currentActMatches(QueueFilter.PROFILE)
         val latest = matches.sortedByDescending { it.startedAt }
         ProfileUiState.Success(
             account = account,
             badge = account?.let { playerBadge(it.riotId, matches, catalog) },
             summary = actMatches.profileSummary(),
             agents = actMatches.agentReport(),
-            weapons = matches.weaponReport(now = clock.now(), timeZone = timeZone, queueFilter = QUEUE),
+            weapons = matches.weaponReport(now = clock.now(), timeZone = timeZone, queueFilter = QueueFilter.PROFILE),
             recentMatches = latest.take(RECENT_MATCHES),
             hasMoreMatches = latest.size > RECENT_MATCHES,
             catalog = catalog,
@@ -92,9 +92,6 @@ class ProfileViewModel(
     )
 
     private companion object {
-        // 기타 모드는 라운드 수와 크레드 규칙이 달라 섞으면 비율이 틀어진다. 바꾸면 RecordsViewModel과 친구 모듈의
-        // QUEUE도 같이 바꾼다.
-        val QUEUE = QueueFilter.COMPETITIVE_AND_UNRATED
         const val RECENT_MATCHES = 3
     }
 }

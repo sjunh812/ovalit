@@ -21,4 +21,12 @@ enum class QueueFilter(val queues: Set<Queue>) {
         get() = if (this == OTHER) listOf(FixedMetric.KD, FixedMetric.KDA, FixedMetric.HEADSHOT_RATE) else FixedMetric.entries
 
     val hasDynamicMetrics: Boolean get() = this != OTHER
+
+    companion object {
+        /**
+         * 큐 칩이 없는 화면(프로필, S5, S6, S7, 친구 목록)이 세는 큐입니다. 기타 모드는 라운드 수와 크레드 규칙이 달라
+         * 섞으면 비율이 틀어집니다.
+         */
+        val PROFILE = COMPETITIVE_AND_UNRATED
+    }
 }

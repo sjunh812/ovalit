@@ -11,6 +11,7 @@ import com.ovalit.core.model.Friend
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.ProfileSummary
+import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.SharedRecord
 import com.ovalit.core.model.WeaponReport
 import com.ovalit.core.model.WeeklyReport
@@ -103,7 +104,7 @@ class FriendProfileViewModel(
         // 전적을 비공개로 바꾼 친구는 기기에 경기가 남아 있어도 경기 목록, 티어, 최근 경기까지 모두 가린다
         val found = friends.firstOrNull { it.id == friendId } ?: return@combine FriendProfileUiState.Gone
         val friend = if (found.statsPublic) found else found.copy(matches = emptyList())
-        val myReport = myMatches.weeklyReport(now = clock.now(), timeZone = timeZone, queueFilter = QUEUE)
+        val myReport = myMatches.weeklyReport(now = clock.now(), timeZone = timeZone, queueFilter = QueueFilter.PROFILE)
         val tier = friend.matches.latestTier()
         FriendProfileUiState.Success(
             friend = friend,
@@ -112,15 +113,15 @@ class FriendProfileViewModel(
             isRival = rival == friendId,
             shared = myMatches.sharedWith(friendId),
             theirProfile = friend.takeIf { it.statsPublic }?.matches?.let { matches ->
-                val actMatches = matches.currentActMatches(QUEUE)
+                val actMatches = matches.currentActMatches(QueueFilter.PROFILE)
                 FriendProfile(
                     summary = actMatches.profileSummary(),
                     agents = actMatches.agentReport(),
-                    weapons = matches.weaponReport(now = clock.now(), timeZone = timeZone, queueFilter = QUEUE),
+                    weapons = matches.weaponReport(now = clock.now(), timeZone = timeZone, queueFilter = QueueFilter.PROFILE),
                 )
             },
             myReport = myReport,
-            theirMetricsInMyPeriod = (myReport as? WeeklyReport.Ready)?.let { friend.metricsIn(it, QUEUE, timeZone) },
+            theirMetricsInMyPeriod = (myReport as? WeeklyReport.Ready)?.let { friend.metricsIn(it, QueueFilter.PROFILE, timeZone) },
             now = clock.now(),
             timeZone = timeZone,
         )

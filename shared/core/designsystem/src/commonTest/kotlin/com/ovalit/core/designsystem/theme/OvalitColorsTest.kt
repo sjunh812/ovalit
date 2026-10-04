@@ -121,7 +121,8 @@ class OvalitColorsTest {
         forEachTheme { name, colors ->
             assertContrast(name, "mvp", colors.mvp, colors.mvpContainer, atLeast = 4.5)
             assertContrast(name, "teamMvp", colors.teamMvp, colors.teamMvpContainer, atLeast = 4.5)
-            assertContrast(name, "highlight", colors.highlight, colors.highlightContainer, atLeast = 4.5)
+            assertContrast(name, "ace", colors.ace, colors.aceContainer, atLeast = 4.5)
+            assertContrast(name, "clutch", colors.clutch, colors.clutchContainer, atLeast = 4.5)
         }
     }
 

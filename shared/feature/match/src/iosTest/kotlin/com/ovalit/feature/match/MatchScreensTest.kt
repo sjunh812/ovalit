@@ -44,13 +44,14 @@ class MatchScreensTest {
         onAllNodes(hasStateDescription("패배")).fetchSemanticsNodes().let { assertTrue(it.isNotEmpty()) }
     }
 
-    // 사용자 요청(2026-10-03): 색만으로는 승패가 갈리지 않아 스코어 앞에 글자로도 적는다. 칩이 너무 많아 칸 없이 쓴다(2026-10-04).
+    // 사용자 요청(2026-10-04): 승패 칸이 MVP·등수 칩과 겹쳐 산만해서 경기 줄은 스코어 색으로만 승패를 보인다
     @Test
-    fun `경기 줄은 스코어 앞에 승패를 글자로 적는다`() = runComposeUiTest {
+    fun `경기 줄은 승패를 글자로 따로 적지 않는다`() = runComposeUiTest {
         setContent { Themed { MatchesScreen(MatchPreviewData.matches, {}, {}, {}) } }
 
-        onNode(hasText("ACS 237") and hasText("승리")).assertExists()
-        assertTrue(onAllNodesWithText("패배").fetchSemanticsNodes().isNotEmpty())
+        onNodeWithText("ACS 237").assertExists()
+        onNodeWithText("승리", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("패배", useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test

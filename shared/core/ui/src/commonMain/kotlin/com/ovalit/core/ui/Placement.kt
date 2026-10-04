@@ -67,8 +67,11 @@ enum class MatchChipTone {
     /** 푸른 기가 도는 은색입니다. 팀 MVP입니다. */
     TEAM_MVP,
 
-    /** 보라입니다. 에이스와 클러치처럼 잘한 장면입니다. */
-    HIGHLIGHT,
+    /** 주황입니다. 에이스입니다. */
+    ACE,
+
+    /** 파랑입니다. 이긴 클러치입니다. */
+    CLUTCH,
 
     /** `--fill` 면에 흐린 글자입니다. 등수입니다. */
     QUIET,
@@ -81,7 +84,8 @@ fun MatchChip(text: String, tone: MatchChipTone, modifier: Modifier = Modifier) 
     val (container, content) = when (tone) {
         MatchChipTone.MVP -> colors.mvpContainer to colors.mvp
         MatchChipTone.TEAM_MVP -> colors.teamMvpContainer to colors.teamMvp
-        MatchChipTone.HIGHLIGHT -> colors.highlightContainer to colors.highlight
+        MatchChipTone.ACE -> colors.aceContainer to colors.ace
+        MatchChipTone.CLUTCH -> colors.clutchContainer to colors.clutch
         MatchChipTone.QUIET -> colors.fill to colors.t2
     }
     // 맵 이름과 선수 이름 옆에 붙는 작은 표시라 글자보다 한 단계 작게 둔다(사용자 요청, 2026-10-04). 22dp로 두니 이름보다 칩이 먼저 보였다.
@@ -106,17 +110,17 @@ fun MatchChip(text: String, tone: MatchChipTone, modifier: Modifier = Modifier) 
     }
 }
 
-/** 그 판에서 내가 낸 에이스와 클러치 칩입니다. 에이스가 먼저입니다. 없으면 빈 목록입니다. */
+/** 그 판에서 내가 낸 에이스와 이긴 클러치의 글자와 칩 색입니다. 에이스가 먼저입니다. 없으면 빈 목록입니다. */
 @Composable
-fun highlightChips(highlights: MatchHighlights): List<String> = listOfNotNull(
+fun highlightChips(highlights: MatchHighlights): List<Pair<String, MatchChipTone>> = listOfNotNull(
     when (highlights.aces) {
         0 -> null
         1 -> stringResource(Res.string.highlight_ace)
         else -> stringResource(Res.string.highlight_aces, highlights.aces)
-    },
+    }?.let { it to MatchChipTone.ACE },
     when (highlights.clutches) {
         0 -> null
         1 -> stringResource(Res.string.highlight_clutch)
         else -> stringResource(Res.string.highlight_clutches, highlights.clutches)
-    },
+    }?.let { it to MatchChipTone.CLUTCH },
 )

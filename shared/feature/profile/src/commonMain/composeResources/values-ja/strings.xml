@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 일본어. 한국어 values/strings.xml과 키가 같다. 용어는 docs/i18n-ja.md -->
+<resources>
+    <string name="no_matches">今ACTはまだプレイした試合がありません</string>
+    <!-- 친구의 S6·S7 제목은 "ミンソクのエージェント"다. 이름이 길면 이름만 줄이려고 "のエージェント"를 따로 둔다 -->
+    <string name="agents_owner_suffix">のエージェント</string>
+    <string name="weapons_owner_suffix">の武器</string>
+    <string name="records_hidden">今はこのフレンドの記録を見られません</string>
+
+    <!-- 내 프로필 -->
+    <string name="profile_recent">最近の試合</string>
+    <string name="profile_recent_all">すべて見る</string>
+
+    <!-- S7 요원 -->
+    <string name="agents_title">エージェント</string>
+    <string name="agents_main_role">メインロール</string>
+    <!-- %1$s 자리의 지표 이름은 밝고 굵게 띄운다 -->
+    <string name="agents_role_duelist">デュエリストはまず%1$sを見ます。もともとアシストが少なめのロールです。</string>
+    <string name="agents_role_initiator">イニシエーターはまず%1$sを見ます。もともとK/Dが低めのロールです。</string>
+    <string name="agents_role_controller">コントローラーはまず%1$sを見ます。もともとファーストキルが少なめのロールです。</string>
+    <string name="agents_role_sentinel">センチネルはまず%1$sを見ます。もともとファーストキルが少なめのロールです。</string>
+    <string name="agents_focus_duelist">初動関与率と初動勝率</string>
+    <string name="agents_focus_initiator">アシストとKAST</string>
+    <string name="agents_focus_controller">KASTと生存率</string>
+    <string name="agents_focus_sentinel">生存率</string>
+    <string name="agents_by_agent">エージェント別</string>
+    <string name="column_kast">KAST</string>
+    <string name="column_survival">生存率</string>
+    <string name="column_first_duel_involvement">初動関与率</string>
+    <string name="column_first_duel_win">初動勝率</string>
+    <string name="agents_columns_note">最初はメインロールに合わせた2つの指標を表示します。表の上のボタンでほかの指標も見られます。</string>
+    <string name="agents_columns_first_duel">初動関与率 · 初動勝率</string>
+    <string name="agents_columns_kast">KAST · 生存率</string>
+    <string name="agents_columns_fight">K/D · ダメージ</string>
+    <string name="agents_columns_score">バトルスコア · ヘッドショット</string>
+    <string name="agents_columns_sheet_title">表に表示する指標</string>
+    <string name="agents_columns_button">表の指標を変更、現在は%1$s</string>
+    <string name="agents_columns_role_default">デフォルト</string>
+
+    <!-- S6 무기 -->
+    <string name="weapons_title">武器</string>
+    <string name="weapons_moved_up">最近よく当たります</string>
+    <string name="weapons_moved_down">最近あまり当たりません</string>
+    <string name="weapons_sample_kills">%1$sキル</string>
+    <string name="weapons_top_title">今ACTのメイン武器</string>
+    <string name="weapons_top_order">キル順</string>
+    <string name="weapons_unused">%1$sは使っていません</string>
+    <string name="weapons_compared">%1$d週間平均と比較</string>
+    <string name="weapons_act_value">今ACT</string>
+    <string name="weapons_single_round_note">キルは敵を倒した武器で数えています。ヘッドショット率はその武器だけでキルしたラウンドで数えています。デス、アシスト、ダメージはその武器を持って始めたラウンドで数えています。</string>
+    <string name="column_kda">KDA</string>
+    <string name="column_damage">ダメージ</string>
+    <string name="column_headshot">HS率</string>
+    <string name="weapons_by_category">種類別</string>
+    <string name="weapons_kills">%1$sキル</string>
+    <!-- 카탈로그에 아직 없는 새 무기를 모으는 계열 -->
+    <string name="weapons_category_unknown">その他の武器</string>
+    <string name="weapons_expand">%1$sを開く</string>
+    <string name="weapons_collapse">%1$sを閉じる</string>
+
+</resources>

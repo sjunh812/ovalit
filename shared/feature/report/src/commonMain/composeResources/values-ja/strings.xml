@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 일본어. 한국어 values/strings.xml과 키가 같다. 용어는 docs/i18n-ja.md -->
+<resources>
+    <string name="open_profile">自分のプロフィールを開く</string>
+    <string name="report_loading">レポートを読み込んでいます</string>
+
+    <string name="period_date_range">%1$d/%2$d – %3$d/%4$d</string>
+    <string name="period_matches">%1$d試合</string>
+    <string name="period_no_matches_this_week">今週はまだ試合がありません</string>
+    <string name="period_label_matches">%1$s %2$d試合</string>
+
+    <string name="metric_kast">KAST</string>
+    <string name="metric_survival">生存率</string>
+    <string name="metric_first_kill_win">ファーストキル勝率</string>
+    <string name="metric_first_duel_involvement">初動関与率</string>
+    <string name="metric_first_duel_win">初動勝率</string>
+    <string name="metric_assists_per_round">ラウンド平均アシスト</string>
+    <string name="metric_eco_win">エコ勝率</string>
+    <string name="metric_force_buy_win">フォースバイ勝率</string>
+    <string name="metric_full_buy_win">フルバイ勝率</string>
+    <!-- 세 칸 격자라 칸 이름은 짧게 둔다. 문장에서는 insight_metric_multi_kill을 쓴다 -->
+    <string name="metric_multi_kill">マルチキル率</string>
+    <string name="metric_traded_death">トレードされたデス</string>
+
+    <string name="baseline_missing">比べる記録が足りません</string>
+    <string name="dynamic_usual">普段 %1$s</string>
+
+    <!-- 이번 주 짚을 점. 움직인 숫자만 적고 결정을 대신하는 말이나 「おすすめ」는 쓰지 않는다 -->
+    <string name="note_up_combat_score">バトルスコアが普段より%1$s上がりました</string>
+    <string name="note_down_combat_score">バトルスコアが普段より%1$s下がりました</string>
+    <string name="note_up_kd">K/Dが普段より%1$s上がりました</string>
+    <string name="note_down_kd">K/Dが普段より%1$s下がりました</string>
+    <string name="note_up_kda">KDAが普段より%1$s上がりました</string>
+    <string name="note_down_kda">KDAが普段より%1$s下がりました</string>
+    <string name="note_up_damage">ダメージが普段より%1$s上がりました</string>
+    <string name="note_down_damage">ダメージが普段より%1$s下がりました</string>
+    <string name="note_up_headshot">ヘッドショット率が普段より%1$s上がりました</string>
+    <string name="note_down_headshot">ヘッドショット率が普段より%1$s下がりました</string>
+    <string name="note_best_combat_score">バトルスコアが普段より%1$s上がり、今ACTの最高記録です</string>
+    <string name="note_best_kd">K/Dが普段より%1$s上がり、今ACTの最高記録です</string>
+    <string name="note_best_kda">KDAが普段より%1$s上がり、今ACTの最高記録です</string>
+    <string name="note_best_damage">ダメージが普段より%1$s上がり、今ACTの最高記録です</string>
+    <string name="note_best_headshot">ヘッドショット率が普段より%1$s上がり、今ACTの最高記録です</string>
+    <string name="note_case_change">%1$s → %2$s</string>
+    <string name="note_mix_buy">%1$sラウンドの割合</string>
+    <string name="note_mix_share">%1$sの割合</string>
+    <string name="note_case_rounds">%1$dラウンド</string>
+    <string name="note_case_matches">%1$d試合</string>
+    <string name="note_steady_buy">%1$sラウンドだけ見ると</string>
+    <!-- 한국어는 코드가 조사를 붙이지만 일본어는 이름만 넘어와 조사를 틀에 쓴다 -->
+    <string name="note_steady_weapon">%1$sを持ったラウンドだけ見ると</string>
+    <string name="note_steady_agent">%1$sでプレイした試合だけ見ると</string>
+    <string name="dynamic_title_moved">変わったところ</string>
+    <string name="dynamic_title_steady">%1$sは大きな変化がありません</string>
+    <string name="dynamic_title_unknown">まだ比べる記録が足りません</string>
+    <string name="dynamic_unknown_hint">あと数週間プレイすると、普段と変わったところをお伝えします。</string>
+    <string name="dynamic_caption">過去%1$d週間と比較</string>
+    <string name="dynamic_caption_with_role">%1$s基準 · 過去%2$d週間と比較</string>
+
+    <!-- 시트 문장 안에서 이름과 횟수가 갈리지 않게 줄바꿈 없는 공백을 넣었다 -->
+    <string name="sample_rounds">%1$dラウンド</string>
+    <string name="sample_first_kills">ファーストキル&#160;%1$d回</string>
+    <string name="sample_first_duels">初動&#160;%1$d回</string>
+    <string name="sample_eco_rounds">エコ&#160;%1$dラウンド</string>
+    <string name="sample_force_buy_rounds">フォースバイ&#160;%1$dラウンド</string>
+    <string name="sample_full_buy_rounds">フルバイ&#160;%1$dラウンド</string>
+    <string name="sample_deaths">デス&#160;%1$d回</string>
+
+    <string name="other_queue_hint">その他のモードはK/D、KDA、ヘッドショット率だけを見ます。ラウンド数やクレジットのルールが違うため、ほかの指標はコンペティティブ・アンレートと同じ基準では見られません。</string>
+
+    <string name="not_enough_title">レポートまであと%1$d試合です</string>
+    <string name="not_enough_title_none">直近%1$d週間にプレイした試合がありません</string>
+    <string name="not_enough_body">直近4週間で%1$d試合集まると、レポートを作ります。</string>
+    <string name="reimport_title">保存した試合がありません</string>
+    <string name="reimport_body">最近の試合を読み込み直すと、レポートを作ります。</string>
+    <string name="reimport_button">読み込み直す</string>
+    <!-- S1-a 지표 설명 시트. 칸 이름 옆에 작게 정식 명칭을 둔다 -->
+    <string name="sheet_open">%1$sの説明を見る</string>
+    <string name="sheet_combat_score_name">ACS</string>
+    <string name="sheet_combat_score_body">キル、ダメージ、アシストでたまるバトルスコアを、プレイしたラウンド数で割った値です。</string>
+    <string name="sheet_combat_score_method">試合ごとのバトルスコアをすべて足して、プレイしたラウンド数で割ります。</string>
+    <string name="sheet_combat_score_formula">%1$s点 ÷ %2$sラウンド = %3$s</string>
+    <string name="sheet_kd_body">1回デスするごとに、敵を何回倒したかを表します。</string>
+    <string name="sheet_kd_method">キルをすべて足してデス数で割ります。アビリティで自分や味方を倒したものはキルに数えず、自分を倒したものはデスに含めます。</string>
+    <string name="sheet_kd_formula">%1$sキル ÷ %2$sデス = %3$s</string>
+    <string name="sheet_kda_body">1回デスするごとに、キルとアシストを合わせて何回したかを表します。K/Dと違ってアシストも含まれます。</string>
+    <string name="sheet_kda_method">キルとアシストをすべて足してデス数で割ります。試合ごとにKDAを出すのではなく、すべて足してから割ります。</string>
+    <string name="sheet_kda_formula">(%1$sキル + %2$sアシスト) ÷ %3$sデス = %4$s</string>
+    <string name="sheet_damage_name">ADR</string>
+    <string name="sheet_damage_body">1ラウンドで敵に与えたダメージの平均です。キルにつながらなかったダメージも含まれます。</string>
+    <string name="sheet_damage_method">試合で与えたダメージをすべて足して、プレイしたラウンド数で割ります。</string>
+    <string name="sheet_damage_formula">%1$sダメージ ÷ %2$sラウンド = %3$s</string>
+    <string name="sheet_headshot_name">HS%</string>
+    <string name="sheet_headshot_body">当てた弾のうち、頭に当たった弾の割合です。キルのうちヘッドショットキルが占める割合とは違います。</string>
+    <string name="sheet_headshot_method">頭に当たった弾を、頭・体・脚に当てた弾の合計で割ります。試合ごとに割合を出すのではなく、弾数をすべて足してから割ります。</string>
+    <string name="sheet_headshot_formula">頭 %1$s発 ÷ 命中 %2$s発 = %3$s</string>
+    <string name="sheet_sample_rounds">%1$dラウンド</string>
+    <string name="sheet_trend_start">%1$d週間前</string>
+    <string name="sheet_trend_act_marker">縦線はACTが切り替わったところです。</string>
+    <string name="sheet_trend_description">週ごとの%1$s：%2$s</string>
+    <!-- 홈 고정 칸 밑 8주 흐름 입구와 시트 -->
+    <string name="trend_entry">過去8週間の推移をひと目で見る</string>
+    <string name="trend_title">過去8週間の推移</string>
+    <string name="trend_body">濃く塗った棒がレポートの期間です。棒をタップすると、その週の値を見られます。</string>
+    <string name="trend_body_baseline">濃く塗った棒がレポートの期間で、点線は過去%1$d週間の平均です。棒をタップすると、その週の値を見られます。</string>
+    <string name="trend_week_sample">%1$d試合 · %2$dラウンド</string>
+    <string name="trend_week_empty">試合なし</string>
+    <string name="trend_baseline_note">点線は過去%1$d週間の平均です。</string>
+    <string name="sheet_usual_title">普段はどのくらいでしたか？</string>
+    <string name="sheet_usual_range">過去%1$d週間は、週ごとに%2$s〜%3$sのあいだでした。</string>
+    <string name="sheet_usual_same">過去%1$d週間は、毎週%2$sのままでした。</string>
+    <string name="sheet_usual_missing">今ACTの記録が%1$d週間分以上たまると、普段の範囲をお知らせします。</string>
+    <string name="sheet_method_title">どうやって計算していますか？</string>
+    <string name="sheet_usual_average">過去%1$d週間の平均 %2$s</string>
+    <string name="sheet_per_match_kd">1試合あたり %1$sキル · %2$sデス</string>
+    <string name="sheet_per_match_kda">1試合あたり %1$sキル · %2$sデス · %3$sアシスト</string>
+    <!-- 달라진 점 칸을 누르면 뜨는 시트. 칸 이름이 KAST라 옆의 정식 명칭 자리에 関与率을 둔다 -->
+    <string name="dynamic_sheet_kast_name">関与率</string>
+    <string name="dynamic_sheet_kast_body">キル、アシスト、生存、トレードのどれか1つでも達成したラウンドの割合です。</string>
+    <string name="dynamic_sheet_survival_body">ラウンド終了まで生き残ったラウンドの割合です。</string>
+    <string name="dynamic_sheet_first_kill_win_body">自分がファーストキルを取ったラウンドのうち、勝ったラウンドの割合です。味方のほかのプレイヤーが取ったファーストキルは含めません。</string>
+    <string name="dynamic_sheet_first_duel_involvement_body">ラウンド最初の撃ち合い（初動）に自分が関わった割合です。ファーストキルとファーストデスを足して、プレイしたラウンド数で割ります。</string>
+    <string name="dynamic_sheet_first_duel_win_body">自分が関わった初動で勝った割合です。ファーストキル数を、ファーストキルとファーストデスの合計で割ります。</string>
+    <string name="dynamic_sheet_assists_body">1ラウンドにアシストを何回したかを表します。</string>
+    <string name="dynamic_sheet_eco_body">味方の平均装備額が2,000クレジット未満のエコラウンドのうち、勝ったラウンドの割合です。ピストルラウンドは含めません。</string>
+    <string name="dynamic_sheet_force_buy_body">味方の平均装備額が2,000クレジット以上3,900クレジット未満のフォースバイラウンドのうち、勝ったラウンドの割合です。ピストルラウンドは含めません。</string>
+    <string name="dynamic_sheet_multi_kill_body">プレイしたラウンドのうち、自分が敵を2人以上倒したラウンドの割合です。勝った撃ち合いを次の撃ち合いまでつなげられたかを見ます。</string>
+    <string name="dynamic_sheet_traded_death_body">自分がデスしてから5秒以内に、自分を倒した敵を味方が倒したデスの割合です。孤立してデスしたのか、味方と固まって戦う中でデスしたのかを見ます。味方がどれだけついてきてくれたかも含まれます。</string>
+    <string name="dynamic_sheet_full_buy_body">味方の平均装備額が3,900クレジット以上のフルバイラウンドのうち、勝ったラウンドの割合です。ピストルラウンドは含めません。</string>
+    <string name="dynamic_sheet_sample_title">何回分で数えましたか？</string>
+    <string name="dynamic_sheet_sample_body">上の数字は、この割合を数えるのに使った回数です。今回の期間と比べる週がすべて%1$s以上のときだけ比べます。</string>
+    <string name="dynamic_sheet_movement_title">どうやって判断していますか？</string>
+    <string name="dynamic_sheet_moved">今回の変化が、過去%1$d週間の週ごとの振れ幅の%2$s倍を超えたため、変わったと判断しました。</string>
+    <string name="dynamic_sheet_steady">今回の変化は普段の週ごとの振れ幅の範囲内なので、変わったとは判断しませんでした。</string>
+    <string name="dynamic_sheet_unknown">今回の期間かそれより前の週のサンプルが足りないため、変わったかどうかは判断していません。</string>
+    <string name="sheet_kd_no_deaths">デスがないため、K/Dは空欄にしています。キル数をそのまま表示すると、実際より高く見えてしまいます。</string>
+    <string name="sheet_kda_no_deaths">デスがないため、KDAは空欄にしています。キルとアシストをそのまま表示すると、実際より高く見えてしまいます。</string>
+    <!-- 개선 포인트 문장. 한국어는 이름 뒤 조사를 코드가 붙이지만(withLocalJosa) 일본어는 이름만 넘어와 で・を・が・は를
+         틀에 직접 쓴다. %5$s는 高いです나 低いです다. -->
+    <string name="insight_side_attack">攻撃</string>
+    <string name="insight_side_defense">防衛</string>
+    <string name="insight_side">%1$sでは%2$sが%3$sより%4$s%5$s</string>
+    <string name="insight_played_as">%1$sでプレイした試合は、%2$sが%3$sより%4$s%5$s</string>
+    <string name="insight_map">%1$sでは%2$sが%3$sより%4$s%5$s</string>
+    <string name="insight_weapon">%1$sを持ったラウンドは、%2$sが%3$sより%4$s%5$s</string>
+    <string name="insight_session">連戦の%1$sは、%2$sが%3$sより%4$s%5$s</string>
+    <string name="insight_higher">高いです</string>
+    <string name="insight_lower">低いです</string>
+    <string name="insight_other_agents">ほかの%1$s</string>
+    <string name="insight_other_roles">ほかのロール</string>
+    <string name="insight_other_maps">ほかのマップ</string>
+    <string name="insight_other_weapons">ほかの%1$s</string>
+    <string name="insight_session_late">3試合目以降</string>
+    <string name="insight_session_early">最初の2試合</string>
+    <string name="insight_title">今ACTの振り返り</string>
+    <string name="insight_title_matches">%1$d試合</string>
+    <string name="insight_matches">%1$d試合</string>
+    <string name="insight_rounds">%1$dラウンド</string>
+    <!-- 관심사 이름은 「エイムを磨く」처럼 구절이라 괄호로 묶는다 -->
+    <string name="insight_reason_focus">「%1$s」を選んだので優先して見ました</string>
+    <string name="insight_reason_role">%1$sにとって%2$sは優先して見る指標です</string>
+    <string name="insight_metric_multi_kill">マルチキルラウンド率</string>
+    <string name="gap_percent">%1$spt</string>
+    <!-- 라이벌과 친구 비교 -->
+    <string name="rival_title">ライバル · %1$s</string>
+    <string name="rival_lead">%1$d項目中%2$d項目リード</string>
+    <string name="rival_no_matches">%1$sの試合がありません</string>
+    <string name="nudge_invite_title">一緒にプレイするフレンドを招待してみましょう</string>
+    <string name="nudge_invite_body">招待リンクでフレンドになると、毎週の記録を並べて見られます</string>
+    <string name="nudge_rival_title">ライバルを選んでみましょう</string>
+    <string name="nudge_rival_body">選んだフレンドとダメージ、K/D、KDA、ヘッドショットを毎週競います</string>
+    <string name="rival_pick_title">ライバルを選ぶ</string>
+    <string name="rival_pick_body">戦績を公開しているフレンドだけ選べます。フレンドのプロフィールからいつでも変更できます。</string>
+    <string name="rival_pick_no_matches">%1$sの試合なし</string>
+    <string name="friends_title">フレンド比較</string>
+    <string name="friends_me">自分</string>
+    <string name="friends_choose_metric">比べる指標</string>
+    <string name="friends_metric_button">%1$s、比べる指標を変更</string>
+    <string name="record_recent">直近%1$d試合</string>
+    <!-- 화면 읽기 프로그램이 읽는 말이라 한 글자(勝・敗・分) 대신 풀어 쓴다 -->
+    <string name="record_cells_description">最近の試合から順に%1$s</string>
+    <string name="record_win">勝ち</string>
+    <string name="record_loss">負け</string>
+    <string name="record_draw">引き分け</string>
+    <string name="picks_agents">%1$sのエージェント</string>
+    <string name="picks_weapons">%1$sの武器</string>
+    <string name="profile_hint">自分のプロフィールはここから見られます</string>
+    <string name="profile_hint_close">案内を閉じる</string>
+</resources>

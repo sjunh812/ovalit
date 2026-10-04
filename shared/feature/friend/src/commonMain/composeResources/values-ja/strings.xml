@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 일본어. 한국어 values/strings.xml과 키가 같다. 용어는 docs/i18n-ja.md -->
+<resources>
+    <string name="more">その他</string>
+
+    <!-- 친구 탭 -->
+    <string name="friends_title">フレンド</string>
+    <string name="invite">招待リンクを送る</string>
+    <string name="invite_note">お互いに承認するとフレンドになります。ニックネームでは探せません。</string>
+    <string name="requests_title">届いた申請 %1$d</string>
+    <string name="request_from_scoreboard">一緒にプレイした試合からの申請です</string>
+    <string name="request_from_invite">招待リンクからの申請です</string>
+    <string name="accept">承認</string>
+    <string name="decline">拒否</string>
+    <string name="friends_count">フレンド %1$d人</string>
+    <string name="friend_caption">%1$s %2$d試合</string>
+    <string name="friend_caption_resting">直近4週間はプレイした試合がありません</string>
+    <string name="friend_caption_few">直近4週間 %1$d試合</string>
+    <string name="friend_private">戦績非公開</string>
+    <string name="rival">ライバル</string>
+    <string name="empty_title">まだフレンドがいません</string>
+    <string name="empty_body">一緒にプレイした試合のスコアボードからフレンドを追加するか、招待リンクを送ってみてください。</string>
+
+    <!-- S5 친구 프로필 -->
+    <string name="set_rival">ライバルに設定</string>
+    <string name="unset_rival">ライバル解除</string>
+    <string name="shared_matches">一緒にプレイした試合</string>
+    <string name="shared_count">%1$d試合</string>
+    <string name="shared_record">%1$d勝%2$d敗</string>
+    <string name="no_act_matches">今ACTはまだプレイした試合がありません</string>
+    <string name="private_body">戦績を公開していないフレンドです。一緒にプレイした試合だけ見られます。</string>
+    <string name="compare_title">自分と比較</string>
+    <!-- 다른 칸은 이번 액트인데 나와 비교만 내 리포트 기간이라 기간을 같이 적는다 -->
+    <string name="compare_caption">%1$s · 自分と%2$s</string>
+    <string name="compare_no_matches">%2$sの%1$sの試合がありません</string>
+    <string name="recent_title">%1$sの最近の試合</string>
+    <string name="recent_all">すべて見る</string>
+    <string name="matches_title">%1$sの試合</string>
+    <string name="matches_hidden">戦績を公開していないフレンドなので、試合は見られません</string>
+    <string name="unfriend">フレンド解除</string>
+    <string name="unfriend_title">%1$sとのフレンドを解除しますか？</string>
+    <string name="unfriend_body">お互いの戦績が見られなくなり、ライバルからも外れます。</string>
+    <string name="cancel">キャンセル</string>
+    <!-- ㅇㅂㅇ(今日やる？). 친구의 답은 상태 말(参加)로, 내가 누르는 버튼은 です・ます(行きます)로 쓴다. -->
+    <string name="ping_title">今日やる？</string>
+    <string name="ping_gone">終了したか、キャンセルされた募集です</string>
+    <string name="ping_proposals_title">別の時間の提案</string>
+    <string name="ping_compose_hint">時間を決めて、フレンドを%1$d人まで一度に誘えます</string>
+    <string name="ping_compose_open">パーティー募集</string>
+    <string name="ping_compose_title">誰とやりましょうか？</string>
+    <string name="ping_reply_yes">行きます</string>
+    <string name="ping_reply_other">別の時間</string>
+    <string name="ping_reply_no">行けません</string>
+    <string name="ping_cancel">募集をキャンセル</string>
+    <string name="ping_invite_more">フレンドを追加で誘う</string>
+    <string name="ping_invite_title">誰を追加で誘いますか？</string>
+    <string name="ping_invite_body">あと%1$d人誘えます。行けないと答えたフレンドは数えません。</string>
+    <string name="ping_invite_send">%1$d人を追加で誘う</string>
+    <string name="ping_move">承認</string>
+    <string name="ping_change_time">時間を変更</string>
+    <string name="ping_change_answer">変更</string>
+    <string name="ping_proposal">%1$sはどうですか？</string>
+    <string name="ping_proposal_by">%1$sの提案</string>
+    <string name="ping_count_yes">参加%1$d人</string>
+    <string name="ping_count_other">時間提案%1$d人</string>
+    <string name="ping_count_pending">未回答%1$d人</string>
+    <string name="ping_count_no">不参加%1$d人</string>
+    <string name="ping_compose_who">誰と</string>
+    <string name="ping_compose_when">いつ</string>
+    <string name="ping_compose_limit">%1$d人まで誘えます</string>
+    <string name="ping_pick_friends">フレンドを選んでください</string>
+    <string name="ping_send_to">%1$d人を誘う</string>
+    <string name="ping_too_many">今日はこれ以上誘えません</string>
+    <string name="ping_time_reply_title">いつやりましょうか？</string>
+    <string name="ping_time_reply_confirm">この時間で回答する</string>
+    <string name="ping_time_move_title">いつに変更しますか？</string>
+    <string name="ping_time_move_confirm">この時間に変更する</string>
+    <string name="ping_time_current">%1$s · 決まった時間</string>
+    <string name="ping_time_mine">%1$s · 自分が提案した時間</string>
+    <string name="ping_time_pick_other">別の時間を選んでください</string>
+</resources>

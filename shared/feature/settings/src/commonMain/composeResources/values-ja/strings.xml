@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 일본어. 한국어 values/strings.xml과 키가 같다. 용어는 docs/i18n-ja.md -->
+<resources>
+    <string name="settings_title">設定</string>
+
+    <!-- 줄이 꺾여도 날짜가 한 덩어리로 남게 월과 일 사이는 줄바꿈 없는 공백이다 -->
+    <string name="account_linked">Riotアカウント連携済み · %1$d月%2$d日</string>
+    <string name="account_unlinked">Riotアカウントが連携されていません</string>
+    <string name="view_profile">プロフィールを見る</string>
+    <string name="open_profile">自分のプロフィールを開く</string>
+
+    <string name="section_public">公開</string>
+    <string name="stats_public">戦績を公開</string>
+    <string name="stats_public_description">オフにすると、フレンドもあなたのレポートと試合を見られなくなります。フレンド比較にも表示されません。</string>
+
+    <string name="section_notifications">通知</string>
+    <string name="notify_analysis_done">分析完了</string>
+    <string name="notify_weekly_report">週間レポート</string>
+    <string name="notify_weekly_report_time">月曜日 午前9時</string>
+    <string name="notify_ping">今日やる？</string>
+    <string name="notify_ping_description">フレンドがパーティーを募集したときや、自分の募集にフレンドが答えたときにお知らせします。</string>
+    <string name="ping_reminder">リマインダー</string>
+    <string name="ping_reminder_description">自分が立てた募集や「行きます」と答えた募集を、始まる前に一度お知らせします。</string>
+    <string name="ping_reminder_10">10分前</string>
+    <string name="ping_reminder_30">30分前</string>
+    <string name="ping_reminder_60">1時間前</string>
+    <string name="ping_reminder_off">受け取らない</string>
+
+    <string name="section_display">表示</string>
+    <string name="theme">テーマ</string>
+    <string name="theme_system">システム設定</string>
+    <string name="theme_dark">ダーク</string>
+    <string name="theme_light">ライト</string>
+    <string name="default_queue">デフォルトのキュー</string>
+    <string name="default_queue_description">ホームを開いたときに最初に表示するキューです。</string>
+    <string name="focus">重視すること</string>
+    <string name="focus_description">選んだ項目の指標を、変化した指標の先頭に表示します。</string>
+
+    <string name="section_data">データ</string>
+    <string name="stored_matches">保存した試合</string>
+    <string name="stored_matches_count">%1$d試合</string>
+    <string name="share_usage_stats">利用統計を送信</string>
+    <string name="share_usage_stats_description">どの画面や機能を使っているか、アプリがなぜ止まったかをGoogleに送り、アプリの改善に使います。Riot IDと戦績は送信しません。</string>
+    <string name="section_support">お問い合わせ</string>
+    <string name="send_feedback">フィードバックを送る</string>
+    <string name="delete_data">保存したデータを削除</string>
+    <string name="delete_title">保存したデータを削除しますか？</string>
+    <string name="delete_body">%1$d試合とレポートが削除されます。Riotアカウントの連携はそのままです。</string>
+    <string name="delete_confirm">削除</string>
+
+    <string name="unlink">Riotアカウントの連携を解除</string>
+    <string name="unlink_note">連携を解除すると、保存した試合とレポート、フレンドリストがすべて削除されます。</string>
+    <string name="unlink_title">Riotアカウントの連携を解除しますか？</string>
+    <string name="unlink_body">保存した試合とレポート、フレンドリストがすべて削除され、最初の画面に戻ります。</string>
+    <string name="unlink_confirm">連携を解除</string>
+
+    <string name="cancel">キャンセル</string>
+    <string name="version">バージョン %1$s</string>
+    <string name="ad_free">広告なしで見る</string>
+    <string name="ad_free_offer">広告を見て24時間</string>
+    <string name="ad_free_until_today">今日%1$sまで</string>
+    <string name="ad_free_until_tomorrow">明日%1$sまで</string>
+</resources>

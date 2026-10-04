@@ -60,6 +60,7 @@ import com.ovalit.core.ui.TierEmblem
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.annotated
 import com.ovalit.core.ui.kdaText
+import com.ovalit.core.ui.columnLabel
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.percentText
 import com.ovalit.core.ui.resultColor
@@ -279,7 +280,7 @@ private fun PlayerStats(row: ScoreboardRow) {
     val headshot = line.shots?.takeIf { it.total > 0 }?.let { it.head.toDouble() / it.total }
     val cells = listOf(
         stringResource(FixedMetric.DAMAGE.label) to (line.adr?.let { MetricFormat.INTEGER.format(it) } ?: NO_VALUE),
-        stringResource(FixedMetric.HEADSHOT_RATE.label) to (headshot?.let { percentText(it) } ?: NO_VALUE),
+        stringResource(FixedMetric.HEADSHOT_RATE.columnLabel) to (headshot?.let { percentText(it) } ?: NO_VALUE),
         stringResource(Res.string.player_stat_first_kills) to (stats?.firstKills?.toString() ?: NO_VALUE),
         stringResource(Res.string.player_stat_first_deaths) to (stats?.firstDeaths?.toString() ?: NO_VALUE),
         stringResource(Res.string.player_stat_multi_kills) to (stats?.multiKillRounds?.toString() ?: NO_VALUE),

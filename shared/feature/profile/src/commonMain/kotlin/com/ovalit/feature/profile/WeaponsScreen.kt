@@ -62,6 +62,7 @@ import com.ovalit.core.ui.WeaponThumb
 import com.ovalit.core.ui.annotated
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.kdaText
+import com.ovalit.core.ui.columnLabel
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.percentText
 import com.ovalit.core.ui.periodLabel
@@ -205,7 +206,7 @@ private fun Highlights(report: WeaponReport, catalog: ContentCatalog) {
         WeaponMetric.entries.any { highlight.current?.value(it) != null && highlight.baseline?.value(it) != null }
     }?.baselineWeeks
 
-    val labels = WeaponMetric.entries.map { stringResource(it.fixed.label) }
+    val labels = WeaponMetric.entries.map { stringResource(it.fixed.columnLabel) }
     val periodText = period?.let { periodLabel(it) }
     val unusedText = periodText?.let { stringResource(Res.string.weapons_unused, it) }
     val rows = report.highlights.map { highlight ->

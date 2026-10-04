@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 일본어. 한국어 values/strings.xml과 키가 같다. 용어는 docs/i18n-ja.md -->
+<resources>
+    <string name="close">閉じる</string>
+
+    <!-- S2 경기 목록 -->
+    <string name="matches_title">試合</string>
+    <string name="filter">フィルター</string>
+    <string name="filter_active">フィルター適用中</string>
+    <string name="filter_agent">エージェント</string>
+    <string name="filter_map">マップ</string>
+    <string name="filter_all">すべて</string>
+    <string name="filter_reset">リセット</string>
+    <string name="empty_queue">このモードでプレイした試合はありません</string>
+    <string name="empty_filter">条件に合う試合はありません</string>
+
+    <!-- S3 경기 상세 -->
+    <string name="detail_caption">%1$s · %2$s · %3$d分</string>
+    <string name="detail_date">%1$d/%2$d %3$s:%4$s</string>
+    <string name="half_first">前半 %1$d–%2$d</string>
+    <string name="half_second">後半 %1$d–%2$d</string>
+    <string name="half_overtime">延長 %1$d–%2$d</string>
+    <string name="score_description">%1$d対%2$d</string>
+    <string name="tab_scoreboard">スコアボード</string>
+    <string name="tab_rounds">ラウンド</string>
+    <string name="tab_report">自分の記録</string>
+
+    <string name="my_team">味方チーム</string>
+    <string name="enemy_team">敵チーム</string>
+    <string name="me">自分</string>
+    <string name="friend_badge">フレンド</string>
+    <string name="scoreboard_note">行をタップすると、その試合の記録をさらに見られます。名前をタップすると、自分とフレンドはプロフィールが開き、ほかのプレイヤーにはフレンド申請や招待リンクを送れます。</string>
+    <string name="player_stats_expand">この試合の記録を開く</string>
+    <string name="player_stats_collapse">この試合の記録を閉じる</string>
+    <string name="player_open_profile">プロフィールを開く</string>
+    <string name="player_stat_first_kills">ファーストキル</string>
+    <string name="player_stat_first_deaths">ファーストデス</string>
+    <string name="player_stat_multi_kills">マルチキル</string>
+
+    <string name="side_attack">攻撃</string>
+    <string name="side_defense">防衛</string>
+    <string name="ending_elimination">全滅</string>
+    <string name="ending_detonated">スパイク爆発</string>
+    <string name="ending_defused">スパイク解除</string>
+    <string name="ending_time_expired">時間切れ</string>
+    <string name="ending_surrendered">降参</string>
+    <string name="round_kills">%1$dキル</string>
+    <string name="round_first_kill">ファーストキル</string>
+    <string name="round_first_death">ファーストデス</string>
+    <string name="round_ace">エース</string>
+    <string name="round_clutch">1v%1$dクラッチ</string>
+    <string name="round_not_played">回線落ちしたラウンド</string>
+
+    <string name="buy_record">%1$dラウンド %2$d勝</string>
+    <string name="buy_title">購入タイプ</string>
+    <string name="report_duels_title">相手別の対面成績</string>
+    <string name="report_weapons_title">この試合の武器</string>
+    <string name="report_kills">キル</string>
+    <string name="report_deaths">デス</string>
+    <string name="report_assists">アシ</string>
+    <string name="report_damage_dealt">与ダメ</string>
+    <string name="report_damage_taken">被ダメ</string>
+    <string name="report_damage">ダメージ</string>
+    <string name="report_headshot">HS率</string>
+    <string name="report_weapons_note">キルは敵を倒した武器で数えています。ダメージはその武器を持って始めたラウンドのラウンド平均ダメージで、ヘッドショット率はその武器だけでキルしたラウンドで数えています。</string>
+    <string name="economy_upsets">装備が相手より1,000を超えて少なかったのに、%1$dラウンド勝ちました</string>
+    <string name="overview_first_blood_ours">味方ファーストキル</string>
+    <string name="overview_first_blood_theirs">敵ファーストキル</string>
+    <string name="overview_attack">攻撃</string>
+    <string name="overview_defense">防衛</string>
+    <string name="overview_win_of">%1$dラウンド中%2$d勝</string>
+    <string name="overview_record">%1$d勝%2$d敗</string>
+    <string name="round_title">ラウンド%1$d</string>
+    <string name="round_pick">ラウンド%1$dを見る</string>
+    <string name="round_loadout">味方 %1$s %2$s · 敵 %3$s %4$s</string>
+    <string name="round_my_damage">与ダメージ %1$s</string>
+    <string name="round_kill_order">キルの順番</string>
+    <string name="round_no_kills">このラウンドはキルがありませんでした</string>
+    <string name="round_kill_ability">アビリティ</string>
+    <string name="economy_note">味方チーム1人あたりの平均装備価値で分けています。2,000クレジット未満はエコ、3,900クレジット以上はフルバイ、その間はフォースバイです。</string>
+
+    <!-- 스코어보드에서 친구가 아닌 사람을 눌렀을 때 -->
+    <string name="player_app_user">フレンドになると、お互いのプロフィールとレポートを見られます。</string>
+    <string name="player_send_request">フレンド申請を送る</string>
+    <string name="player_request_sent">申請を送りました。相手が承認するとフレンドになります。</string>
+    <string name="player_requested_me">このプレイヤーからフレンド申請が届いています。</string>
+    <string name="player_accept">承認</string>
+    <string name="player_not_app_user">Ovalitを使っていないプレイヤーです。招待リンクを送るとフレンドに追加できます。</string>
+    <string name="player_unknown">Ovalitを使っているか確認できませんでした。招待リンクでもフレンドを追加できます。</string>
+    <string name="player_invite">招待リンクを送る</string>
+</resources>

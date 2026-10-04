@@ -7,6 +7,7 @@ import com.ovalit.core.ui.resources.Res
 import com.ovalit.core.ui.resources.metric_combat_score
 import com.ovalit.core.ui.resources.metric_damage
 import com.ovalit.core.ui.resources.metric_headshot
+import com.ovalit.core.ui.resources.metric_headshot_short
 import com.ovalit.core.ui.resources.metric_kd
 import com.ovalit.core.ui.resources.period_last_week
 import com.ovalit.core.ui.resources.profile_kda
@@ -25,6 +26,10 @@ val FixedMetric.label: StringResource
         FixedMetric.HEADSHOT_RATE -> Res.string.metric_headshot
         FixedMetric.KDA -> Res.string.profile_kda
     }
+
+/** 표 열처럼 좁은 자리의 이름입니다. 한국어는 [label]과 같고, 일본어 「ヘッドショット」는 열에 안 들어가 「HS率」로 줄입니다. */
+val FixedMetric.columnLabel: StringResource
+    get() = if (this == FixedMetric.HEADSHOT_RATE) Res.string.metric_headshot_short else label
 
 val FixedMetric.format: MetricFormat
     get() = when (this) {

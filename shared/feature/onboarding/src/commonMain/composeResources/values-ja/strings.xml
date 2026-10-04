@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 일본어. 한국어 values/strings.xml과 키가 같다. 용어는 docs/i18n-ja.md -->
+<resources>
+    <!-- 괄호 안을 흐리게 그리는 코드(dimParentheses)가 반각 괄호만 찾아서 반각으로 둔다 -->
+    <string name="intro_hook">Ovalit (今日ヴァロやる人いる？)</string>
+    <!-- 이름 풀이에 이어지는 혼잣말이라 한국어처럼 반말이다 -->
+    <string name="intro_headline">その前に、今週の戦績から見てみようか</string>
+    <string name="intro_subtitle_what">VALORANTの戦績がどう動いたかを</string>
+    <string name="intro_subtitle_when">毎週お伝えします</string>
+    <string name="intro_start">Riotアカウントで始める</string>
+
+    <string name="consent_title">Riotアカウントを連携します</string>
+    <string name="consent_matches_title">直近50試合を読み込みます</string>
+    <string name="consent_matches_body">コンペティティブとアンレートの試合をラウンドごとに分析します。最初の1回だけ1分ほどかかります。</string>
+    <string name="consent_public_title">お互いに承認したフレンドに戦績が公開されます</string>
+    <string name="consent_public_body">フレンドになると、お互いのレポートと試合を見られます。設定で戦績の公開をオフにすると、フレンドも見られなくなります。</string>
+    <string name="consent_unlink_title">いつでも解除できます</string>
+    <string name="consent_unlink_body">設定で連携を解除すると、保存したデータも一緒に削除されます。</string>
+    <string name="consent_password">パスワードはRiotのログインページでのみ入力します。このアプリがパスワードを受け取ったり保存したりすることはありません。</string>
+    <string name="consent_continue">Riotアカウントで続ける</string>
+    <string name="consent_note">続けるとRiotのログインページに移動します。</string>
+
+    <string name="import_title">いちばん気になるのはどれですか？</string>
+    <string name="import_subtitle">選んだ項目の指標をレポートの先頭に表示します。あとから設定で変更することもできます。</string>
+    <string name="import_loading">試合を読み込んでいます</string>
+    <string name="import_count">%1$d / %2$d</string>
+    <string name="import_background">アプリを閉じても読み込みは続きます。読み込みが終わったら通知でお知らせします。</string>
+    <string name="import_done">%1$d試合を読み込みました</string>
+    <string name="import_done_none">直近8週間にプレイした試合がありません</string>
+    <string name="import_open_report">レポートを見る</string>
+    <string name="import_stopped">試合をすべて読み込めませんでした</string>
+    <string name="import_stopped_offline">インターネットにつながると、続きから読み込みます。</string>
+    <string name="import_stopped_later">しばらくすると自動で続きから読み込みます。今すぐやり直すこともできます。</string>
+    <string name="import_retry">続きから読み込む</string>
+    <string name="import_progress_description">%2$d試合中%1$d試合を読み込みました</string>
+</resources>

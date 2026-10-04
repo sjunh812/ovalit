@@ -14,6 +14,7 @@ import com.ovalit.core.model.Friend
 import com.ovalit.core.model.FriendRequest
 import com.ovalit.core.model.ImportProgress
 import com.ovalit.core.model.Match
+import com.ovalit.core.model.NewMatchesProgress
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
@@ -33,8 +34,10 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -65,6 +68,10 @@ private val Seoul = TimeZone.of("Asia/Seoul")
 private val Thursday = LocalDateTime(2026, 9, 24, 22, 0).toInstant(Seoul)
 private val ThursdayClock = object : Clock {
     override fun now(): Instant = Thursday
+}
+
+private class StepClock(var now: Instant) : Clock {
+    override fun now(): Instant = now
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -261,7 +268,7 @@ class ReportViewModelTest {
 
     @Test
     fun `홈을 당겨 새 경기를 받으면 리포트를 다시 만든다`() = runTest {
-        val matches = FakeMatchRepository(ThursdayClock)
+        val matches = FakeMatchRepository(ThursdayClock, scope = this)
         val viewModel = ReportViewModel(matches, NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
         val before = assertIs<ReportUiState.Success>(viewModel.uiState.value).report
@@ -278,6 +285,60 @@ class ReportViewModelTest {
         assertNotEquals(before, after)
         assertEquals(all.weeklyReport(Thursday, Seoul), after)
         assertEquals(false, viewModel.isRefreshing.value)
+    }
+
+    // 받는 대로 숫자가 바뀌면 첫 수집처럼 믿을 수 없다. 이번 주를 보고 있었으면 새 경기도 이번 주라 기간은 그대로다.
+    @Test
+    fun `새 경기를 여러 판 받는 동안 숫자는 그대로 두고 다 받은 뒤 한 번만 바꾼다`() = runTest {
+        val clock = StepClock(Thursday)
+        val matches = FakeMatchRepository(clock, scope = this)
+        matches.importRecent()
+        val viewModel = ReportViewModel(matches, NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), clock, Seoul, computation = SameThread)
+        val reports = mutableListOf<WeeklyReport>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect { (it as? ReportUiState.Success)?.let { state -> reports += state.report } }
+        }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.newMatches.collect() }
+        val before = reports.single()
+        clock.now += 10.minutes
+
+        viewModel.refresh()
+        advanceTimeBy(3_000.milliseconds)
+
+        val receiving = assertNotNull(viewModel.newMatches.value)
+        assertTrue(receiving.received in 1..<receiving.total)
+        assertFalse(viewModel.isRefreshing.value)
+        assertEquals(listOf(before), reports.distinct())
+        assertFalse(assertIs<ReportUiState.Success>(viewModel.uiState.value).waitingForNewMatches)
+
+        advanceUntilIdle()
+
+        assertNull(viewModel.newMatches.value)
+        assertEquals(listOf(before, matches.observeMatches().first().weeklyReport(clock.now, Seoul)), reports.distinct())
+    }
+
+    // 일주일 넘게 쉬면 받기 전 경기로는 "지난주"를 센다. 그 숫자를 띄우면 다 받은 뒤 기간까지 바뀌어 틀린 말을 한 셈이다.
+    @Test
+    fun `이번 주가 아닌 기간을 보던 중 여러 판을 받으면 리포트 자리를 비워 둔다`() = runTest {
+        val clock = StepClock(Thursday)
+        val matches = FakeMatchRepository(clock, scope = this)
+        matches.importRecent()
+        clock.now += 7.days
+        val viewModel = ReportViewModel(matches, NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), clock, Seoul, computation = SameThread)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.newMatches.collect() }
+        val stale = assertIs<WeeklyReport.Ready>(assertIs<ReportUiState.Success>(viewModel.uiState.value).report)
+        assertFalse(stale.period.includesThisWeek)
+
+        viewModel.refresh()
+        advanceTimeBy(3_000.milliseconds)
+        assertTrue(assertIs<ReportUiState.Success>(viewModel.uiState.value).waitingForNewMatches)
+
+        advanceUntilIdle()
+
+        val fresh = assertIs<ReportUiState.Success>(viewModel.uiState.value)
+        assertFalse(fresh.waitingForNewMatches)
+        assertTrue(assertIs<WeeklyReport.Ready>(fresh.report).period.includesThisWeek)
     }
 
     // 리포트를 만들 기록이 모자라면 그 안내가 먼저다. 친구가 없어도 초대를 권하지 않는다.
@@ -390,6 +451,7 @@ private object NoAccount : AccountRepository {
 private class StubRepository(
     private val matches: Flow<List<Match>>,
     override val importProgress: Flow<ImportProgress?> = flowOf(null),
+    override val newMatchesProgress: Flow<NewMatchesProgress?> = flowOf(null),
 ) : MatchRepository {
     override fun observeMatches(): Flow<List<Match>> = matches
 

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.ovalit.core.data.AccountRepository
 import com.ovalit.core.data.ContentRepository
 import com.ovalit.core.data.MatchRepository
+import com.ovalit.core.data.settledMatches
 import com.ovalit.core.model.Account
 import com.ovalit.core.model.AgentReport
 import com.ovalit.core.model.ContentCatalog
@@ -67,7 +68,7 @@ class ProfileViewModel(
 
     val uiState: StateFlow<ProfileUiState> = combine(
         accountRepository.account,
-        matchRepository.observeMatches(),
+        matchRepository.settledMatches(),
         contentRepository.catalog,
     ) { account, matches, catalog ->
         val actMatches = matches.currentActMatches(QUEUE)

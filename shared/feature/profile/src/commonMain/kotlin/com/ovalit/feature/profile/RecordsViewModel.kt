@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.ovalit.core.data.ContentRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.MatchRepository
+import com.ovalit.core.data.settledMatches
 import com.ovalit.core.model.AgentReport
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Match
@@ -68,7 +69,7 @@ class RecordsViewModel(
     // 제목에 붙일 이름과 셀 경기다. 내 기록이면 이름이 null이고, 친구를 끊었거나 친구가 전적을 비공개로 바꿨으면 통째로
     // null이다.
     private val source: Flow<Pair<String?, List<Match>>?> = when (owner) {
-        RecordsOwner.Me -> matchRepository.observeMatches().map { null to it }
+        RecordsOwner.Me -> matchRepository.settledMatches().map { null to it }
         is RecordsOwner.Friend -> friendRepository.friends.map { friends ->
             friends.firstOrNull { it.id == owner.id }
                 ?.takeIf { it.statsPublic }

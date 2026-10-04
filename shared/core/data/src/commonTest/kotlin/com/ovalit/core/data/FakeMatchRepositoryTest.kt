@@ -76,7 +76,7 @@ class FakeMatchRepositoryTest {
     // 홈과 경기 탭이 같이 당기면 레이트 리밋을 두 번 쓴다
     @Test
     fun `받는 중에 또 당기면 새로 받지 않는다`() = runTest {
-        val repository = FakeMatchRepository(clock = ThursdayClock)
+        val repository = FakeMatchRepository(clock = ThursdayClock, scope = this)
         val before = repository.observeMatches().first().size
 
         val counts = listOf(async { repository.refresh() }, async { repository.refresh() }).awaitAll()

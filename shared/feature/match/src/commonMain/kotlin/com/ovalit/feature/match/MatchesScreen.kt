@@ -44,12 +44,14 @@ import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
+import com.ovalit.core.model.NewMatchesProgress
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdSlot
 import com.ovalit.core.ui.MatchRow
 import com.ovalit.core.ui.MatchRowStyle
 import com.ovalit.core.ui.MatchRowsSkeleton
+import com.ovalit.core.ui.NewMatchesLine
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.dayLabel
 import com.ovalit.core.ui.label
@@ -83,6 +85,7 @@ fun MatchesRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val newMatches by viewModel.newMatches.collectAsStateWithLifecycle()
     MatchesScreen(
         uiState = uiState,
         onSelectQueue = viewModel::selectQueue,
@@ -91,6 +94,7 @@ fun MatchesRoute(
         isRefreshing = isRefreshing,
         onRefresh = viewModel::refresh,
         modifier = modifier,
+        newMatches = newMatches,
     )
 }
 
@@ -103,6 +107,7 @@ internal fun MatchesScreen(
     modifier: Modifier = Modifier,
     isRefreshing: Boolean = false,
     onRefresh: () -> Unit = {},
+    newMatches: NewMatchesProgress? = null,
 ) {
     val colors = OvalitTheme.colors
     var filtering by rememberSaveable { mutableStateOf(false) }
@@ -138,6 +143,8 @@ internal fun MatchesScreen(
                     Spacer(Modifier.height(OvalitSpacing.xs))
                     QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
                     Spacer(Modifier.height(OvalitSpacing.md))
+                    // 오래 쉬었다 와서 여러 판을 받는 동안만 뜬다. 받은 경기는 바로 밑 목록에 위에서부터 붙는다.
+                    NewMatchesLine(newMatches, bottomSpacing = OvalitSpacing.md)
                 }
 
                 if (uiState.days.isEmpty()) {

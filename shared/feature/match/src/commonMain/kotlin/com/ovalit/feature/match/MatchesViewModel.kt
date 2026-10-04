@@ -9,6 +9,7 @@ import com.ovalit.core.model.AgentId
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.MapId
 import com.ovalit.core.model.Match
+import com.ovalit.core.model.NewMatchesProgress
 import com.ovalit.core.model.QueueFilter
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Clock
@@ -17,6 +18,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -62,7 +65,12 @@ class MatchesViewModel(
     private val filter = MutableStateFlow(MatchFilter())
     private val refreshing = MutableStateFlow(false)
 
-    /** 목록을 당겨 새 경기를 받는 중인지입니다. */
+    /** 새 경기를 여러 판 받는 중이면 몇 판 중 몇 판을 받았는지입니다. 목록 맨 위 진행 줄로 띄웁니다. 다섯 판보다 적으면 `null`입니다. */
+    val newMatches: StateFlow<NewMatchesProgress?> = matchRepository.newMatchesProgress
+        .map { progress -> progress?.takeIf { it.isShown } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** 목록을 당겨 새 경기를 받는 중인지입니다. 진행 줄이 뜨면 당김 표시는 거둡니다. */
     val isRefreshing: StateFlow<Boolean> = refreshing
 
     val uiState: StateFlow<MatchesUiState> = combine(
@@ -95,11 +103,15 @@ class MatchesViewModel(
         initialValue = MatchesUiState.Loading,
     )
 
-    /** 새로 끝난 경기를 받습니다. 받는 중에 또 당기면 무시합니다. 실패해도 저장해 둔 경기는 그대로 둡니다. */
+    /** 새로 끝난 경기를 받습니다. 받는 중에 또 당기거나 진행 줄이 떠 있으면 무시합니다. 실패해도 저장해 둔 경기는 그대로 둡니다. */
     fun refresh() {
-        if (refreshing.value) return
+        if (refreshing.value || newMatches.value != null) return
         refreshing.value = true
         viewModelScope.launch {
+            val untilLineShows = launch {
+                matchRepository.newMatchesProgress.first { it?.isShown == true }
+                refreshing.value = false
+            }
             try {
                 matchRepository.refresh()
             } catch (e: CancellationException) {
@@ -107,6 +119,7 @@ class MatchesViewModel(
             } catch (_: Exception) {
                 // 아직 실패를 화면에 알리지 않는다. 저장해 둔 경기는 그대로 남는다.
             } finally {
+                untilLineShows.cancel()
                 refreshing.value = false
             }
         }

@@ -2,6 +2,7 @@ package com.ovalit
 
 import android.app.Application
 import com.ovalit.ads.AdMobRenderer
+import com.ovalit.core.data.NewMatchesWatcher
 import com.ovalit.core.data.di.dataModule
 import com.ovalit.di.appModule
 import com.ovalit.feature.friend.di.friendModule
@@ -44,6 +45,9 @@ class OvalitApplication : Application() {
         // 앱이 살아 있는 동안 토큰을 서버에 맡기고 주간 리포트 토픽 구독을 설정에 맞춘다
         OvalitPush.start(this, appScope, preferences = get(), push = get())
         AdMobRenderer.start(this, appScope)
+        // 앱을 다시 열면 그사이 끝난 경기를 받고, 많이 남은 채로 떠나면 WorkManager가 이어 받는다
+        val newMatches = get<NewMatchesWatcher>()
+        AppVisibility.onChange = { visible -> if (visible) newMatches.onAppVisible() else newMatches.onAppHidden() }
     }
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)

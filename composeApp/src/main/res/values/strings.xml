@@ -26,6 +26,8 @@
     <!-- 다섯 판이 안 되면 리포트가 없으니 불러온 것까지만 말한다 -->
     <string name="notification_analysis_body">최근 %1$d경기를 다 불러왔어요</string>
     <string name="notification_analysis_body_none">최근 8주 동안 뛴 경기가 없어요</string>
+    <string name="notification_new_matches_title">새 경기를 다 받았어요</string>
+    <string name="notification_new_matches_body">그사이 끝난 %1$d경기로 리포트를 다시 셌어요</string>
     <!-- ㅇㅂㅇ와 주간 리포트 알림. 받는 쪽 이름은 서버가 Riot ID의 이름 부분만 보낸다. 친구의 답은 앱 화면처럼 "참석, 불참"으로,
          내가 누르는 버튼은 해요체로 쓴다. -->
     <string name="notification_channel_ping">오발있? 파티 모집</string>

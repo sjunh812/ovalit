@@ -138,6 +138,8 @@ private class RecordingScheduler : ImportScheduler {
 
     override fun start() = Unit
 
+    override fun continueNewMatches(total: Int) = Unit
+
     override fun cancel() {
         cancelled = true
     }

@@ -40,12 +40,14 @@ import com.ovalit.core.model.DynamicMetric
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MAX_REPORT_WEEKS
 import com.ovalit.core.model.MIN_MATCHES_PER_REPORT
+import com.ovalit.core.model.NewMatchesProgress
 import com.ovalit.core.model.PingId
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdSlot
+import com.ovalit.core.ui.NewMatchesLine
 import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.feature.report.component.DynamicMetricSection
 import com.ovalit.feature.report.component.DynamicMetricSheet
@@ -94,6 +96,7 @@ fun ReportRoute(
     val catalog by viewModel.catalog.collectAsStateWithLifecycle()
     val homePing by viewModel.homePing.collectAsStateWithLifecycle()
     val profileHint by viewModel.profileHint.collectAsStateWithLifecycle()
+    val newMatches by viewModel.newMatches.collectAsStateWithLifecycle()
 
     ReportScreen(
         uiState = uiState,
@@ -113,6 +116,7 @@ fun ReportRoute(
         timeZone = viewModel.timeZone,
         profileHint = profileHint,
         onProfileHintShown = viewModel::markProfileHintSeen,
+        newMatches = newMatches,
     )
 }
 
@@ -135,6 +139,7 @@ internal fun ReportScreen(
     timeZone: TimeZone = TimeZone.currentSystemDefault(),
     profileHint: Boolean = false,
     onProfileHintShown: () -> Unit = {},
+    newMatches: NewMatchesProgress? = null,
 ) {
     // 첫 수집 뒤 홈으로 넘어오면 리포트가 전환 한가운데 도착한다. 그때 홈 전체를 그리면 밀려 들어오던 화면이 한 번
     // 멈춰서, 다 들어올 때까지 스켈레톤을 둔다. 다 들어온 뒤에도 한 프레임에 다 그리면 그 프레임이 200ms 가까이 걸려 묶음마다
@@ -188,12 +193,17 @@ internal fun ReportScreen(
                     Spacer(Modifier.height(OvalitSpacing.xs))
                     QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
                     Spacer(Modifier.height(OvalitSpacing.md))
+                    // 오래 쉬었다 와서 여러 판을 받는 동안만 뜬다. 그동안 밑의 숫자가 왜 그대로인지 여기서 알 수 있다.
+                    NewMatchesLine(newMatches, bottomSpacing = OvalitSpacing.lg)
 
                     // 큰 묶음마다 카드 하나다. 카드끼리는 화면 가장자리와 같은 간격을 둔다.
                     Column(verticalArrangement = Arrangement.spacedBy(OvalitCardGap)) {
                         // 답해야 하는 ㅇㅂㅇ이 리포트에 묻히지 않게 맨 위에 둔다
                         homePing?.let { home -> PingHomeCard(home = home, timeZone = timeZone, onClick = { onOpenPing(home.ping.id) }) }
-                        when (val report = uiState.report) {
+                        // 받기 전 숫자가 틀린 기간을 말할 수 있으면 다 받을 때까지 자리만 잡아 둔다
+                        if (uiState.waitingForNewMatches) {
+                            ReportSkeleton(withChips = false)
+                        } else when (val report = uiState.report) {
                             is WeeklyReport.Ready -> ReportContent(
                                 report = report,
                                 queueFilter = uiState.queueFilter,

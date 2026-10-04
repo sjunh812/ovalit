@@ -102,7 +102,7 @@ class MatchesViewModelTest {
         val state = assertIs<MatchesUiState.Success>(viewModel.uiState.value)
         assertFalse(viewModel.isRefreshing.value)
         assertEquals(before + 1, state.days.sumOf { it.matches.size })
-        assertEquals("fresh-1", state.days.first().matches.first().id.value)
+        assertEquals("fresh-1-0", state.days.first().matches.first().id.value)
     }
 
     // 받는 중에 또 당겨서 한 번 더 받으면 레이트 리밋을 두 배로 쓴다.
@@ -118,8 +118,8 @@ class MatchesViewModelTest {
         assertEquals(before + 1, assertIs<MatchesUiState.Success>(viewModel.uiState.value).days.sumOf { it.matches.size })
     }
 
-    private fun viewModel(preferences: UserPreferences = UserPreferences.Default) = MatchesViewModel(
-        FakeMatchRepository(ThursdayClock),
+    private fun TestScope.viewModel(preferences: UserPreferences = UserPreferences.Default) = MatchesViewModel(
+        FakeMatchRepository(ThursdayClock, scope = this),
         StubPreferences(preferences),
         FakeContentRepository(),
         ThursdayClock,

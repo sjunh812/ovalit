@@ -26,21 +26,25 @@ import org.jetbrains.compose.resources.stringResource
  * 리포트를 만들기 전 홈의 모양입니다. 칩, 기간, 승패 줄, 세 칸씩 두 줄인 고정 칸과 그 밑 두 줄, 달라진 점 세 칸, 개선 포인트
  * 자리를 잡습니다.
  * 홈처럼 카드에 담아 내용이 나타날 때 카드 자리가 움직이지 않습니다. 카드 면은 깜빡이지 않고 안의 칸만 깜빡입니다.
+ *
+ * @param withChips 칩 자리도 잡을지입니다. 새 경기를 받느라 리포트만 기다릴 때는 칩이 이미 있어 끕니다.
  */
 @Composable
-internal fun ReportSkeleton(modifier: Modifier = Modifier) {
+internal fun ReportSkeleton(modifier: Modifier = Modifier, withChips: Boolean = true) {
     val description = stringResource(Res.string.report_loading)
     // 깜빡이는 덩어리가 여럿이어도 낭독기에는 한 줄만 읽힌다
     Column(modifier = modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = description }) {
-        OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.xs)) {
-                SkeletonBlock(width = 88.dp, height = 34.dp, radius = 10.dp)
-                SkeletonBlock(width = 52.dp, height = 34.dp, radius = 10.dp)
-                SkeletonBlock(width = 52.dp, height = 34.dp, radius = 10.dp)
-                SkeletonBlock(width = 52.dp, height = 34.dp, radius = 10.dp)
+        if (withChips) {
+            OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.xs)) {
+                    SkeletonBlock(width = 88.dp, height = 34.dp, radius = 10.dp)
+                    SkeletonBlock(width = 52.dp, height = 34.dp, radius = 10.dp)
+                    SkeletonBlock(width = 52.dp, height = 34.dp, radius = 10.dp)
+                    SkeletonBlock(width = 52.dp, height = 34.dp, radius = 10.dp)
+                }
             }
+            Spacer(Modifier.height(OvalitSpacing.md))
         }
-        Spacer(Modifier.height(OvalitSpacing.md))
         SkeletonCard(description) {
             SkeletonBlock(width = 96.dp, height = 28.dp)
             // 승패 줄이다. 없으면 리포트가 뜰 때 그 아래가 한 줄만큼 내려간다.

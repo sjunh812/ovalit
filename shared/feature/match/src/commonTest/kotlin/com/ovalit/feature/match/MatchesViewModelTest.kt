@@ -2,13 +2,18 @@ package com.ovalit.feature.match
 
 import com.ovalit.core.data.FakeContentRepository
 import com.ovalit.core.data.FakeMatchRepository
+import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.Focus
+import com.ovalit.core.model.OvalitError
+import com.ovalit.core.model.OvalitException
 import com.ovalit.core.model.PingReminder
 import com.ovalit.core.model.Queue
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.model.UserPreferences
+import com.ovalit.core.ui.FailedAction
+import com.ovalit.core.ui.FailureNotice
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -22,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -117,6 +123,23 @@ class MatchesViewModelTest {
         advanceUntilIdle()
 
         assertEquals(before + 1, assertIs<MatchesUiState.Success>(viewModel.uiState.value).days.sumOf { it.matches.size })
+    }
+
+    // 인터넷이 끊겨 받지 못하면 조용히 넘기지 않고 까닭을 알린다. 당김 표시도 거둔다.
+    @Test
+    fun `새 경기를 받지 못하면 까닭을 안내로 넘긴다`() = runTest {
+        val failing = object : MatchRepository by FakeMatchRepository(ThursdayClock, scope = this) {
+            override suspend fun refresh(): Int = throw OvalitException(OvalitError.Offline)
+        }
+        val viewModel = MatchesViewModel(failing, StubPreferences(UserPreferences.Default), FakeContentRepository(), ThursdayClock, Seoul)
+        val notices = mutableListOf<FailureNotice>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.notices.toList(notices) }
+
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        assertEquals(listOf(FailureNotice(FailedAction.REFRESH, OvalitError.Offline)), notices)
+        assertFalse(viewModel.isRefreshing.value)
     }
 
     private fun TestScope.viewModel(preferences: UserPreferences = UserPreferences.Default) = MatchesViewModel(

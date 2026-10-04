@@ -14,9 +14,14 @@ import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.model.pingSlots
 import com.ovalit.core.model.weeklyReport
+import com.ovalit.core.ui.FailedAction
+import com.ovalit.core.ui.FailureNotice
+import com.ovalit.core.ui.FailureNotices
+import com.ovalit.core.ui.launchNotifying
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -89,12 +94,17 @@ class FriendsViewModel(
         initialValue = FriendsUiState.Loading,
     )
 
+    private val failures = FailureNotices()
+
+    /** 사용자가 한 일이 실패했을 때 화면 아래에 띄울 안내입니다. */
+    val notices: Flow<FailureNotice> = failures.flow
+
     fun accept(id: PlayerId) {
-        viewModelScope.launch { friendRepository.accept(id) }
+        viewModelScope.launchNotifying(failures, FailedAction.ACCEPT_FRIEND) { friendRepository.accept(id) }
     }
 
     fun decline(id: PlayerId) {
-        viewModelScope.launch { friendRepository.decline(id) }
+        viewModelScope.launchNotifying(failures, FailedAction.DECLINE_FRIEND) { friendRepository.decline(id) }
     }
 
     fun inviteLink(): String = friendRepository.inviteLink()
@@ -102,7 +112,7 @@ class FriendsViewModel(
     /** 친구, 받은 요청, ㅇㅂㅇ을 같이 다시 받습니다. 받는 중에 또 당기면 무시합니다. */
     fun refresh() {
         if (!refreshing.compareAndSet(expect = false, update = true)) return
-        viewModelScope.launch {
+        viewModelScope.launchNotifying(failures, FailedAction.FRIENDS_REFRESH) {
             try {
                 coroutineScope {
                     launch { friendRepository.refresh() }
@@ -119,8 +129,14 @@ class FriendsViewModel(
 
     fun now(): Instant = clock.now()
 
+    /** 보냈거나 정해 둔 까닭으로 막혔으면 [onResult]를 부릅니다. 보내다 실패하면 부르지 않고 안내를 띄워 시트를 그대로 둡니다. */
     fun sendPing(friends: List<PlayerId>, startsAt: Instant, onResult: (PingSendResult) -> Unit) {
-        viewModelScope.launch { onResult(pingRepository.send(friends, startsAt)) }
+        viewModelScope.launchNotifying(failures, FailedAction.PING_SEND) {
+            val result = pingRepository.send(friends, startsAt)
+            // 보낸 것이 끝나기 전에는 "부르기"를 두지 않으니, 이 결과는 다른 기기에서 그사이 보낸 경우다
+            if (result == PingSendResult.ALREADY_ACTIVE) failures.send(FailureNotice(FailedAction.PING_ALREADY_ACTIVE))
+            onResult(result)
+        }
     }
 
 }

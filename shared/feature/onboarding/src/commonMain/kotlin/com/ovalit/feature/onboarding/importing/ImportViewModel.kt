@@ -2,6 +2,7 @@ package com.ovalit.feature.onboarding.importing
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ovalit.core.data.ImportScheduler
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.Focus
@@ -23,6 +24,7 @@ sealed interface ImportUiState {
 class ImportViewModel(
     matchRepository: MatchRepository,
     private val preferencesRepository: UserPreferencesRepository,
+    private val importScheduler: ImportScheduler,
 ) : ViewModel() {
 
     val uiState: StateFlow<ImportUiState> = combine(
@@ -37,6 +39,9 @@ class ImportViewModel(
     )
 
     fun selectFocus(focus: Focus) {
-        viewModelScope.launch { preferencesRepository.setFocus(focus) }
+        viewModelScope.launch { runCatching { preferencesRepository.setFocus(focus) } }
     }
+
+    /** 멈춘 첫 수집을 지금 이어 받습니다. 기다리면 WorkManager가 저절로 다시 띄우지만 사용자가 바로 다시 할 수 있게 둡니다. */
+    fun retry() = importScheduler.retry()
 }

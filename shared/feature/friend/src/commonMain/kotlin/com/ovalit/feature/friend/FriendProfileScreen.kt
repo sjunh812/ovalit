@@ -49,6 +49,7 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.ui.FailureNoticesEffect
 import com.ovalit.core.ui.HeadToHeadRow
 import com.ovalit.core.ui.MatchRow
 import com.ovalit.core.ui.MatchRowStyle
@@ -104,6 +105,7 @@ fun FriendProfileRoute(
     modifier: Modifier = Modifier,
     viewModel: FriendProfileViewModel = koinViewModel(key = friendId.value) { parametersOf(friendId.value) },
 ) {
+    FailureNoticesEffect(viewModel.notices)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     // 화면을 닫는 곳은 여기 하나다. 끊기 버튼에서도 닫으면 뒤로 가기가 두 번 돼 그 앞 화면까지 빠진다.
     LaunchedEffect(uiState) {

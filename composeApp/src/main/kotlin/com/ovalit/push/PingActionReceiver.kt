@@ -8,6 +8,7 @@ import com.ovalit.R
 import com.ovalit.core.data.PingRepository
 import com.ovalit.core.model.PingAnswer
 import com.ovalit.core.model.PingId
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Instant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,6 +48,11 @@ class PingActionReceiver : BroadcastReceiver(), KoinComponent {
                         PingNotifications.answered(context, pingId, R.string.ping_moved)
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // 보내지 못했으면 버튼 대신 알림을 눌러 앱에서 다시 답하게 한다
+                PingNotifications.answered(context, pingId, R.string.ping_answer_failed)
             } finally {
                 pending.finish()
             }
@@ -59,23 +65,23 @@ class PingActionReceiver : BroadcastReceiver(), KoinComponent {
 
         fun reply(context: Context, pingId: String, answer: String): PendingIntent = broadcast(
             context,
-            requestCode = PingNotifications.notificationId(pingId) * 4 + if (answer == "yes") 2 else 3,
             intent = Intent(context, PingActionReceiver::class.java)
                 .setAction(ACTION_REPLY)
+                .setData(PingNotifications.actionUri(pingId, "reply_$answer"))
                 .putExtra(EXTRA_PING, pingId)
                 .putExtra(EXTRA_ANSWER, answer),
         )
 
         fun move(context: Context, pingId: String, time: Long): PendingIntent = broadcast(
             context,
-            requestCode = PingNotifications.notificationId(pingId) * 4,
             intent = Intent(context, PingActionReceiver::class.java)
                 .setAction(ACTION_MOVE)
+                .setData(PingNotifications.actionUri(pingId, "move_$time"))
                 .putExtra(EXTRA_PING, pingId)
                 .putExtra(EXTRA_TIME, time),
         )
 
-        private fun broadcast(context: Context, requestCode: Int, intent: Intent): PendingIntent =
-            PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        private fun broadcast(context: Context, intent: Intent): PendingIntent =
+            PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     }
 }

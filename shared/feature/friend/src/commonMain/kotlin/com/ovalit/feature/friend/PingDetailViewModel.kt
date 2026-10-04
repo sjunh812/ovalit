@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ovalit.core.data.AccountRepository
 import com.ovalit.core.data.FriendRepository
+import com.ovalit.core.data.PingInviteResult
 import com.ovalit.core.data.PingRepository
 import com.ovalit.core.model.Friend
 import com.ovalit.core.model.Ping
@@ -11,8 +12,13 @@ import com.ovalit.core.model.PingAnswer
 import com.ovalit.core.model.PingId
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.pingSlots
+import com.ovalit.core.ui.FailedAction
+import com.ovalit.core.ui.FailureNotice
+import com.ovalit.core.ui.FailureNotices
+import com.ovalit.core.ui.launchNotifying
 import kotlin.time.Clock
 import kotlin.time.Instant
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -73,19 +79,27 @@ class PingDetailViewModel(
     /** 지금부터 고를 수 있는 시각입니다. 시트를 열 때마다 다시 셉니다. */
     fun slots(): List<Instant> = pingSlots(clock.now(), timeZone)
 
+    private val failures = FailureNotices()
+
+    /** 사용자가 한 일이 실패했을 때 화면 아래에 띄울 안내입니다. */
+    val notices: Flow<FailureNotice> = failures.flow
+
     fun reply(answer: PingAnswer, proposedAt: Instant? = null) {
-        viewModelScope.launch { pingRepository.reply(pingId, answer, proposedAt) }
+        viewModelScope.launchNotifying(failures, FailedAction.PING_REPLY) { pingRepository.reply(pingId, answer, proposedAt) }
     }
 
     fun moveTo(startsAt: Instant) {
-        viewModelScope.launch { pingRepository.moveTo(pingId, startsAt) }
+        viewModelScope.launchNotifying(failures, FailedAction.PING_TIME) { pingRepository.moveTo(pingId, startsAt) }
     }
 
     fun invite(friends: List<PlayerId>) {
-        viewModelScope.launch { pingRepository.invite(pingId, friends) }
+        viewModelScope.launchNotifying(failures, FailedAction.PING_INVITE) {
+            // 그사이 다른 기기에서 더 불러 자리가 찼으면 아무도 더하지 않는다
+            if (pingRepository.invite(pingId, friends) == PingInviteResult.FULL) failures.send(FailureNotice(FailedAction.PING_FULL))
+        }
     }
 
     fun cancel() {
-        viewModelScope.launch { pingRepository.cancel(pingId) }
+        viewModelScope.launchNotifying(failures, FailedAction.PING_CANCEL) { pingRepository.cancel(pingId) }
     }
 }

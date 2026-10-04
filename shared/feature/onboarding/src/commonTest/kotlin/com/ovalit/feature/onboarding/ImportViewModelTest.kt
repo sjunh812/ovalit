@@ -1,6 +1,7 @@
 package com.ovalit.feature.onboarding
 
 import com.ovalit.core.data.FakeMatchRepository
+import com.ovalit.core.data.ImportScheduler
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.Focus
 import com.ovalit.core.model.PingReminder
@@ -45,7 +46,7 @@ class ImportViewModelTest {
     @Test
     fun `첫 수집이 진행되는 대로 받은 경기 수가 늘어난다`() = runTest {
         val matches = FakeMatchRepository(importDelay = Duration.ZERO)
-        val viewModel = ImportViewModel(matches, InMemoryPreferences())
+        val viewModel = ImportViewModel(matches, InMemoryPreferences(), NoScheduler)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
         assertNull(assertIs<ImportUiState.Success>(viewModel.uiState.value).progress)
 
@@ -59,7 +60,7 @@ class ImportViewModelTest {
     @Test
     fun `고른 관심사를 설정에 저장한다`() = runTest {
         val preferences = InMemoryPreferences()
-        val viewModel = ImportViewModel(FakeMatchRepository(), preferences)
+        val viewModel = ImportViewModel(FakeMatchRepository(), preferences, NoScheduler)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         viewModel.selectFocus(Focus.CONSISTENCY)
@@ -91,4 +92,14 @@ private class InMemoryPreferences : UserPreferencesRepository {
     override suspend fun setSeenProfileHint() = Unit
 
     override suspend fun setAdFreeUntil(until: Instant) = Unit
+}
+
+private object NoScheduler : ImportScheduler {
+    override fun start() = Unit
+
+    override fun retry() = Unit
+
+    override fun continueNewMatches(total: Int) = Unit
+
+    override fun cancel() = Unit
 }

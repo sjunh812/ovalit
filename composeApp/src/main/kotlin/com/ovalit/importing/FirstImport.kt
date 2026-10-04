@@ -45,6 +45,10 @@ class WorkManagerImportScheduler(private val context: Context) : ImportScheduler
         enqueue<FirstImportWorker>(WORK_NAME)
     }
 
+    override fun retry() {
+        enqueue<FirstImportWorker>(WORK_NAME, policy = ExistingWorkPolicy.REPLACE)
+    }
+
     override fun continueNewMatches(total: Int) {
         enqueue<NewMatchesWorker>(NEW_MATCHES_WORK_NAME, workDataOf(KEY_TOTAL to total))
     }
@@ -56,12 +60,16 @@ class WorkManagerImportScheduler(private val context: Context) : ImportScheduler
         }
     }
 
-    private inline fun <reified W : ListenableWorker> enqueue(name: String, input: Data = Data.EMPTY) {
+    private inline fun <reified W : ListenableWorker> enqueue(
+        name: String,
+        input: Data = Data.EMPTY,
+        policy: ExistingWorkPolicy = ExistingWorkPolicy.KEEP,
+    ) {
         val request = OneTimeWorkRequestBuilder<W>()
             .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
             .setInputData(input)
             .build()
-        WorkManager.getInstance(context).enqueueUniqueWork(name, ExistingWorkPolicy.KEEP, request)
+        WorkManager.getInstance(context).enqueueUniqueWork(name, policy, request)
     }
 }
 
@@ -73,7 +81,14 @@ class FirstImportWorker(context: Context, params: WorkerParameters) : CoroutineW
     override suspend fun doWork(): Result {
         // 연동을 해제한 뒤에 기다리던 작업이 돌면 RSO 세션 없이 전적을 요청한다(CLAUDE.md 지켜야 할 선)
         if (account.account.first() == null) return Result.success()
-        matches.importRecent()
+        // 실패하면 WorkManager가 30초부터 늘려 가며 다시 띄운다. 받은 경기는 그대로라 남은 것만 받는다.
+        try {
+            matches.importRecent()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            return Result.retry()
+        }
         // 화면을 보고 있으면 S0-4가 이미 끝났다고 알려 주니 알림을 겹쳐 보내지 않는다. 받는 사이 연동을 해제했어도 보내지 않는다.
         if (account.account.first() != null && preferences.preferences.first().notifyAnalysisDone && !AppVisibility.isVisible) {
             val count = matches.observeMatches().first().size

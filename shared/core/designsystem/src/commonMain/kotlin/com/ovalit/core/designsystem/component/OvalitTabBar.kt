@@ -60,7 +60,7 @@ fun OvalitTabBar(
                     modifier = Modifier
                         .weight(1f)
                         // 글자를 키우면 이름이 아래로 잘리지 않게 칸이 같이 커진다
-                        .heightIn(min = TabBarHeight)
+                        .heightIn(min = OvalitTabBarHeight)
                         .selectable(
                             selected = selected,
                             interactionSource = null,
@@ -90,7 +90,8 @@ fun OvalitTabBar(
     }
 }
 
-private val TabBarHeight = 60.dp
+/** 탭바에서 시스템 내비게이션 바를 뺀 높이입니다. 글자를 키우면 이보다 커집니다. */
+val OvalitTabBarHeight = 60.dp
 
 // 누른 면은 칸 전체가 아니라 아이콘과 이름을 감싸는 둥근 사각형이다. 칸이 가로로 길어 칸째로 깔면 막대처럼 보인다.
 private val TabPressShape = object : Shape {

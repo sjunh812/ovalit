@@ -48,6 +48,7 @@ import com.ovalit.core.model.NewMatchesProgress
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdSlot
+import com.ovalit.core.ui.FailureNoticesEffect
 import com.ovalit.core.ui.MatchRow
 import com.ovalit.core.ui.MatchRowStyle
 import com.ovalit.core.ui.MatchRowsSkeleton
@@ -83,6 +84,7 @@ fun MatchesRoute(
     modifier: Modifier = Modifier,
     viewModel: MatchesViewModel = koinViewModel(),
 ) {
+    FailureNoticesEffect(viewModel.notices)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val newMatches by viewModel.newMatches.collectAsStateWithLifecycle()

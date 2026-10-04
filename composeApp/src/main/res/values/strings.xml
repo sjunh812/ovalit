@@ -58,5 +58,6 @@
     <string name="ping_action_move">수락</string>
     <string name="ping_answered_yes">참석으로 답했어요</string>
     <string name="ping_answered_no">불참으로 답했어요</string>
+    <string name="ping_answer_failed">답을 보내지 못했어요 · 눌러서 다시 답하기</string>
     <string name="ping_moved">시간을 바꿨어요</string>
 </resources>

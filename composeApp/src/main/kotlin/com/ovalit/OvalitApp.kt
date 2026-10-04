@@ -16,12 +16,15 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -41,10 +44,15 @@ import androidx.navigation3.ui.NavDisplay
 import com.ovalit.core.data.FakeAccountRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.ImportScheduler
+import com.ovalit.core.designsystem.component.LocalOvalitToast
 import com.ovalit.core.designsystem.component.LocalScreenEntering
 import com.ovalit.core.designsystem.component.OvalitTab
 import com.ovalit.core.designsystem.component.OvalitTabBar
+import com.ovalit.core.designsystem.component.OvalitTabBarHeight
+import com.ovalit.core.designsystem.component.OvalitToastHost
+import com.ovalit.core.designsystem.component.rememberOvalitToastState
 import com.ovalit.core.designsystem.icon.OvalitIcons
+import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.PlayerId
@@ -127,7 +135,7 @@ fun OvalitApp(appVersion: String, openPing: Flow<String> = emptyFlow()) {
         openPing.collect { id ->
             if (Report !in backStack || backStack.last() == PingDetail(id)) return@collect
             backStack.selectTab(Friends)
-            backStack.add(PingDetail(id))
+            backStack.push(PingDetail(id))
         }
     }
     // RSO가 붙기 전까지는 가짜 계정이다. S0-2의 계속하기가 연동을 대신한다.
@@ -142,112 +150,130 @@ fun OvalitApp(appVersion: String, openPing: Flow<String> = emptyFlow()) {
     val tabState = rememberTabStateDecorator(keepTabs = { Report in backStack })
     LaunchedEffect(linked) { if (!linked) tabState.clearKept() }
 
+    val toast = rememberOvalitToastState()
+
     // 전환 중에 아래 화면이 어두워 보이게 하는 검은 바탕이다(OvalitTransitions). 화면이 모두 불투명해서 평소에는 안 보인다.
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
-        NavDisplay(
-            backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
-            entryDecorators = listOf(tabState.decorator, rememberOpaqueEntryDecorator()),
-            transitionSpec = pushTransition(dimmedAlpha),
-            popTransitionSpec = popTransition(dimmedAlpha),
-            predictivePopTransitionSpec = predictivePopTransition(dimmedAlpha),
-            entryProvider = entryProvider {
-                entry<Intro> {
-                    IntroScreen(onStart = { backStack.add(Consent) })
-                }
-                entry<Consent> {
-                    ConsentScreen(
-                        onBack = { backStack.removeLastOrNull() },
-                        onContinue = {
-                            // S0-3 Riot 로그인은 RSO가 붙으면 여기서 Custom Tabs로 연다. 지금은 가짜 계정으로 연동한다.
-                            scope.launch {
-                                account.link()
-                                importScheduler.start()
-                            }
-                            backStack.replaceAllWith(Import)
-                        },
-                    )
-                }
-                entry<Import> {
-                    RequestNotificationPermission()
-                    ImportRoute(onOpenReport = { backStack.replaceAllWith(Report) })
-                }
-                entry<Report> {
-                    TabScaffold(selected = Report, onSelect = backStack::selectTab) {
-                        ReportRoute(
-                            onOpenProfile = { backStack.add(Profile) },
+        CompositionLocalProvider(LocalOvalitToast provides toast) {
+            NavDisplay(
+                backStack = backStack,
+                onBack = { backStack.removeLastOrNull() },
+                entryDecorators = listOf(tabState.decorator, rememberOpaqueEntryDecorator()),
+                transitionSpec = pushTransition(dimmedAlpha),
+                popTransitionSpec = popTransition(dimmedAlpha),
+                predictivePopTransitionSpec = predictivePopTransition(dimmedAlpha),
+                entryProvider = entryProvider {
+                    entry<Intro> {
+                        IntroScreen(onStart = { backStack.push(Consent) })
+                    }
+                    entry<Consent> {
+                        ConsentScreen(
+                            onBack = { backStack.removeLastOrNull() },
+                            onContinue = {
+                                // S0-3 Riot 로그인은 RSO가 붙으면 여기서 Custom Tabs로 연다. 지금은 가짜 계정으로 연동한다.
+                                scope.launch {
+                                    account.link()
+                                    importScheduler.start()
+                                }
+                                backStack.replaceAllWith(Import)
+                            },
+                        )
+                    }
+                    entry<Import> {
+                        RequestNotificationPermission()
+                        ImportRoute(onOpenReport = { backStack.replaceAllWith(Report) })
+                    }
+                    entry<Report> {
+                        TabScaffold(selected = Report, onSelect = backStack::selectTab) {
+                            ReportRoute(
+                                onOpenProfile = { backStack.push(Profile) },
+                                onShareInvite = { context.shareInvite(friends.inviteLink()) },
+                                onOpenAgents = { backStack.push(Agents) },
+                                onOpenWeapons = { backStack.push(Weapons) },
+                                onOpenPing = { backStack.push(PingDetail(it.value)) },
+                                // 설정에서 저장된 데이터를 지웠으면 첫 수집을 다시 띄우고 S0-4에서 받는 걸 보여준다
+                                onReimport = {
+                                    importScheduler.start()
+                                    backStack.push(Import)
+                                },
+                            )
+                        }
+                    }
+                    entry<Profile> {
+                        ProfileRoute(
+                            onBack = { backStack.removeLastOrNull() },
+                            onOpenAgents = { backStack.push(Agents) },
+                            onOpenWeapons = { backStack.push(Weapons) },
+                            onOpenMatch = { backStack.push(MatchDetail(it.value)) },
+                            onOpenMatches = { backStack.selectTab(Matches) },
+                        )
+                    }
+                    entry<Matches>(clazzContentKey = ::tabContentKey, metadata = TabTransitions) {
+                        TabScaffold(selected = Matches, onSelect = backStack::selectTab) {
+                            MatchesRoute(onOpenMatch = { backStack.push(MatchDetail(it.value)) })
+                        }
+                    }
+                    entry<MatchDetail> { key ->
+                        MatchDetailRoute(
+                            matchId = MatchId(key.id),
+                            onBack = { backStack.removeLastOrNull() },
+                            onOpenFriend = { backStack.push(FriendProfile(it.value)) },
+                            onOpenMe = { backStack.openProfile() },
                             onShareInvite = { context.shareInvite(friends.inviteLink()) },
-                            onOpenAgents = { backStack.add(Agents) },
-                            onOpenWeapons = { backStack.add(Weapons) },
-                            onOpenPing = { backStack.add(PingDetail(it.value)) },
                         )
                     }
-                }
-                entry<Profile> {
-                    ProfileRoute(
-                        onBack = { backStack.removeLastOrNull() },
-                        onOpenAgents = { backStack.add(Agents) },
-                        onOpenWeapons = { backStack.add(Weapons) },
-                        onOpenMatch = { backStack.add(MatchDetail(it.value)) },
-                        onOpenMatches = { backStack.selectTab(Matches) },
-                    )
-                }
-                entry<Matches>(clazzContentKey = ::tabContentKey, metadata = TabTransitions) {
-                    TabScaffold(selected = Matches, onSelect = backStack::selectTab) {
-                        MatchesRoute(onOpenMatch = { backStack.add(MatchDetail(it.value)) })
+                    entry<Friends>(clazzContentKey = ::tabContentKey, metadata = TabTransitions) {
+                        TabScaffold(selected = Friends, onSelect = backStack::selectTab) {
+                            FriendsRoute(
+                                onOpenFriend = { backStack.push(FriendProfile(it.value)) },
+                                onOpenPing = { backStack.push(PingDetail(it.value)) },
+                                onShareInvite = { link -> context.shareInvite(link) },
+                            )
+                        }
                     }
-                }
-                entry<MatchDetail> { key ->
-                    MatchDetailRoute(
-                        matchId = MatchId(key.id),
-                        onBack = { backStack.removeLastOrNull() },
-                        onOpenFriend = { backStack.add(FriendProfile(it.value)) },
-                        onOpenMe = { backStack.openProfile() },
-                        onShareInvite = { context.shareInvite(friends.inviteLink()) },
-                    )
-                }
-                entry<Friends>(clazzContentKey = ::tabContentKey, metadata = TabTransitions) {
-                    TabScaffold(selected = Friends, onSelect = backStack::selectTab) {
-                        FriendsRoute(
-                            onOpenFriend = { backStack.add(FriendProfile(it.value)) },
-                            onOpenPing = { backStack.add(PingDetail(it.value)) },
-                            onShareInvite = { link -> context.shareInvite(link) },
+                    entry<FriendProfile> { key ->
+                        FriendProfileRoute(
+                            friendId = PlayerId(key.id),
+                            onBack = { backStack.removeLastOrNull() },
+                            onOpenMatches = { backStack.push(FriendMatches(key.id)) },
+                            onOpenAgents = { backStack.push(FriendAgents(key.id)) },
+                            onOpenWeapons = { backStack.push(FriendWeapons(key.id)) },
                         )
                     }
-                }
-                entry<FriendProfile> { key ->
-                    FriendProfileRoute(
-                        friendId = PlayerId(key.id),
-                        onBack = { backStack.removeLastOrNull() },
-                        onOpenMatches = { backStack.add(FriendMatches(key.id)) },
-                        onOpenAgents = { backStack.add(FriendAgents(key.id)) },
-                        onOpenWeapons = { backStack.add(FriendWeapons(key.id)) },
-                    )
-                }
-                entry<PingDetail> { key ->
-                    PingDetailRoute(pingId = key.id, onBack = { backStack.removeLastOrNull() })
-                }
-                entry<FriendMatches> { key ->
-                    FriendMatchesRoute(friendId = PlayerId(key.id), onBack = { backStack.removeLastOrNull() })
-                }
-                entry<FriendAgents> { key ->
-                    AgentsRoute(owner = RecordsOwner.Friend(PlayerId(key.id)), onBack = { backStack.removeLastOrNull() })
-                }
-                entry<FriendWeapons> { key ->
-                    WeaponsRoute(owner = RecordsOwner.Friend(PlayerId(key.id)), onBack = { backStack.removeLastOrNull() })
-                }
-                entry<Agents> { AgentsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }) }
-                entry<Weapons> { WeaponsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }) }
-                entry<Settings>(clazzContentKey = ::tabContentKey, metadata = TabTransitions) {
-                    TabScaffold(selected = Settings, onSelect = backStack::selectTab) {
-                        SettingsRoute(
-                            appVersion = appVersion,
-                            onUnlinked = { backStack.replaceAllWith(Intro) },
-                            onOpenProfile = { backStack.openProfile() },
-                        )
+                    entry<PingDetail> { key ->
+                        PingDetailRoute(pingId = key.id, onBack = { backStack.removeLastOrNull() })
                     }
-                }
-            },
+                    entry<FriendMatches> { key ->
+                        FriendMatchesRoute(friendId = PlayerId(key.id), onBack = { backStack.removeLastOrNull() })
+                    }
+                    entry<FriendAgents> { key ->
+                        AgentsRoute(owner = RecordsOwner.Friend(PlayerId(key.id)), onBack = { backStack.removeLastOrNull() })
+                    }
+                    entry<FriendWeapons> { key ->
+                        WeaponsRoute(owner = RecordsOwner.Friend(PlayerId(key.id)), onBack = { backStack.removeLastOrNull() })
+                    }
+                    entry<Agents> { AgentsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }) }
+                    entry<Weapons> { WeaponsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }) }
+                    entry<Settings>(clazzContentKey = ::tabContentKey, metadata = TabTransitions) {
+                        TabScaffold(selected = Settings, onSelect = backStack::selectTab) {
+                            SettingsRoute(
+                                appVersion = appVersion,
+                                onUnlinked = { backStack.replaceAllWith(Intro) },
+                                onOpenProfile = { backStack.openProfile() },
+                            )
+                        }
+                    }
+                },
+            )
+        }
+        // 사용자가 한 일이 실패하면 화면 아래에 한 줄로 알린다. 탭 화면에서는 탭바를 가리지 않게 그 위에 띄운다.
+        val onTab = backStack.lastOrNull() in TopLevel
+        OvalitToastHost(
+            state = toast,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(bottom = if (onTab) OvalitTabBarHeight + OvalitSpacing.md else OvalitSpacing.lg),
         )
     }
 }
@@ -306,6 +332,11 @@ private val EdgeWidth = 1.dp
 
 // 홈은 늘 스택 맨 아래에 두고 다른 탭은 그 위에 하나만 둔다. 그래야 어느 탭에서 뒤로 가도 홈이 나오고 홈에서
 // 뒤로 가면 앱이 닫힌다. 홈은 새로 띄우지 않아서 스크롤과 칩이 남고, 다른 탭은 빠져도 TabStateDecorator가 남겨 둔다.
+// 전환 중에 같은 줄을 두 번 누르면 같은 화면이 두 번 쌓인다. 같은 키가 둘이면 저장 상태 키가 겹쳐 앱이 죽는다.
+private fun NavBackStack<NavKey>.push(key: NavKey) {
+    if (lastOrNull() != key) add(key)
+}
+
 private fun NavBackStack<NavKey>.selectTab(tab: NavKey) {
     if (last() == tab) return
     while (size > 1) removeAt(lastIndex)

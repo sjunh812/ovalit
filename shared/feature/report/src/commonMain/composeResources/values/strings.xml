@@ -72,6 +72,9 @@
     <string name="not_enough_title">리포트까지 %1$d경기 남았어요</string>
     <string name="not_enough_title_none">최근 %1$d주 동안 뛴 경기가 없어요</string>
     <string name="not_enough_body">최근 4주 안에 %1$d경기가 모이면 리포트를 만들어드려요.</string>
+    <string name="reimport_title">저장된 경기가 없어요</string>
+    <string name="reimport_body">최근 경기를 다시 불러오면 리포트를 만들어드려요.</string>
+    <string name="reimport_button">다시 불러오기</string>
     <!-- S1-a 지표 설명 시트. 화면 라벨은 한글이고 정식 명칭은 여기서 알려준다. -->
     <string name="sheet_open">%1$s 설명 보기</string>
     <string name="sheet_combat_score_name">ACS</string>

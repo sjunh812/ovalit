@@ -21,10 +21,13 @@ fun <T> Iterable<T>.forFirstImport(now: Instant, startedAt: (T) -> Instant): Lis
  * 첫 수집이 어디까지 왔는지입니다.
  *
  * @property results 받은 경기의 승패를 받은 순서대로 담습니다. S0-4 아래 막대를 이걸로 칠합니다.
+ * @property stoppedBy 받다 멈췄으면 그 까닭입니다. 실제 저장소가 실패를 여기 적고, 다시 받기 시작하면 비웁니다. 받은 경기는
+ * 그대로 두고 남은 것만 이어 받습니다.
  */
 data class ImportProgress(
     val total: Int,
     val results: List<Boolean?>,
+    val stoppedBy: OvalitError? = null,
 ) {
     val loaded: Int get() = results.size
 

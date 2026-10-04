@@ -18,6 +18,10 @@ import com.ovalit.core.model.buyRecords
 import com.ovalit.core.model.placements
 import com.ovalit.core.model.playerStats
 import com.ovalit.core.model.roundSummaries
+import com.ovalit.core.ui.FailedAction
+import com.ovalit.core.ui.FailureNotice
+import com.ovalit.core.ui.FailureNotices
+import com.ovalit.core.ui.launchNotifying
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -153,12 +157,17 @@ class MatchDetailViewModel(
         initialValue = MatchDetailUiState.Loading,
     )
 
+    private val failures = FailureNotices()
+
+    /** 사용자가 한 일이 실패했을 때 화면 아래에 띄울 안내입니다. */
+    val notices: Flow<FailureNotice> = failures.flow
+
     fun sendRequest(id: PlayerId) {
-        viewModelScope.launch { friendRepository.sendRequest(id) }
+        viewModelScope.launchNotifying(failures, FailedAction.FRIEND_REQUEST) { friendRepository.sendRequest(id) }
     }
 
     fun accept(id: PlayerId) {
-        viewModelScope.launch { friendRepository.accept(id) }
+        viewModelScope.launchNotifying(failures, FailedAction.ACCEPT_FRIEND) { friendRepository.accept(id) }
     }
 }
 

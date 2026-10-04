@@ -69,9 +69,12 @@ class MainActivity : ComponentActivity() {
             val adRenderer = remember { if (AdMobRenderer.enabled) AdMobRenderer(this, preferences, adScope) else null }
             DisposableEffect(adRenderer) { onDispose { adRenderer?.destroy() } }
 
+            // 테마가 바뀌어 다시 그려도 같은 흐름을 넘긴다. 새로 만들면 알림 열기를 받는 LaunchedEffect가 다시 시작한다.
+            val pingsToOpen = remember { openPing.receiveAsFlow() }
+
             OvalitTheme(darkTheme = darkTheme) {
                 CompositionLocalProvider(LocalAdRenderer provides adRenderer) {
-                    OvalitApp(appVersion = BuildConfig.VERSION_NAME, openPing = openPing.receiveAsFlow())
+                    OvalitApp(appVersion = BuildConfig.VERSION_NAME, openPing = pingsToOpen)
                     adRenderer?.Sheets()
                 }
             }

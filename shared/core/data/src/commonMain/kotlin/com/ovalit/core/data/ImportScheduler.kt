@@ -7,6 +7,9 @@ package com.ovalit.core.data
 interface ImportScheduler {
     fun start()
 
+    /** 멈춘 첫 수집을 지금 이어 받습니다. 실패한 뒤 다시 시도하려고 기다리던 작업도 바로 다시 띄웁니다. */
+    fun retry()
+
     /**
      * 새 경기를 스무 판 이상 남긴 채 앱 화면이 가려지면 부릅니다([NewMatchesWatcher]). 앱이 살아 있으면 받던 것을 기다리고, 앱이 닫혔으면
      * 남은 경기를 받습니다. 다 받으면 [total]판을 받았다고 알립니다. 작업이 시작되기 전에 앱에서 다 받았어도 알림은 갑니다.

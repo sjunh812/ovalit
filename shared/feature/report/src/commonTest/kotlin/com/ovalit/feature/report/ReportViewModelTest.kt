@@ -135,7 +135,8 @@ class ReportViewModelTest {
     @Test
     fun `경기가 새로 들어오면 리포트를 다시 만든다`() = runTest {
         val matches = MutableStateFlow<List<Match>>(emptyList())
-        val viewModel = ReportViewModel(StubRepository(matches), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
+        val imported = flowOf(ImportProgress(total = 0, results = emptyList()))
+        val viewModel = ReportViewModel(StubRepository(matches, imported), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         assertEquals(
@@ -147,6 +148,15 @@ class ReportViewModelTest {
 
         val state = assertIs<ReportUiState.Success>(viewModel.uiState.value)
         assertIs<WeeklyReport.Ready>(state.report)
+    }
+
+    // 설정에서 저장된 데이터를 지우면 경기도 첫 수집 진행도도 없다. 뛴 경기가 없는 게 아니라 지운 것이라 다시 불러오기를 권한다.
+    @Test
+    fun `저장된 경기를 지웠으면 다시 불러오기를 권한다`() = runTest {
+        val viewModel = ReportViewModel(StubRepository(flowOf(emptyList())), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+
+        assertTrue(assertIs<ReportUiState.Success>(viewModel.uiState.value).needsImport)
     }
 
     // 홈을 켜 둔 채 월요일 0시를 넘기면 새 경기가 없어도 이번 주가 지난주가 된다

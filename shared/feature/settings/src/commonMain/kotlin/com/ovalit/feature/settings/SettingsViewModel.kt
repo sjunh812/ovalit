@@ -12,13 +12,17 @@ import com.ovalit.core.model.PingReminder
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.model.UserPreferences
+import com.ovalit.core.ui.FailedAction
+import com.ovalit.core.ui.FailureNotice
+import com.ovalit.core.ui.FailureNotices
+import com.ovalit.core.ui.launchNotifying
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 sealed interface SettingsUiState {
     data object Loading : SettingsUiState
@@ -70,7 +74,11 @@ class SettingsViewModel(
 
     fun setDefaultQueue(queue: QueueFilter) = launch { preferencesRepository.setDefaultQueue(queue) }
 
-    fun deleteData() = launch { matchRepository.deleteAll() }
+    // 기다리던 새 경기 이어 받기도 멈춘다. 지운 뒤에 "새 경기를 다 받았어요" 알림이 가면 안 된다.
+    fun deleteData() = launch(FailedAction.DELETE_DATA) {
+        importScheduler.cancel()
+        matchRepository.deleteAll()
+    }
 
     /**
      * 첫 수집을 멈추고, 연동을 해제해 경기와 친구를 다 지운 뒤 [onUnlinked]를 부릅니다.
@@ -78,14 +86,19 @@ class SettingsViewModel(
      * 수집을 먼저 멈추지 않으면 해제한 뒤에 경기를 다시 채우고 "분석을 마쳤어요" 알림까지 보냅니다. 다 지우기 전에 화면을
      * 옮기면 설정 화면이 스택에서 빠지면서 이 ViewModel이 정리돼, 지우던 작업이 중간에 끊길 수 있습니다.
      */
-    fun unlink(onUnlinked: () -> Unit) = launch {
+    fun unlink(onUnlinked: () -> Unit) = launch(FailedAction.UNLINK, onFailure = { unlinking = false }) {
         unlinking = true
         importScheduler.cancel()
         accountRepository.unlink()
         onUnlinked()
     }
 
-    private fun launch(block: suspend () -> Unit) {
-        viewModelScope.launch { block() }
+    private val failures = FailureNotices()
+
+    /** 사용자가 한 일이 실패했을 때 화면 아래에 띄울 안내입니다. */
+    val notices: Flow<FailureNotice> = failures.flow
+
+    private fun launch(action: FailedAction = FailedAction.SETTING, onFailure: () -> Unit = {}, block: suspend () -> Unit) {
+        viewModelScope.launchNotifying(failures, action, onFailure) { block() }
     }
 }

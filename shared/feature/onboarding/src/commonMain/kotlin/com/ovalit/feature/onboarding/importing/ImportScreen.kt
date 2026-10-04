@@ -42,6 +42,7 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Focus
 import com.ovalit.core.model.ImportProgress
+import com.ovalit.core.model.OvalitError
 import com.ovalit.core.ui.description
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.resultColor
@@ -53,6 +54,10 @@ import com.ovalit.feature.onboarding.resources.import_done_none
 import com.ovalit.feature.onboarding.resources.import_loading
 import com.ovalit.feature.onboarding.resources.import_open_report
 import com.ovalit.feature.onboarding.resources.import_progress_description
+import com.ovalit.feature.onboarding.resources.import_retry
+import com.ovalit.feature.onboarding.resources.import_stopped
+import com.ovalit.feature.onboarding.resources.import_stopped_later
+import com.ovalit.feature.onboarding.resources.import_stopped_offline
 import com.ovalit.feature.onboarding.resources.import_subtitle
 import com.ovalit.feature.onboarding.resources.import_title
 import org.jetbrains.compose.resources.stringResource
@@ -69,7 +74,7 @@ fun ImportRoute(
     viewModel: ImportViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    ImportScreen(uiState, onSelectFocus = viewModel::selectFocus, onOpenReport = onOpenReport, modifier = modifier)
+    ImportScreen(uiState, onSelectFocus = viewModel::selectFocus, onOpenReport = onOpenReport, onRetry = viewModel::retry, modifier = modifier)
 }
 
 @Composable
@@ -78,6 +83,7 @@ internal fun ImportScreen(
     onSelectFocus: (Focus) -> Unit,
     onOpenReport: () -> Unit,
     modifier: Modifier = Modifier,
+    onRetry: () -> Unit = {},
 ) {
     val colors = OvalitTheme.colors
     Box(modifier = modifier.fillMaxSize().background(colors.bg)) {
@@ -106,7 +112,7 @@ internal fun ImportScreen(
                 }
                 Spacer(Modifier.height(OvalitSpacing.xl))
             }
-            Progress(uiState.progress, onOpenReport)
+            Progress(uiState.progress, onOpenReport, onRetry)
         }
     }
 }
@@ -157,11 +163,12 @@ private fun FocusOption(focus: Focus, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun Progress(progress: ImportProgress?, onOpenReport: () -> Unit) {
+private fun Progress(progress: ImportProgress?, onOpenReport: () -> Unit, onRetry: () -> Unit) {
     val colors = OvalitTheme.colors
     val loaded = progress?.loaded ?: 0
     val total = progress?.total ?: 0
     val done = progress?.isDone == true
+    val stoppedBy = progress?.stoppedBy?.takeIf { !done }
     val description = stringResource(Res.string.import_progress_description, loaded, total)
 
     Column(modifier = Modifier.padding(start = OvalitSpacing.xl, end = OvalitSpacing.xl, bottom = OvalitSpacing.xl)) {
@@ -172,6 +179,7 @@ private fun Progress(progress: ImportProgress?, onOpenReport: () -> Unit) {
                 text = when {
                     done && total == 0 -> stringResource(Res.string.import_done_none)
                     done -> stringResource(Res.string.import_done, total)
+                    stoppedBy != null -> stringResource(Res.string.import_stopped)
                     else -> stringResource(Res.string.import_loading)
                 },
                 modifier = Modifier.weight(1f),
@@ -205,10 +213,19 @@ private fun Progress(progress: ImportProgress?, onOpenReport: () -> Unit) {
             }
         }
         Spacer(Modifier.height(12.dp))
-        if (done) {
-            OvalitPrimaryButton(text = stringResource(Res.string.import_open_report), onClick = onOpenReport)
-        } else {
-            OvalitText(text = stringResource(Res.string.import_background), style = OvalitTheme.typography.caption, color = colors.t3)
+        when {
+            done -> OvalitPrimaryButton(text = stringResource(Res.string.import_open_report), onClick = onOpenReport)
+            // 멈춰도 받은 칸은 그대로 두고 남은 것만 이어 받는다. 기다리면 저절로 다시 시도한다.
+            stoppedBy != null -> {
+                OvalitText(
+                    text = stringResource(if (stoppedBy == OvalitError.Offline) Res.string.import_stopped_offline else Res.string.import_stopped_later),
+                    style = OvalitTheme.typography.caption,
+                    color = colors.t3,
+                )
+                Spacer(Modifier.height(12.dp))
+                OvalitPrimaryButton(text = stringResource(Res.string.import_retry), onClick = onRetry)
+            }
+            else -> OvalitText(text = stringResource(Res.string.import_background), style = OvalitTheme.typography.caption, color = colors.t3)
         }
     }
 }

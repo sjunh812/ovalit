@@ -67,6 +67,7 @@ import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.halfScores
 import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdSlot
+import com.ovalit.core.ui.FailureNoticesEffect
 import com.ovalit.core.ui.MapImage
 import com.ovalit.core.ui.MapImageStyle
 import com.ovalit.core.ui.ResultLabel
@@ -111,6 +112,7 @@ fun MatchDetailRoute(
     modifier: Modifier = Modifier,
     viewModel: MatchDetailViewModel = koinViewModel(key = matchId.value) { parametersOf(matchId.value) },
 ) {
+    FailureNoticesEffect(viewModel.notices)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LaunchedEffect(uiState) {
         if (uiState == MatchDetailUiState.Gone) onBack()

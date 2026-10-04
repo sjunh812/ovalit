@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitCard
 import com.ovalit.core.designsystem.component.OvalitCardGap
+import com.ovalit.core.designsystem.component.OvalitPrimaryButton
 import com.ovalit.core.designsystem.component.OvalitPullToRefresh
 import com.ovalit.core.designsystem.component.OvalitStage
 import com.ovalit.core.designsystem.component.OvalitStaged
@@ -47,6 +48,7 @@ import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdSlot
+import com.ovalit.core.ui.FailureNoticesEffect
 import com.ovalit.core.ui.NewMatchesLine
 import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.feature.report.component.DynamicMetricSection
@@ -75,6 +77,9 @@ import com.ovalit.feature.report.resources.not_enough_body
 import com.ovalit.feature.report.resources.not_enough_title
 import com.ovalit.feature.report.resources.not_enough_title_none
 import com.ovalit.feature.report.resources.other_queue_hint
+import com.ovalit.feature.report.resources.reimport_body
+import com.ovalit.feature.report.resources.reimport_button
+import com.ovalit.feature.report.resources.reimport_title
 import kotlinx.datetime.TimeZone
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -88,8 +93,10 @@ fun ReportRoute(
     onOpenWeapons: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenPing: (PingId) -> Unit = {},
+    onReimport: () -> Unit = {},
     viewModel: ReportViewModel = koinViewModel(),
 ) {
+    FailureNoticesEffect(viewModel.notices)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val badge by viewModel.badge.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
@@ -117,6 +124,7 @@ fun ReportRoute(
         profileHint = profileHint,
         onProfileHintShown = viewModel::markProfileHintSeen,
         newMatches = newMatches,
+        onReimport = onReimport,
     )
 }
 
@@ -140,6 +148,7 @@ internal fun ReportScreen(
     profileHint: Boolean = false,
     onProfileHintShown: () -> Unit = {},
     newMatches: NewMatchesProgress? = null,
+    onReimport: () -> Unit = {},
 ) {
     // 첫 수집 뒤 홈으로 넘어오면 리포트가 전환 한가운데 도착한다. 그때 홈 전체를 그리면 밀려 들어오던 화면이 한 번
     // 멈춰서, 다 들어올 때까지 스켈레톤을 둔다. 다 들어온 뒤에도 한 프레임에 다 그리면 그 프레임이 200ms 가까이 걸려 묶음마다
@@ -201,7 +210,9 @@ internal fun ReportScreen(
                         // 답해야 하는 ㅇㅂㅇ이 리포트에 묻히지 않게 맨 위에 둔다
                         homePing?.let { home -> PingHomeCard(home = home, timeZone = timeZone, onClick = { onOpenPing(home.ping.id) }) }
                         // 받기 전 숫자가 틀린 기간을 말할 수 있으면 다 받을 때까지 자리만 잡아 둔다
-                        if (uiState.waitingForNewMatches) {
+                        if (uiState.needsImport) {
+                            Reimport(onClick = onReimport)
+                        } else if (uiState.waitingForNewMatches) {
                             ReportSkeleton(withChips = false)
                         } else when (val report = uiState.report) {
                             is WeeklyReport.Ready -> ReportContent(
@@ -348,6 +359,19 @@ private fun ReportContent(
     }
     openDynamic?.let { metric ->
         DynamicMetricSheet(metric = metric, report = report, onDismiss = { openDynamic = null })
+    }
+}
+
+@Composable
+private fun Reimport(onClick: () -> Unit) {
+    OvalitCard {
+        Column(modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+            OvalitText(text = stringResource(Res.string.reimport_title), style = OvalitTheme.typography.titleL)
+            Spacer(Modifier.height(OvalitSpacing.sm))
+            OvalitText(text = stringResource(Res.string.reimport_body), style = OvalitTheme.typography.body, color = OvalitTheme.colors.t2)
+            Spacer(Modifier.height(OvalitSpacing.lg))
+            OvalitPrimaryButton(text = stringResource(Res.string.reimport_button), onClick = onClick)
+        }
     }
 }
 

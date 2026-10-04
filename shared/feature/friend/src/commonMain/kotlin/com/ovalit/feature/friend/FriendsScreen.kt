@@ -56,6 +56,7 @@ import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdSlot
+import com.ovalit.core.ui.FailureNoticesEffect
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.loading
@@ -95,6 +96,7 @@ fun FriendsRoute(
     modifier: Modifier = Modifier,
     viewModel: FriendsViewModel = koinViewModel(),
 ) {
+    FailureNoticesEffect(viewModel.notices)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     FriendsScreen(

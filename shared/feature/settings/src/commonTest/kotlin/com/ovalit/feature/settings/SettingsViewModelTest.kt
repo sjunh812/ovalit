@@ -139,6 +139,8 @@ private class RecordingScheduler : ImportScheduler {
 
     override fun start() = Unit
 
+    override fun retry() = Unit
+
     override fun continueNewMatches(total: Int) = Unit
 
     override fun cancel() {

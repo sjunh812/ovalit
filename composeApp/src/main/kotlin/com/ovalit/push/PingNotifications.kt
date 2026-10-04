@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -20,7 +21,7 @@ import kotlin.math.roundToInt
 
 private const val PING_CHANNEL = "ping"
 private const val WEEKLY_CHANNEL = "weekly_report"
-private const val WEEKLY_NOTIFICATION_ID = 2
+private const val WEEKLY_TAG = "weekly_report"
 
 // 보낸 시각과 이만큼 안쪽이면 "지금"으로 적는다. 앱의 Ping.isNow와 같은 폭이다.
 private const val NOW_WINDOW_MS = 5 * 60 * 1000L
@@ -93,8 +94,7 @@ internal object PingNotifications {
                 .build()
             else -> null
         } ?: return
-        val id = if (data["type"] == "weekly_report") WEEKLY_NOTIFICATION_ID else notificationId(pingId)
-        notify(context, id, notification)
+        notify(context, if (data["type"] == "weekly_report") WEEKLY_TAG else pingTag(pingId), notification)
     }
 
     /** 알림 버튼으로 답한 뒤 같은 자리의 알림을 "참석으로 답했어요"로 바꿉니다. 소리는 다시 내지 않습니다. */
@@ -105,17 +105,24 @@ internal object PingNotifications {
             setOnlyAlertOnce(true)
             setTimeoutAfter(10_000L)
         }
-        notify(context, notificationId(pingId), notification)
+        notify(context, pingTag(pingId), notification)
     }
 
-    // 같은 ㅇㅂㅇ의 알림은 한 자리에서 바뀐다. 답이 올 때마다 쌓이면 알림판이 지저분해진다.
-    fun notificationId(pingId: String?): Int = 1_000 + (pingId?.hashCode() ?: 0).and(0xFFFF)
+    // 같은 ㅇㅂㅇ의 알림은 한 자리에서 바뀐다. 답이 올 때마다 쌓이면 알림판이 지저분해진다. 초대 ID를 태그로 써서 다른 초대나
+    // 다른 종류의 알림과 겹치지 않는다.
+    private fun pingTag(pingId: String?): String = "ping:${pingId.orEmpty()}"
+
+    /**
+     * 알림 버튼마다 다른 [PendingIntent]가 되게 붙이는 주소입니다. 안드로이드는 extra를 보지 않고 액션과 주소로 PendingIntent를
+     * 가르니, 이게 없으면 다른 초대의 버튼이 앞 초대의 것으로 덮입니다. 명시적 인텐트에만 붙여 다른 앱이 받을 수 없습니다.
+     */
+    fun actionUri(pingId: String?, action: String): Uri = Uri.Builder().scheme("ovalit-notification").authority(action).appendPath(pingId.orEmpty()).build()
 
     private fun pingNotification(context: Context, pingId: String?, build: NotificationCompat.Builder.() -> Unit) =
         NotificationCompat.Builder(context, channel(context, PING_CHANNEL, R.string.notification_channel_ping, NotificationManager.IMPORTANCE_HIGH))
             .setSmallIcon(R.drawable.ic_notification)
             .setCategory(NotificationCompat.CATEGORY_SOCIAL)
-            .setContentIntent(openApp(context, pingId, requestCode = notificationId(pingId)))
+            .setContentIntent(openApp(context, pingId, action = "open"))
             .setAutoCancel(true)
             .apply(build)
             .build()
@@ -123,7 +130,7 @@ internal object PingNotifications {
     private fun NotificationCompat.Builder.addAnswerActions(context: Context, pingId: String?) {
         if (pingId == null) return
         addAction(0, context.getString(R.string.ping_action_yes), PingActionReceiver.reply(context, pingId, "yes"))
-        addAction(0, context.getString(R.string.ping_action_other), openApp(context, pingId, requestCode = notificationId(pingId) + 1))
+        addAction(0, context.getString(R.string.ping_action_other), openApp(context, pingId, action = "other_time"))
         addAction(0, context.getString(R.string.ping_action_no), PingActionReceiver.reply(context, pingId, "no"))
     }
 
@@ -172,11 +179,12 @@ internal object PingNotifications {
     }
 
     // pingId가 있으면 그 초대 화면을 연다. 다른 시간은 거기서 고른다.
-    private fun openApp(context: Context, pingId: String?, requestCode: Int = 0): PendingIntent {
+    private fun openApp(context: Context, pingId: String?, action: String = "open"): PendingIntent {
         val intent = Intent(context, MainActivity::class.java)
+            .setData(actionUri(pingId, action))
             .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
             .apply { if (pingId != null) putExtra(EXTRA_OPEN_PING, pingId) }
-        return PendingIntent.getActivity(context, requestCode, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        return PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     private fun channel(context: Context, id: String, name: Int, importance: Int): String {
@@ -190,7 +198,7 @@ internal object PingNotifications {
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
     @Suppress("MissingPermission")
-    private fun notify(context: Context, id: Int, notification: android.app.Notification) {
-        NotificationManagerCompat.from(context).notify(id, notification)
+    private fun notify(context: Context, tag: String, notification: android.app.Notification) {
+        NotificationManagerCompat.from(context).notify(tag, 0, notification)
     }
 }

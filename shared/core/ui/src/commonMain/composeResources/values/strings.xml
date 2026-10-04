@@ -159,4 +159,26 @@
     <string name="new_matches_count">%1$d / %2$d</string>
     <string name="new_matches_description">새 경기 %2$d경기 중 %1$d경기를 받았어요</string>
     <string name="new_matches_in_background">앱을 닫아도 이어 받아요</string>
+    <!-- 사용자가 한 일이 실패했을 때 화면 아래에 잠깐 띄우는 한 줄. 까닭을 알면 까닭을, 모르면 무엇을 못 했는지 적는다 -->
+    <string name="error_offline">인터넷에 연결되어 있지 않아요</string>
+    <string name="error_session_expired">로그인이 풀렸어요 · 다시 로그인해 주세요</string>
+    <string name="error_riot_busy">Riot 서버가 붐벼요 · 잠시 뒤 다시 해 주세요</string>
+    <string name="error_riot_down">Riot 서버가 응답하지 않아요</string>
+    <string name="failed_refresh">새 경기를 받지 못했어요</string>
+    <string name="failed_friends_refresh">친구 목록을 새로 받지 못했어요</string>
+    <string name="failed_accept_friend">친구 요청을 수락하지 못했어요</string>
+    <string name="failed_decline_friend">친구 요청을 거절하지 못했어요</string>
+    <string name="failed_friend_request">친구 요청을 보내지 못했어요</string>
+    <string name="failed_unfriend">친구를 끊지 못했어요</string>
+    <string name="failed_rival">라이벌을 바꾸지 못했어요</string>
+    <string name="failed_ping_send">친구를 부르지 못했어요</string>
+    <string name="failed_ping_reply">답을 보내지 못했어요</string>
+    <string name="failed_ping_time">시간을 바꾸지 못했어요</string>
+    <string name="failed_ping_invite">친구를 더 부르지 못했어요</string>
+    <string name="failed_ping_cancel">초대를 취소하지 못했어요</string>
+    <string name="failed_ping_already_active">보낸 초대가 끝나야 또 부를 수 있어요</string>
+    <string name="failed_ping_full">자리가 다 찼어요</string>
+    <string name="failed_setting">설정을 바꾸지 못했어요</string>
+    <string name="failed_delete_data">저장된 데이터를 지우지 못했어요</string>
+    <string name="failed_unlink">연동을 해제하지 못했어요</string>
 </resources>

@@ -22,10 +22,13 @@ import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.model.forHome
 import com.ovalit.core.model.metricsIn
 import com.ovalit.core.model.weeklyReport
+import com.ovalit.core.ui.FailedAction
+import com.ovalit.core.ui.FailureNotice
+import com.ovalit.core.ui.FailureNotices
 import com.ovalit.core.ui.PlayerBadge
+import com.ovalit.core.ui.launchNotifying
 import com.ovalit.core.ui.playerBadge
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.coroutines.Dispatchers
@@ -54,6 +57,8 @@ sealed interface ReportUiState {
      * @property nudge 라이벌 칸 자리에 두는 유도 칸입니다. [homeNudge]가 정합니다.
      * @property waitingForNewMatches 새 경기를 여러 판 받는 중이라 [report]의 기간이 바뀔 수 있는지입니다. 그러면 리포트
      * 자리에 스켈레톤을 둡니다. 오래 쉬어 "지난주"를 보던 사람에게 받기 전 숫자를 띄우면 틀린 말이 됩니다.
+     * @property needsImport 설정에서 저장된 데이터를 지워 기기에 경기가 없는지입니다. 그러면 리포트 대신 다시 불러오기를
+     * 권합니다. 뛴 경기가 없는 것이 아니라 지운 것이라 "최근 4주 동안 뛴 경기가 없어요"는 틀린 말입니다.
      */
     data class Success(
         val queueFilter: QueueFilter,
@@ -62,6 +67,7 @@ sealed interface ReportUiState {
         val friends: List<FriendStanding> = emptyList(),
         val nudge: HomeNudge? = null,
         val waitingForNewMatches: Boolean = false,
+        val needsImport: Boolean = false,
     ) : ReportUiState
 }
 
@@ -136,6 +142,11 @@ class ReportViewModel(
 
     private val refreshing = MutableStateFlow(false)
 
+    private val failures = FailureNotices()
+
+    /** 사용자가 한 일이 실패했을 때 화면 아래에 띄울 안내입니다. */
+    val notices: Flow<FailureNotice> = failures.flow
+
     /** 새 경기를 여러 판 받는 중이면 몇 판 중 몇 판을 받았는지입니다. 홈 맨 위 진행 줄로 띄웁니다. 다섯 판보다 적으면 `null`입니다. */
     val newMatches: StateFlow<NewMatchesProgress?> = matchRepository.newMatchesProgress
         .map { progress -> progress?.takeIf { it.isShown } }
@@ -156,7 +167,7 @@ class ReportViewModel(
         waitingForNewMatches,
     ) { matches, progress, _, catalog, waiting ->
         matches.takeIf { progress == null || progress.isDone }?.let {
-            ReportInputs(it, catalog.weapons.mapValues { (_, info) -> info.category }, waiting)
+            ReportInputs(it, catalog.weapons.mapValues { (_, info) -> info.category }, waiting, needsImport = progress == null && it.isEmpty())
         }
     }
 
@@ -200,6 +211,7 @@ class ReportViewModel(
                 hasRival = rivalId != null,
             ),
             waitingForNewMatches = inputs.waitingForNewMatches && periodMayChange,
+            needsImport = inputs.needsImport,
         )
     }.flowOn(computation).stateIn(
         scope = viewModelScope,
@@ -216,7 +228,8 @@ class ReportViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initialValue = false)
 
     fun markProfileHintSeen() {
-        viewModelScope.launch { preferencesRepository.setSeenProfileHint() }
+        // 적지 못하면 다음에 한 번 더 뜰 뿐이라 안내하지 않는다
+        viewModelScope.launch { runCatching { preferencesRepository.setSeenProfileHint() } }
     }
 
     /** 요원과 무기 이름을 찾는 카탈로그입니다. 받기 전에는 비어 있어 "알 수 없는 요원", "알 수 없는 무기"가 뜹니다. */
@@ -243,17 +256,14 @@ class ReportViewModel(
     fun refresh() {
         if (refreshing.value || newMatches.value != null) return
         refreshing.value = true
-        viewModelScope.launch {
+        // 받지 못해도 저장해 둔 경기와 그 숫자는 그대로 두고 안내만 띄운다
+        viewModelScope.launchNotifying(failures, FailedAction.REFRESH) {
             val untilLineShows = launch {
                 matchRepository.newMatchesProgress.first { it?.isShown == true }
                 refreshing.value = false
             }
             try {
                 matchRepository.refresh()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // 받지 못해도 저장해 둔 경기로 그린 리포트는 그대로 둔다
             } finally {
                 untilLineShows.cancel()
                 refreshing.value = false
@@ -263,7 +273,7 @@ class ReportViewModel(
 
     /** 유도 칸에서 고른 친구를 라이벌로 정합니다. S5의 라이벌 지정과 같은 값을 바꿉니다. */
     fun selectRival(id: PlayerId) {
-        viewModelScope.launch { friendRepository.setRival(id) }
+        viewModelScope.launchNotifying(failures, FailedAction.RIVAL) { friendRepository.setRival(id) }
     }
 }
 
@@ -271,4 +281,5 @@ private class ReportInputs(
     val matches: List<Match>,
     val weaponCategories: Map<WeaponId, WeaponCategory>,
     val waitingForNewMatches: Boolean,
+    val needsImport: Boolean,
 )

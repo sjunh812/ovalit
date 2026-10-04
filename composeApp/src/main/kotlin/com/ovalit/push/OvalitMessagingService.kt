@@ -2,6 +2,8 @@ package com.ovalit.push
 
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.ovalit.LogBackgroundFailure
+import com.ovalit.core.data.AccountRepository
 import com.ovalit.core.data.PingRepository
 import com.ovalit.core.data.PushRepository
 import com.ovalit.core.data.UserPreferencesRepository
@@ -21,10 +23,11 @@ import org.koin.core.component.inject
  */
 class OvalitMessagingService : FirebaseMessagingService(), KoinComponent {
 
+    private val account: AccountRepository by inject()
     private val preferences: UserPreferencesRepository by inject()
     private val pings: PingRepository by inject()
     private val push: PushRepository by inject()
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + LogBackgroundFailure)
 
     override fun onNewToken(token: String) {
         scope.launch { push.register(token) }
@@ -34,7 +37,9 @@ class OvalitMessagingService : FirebaseMessagingService(), KoinComponent {
     override fun onMessageReceived(message: RemoteMessage) {
         val data = message.data
         val type = data["type"] ?: return
-        val settings = runBlocking { preferences.preferences.first() }
+        // 연동을 해제한 뒤 늦게 도착한 알림은 띄우지 않는다
+        val (linked, settings) = runBlocking { (account.account.first() != null) to preferences.preferences.first() }
+        if (!linked) return
         if (type == "weekly_report") {
             if (settings.notifyWeeklyReport) PingNotifications.show(this, data)
             return

@@ -45,6 +45,7 @@ import com.ovalit.core.model.Focus
 import com.ovalit.core.model.PingReminder
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
+import com.ovalit.core.ui.FailureNoticesEffect
 import com.ovalit.core.ui.LocalAdRenderer
 import com.ovalit.core.ui.PlayerAvatar
 import com.ovalit.core.ui.label
@@ -105,6 +106,7 @@ fun SettingsRoute(
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = koinViewModel(),
 ) {
+    FailureNoticesEffect(viewModel.notices)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     SettingsScreen(

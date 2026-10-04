@@ -11,9 +11,13 @@ import com.ovalit.core.model.MapId
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.NewMatchesProgress
 import com.ovalit.core.model.QueueFilter
-import kotlin.coroutines.cancellation.CancellationException
+import com.ovalit.core.ui.FailedAction
+import com.ovalit.core.ui.FailureNotice
+import com.ovalit.core.ui.FailureNotices
+import com.ovalit.core.ui.launchNotifying
 import kotlin.time.Clock
 import kotlin.time.Instant
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -65,6 +69,11 @@ class MatchesViewModel(
     private val filter = MutableStateFlow(MatchFilter())
     private val refreshing = MutableStateFlow(false)
 
+    private val failures = FailureNotices()
+
+    /** 사용자가 한 일이 실패했을 때 화면 아래에 띄울 안내입니다. */
+    val notices: Flow<FailureNotice> = failures.flow
+
     /** 새 경기를 여러 판 받는 중이면 몇 판 중 몇 판을 받았는지입니다. 목록 맨 위 진행 줄로 띄웁니다. 다섯 판보다 적으면 `null`입니다. */
     val newMatches: StateFlow<NewMatchesProgress?> = matchRepository.newMatchesProgress
         .map { progress -> progress?.takeIf { it.isShown } }
@@ -107,17 +116,14 @@ class MatchesViewModel(
     fun refresh() {
         if (refreshing.value || newMatches.value != null) return
         refreshing.value = true
-        viewModelScope.launch {
+        // 받지 못해도 저장해 둔 경기와 그 숫자는 그대로 두고 안내만 띄운다
+        viewModelScope.launchNotifying(failures, FailedAction.REFRESH) {
             val untilLineShows = launch {
                 matchRepository.newMatchesProgress.first { it?.isShown == true }
                 refreshing.value = false
             }
             try {
                 matchRepository.refresh()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                // 아직 실패를 화면에 알리지 않는다. 저장해 둔 경기는 그대로 남는다.
             } finally {
                 untilLineShows.cancel()
                 refreshing.value = false

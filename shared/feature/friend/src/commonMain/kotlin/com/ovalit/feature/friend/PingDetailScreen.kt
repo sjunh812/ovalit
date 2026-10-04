@@ -39,6 +39,7 @@ import com.ovalit.core.model.Ping
 import com.ovalit.core.model.PingAnswer
 import com.ovalit.core.model.PingMember
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.ui.FailureNoticesEffect
 import com.ovalit.core.ui.pingCalledBy
 import com.ovalit.core.ui.pingClockText
 import com.ovalit.core.ui.pingHeroDay
@@ -65,6 +66,7 @@ fun PingDetailRoute(
     modifier: Modifier = Modifier,
     viewModel: PingDetailViewModel = koinViewModel(key = "ping-$pingId") { parametersOf(pingId) },
 ) {
+    FailureNoticesEffect(viewModel.notices)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     PingDetailScreen(
         uiState = uiState,

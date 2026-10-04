@@ -22,11 +22,16 @@ import com.ovalit.core.model.profileSummary
 import com.ovalit.core.model.sharedWith
 import com.ovalit.core.model.weaponReport
 import com.ovalit.core.model.weeklyReport
+import com.ovalit.core.ui.FailedAction
+import com.ovalit.core.ui.FailureNotice
+import com.ovalit.core.ui.FailureNotices
 import com.ovalit.core.ui.PlayerBadge
+import com.ovalit.core.ui.launchNotifying
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -125,8 +130,13 @@ class FriendProfileViewModel(
         initialValue = FriendProfileUiState.Loading,
     )
 
+    private val failures = FailureNotices()
+
+    /** 사용자가 한 일이 실패했을 때 화면 아래에 띄울 안내입니다. */
+    val notices: Flow<FailureNotice> = failures.flow
+
     fun toggleRival() {
-        viewModelScope.launch {
+        viewModelScope.launchNotifying(failures, FailedAction.RIVAL) {
             val isRival = friendRepository.rival.first() == friendId
             friendRepository.setRival(if (isRival) null else friendId)
         }
@@ -134,6 +144,6 @@ class FriendProfileViewModel(
 
     /** 끊고 나면 상태가 [FriendProfileUiState.Gone]이 되고, 화면은 그걸 보고 닫힙니다. */
     fun unfriend() {
-        viewModelScope.launch { friendRepository.unfriend(friendId) }
+        viewModelScope.launchNotifying(failures, FailedAction.UNFRIEND) { friendRepository.unfriend(friendId) }
     }
 }

@@ -29,5 +29,9 @@
     <string name="import_done">%1$d경기를 다 불러왔어요</string>
     <string name="import_done_none">최근 8주 동안 뛴 경기가 없어요</string>
     <string name="import_open_report">리포트 보기</string>
+    <string name="import_stopped">경기를 다 불러오지 못했어요</string>
+    <string name="import_stopped_offline">인터넷에 연결되면 이어서 불러와요.</string>
+    <string name="import_stopped_later">잠시 뒤 저절로 이어서 불러와요. 지금 다시 해도 돼요.</string>
+    <string name="import_retry">이어서 불러오기</string>
     <string name="import_progress_description">%2$d경기 중 %1$d경기를 불러왔어요</string>
 </resources>

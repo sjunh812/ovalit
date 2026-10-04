@@ -20,6 +20,7 @@ val reportModule = module {
             timeZone,
             weekStarts(Clock.System, timeZone),
             pingRepository = get(),
+            analytics = get(),
         )
     }
 }

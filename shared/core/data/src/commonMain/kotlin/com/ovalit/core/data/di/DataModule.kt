@@ -42,7 +42,7 @@ fun dataModule(preferencesPath: () -> String) = module {
     single { FakeAccountRepository(get(), friendRepository = get(), pingRepository = get()) } bind AccountRepository::class
     single<ContentRepository> { FakeContentRepository() }
     // ImportScheduler는 앱 모듈이 넣는다
-    single { NewMatchesWatcher(get(), get(), get(), get(ApplicationScope)) }
+    single { NewMatchesWatcher(get(), get(), get(), get(ApplicationScope), analytics = get()) }
     single<UserPreferencesRepository> {
         DataStoreUserPreferencesRepository(createPreferencesDataStore(preferencesPath()))
     }

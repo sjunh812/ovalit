@@ -87,6 +87,8 @@ private class InMemoryPreferences : UserPreferencesRepository {
 
     override suspend fun setPingReminder(reminder: PingReminder) = Unit
 
+    override suspend fun setShareUsageStats(enabled: Boolean) = Unit
+
     override suspend fun setFocus(focus: Focus) = preferences.update { it.copy(focus = focus) }
 
     override suspend fun setSeenProfileHint() = Unit

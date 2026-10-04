@@ -23,6 +23,8 @@ import androidx.work.workDataOf
 import com.ovalit.MainActivity
 import com.ovalit.R
 import com.ovalit.core.data.AccountRepository
+import com.ovalit.core.data.Analytics
+import com.ovalit.core.data.AnalyticsEvents
 import com.ovalit.core.data.ImportScheduler
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
@@ -77,6 +79,7 @@ class FirstImportWorker(context: Context, params: WorkerParameters) : CoroutineW
     private val account: AccountRepository by inject()
     private val matches: MatchRepository by inject()
     private val preferences: UserPreferencesRepository by inject()
+    private val analytics: Analytics by inject()
 
     override suspend fun doWork(): Result {
         // 연동을 해제한 뒤에 기다리던 작업이 돌면 RSO 세션 없이 전적을 요청한다(CLAUDE.md 지켜야 할 선)
@@ -89,6 +92,10 @@ class FirstImportWorker(context: Context, params: WorkerParameters) : CoroutineW
         } catch (_: Exception) {
             return Result.retry()
         }
+        analytics.log(
+            AnalyticsEvents.TUTORIAL_COMPLETE,
+            mapOf("match_bucket" to importBucket(matches.observeMatches().first().size), "finished_in_background" to (!AppVisibility.isVisible).toString()),
+        )
         // 화면을 보고 있으면 S0-4가 이미 끝났다고 알려 주니 알림을 겹쳐 보내지 않는다. 받는 사이 연동을 해제했어도 보내지 않는다.
         if (account.account.first() != null && preferences.preferences.first().notifyAnalysisDone && !AppVisibility.isVisible) {
             val count = matches.observeMatches().first().size
@@ -166,4 +173,12 @@ private fun notify(context: Context, tag: String, title: String, body: String) {
         .setAutoCancel(true)
         .build()
     NotificationManagerCompat.from(context).notify(tag, 0, notification)
+}
+
+// 첫 수집으로 받은 경기 수를 몇 구간으로 줄인다. 정확한 수는 쓸모가 적다.
+private fun importBucket(count: Int): String = when {
+    count == 0 -> "0"
+    count < 10 -> "1-9"
+    count < 30 -> "10-29"
+    else -> "30-50"
 }

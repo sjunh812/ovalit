@@ -2,9 +2,13 @@ package com.ovalit.feature.match
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ovalit.core.data.Analytics
+import com.ovalit.core.data.AnalyticsEvents
 import com.ovalit.core.data.ContentRepository
 import com.ovalit.core.data.MatchRepository
+import com.ovalit.core.data.NoAnalytics
 import com.ovalit.core.data.UserPreferencesRepository
+import com.ovalit.core.data.logRefresh
 import com.ovalit.core.model.AgentId
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.MapId
@@ -62,6 +66,7 @@ class MatchesViewModel(
     contentRepository: ContentRepository,
     private val clock: Clock,
     private val timeZone: TimeZone,
+    private val analytics: Analytics = NoAnalytics,
 ) : ViewModel() {
 
     // 홈과 마찬가지로 칩을 고르기 전까지는 설정의 기본 큐를 따른다
@@ -123,7 +128,7 @@ class MatchesViewModel(
                 refreshing.value = false
             }
             try {
-                matchRepository.refresh()
+                logRefresh(analytics, source = "matches") { matchRepository.refresh() }
             } finally {
                 untilLineShows.cancel()
                 refreshing.value = false

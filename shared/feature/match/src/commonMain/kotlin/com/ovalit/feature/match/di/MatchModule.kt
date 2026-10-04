@@ -9,8 +9,8 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val matchModule = module {
-    viewModel { MatchesViewModel(get(), get(), get(), Clock.System, TimeZone.currentSystemDefault()) }
+    viewModel { MatchesViewModel(get(), get(), get(), Clock.System, TimeZone.currentSystemDefault(), analytics = get()) }
     viewModel { (id: String) ->
-        MatchDetailViewModel(MatchId(id), get(), get(), get(), TimeZone.currentSystemDefault())
+        MatchDetailViewModel(MatchId(id), get(), get(), get(), TimeZone.currentSystemDefault(), analytics = get())
     }
 }

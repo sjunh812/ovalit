@@ -16,6 +16,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.ads.AdMobRenderer
+import com.ovalit.core.data.Analytics
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ThemePreference
@@ -66,7 +67,8 @@ class MainActivity : ComponentActivity() {
 
             // 광고 단위 ID가 없으면 렌더러를 깔지 않아 광고 자리가 비어 있다
             val adScope = rememberCoroutineScope()
-            val adRenderer = remember { if (AdMobRenderer.enabled) AdMobRenderer(this, preferences, adScope) else null }
+            val analytics = koinInject<Analytics>()
+            val adRenderer = remember { if (AdMobRenderer.enabled) AdMobRenderer(this, preferences, adScope, analytics) else null }
             DisposableEffect(adRenderer) { onDispose { adRenderer?.destroy() } }
 
             // 테마가 바뀌어 다시 그려도 같은 흐름을 넘긴다. 새로 만들면 알림 열기를 받는 LaunchedEffect가 다시 시작한다.

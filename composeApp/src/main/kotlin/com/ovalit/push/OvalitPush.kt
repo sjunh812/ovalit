@@ -2,11 +2,9 @@ package com.ovalit.push
 
 import android.content.Context
 import androidx.core.app.NotificationManagerCompat
-import com.google.firebase.FirebaseApp
-import com.google.firebase.FirebaseOptions
 import com.google.firebase.messaging.FirebaseMessaging
-import com.ovalit.BuildConfig
 import com.ovalit.core.data.AccountRepository
+import com.ovalit.telemetry.OvalitFirebase
 import com.ovalit.core.data.PushRepository
 import com.ovalit.core.data.UserPreferencesRepository
 import kotlinx.coroutines.CoroutineScope
@@ -19,12 +17,12 @@ import kotlinx.coroutines.launch
 internal const val WEEKLY_REPORT_TOPIC = "weekly_report"
 
 /**
- * FCM을 띄웁니다. google-services 플러그인 대신 `local.properties`의 네 값으로 직접 띄웁니다. 값이 없으면 아무것도 하지 않고
- * 앱은 푸시 없이 돕니다. 가짜 저장소로 돌릴 때와 Firebase 프로젝트를 만들기 전이 그렇습니다.
+ * FCM 토큰을 서버에 맡기고 주간 리포트 토픽을 구독합니다. Firebase 값이 없으면 아무것도 하지 않고 앱은 푸시 없이 돕니다. 가짜
+ * 저장소로 돌릴 때와 Firebase 프로젝트를 만들기 전이 그렇습니다.
  */
 internal object OvalitPush {
 
-    val enabled: Boolean get() = BuildConfig.FIREBASE_APP_ID.isNotBlank()
+    val enabled: Boolean get() = OvalitFirebase.enabled
 
     fun start(
         context: Context,
@@ -33,16 +31,8 @@ internal object OvalitPush {
         preferences: UserPreferencesRepository,
         push: PushRepository,
     ) {
+        // Firebase는 OvalitFirebase가 앱 시작 맨 앞에서 띄운다
         if (!enabled) return
-        if (FirebaseApp.getApps(context).isEmpty()) {
-            val options = FirebaseOptions.Builder()
-                .setApplicationId(BuildConfig.FIREBASE_APP_ID)
-                .setApiKey(BuildConfig.FIREBASE_API_KEY)
-                .setProjectId(BuildConfig.FIREBASE_PROJECT_ID)
-                .setGcmSenderId(BuildConfig.FIREBASE_SENDER_ID)
-                .build()
-            FirebaseApp.initializeApp(context, options)
-        }
         val messaging = FirebaseMessaging.getInstance()
         messaging.isAutoInitEnabled = true
         // 연동하면 토큰을 서버에 맡기고, 해제하면 토큰을 버리고 떠 있는 알림을 지운다. 그대로 두면 해제한 기기로 옛 계정의

@@ -13,6 +13,7 @@ import com.ovalit.feature.report.di.reportModule
 import com.ovalit.feature.settings.di.settingsModule
 import com.ovalit.importing.AppVisibility
 import com.ovalit.push.OvalitPush
+import com.ovalit.telemetry.OvalitFirebase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -26,6 +27,8 @@ class OvalitApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // 비정상 종료 보고를 놓치지 않게 무엇보다 먼저 띄운다. 광고 SDK보다도 앞서야 동의 신호가 맞게 이어진다.
+        OvalitFirebase.start(this)
         registerActivityLifecycleCallbacks(AppVisibility)
 
         startKoin {
@@ -42,6 +45,7 @@ class OvalitApplication : Application() {
                 settingsModule,
             )
         }
+        OvalitFirebase.follow(this, appScope, preferences = get(), account = get())
         // 앱이 살아 있는 동안 토큰을 서버에 맡기고 주간 리포트 토픽 구독을 설정에 맞춘다
         OvalitPush.start(this, appScope, account = get(), preferences = get(), push = get())
         AdMobRenderer.start(this, appScope)

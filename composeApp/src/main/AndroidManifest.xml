@@ -82,6 +82,21 @@
             android:name=".push.PingActionReceiver"
             android:exported="false" />
 
+        <!-- 사용 통계와 비정상 종료 보고는 꺼 둔 채 시작하고, 설정의 "사용 통계 보내기"를 읽은 뒤에 켠다(OvalitFirebase).
+             광고 ID는 AdMob만 쓰고, 화면 이름은 고정된 표로 직접 보낸다. 자동으로 모으면 화면 클래스 이름이 난독화돼 쓸모가 없다. -->
+        <meta-data
+            android:name="firebase_analytics_collection_enabled"
+            android:value="false" />
+        <meta-data
+            android:name="firebase_crashlytics_collection_enabled"
+            android:value="false" />
+        <meta-data
+            android:name="google_analytics_adid_collection_enabled"
+            android:value="false" />
+        <meta-data
+            android:name="google_analytics_automatic_screen_reporting_enabled"
+            android:value="false" />
+
         <!-- 값이 없을 때 Firebase가 스스로 토큰을 만들지 않게 막고, 띄운 뒤에 켠다 -->
         <meta-data
             android:name="firebase_messaging_auto_init_enabled"

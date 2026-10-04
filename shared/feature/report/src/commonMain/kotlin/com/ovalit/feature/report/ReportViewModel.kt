@@ -3,11 +3,15 @@ package com.ovalit.feature.report
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ovalit.core.data.AccountRepository
+import com.ovalit.core.data.Analytics
+import com.ovalit.core.data.AnalyticsEvents
 import com.ovalit.core.data.ContentRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.MatchRepository
+import com.ovalit.core.data.NoAnalytics
 import com.ovalit.core.data.PingRepository
 import com.ovalit.core.data.UserPreferencesRepository
+import com.ovalit.core.data.logRefresh
 import com.ovalit.core.data.settledMatches
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Match
@@ -128,6 +132,7 @@ class ReportViewModel(
     weekChanges: Flow<Unit> = flowOf(Unit),
     computation: CoroutineContext = Dispatchers.Default,
     pingRepository: PingRepository? = null,
+    private val analytics: Analytics = NoAnalytics,
 ) : ViewModel() {
 
     /** 홈 맨 위에 띄울 ㅇㅂㅇ입니다. 리포트 계산과 따로 둬서 답이 바뀔 때 리포트를 다시 세지 않습니다. */
@@ -263,7 +268,7 @@ class ReportViewModel(
                 refreshing.value = false
             }
             try {
-                matchRepository.refresh()
+                logRefresh(analytics, source = "home") { matchRepository.refresh() }
             } finally {
                 untilLineShows.cancel()
                 refreshing.value = false

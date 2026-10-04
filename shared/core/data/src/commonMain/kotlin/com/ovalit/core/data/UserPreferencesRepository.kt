@@ -26,6 +26,8 @@ interface UserPreferencesRepository {
 
     suspend fun setPingReminder(reminder: PingReminder)
 
+    suspend fun setShareUsageStats(enabled: Boolean)
+
     suspend fun setFocus(focus: Focus)
 
     /** 홈의 내 프로필 안내를 띄웠다고 적습니다. 다시 띄우지 않습니다. */

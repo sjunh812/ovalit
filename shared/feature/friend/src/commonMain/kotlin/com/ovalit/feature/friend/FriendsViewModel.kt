@@ -3,7 +3,10 @@ package com.ovalit.feature.friend
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ovalit.core.data.AccountRepository
+import com.ovalit.core.data.Analytics
+import com.ovalit.core.data.AnalyticsEvents
 import com.ovalit.core.data.FriendRepository
+import com.ovalit.core.data.NoAnalytics
 import com.ovalit.core.data.PingRepository
 import com.ovalit.core.data.PingSendResult
 import com.ovalit.core.model.Friend
@@ -60,6 +63,7 @@ class FriendsViewModel(
     accountRepository: AccountRepository,
     private val clock: Clock,
     val timeZone: TimeZone,
+    private val analytics: Analytics = NoAnalytics,
 ) : ViewModel() {
 
     private val refreshing = MutableStateFlow(false)
@@ -100,11 +104,17 @@ class FriendsViewModel(
     val notices: Flow<FailureNotice> = failures.flow
 
     fun accept(id: PlayerId) {
-        viewModelScope.launchNotifying(failures, FailedAction.ACCEPT_FRIEND) { friendRepository.accept(id) }
+        viewModelScope.launchNotifying(failures, FailedAction.ACCEPT_FRIEND) {
+            friendRepository.accept(id)
+            analytics.log(AnalyticsEvents.FRIEND_REQUEST, mapOf("action" to "accept", "source" to "friends_tab"))
+        }
     }
 
     fun decline(id: PlayerId) {
-        viewModelScope.launchNotifying(failures, FailedAction.DECLINE_FRIEND) { friendRepository.decline(id) }
+        viewModelScope.launchNotifying(failures, FailedAction.DECLINE_FRIEND) {
+            friendRepository.decline(id)
+            analytics.log(AnalyticsEvents.FRIEND_REQUEST, mapOf("action" to "decline", "source" to "friends_tab"))
+        }
     }
 
     fun inviteLink(): String = friendRepository.inviteLink()
@@ -133,6 +143,7 @@ class FriendsViewModel(
     fun sendPing(friends: List<PlayerId>, startsAt: Instant, onResult: (PingSendResult) -> Unit) {
         viewModelScope.launchNotifying(failures, FailedAction.PING_SEND) {
             val result = pingRepository.send(friends, startsAt)
+            if (result == PingSendResult.SENT) analytics.log(AnalyticsEvents.PING_SEND, mapOf("friend_count" to friends.size.toString()))
             // 보낸 것이 끝나기 전에는 "부르기"를 두지 않으니, 이 결과는 다른 기기에서 그사이 보낸 경우다
             if (result == PingSendResult.ALREADY_ACTIVE) failures.send(FailureNotice(FailedAction.PING_ALREADY_ACTIVE))
             onResult(result)

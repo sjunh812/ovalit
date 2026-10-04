@@ -20,6 +20,8 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.ovalit.BuildConfig
+import com.ovalit.core.data.Analytics
+import com.ovalit.core.data.AnalyticsEvents
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdRenderer
@@ -46,6 +48,7 @@ internal class AdMobRenderer(
     private val activity: Activity,
     private val preferences: UserPreferencesRepository,
     private val scope: CoroutineScope,
+    private val analytics: Analytics,
 ) : AdRenderer {
 
     private val ads = mutableStateMapOf<String, LoadedAd>()
@@ -112,6 +115,7 @@ internal class AdMobRenderer(
             activity = activity,
             unitId = BuildConfig.ADMOB_REWARDED_UNIT_ID,
             onEarned = {
+                analytics.log(AnalyticsEvents.AD_FREE_START, mapOf("entry" to if (shown.closeKey != null) "ad_row" else "settings"))
                 val until = Instant.fromEpochMilliseconds(System.currentTimeMillis() + AD_FREE.inWholeMilliseconds)
                 scope.launch { preferences.setAdFreeUntil(until) }
             },

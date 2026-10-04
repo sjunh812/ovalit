@@ -2,9 +2,12 @@ package com.ovalit.feature.match
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ovalit.core.data.Analytics
+import com.ovalit.core.data.AnalyticsEvents
 import com.ovalit.core.data.ContentRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.MatchRepository
+import com.ovalit.core.data.NoAnalytics
 import com.ovalit.core.model.BuyRecord
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Match
@@ -101,6 +104,7 @@ class MatchDetailViewModel(
     matchRepository: MatchRepository,
     contentRepository: ContentRepository,
     private val timeZone: TimeZone,
+    private val analytics: Analytics = NoAnalytics,
 ) : ViewModel() {
 
     private val match = matchRepository.observeMatches()
@@ -163,11 +167,17 @@ class MatchDetailViewModel(
     val notices: Flow<FailureNotice> = failures.flow
 
     fun sendRequest(id: PlayerId) {
-        viewModelScope.launchNotifying(failures, FailedAction.FRIEND_REQUEST) { friendRepository.sendRequest(id) }
+        viewModelScope.launchNotifying(failures, FailedAction.FRIEND_REQUEST) {
+            friendRepository.sendRequest(id)
+            analytics.log(AnalyticsEvents.FRIEND_REQUEST, mapOf("action" to "send", "source" to "scoreboard"))
+        }
     }
 
     fun accept(id: PlayerId) {
-        viewModelScope.launchNotifying(failures, FailedAction.ACCEPT_FRIEND) { friendRepository.accept(id) }
+        viewModelScope.launchNotifying(failures, FailedAction.ACCEPT_FRIEND) {
+            friendRepository.accept(id)
+            analytics.log(AnalyticsEvents.FRIEND_REQUEST, mapOf("action" to "accept", "source" to "scoreboard"))
+        }
     }
 }
 

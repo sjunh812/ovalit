@@ -56,6 +56,8 @@ androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref
 # ㅇㅂㅇ와 주간 리포트 알림만 받는다. 앱 모듈만 쓴다. 따라오는 Google Play 서비스는 Apache가 아닌 구글 무료 라이선스다(CLAUDE.md 비용).
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
 # 설정 값만 담는다. 경기는 여기 두지 않는다. 경기를 담을 DB는 프로덕션 키가 나온 뒤에 고른다.
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "androidxDatastore" }

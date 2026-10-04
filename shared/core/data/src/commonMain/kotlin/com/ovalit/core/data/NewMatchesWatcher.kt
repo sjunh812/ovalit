@@ -29,6 +29,7 @@ class NewMatchesWatcher(
     private val scheduler: ImportScheduler,
     private val scope: CoroutineScope,
     private val clock: Clock = Clock.System,
+    private val analytics: Analytics = NoAnalytics,
 ) {
     private val lock = Mutex()
     private var checkedAt: Instant? = null
@@ -58,7 +59,7 @@ class NewMatchesWatcher(
             }
             if (!stale) return@launch
             try {
-                matches.refresh()
+                logRefresh(analytics, source = "app_open") { matches.refresh() }
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {

@@ -70,7 +70,11 @@ import com.ovalit.feature.settings.resources.section_data
 import com.ovalit.feature.settings.resources.section_display
 import com.ovalit.feature.settings.resources.section_notifications
 import com.ovalit.feature.settings.resources.section_public
+import com.ovalit.feature.settings.resources.section_support
+import com.ovalit.feature.settings.resources.send_feedback
 import com.ovalit.feature.settings.resources.settings_title
+import com.ovalit.feature.settings.resources.share_usage_stats
+import com.ovalit.feature.settings.resources.share_usage_stats_description
 import com.ovalit.feature.settings.resources.stats_public
 import com.ovalit.feature.settings.resources.stats_public_description
 import com.ovalit.feature.settings.resources.stored_matches
@@ -97,6 +101,7 @@ private val AvatarSize = 44.dp
  * @param appVersion 앱 모듈만 버전을 알아서 밖에서 받습니다.
  * @param onUnlinked 연동을 해제하고 데이터를 다 지운 뒤에 불립니다. 앱 모듈이 여기서 인트로로 돌려보냅니다.
  * @param onOpenProfile 맨 위 계정 줄을 누르면 부릅니다. 홈 오른쪽 위 말고도 내 프로필로 가는 길입니다(사용자 요청, 2026-10-03).
+ * @param onSendFeedback 메일 앱을 엽니다. 받을 주소가 정해지지 않았으면 `null`이고 그 줄을 두지 않습니다.
  */
 @Composable
 fun SettingsRoute(
@@ -104,6 +109,7 @@ fun SettingsRoute(
     onUnlinked: () -> Unit,
     onOpenProfile: () -> Unit,
     modifier: Modifier = Modifier,
+    onSendFeedback: (() -> Unit)? = null,
     viewModel: SettingsViewModel = koinViewModel(),
 ) {
     FailureNoticesEffect(viewModel.notices)
@@ -118,12 +124,14 @@ fun SettingsRoute(
             onNotifyWeeklyReportChange = viewModel::setNotifyWeeklyReport,
             onNotifyPingChange = viewModel::setNotifyPing,
             onPingReminderChange = viewModel::setPingReminder,
+            onShareUsageStatsChange = viewModel::setShareUsageStats,
             onThemeChange = viewModel::setTheme,
             onDefaultQueueChange = viewModel::setDefaultQueue,
             onFocusChange = viewModel::setFocus,
             onDeleteData = viewModel::deleteData,
             onUnlink = { viewModel.unlink(onUnlinked) },
             onOpenProfile = onOpenProfile,
+            onSendFeedback = onSendFeedback,
         ),
         modifier = modifier,
     )
@@ -135,12 +143,14 @@ internal class SettingsActions(
     val onNotifyWeeklyReportChange: (Boolean) -> Unit = {},
     val onNotifyPingChange: (Boolean) -> Unit = {},
     val onPingReminderChange: (PingReminder) -> Unit = {},
+    val onShareUsageStatsChange: (Boolean) -> Unit = {},
     val onThemeChange: (ThemePreference) -> Unit = {},
     val onDefaultQueueChange: (QueueFilter) -> Unit = {},
     val onFocusChange: (Focus) -> Unit = {},
     val onDeleteData: () -> Unit = {},
     val onUnlink: () -> Unit = {},
     val onOpenProfile: () -> Unit = {},
+    val onSendFeedback: (() -> Unit)? = null,
 )
 
 @Composable
@@ -250,10 +260,22 @@ internal fun SettingsScreen(
                 value = stringResource(Res.string.stored_matches_count, uiState.storedMatches),
             )
             RowDivider()
+            ToggleRow(
+                title = stringResource(Res.string.share_usage_stats),
+                description = stringResource(Res.string.share_usage_stats_description),
+                checked = preferences.shareUsageStats,
+                onCheckedChange = actions.onShareUsageStatsChange,
+            )
+            RowDivider()
             ValueRow(
                 title = stringResource(Res.string.delete_data),
                 onClick = { openSheet = SettingsSheet.DELETE_DATA },
             )
+
+            actions.onSendFeedback?.let { sendFeedback ->
+                SectionHeader(stringResource(Res.string.section_support))
+                ValueRow(title = stringResource(Res.string.send_feedback), onClick = sendFeedback)
+            }
 
             Spacer(Modifier.height(OvalitSpacing.xl))
             OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))

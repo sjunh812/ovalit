@@ -490,6 +490,8 @@ private class StubPreferences(initial: UserPreferences = UserPreferences.Default
 
     override suspend fun setPingReminder(reminder: PingReminder) = Unit
 
+    override suspend fun setShareUsageStats(enabled: Boolean) = Unit
+
     override suspend fun setFocus(focus: Focus) = Unit
 
     override suspend fun setSeenProfileHint() = preferences.update { it.copy(seenProfileHint = true) }

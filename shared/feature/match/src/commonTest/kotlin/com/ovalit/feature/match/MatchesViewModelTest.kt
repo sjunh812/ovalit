@@ -173,6 +173,8 @@ internal class StubPreferences(initial: UserPreferences = UserPreferences.Defaul
 
     override suspend fun setPingReminder(reminder: PingReminder) = Unit
 
+    override suspend fun setShareUsageStats(enabled: Boolean) = Unit
+
     override suspend fun setFocus(focus: Focus) = Unit
 
     override suspend fun setSeenProfileHint() = Unit

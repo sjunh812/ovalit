@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.ovalit.R
+import com.ovalit.core.data.Analytics
+import com.ovalit.core.data.AnalyticsEvents
 import com.ovalit.core.data.PingRepository
 import com.ovalit.core.model.PingAnswer
 import com.ovalit.core.model.PingId
@@ -30,6 +32,7 @@ private const val EXTRA_TIME = "time"
 class PingActionReceiver : BroadcastReceiver(), KoinComponent {
 
     private val pings: PingRepository by inject()
+    private val analytics: Analytics by inject()
 
     override fun onReceive(context: Context, intent: Intent) {
         val pingId = intent.getStringExtra(EXTRA_PING) ?: return
@@ -40,6 +43,7 @@ class PingActionReceiver : BroadcastReceiver(), KoinComponent {
                     ACTION_REPLY -> {
                         val yes = intent.getStringExtra(EXTRA_ANSWER) == "yes"
                         pings.reply(PingId(pingId), if (yes) PingAnswer.YES else PingAnswer.NO)
+                        analytics.log(AnalyticsEvents.PING_REPLY, mapOf("answer" to if (yes) "yes" else "no", "via" to "notification"))
                         PingNotifications.answered(context, pingId, if (yes) R.string.ping_answered_yes else R.string.ping_answered_no)
                     }
                     ACTION_MOVE -> {

@@ -3,7 +3,10 @@ package com.ovalit.feature.friend
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ovalit.core.data.AccountRepository
+import com.ovalit.core.data.Analytics
+import com.ovalit.core.data.AnalyticsEvents
 import com.ovalit.core.data.FriendRepository
+import com.ovalit.core.data.NoAnalytics
 import com.ovalit.core.data.PingInviteResult
 import com.ovalit.core.data.PingRepository
 import com.ovalit.core.model.Friend
@@ -52,6 +55,7 @@ class PingDetailViewModel(
     accountRepository: AccountRepository,
     private val clock: Clock,
     val timeZone: TimeZone,
+    private val analytics: Analytics = NoAnalytics,
 ) : ViewModel() {
 
     val uiState: StateFlow<PingDetailUiState> = combine(
@@ -85,7 +89,10 @@ class PingDetailViewModel(
     val notices: Flow<FailureNotice> = failures.flow
 
     fun reply(answer: PingAnswer, proposedAt: Instant? = null) {
-        viewModelScope.launchNotifying(failures, FailedAction.PING_REPLY) { pingRepository.reply(pingId, answer, proposedAt) }
+        viewModelScope.launchNotifying(failures, FailedAction.PING_REPLY) {
+            pingRepository.reply(pingId, answer, proposedAt)
+            analytics.log(AnalyticsEvents.PING_REPLY, mapOf("answer" to answer.name.lowercase(), "via" to "app"))
+        }
     }
 
     fun moveTo(startsAt: Instant) {

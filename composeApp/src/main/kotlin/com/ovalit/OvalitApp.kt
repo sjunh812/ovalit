@@ -1,9 +1,11 @@
 package com.ovalit
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -41,6 +43,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
+import com.ovalit.core.data.Analytics
+import com.ovalit.core.data.AnalyticsEvents
 import com.ovalit.core.data.FakeAccountRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.ImportScheduler
@@ -151,6 +155,9 @@ fun OvalitApp(appVersion: String, openPing: Flow<String> = emptyFlow()) {
     LaunchedEffect(linked) { if (!linked) tabState.clearKept() }
 
     val toast = rememberOvalitToastState()
+    val analytics = koinInject<Analytics>()
+    val top = backStack.lastOrNull()
+    LaunchedEffect(top) { top?.let { analytics.screen(screenName(it)) } }
 
     // 전환 중에 아래 화면이 어두워 보이게 하는 검은 바탕이다(OvalitTransitions). 화면이 모두 불투명해서 평소에는 안 보인다.
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
@@ -187,7 +194,7 @@ fun OvalitApp(appVersion: String, openPing: Flow<String> = emptyFlow()) {
                         TabScaffold(selected = Report, onSelect = backStack::selectTab) {
                             ReportRoute(
                                 onOpenProfile = { backStack.push(Profile) },
-                                onShareInvite = { context.shareInvite(friends.inviteLink()) },
+                                onShareInvite = { context.shareInvite(friends.inviteLink(), analytics) },
                                 onOpenAgents = { backStack.push(Agents) },
                                 onOpenWeapons = { backStack.push(Weapons) },
                                 onOpenPing = { backStack.push(PingDetail(it.value)) },
@@ -219,7 +226,7 @@ fun OvalitApp(appVersion: String, openPing: Flow<String> = emptyFlow()) {
                             onBack = { backStack.removeLastOrNull() },
                             onOpenFriend = { backStack.push(FriendProfile(it.value)) },
                             onOpenMe = { backStack.openProfile() },
-                            onShareInvite = { context.shareInvite(friends.inviteLink()) },
+                            onShareInvite = { context.shareInvite(friends.inviteLink(), analytics) },
                         )
                     }
                     entry<Friends>(clazzContentKey = ::tabContentKey, metadata = TabTransitions) {
@@ -227,7 +234,7 @@ fun OvalitApp(appVersion: String, openPing: Flow<String> = emptyFlow()) {
                             FriendsRoute(
                                 onOpenFriend = { backStack.push(FriendProfile(it.value)) },
                                 onOpenPing = { backStack.push(PingDetail(it.value)) },
-                                onShareInvite = { link -> context.shareInvite(link) },
+                                onShareInvite = { link -> context.shareInvite(link, analytics) },
                             )
                         }
                     }
@@ -260,6 +267,16 @@ fun OvalitApp(appVersion: String, openPing: Flow<String> = emptyFlow()) {
                                 appVersion = appVersion,
                                 onUnlinked = { backStack.replaceAllWith(Intro) },
                                 onOpenProfile = { backStack.openProfile() },
+                                onSendFeedback = if (BuildConfig.FEEDBACK_EMAIL.isNotBlank()) {
+                                    {
+                                        // 메일 앱이 없는 기기도 있어서 그때는 주소를 알려 준다
+                                        if (!context.sendFeedback(appVersion)) {
+                                            scope.launch { toast.show(context.getString(R.string.feedback_no_mail_app, BuildConfig.FEEDBACK_EMAIL)) }
+                                        }
+                                    }
+                                } else {
+                                    null
+                                },
                             )
                         }
                     }
@@ -333,6 +350,27 @@ private val EdgeWidth = 1.dp
 // 홈은 늘 스택 맨 아래에 두고 다른 탭은 그 위에 하나만 둔다. 그래야 어느 탭에서 뒤로 가도 홈이 나오고 홈에서
 // 뒤로 가면 앱이 닫힌다. 홈은 새로 띄우지 않아서 스크롤과 칩이 남고, 다른 탭은 빠져도 TabStateDecorator가 남겨 둔다.
 // 전환 중에 같은 줄을 두 번 누르면 같은 화면이 두 번 쌓인다. 같은 키가 둘이면 저장 상태 키가 겹쳐 앱이 죽는다.
+// 사용 통계에 쓰는 화면 이름이다. 키를 그대로 쓰면 친구·경기 ID가 섞이고 릴리스에서는 난독화된 이름이 된다.
+private fun screenName(key: NavKey): String = when (key) {
+    Intro -> "intro"
+    Consent -> "consent"
+    Import -> "import"
+    Report -> "report"
+    Matches -> "matches"
+    is MatchDetail -> "match_detail"
+    Friends -> "friends"
+    is FriendProfile -> "friend_profile"
+    is FriendMatches -> "friend_matches"
+    Profile -> "my_profile"
+    Agents -> "agents"
+    Weapons -> "weapons"
+    is FriendAgents -> "friend_agents"
+    is FriendWeapons -> "friend_weapons"
+    is PingDetail -> "ping_detail"
+    Settings -> "settings"
+    else -> "other"
+}
+
 private fun NavBackStack<NavKey>.push(key: NavKey) {
     if (lastOrNull() != key) add(key)
 }
@@ -355,7 +393,26 @@ private fun NavBackStack<NavKey>.replaceAllWith(vararg keys: NavKey) {
     repeat(size - keys.size) { removeAt(0) }
 }
 
-private fun Context.shareInvite(link: String) {
+/**
+ * 피드백 메일을 씁니다. 받는 주소와 제목, 앱 버전과 기기만 채우고 Riot ID나 전적은 넣지 않습니다. 메일 앱이 없으면 `false`입니다.
+ * 본문은 화면에 그리는 글이 아니라 메일이라 줄바꿈을 넣어 둡니다.
+ */
+private fun Context.sendFeedback(appVersion: String): Boolean {
+    val body = getString(R.string.feedback_body, appVersion, "${Build.MANUFACTURER} ${Build.MODEL}", Build.VERSION.RELEASE)
+    val mail = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"))
+        .putExtra(Intent.EXTRA_EMAIL, arrayOf(BuildConfig.FEEDBACK_EMAIL))
+        .putExtra(Intent.EXTRA_SUBJECT, getString(R.string.feedback_subject))
+        .putExtra(Intent.EXTRA_TEXT, body)
+    return try {
+        startActivity(mail)
+        true
+    } catch (_: ActivityNotFoundException) {
+        false
+    }
+}
+
+private fun Context.shareInvite(link: String, analytics: Analytics) {
+    analytics.log(AnalyticsEvents.SHARE, mapOf("method" to "invite_link", "content_type" to "invite"))
     val send = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
         putExtra(Intent.EXTRA_TEXT, link)

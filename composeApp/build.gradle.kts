@@ -1,3 +1,4 @@
+import java.security.MessageDigest
 import java.util.Properties
 
 plugins {
@@ -6,6 +7,9 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
 }
+
+fun crashlyticsMappingId(version: String): String =
+    MessageDigest.getInstance("MD5").digest("com.ovalit:$version".toByteArray()).joinToString("") { "%02x".format(it) }
 
 // Google이 공개한 테스트용 ID다. 실제 광고가 아니라 노출과 클릭이 계정에 잡히지 않는다.
 val ADMOB_TEST_APP_ID = "ca-app-pub-3940256099942544~3347511713"
@@ -40,13 +44,21 @@ android {
         // 앱 ID가 없으면 Google 테스트 앱 ID를 넣어 둔다.
         manifestPlaceholders["admobAppId"] = localProperties.getProperty("admob.appId") ?: ADMOB_TEST_APP_ID
         buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", "\"${localProperties.getProperty("admob.nativeUnitId").orEmpty()}\"")
-        // "24시간 광고 없이 보기"에 쓰는 보상형 광고다. 없으면 광고 줄의 "숨기기"와 설정 줄이 없다.
+        // "24시간 광고 없이 보기"에 쓰는 보상형 광고다. 없으면 광고 줄의 ×가 그 광고만 바로 닫고 설정 줄이 없다.
         buildConfigField("String", "ADMOB_REWARDED_UNIT_ID", "\"${localProperties.getProperty("admob.rewardedUnitId").orEmpty()}\"")
+        // 설정의 "피드백 보내기"가 여는 메일의 받는 주소다. 개인 주소를 저장소에 넣지 않으려고 local.properties에서 받고, 없으면
+        // 그 줄이 없다.
+        buildConfigField("String", "FEEDBACK_EMAIL", "\"${localProperties.getProperty("ovalit.feedback.email").orEmpty()}\"")
+        // Crashlytics SDK는 이 값이 없으면 시작하자마자 죽는다. google-services와 Crashlytics Gradle 플러그인 없이 쓰니(CLAUDE.md 비용)
+        // 플러그인이 만들던 값을 직접 넣는다. 디버그는 난독화하지 않아 매핑 파일이 없으니 0으로 둔다.
+        resValue("string", "com.google.firebase.crashlytics.mapping_file_id", "0".repeat(32))
     }
 
     buildFeatures {
         compose = true
         buildConfig = true
+        // Crashlytics 매핑 ID를 resValue로 넣는다
+        resValues = true
     }
 
     buildTypes {
@@ -66,6 +78,9 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            // 버전마다 다른 매핑 ID다. 릴리스를 올린 뒤 이 값을 담은 리소스와 매핑 파일을 Firebase CLI로 올려야 Crashlytics가
+            // 난독화된 스택을 풀어 준다(docs/RELEASE.md).
+            resValue("string", "com.google.firebase.crashlytics.mapping_file_id", crashlyticsMappingId("${defaultConfig.versionName}-${defaultConfig.versionCode}"))
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -105,6 +120,8 @@ dependencies {
     implementation(libs.androidx.work.runtime)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
     implementation(libs.play.services.ads)
     implementation(libs.jb.lifecycle.runtime.compose)
     implementation(libs.kotlinx.serialization.core)

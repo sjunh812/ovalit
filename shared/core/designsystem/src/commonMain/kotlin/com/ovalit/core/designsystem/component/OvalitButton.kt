@@ -98,6 +98,30 @@ fun OvalitOutlinedButton(
     }
 }
 
+/**
+ * 되돌릴 수 없는 동작(연동 해제)의 버튼입니다. 옅은 `--neg` 면에 `--neg` 글자를 올립니다. 카드와 같은 흰 면에 두면 묶음 하나처럼
+ * 보이고, 회색 바탕에 테두리만 두르면 면이 없어 묻힙니다.
+ */
+@Composable
+fun OvalitDangerButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val neg = OvalitTheme.colors.neg
+    OvalitButtonSurface(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        enabled = true,
+        background = neg.copy(alpha = DangerContainerAlpha),
+        pressColor = neg,
+    ) {
+        OvalitText(text = text, style = OvalitTheme.typography.bodyStrong, color = neg)
+    }
+}
+
+private const val DangerContainerAlpha = 0.1f
+
 // `clickable`이 안의 글자를 묶어 읽어서 Role.Button만 달면 화면 읽기 프로그램이 "○○, 버튼"으로 한 번에 읽는다
 @Composable
 private fun OvalitButtonSurface(

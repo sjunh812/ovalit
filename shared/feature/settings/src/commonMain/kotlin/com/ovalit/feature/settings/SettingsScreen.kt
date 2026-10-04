@@ -32,8 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitCard
 import com.ovalit.core.designsystem.component.OvalitCardGap
+import com.ovalit.core.designsystem.component.OvalitDangerButton
 import com.ovalit.core.designsystem.component.OvalitDisclaimer
-import com.ovalit.core.designsystem.component.OvalitOutlinedButton
 import com.ovalit.core.designsystem.component.OvalitSwitch
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
@@ -288,7 +288,7 @@ internal fun SettingsScreen(
                 }
             }
 
-            Spacer(Modifier.height(OvalitSpacing.xxl))
+            Spacer(Modifier.height(OvalitSpacing.xl))
             UnlinkSection(onClick = { openSheet = SettingsSheet.UNLINK })
 
             Spacer(Modifier.height(OvalitSpacing.xxl))
@@ -470,11 +470,7 @@ private fun UnlinkSection(onClick: () -> Unit) {
         modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        OvalitOutlinedButton(
-            text = stringResource(Res.string.unlink),
-            onClick = onClick,
-            contentColor = OvalitTheme.colors.neg,
-        )
+        OvalitDangerButton(text = stringResource(Res.string.unlink), onClick = onClick)
         Spacer(Modifier.height(OvalitSpacing.sm))
         OvalitText(
             text = stringResource(Res.string.unlink_note),

@@ -49,7 +49,6 @@ class DataStoreUserPreferencesRepository(
                 notifyWeeklyReport = stored[Keys.notifyWeeklyReport] ?: default.notifyWeeklyReport,
                 notifyPing = stored[Keys.notifyPing] ?: default.notifyPing,
                 pingReminder = stored[Keys.pingReminder].toEnumOr(default.pingReminder),
-                shareUsageStats = stored[Keys.shareUsageStats] ?: default.shareUsageStats,
                 focus = stored[Keys.focus].toEnumOr(default.focus),
                 seenProfileHint = stored[Keys.seenProfileHint] ?: default.seenProfileHint,
                 adFreeUntil = stored[Keys.adFreeUntil]?.let(Instant::fromEpochMilliseconds),
@@ -70,7 +69,6 @@ class DataStoreUserPreferencesRepository(
 
     override suspend fun setPingReminder(reminder: PingReminder) = set(Keys.pingReminder, reminder.name)
 
-    override suspend fun setShareUsageStats(enabled: Boolean) = set(Keys.shareUsageStats, enabled)
 
     override suspend fun setFocus(focus: Focus) = set(Keys.focus, focus.name)
 
@@ -91,7 +89,6 @@ class DataStoreUserPreferencesRepository(
         val notifyWeeklyReport = booleanPreferencesKey("notify_weekly_report")
         val notifyPing = booleanPreferencesKey("notify_ping")
         val pingReminder = stringPreferencesKey("ping_reminder")
-        val shareUsageStats = booleanPreferencesKey("share_usage_stats")
         val focus = stringPreferencesKey("focus")
         val seenProfileHint = booleanPreferencesKey("seen_profile_hint")
         val adFreeUntil = longPreferencesKey("ad_free_until")

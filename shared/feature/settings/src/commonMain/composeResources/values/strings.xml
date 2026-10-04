@@ -39,8 +39,6 @@
     <string name="section_data">데이터</string>
     <string name="stored_matches">저장된 경기</string>
     <string name="stored_matches_count">%1$d경기</string>
-    <string name="share_usage_stats">사용 통계 보내기</string>
-    <string name="share_usage_stats_description">어떤 화면과 기능을 쓰는지, 앱이 왜 멈췄는지 Google로 보내 앱을 고치는 데 써요. Riot ID와 전적은 보내지 않아요.</string>
     <string name="section_support">문의</string>
     <string name="send_feedback">피드백 보내기</string>
     <string name="delete_data">저장된 데이터 삭제</string>

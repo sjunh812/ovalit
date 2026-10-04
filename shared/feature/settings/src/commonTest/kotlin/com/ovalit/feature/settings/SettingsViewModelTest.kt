@@ -177,7 +177,6 @@ private class InMemoryPreferences : UserPreferencesRepository {
 
     override suspend fun setPingReminder(reminder: PingReminder) = preferences.update { it.copy(pingReminder = reminder) }
 
-    override suspend fun setShareUsageStats(enabled: Boolean) = preferences.update { it.copy(shareUsageStats = enabled) }
 
     override suspend fun setFocus(focus: Focus) = preferences.update { it.copy(focus = focus) }
 

@@ -48,7 +48,7 @@ class OvalitApplication : Application() {
                 settingsModule,
             )
         }
-        OvalitFirebase.follow(this, appScope, preferences = get(), account = get())
+        OvalitFirebase.follow(this, appScope, account = get())
         OvalitPush.start(this, appScope, account = get(), preferences = get(), push = get())
         AdMobRenderer.start(this, appScope)
         // 앱을 다시 열면 그사이 끝난 경기를 받고, 많이 남은 채로 떠나면 WorkManager가 이어 받는다

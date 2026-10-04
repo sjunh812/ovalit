@@ -40,8 +40,6 @@
     <string name="section_data">データ</string>
     <string name="stored_matches">保存した試合</string>
     <string name="stored_matches_count">%1$d試合</string>
-    <string name="share_usage_stats">利用統計を送信</string>
-    <string name="share_usage_stats_description">どの画面や機能を使っているか、アプリがなぜ止まったかをGoogleに送り、アプリの改善に使います。Riot IDと戦績は送信しません。</string>
     <string name="section_support">お問い合わせ</string>
     <string name="send_feedback">フィードバックを送る</string>
     <string name="delete_data">保存したデータを削除</string>

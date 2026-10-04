@@ -26,7 +26,6 @@ interface UserPreferencesRepository {
 
     suspend fun setPingReminder(reminder: PingReminder)
 
-    suspend fun setShareUsageStats(enabled: Boolean)
 
     suspend fun setFocus(focus: Focus)
 

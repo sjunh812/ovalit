@@ -78,8 +78,6 @@ import com.ovalit.feature.settings.resources.section_public
 import com.ovalit.feature.settings.resources.section_support
 import com.ovalit.feature.settings.resources.send_feedback
 import com.ovalit.feature.settings.resources.settings_title
-import com.ovalit.feature.settings.resources.share_usage_stats
-import com.ovalit.feature.settings.resources.share_usage_stats_description
 import com.ovalit.feature.settings.resources.stats_public
 import com.ovalit.feature.settings.resources.stats_public_description
 import com.ovalit.feature.settings.resources.stored_matches
@@ -129,7 +127,6 @@ fun SettingsRoute(
             onNotifyWeeklyReportChange = viewModel::setNotifyWeeklyReport,
             onNotifyPingChange = viewModel::setNotifyPing,
             onPingReminderChange = viewModel::setPingReminder,
-            onShareUsageStatsChange = viewModel::setShareUsageStats,
             onThemeChange = viewModel::setTheme,
             onDefaultQueueChange = viewModel::setDefaultQueue,
             onFocusChange = viewModel::setFocus,
@@ -148,7 +145,6 @@ internal class SettingsActions(
     val onNotifyWeeklyReportChange: (Boolean) -> Unit = {},
     val onNotifyPingChange: (Boolean) -> Unit = {},
     val onPingReminderChange: (PingReminder) -> Unit = {},
-    val onShareUsageStatsChange: (Boolean) -> Unit = {},
     val onThemeChange: (ThemePreference) -> Unit = {},
     val onDefaultQueueChange: (QueueFilter) -> Unit = {},
     val onFocusChange: (Focus) -> Unit = {},
@@ -268,12 +264,6 @@ internal fun SettingsScreen(
                     ValueRow(
                         title = stringResource(Res.string.stored_matches),
                         value = stringResource(Res.string.stored_matches_count, uiState.storedMatches),
-                    )
-                    ToggleRow(
-                        title = stringResource(Res.string.share_usage_stats),
-                        description = stringResource(Res.string.share_usage_stats_description),
-                        checked = preferences.shareUsageStats,
-                        onCheckedChange = actions.onShareUsageStatsChange,
                     )
                     ValueRow(
                         title = stringResource(Res.string.delete_data),

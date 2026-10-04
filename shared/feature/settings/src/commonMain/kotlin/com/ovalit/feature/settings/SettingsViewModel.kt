@@ -68,7 +68,6 @@ class SettingsViewModel(
     /** 실제 저장소가 붙으면 서버(`PATCH /me`의 `remindBefore`)에도 맡깁니다. 파티 시작 전 알림은 서버가 이 시간에 맞춰 보냅니다. */
     fun setPingReminder(reminder: PingReminder) = launch { preferencesRepository.setPingReminder(reminder) }
 
-    fun setShareUsageStats(enabled: Boolean) = launch { preferencesRepository.setShareUsageStats(enabled) }
 
     fun setTheme(theme: ThemePreference) = launch { preferencesRepository.setTheme(theme) }
 

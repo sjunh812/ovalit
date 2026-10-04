@@ -21,7 +21,6 @@ enum class PingReminder(val minutes: Int) {
  * @property notifyWeeklyReport 서버가 월요일 오전 9시에 FCM 토픽으로 보내는 주간 리포트 알림입니다. 끄면 토픽 구독을 풉니다.
  * @property notifyPing 친구가 보낸 ㅇㅂㅇ과 내가 보낸 ㅇㅂㅇ의 답을 알릴지입니다.
  * @property pingReminder 내가 부르거나 간다고 답한 ㅇㅂㅇ을 시작 몇 분 전에 알릴지입니다.
- * @property shareUsageStats 어떤 화면과 기능을 쓰는지, 앱이 왜 멈췄는지 Firebase로 보낼지입니다. Riot ID와 전적은 보내지 않습니다.
  * @property focus S0-4와 설정에서 고른 관심사입니다. 동적 칸 순서와 개선 포인트 문장을 고를 때 씁니다.
  * @property seenProfileHint 홈의 "내 프로필은 여기서 볼 수 있어요" 말풍선을 띄웠는지입니다. 사용자가 고르는 값이 아니라
  * 한 번만 띄우려고 적어 둡니다.
@@ -37,7 +36,6 @@ data class UserPreferences(
     val focus: Focus,
     val notifyPing: Boolean = true,
     val pingReminder: PingReminder = PingReminder.TEN_MINUTES,
-    val shareUsageStats: Boolean = true,
     val seenProfileHint: Boolean = false,
     val adFreeUntil: Instant? = null,
 ) {

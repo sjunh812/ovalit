@@ -43,7 +43,7 @@ class SettingsScreenTest {
         setContent { Settings() }
 
         onNodeWithText("오발러#KR1").assertExists()
-        onNodeWithText("Riot 계정 연동됨 · 9월 19일").assertExists()
+        onNodeWithText("Riot 계정 연동됨 · 9월\u00a019일").assertExists()
     }
 
     // 사용자 요청(2026-10-03): 홈 오른쪽 위 말고도 내 프로필로 가는 길을 둔다

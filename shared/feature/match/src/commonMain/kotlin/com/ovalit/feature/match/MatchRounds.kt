@@ -31,6 +31,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -317,6 +318,8 @@ private fun KillRow(kill: RoundKill, uiState: MatchDetailUiState.Success) {
     val weapon = kill.weapon?.let { uiState.catalog.weaponName(it) } ?: stringResource(Res.string.round_kill_ability)
     val time = "${kill.atMillis / 60_000}:${((kill.atMillis / 1_000) % 60).toString().padStart(2, '0')}"
     val killerStyle = OvalitTheme.typography.label.copy(fontWeight = if (kill.byMyTeam) FontWeight.SemiBold else FontWeight.Normal)
+    // 글자를 키우면 시각이 얼굴에 붙어서 시각 칸도 같이 넓힌다
+    val timeWidth = 34.dp * LocalDensity.current.fontScale.coerceIn(1f, 1.6f) + 4.dp
 
     Row(
         modifier = Modifier
@@ -325,7 +328,7 @@ private fun KillRow(kill: RoundKill, uiState: MatchDetailUiState.Success) {
             .semantics(mergeDescendants = true) { contentDescription = "$time ${name(kill.killer)} → ${name(kill.victim)} $weapon" },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        OvalitText(text = time, modifier = Modifier.width(34.dp), style = OvalitTheme.typography.metricS, color = colors.t3, maxLines = 1)
+        OvalitText(text = time, modifier = Modifier.width(timeWidth), style = OvalitTheme.typography.metricS, color = colors.t3, maxLines = 1)
         Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
             lines[kill.killer]?.let { AgentImage(it.agent, uiState.catalog.agentName(it.agent), Modifier.size(22.dp).clip(RoundedCornerShape(6.dp))) }
             Spacer(Modifier.width(6.dp))

@@ -2,7 +2,8 @@
 <resources>
     <string name="settings_title">설정</string>
 
-    <string name="account_linked">Riot 계정 연동됨 · %1$d월 %2$d일</string>
+    <!-- 줄이 꺾여도 날짜는 한 덩어리로 남게 월과 일 사이는 줄바꿈 없는 공백이다 -->
+    <string name="account_linked">Riot 계정 연동됨 · %1$d월&#160;%2$d일</string>
     <string name="account_unlinked">Riot 계정이 연동되지 않았어요</string>
     <string name="view_profile">프로필 보기</string>
     <string name="open_profile">내 프로필 열기</string>

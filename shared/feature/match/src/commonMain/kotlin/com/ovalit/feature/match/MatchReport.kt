@@ -2,6 +2,7 @@ package com.ovalit.feature.match
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -27,6 +29,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.currentMaxWidth
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Duel
@@ -42,6 +45,7 @@ import com.ovalit.core.ui.ShotsBreakdown
 import com.ovalit.core.ui.WeaponThumb
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.percentText
+import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.weaponName
 import com.ovalit.core.ui.withThousands
 import com.ovalit.feature.match.resources.Res
@@ -57,8 +61,16 @@ import com.ovalit.feature.match.resources.report_weapons_note
 import com.ovalit.feature.match.resources.report_weapons_title
 import org.jetbrains.compose.resources.stringResource
 
-private val CountColumn = 30.dp
-private val DamageColumn = 60.dp
+private val FaceSize = 28.dp
+private val MinNameWidth = 40.dp
+private val BaseCountColumn = 30.dp
+private val BaseDamageColumn = 60.dp
+
+// 글자를 키우면 열 제목끼리 붙어서 열 폭도 글자 크기만큼 넓힌다. 이름 칸이 남은 폭을 가져간다.
+private val CountColumn: Dp
+    @Composable get() = BaseCountColumn * LocalDensity.current.fontScale.coerceIn(1f, 1.6f)
+private val DamageColumn: Dp
+    @Composable get() = BaseDamageColumn * LocalDensity.current.fontScale.coerceIn(1f, 1.6f)
 
 /**
  * S3 내 기록 탭입니다. op.gg의 매치 리포트처럼 맞힌 부위, 상대마다 누구를 잡고 누구에게 잡혔는지와 주고받은 피해, 이 판에서 쓴
@@ -96,40 +108,54 @@ private fun Duels(duels: List<Duel>, uiState: MatchDetailUiState.Success) {
     val most = duels.maxOf { maxOf(it.damageDealt, it.damageTaken) }.coerceAtLeast(1)
 
     ReportTitle(stringResource(Res.string.report_duels_title))
-    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.xs)) {
-        Spacer(Modifier.weight(1f))
-        HeaderCell(stringResource(Res.string.report_kills), CountColumn)
-        HeaderCell(stringResource(Res.string.report_deaths), CountColumn)
-        HeaderCell(stringResource(Res.string.report_assists), CountColumn)
-        HeaderCell(stringResource(Res.string.report_damage_dealt), DamageColumn)
-        HeaderCell(stringResource(Res.string.report_damage_taken), DamageColumn)
-    }
-    duels.forEach { duel ->
-        val line = lines[duel.opponent] ?: return@forEach
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 46.dp)
-                .semantics(mergeDescendants = true) {}
-                .padding(horizontal = OvalitSpacing.gutter, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            AgentImage(line.agent, uiState.catalog.agentName(line.agent), Modifier.size(28.dp).clip(RoundedCornerShape(8.dp)))
-            Spacer(Modifier.width(OvalitSpacing.sm))
-            OvalitText(
-                text = line.riotId.substringBefore('#'),
-                modifier = Modifier.weight(1f),
-                style = OvalitTheme.typography.label,
-                color = colors.t2,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            // 내가 더 많이 잡았으면 킬을, 더 많이 잡혔으면 데스를 밝고 굵게 둔다
-            CountCell(duel.kills, emphasized = duel.kills > duel.deaths)
-            CountCell(duel.deaths, emphasized = duel.deaths > duel.kills)
-            CountCell(duel.assists, emphasized = false)
-            DamageCell(duel.damageDealt, most, colors.t1)
-            DamageCell(duel.damageTaken, most, colors.t4)
+    val countColumn = CountColumn
+    val damageColumn = DamageColumn
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        // 글자를 키워 이름 칸이 너무 좁아지면 이름을 빼고 얼굴만 둔다. 상대 팀 안에서는 요원이 겹치지 않아 얼굴로 가린다. "…"만
+        // 남은 이름은 아무것도 말하지 않는다.
+        val nameRoom = currentMaxWidth - OvalitSpacing.gutter * 2 - FaceSize - OvalitSpacing.sm - countColumn * 3 - damageColumn * 2
+        val showNames = nameRoom >= MinNameWidth
+        Column {
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.xs)) {
+                Spacer(Modifier.weight(1f))
+                HeaderCell(stringResource(Res.string.report_kills), countColumn)
+                HeaderCell(stringResource(Res.string.report_deaths), countColumn)
+                HeaderCell(stringResource(Res.string.report_assists), countColumn)
+                HeaderCell(stringResource(Res.string.report_damage_dealt), damageColumn)
+                HeaderCell(stringResource(Res.string.report_damage_taken), damageColumn)
+            }
+            duels.forEach { duel ->
+                val line = lines[duel.opponent] ?: return@forEach
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 46.dp)
+                        .semantics(mergeDescendants = true) {}
+                        .padding(horizontal = OvalitSpacing.gutter, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    AgentImage(line.agent, uiState.catalog.agentName(line.agent), Modifier.size(FaceSize).clip(RoundedCornerShape(8.dp)))
+                    Spacer(Modifier.width(OvalitSpacing.sm))
+                    if (showNames) {
+                        OvalitText(
+                            text = line.riotId.substringBefore('#'),
+                            modifier = Modifier.weight(1f),
+                            style = OvalitTheme.typography.label,
+                            color = colors.t2,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    } else {
+                        Spacer(Modifier.weight(1f))
+                    }
+                    // 내가 더 많이 잡았으면 킬을, 더 많이 잡혔으면 데스를 밝고 굵게 둔다
+                    CountCell(duel.kills, emphasized = duel.kills > duel.deaths)
+                    CountCell(duel.deaths, emphasized = duel.deaths > duel.kills)
+                    CountCell(duel.assists, emphasized = false)
+                    DamageCell(duel.damageDealt, most, colors.t1)
+                    DamageCell(duel.damageTaken, most, colors.t4)
+                }
+            }
         }
     }
 }
@@ -200,7 +226,14 @@ private fun Weapons(weapons: List<WeaponStats>, uiState: MatchDetailUiState.Succ
         ) {
             WeaponThumb(weapon.weapon, name, width = 44.dp, height = 22.dp)
             Spacer(Modifier.width(OvalitSpacing.md))
-            OvalitText(text = name, modifier = Modifier.weight(1f), style = OvalitTheme.typography.body, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            // 글자를 키워 이름이 안 들어가면 자르지 않고 조금 줄인다. "오퍼레…"로는 무슨 무기인지 모른다.
+            OvalitText(
+                text = name,
+                modifier = Modifier.weight(1f),
+                style = OvalitTheme.typography.body,
+                maxLines = 1,
+                autoSize = shrinkToFit(OvalitTheme.typography.body.fontSize),
+            )
             CountCell(weapon.kills, emphasized = true)
             ValueCell(weapon.damagePerRound?.let { MetricFormat.INTEGER.format(it) } ?: NO_VALUE)
             ValueCell(weapon.headshotRate?.let { percentText(it) } ?: NO_VALUE)

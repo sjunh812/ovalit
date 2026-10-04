@@ -155,7 +155,7 @@ class MatchScreensTest {
 
         onNodeWithText("라운드").performClick()
 
-        onNodeWithText("우리 팀이 첫 킬을 낸 라운드").assertExists()
+        onNodeWithText("우리 팀 첫 킬").assertExists()
         onNodeWithText("1라운드").assertExists()
         onNodeWithText("킬 순서").assertExists()
 

@@ -70,7 +70,8 @@ fun HeadToHeadRow(
             maxLines = 1,
             autoSize = shrinkToFit(labelStyle.fontSize),
         )
-        Spacer(Modifier.width(OvalitSpacing.xs))
+        // 글자를 키우면 이름과 숫자가 붙어 보여서 한 단계 띄운다
+        Spacer(Modifier.width(OvalitSpacing.sm))
         Value(my?.let { metric.format.valueText(it) } ?: NO_VALUE, valueStyle, leading = result > 0, alignEnd = false)
         Spacer(Modifier.width(OvalitSpacing.sm))
         Box(modifier = Modifier.weight(1f).height(3.dp).background(colors.fill)) {

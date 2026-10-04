@@ -76,7 +76,7 @@ class PingScreenTest {
         onNodeWithText("오발있?").assertExists()
         onNodeWithText("파티 모집").assertExists()
         onNodeWithText("부르기").assertDoesNotExist()
-        onNodeWithText("친구 4명까지 시간을 정해 한 번에 불러요").assertExists()
+        onNodeWithText("시간을 정해 친구를 4명까지 한 번에 불러요").assertExists()
     }
 
     // 사용자 요청(2026-10-03): 친구 탭을 크게 차지하지 않게 부르기는 시트로 띄운다

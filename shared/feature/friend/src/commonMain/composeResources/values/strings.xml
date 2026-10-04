@@ -23,14 +23,14 @@
     <!-- S5 친구 프로필 -->
     <string name="set_rival">라이벌 지정</string>
     <string name="unset_rival">라이벌 해제</string>
-    <string name="shared_matches">같이 한 경기</string>
+    <string name="shared_matches">같이 뛴 경기</string>
     <string name="shared_count">%1$d경기</string>
     <string name="shared_record">%1$d승 %2$d패</string>
     <string name="no_act_matches">이번 액트에 뛴 경기가 아직 없어요</string>
-    <string name="private_body">전적을 공개하지 않은 친구예요. 같이 한 경기만 볼 수 있어요.</string>
+    <string name="private_body">전적을 공개하지 않은 친구예요. 같이 뛴 경기만 볼 수 있어요.</string>
     <string name="compare_title">나와 비교</string>
     <!-- 다른 칸은 이번 액트인데 나와 비교만 내 리포트 기간이라 기간을 같이 적는다 -->
-    <string name="compare_caption">%1$s · 나 · %2$s</string>
+    <string name="compare_caption">%1$s · 나와 %2$s</string>
     <string name="compare_no_matches">%2$s의 %1$s 경기가 없어요</string>
     <string name="recent_title">%1$s의 최근 경기</string>
     <string name="recent_all">전체 보기</string>
@@ -44,7 +44,7 @@
     <string name="ping_title">오발있?</string>
     <string name="ping_gone">끝났거나 취소된 초대예요</string>
     <string name="ping_proposals_title">다른 시간 제안</string>
-        <string name="ping_compose_hint">친구 %1$d명까지 시간을 정해 한 번에 불러요</string>
+        <string name="ping_compose_hint">시간을 정해 친구를 %1$d명까지 한 번에 불러요</string>
     <string name="ping_compose_open">파티 모집</string>
     <string name="ping_compose_title">누구랑 할까요?</string>
     <string name="ping_reply_yes">갈게요</string>

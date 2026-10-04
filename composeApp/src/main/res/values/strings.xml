@@ -9,8 +9,8 @@
     <string name="notification_channel_analysis">분석 완료</string>
     <string name="notification_analysis_title">분석을 마쳤어요</string>
     <!-- 다섯 판이 안 되면 리포트가 없으니 불러온 것까지만 말한다 -->
-    <string name="notification_analysis_body">최근 %1$d경기를 다 불러왔어요.</string>
-    <string name="notification_analysis_body_none">최근 8주 동안 뛴 경기가 없어요.</string>
+    <string name="notification_analysis_body">최근 %1$d경기를 다 불러왔어요</string>
+    <string name="notification_analysis_body_none">최근 8주 동안 뛴 경기가 없어요</string>
     <!-- ㅇㅂㅇ와 주간 리포트 알림. 받는 쪽 이름은 서버가 Riot ID의 이름 부분만 보낸다. 친구의 답은 앱 화면처럼 "참석, 불참"으로,
          내가 누르는 버튼은 해요체로 쓴다. -->
     <string name="notification_channel_ping">오발있? 파티 모집</string>
@@ -20,19 +20,19 @@
     <string name="ping_time_dawn">새벽 %1$s</string>
     <string name="ping_new_title">%1$s의 초대 · %2$s</string>
     <string name="ping_new_title_now">%1$s의 초대 · 지금</string>
-    <string name="ping_new_body">갈게요, 다른 시간, 못 가요 중에서 답해 주세요</string>
+    <string name="ping_new_body">같이 할 수 있는지 알림에서 바로 답할 수 있어요</string>
     <string name="ping_new_body_others">%1$s도 같이 불렀어요</string>
     <string name="ping_reply_yes_title">%1$s · 참석</string>
     <string name="ping_reply_no_title">%1$s · 불참</string>
     <string name="ping_reply_other_title">%1$s · %2$s 제안</string>
-    <string name="ping_reply_body">%1$s 초대</string>
+    <string name="ping_reply_body">%1$s 초대에 답했어요</string>
     <string name="ping_time_title">%1$s의 초대 시간이 바뀌었어요</string>
-    <string name="ping_time_body">%1$s에 올 수 있는지 다시 답해 주세요</string>
+    <string name="ping_time_body">%1$s · 갈 수 있는지 다시 답해 주세요</string>
     <string name="ping_cancel_title">%1$s의 초대가 취소됐어요</string>
     <string name="ping_remind_title">10분 뒤 발로란트</string>
     <string name="ping_remind_body">%1$s 참석</string>
     <string name="weekly_report_title">지난주 리포트가 나왔어요</string>
-    <string name="weekly_report_body">무엇이 달라졌는지 짚어 드려요</string>
+    <string name="weekly_report_body">무엇이 달라졌는지 짚어드려요</string>
     <string name="ping_action_yes">갈게요</string>
     <string name="ping_action_other">다른 시간</string>
     <string name="ping_action_no">못 가요</string>

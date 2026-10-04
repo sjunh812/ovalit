@@ -91,8 +91,8 @@ import org.koin.core.parameter.parametersOf
 private const val RECENT_MATCHES = 3
 
 /**
- * S5 친구 프로필입니다. 머리 바로 밑에 같이 한 경기를 두고, 전적을 공개한 친구면 그 아래로 티어 카드, 통계, 나와 비교,
- * 맞힌 부위, 요원, 무기, 최근 경기를 둡니다. 비공개면 같이 한 경기만 보여줍니다.
+ * S5 친구 프로필입니다. 머리 바로 밑에 같이 뛴 경기를 두고, 전적을 공개한 친구면 그 아래로 티어 카드, 통계, 나와 비교,
+ * 맞힌 부위, 요원, 무기, 최근 경기를 둡니다. 비공개면 같이 뛴 경기만 보여줍니다.
  */
 @Composable
 fun FriendProfileRoute(

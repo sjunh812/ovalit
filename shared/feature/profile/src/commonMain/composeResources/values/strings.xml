@@ -14,17 +14,17 @@
     <string name="agents_title">요원</string>
     <string name="agents_main_role">주 역할</string>
     <!-- %1$s 자리의 지표 이름은 밝고 굵게 띄운다 -->
-    <string name="agents_role_duelist">타격대는 %1$s로 봐요. 어시스트가 적은 건 역할상 자연스러워요.</string>
-    <string name="agents_role_initiator">척후대는 %1$s로 봐요. K/D가 낮은 건 역할상 자연스러워요.</string>
-    <string name="agents_role_controller">전략가는 %1$s로 봐요. 퍼블이 적은 건 역할상 자연스러워요.</string>
-    <string name="agents_role_sentinel">감시자는 %1$s로 봐요. 퍼블이 적은 건 역할상 자연스러워요.</string>
+    <string name="agents_role_duelist">타격대는 %1$s부터 봐요. 타격대는 원래 어시스트가 적은 편이에요.</string>
+    <string name="agents_role_initiator">척후대는 %1$s부터 봐요. 척후대는 원래 K/D가 낮은 편이에요.</string>
+    <string name="agents_role_controller">전략가는 %1$s부터 봐요. 전략가는 원래 퍼블이 적은 편이에요.</string>
+    <string name="agents_role_sentinel">감시자는 %1$s부터 봐요. 감시자는 원래 퍼블이 적은 편이에요.</string>
     <string name="agents_focus_duelist">퍼블 관여율과 첫 교전 승률</string>
     <string name="agents_focus_initiator">어시스트와 관여율</string>
     <string name="agents_focus_controller">관여율과 생존율</string>
     <string name="agents_focus_sentinel">생존율</string>
     <string name="agents_by_agent">요원별</string>
     <string name="column_kast">관여율</string>
-    <string name="column_survival">생존</string>
+    <string name="column_survival">생존율</string>
     <string name="column_first_duel_involvement">퍼블 관여</string>
     <string name="column_first_duel_win">첫 교전</string>
     <string name="agents_columns_note">처음에는 주 역할에 맞춘 두 지표를 보여드려요. 표 위 버튼으로 다른 지표를 볼 수 있어요.</string>
@@ -39,14 +39,14 @@
     <!-- S6 무기 -->
     <string name="weapons_title">무기</string>
     <string name="weapons_moved_up">요즘 잘 맞아요</string>
-    <string name="weapons_moved_down">최근 떨어졌어요</string>
+    <string name="weapons_moved_down">요즘 덜 맞아요</string>
     <string name="weapons_sample_kills">%1$s킬</string>
     <string name="weapons_top_title">이번 액트 주력 무기</string>
     <string name="weapons_top_order">킬 순</string>
     <string name="weapons_unused">%1$s엔 안 썼어요</string>
     <string name="weapons_compared">%1$d주 평균과 비교</string>
     <string name="weapons_act_value">이번 액트</string>
-    <string name="weapons_single_round_note">킬은 처치한 무기로 셌어요. 헤드샷은 그 무기로만 킬을 낸 라운드에서, 데스·어시스트·피해량은 그 무기를 들고 시작한 라운드에서 셌어요.</string>
+    <string name="weapons_single_round_note">킬은 적을 쓰러뜨린 무기로 셌어요. 헤드샷은 그 무기로만 킬을 낸 라운드에서 셌어요. 데스, 어시스트, 피해량은 그 무기를 들고 시작한 라운드에서 셌어요.</string>
     <string name="column_kda">KDA</string>
     <string name="column_damage">피해량</string>
     <string name="column_headshot">헤드샷</string>

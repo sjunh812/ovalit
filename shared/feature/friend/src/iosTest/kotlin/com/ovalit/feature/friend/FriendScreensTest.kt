@@ -70,14 +70,14 @@ class FriendScreensTest {
         onNodeWithText("아직 친구가 없어요").assertExists()
     }
 
-    // CLAUDE.md: S5는 나와의 관계에서 시작하는 친구 프로필이다. 머리 바로 밑에 같이 한 경기를 둔다.
+    // CLAUDE.md: S5는 나와의 관계에서 시작하는 친구 프로필이다. 머리 바로 밑에 같이 뛴 경기를 둔다.
     @Test
-    fun `친구 프로필은 같이 한 경기와 나와 비교를 보여준다`() = runComposeUiTest {
+    fun `친구 프로필은 같이 뛴 경기와 나와 비교를 보여준다`() = runComposeUiTest {
         setContent { Themed { FriendProfileScreen(FriendPreviewData.profile, {}, {}, {}) } }
 
         onNodeWithText("12경기").assertExists()
         onNodeWithText("8승 4패").assertExists()
-        onNodeWithText("이번 주 · 나 · 민석").assertExists()
+        onNodeWithText("이번 주 · 나와 민석").assertExists()
     }
 
     // 사용자 결정(2026-09-29): 나와 비교도 홈 고정 칸처럼 KDA까지 다섯을 견준다
@@ -95,12 +95,12 @@ class FriendScreensTest {
         assertEquals(1, kdaRows.size, "나와 비교에 KDA 줄이 없다")
     }
 
-    // 사용자 요청: 같이 한 경기 다음에 내 프로필과 같은 칸을 두고, 나와 비교는 통계 다음이다
+    // 사용자 요청: 같이 뛴 경기 다음에 내 프로필과 같은 칸을 두고, 나와 비교는 통계 다음이다
     @Test
     fun `전적을 공개한 친구는 내 프로필과 같은 칸을 정한 순서로 보여준다`() = runComposeUiTest {
         setContent { Themed { FriendProfileScreen(FriendPreviewData.profile, {}, {}, {}) } }
 
-        val order = listOf("같이 한 경기", "다이아몬드 2", "통계", "나와 비교", "맞힌 부위", "요원", "무기", "민석의 최근 경기")
+        val order = listOf("같이 뛴 경기", "다이아몬드 2", "통계", "나와 비교", "맞힌 부위", "요원", "무기", "민석의 최근 경기")
             // 화면 밖으로 내려간 칸도 잘리기 전 자리로 본다
             .map { onNodeWithText(it, useUnmergedTree = true).getUnclippedBoundsInRoot().top }
         assertEquals(order.sorted(), order)
@@ -150,10 +150,10 @@ class FriendScreensTest {
     }
 
     @Test
-    fun `전적 비공개 친구는 같이 한 경기만 보여주고 라이벌로 고를 수 없다`() = runComposeUiTest {
+    fun `전적 비공개 친구는 같이 뛴 경기만 보여주고 라이벌로 고를 수 없다`() = runComposeUiTest {
         setContent { Themed { FriendProfileScreen(FriendPreviewData.privateProfile, {}, {}, {}) } }
 
-        onNodeWithText("같이 한 경기만 볼 수 있어요", substring = true).assertExists()
+        onNodeWithText("같이 뛴 경기만 볼 수 있어요", substring = true).assertExists()
         onNodeWithText("라이벌 지정").assertDoesNotExist()
         onNodeWithText("나와 비교").assertDoesNotExist()
     }

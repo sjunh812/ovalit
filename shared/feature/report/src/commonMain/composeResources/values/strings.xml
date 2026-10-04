@@ -67,15 +67,15 @@
     <string name="sample_full_buy_rounds">풀바이&#160;%1$d라운드</string>
     <string name="sample_deaths">데스&#160;%1$d번</string>
 
-    <string name="other_queue_hint">기타 모드는 K/D와 헤드샷만 봐요. 라운드 수와 크레드 규칙이 달라서 다른 지표는 경쟁·일반과 같은 잣대로 볼 수 없어요.</string>
+    <string name="other_queue_hint">기타 모드는 K/D, KDA, 헤드샷만 봐요. 라운드 수와 크레드 규칙이 달라서 다른 지표는 경쟁·일반과 같은 잣대로 볼 수 없어요.</string>
 
     <string name="not_enough_title">리포트까지 %1$d경기 남았어요</string>
     <string name="not_enough_title_none">최근 %1$d주 동안 뛴 경기가 없어요</string>
-    <string name="not_enough_body">%1$d경기를 뛰면 리포트를 만들어드려요.</string>
+    <string name="not_enough_body">최근 4주 안에 %1$d경기가 모이면 리포트를 만들어드려요.</string>
     <!-- S1-a 지표 설명 시트. 화면 라벨은 한글이고 정식 명칭은 여기서 알려준다. -->
     <string name="sheet_open">%1$s 설명 보기</string>
     <string name="sheet_combat_score_name">ACS</string>
-    <string name="sheet_combat_score_body">킬, 피해, 어시스트로 쌓이는 전투점수의 라운드당 평균이에요. 스코어보드에 뜨는 그 숫자예요.</string>
+    <string name="sheet_combat_score_body">킬, 피해, 어시스트로 쌓이는 전투점수를 뛴 라운드 수로 나눈 값이에요.</string>
     <string name="sheet_combat_score_method">경기마다 받은 전투점수를 전부 더해 뛴 라운드 수로 나눠요.</string>
     <string name="sheet_combat_score_formula">%1$s점 ÷ %2$s라운드 = %3$s</string>
     <string name="sheet_kd_body">한 번 죽을 때마다 적을 몇 번 처치했는지예요.</string>
@@ -125,10 +125,10 @@
     <string name="dynamic_sheet_eco_body">우리 팀 평균 장비 가치가 2,000 미만인 이코 라운드 중 이긴 비율이에요. 피스톨 라운드는 넣지 않아요.</string>
     <string name="dynamic_sheet_force_buy_body">우리 팀 평균 장비 가치가 2,000 이상 3,900 미만인 포스바이 라운드 중 이긴 비율이에요. 피스톨 라운드는 넣지 않아요.</string>
     <string name="dynamic_sheet_multi_kill_body">뛴 라운드 중 내가 적을 둘 이상 잡은 라운드의 비율이에요. 이긴 교전을 다음 교전까지 이어 갔는지 봐요.</string>
-    <string name="dynamic_sheet_traded_death_body">내가 죽은 뒤 5초 안에 우리 팀이 내 킬러를 잡은 데스의 비율이에요. 혼자 떨어져 죽었는지, 팀과 붙어 싸우다 죽었는지 봐요. 우리 팀이 얼마나 따라와 줬는지도 같이 들어가요.</string>
+    <string name="dynamic_sheet_traded_death_body">내가 죽은 뒤 5초 안에 우리 팀이 나를 죽인 적을 잡은 데스의 비율이에요. 혼자 떨어져 죽었는지, 팀과 붙어 싸우다 죽었는지 봐요. 우리 팀이 얼마나 따라와 줬는지도 같이 들어가요.</string>
     <string name="dynamic_sheet_full_buy_body">우리 팀 평균 장비 가치가 3,900 이상인 풀바이 라운드 중 이긴 비율이에요. 피스톨 라운드는 넣지 않아요.</string>
     <string name="dynamic_sheet_sample_title">몇 번으로 셌나요?</string>
-    <string name="dynamic_sheet_sample_body">위에 적은 표본이 이 비율의 분모예요. 이번 기간과 비교하는 주가 모두 %1$s 이상이어야 비교해요.</string>
+    <string name="dynamic_sheet_sample_body">위 숫자는 이 비율을 셀 때 쓴 횟수예요. 이번 기간과 견주는 주가 모두 %1$s 이상이어야 비교해요.</string>
     <string name="dynamic_sheet_movement_title">어떻게 판단하나요?</string>
     <string name="dynamic_sheet_moved">이번 변화가 지난 %1$d주 동안 주마다 흔들린 폭의 %2$s배를 넘어서 달라졌다고 봤어요.</string>
     <string name="dynamic_sheet_steady">이번 변화가 평소 주마다 흔들리는 폭 안이라 달라졌다고 보지 않았어요.</string>
@@ -166,10 +166,10 @@
     <string name="rival_title">라이벌 · %1$s</string>
     <string name="rival_lead">%1$d개 중 %2$d개 앞섬</string>
     <string name="rival_no_matches">%1$s 경기가 없어요</string>
-    <string name="nudge_invite_title">같이 뛰는 친구를 불러 보세요</string>
+    <string name="nudge_invite_title">같이 뛰는 친구를 초대해 보세요</string>
     <string name="nudge_invite_body">초대 링크로 친구가 되면 매주 기록을 나란히 놓고 볼 수 있어요</string>
     <string name="nudge_rival_title">라이벌을 골라 보세요</string>
-    <string name="nudge_rival_body">고른 친구와 K/D, 피해량, 헤드샷, KDA를 매주 겨뤄요</string>
+    <string name="nudge_rival_body">고른 친구와 피해량, K/D, KDA, 헤드샷을 매주 겨뤄요</string>
     <string name="rival_pick_title">라이벌 고르기</string>
     <string name="rival_pick_body">전적을 공개한 친구만 고를 수 있어요. 친구 프로필에서 언제든 바꿀 수 있어요.</string>
     <string name="rival_pick_no_matches">%1$s 경기 없음</string>

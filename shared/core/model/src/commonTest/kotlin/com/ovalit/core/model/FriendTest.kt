@@ -22,7 +22,7 @@ private val Junho = PlayerId("junho")
 class FriendTest {
 
     @Test
-    fun `같이 한 경기는 그 친구가 우리 팀이었던 내 경기만 센다`() {
+    fun `같이 뛴 경기는 그 친구가 우리 팀이었던 내 경기만 센다`() {
         val matches = listOf(
             game(allies = setOf(Junho), won = true),
             game(allies = setOf(Junho), won = false),

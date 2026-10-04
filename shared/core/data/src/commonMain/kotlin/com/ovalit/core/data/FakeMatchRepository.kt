@@ -124,7 +124,7 @@ internal const val MY_RIOT_ID = "오발러#KR1"
 internal val MyCard = FakeCards[0]
 private const val MY_TIER = 16
 
-// 친구가 내 편으로 끼는 비율. S5의 "같이 한 경기"가 전체 경기 수가 되지 않게 한다.
+// 친구가 내 편으로 끼는 비율. S5의 "같이 뛴 경기"가 전체 경기 수가 되지 않게 한다.
 private const val FRIEND_IN_MATCH_RATE = 0.2
 private val FakeAct = ActId("fake-act")
 
@@ -156,7 +156,7 @@ internal class Owner(val id: PlayerId, val riotId: String, val card: PlayerCardI
 internal val Myself = Owner(Me, MY_RIOT_ID, MyCard, MY_TIER)
 
 /**
- * @param withFriends 내 경기일 때만 켭니다. 친구 경기에 다른 친구를 끼우면 S5의 같이 한 경기 수가 틀어집니다.
+ * @param withFriends 내 경기일 때만 켭니다. 친구 경기에 다른 친구를 끼우면 S5의 같이 뛴 경기 수가 틀어집니다.
  */
 internal fun fakeMatches(
     now: Instant,

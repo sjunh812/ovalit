@@ -101,7 +101,7 @@ class ProfileScreensTest {
     fun `요원 화면은 주 역할을 무엇으로 보는지 알려준다`() = runComposeUiTest {
         setContent { Themed { AgentsScreen(ProfilePreviewData.records, onBack = {}) } }
 
-        onNodeWithText("전략가는 관여율과 생존율로 봐요. 퍼블이 적은 건 역할상 자연스러워요.").assertExists()
+        onNodeWithText("전략가는 관여율과 생존율부터 봐요. 전략가는 원래 퍼블이 적은 편이에요.").assertExists()
     }
 
     @Test
@@ -109,7 +109,7 @@ class ProfileScreensTest {
         setContent { Themed { AgentsScreen(ProfilePreviewData.records, onBack = {}) } }
 
         onNodeWithText("관여율").assertExists()
-        onNodeWithText("생존").assertExists()
+        onNodeWithText("생존율").assertExists()
         onNodeWithText("퍼블 관여").assertDoesNotExist()
     }
 
@@ -121,7 +121,7 @@ class ProfileScreensTest {
 
         onNodeWithText("퍼블 관여").assertExists()
         onNodeWithText("첫 교전").assertExists()
-        onNodeWithText("생존").assertDoesNotExist()
+        onNodeWithText("생존율").assertDoesNotExist()
     }
 
     // 역할 표에 없는 새 요원만 뛰었으면 주 역할을 모른다. 경기는 있으니 "경기가 없어요"라고 하면 안 된다.
@@ -146,7 +146,7 @@ class ProfileScreensTest {
 
         onNodeWithText("K/D").assertExists()
         onNodeWithText("피해량").assertExists()
-        onNodeWithText("생존").assertDoesNotExist()
+        onNodeWithText("생존율").assertDoesNotExist()
         onNodeWithText("K/D · 피해량").assertExists()
     }
 

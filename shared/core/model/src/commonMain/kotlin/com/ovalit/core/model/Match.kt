@@ -9,7 +9,7 @@ import kotlin.time.Instant
  * 네트워크 계층이 여기에 맞춰 옮겨 담습니다.
  *
  * @property myRole 서버의 역할 표에 아직 없는 새 요원이면 `null`입니다.
- * @property allies 나를 뺀 우리 팀입니다. 팀킬, 트레이드, 클러치, 같이 한 경기를 이걸로 가립니다.
+ * @property allies 나를 뺀 우리 팀입니다. 팀킬, 트레이드, 클러치, 같이 뛴 경기를 이걸로 가립니다.
  * @property myTeamWon 비겼거나 결과를 모르면 `null`입니다. 승률을 낼 때 분모에서 뺍니다.
  * @property myCombatScore `players[].stats.score`. 라운드별이 아니라 경기 전체 합입니다.
  * @property rounds 내가 뛴 라운드만 담습니다. 중간에 튕겼다 들어온 경기에서 전체 라운드를

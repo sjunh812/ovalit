@@ -642,7 +642,7 @@ class ReportScreenTest {
 
         onNodeWithText("몇 번으로 셌나요?").assertExists()
         onNodeWithText("146라운드").assertExists()
-        onNodeWithText("위에 적은 표본이 이 비율의 분모예요. 이번 기간과 비교하는 주가 모두 40라운드 이상이어야 비교해요.").assertExists()
+        onNodeWithText("위 숫자는 이 비율을 셀 때 쓴 횟수예요. 이번 기간과 견주는 주가 모두 40라운드 이상이어야 비교해요.").assertExists()
         onNodeWithText("이번 변화가 지난 8주 동안 주마다 흔들린 폭의 1.5배를 넘어서 달라졌다고 봤어요.").assertExists()
     }
 
@@ -1257,7 +1257,7 @@ class ReportScreenTest {
         var shared = false
         setContent { Social(nudge = HomeNudge.INVITE_FRIEND, onShareInvite = { shared = true }) }
 
-        onNodeWithText("같이 뛰는 친구를 불러 보세요").performScrollTo().performClick()
+        onNodeWithText("같이 뛰는 친구를 초대해 보세요").performScrollTo().performClick()
 
         assertTrue(shared)
     }

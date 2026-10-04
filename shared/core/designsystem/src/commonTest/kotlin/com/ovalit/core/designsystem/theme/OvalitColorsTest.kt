@@ -96,14 +96,20 @@ class OvalitColorsTest {
         }
     }
 
-    // 사용자 요청(2026-09-29): 1~2 구간 청록이 오르내림의 초록처럼 보였다. OKLab 거리 15 밑이면 색으로 가르기 어렵다.
-    // 맨 위 칸(kda3)은 빨강 액센트와 멀리 두려고 호박색을 골랐다(2026-10-03). 라이트의 neg와는 15에 조금 못 미친다.
+    // 사용자 요청(2026-09-29): 1~2 구간 청록이 오르내림의 초록처럼 보였다. 그때 거리는 10이 안 됐다.
+    // 사용자 결정(2026-10-04): 초록·파랑·빨강을 쓰되 톤을 낮춰 오르내림 색과 가른다. 같은 계열이라 15까지는 못 떼고 11을 바닥으로 본다.
     @Test
-    fun `KDA 1에서 3 사이 구간 색은 오르내림 색이나 액센트와 섞여 보이지 않는다`() {
+    fun `KDA 구간 색은 오르내림 색이나 액센트와 섞여 보이지 않는다`() {
         forEachTheme { name, colors ->
-            val others = mapOf("pos" to colors.pos, "neg" to colors.neg, "accentInk" to colors.accentInk, "kda3" to colors.kda3)
+            val tokens = listOf("kda1" to colors.kda1, "kda2" to colors.kda2, "kda3" to colors.kda3)
+            tokens.forEach { (token, color) ->
+                mapOf("pos" to colors.pos, "neg" to colors.neg).forEach { (other, otherColor) ->
+                    val distance = oklabDistance(color, otherColor)
+                    assertTrue(distance >= 11.0, "$name $token 와 $other 의 OKLab 거리가 ${distance.rounded()}라 11에 못 미친다")
+                }
+            }
             listOf("kda1" to colors.kda1, "kda2" to colors.kda2).forEach { (token, color) ->
-                others.forEach { (other, otherColor) ->
+                mapOf("accentInk" to colors.accentInk, "kda3" to colors.kda3).forEach { (other, otherColor) ->
                     val distance = oklabDistance(color, otherColor)
                     assertTrue(distance >= 15.0, "$name $token 와 $other 의 OKLab 거리가 ${distance.rounded()}라 15에 못 미친다")
                 }

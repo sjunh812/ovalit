@@ -49,7 +49,7 @@ import com.ovalit.core.model.RoundSummary
 import com.ovalit.core.model.WinRecord
 import com.ovalit.core.model.roundsOverview
 import com.ovalit.core.ui.AgentImage
-import com.ovalit.core.ui.ResultTile
+import com.ovalit.core.ui.ResultLabel
 import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.resultColor
@@ -58,7 +58,7 @@ import com.ovalit.core.ui.weaponName
 import com.ovalit.core.ui.withThousands
 import com.ovalit.feature.match.resources.Res
 import com.ovalit.feature.match.resources.buy_record
-import com.ovalit.feature.match.resources.economy_chart_title
+import com.ovalit.feature.match.resources.buy_title
 import com.ovalit.feature.match.resources.economy_note
 import com.ovalit.feature.match.resources.economy_upsets
 import com.ovalit.feature.match.resources.enemy_team
@@ -103,6 +103,11 @@ internal fun RoundList(uiState: MatchDetailUiState.Success) {
         Spacer(Modifier.height(OvalitSpacing.md))
         OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter), color = OvalitTheme.colors.lineWeak)
         RoundDetail(round, uiState)
+        if (uiState.match.queue.hasEconomy && uiState.buys.isNotEmpty()) {
+            Spacer(Modifier.height(OvalitSpacing.sm))
+            OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter), color = OvalitTheme.colors.lineWeak)
+            BuyTable(uiState)
+        }
     }
 }
 
@@ -229,7 +234,7 @@ private fun RoundDetail(round: RoundSummary, uiState: MatchDetailUiState.Success
         Row(verticalAlignment = Alignment.CenterVertically) {
             OvalitText(text = stringResource(Res.string.round_title, round.number), style = OvalitTheme.typography.titleM)
             Spacer(Modifier.width(OvalitSpacing.sm))
-            ResultTile(round.won)
+            ResultLabel(round.won)
             Spacer(Modifier.width(OvalitSpacing.sm))
             OvalitText(
                 text = if (round.played) {
@@ -354,32 +359,21 @@ private fun KillRow(kill: RoundKill, uiState: MatchDetailUiState.Success) {
 }
 
 /**
- * S3 이코노미 탭입니다. 라운드마다 두 팀의 평균 장비를 막대로 견주고, 구매 유형마다 두 팀이 몇 라운드를 사서 몇 번 이겼는지를
- * 둡니다(사용자 요청, 2026-10-04). 우리 팀만 적던 표로는 상대가 언제 무너졌는지 안 보였습니다.
+ * 라운드 탭 맨 밑의 구매 유형 표입니다. 구매 유형마다 두 팀이 몇 라운드를 사서 몇 번 이겼는지를 둡니다. 우리 팀만 적던 표로는
+ * 상대가 언제 무너졌는지 안 보였습니다. 라운드마다 두 팀의 평균 장비를 그리던 그래프는 라운드 고르는 줄의 장비 막대와 겹쳐서
+ * 뺐습니다(사용자 요청, 2026-10-04).
  */
 @Composable
-internal fun EconomyList(uiState: MatchDetailUiState.Success) {
+private fun BuyTable(uiState: MatchDetailUiState.Success) {
     val colors = OvalitTheme.colors
     val caption = OvalitTheme.typography.caption
     val overview = uiState.match.roundsOverview()
     Column {
-        SectionLabel(stringResource(Res.string.economy_chart_title))
-        LoadoutChart(uiState.rounds, half = uiState.match.queue.halfRounds ?: 12)
+        // 열 제목은 맨 위에 한 번만 둔다.
         Row(
-            modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.sm),
-            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.lg, bottom = OvalitSpacing.xs),
         ) {
-            Legend(colors.t1, stringResource(Res.string.my_team))
-            Spacer(Modifier.width(OvalitSpacing.md))
-            Legend(colors.t4, stringResource(Res.string.enemy_team))
-        }
-        Spacer(Modifier.height(OvalitSpacing.lg))
-        OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter), color = colors.lineWeak)
-        // 구매 유형 표다. 열 제목은 맨 위에 한 번만 둔다.
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.md, bottom = OvalitSpacing.xs),
-        ) {
-            Spacer(Modifier.weight(1f))
+            OvalitText(text = stringResource(Res.string.buy_title), modifier = Modifier.weight(1f), style = OvalitTheme.typography.label, color = colors.t3)
             OvalitText(text = stringResource(Res.string.my_team), modifier = Modifier.weight(1f), style = caption, color = colors.t3, textAlign = TextAlign.End)
             OvalitText(text = stringResource(Res.string.enemy_team), modifier = Modifier.weight(1f), style = caption, color = colors.t3, textAlign = TextAlign.End)
         }
@@ -427,62 +421,3 @@ internal fun EconomyList(uiState: MatchDetailUiState.Success) {
         )
     }
 }
-
-@Composable
-private fun Legend(color: Color, text: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(8.dp).clip(RoundedCornerShape(2.dp)).background(color))
-        Spacer(Modifier.width(4.dp))
-        OvalitText(text = text, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t3)
-    }
-}
-
-/**
- * 라운드마다 두 팀의 한 사람당 평균 장비를 나란한 막대 둘로 그립니다. 밑에는 위쪽 라운드 막대처럼 이긴 라운드만 `--pos`로
- * 칠한 띠를 둡니다. 전반과 후반 사이에 세로선을 긋습니다. 못 뛴 라운드는 장비를 몰라 비웁니다.
- */
-@Composable
-private fun LoadoutChart(rounds: List<RoundSummary>, half: Int) {
-    val colors = OvalitTheme.colors
-    val most = rounds.maxOfOrNull { maxOf(it.economy?.teamLoadout ?: 0, it.economy?.enemyLoadout ?: 0) }?.coerceAtLeast(1) ?: 1
-    val win = colors.pos
-    val loss = colors.bar
-    val ours = colors.t1
-    val theirs = colors.t4
-    val line = colors.line
-    val description = rounds.joinToString { round ->
-        val economy = round.economy
-        if (economy == null) "${round.number}" else "${round.number} ${economy.teamLoadout} ${economy.enemyLoadout}"
-    }
-    Canvas(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(120.dp)
-            .padding(horizontal = OvalitSpacing.gutter)
-            .semantics { contentDescription = description },
-    ) {
-        if (rounds.isEmpty()) return@Canvas
-        val slot = size.width / rounds.size
-        val strip = 4.dp.toPx()
-        val gap = 6.dp.toPx()
-        val chartHeight = size.height - strip - gap
-        val bar = (slot * 0.32f).coerceAtMost(6.dp.toPx())
-        rounds.forEachIndexed { index, round ->
-            val left = index * slot
-            val center = left + slot / 2
-            round.economy?.let { economy ->
-                fun draw(x: Float, value: Int, color: Color) {
-                    val height = (chartHeight * value / most).coerceAtLeast(2.dp.toPx())
-                    drawRoundRect(color, topLeft = Offset(x, chartHeight - height), size = Size(bar, height), cornerRadius = CornerRadius(1.5.dp.toPx()))
-                }
-                draw(center - bar - 0.5.dp.toPx(), economy.teamLoadout, ours)
-                draw(center + 0.5.dp.toPx(), economy.enemyLoadout, theirs)
-            }
-            drawRect(if (round.won) win else loss, topLeft = Offset(left + 1.dp.toPx(), size.height - strip), size = Size(slot - 2.dp.toPx(), strip))
-            if (index > 0 && index % half == 0 && index <= half * 2) {
-                drawLine(line, start = Offset(left, 0f), end = Offset(left, size.height), strokeWidth = 1.dp.toPx())
-            }
-        }
-    }
-}
-

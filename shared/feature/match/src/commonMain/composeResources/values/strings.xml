@@ -22,7 +22,7 @@
     <string name="score_description">%1$d 대 %2$d</string>
     <string name="tab_scoreboard">스코어보드</string>
     <string name="tab_rounds">라운드</string>
-    <string name="tab_economy">이코노미</string>
+    <string name="tab_report">내 기록</string>
 
     <string name="my_team">우리 팀</string>
     <string name="enemy_team">상대 팀</string>
@@ -56,7 +56,17 @@
     <string name="section_overtime">연장</string>
 
     <string name="buy_record">%1$d라운드 %2$d승</string>
-    <string name="economy_chart_title">라운드별 한 사람당 평균 장비</string>
+    <string name="buy_title">구매 유형</string>
+    <string name="report_duels_title">상대별 맞대결</string>
+    <string name="report_weapons_title">이번 판 무기</string>
+    <string name="report_kills">킬</string>
+    <string name="report_deaths">데스</string>
+    <string name="report_assists">어시</string>
+    <string name="report_damage_dealt">준 피해</string>
+    <string name="report_damage_taken">받은 피해</string>
+    <string name="report_damage">피해량</string>
+    <string name="report_headshot">헤드샷</string>
+    <string name="report_weapons_note">킬은 마무리한 무기로 세요. 피해량은 그 무기를 들고 시작한 라운드의 라운드당 피해량이고, 헤드샷은 킬을 모두 그 무기로 낸 라운드만 세요.</string>
     <string name="economy_upsets">장비가 상대보다 1,000 넘게 적었는데 %1$d라운드를 이겼어요</string>
     <string name="overview_first_blood_ours">우리 팀이 퍼블을 딴 라운드</string>
     <string name="overview_first_blood_theirs">상대 팀이 퍼블을 딴 라운드</string>

@@ -279,6 +279,13 @@ private fun playTimeText(millis: Long): String {
 @Composable
 fun ProfileShotsSection(shots: Shots) {
     if (shots.total == 0) return
+    ProfileSection { ShotsBreakdown(shots) }
+}
+
+/** [ProfileShotsSection]에서 카드를 뺀 내용입니다. 카드 없이 놓는 S3 내 기록 탭도 같이 씁니다. */
+@Composable
+fun ShotsBreakdown(shots: Shots) {
+    if (shots.total == 0) return
     val colors = OvalitTheme.colors
     val parts = listOf(
         ShotPart(Res.string.profile_shots_head, shots.head, colors.t1),
@@ -286,7 +293,7 @@ fun ProfileShotsSection(shots: Shots) {
         ShotPart(Res.string.profile_shots_leg, shots.leg, colors.bar),
     )
 
-    ProfileSection {
+    Column {
         ProfileSectionTitle(
             title = stringResource(Res.string.profile_shots_title),
             caption = stringResource(Res.string.profile_shots_caption, shots.total.withThousands()),

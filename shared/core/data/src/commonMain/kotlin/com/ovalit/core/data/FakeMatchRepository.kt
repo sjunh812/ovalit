@@ -487,8 +487,10 @@ private fun Match.withScoreboard(
 ): Match {
     val slotToEnemy = EnemySlots.zip(enemies.map { it.id }).toMap()
     fun PlayerId.real() = slotToEnemy[this] ?: this
+    val enemyIds = enemies.map { it.id }
     val renamed = rounds.map { round ->
         round.copy(kills = round.kills.map { it.copy(killer = it.killer.real(), victim = it.victim.real()) })
+            .withDamageMaps(random, owner.id, enemyIds)
     }
     val mine = copy(rounds = renamed).metrics()
     val roundCount = roundOutcomes.size
@@ -545,4 +547,19 @@ private fun randomShots(random: Random, rounds: Int): Shots {
     val head = (total * random.nextDouble(0.12, 0.32)).toInt()
     val leg = (total * random.nextDouble(0.03, 0.1)).toInt()
     return Shots(head = head, body = total - head - leg, leg = leg)
+}
+
+
+// 상대마다 주고받은 피해다. 내가 잡은 상대에게는 한 번에 110~150을, 남은 피해는 아무 상대에게 준다. 내가 죽었으면 잡은 상대에게
+// 100~150을 받고, 가끔 다른 상대에게도 조금 받는다.
+private fun Round.withDamageMaps(random: Random, me: PlayerId, enemies: List<PlayerId>): Round {
+    if (enemies.isEmpty()) return this
+    val dealt = mutableMapOf<PlayerId, Int>()
+    kills.filter { it.killer == me && it.victim in enemies }.forEach { dealt[it.victim] = (dealt[it.victim] ?: 0) + random.nextInt(110, 151) }
+    val left = myDamage - dealt.values.sum()
+    if (left > 0) enemies.random(random).let { dealt[it] = (dealt[it] ?: 0) + left }
+    val taken = mutableMapOf<PlayerId, Int>()
+    kills.firstOrNull { it.victim == me && it.killer in enemies }?.let { taken[it.killer] = random.nextInt(100, 151) }
+    if (random.nextDouble() < 0.6) enemies.random(random).let { taken[it] = (taken[it] ?: 0) + random.nextInt(20, 81) }
+    return copy(myDamageTo = dealt, myDamageFrom = taken)
 }

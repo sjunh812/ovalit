@@ -2,9 +2,11 @@ package com.ovalit.feature.match
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -20,22 +22,27 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -57,7 +64,7 @@ import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.halfScores
 import com.ovalit.core.ui.MapImage
 import com.ovalit.core.ui.MapImageStyle
-import com.ovalit.core.ui.ResultTile
+import com.ovalit.core.ui.ResultLabel
 import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.mapName
@@ -69,7 +76,7 @@ import com.ovalit.feature.match.resources.half_first
 import com.ovalit.feature.match.resources.half_overtime
 import com.ovalit.feature.match.resources.half_second
 import com.ovalit.feature.match.resources.score_description
-import com.ovalit.feature.match.resources.tab_economy
+import com.ovalit.feature.match.resources.tab_report
 import com.ovalit.feature.match.resources.tab_rounds
 import com.ovalit.feature.match.resources.tab_scoreboard
 import kotlinx.datetime.number
@@ -81,7 +88,7 @@ import org.koin.core.parameter.parametersOf
 private val BannerHeight = 196.dp
 private val TouchSize = 44.dp
 
-internal enum class DetailTab { SCOREBOARD, ROUNDS, ECONOMY }
+internal enum class DetailTab { SCOREBOARD, ROUNDS, REPORT }
 
 /**
  * S3 경기 상세입니다.
@@ -136,10 +143,11 @@ internal fun MatchDetailScreen(
         val tabs = buildList {
             add(DetailTab.SCOREBOARD)
             if (match.queue.halfRounds != null) add(DetailTab.ROUNDS)
-            if (match.queue.hasEconomy) add(DetailTab.ECONOMY)
+            add(DetailTab.REPORT)
         }
 
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        val scrollState = rememberScrollState()
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
             Banner(uiState, onBack)
             if (match.queue.halfRounds != null) {
                 RoundStrip(uiState)
@@ -161,13 +169,14 @@ internal fun MatchDetailScreen(
                         },
                     )
                     DetailTab.ROUNDS -> RoundList(uiState)
-                    DetailTab.ECONOMY -> EconomyList(uiState)
+                    DetailTab.REPORT -> MatchReport(uiState)
                 }
             }
             Spacer(Modifier.height(OvalitSpacing.xxl))
             // 탭바 밖 화면이라 시스템 내비게이션 바 높이만큼 더 띄운다. 안 그러면 마지막 줄이 내비게이션 바에 덮인다.
             Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
         }
+        StatusBarScrim(scrollState)
     }
 
     val success = uiState as? MatchDetailUiState.Success
@@ -179,6 +188,27 @@ internal fun MatchDetailScreen(
             onAccept = { onAccept(selected.line.player) },
             onShareInvite = onShareInvite,
             onDismiss = { sheetFor = null },
+        )
+    }
+}
+
+/**
+ * 배너가 상태 표시줄 밑을 벗어나면 그 자리를 바탕색으로 덮습니다. 배너가 화면 맨 위까지 깔려 있어서, 안 덮으면 내린 스코어보드가
+ * 시계와 겹칩니다. 배너가 그 자리에 있을 때는 맵 그림이 보이게 비워 둡니다.
+ */
+@Composable
+private fun BoxScope.StatusBarScrim(scrollState: ScrollState) {
+    val density = LocalDensity.current
+    val statusBar = WindowInsets.statusBars.getTop(density)
+    val banner = with(density) { BannerHeight.roundToPx() }
+    val covered by remember(scrollState, statusBar, banner) { derivedStateOf { scrollState.value > banner - statusBar } }
+    if (covered) {
+        Box(
+            Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .windowInsetsTopHeight(WindowInsets.statusBars)
+                .background(OvalitTheme.colors.bg),
         )
     }
 }
@@ -237,8 +267,8 @@ private fun ScoreHeadline(uiState: MatchDetailUiState.Success, modifier: Modifie
     val scoreDescription = stringResource(Res.string.score_description, score.myTeam, score.enemyTeam)
 
     Column(modifier = modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = 14.dp)) {
-        // 경기 목록 줄처럼 맵 이름 옆에 "승", "패" 칸을 둔다(사용자 요청, 2026-10-04). MVP와 순위는 바로 밑 스코어보드에 있다.
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // 경기 목록 줄처럼 맵 이름 옆에 "승리", "패배"를 적는다(사용자 요청, 2026-10-04). MVP와 순위는 바로 밑 스코어보드에 있다.
+        Row(verticalAlignment = Alignment.Bottom) {
             OvalitText(
                 text = uiState.catalog.mapName(match.map),
                 modifier = Modifier.weight(1f, fill = false),
@@ -247,7 +277,7 @@ private fun ScoreHeadline(uiState: MatchDetailUiState.Success, modifier: Modifie
                 overflow = TextOverflow.Ellipsis,
             )
             Spacer(Modifier.width(OvalitSpacing.sm))
-            ResultTile(match.myTeamWon)
+            ResultLabel(match.myTeamWon, Modifier.padding(bottom = 3.dp))
         }
         Spacer(Modifier.height(6.dp))
         Row(verticalAlignment = Alignment.Bottom) {
@@ -326,7 +356,7 @@ private fun Tabs(tabs: List<DetailTab>, selected: DetailTab, onSelect: (DetailTa
                             when (tab) {
                                 DetailTab.SCOREBOARD -> Res.string.tab_scoreboard
                                 DetailTab.ROUNDS -> Res.string.tab_rounds
-                                DetailTab.ECONOMY -> Res.string.tab_economy
+                                DetailTab.REPORT -> Res.string.tab_report
                             },
                         ),
                         modifier = Modifier.padding(bottom = 11.dp),

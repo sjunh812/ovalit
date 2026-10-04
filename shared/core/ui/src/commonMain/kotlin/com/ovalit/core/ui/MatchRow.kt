@@ -38,13 +38,10 @@ import com.ovalit.core.model.Match
 import com.ovalit.core.model.myHighlights
 import com.ovalit.core.model.myPlacement
 import com.ovalit.core.ui.resources.Res
-import com.ovalit.core.ui.resources.match_adr
+import com.ovalit.core.ui.resources.match_acs
 import com.ovalit.core.ui.resources.match_kda
 import com.ovalit.core.ui.resources.match_result_draw
 import com.ovalit.core.ui.resources.match_result_loss
-import com.ovalit.core.ui.resources.match_result_short_draw
-import com.ovalit.core.ui.resources.match_result_short_loss
-import com.ovalit.core.ui.resources.match_result_short_win
 import com.ovalit.core.ui.resources.match_result_win
 import com.ovalit.core.ui.resources.match_score
 import org.jetbrains.compose.resources.stringResource
@@ -59,7 +56,7 @@ enum class MatchRowStyle {
 
 /**
  * 경기 한 줄입니다. 스코어는 이겼으면 `--pos`, 졌으면 `--neg`로 칠하고, 낭독기에는 승패를 말로 읽어 줍니다. 숫자는 게임
- * 스코어보드와 같게 응답의 K/D/A를 그대로 씁니다.
+ * 스코어보드와 같게 응답의 K/D/A와 전투점수를 그대로 씁니다.
  *
  * @param onClick `null`이면 누를 수 없는 줄입니다. 친구 경기는 다른 사람 기록이 섞여 있어서 열지 않습니다.
  */
@@ -77,9 +74,11 @@ fun MatchRow(
     val score = match.score
     val mapName = catalog.mapName(match.map)
     val kda = line?.let { stringResource(Res.string.match_kda, it.kills, it.deaths, it.assists) }
-    val adr = line?.adr?.let { value ->
+    // K/D/A 옆은 그 판에서 얼마나 보탰는지 보이는 전투점수다(사용자 요청, 2026-10-04). 등수와 MVP도 전투점수로 센다. 목록은
+    // 폭이 좁아 예전 "ADR 174"처럼 약어로 적는다.
+    val acs = line?.acs?.let { value ->
         val digits = MetricFormat.INTEGER.format(value)
-        if (style == MatchRowStyle.LIST) stringResource(Res.string.match_adr, digits) else digits
+        if (style == MatchRowStyle.LIST) stringResource(Res.string.match_acs, digits) else digits
     }
     val result = resultText(match.myTeamWon)
     val compact = style == MatchRowStyle.COMPACT
@@ -106,24 +105,22 @@ fun MatchRow(
         }
         Spacer(Modifier.width(13.dp))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 5.dp)) {
-            // 맵 이름 옆에 큐와 시각을 흐리게 붙인다. 폭이 모자라면 큐와 시각부터 줄인다.
-            Row(verticalAlignment = Alignment.Bottom) {
+            // 윗줄은 맵 이름과 그 판의 자리(MVP, 팀 MVP, 등수), 에이스와 클러치 칩이고 아랫줄은 큐와 시각이다. 오른쪽 칸과 같이 윗줄이
+            // 결과, 아랫줄이 풀이다(사용자 요청, 2026-10-04). 칩만 아랫줄에 따로 두니 왼쪽이 무거워 보였다. 폭이 모자라면 뒤 칩부터 뺀다.
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 OvalitText(text = mapName, style = OvalitTheme.typography.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Spacer(Modifier.width(6.dp))
-                OvalitText(
-                    text = stringResource(match.queue.label) + SEPARATOR + timeLabel,
-                    modifier = Modifier.weight(1f, fill = false).padding(bottom = 1.dp),
-                    style = caption,
-                    color = colors.t3,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                ChipsThatFit(
+                    chips = listOfNotNull<@Composable () -> Unit>(placement?.let { { PlacementLabel(it) } }) +
+                        highlightChips(highlights).map { text -> { MatchChip(text, MatchChipTone.HIGHLIGHT) } },
+                    modifier = Modifier.weight(1f, fill = false).padding(start = 6.dp),
                 )
             }
-            // 밑 줄에 칩을 한 줄로 모은다. 그 판의 자리(MVP, 팀 MVP, 등수), 에이스와 클러치 순이다(사용자 요청, 2026-10-04). op.gg처럼
-            // 목록만 봐도 얼마나 보탰는지, 큰 장면이 있었는지 보인다. 폭이 모자라면 뒤 칩부터 뺀다.
-            ChipsThatFit(
-                listOfNotNull<@Composable () -> Unit>(placement?.let { { PlacementLabel(it) } }) +
-                    highlightChips(highlights).map { text -> { MatchChip(text, MatchChipTone.HIGHLIGHT) } },
+            OvalitText(
+                text = stringResource(match.queue.label) + SEPARATOR + timeLabel,
+                style = caption,
+                color = colors.t3,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
         Spacer(Modifier.width(OvalitSpacing.sm))
@@ -135,11 +132,11 @@ fun MatchRow(
             verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 4.dp),
         ) {
             val scoreStyle = OvalitTheme.typography.metricS.copy(fontSize = 15.sp, fontWeight = FontWeight.Bold)
-            // 색만으로는 승패를 못 읽어서 스코어 앞에 "승", "패"를 결과 색을 옅게 깐 칸에 적는다(사용자 요청, 2026-10-03). op.gg처럼
-            // 줄 전체를 칠하면 목록이 빨강과 초록 띠가 된다.
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                ResultTile(match.myTeamWon)
-                Spacer(Modifier.width(7.dp))
+            // 색만으로는 승패를 못 읽어서 스코어 앞에 "승리", "패배"를 결과 색 글자로 적는다. 칸에 담았더니 MVP·등수 칩과 겹쳐
+            // 줄마다 칩이 너무 많았다(사용자 요청, 2026-10-04). op.gg처럼 줄 전체를 칠하면 목록이 빨강과 초록 띠가 된다.
+            Row(verticalAlignment = Alignment.Bottom) {
+                ResultLabel(match.myTeamWon, Modifier.padding(bottom = 1.dp))
+                Spacer(Modifier.width(6.dp))
                 OvalitText(
                     text = stringResource(Res.string.match_score, score.myTeam, score.enemyTeam),
                     modifier = Modifier.weight(1f, fill = false),
@@ -152,8 +149,8 @@ fun MatchRow(
             if (kda != null) {
                 SeparatedRow(
                     items = listOfNotNull(
-                        { OvalitText(text = kda, style = small, color = colors.t2) },
-                        adr?.let { { OvalitText(text = it, style = small, color = colors.t2) } },
+                        { OvalitText(text = kda, style = small.copy(fontWeight = FontWeight.SemiBold), color = colors.t1) },
+                        acs?.let { { OvalitText(text = it, style = small, color = colors.t2) } },
                     ),
                     separator = { SeparatorDot(small, colors.t2) },
                     alignEnd = true,
@@ -163,40 +160,19 @@ fun MatchRow(
     }
 }
 
-/** 결과 색을 옅게 깐 작은 네모에 "승", "패", "무"를 적습니다. 알약 모양은 쓰지 않습니다(CLAUDE.md 디자인). */
+/** 결과 색으로 적은 "승리", "패배", "무승부"입니다. 칩에 담지 않습니다. 칩은 그 판의 자리와 큰 장면에만 씁니다. */
 @Composable
-fun ResultTile(won: Boolean?, modifier: Modifier = Modifier) {
-    val color = resultColor(won)
-    Box(
-        modifier = modifier
-            .size(ResultTileSize)
-            .clip(RoundedCornerShape(6.dp))
-            .background(color.copy(alpha = RESULT_TILE_ALPHA)),
-        contentAlignment = Alignment.Center,
-    ) {
-        OvalitText(
-            text = resultShortText(won),
-            style = OvalitTheme.typography.caption.copy(fontWeight = FontWeight.Bold),
-            color = color,
-            maxLines = 1,
-        )
-    }
+fun ResultLabel(won: Boolean?, modifier: Modifier = Modifier) {
+    OvalitText(
+        text = resultText(won),
+        modifier = modifier,
+        style = OvalitTheme.typography.label.copy(fontWeight = FontWeight.SemiBold),
+        color = resultColor(won),
+        maxLines = 1,
+    )
 }
 
-private val ResultTileSize = 22.dp
-private const val RESULT_TILE_ALPHA = 0.14f
-
-/** 경기 줄 스코어 앞의 "승", "패", "무"입니다. */
-@Composable
-fun resultShortText(won: Boolean?): String = stringResource(
-    when (won) {
-        true -> Res.string.match_result_short_win
-        false -> Res.string.match_result_short_loss
-        null -> Res.string.match_result_short_draw
-    },
-)
-
-/** 결과를 다 쓴 "승리", "패배", "무승부"입니다. S3 머리와 낭독기에 씁니다. */
+/** "승리", "패배", "무승부"입니다. */
 @Composable
 fun resultText(won: Boolean?): String = stringResource(
     when (won) {
@@ -233,11 +209,12 @@ private fun MapWithAgent(match: Match, catalog: ContentCatalog) {
 }
 
 /**
- * [chips]를 6dp 간격으로 한 줄에 들어가는 만큼만 둡니다. 맨 앞 칩은 늘 두고, 하나가 안 들어가면 그 뒤 칩은 모두 뺍니다.
+ * [chips]를 6dp 간격으로 한 줄에 들어가는 만큼만 둡니다. 하나가 안 들어가면 그 칩부터 뒤는 모두 뺍니다.
  */
 @Composable
-private fun ChipsThatFit(chips: List<@Composable () -> Unit>) {
-    Layout(contents = chips) { measurables, constraints ->
+private fun ChipsThatFit(chips: List<@Composable () -> Unit>, modifier: Modifier = Modifier) {
+    if (chips.isEmpty()) return
+    Layout(contents = chips, modifier = modifier) { measurables, constraints ->
         val loose = constraints.copy(minWidth = 0, minHeight = 0)
         val gap = 6.dp.roundToPx()
         val placeables = measurables.map { it.first().measure(loose) }
@@ -245,7 +222,7 @@ private fun ChipsThatFit(chips: List<@Composable () -> Unit>) {
         val shown = mutableListOf<Pair<Placeable, Int>>()
         placeables.forEachIndexed { index, chip ->
             val at = if (index == 0) 0 else x + gap
-            if (index > 0 && at + chip.width > constraints.maxWidth) return@forEachIndexed
+            if (at + chip.width > constraints.maxWidth) return@forEachIndexed
             if (shown.size < index) return@forEachIndexed
             shown += chip to at
             x = at + chip.width

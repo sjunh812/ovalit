@@ -113,6 +113,9 @@ data class Scoreline(
  * @property mySide 그 라운드에 내가 공격이었는지 수비였는지입니다. 모르면 `null`이고, 공수를 나눠 셀 때
  * 양쪽 다 빠집니다.
  * @property ending 라운드가 어떻게 끝났는지입니다. 응답의 `roundResult`에서 옵니다.
+ * @property myDamageTo 내가 상대마다 입힌 피해입니다. 응답의 `roundResults[].playerStats[내 것].damage[]`를 받는 사람마다 더해
+ * 담습니다. S3 내 기록 탭의 상대별 맞대결에 씁니다.
+ * @property myDamageFrom 상대마다 내가 받은 피해입니다. 다른 사람의 `damage[]` 중 받는 사람이 나인 것을 더해 담습니다.
  */
 data class Round(
     val number: Int,
@@ -123,6 +126,8 @@ data class Round(
     val mySide: Side?,
     val ending: RoundEnding?,
     val economy: RoundEconomy?,
+    val myDamageTo: Map<PlayerId, Int> = emptyMap(),
+    val myDamageFrom: Map<PlayerId, Int> = emptyMap(),
 )
 
 enum class RoundEnding {

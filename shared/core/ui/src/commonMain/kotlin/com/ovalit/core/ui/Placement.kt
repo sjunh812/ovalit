@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchAward
@@ -83,18 +84,22 @@ fun MatchChip(text: String, tone: MatchChipTone, modifier: Modifier = Modifier) 
         MatchChipTone.HIGHLIGHT -> colors.highlightContainer to colors.highlight
         MatchChipTone.QUIET -> colors.fill to colors.t2
     }
-    // 승패 칸과 같은 높이라 한 줄에 놓아도 칩이 들쭉날쭉하지 않다
+    // 맵 이름과 선수 이름 옆에 붙는 작은 표시라 글자보다 한 단계 작게 둔다(사용자 요청, 2026-10-04). 22dp로 두니 이름보다 칩이 먼저 보였다.
     Box(
         modifier = modifier
-            .heightIn(min = 22.dp)
-            .clip(RoundedCornerShape(6.dp))
+            .heightIn(min = 19.dp)
+            .clip(RoundedCornerShape(5.dp))
             .background(container)
-            .padding(horizontal = 6.dp),
+            .padding(horizontal = 5.dp),
         contentAlignment = Alignment.Center,
     ) {
         OvalitText(
             text = text,
-            style = OvalitTheme.typography.caption.copy(fontWeight = if (tone == MatchChipTone.QUIET) FontWeight.Medium else FontWeight.Bold),
+            style = OvalitTheme.typography.caption.copy(
+                fontSize = 11.sp,
+                lineHeight = 14.sp,
+                fontWeight = if (tone == MatchChipTone.QUIET) FontWeight.Medium else FontWeight.SemiBold,
+            ),
             color = content,
             maxLines = 1,
         )

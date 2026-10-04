@@ -30,7 +30,7 @@ class MatchScreensTest {
 
         onNodeWithText("오늘").assertExists()
         onNodeWithText("어제").assertExists()
-        onNodeWithText("ADR 174").performClick()
+        onNodeWithText("ACS 237").performClick()
 
         assertEquals(MatchId("ascent"), opened)
     }
@@ -40,17 +40,17 @@ class MatchScreensTest {
     fun `경기 줄은 낭독기에 승패를 말로 알린다`() = runComposeUiTest {
         setContent { Themed { MatchesScreen(MatchPreviewData.matches, {}, {}, {}) } }
 
-        onNode(hasText("ADR 174") and hasStateDescription("승리")).assertExists()
+        onNode(hasText("ACS 237") and hasStateDescription("승리")).assertExists()
         onAllNodes(hasStateDescription("패배")).fetchSemanticsNodes().let { assertTrue(it.isNotEmpty()) }
     }
 
-    // 사용자 요청(2026-10-03): 색만으로는 승패가 갈리지 않아 스코어 앞에 글자로도 적는다
+    // 사용자 요청(2026-10-03): 색만으로는 승패가 갈리지 않아 스코어 앞에 글자로도 적는다. 칩이 너무 많아 칸 없이 쓴다(2026-10-04).
     @Test
     fun `경기 줄은 스코어 앞에 승패를 글자로 적는다`() = runComposeUiTest {
         setContent { Themed { MatchesScreen(MatchPreviewData.matches, {}, {}, {}) } }
 
-        onNode(hasText("ADR 174") and hasText("승")).assertExists()
-        assertTrue(onAllNodesWithText("패").fetchSemanticsNodes().isNotEmpty())
+        onNode(hasText("ACS 237") and hasText("승리")).assertExists()
+        assertTrue(onAllNodesWithText("패배").fetchSemanticsNodes().isNotEmpty())
     }
 
     @Test
@@ -70,8 +70,8 @@ class MatchScreensTest {
 
         onNodeWithContentDescription("13 대 9").assertExists()
         onNodeWithText("전반 8–4 · 후반 5–5").assertExists()
-        // 경기 목록 줄처럼 맵 이름 옆에 승패 칸을 둔다(사용자 요청, 2026-10-04)
-        onNodeWithText("승").assertExists()
+        // 경기 목록 줄처럼 맵 이름 옆에 승패를 적는다(사용자 요청, 2026-10-04)
+        onNodeWithText("승리").assertExists()
     }
 
     // CLAUDE.md: 프로필은 서로 수락한 친구끼리만 본다
@@ -175,13 +175,25 @@ class MatchScreensTest {
         onNodeWithText("1대4 클러치", useUnmergedTree = true).assertExists()
     }
 
+    // 사용자 요청(2026-10-04): 라운드별 평균 장비 그래프 대신 op.gg 매치 리포트처럼 그 판의 내 기록을 둔다
     @Test
-    fun `이코노미 탭은 라운드별 장비와 두 팀의 구매 유형별 승을 보여준다`() = runComposeUiTest {
+    fun `내 기록 탭은 맞힌 부위와 상대별 맞대결을 보여준다`() = runComposeUiTest {
         setContent { Themed { Detail() } }
 
-        onNodeWithText("이코노미").performClick()
+        onNodeWithText("이코노미").assertDoesNotExist()
+        onNodeWithText("내 기록").performClick()
 
-        onNodeWithText("라운드별 한 사람당 평균 장비").assertExists()
+        onNodeWithText("상대별 맞대결").assertExists()
+        onNodeWithText("민석").assertExists()
+        onNodeWithText("pixel").assertExists()
+    }
+
+    @Test
+    fun `구매 유형 표는 라운드 탭 맨 밑에 두 팀을 나란히 둔다`() = runComposeUiTest {
+        setContent { Themed { Detail() } }
+
+        onNodeWithText("라운드").performClick()
+
         onNodeWithText("13라운드 9승", substring = true).assertExists()
         onAllNodesWithText("상대 팀").fetchSemanticsNodes().let { assertTrue(it.isNotEmpty()) }
     }

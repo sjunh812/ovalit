@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -30,11 +31,16 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitDisclosureIcon
@@ -59,8 +65,8 @@ import com.ovalit.core.ui.PlacementLabel
 import com.ovalit.core.ui.TierEmblem
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.annotated
-import com.ovalit.core.ui.kdaText
 import com.ovalit.core.ui.columnLabel
+import com.ovalit.core.ui.kdaText
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.percentText
 import com.ovalit.core.ui.resultColor
@@ -96,6 +102,16 @@ import com.ovalit.feature.match.resources.side_defense
 import org.jetbrains.compose.resources.stringResource
 
 private val ChevronWidth = 16.dp
+private val TierSize = 16.dp
+
+// "닉네임#KR1"의 태그는 이름보다 덜 중요해서 한 단계 작고 옅게 둔다. 글자 크기를 키우면 같이 커지게 em으로 준다.
+private fun riotIdText(riotId: String, tagColor: Color): AnnotatedString = buildAnnotatedString {
+    append(riotId.substringBefore('#'))
+    val tag = riotId.substringAfter('#', missingDelimiterValue = "")
+    if (tag.isNotEmpty()) {
+        withStyle(SpanStyle(fontSize = 0.85.em, color = tagColor, fontWeight = FontWeight.Normal)) { append("#$tag") }
+    }
+}
 
 // 숫자 열은 글자 크기만큼 넓힌다. 고정 폭이면 큰 글씨에서 "14/16/4"가 "14/1"로 잘린다. 줄어든 폭은 이름 칸이 내준다.
 private class ColumnWidths(val kda: Dp, val acs: Dp)
@@ -111,9 +127,11 @@ internal fun Scoreboard(uiState: MatchDetailUiState.Success, onOpenPlayer: (Scor
     val colors = OvalitTheme.colors
     // 한 번에 한 사람만 펼친다. 여럿을 펼치면 스코어보드가 길어져 팀 머리가 화면 밖으로 밀린다.
     var expanded by rememberSaveable { mutableStateOf<String?>(null) }
+    // 티어가 없는 사람이 섞여도 이름이 같은 자리에서 시작하게, 한 사람이라도 티어가 있으면 모든 줄이 그 자리를 비운다
+    val tierSlot = (uiState.myTeam + uiState.enemyTeam).any { it.line.tier != null }
     val row = @Composable { line: ScoreboardRow ->
         val id = line.line.player.value
-        PlayerRow(line, uiState, onOpenPlayer, expanded = expanded == id, onToggle = { expanded = if (expanded == id) null else id })
+        PlayerRow(line, uiState, onOpenPlayer, tierSlot, expanded = expanded == id, onToggle = { expanded = if (expanded == id) null else id })
     }
     Column {
         TeamHeader(stringResource(Res.string.my_team), resultColor(uiState.match.myTeamWon), showColumns = true)
@@ -167,6 +185,7 @@ private fun PlayerRow(
     row: ScoreboardRow,
     uiState: MatchDetailUiState.Success,
     onOpenPlayer: (ScoreboardRow) -> Unit,
+    tierSlot: Boolean,
     expanded: Boolean,
     onToggle: () -> Unit,
 ) {
@@ -212,13 +231,19 @@ private fun PlayerRow(
                         if (isFriend) FriendMark(Modifier.align(Alignment.BottomEnd).offset(x = 4.dp, y = 4.dp), border = if (isMe) colors.raised else colors.bg)
                     }
                     Spacer(Modifier.width(10.dp))
+                    // 티어는 이름 앞에 둔다. 줄마다 같은 자리라 위아래로 훑으면 한 줄로 읽힌다.
+                    if (tierSlot) {
+                        Box(modifier = Modifier.size(TierSize)) { line.tier?.let { TierEmblem(it, Modifier.fillMaxSize()) } }
+                        Spacer(Modifier.width(6.dp))
+                    }
                     Row(
                         modifier = Modifier.weight(1f, fill = false),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(7.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
+                        // 이름이 길면 작고 옅게 둔 태그부터 잘리고, 자리 칩은 늘 남는다
                         OvalitText(
-                            text = if (isMe) stringResource(Res.string.me) else line.riotId,
+                            text = if (isMe) AnnotatedString(stringResource(Res.string.me)) else riotIdText(line.riotId, colors.t4),
                             modifier = Modifier.weight(1f, fill = false),
                             style = OvalitTheme.typography.label.copy(
                                 fontWeight = when {
@@ -230,10 +255,8 @@ private fun PlayerRow(
                             color = if (emphasized) colors.t1 else colors.t2,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            autoSize = shrinkToFit(OvalitTheme.typography.label.fontSize),
                         )
                         row.placement?.let { PlacementLabel(it) }
-                        line.tier?.let { TierEmblem(it, Modifier.size(15.dp)) }
                     }
                 }
             }

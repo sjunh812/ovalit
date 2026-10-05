@@ -649,7 +649,7 @@ class ReportScreenTest {
         setContent { OvalitTheme { DynamicMetricSheetBody(DynamicMetric.FIRST_KILL_WIN_RATE, ReportPreviewData.moved) } }
 
         onNodeWithText("달라졌는지 판단하지 않았어요", substring = true).assertExists()
-        onNodeWithText("첫 킬\u00a010번 이상이어야", substring = true).assertExists()
+        onNodeWithText("첫\u00a0킬\u00a010번 이상이어야", substring = true).assertExists()
     }
 
     // 분모가 데스라 라운드가 아니라 데스 수를 표본으로 적는다. 우리 팀 움직임도 들어가는 숫자라는 걸 밝힌다.

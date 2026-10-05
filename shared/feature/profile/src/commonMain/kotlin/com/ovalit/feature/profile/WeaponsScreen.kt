@@ -239,7 +239,7 @@ private fun Highlights(report: WeaponReport, catalog: ContentCatalog) {
             )
             val changeStyle = rememberFittingStyle(
                 rows.flatMap { row -> row.cells.orEmpty().mapNotNull { it.change } },
-                typography.metricS.copy(fontSize = 11.sp, lineHeight = 16.sp),
+                typography.delta,
                 cellWidth,
             )
             val labelStyle = rememberFittingStyle(labels, typography.caption, cellWidth)

@@ -24,7 +24,6 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
@@ -127,7 +126,7 @@ internal class MetricSubLineStyle(val change: TextStyle, val usual: TextStyle, v
 internal fun rememberSubLineStyle(cells: List<Pair<String?, String>>, width: Dp): MetricSubLineStyle {
     val typography = OvalitTheme.typography
     // 변화량은 평소 값보다 한 단계 작게 둔다
-    val change = typography.metricS.copy(fontSize = 11.sp, lineHeight = 16.sp)
+    val change = typography.delta
     val usual = rememberFittingStyle(cells.map { it.second }, typography.caption, width)
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current

@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -203,7 +204,7 @@ private fun CurrentValue(metric: FixedMetric, report: WeeklyReport.Ready) {
                 OvalitText(
                     text = metric.format.formatChange(current, usual),
                     modifier = Modifier.alignByBaseline(),
-                    style = OvalitTheme.typography.metricS,
+                    style = OvalitTheme.typography.delta.copy(fontSize = 13.sp, lineHeight = 18.sp),
                     color = directionColor(metric.format, current, usual),
                 )
             }

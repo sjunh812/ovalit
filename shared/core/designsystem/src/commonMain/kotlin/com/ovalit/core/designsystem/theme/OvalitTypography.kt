@@ -27,6 +27,8 @@ data class OvalitTypography(
     val metricL: TextStyle,
     val metricM: TextStyle,
     val metricS: TextStyle,
+    /** 변화량("+13", "−0.14")입니다. 숫자 폭은 고정하되 토스처럼 보통 굵기로 둬 옆의 큰 숫자보다 가볍게 읽힙니다. */
+    val delta: TextStyle,
     val display: TextStyle,
     val titleL: TextStyle,
     val titleM: TextStyle,
@@ -64,6 +66,7 @@ fun ovalitTypography(fontFamily: FontFamily = FontFamily.Default, locale: Locale
         // 홈 고정 칸과 달라진 점 숫자다. 한 화면에 여덟 개가 모여서 더 키우면 무겁고, 제목(titleL)보다는 커야 한다.
         metricM = metric(size = 22, lineHeight = 26, tracking = -0.5),
         metricS = metric(size = 12, lineHeight = 16, tracking = 0.0),
+        delta = metric(size = 11, lineHeight = 16, tracking = 0.0).copy(fontWeight = FontWeight.Normal),
         // 화면 제목, 홈 기간, 프로필 이름은 목업처럼 titleL이다. 목업에서도 그보다 큰 곳(온보딩 헤드라인, S3 맵 이름,
         // S7 주 역할)만 display를 쓴다.
         display = text(size = 24, lineHeight = 32, tracking = -0.6, weight = FontWeight.SemiBold, lineBreak = KoreanLineBreak),

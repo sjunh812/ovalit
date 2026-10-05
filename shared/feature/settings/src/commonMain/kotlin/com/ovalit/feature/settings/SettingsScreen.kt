@@ -37,6 +37,7 @@ import com.ovalit.core.designsystem.component.OvalitDisclaimer
 import com.ovalit.core.designsystem.component.OvalitSwitch
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.ScrollToTopOnReselect
 import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
@@ -64,8 +65,8 @@ import com.ovalit.feature.settings.resources.delete_data
 import com.ovalit.feature.settings.resources.focus
 import com.ovalit.feature.settings.resources.notify_analysis_done
 import com.ovalit.feature.settings.resources.notify_ping
-import com.ovalit.feature.settings.resources.notify_ping_invites
 import com.ovalit.feature.settings.resources.notify_ping_description
+import com.ovalit.feature.settings.resources.notify_ping_invites
 import com.ovalit.feature.settings.resources.notify_weekly_report
 import com.ovalit.feature.settings.resources.notify_weekly_report_time
 import com.ovalit.feature.settings.resources.open_profile
@@ -177,11 +178,13 @@ internal fun SettingsScreen(
         }
         val preferences = uiState.preferences
 
+        val scroll = rememberScrollState()
+        ScrollToTopOnReselect(scroll)
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .safeDrawingPadding()
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(scroll),
         ) {
             OvalitTabHeader(title = stringResource(Res.string.settings_title))
             Spacer(Modifier.height(OvalitSpacing.xs))

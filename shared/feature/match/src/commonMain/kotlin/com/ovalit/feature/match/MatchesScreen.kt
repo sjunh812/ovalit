@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
@@ -38,6 +39,7 @@ import com.ovalit.core.designsystem.component.OvalitSkeleton
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTextButton
+import com.ovalit.core.designsystem.component.ScrollToTopOnReselect
 import com.ovalit.core.designsystem.component.SkeletonBlock
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
@@ -137,7 +139,9 @@ internal fun MatchesScreen(
             onRefresh = onRefresh,
             modifier = Modifier.fillMaxSize().safeDrawingPadding(),
         ) {
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
+            val list = rememberLazyListState()
+            ScrollToTopOnReselect(list)
+            LazyColumn(modifier = Modifier.fillMaxSize(), state = list) {
                 item {
                     OvalitTabHeader(title = stringResource(Res.string.matches_title)) {
                         FilterButton(active = uiState.filter.isActive, onClick = { filtering = true })

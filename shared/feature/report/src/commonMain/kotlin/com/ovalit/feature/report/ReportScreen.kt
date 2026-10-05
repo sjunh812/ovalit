@@ -33,6 +33,7 @@ import com.ovalit.core.designsystem.component.OvalitPullToRefresh
 import com.ovalit.core.designsystem.component.OvalitStage
 import com.ovalit.core.designsystem.component.OvalitStaged
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.ScrollToTopOnReselect
 import com.ovalit.core.designsystem.component.rememberContentShown
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
@@ -191,7 +192,9 @@ internal fun ReportScreen(
                 onRefresh = onRefresh,
                 modifier = Modifier.fillMaxSize().safeDrawingPadding(),
             ) {
-                Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                val scroll = rememberScrollState()
+                ScrollToTopOnReselect(scroll)
+                Column(modifier = Modifier.fillMaxSize().verticalScroll(scroll)) {
                     ReportTopBar(
                         badge = badge,
                         onOpenProfile = openProfile,

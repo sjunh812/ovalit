@@ -66,4 +66,5 @@
     <string name="feedback_no_mail_app">メールアプリがありません · %1$sに送ってください</string>
     <!-- 이름을 늘어놓을 때 쓰는 구분자다. 따옴표로 감싸 한국어 파일과 모양을 맞춘다. -->
     <string name="list_separator">"、"</string>
+    <string name="exit_confirm">もう一度戻るとアプリを閉じます</string>
 </resources>

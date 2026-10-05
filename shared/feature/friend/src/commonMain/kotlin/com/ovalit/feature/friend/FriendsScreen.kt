@@ -43,6 +43,7 @@ import com.ovalit.core.designsystem.component.OvalitPullToRefresh
 import com.ovalit.core.designsystem.component.OvalitSkeleton
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.ScrollToTopOnReselect
 import com.ovalit.core.designsystem.component.SkeletonBlock
 import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
 import com.ovalit.core.designsystem.icon.OvalitIcon
@@ -178,7 +179,9 @@ internal fun FriendsScreen(
             onRefresh = onRefresh,
             modifier = Modifier.fillMaxSize().safeDrawingPadding(),
         ) {
-            Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+            val scroll = rememberScrollState()
+            ScrollToTopOnReselect(scroll)
+            Column(modifier = Modifier.fillMaxSize().verticalScroll(scroll)) {
                 OvalitTabHeader(title = stringResource(Res.string.friends_title))
                 Spacer(Modifier.height(OvalitSpacing.xs))
                 Column(verticalArrangement = Arrangement.spacedBy(OvalitCardGap)) {

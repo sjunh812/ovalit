@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.EnterExitState
@@ -24,8 +25,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -50,10 +54,12 @@ import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.ImportScheduler
 import com.ovalit.core.designsystem.component.LocalOvalitToast
 import com.ovalit.core.designsystem.component.LocalScreenEntering
+import com.ovalit.core.designsystem.component.LocalTabReselects
 import com.ovalit.core.designsystem.component.OvalitTab
 import com.ovalit.core.designsystem.component.OvalitTabBar
 import com.ovalit.core.designsystem.component.OvalitTabBarHeight
 import com.ovalit.core.designsystem.component.OvalitToastHost
+import com.ovalit.core.designsystem.component.OvalitToastState
 import com.ovalit.core.designsystem.component.rememberOvalitToastState
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -75,7 +81,9 @@ import com.ovalit.feature.profile.RecordsOwner
 import com.ovalit.feature.profile.WeaponsRoute
 import com.ovalit.feature.report.ReportRoute
 import com.ovalit.feature.settings.SettingsRoute
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -191,6 +199,7 @@ fun OvalitApp(appVersion: String, openPing: Flow<String> = emptyFlow()) {
                         ImportRoute(onOpenReport = { backStack.replaceAllWith(Report) })
                     }
                     entry<Report> {
+                        if (backStack.size == 1) ExitOnSecondBack(toast)
                         TabScaffold(selected = Report, onSelect = backStack::selectTab) {
                             ReportRoute(
                                 onOpenProfile = { backStack.push(Profile) },
@@ -297,14 +306,40 @@ fun OvalitApp(appVersion: String, openPing: Flow<String> = emptyFlow()) {
 
 // 탭바는 탭 화면마다 안에 둔다(docs/screens.md). 밖에 하나만 두면 새 화면으로 넘어갈 때 탭바가 먼저 사라져서
 // 밀려나는 화면이 탭바 높이만큼 늘어나고 목록이 튄다.
+/**
+ * 토스처럼 홈에서 뒤로 가기를 한 번 누르면 안내만 띄우고, 안내가 떠 있는 동안 한 번 더 누르면 앱을 닫습니다. 홈에서 뒤로 가면 앱이
+ * 닫히는데, 한 번에 닫히면 위로 스크롤하려다 실수로 닫히기 쉽습니다.
+ */
+@Composable
+private fun ExitOnSecondBack(toast: OvalitToastState) {
+    var armed by remember { mutableStateOf(false) }
+    val message = stringResource(R.string.exit_confirm)
+    val scope = rememberCoroutineScope()
+    // 안내가 떠 있는 동안은 가로채지 않아 시스템이 앱을 닫는다
+    BackHandler(enabled = !armed) {
+        armed = true
+        scope.launch {
+            try {
+                toast.show(message, ExitWindow)
+            } finally {
+                armed = false
+            }
+        }
+    }
+}
+
+private val ExitWindow = 2.seconds
+
 @Composable
 private fun TabScaffold(selected: NavKey, onSelect: (NavKey) -> Unit, content: @Composable () -> Unit) {
+    // 지금 탭을 한 번 더 누르면 그 탭 화면을 맨 위로 올린다(ScrollToTopOnReselect)
+    val reselects = remember { MutableSharedFlow<Unit>(extraBufferCapacity = 1) }
     Column(modifier = Modifier.fillMaxSize()) {
         // 아래 내비게이션 바 여백은 탭바가 두니 본문은 또 두지 않는다. 가로 화면에서 옆에 붙는 내비게이션 바는 본문도 피해야
         // 해서 아래쪽만 소비한다.
         Box(
             modifier = Modifier.weight(1f).consumeWindowInsets(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)),
-        ) { content() }
+        ) { CompositionLocalProvider(LocalTabReselects provides reselects) { content() } }
         OvalitTabBar(
             tabs = listOf(
                 OvalitTab(stringResource(R.string.tab_home), OvalitIcons.Home, OvalitIcons.HomeFilled),
@@ -313,7 +348,10 @@ private fun TabScaffold(selected: NavKey, onSelect: (NavKey) -> Unit, content: @
                 OvalitTab(stringResource(R.string.tab_settings), OvalitIcons.Settings, OvalitIcons.SettingsFilled),
             ),
             selectedIndex = TopLevel.indexOf(selected),
-            onSelect = { index -> onSelect(TopLevel[index]) },
+            onSelect = { index ->
+                val tab = TopLevel[index]
+                if (tab == selected) reselects.tryEmit(Unit) else onSelect(tab)
+            },
         )
     }
 }

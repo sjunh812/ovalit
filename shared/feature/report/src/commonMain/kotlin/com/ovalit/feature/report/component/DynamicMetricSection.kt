@@ -44,7 +44,6 @@ import com.ovalit.core.ui.rememberFittingStyle
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.report.format
-import com.ovalit.feature.report.hasGoodDirection
 import com.ovalit.feature.report.label
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.dynamic_caption
@@ -244,10 +243,7 @@ private fun DynamicMetricColumn(
     }
 }
 
-// 움직였다고 판단했고 좋고 나쁨이 분명한 칸만 오르내림 색을 칠한다(CLAUDE.md 지표 규칙). 나머지는 모두 평소 값과 같은 회색이다.
-// 검정으로 두면 증감이 아니라 그냥 글자처럼 읽힌다. 달라진 점 시트도 이 색을 쓴다.
+// 움직였다고 판단한 칸만 오르내림 색을 칠한다(CLAUDE.md 지표 규칙). 나머지는 평소 값과 같은 회색이다. 달라진 점 시트도 이 색을 쓴다.
 @Composable
-internal fun changeColor(slot: DynamicSlot, current: Double, usual: Double): Color = when {
-    slot.movement != Movement.MOVED || !slot.metric.hasGoodDirection -> OvalitTheme.colors.t3
-    else -> directionColor(slot.metric.format, current, usual)
-}
+internal fun changeColor(slot: DynamicSlot, current: Double, usual: Double): Color =
+    if (slot.movement == Movement.MOVED) directionColor(slot.metric.format, current, usual) else OvalitTheme.colors.t3

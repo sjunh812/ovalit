@@ -215,7 +215,8 @@ class ProfileScreensTest {
         onNodeWithText("+0.28", useUnmergedTree = true).assertExists()
         onNodeWithText("151", useUnmergedTree = true).assertExists()
         onNodeWithText("+12", useUnmergedTree = true).assertExists()
-        onNodeWithText("+6", useUnmergedTree = true).assertExists()
+        // 헤드샷은 퍼센트라 변화량에 %p를 붙인다
+        onNodeWithText("+6%p", useUnmergedTree = true).assertExists()
     }
 
     // 한 줄만 이번 액트 값을 띄우면 어느 숫자가 언제 것인지 헷갈린다

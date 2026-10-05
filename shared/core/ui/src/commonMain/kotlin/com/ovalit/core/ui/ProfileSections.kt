@@ -29,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitCard
 import com.ovalit.core.designsystem.component.OvalitCardGap
@@ -228,7 +229,7 @@ private fun StatRow(cells: List<StatCell>, columns: Int, styles: StatStyles) {
                 )
                 Spacer(Modifier.height(4.dp))
                 OvalitText(
-                    text = value ?: NO_VALUE,
+                    text = withSmallUnits(value ?: NO_VALUE),
                     style = styles.value,
                     color = when {
                         value == null -> colors.t3
@@ -254,6 +255,16 @@ private fun StatRow(cells: List<StatCell>, columns: Int, styles: StatStyles) {
         repeat(columns - cells.size) { Spacer(Modifier.weight(1f)) }
     }
 }
+
+// "45시간", "10번 중 5번"의 글자 부분을 한 단계 작게 둔다. 토스나 애플 피트니스처럼 숫자만 크게 두어야 숫자가 먼저 읽히고 칸이
+// 무거워지지 않는다. 숫자와 기호(%, ., /)는 그대로다.
+private fun withSmallUnits(text: String): AnnotatedString = buildAnnotatedString {
+    text.forEach { char ->
+        if (char.isLetter()) withStyle(SpanStyle(fontSize = UnitScale.em)) { append(char) } else append(char)
+    }
+}
+
+private const val UnitScale = 0.8f
 
 // 목업처럼 티어 이름(titleM)과 같은 크기다. 홈의 큰 지표 숫자 크기를 쓰면 통계 칸들이 제목보다 커진다.
 @Composable

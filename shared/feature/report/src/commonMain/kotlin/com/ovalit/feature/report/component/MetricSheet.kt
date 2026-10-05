@@ -31,6 +31,7 @@ import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.model.usualRange
 import com.ovalit.core.ui.NO_VALUE
+import com.ovalit.core.ui.changeText
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.kdaColor
 import com.ovalit.core.ui.label
@@ -202,7 +203,7 @@ private fun CurrentValue(metric: FixedMetric, report: WeeklyReport.Ready) {
             if (current != null && usual != null) {
                 Spacer(Modifier.width(OvalitSpacing.sm))
                 OvalitText(
-                    text = metric.format.formatChange(current, usual),
+                    text = metric.format.changeText(current, usual),
                     modifier = Modifier.alignByBaseline(),
                     style = OvalitTheme.typography.delta.copy(fontSize = 13.sp, lineHeight = 18.sp),
                     color = directionColor(metric.format, current, usual),

@@ -59,7 +59,7 @@ class PingScreenTest {
     fun `답하지 않은 초대는 아직 답하지 않았다고 적는다`() = runComposeUiTest {
         setContent { Friends(pings = listOf(received(), sent())) }
 
-        onNodeWithText("아직 답하지 않았어요").assertExists()
+        onNodeWithText("답을 기다리고 있어요").assertExists()
         onNodeWithText("3명 중 1명 참석").assertExists()
     }
 

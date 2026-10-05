@@ -36,6 +36,7 @@ import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.NO_VALUE
+import com.ovalit.core.ui.changeText
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.rememberFitsOnOneLine
@@ -191,7 +192,7 @@ private fun dynamicColumn(slot: DynamicSlot, metrics: MatchMetrics, baseline: Ba
         label = stringResource(metric.label),
         value = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
         valueColor = if (judged) colors.t1 else colors.t2,
-        change = if (judged) metric.format.formatChange(current, usual) else null,
+        change = if (judged) metric.format.changeText(current, usual) else null,
         changeColor = if (judged) changeColor(slot, current, usual) else colors.t3,
         // 표본은 시트에 있어 칸에는 평소 값만 둔다. 판단을 보류한 칸도 평균이 있으면 적고 없으면 대시다. "비교할 기록이
         // 모자라요"를 칸마다 쓰면 좁은 칸에서 잘리고 같은 말이 여러 번 뜬다.
@@ -243,10 +244,10 @@ private fun DynamicMetricColumn(
     }
 }
 
-// 움직였다고 판단한 칸만 오르내림 색을 칠한다(CLAUDE.md 지표 규칙). 달라진 점 시트도 이 색을 쓴다.
+// 움직였다고 판단했고 좋고 나쁨이 분명한 칸만 오르내림 색을 칠한다(CLAUDE.md 지표 규칙). 나머지는 모두 평소 값과 같은 회색이다.
+// 검정으로 두면 증감이 아니라 그냥 글자처럼 읽힌다. 달라진 점 시트도 이 색을 쓴다.
 @Composable
 internal fun changeColor(slot: DynamicSlot, current: Double, usual: Double): Color = when {
-    slot.movement != Movement.MOVED -> OvalitTheme.colors.t3
-    !slot.metric.hasGoodDirection -> OvalitTheme.colors.t1
+    slot.movement != Movement.MOVED || !slot.metric.hasGoodDirection -> OvalitTheme.colors.t3
     else -> directionColor(slot.metric.format, current, usual)
 }

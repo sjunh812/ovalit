@@ -60,9 +60,10 @@ import com.ovalit.core.ui.SeparatedRow
 import com.ovalit.core.ui.SeparatorDot
 import com.ovalit.core.ui.WeaponThumb
 import com.ovalit.core.ui.annotated
+import com.ovalit.core.ui.changeText
+import com.ovalit.core.ui.columnLabel
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.kdaText
-import com.ovalit.core.ui.columnLabel
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.percentText
 import com.ovalit.core.ui.periodLabel
@@ -332,7 +333,7 @@ private fun highlightCells(highlight: WeaponHighlight, comparesPeriod: Boolean):
             value = shown.recorded(metric)?.let { format.valueText(it) } ?: NO_VALUE,
             change = when {
                 !comparesPeriod -> null
-                now != null && usual != null -> format.formatChange(now, usual)
+                now != null && usual != null -> format.changeText(now, usual)
                 else -> ""
             },
             // 동적 칸과 같은 규칙이다. 평소 흔들림 안의 변화는 칠하지도, 문구를 붙이지도 않는다.

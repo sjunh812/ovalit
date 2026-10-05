@@ -1,14 +1,10 @@
 package com.ovalit.core.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,14 +23,13 @@ import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 
 private val AvatarSize = 36.dp
-private val UnreadDotSize = 8.dp
 
 /**
  * ㅇㅂㅇ 한 줄입니다. 부른 사람 얼굴, "민석의 초대 · 21:00", 내 답이나 참석 수, 화살표를 둡니다. 홈 카드와 친구 탭 목록이
  * 같이 쓰고, 자세한 것은 누르면 열리는 초대 화면에서 봅니다.
  *
- * 받은 초대에 아직 답하지 않았으면 화살표 앞에 `--accent` 점을 찍고 둘째 줄을 밝기로 한 단계 올립니다. 카카오톡, 토스처럼
- * 읽지 않은 것을 점 하나로 알립니다. 글자만 진하게 하면 한눈에 안 들어옵니다.
+ * 받은 초대에 아직 답하지 않았으면 둘째 줄 "답을 기다리고 있어요"를 `--accent-ink`로 칠합니다. 새 소식이 아니라 답해야 할
+ * 일이라 토스처럼 점 대신 할 일을 글자로 알립니다. 회색 글자를 진하게만 하면 한눈에 안 들어옵니다.
  */
 @Composable
 fun PingSummaryRow(ping: Ping, me: PlayerId, now: Instant, timeZone: TimeZone, modifier: Modifier = Modifier) {
@@ -54,14 +49,10 @@ fun PingSummaryRow(ping: Ping, me: PlayerId, now: Instant, timeZone: TimeZone, m
             OvalitText(
                 text = pingSummary(ping, me, now, timeZone),
                 style = OvalitTheme.typography.caption.copy(fontWeight = if (waiting) FontWeight.Medium else FontWeight.Normal),
-                color = if (waiting) colors.t1 else colors.t3,
+                color = if (waiting) colors.accentInk else colors.t3,
             )
         }
         Spacer(Modifier.width(OvalitSpacing.sm))
-        if (waiting) {
-            Box(Modifier.size(UnreadDotSize).background(colors.accent, CircleShape))
-            Spacer(Modifier.width(OvalitSpacing.sm))
-        }
         OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = colors.t4, size = 16.dp)
     }
 }

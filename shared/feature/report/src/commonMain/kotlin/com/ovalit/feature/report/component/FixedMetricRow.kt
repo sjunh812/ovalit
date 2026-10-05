@@ -32,6 +32,7 @@ import com.ovalit.core.model.Baseline
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.ui.NO_VALUE
+import com.ovalit.core.ui.changeText
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.kdaColor
 import com.ovalit.core.ui.label
@@ -67,7 +68,7 @@ internal fun FixedMetricRow(
             label = stringResource(metric.label),
             value = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
             valueColor = if (metric == FixedMetric.KDA && current != null) kdaColor(current, below = colors.t1) else colors.t1,
-            change = if (current != null && usual != null) metric.format.formatChange(current, usual) else null,
+            change = if (current != null && usual != null) metric.format.changeText(current, usual) else null,
             changeColor = if (current != null && usual != null) directionColor(metric.format, current, usual) else colors.t3,
             usual = stringResource(Res.string.dynamic_usual, usual?.let { metric.format.valueText(it) } ?: NO_VALUE),
         )

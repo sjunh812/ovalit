@@ -27,6 +27,7 @@ import com.ovalit.core.model.VOLATILITY_WEEKS
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.NO_VALUE
+import com.ovalit.core.ui.changeText
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.report.format
@@ -129,7 +130,7 @@ private fun CurrentValue(slot: DynamicSlot, report: WeeklyReport.Ready) {
                 if (judged && current != null && usual != null) {
                     Spacer(Modifier.width(OvalitSpacing.sm))
                     OvalitText(
-                        text = metric.format.formatChange(current, usual),
+                        text = metric.format.changeText(current, usual),
                         modifier = Modifier.alignByBaseline(),
                         style = OvalitTheme.typography.delta.copy(fontSize = 13.sp, lineHeight = 18.sp),
                         color = changeColor(slot, current, usual),

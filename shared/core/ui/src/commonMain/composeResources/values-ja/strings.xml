@@ -15,6 +15,7 @@
     <string name="metric_headshot_short">HS率</string>
 
     <string name="value_percent">%1$s%</string>
+    <string name="value_percent_point">%1$spt</string>
 
     <string name="role_duelist">デュエリスト</string>
     <string name="role_initiator">イニシエーター</string>
@@ -141,7 +142,7 @@
     <string name="ping_my_answer_yes">参加で回答しました</string>
     <string name="ping_my_answer_no">不参加で回答しました</string>
     <string name="ping_my_answer_other">%1$sを提案しました</string>
-    <string name="ping_my_answer_pending">まだ回答していません</string>
+    <string name="ping_my_answer_pending">回答を待っています</string>
     <string name="profile_loading">プロフィールを読み込んでいます</string>
     <string name="loading">読み込んでいます</string>
     <string name="placement_mvp">MVP</string>

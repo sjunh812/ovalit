@@ -95,6 +95,7 @@ android {
 }
 
 dependencies {
+    implementation(projects.shared.app)
     implementation(projects.shared.core.data)
     implementation(projects.shared.core.designsystem)
     implementation(projects.shared.core.ui)
@@ -112,9 +113,6 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
-    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
-    implementation(libs.androidx.navigation3.runtime)
-    implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.work.runtime)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)

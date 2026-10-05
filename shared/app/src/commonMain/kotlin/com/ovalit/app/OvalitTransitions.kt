@@ -1,4 +1,4 @@
-package com.ovalit
+package com.ovalit.app
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform

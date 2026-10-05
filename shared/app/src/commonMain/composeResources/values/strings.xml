@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_home">홈</string>
+    <string name="tab_matches">경기</string>
+    <string name="tab_friends">친구</string>
+    <string name="tab_settings">설정</string>
+    <string name="feedback_no_mail_app">메일 앱이 없어요 · %1$s로 보내 주세요</string>
+</resources>

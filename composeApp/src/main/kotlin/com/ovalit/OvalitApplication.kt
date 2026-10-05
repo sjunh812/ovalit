@@ -3,15 +3,9 @@ package com.ovalit
 import android.app.Application
 import android.content.res.Configuration
 import com.ovalit.ads.AdMobRenderer
+import com.ovalit.app.ovalitModules
 import com.ovalit.core.data.NewMatchesWatcher
-import com.ovalit.core.data.di.dataModule
 import com.ovalit.di.appModule
-import com.ovalit.feature.friend.di.friendModule
-import com.ovalit.feature.match.di.matchModule
-import com.ovalit.feature.onboarding.di.onboardingModule
-import com.ovalit.feature.profile.di.profileModule
-import com.ovalit.feature.report.di.reportModule
-import com.ovalit.feature.settings.di.settingsModule
 import com.ovalit.importing.AppVisibility
 import com.ovalit.push.OvalitPush
 import com.ovalit.telemetry.OvalitFirebase
@@ -35,17 +29,10 @@ class OvalitApplication : Application() {
             androidLogger(if (BuildConfig.DEBUG) Level.INFO else Level.NONE)
             androidContext(this@OvalitApplication)
             modules(
-                appModule,
-                dataModule(
+                ovalitModules(
                     preferencesPath = { filesDir.resolve("ovalit.preferences_pb").absolutePath },
                     language = AppLanguage.current,
-                ),
-                onboardingModule,
-                reportModule,
-                matchModule,
-                friendModule,
-                profileModule,
-                settingsModule,
+                ) + appModule,
             )
         }
         OvalitFirebase.follow(this, appScope, account = get())

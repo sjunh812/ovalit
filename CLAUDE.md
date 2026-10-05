@@ -76,12 +76,16 @@ individually"에 걸릴 수 있다. 홈 고정 칸, 라이벌 대결, 친구 비
 ## 아키텍처
 
 - CMP(Compose Multiplatform)로 쓰고 출시는 안드로이드만 한다. iOS는 시뮬레이터에서 도는 데까지다. TestFlight 외부 테스트에 Beta
-  App Review가 걸려 배포할 길이 없다.
+  App Review가 걸려 배포할 길이 없다. 시뮬레이터용 앱은 Xcode 프로젝트 없이 `shared/app`의 실행 파일을 앱 번들로 묶어 만든다
+  (`docs/CONVENTIONS.md`).
 - DI는 Koin 4다. Hilt는 KMP를 지원하지 않는다. 회사 코드와 다르니 주의한다.
 - nowinandroid에서 UDF, `sealed interface UiState`, `stateIn(WhileSubscribed(5_000))`, Repository 분리, `build-logic` convention
   plugin을 가져온다. SyncWorker 주기 동기화 계층, FTS 전문 검색, 20여 개 모듈 구조는 버린다.
-- 화면 전환은 Navigation 3이고 `composeApp`에만 둔다. 출시가 안드로이드뿐이라 안드로이드 아티팩트를 쓴다. 기능 모듈은
-  `ReportRoute`처럼 ViewModel을 받아 그리는 진입 컴포저블까지만 내놓고, 어디서 어디로 가는지는 `composeApp`이 정한다.
+- 화면 전환은 Navigation 3이고 `shared/app`에 두어 안드로이드와 iOS가 같은 뼈대를 쓴다(사용자 결정). 런타임은 Google 것이
+  멀티플랫폼이고 `NavDisplay`는 JetBrains 것이다. 안드로이드에서는 JetBrains 것이 Google `navigation3-ui`로 풀린다. 기능 모듈은
+  `ReportRoute`처럼 ViewModel을 받아 그리는 진입 컴포저블까지만 내놓고, 어디서 어디로 가는지는 `shared/app`이 정한다.
+- 플랫폼마다 다른 일(홈에서 뒤로 두 번 종료, 알림 권한, 공유 창, 피드백 메일)은 `OvalitPlatform`으로 받는다. 광고, 푸시,
+  WorkManager, Firebase는 `composeApp`에만 있고 iOS에는 없다.
 - 백엔드가 있다. RSO가 Authorization Code 방식이라 `client_secret` 교환이 서버에서 일어나야 하고 RGAPI 키도 앱에 넣을 수 없다.
   앱은 서버가 준 세션 토큰만 든다.
 - RSO는 Custom Tabs로 띄운다. WebView는 쓰지 않는다. 앱이 비밀번호를 만지지 않는다고 신청서에 적었다.
@@ -104,7 +108,8 @@ individually"에 걸릴 수 있다. 홈 고정 칸, 라이벌 대결, 친구 비
   사라져도 받기는 끝까지 가고, 멈추는 건 저장된 경기를 지우거나 연동을 해제할 때뿐이다(사용자 결정).
 - WorkManager는 첫 수집과 오래 쉬었다 와서 쌓인 새 경기 둘만 맡는다. 앱을 닫아도 이어 받고 끝나면 알림을 보낸다. 새 경기는
   받던 중에 앱 화면이 모두 가려졌고 스무 판 이상 남았을 때만 넘긴다(사용자 결정). 그보다 적으면 몇 초 안에 끝나 알림이 오히려
-  귀찮다. 공유 모듈은 `ImportScheduler`만 알고 WorkManager 구현은 `composeApp`에 둔다.
+  귀찮다. 공유 모듈은 `ImportScheduler`만 알고 WorkManager 구현은 `composeApp`에 둔다. iOS는 앱이 떠 있는 동안 앱 안에서 받는다
+  (`InProcessImportScheduler`).
 - 친구 경기도 기기에 저장한다. S5를 열면 저장된 것을 바로 보여주고, 마지막으로 받은 지 10분이 지났을 때만 뒤에서 새 경기만
   받는다. S5에 "마지막 갱신 3분 전"을 적고, 당겨서 새로 받는 건 같은 친구에 1분에 한 번까지다. 지금은 가짜 저장소가 친구 경기를
   들고 있어서 이 흐름이 없다. 실제 친구 저장소를 붙일 때 같이 넣는다.

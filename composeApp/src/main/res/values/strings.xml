@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">오발있</string>
-    <string name="tab_home">홈</string>
-    <string name="tab_matches">경기</string>
-    <string name="tab_friends">친구</string>
-    <string name="tab_settings">설정</string>
     <!-- 네이티브 광고 앞에 붙는 표시다. AdMob 정책상 광고인 줄 알아볼 수 있어야 한다. -->
     <string name="ad_label">광고</string>
     <!-- 보상형 광고로 24시간 광고를 숨긴다. AdMob 정책상 무엇을 보고 무엇을 받는지 보기 전에 알려야 하고, 보지 않아도 앱을
@@ -62,7 +58,6 @@
     <string name="ping_moved">시간을 바꿨어요</string>
     <string name="feedback_subject">오발있 피드백</string>
     <string name="feedback_body">\n\n\n앱 버전 %1$s · %2$s · Android %3$s</string>
-    <string name="feedback_no_mail_app">메일 앱이 없어요 · %1$s로 보내 주세요</string>
     <!-- 이름을 늘어놓을 때 쓰는 구분자다. 앞뒤 공백을 지키려고 따옴표로 감싼다. -->
     <string name="list_separator">", "</string>
     <string name="exit_confirm">뒤로 가기를 한 번 더 누르면 앱이 닫혀요</string>

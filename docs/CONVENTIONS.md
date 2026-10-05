@@ -284,6 +284,25 @@ UI는 시뮬레이터에서 돌립니다. 처음 한 번은 시뮬레이터를 �
 지표 계산을 처음 짤 때 이렇게 확인했더니 트레이드 판정의 "우리 팀이 잡았는지" 조건을 아무
 테스트도 지키고 있지 않았습니다. 그 조건을 빼도 전부 통과했습니다.
 
+## iOS 시뮬레이터
+
+출시는 안드로이드뿐이라 Xcode 프로젝트를 두지 않습니다. `shared/app`이 iOS 실행 파일을 만들고, 그 옆에 모든 모듈의 Compose
+리소스와 `Info.plist`를 묶어 `shared/app/build/ios/Ovalit.app`을 만듭니다. 서명은 시뮬레이터용 임시 서명뿐입니다.
+
+```bash
+./gradlew :shared:app:assembleIosSimulatorApp
+```
+
+```bash
+xcrun simctl install booted shared/app/build/ios/Ovalit.app
+```
+
+```bash
+xcrun simctl launch booted com.ovalit
+```
+
+iOS에는 광고, 푸시, 사용 통계가 없고 첫 수집은 앱이 떠 있는 동안 앱 안에서 받습니다. 피드백 메일 줄도 없습니다.
+
 ## 프리뷰
 
 화면을 만들면 프리뷰를 같이 답니다. 최소 세 가지를 봅니다.

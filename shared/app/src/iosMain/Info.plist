@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- 시뮬레이터에서만 띄우는 앱 번들의 설정이다(assembleIosSimulatorApp). 기기용 서명과 배포는 범위 밖이다. -->
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.ovalit</string>
+    <key>CFBundleExecutable</key>
+    <string>Ovalit</string>
+    <key>CFBundleName</key>
+    <string>Ovalit</string>
+    <key>CFBundleDisplayName</key>
+    <string>오발있</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>0.1.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>ko</string>
+    <key>CFBundleLocalizations</key>
+    <array>
+        <string>ko</string>
+        <string>ja</string>
+    </array>
+    <key>CFBundleSupportedPlatforms</key>
+    <array>
+        <string>iPhoneSimulator</string>
+    </array>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>MinimumOSVersion</key>
+    <string>16.0</string>
+    <key>UIDeviceFamily</key>
+    <array>
+        <integer>1</integer>
+    </array>
+    <!-- 런치 화면이 없으면 옛 iPhone 크기로 띄워 위아래에 검은 띠가 생긴다 -->
+    <key>UILaunchScreen</key>
+    <dict/>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+    </array>
+    <!-- 120Hz 화면에서 Compose가 60Hz에 묶이지 않게 한다 -->
+    <key>CADisableMinimumFrameDurationOnPhone</key>
+    <true/>
+</dict>
+</plist>

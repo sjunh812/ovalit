@@ -22,6 +22,8 @@ androidxCoreSplashscreen = "1.0.1"
 androidxDatastore = "1.2.1"
 androidxLifecycle = "2.11.0"
 androidxNavigation3 = "1.2.0"
+# JetBrains가 iOS용으로 다시 낸 NavDisplay다. 안드로이드에서는 Google의 navigation3-ui로 풀린다. 1.2.0 정식이 아직 없다.
+jbNavigation3 = "1.2.0-beta01"
 androidxWork = "2.10.1"
 firebaseBom = "34.19.0"
 firebaseCrashlyticsPlugin = "3.0.8"
@@ -64,11 +66,11 @@ play-services-ads = { module = "com.google.android.gms:play-services-ads", versi
 # 설정 값만 담는다. 경기는 여기 두지 않는다. 경기를 담을 DB는 프로덕션 키가 나온 뒤에 고른다.
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "androidxDatastore" }
 
-# Navigation 3. 출시하는 쪽이 안드로이드뿐이라 composeApp에서만 쓴다.
+# Navigation 3. 화면 전환 뼈대는 shared/app에 두고 안드로이드와 iOS가 같이 쓴다. 런타임은 Google 것이 멀티플랫폼이고 NavDisplay는
+# JetBrains 것을 쓴다. 안드로이드에서는 Google navigation3-ui를 같이 걸어 정식 1.2.0으로 맞춘다.
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "androidxNavigation3" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "androidxNavigation3" }
-# 화면이 뒤로 가기로 빠질 때 그 화면의 ViewModel도 같이 치운다.
-androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidxLifecycle" }
+jb-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "jbNavigation3" }
 
 # JetBrains가 멀티플랫폼용으로 다시 낸 androidx. 공유 모듈에서는 이쪽을 쓴다.
 jb-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "jbLifecycle" }

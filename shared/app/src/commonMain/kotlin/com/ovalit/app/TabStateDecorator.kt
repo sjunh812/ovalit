@@ -1,4 +1,4 @@
-package com.ovalit
+package com.ovalit.app
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider

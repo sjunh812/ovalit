@@ -7,23 +7,20 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.ads.AdMobRenderer
+import com.ovalit.app.OvalitApp
+import com.ovalit.app.rememberDarkTheme
 import com.ovalit.core.data.Analytics
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.designsystem.theme.OvalitTheme
-import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.ui.LocalAdRenderer
 import com.ovalit.push.EXTRA_OPEN_PING
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import org.koin.compose.koinInject
 
@@ -47,14 +44,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val preferences = koinInject<UserPreferencesRepository>()
-            val theme by preferences.preferences
-                .map { it.theme }
-                .collectAsStateWithLifecycle(initialValue = ThemePreference.SYSTEM)
-            val darkTheme = when (theme) {
-                ThemePreference.SYSTEM -> isSystemInDarkTheme()
-                ThemePreference.DARK -> true
-                ThemePreference.LIGHT -> false
-            }
+            val darkTheme = rememberDarkTheme()
 
             // 앱 테마를 시스템과 다르게 고르면 상태 표시줄 글자색도 바꿔야 한다. 안 바꾸면 라이트 배경에 흰 시계가 뜬다.
             DisposableEffect(darkTheme) {
@@ -73,10 +63,11 @@ class MainActivity : ComponentActivity() {
 
             // 테마가 바뀌어 다시 그려도 같은 흐름을 넘긴다. 새로 만들면 알림을 받는 LaunchedEffect가 다시 시작한다.
             val pingsToOpen = remember { openPing.receiveAsFlow() }
+            val platform = remember { AndroidOvalitPlatform(this) }
 
             OvalitTheme(darkTheme = darkTheme) {
                 CompositionLocalProvider(LocalAdRenderer provides adRenderer) {
-                    OvalitApp(appVersion = BuildConfig.VERSION_NAME, openPing = pingsToOpen)
+                    OvalitApp(appVersion = BuildConfig.VERSION_NAME, platform = platform, openPing = pingsToOpen)
                     adRenderer?.Sheets()
                 }
             }

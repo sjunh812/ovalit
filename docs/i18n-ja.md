@@ -1,7 +1,7 @@
 # 일본어(ja) 현지화
 
-화면 문구는 모듈마다 `composeResources/values/strings.xml`(한국어, 기본)과 `values-ja/strings.xml`(일본어)에 둔다. 앱 모듈은
-`composeApp/src/main/res/values(-ja)/strings.xml`이다. 한국어 문구를 바꾸면 같은 커밋에서 일본어도 고친다. 지금은 일본어 화면만
+화면 문구는 모듈마다 `composeResources/values/strings.xml`(한국어, 기본)과 `values-ja/strings.xml`(일본어)에 둔다. 안드로이드에만
+있는 문구(알림, 광고, 공유 창 제목)는 `composeApp/src/main/res/values(-ja)/strings.xml`이다. 한국어 문구를 바꾸면 같은 커밋에서 일본어도 고친다. 지금은 일본어 화면만
 있고 데이터는 한국 샤드다(사용자 결정, 2026-10-04). AP 샤드는 Riot 승인 뒤 제품 설명을 고칠 때 붙인다.
 
 ## 언제 일본어가 뜨나

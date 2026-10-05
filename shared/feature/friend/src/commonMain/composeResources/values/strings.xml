@@ -60,6 +60,7 @@
     <string name="ping_change_answer">바꾸기</string>
     <string name="ping_proposal">%1$s 어때요?</string>
     <string name="ping_proposal_by">%1$s의 제안</string>
+    <string name="ping_me">나</string>
     <string name="ping_count_yes">%1$d명 참석</string>
     <string name="ping_count_other">%1$d명 시간 제안</string>
     <string name="ping_count_pending">%1$d명 응답 전</string>

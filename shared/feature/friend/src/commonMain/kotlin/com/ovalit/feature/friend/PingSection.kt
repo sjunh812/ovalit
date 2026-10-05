@@ -82,6 +82,7 @@ import com.ovalit.feature.friend.resources.ping_invite_body
 import com.ovalit.feature.friend.resources.ping_invite_more
 import com.ovalit.feature.friend.resources.ping_invite_send
 import com.ovalit.feature.friend.resources.ping_invite_title
+import com.ovalit.feature.friend.resources.ping_me
 import com.ovalit.feature.friend.resources.ping_move
 import com.ovalit.feature.friend.resources.ping_pick_friends
 import com.ovalit.feature.friend.resources.ping_proposal
@@ -290,7 +291,7 @@ internal fun PingInviteSheet(friends: List<Friend>, seats: Int, onInvite: (List<
 
 // 친구 한 사람의 답이다. 강조는 색이 아니라 밝기로 한다. 참석이 가장 밝고 응답 전이 가장 옅다.
 @Composable
-internal fun MemberLine(member: PingMember, now: Instant, timeZone: TimeZone) {
+internal fun MemberLine(member: PingMember, now: Instant, timeZone: TimeZone, isMe: Boolean = false) {
     val colors = OvalitTheme.colors
     val (color, weight) = when (member.answer) {
         PingAnswer.YES -> colors.t1 to FontWeight.SemiBold
@@ -305,7 +306,7 @@ internal fun MemberLine(member: PingMember, now: Instant, timeZone: TimeZone) {
         StatusAvatar(member, size = RowAvatarSize)
         Spacer(Modifier.width(OvalitSpacing.md))
         OvalitText(
-            text = member.person.riotId.substringBefore('#'),
+            text = if (isMe) stringResource(Res.string.ping_me) else member.person.riotId.substringBefore('#'),
             modifier = Modifier.weight(1f),
             style = OvalitTheme.typography.body,
             maxLines = 1,

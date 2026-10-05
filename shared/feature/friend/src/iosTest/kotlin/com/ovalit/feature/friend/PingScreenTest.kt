@@ -6,7 +6,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -126,8 +128,9 @@ class PingScreenTest {
         onNodeWithText("민석의 초대").assertExists()
         onNodeWithText("21:00").assertExists()
         onNodeWithText("오늘 · 35분 뒤").assertExists()
-        // 부른 친구는 참석으로 치고 나는 세지 않는다. 내 답은 맨 밑 버튼에 있다.
-        onNodeWithText("2명 참석 · 1명 응답 전").assertExists()
+        // 부른 친구는 참석으로 치고 나도 센다. 나를 빼면 몇 명이 모이는지 세기 어렵다.
+        onNodeWithText("2명 참석 · 2명 응답 전").assertExists()
+        onNodeWithText("나").assertExists()
         onNodeWithText("준호").assertExists()
         onNodeWithText("오발러").assertDoesNotExist()
     }
@@ -186,9 +189,11 @@ class PingScreenTest {
         setContent { Detail(received().answeredByMe(PingAnswer.OTHER_TIME, NineThirty)) }
 
         onNodeWithText("21:30 제안했어요").assertExists()
+        // 참석자 목록의 내 줄에 한 번 뜨고, 바꾸기를 누르면 다른 시간 버튼에도 뜬다
+        onAllNodesWithText("21:30 제안").assertCountEquals(1)
         onNodeWithText("바꾸기").performClick()
 
-        onNodeWithText("21:30 제안").assertExists()
+        onAllNodesWithText("21:30 제안").assertCountEquals(2)
     }
 
     // 정해진 시간을 휠에서 빼면 지금 몇 시로 잡혀 있는지 안 보인다
@@ -218,7 +223,7 @@ class PingScreenTest {
         onNodeWithText("내 초대").assertExists()
         onNodeWithText("21:30 어때요?").assertExists()
         onNodeWithText("준호, 재현의 제안").assertExists()
-        onNodeWithText("1명 참석 · 2명 시간 제안").assertExists()
+        onNodeWithText("2명 참석 · 2명 시간 제안").assertExists()
         onNodeWithText("수락").performClick()
 
         assertEquals(NineThirty, moved)

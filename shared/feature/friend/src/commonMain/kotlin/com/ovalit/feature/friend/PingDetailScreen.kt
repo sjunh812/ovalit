@@ -169,12 +169,10 @@ private fun ColumnScope.PingDetailContent(
     val colors = OvalitTheme.colors
     val hosting = ping.isHostedBy(me)
     var sheet by remember { mutableStateOf<DetailSheet?>(null) }
-    // 받은 초대면 부른 친구를 참석으로 맨 앞에 두고 나는 뺀다. 내 답은 맨 밑 버튼에 있다.
-    val crowd = if (hosting) {
-        ping.members
-    } else {
-        listOf(PingMember(ping.host, PingAnswer.YES)) + ping.members.filterNot { it.person.id == me }
-    }
+    // 부른 사람을 참석으로 맨 앞에, 그다음에 나를 둔다. 나를 빼면 몇 명이 모이는지 세기 어렵다.
+    val crowd = listOf(PingMember(ping.host, PingAnswer.YES)) +
+        listOfNotNull(ping.memberOf(me)) +
+        ping.members.filterNot { it.person.id == me }
     // 같은 시각을 낸 친구는 한 줄에 모은 뒤 많이 낸 시각부터 둔다. 제안이 여럿 와도 줄이 사람 수만큼 쌓이지 않는다.
     val proposals = if (!hosting) {
         emptyList()
@@ -220,7 +218,7 @@ private fun ColumnScope.PingDetailContent(
             }
         }
         SectionTitle(crowdCounts(crowd))
-        crowd.forEach { MemberLine(it, now, timeZone) }
+        crowd.forEach { MemberLine(it, now, timeZone, isMe = it.person.id == me) }
         // 못 간다고 한 친구 자리를 채우거나 빠뜨린 친구를 더 부른다
         if (hosting && ping.openSeats > 0 && invitable.isNotEmpty()) {
             InviteMoreRow(onClick = { sheet = DetailSheet.INVITE })

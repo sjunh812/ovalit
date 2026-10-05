@@ -61,6 +61,7 @@
     <string name="ping_change_answer">変更</string>
     <string name="ping_proposal">%1$sはどうですか？</string>
     <string name="ping_proposal_by">%1$sの提案</string>
+    <string name="ping_me">自分</string>
     <string name="ping_count_yes">参加%1$d人</string>
     <string name="ping_count_other">時間提案%1$d人</string>
     <string name="ping_count_pending">未回答%1$d人</string>

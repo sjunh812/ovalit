@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
@@ -43,14 +44,16 @@ private val LogoWidth = 88.dp
 private val ParenthesisScale = 0.7.em
 
 /**
- * 괄호와 그 안의 글자를 한 단계 흐리고 작게 그립니다. "오발있? (오늘 발로란트 할 사람 있어?)"에서 어디까지가 앱 이름인지
- * 먼저 읽히게 합니다. 문구는 리소스에 그대로 두니 번역할 때도 괄호만 지키면 됩니다.
+ * 괄호와 그 안의 글자를 한 단계 흐리고 작고 가늘게 그립니다. "오발있? (오늘 발로란트 할 사람 있어?)"에서 어디까지가 앱
+ * 이름인지 먼저 읽히게 합니다. 바깥 글자의 SemiBold를 그대로 두면 작아져도 굵어서 탁해 보여 보통 굵기로 내립니다. 문구는
+ * 리소스에 그대로 두니 번역할 때도 괄호만 지키면 됩니다.
  */
 @Composable
 private fun dimParentheses(text: String): AnnotatedString {
     val dimmed = SpanStyle(
         color = OvalitTheme.colors.t3,
         fontSize = ParenthesisScale,
+        fontWeight = FontWeight.Normal,
     )
 
     return buildAnnotatedString {

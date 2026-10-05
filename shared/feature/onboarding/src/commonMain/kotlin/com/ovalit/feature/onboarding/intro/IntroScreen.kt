@@ -20,6 +20,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
@@ -34,8 +35,7 @@ import com.ovalit.feature.onboarding.resources.Res
 import com.ovalit.feature.onboarding.resources.intro_headline
 import com.ovalit.feature.onboarding.resources.intro_hook
 import com.ovalit.feature.onboarding.resources.intro_start
-import com.ovalit.feature.onboarding.resources.intro_subtitle_what
-import com.ovalit.feature.onboarding.resources.intro_subtitle_when
+import com.ovalit.feature.onboarding.resources.intro_subtitle
 import org.jetbrains.compose.resources.stringResource
 
 private val LogoWidth = 88.dp
@@ -108,12 +108,14 @@ fun IntroScreen(
                 Spacer(Modifier.height(OvalitSpacing.xl))
 
                 // 로고 ㅇㅂㅇ을 소리 내어 읽어 주는 줄이라 로고 바로 밑에 둔다(CLAUDE.md 용어). 헤드라인과 같은 크기로
-                // 둬서 두 줄이 한 덩어리로 읽히게 한다.
+                // 둬서 헤드라인과 한 덩어리로 읽히게 한다.
                 OvalitText(
                     text = dimParentheses(stringResource(Res.string.intro_hook)),
                     style = OvalitTheme.typography.display,
                 )
 
+                // 한 문자열로 두고 줄은 display의 줄바꿈(LineBreak.Heading)에 맡긴다. 들어가면 한 줄이고, 안 들어가면 어절 경계에서
+                // 고르게 꺾는다. 손으로 나누면 "이번 주 / 뭐가"처럼 한 덩어리 말 한가운데가 끊긴다.
                 OvalitText(
                     text = stringResource(Res.string.intro_headline),
                     style = OvalitTheme.typography.display,
@@ -121,16 +123,11 @@ fun IntroScreen(
 
                 Spacer(Modifier.height(OvalitSpacing.md))
 
-                // "움직였는지"에서 줄을 나눈다. 한 문자열이면 기기 폭에 따라 "짚어드려요"만 다음 줄에 떨어져서 둘로 나눴다.
-                // 좁은 화면에서는 줄마다 알아서 꺾인다.
+                // 부제도 한 문장으로 두고 줄 길이를 고르게 나누는 Heading 줄바꿈을 쓴다. 본문 줄바꿈은 줄을 끝까지 채워서 이
+                // 폭에서는 "짚어드려요"만 다음 줄로 떨어진다.
                 OvalitText(
-                    text = stringResource(Res.string.intro_subtitle_what),
-                    style = OvalitTheme.typography.body,
-                    color = OvalitTheme.colors.t2,
-                )
-                OvalitText(
-                    text = stringResource(Res.string.intro_subtitle_when),
-                    style = OvalitTheme.typography.body,
+                    text = stringResource(Res.string.intro_subtitle),
+                    style = OvalitTheme.typography.body.copy(lineBreak = LineBreak.Heading),
                     color = OvalitTheme.colors.t2,
                 )
             }

@@ -13,7 +13,7 @@
     <string name="consent_matches_title">直近50試合を読み込みます</string>
     <string name="consent_matches_body">コンペティティブとアンレートの試合をラウンドごとに分析します。最初の1回だけ1分ほどかかります。</string>
     <string name="consent_public_title">お互いに承認したフレンドに戦績が公開されます</string>
-    <string name="consent_public_body">フレンドになると、お互いのレポートと試合を見られます。設定で戦績の公開をオフにすると、フレンドも見られなくなります。</string>
+    <string name="consent_public_body">フレンドになると、お互いのプロフィールと試合を見られます。設定で戦績の公開をオフにすると、フレンドも見られなくなります。</string>
     <string name="consent_unlink_title">いつでも解除できます</string>
     <string name="consent_unlink_body">設定で連携を解除すると、保存したデータも一緒に削除されます。</string>
     <string name="consent_password">パスワードはRiotのログインページでのみ入力します。このアプリがパスワードを受け取ったり保存したりすることはありません。</string>

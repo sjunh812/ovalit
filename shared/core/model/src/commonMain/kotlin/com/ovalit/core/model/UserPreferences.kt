@@ -17,7 +17,7 @@ enum class PingReminder(val minutes: Int) {
 }
 
 /**
- * @property statsPublic 끄면 친구도 내 리포트와 경기를 볼 수 없습니다. 친구 비교에서도 빠집니다.
+ * @property statsPublic 끄면 친구도 내 프로필과 경기를 볼 수 없습니다. 친구 비교에서도 빠집니다.
  * @property notifyWeeklyReport 서버가 월요일 오전 9시에 FCM 토픽으로 보내는 주간 리포트 알림입니다. 끄면 토픽 구독을 풉니다.
  * @property notifyPing 친구가 보낸 ㅇㅂㅇ과 내가 보낸 ㅇㅂㅇ의 답을 알릴지입니다.
  * @property pingReminder 내가 부르거나 간다고 답한 ㅇㅂㅇ을 시작 몇 분 전에 알릴지입니다.

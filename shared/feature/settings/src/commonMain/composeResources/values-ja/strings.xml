@@ -11,7 +11,7 @@
 
     <string name="section_public">公開</string>
     <string name="stats_public">戦績を公開</string>
-    <string name="stats_public_description">オフにすると、フレンドもあなたのレポートと試合を見られなくなります。フレンド比較にも表示されません。</string>
+    <string name="stats_public_description">オフにすると、フレンドもあなたのプロフィールと試合を見られなくなります。フレンド比較にも表示されません。</string>
 
     <string name="section_notifications">通知</string>
     <string name="notify_analysis_done">分析完了</string>

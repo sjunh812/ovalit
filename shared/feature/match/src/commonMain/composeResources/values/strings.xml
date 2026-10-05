@@ -79,7 +79,7 @@
     <string name="economy_note">우리 팀 한 사람당 평균 장비 가치로 나눠요. 2,000크레드 미만은 이코, 3,900크레드 이상은 풀바이, 그 사이는 포스바이예요.</string>
 
     <!-- 스코어보드에서 친구가 아닌 사람을 눌렀을 때 -->
-    <string name="player_app_user">친구가 되면 서로의 프로필과 리포트를 볼 수 있어요.</string>
+    <string name="player_app_user">친구가 되면 서로의 프로필과 경기를 볼 수 있어요.</string>
     <string name="player_send_request">친구 요청 보내기</string>
     <string name="player_request_sent">요청을 보냈어요. 상대가 수락하면 친구가 돼요.</string>
     <string name="player_requested_me">이 플레이어가 먼저 친구 요청을 보냈어요.</string>

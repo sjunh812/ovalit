@@ -10,7 +10,7 @@
 
     <string name="section_public">공개</string>
     <string name="stats_public">전적 공개</string>
-    <string name="stats_public_description">끄면 친구도 내 리포트와 경기를 볼 수 없어요. 친구 비교에서도 빠져요.</string>
+    <string name="stats_public_description">끄면 친구도 내 프로필과 경기를 볼 수 없어요. 친구 비교에서도 빠져요.</string>
 
     <string name="section_notifications">알림</string>
     <string name="notify_analysis_done">분석 완료</string>

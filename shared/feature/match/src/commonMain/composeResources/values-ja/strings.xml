@@ -80,7 +80,7 @@
     <string name="economy_note">味方チーム1人あたりの平均装備価値で分けています。2,000クレジット未満はエコ、3,900クレジット以上はフルバイ、その間はフォースバイです。</string>
 
     <!-- 스코어보드에서 친구가 아닌 사람을 눌렀을 때 -->
-    <string name="player_app_user">フレンドになると、お互いのプロフィールとレポートを見られます。</string>
+    <string name="player_app_user">フレンドになると、お互いのプロフィールと試合を見られます。</string>
     <string name="player_send_request">フレンド申請を送る</string>
     <string name="player_request_sent">申請を送りました。相手が承認するとフレンドになります。</string>
     <string name="player_requested_me">このプレイヤーからフレンド申請が届いています。</string>

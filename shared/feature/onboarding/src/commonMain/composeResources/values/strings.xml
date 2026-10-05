@@ -13,7 +13,7 @@
     <string name="consent_matches_title">최근 50경기를 불러와요</string>
     <string name="consent_matches_body">경쟁과 일반 경기를 라운드 단위로 분석해요. 처음 한 번만 1분 정도 걸려요.</string>
     <string name="consent_public_title">서로 수락한 친구에게 전적이 공개돼요</string>
-    <string name="consent_public_body">친구가 되면 서로의 리포트와 경기를 볼 수 있어요. 설정에서 전적 공개를 끄면 친구도 볼 수 없어요.</string>
+    <string name="consent_public_body">친구가 되면 서로의 프로필과 경기를 볼 수 있어요. 설정에서 전적 공개를 끄면 친구도 볼 수 없어요.</string>
     <string name="consent_unlink_title">언제든 해제할 수 있어요</string>
     <string name="consent_unlink_body">설정에서 연동을 해제하면 저장된 데이터도 같이 지워요.</string>
     <string name="consent_password">비밀번호는 Riot 로그인 페이지에서만 입력해요. 이 앱은 비밀번호를 받지도, 저장하지도 않아요.</string>

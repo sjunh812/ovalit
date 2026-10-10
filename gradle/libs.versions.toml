@@ -1,6 +1,6 @@
 [versions]
 # Android Studio 2026.1이 AGP 9.3까지만 받는다. 최신은 9.4.1이지만 IDE 싱크가 막힌다.
-# 9.3.0도 compileSdk 37까지 지원하므로 잃는 것은 없다. Gradle 9.5 이상, JDK 17 이상.
+# 9.3.0도 compileSdk 37까지 지원해서 잃는 것은 없다. Gradle 9.5 이상, JDK 17 이상.
 agp = "9.3.0"
 kotlin = "2.4.20"
 composeMultiplatform = "1.12.0"
@@ -14,7 +14,6 @@ androidCompileSdk = "37"
 androidTargetSdk = "37"
 androidMinSdk = "26"
 
-# 라이브러리
 androidxActivityCompose = "1.13.0"
 androidxBrowser = "1.10.0"
 androidxCoreKtx = "1.19.0"
@@ -37,7 +36,6 @@ kotlinxDatetime = "0.8.0"
 kotlinxSerialization = "1.11.0"
 ktor = "3.6.0"
 
-# 테스트
 turbine = "1.2.1"
 
 [libraries]
@@ -55,19 +53,21 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 androidx-browser = { module = "androidx.browser:browser", version.ref = "androidxBrowser" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCoreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidxCoreSplashscreen" }
-# 첫 수집 한 번만 맡긴다. 앱을 닫아도 이어 받고 끝나면 알림을 보낸다. 주기 동기화에는 쓰지 않는다.
+# 첫 수집과 오래 쉬었다 와서 쌓인 새 경기만 맡긴다. 앱을 닫아도 이어 받고 끝나면 알림을 보낸다. 주기 동기화에는 쓰지 않는다.
 androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "androidxWork" }
-# ㅇㅂㅇ와 주간 리포트 알림만 받는다. 앱 모듈만 쓴다. 따라오는 Google Play 서비스는 Apache가 아닌 구글 무료 라이선스다(CLAUDE.md 비용).
+# Firebase와 광고는 앱 모듈만 쓴다. 푸시로는 ㅇㅂㅇ과 주간 리포트 알림만 받는다.
+# 따라오는 Google Play 서비스는 Apache가 아닌 구글 무료 라이선스다(CLAUDE.md 비용).
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
-# 설정 값만 담는다. 경기는 여기 두지 않는다. 경기를 담을 DB는 프로덕션 키가 나온 뒤에 고른다.
+# 설정 값만 담는다. 경기를 담을 DB는 프로덕션 키가 나온 뒤에 고른다.
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "androidxDatastore" }
 
-# Navigation 3. 화면 전환 뼈대는 shared/app에 두고 안드로이드와 iOS가 같이 쓴다. 런타임은 Google 것이 멀티플랫폼이고 NavDisplay는
-# JetBrains 것을 쓴다. 안드로이드에서는 Google navigation3-ui를 같이 걸어 정식 1.2.0으로 맞춘다.
+# Navigation 3. 화면 전환 뼈대는 shared/app에 두고 안드로이드와 iOS가 같이 쓴다.
+# 런타임은 Google 것이 멀티플랫폼이고 NavDisplay는 JetBrains 것을 쓴다.
+# 안드로이드에서는 Google navigation3-ui를 같이 걸어 정식 1.2.0으로 맞춘다.
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "androidxNavigation3" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "androidxNavigation3" }
 jb-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "jbNavigation3" }

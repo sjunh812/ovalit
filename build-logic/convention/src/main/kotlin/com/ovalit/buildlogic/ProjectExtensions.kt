@@ -16,7 +16,7 @@ internal fun VersionCatalog.int(alias: String): Int =
 private fun VersionCatalog.string(alias: String): String =
     findVersion(alias).get().requiredVersion
 
-/** 카탈로그의 `jvmTarget` 하나만 보게 한다. 코틀린과 자바가 따로 놀면 찾기 어렵다. */
+/** 코틀린과 자바 모두 카탈로그의 `jvmTarget` 하나를 봅니다. 둘이 갈리면 어디서 어긋났는지 찾기 어렵습니다. */
 internal val VersionCatalog.jvmTarget: JvmTarget
     get() = JvmTarget.fromTarget(string("jvmTarget"))
 

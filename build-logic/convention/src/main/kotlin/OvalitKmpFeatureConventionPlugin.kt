@@ -34,8 +34,8 @@ class OvalitKmpFeatureConventionPlugin : Plugin<Project> {
             }
         }
 
-        // 앱은 모든 모듈의 Compose 리소스를 이 패키지 이름의 폴더로 모은다. 모듈마다 달라야 해서 네임스페이스에서 만든다
-        // (:shared:feature:report → com.ovalit.feature.report.resources).
+        // 앱은 모든 모듈의 Compose 리소스를 이 패키지 이름의 폴더로 모은다.
+        // 모듈마다 달라야 해서 네임스페이스에서 만든다(:shared:feature:report → com.ovalit.feature.report.resources).
         val resourcePackage = "$ovalitNamespace.resources"
         extensions.configure<ComposeExtension> {
             (this as ExtensionAware).extensions.configure(ResourcesExtension::class.java) {

@@ -32,8 +32,8 @@ class OvalitKmpLibraryConventionPlugin : Plugin<Project> {
                     minSdk = minSdkVersion
                     // 이 플러그인은 단위 테스트가 opt-in이다. 안 켜면 androidHostTest가 안 생긴다.
                     withHostTestBuilder {}.configure {}
-                    // 안드로이드 리소스도 opt-in이다. 안 켜면 CMP 문구가 APK에 안 들어가고
-                    // 런타임에 MissingResourceException으로 터진다.
+                    // 안드로이드 리소스도 opt-in이다.
+                    // 안 켜면 CMP 문구가 APK에 안 들어가고 런타임에 MissingResourceException으로 터진다.
                     androidResources {
                         enable = true
                     }

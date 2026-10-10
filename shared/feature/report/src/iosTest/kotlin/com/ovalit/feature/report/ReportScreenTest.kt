@@ -1355,6 +1355,21 @@ class ReportScreenTest {
         onNodeWithText("친구150", useUnmergedTree = true).assertExists()
     }
 
+    @Test
+    fun `라이벌 고르기 시트는 친구가 많아도 열리고 끝까지 내려 고른다`() = runComposeUiTest {
+        var picked: PlayerId? = null
+        setContent { Social(friends = ManyFriends, nudge = HomeNudge.PICK_RIVAL, onSelectRival = { picked = it }) }
+
+        onNodeWithText("라이벌을 골라 보세요").performScrollTo().performClick()
+        onNodeWithText("친구1#KR1").assertExists()
+        onNodeWithText("친구150#KR1").assertDoesNotExist()
+
+        onNode(hasScrollToIndexAction()).performScrollToNode(hasText("친구150#KR1"))
+        onNodeWithText("친구150#KR1").performClick()
+
+        assertEquals(PlayerId("f150"), picked)
+    }
+
     // 수집 중에는 숫자를 띄우지 않고 자리만 잡는다. 화면 읽기 프로그램에는 칸마다가 아니라 한 줄로 알린다.
     @Test
     fun `리포트를 만들기 전에는 자리만 잡고 숫자를 띄우지 않는다`() = runComposeUiTest {

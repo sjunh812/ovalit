@@ -223,8 +223,23 @@ class ReportViewModelTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         val state = assertIs<ReportUiState.Success>(viewModel.uiState.value)
-        assertEquals(listOf("준호#KR1", "민석#KR3", "재현#KR2"), state.friends.map { it.riotId })
+        assertEquals(listOf("민석#KR3", "재현#KR2", "준호#KR1"), state.friends.map { it.riotId }.sorted())
         assertEquals(null, state.rival)
+    }
+
+    // 친구가 수백 명이어도 다시 같이 할 사람이 라이벌 고르기 시트 위에 온다
+    @Test
+    fun `라이벌 후보는 최근에 같이 뛴 친구부터 세우고 같이 뛴 적 없으면 그 기간 경기가 많은 친구부터 둔다`() = runTest {
+        val matches = FakeMatchRepository(ThursdayClock)
+        val mine = matches.observeMatches().first()
+        val recent = Friend(PlayerId("recent"), "최근#KR1", null, statsPublic = true, matches = emptyList(), lastPlayedTogether = Thursday - 1.days)
+        val many = Friend(PlayerId("many"), "많이#KR1", null, statsPublic = true, matches = mine)
+        val few = Friend(PlayerId("few"), "조금#KR1", null, statsPublic = true, matches = mine.sortedByDescending { it.startedAt }.take(1))
+        val viewModel = ReportViewModel(matches, NoAccount, StubPreferences(), StubFriends(listOf(few, many, recent)), FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+
+        val state = assertIs<ReportUiState.Success>(viewModel.uiState.value)
+        assertEquals(listOf("recent", "many", "few"), state.friends.map { it.id.value })
     }
 
     @Test

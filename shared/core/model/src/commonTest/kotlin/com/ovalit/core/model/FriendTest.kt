@@ -4,6 +4,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -31,6 +33,29 @@ class FriendTest {
         )
 
         assertEquals(SharedRecord(matches = 3, wins = 1, losses = 1), matches.sharedWith(Junho))
+    }
+
+    @Test
+    fun `마지막으로 같이 뛴 시각은 그 친구가 우리 팀이었던 가장 최근 경기다`() {
+        val older = game(allies = setOf(Junho), won = true).copy(startedAt = Now - 3.days)
+        val newer = game(allies = setOf(Junho), won = false).copy(startedAt = Now - 1.days)
+        val without = game(allies = emptySet(), won = true).copy(startedAt = Now)
+
+        assertEquals(Now - 1.days, listOf(older, newer, without).lastPlayedWith(Junho))
+        assertNull(listOf(without).lastPlayedWith(Junho))
+    }
+
+    // 친구가 수백 명이면 다시 같이 할 사람을 앞에 둬야 고르기 쉽다
+    @Test
+    fun `최근에 같이 뛴 친구부터 세우고 같이 뛴 적 없는 친구는 받은 순서대로 뒤에 둔다`() {
+        val never1 = friend(emptyList()).copy(id = PlayerId("never1"))
+        val old = friend(emptyList()).copy(id = PlayerId("old"), lastPlayedTogether = Now - 7.days)
+        val never2 = friend(emptyList()).copy(id = PlayerId("never2"))
+        val recent = friend(emptyList()).copy(id = PlayerId("recent"), lastPlayedTogether = Now - 1.hours)
+
+        val ordered = listOf(never1, old, never2, recent).byLastPlayedTogether().map { it.id.value }
+
+        assertEquals(listOf("recent", "old", "never1", "never2"), ordered)
     }
 
     // 라이벌 대결은 나와 친구를 같은 달력 구간으로 세야 나란히 놓을 수 있다

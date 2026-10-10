@@ -32,6 +32,12 @@
     <string name="queue_unrated">アンレート</string>
     <string name="queue_spike_rush">スパイクラッシュ</string>
     <string name="queue_swiftplay">スイフトプレイ</string>
+    <string name="queue_premier">プレミア</string>
+    <string name="queue_replication">レプリケーション</string>
+    <string name="queue_escalation">エスカレーション</string>
+    <string name="queue_deathmatch">デスマッチ</string>
+    <string name="queue_team_deathmatch">チームデスマッチ</string>
+    <string name="queue_snowball_fight">スノーボールファイト</string>
     <string name="queue_other">その他</string>
 
     <string name="unknown_agent">不明なエージェント</string>

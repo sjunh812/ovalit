@@ -32,15 +32,15 @@ fun Iterable<Match>.weeklyReport(
     focus: Focus = Focus.NONE,
     weaponCategories: Map<WeaponId, WeaponCategory> = emptyMap(),
 ): WeeklyReport {
-    val counted = filter { it.queue in queueFilter.queues }
-    val act = counted.maxByOrNull { it.startedAt }?.act
-        ?: return WeeklyReport.NotEnoughMatches(played = 0)
+    val counted = filter { it.queue in queueFilter.countedQueues }
+    fun notEnough(played: Int) = WeeklyReport.NotEnoughMatches(played, notCounted = notCountedRecently(queueFilter, now, timeZone))
+    val act = counted.maxByOrNull { it.startedAt }?.act ?: return notEnough(played = 0)
     val matchesByWeek = counted
         .filter { it.act == act }
         .groupBy { it.startedAt.weekStart(timeZone) }
 
     val choice = matchesByWeek.choosePeriod(now, timeZone)
-    val period = choice.period ?: return WeeklyReport.NotEnoughMatches(played = choice.played)
+    val period = choice.period ?: return notEnough(played = choice.played)
     val end = period.end
 
     val periodMatches = matchesByWeek.between(period.firstDay, end)
@@ -73,6 +73,12 @@ fun Iterable<Match>.weeklyReport(
             null
         },
     )
+}
+
+// 데스매치처럼 목록에만 두는 모드는 리포트에 안 들어가도 뛴 경기다. 이번 주를 넣어 최근 4주를 본다.
+private fun Iterable<Match>.notCountedRecently(queueFilter: QueueFilter, now: Instant, timeZone: TimeZone): Int {
+    val since = now.weekStart(timeZone).minusWeeks(MAX_REPORT_WEEKS - 1)
+    return count { it.queue in queueFilter.queues && it.queue !in queueFilter.countedQueues && it.startedAt.weekStart(timeZone) >= since }
 }
 
 // 한 주 경기를 둘로 나누면 표본이 작아 우연한 차이가 대부분이다. 이번 액트 경기로 견주고, 그 차이가 이번 기간에도
@@ -224,9 +230,9 @@ private fun LocalDate.plusWeeks(weeks: Int) = plus(weeks, DateTimeUnit.WEEK)
 
 private fun LocalDate.minusWeeks(weeks: Int) = minus(weeks, DateTimeUnit.WEEK)
 
-/** S6·S7과 프로필이 보는 경기입니다. 고른 큐에서 가장 최근 경기의 액트만 남깁니다. */
+/** S6·S7과 프로필이 보는 경기입니다. 고른 큐에서 리포트에 넣는 경기만 골라 가장 최근 경기의 액트만 남깁니다. */
 fun Iterable<Match>.currentActMatches(queueFilter: QueueFilter): List<Match> {
-    val counted = filter { it.queue in queueFilter.queues }
+    val counted = filter { it.queue in queueFilter.countedQueues }
     val act = counted.maxByOrNull { it.startedAt }?.act ?: return emptyList()
     return counted.filter { it.act == act }
 }

@@ -59,8 +59,8 @@ npm run typecheck
 | GET | `/content/tiers` | | 티어 번호 → 한글 이름 |
 | GET | `/content/roles` | | 요원 UUID(소문자) → `duelist` · `initiator` · `controller` · `sentinel` |
 | GET | `/i/:code` | | 초대 링크를 브라우저에서 열었을 때 보이는 쪽 |
-| GET | `/auth/rso/start?challenge=` | | Riot 로그인으로 보냅니다 |
-| GET | `/auth/rso/callback` | | `/auth/done?code=`(App Link)로 돌려보냅니다 |
+| GET | `/auth/rso/start?challenge=` | | Riot 로그인으로 보냅니다. D1에 쓰지 않습니다 |
+| GET | `/auth/rso/callback` | | `/auth/done?code=`(App Link)로 돌려보냅니다. 실패하면 `/auth/done?error=` |
 | GET | `/auth/done` | | 앱이 안 열렸을 때 보이는 쪽. 우리 패키지를 지정한 intent 버튼을 둡니다 |
 | GET | `/.well-known/assetlinks.json` | | App Link 검증 파일. `ANDROID_CERT_SHA256`이 없으면 404 |
 | POST | `/auth/session` | | `{code, verifier}` → `{token, expiresAt}` |
@@ -196,6 +196,17 @@ Riot이 돌려준 실패는 이렇게 바꿔 보냅니다.
 429를 받은 뒤에는 `Retry-After`가 지날 때까지 그 호스트로 가는 요청을 Riot에 보내지 않고 바로 같은 503을
 돌려줍니다. 막힌 동안 계속 부르면 앱 전체의 몫이 더 깎이기 때문입니다.
 
+### 로그인
+
+RSO state는 D1에 두지 않고 `STATE_SECRET`으로 서명해 Riot에 실어 보냅니다. 로그인 시작은 세션 없이 열려 있어서
+시작마다 D1에 쓰면 누구나 되풀이해 불러 하루 쓰기 한도를 다 쓰게 할 수 있기 때문입니다. 콜백은 서명과 10분 기한을
+보고, 같은 state를 두 번 받지 않습니다. 이건 isolate 메모리로 막는데, 다른 isolate로 가도 Riot 인가 코드가 한 번만
+쓰여 로그인 코드가 두 번 나오지 않습니다.
+
+로그인 시작과 콜백은 IP마다 1분에 20번까지입니다. 시작은 넘기면 429 `too_many_requests`에 `Retry-After`를 주고,
+콜백은 Custom Tabs 안이라 `/auth/done?error=too_many_requests`로 돌려보냅니다. 콜백이 앱에 넘기는 `error`는
+`access_denied`, `invalid_state`, `riot_rate_limited`, `rso_not_configured`, `too_many_requests`, `rso_failed`입니다.
+
 ### 호출 한도
 
 Riot 레이트 리밋은 앱 전체에 걸려서 한 사람이 몰아 부르면 모두의 몫이 줄어듭니다. 그래서 사용자마다 Riot에
@@ -321,10 +332,14 @@ npx wrangler d1 create ovalit
 npx wrangler secret put RIOT_API_KEY
 npx wrangler secret put RSO_CLIENT_ID
 npx wrangler secret put RSO_CLIENT_SECRET
+openssl rand -base64 32 | npx wrangler secret put STATE_SECRET
 npx wrangler secret put FCM_SERVICE_ACCOUNT
 npx wrangler d1 migrations apply ovalit --remote
 npx wrangler deploy
 ```
+
+`STATE_SECRET`은 RSO state에 서명하는 키라 32자 이상의 아무 값이면 됩니다. 없으면 RSO를 띄우지 않습니다. 바꾸면
+그때 Riot 로그인 화면에 있던 사람만 처음부터 다시 로그인합니다.
 
 `FCM_SERVICE_ACCOUNT`에는 Firebase 콘솔의 프로젝트 설정 > 서비스 계정에서 받은 JSON 파일 내용을 통째로 붙여 넣습니다.
 `project_id`, `client_email`, `private_key`를 씁니다. 개인 키가 들어 있어서 저장소, `wrangler.jsonc`, `.dev.vars.example`

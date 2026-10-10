@@ -5,6 +5,8 @@ import { base64url } from "../src/crypto";
 import type { Env } from "../src/env";
 import { clearAccessTokens } from "../src/push";
 import { cacheKey, clearMemoryCaches, clearQuotas } from "../src/riot";
+import { clearAuthQuotas } from "../src/routes/auth";
+import { clearUsedStates } from "../src/state";
 import { clearRiotBlocks } from "../src/upstream";
 
 // 실제 키는 쓰지 않는다. wrangler가 .dev.vars를 읽어 오더라도 여기 값으로 덮어쓴다.
@@ -12,6 +14,7 @@ const TEST_SECRETS = {
   RIOT_API_KEY: "test-riot-key",
   RSO_CLIENT_ID: "test-client",
   RSO_CLIENT_SECRET: "test-secret",
+  STATE_SECRET: "test-state-secret-0123456789abcdef",
   DEV_LOGIN: "true",
   FCM_SERVICE_ACCOUNT: undefined,
 } satisfies Partial<Env>;
@@ -60,6 +63,8 @@ export function setup(overrides: Partial<Env> = {}) {
   // isolate 메모리에 남은 레이트 리밋, 사용자 호출 한도, FCM 액세스 토큰이 다음 테스트로 이어지지 않게 비운다.
   clearRiotBlocks();
   clearQuotas();
+  clearAuthQuotas();
+  clearUsedStates();
   clearAccessTokens();
   const upstream = new FakeUpstream();
   const app = createApp({ fetch: upstream.fetch });

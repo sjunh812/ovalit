@@ -12,10 +12,16 @@
 
 ## 인증
 
-- Riot 키와 RSO `client_secret`은 서버 비밀값이다. 세션 토큰과 로그인 코드는 SHA-256 해시만 저장한다. Riot 토큰은 계정을 한
+- Riot 키, RSO `client_secret`, `STATE_SECRET`은 서버 비밀값이다. 세션 토큰과 로그인 코드는 SHA-256 해시만 저장한다. Riot 토큰은 계정을 한
   번 읽고 버린다. 세션은 90일이다.
 - RSO는 앱과 서버 사이에 PKCE를 한 겹 더 둔다. 앱이 verifier를 만들어 challenge만 넘기고, 콜백은 서버 주소의 App Link
   `https://<서버>/auth/done?code=`로 일회용 코드를 준다. 가로챈 코드는 verifier 없이 세션으로 못 바꾼다.
+- RSO state는 challenge, 만든 시각, 임의값을 서버 비밀값 `STATE_SECRET`(32자 이상)으로 HMAC 서명한 값이다. 로그인 시작은 세션
+  없이 열려 있어 D1에 쓰지 않는다. 시작마다 쓰면 누구나 되풀이해 불러 로그인과 같이 쓰는 하루 쓰기 한도를 다 쓰게 할 수 있다.
+  콜백은 서명과 10분 기한을 보고, 같은 state는 isolate 메모리로 한 번만 받는다. 다른 isolate로 가도 Riot 인가 코드가 한 번만
+  쓰여 로그인 코드가 두 번 나오지 않는다.
+- 로그인 시작과 콜백은 IP(`CF-Connecting-IP`)마다 1분에 20번까지다(시작 기준선). isolate 메모리에서 센다. 넘기면 시작은 429
+  `too_many_requests`, 콜백은 `/auth/done?error=too_many_requests`다. 통신사 NAT 뒤에서는 여럿이 IP 하나를 쓰니 줄이지 않는다.
 - 커스텀 스킴(`ovalit://`)은 쓰지 않는다. 다른 앱이 같은 이름을 등록해 남이 시작한 로그인의 코드를 받아 갈 수 있다.
 - App Link는 서버의 `/.well-known/assetlinks.json`(서명 지문은 `ANDROID_CERT_SHA256`)으로 검증하고, 매니페스트의 호스트는
   `local.properties`의 `ovalit.server.host`에서 받는다. 앱이 안 열린 기기에서는 `/auth/done`이 `package=com.ovalit`을 지정한

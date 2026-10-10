@@ -4,7 +4,12 @@ export function base64url(bytes: Uint8Array): string {
   return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
 }
 
-/** 32바이트면 base64url 43자입니다. 세션 토큰, 로그인 코드, RSO state에 씁니다. */
+export function fromBase64url(text: string): Uint8Array {
+  const base64 = text.replaceAll("-", "+").replaceAll("_", "/");
+  return Uint8Array.from(atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, "=")), (char) => char.charCodeAt(0));
+}
+
+/** 32바이트면 base64url 43자입니다. 세션 토큰과 로그인 코드에 씁니다. */
 export function randomToken(bytes = 32): string {
   return base64url(crypto.getRandomValues(new Uint8Array(bytes)));
 }

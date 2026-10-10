@@ -63,6 +63,13 @@ private fun ReportNothingPlayedPreview() {
     ReportPreview(ReportPreviewData.nothingPlayed)
 }
 
+// 기타 칩에서 데스매치처럼 리포트에 넣지 않는 모드만 뛴 때
+@Preview(widthDp = 390, heightDp = 844)
+@Composable
+private fun ReportOtherNotCountedPreview() {
+    ReportPreview(WeeklyReport.NotEnoughMatches(played = 2, notCounted = 4), queueFilter = QueueFilter.OTHER)
+}
+
 // 가장 좁은 폭이다. 숫자가 칸을 넘지 않는지 본다.
 @Preview(widthDp = 320, heightDp = 568)
 @Composable

@@ -77,6 +77,7 @@ import com.ovalit.feature.report.component.dynamicSubLines
 import com.ovalit.feature.report.component.fixedSubLines
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.not_enough_body
+import com.ovalit.feature.report.resources.not_enough_not_counted
 import com.ovalit.feature.report.resources.not_enough_title
 import com.ovalit.feature.report.resources.not_enough_title_none
 import com.ovalit.feature.report.resources.other_queue_hint
@@ -228,7 +229,7 @@ internal fun ReportScreen(
                                 onOpenAgents = onOpenAgents,
                                 onOpenWeapons = onOpenWeapons,
                             )
-                            is WeeklyReport.NotEnoughMatches -> NotEnoughMatches(played = report.played)
+                            is WeeklyReport.NotEnoughMatches -> NotEnoughMatches(report)
                         }
                     }
 
@@ -382,12 +383,14 @@ private fun Reimport(onClick: () -> Unit) {
     }
 }
 
+// 기타 칩에서 데스매치만 뛰었으면 뛴 경기가 없는 게 아니다. 리포트에 넣지 않는 모드라서 경기 수를 따로 적는다.
 @Composable
-private fun NotEnoughMatches(played: Int) {
+private fun NotEnoughMatches(report: WeeklyReport.NotEnoughMatches) {
+    val played = report.played
     OvalitCard {
         Column(modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
             OvalitText(
-                text = if (played == 0) {
+                text = if (played == 0 && report.notCounted == 0) {
                     stringResource(Res.string.not_enough_title_none, MAX_REPORT_WEEKS)
                 } else {
                     stringResource(Res.string.not_enough_title, MIN_MATCHES_PER_REPORT - played)
@@ -400,6 +403,14 @@ private fun NotEnoughMatches(played: Int) {
                 style = OvalitTheme.typography.body,
                 color = OvalitTheme.colors.t2,
             )
+            if (report.notCounted > 0) {
+                Spacer(Modifier.height(OvalitSpacing.sm))
+                OvalitText(
+                    text = stringResource(Res.string.not_enough_not_counted, report.notCounted),
+                    style = OvalitTheme.typography.caption,
+                    color = OvalitTheme.colors.t3,
+                )
+            }
         }
     }
 }

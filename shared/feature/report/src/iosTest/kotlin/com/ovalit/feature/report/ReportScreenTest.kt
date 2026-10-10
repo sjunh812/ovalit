@@ -636,6 +636,16 @@ class ReportScreenTest {
         onNodeWithText("최근 4주 동안 뛴 경기가 없어요").assertExists()
     }
 
+    // 데스매치만 뛴 사람에게 "뛴 경기가 없어요"는 틀린 말이다. 리포트에 안 넣는 까닭을 같이 적는다.
+    @Test
+    fun `기타 칩에서 목록에만 두는 모드만 뛰었으면 뛴 경기가 없다고 하지 않는다`() = runComposeUiTest {
+        setContent { Report(WeeklyReport.NotEnoughMatches(played = 0, notCounted = 3), queueFilter = QueueFilter.OTHER) }
+
+        onNodeWithText("최근 4주 동안 뛴 경기가 없어요").assertDoesNotExist()
+        onNodeWithText("리포트까지 5경기 남았어요").assertExists()
+        onNodeWithText("규칙이 크게 다른 모드 3경기는 리포트에 넣지 않았어요", substring = true).assertExists()
+    }
+
     @Test
     fun `고정 칸을 누르면 그 지표 설명 시트가 뜬다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }

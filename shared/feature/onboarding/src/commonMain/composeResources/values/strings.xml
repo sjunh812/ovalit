@@ -26,6 +26,9 @@
     <string name="import_loading">경기를 불러오고 있어요</string>
     <string name="import_count">%1$d / %2$d</string>
     <string name="import_background">앱을 닫아도 계속 불러와요. 다 불러오면 알림을 보내드릴게요.</string>
+    <!-- 알림을 보낼 수 없을 때다. 알림 약속은 빼고, 권한이 없으면 그 밑에 알림 받기 버튼을 둔다. -->
+    <string name="import_background_silent">앱을 닫아도 계속 불러와요.</string>
+    <string name="import_notify_when_done">다 불러오면 알림 받기</string>
     <string name="import_done">%1$d경기를 다 불러왔어요</string>
     <string name="import_done_none">최근 8주 동안 뛴 경기가 없어요</string>
     <string name="import_open_report">리포트 보기</string>

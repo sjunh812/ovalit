@@ -112,6 +112,7 @@
     <string name="profile_weapons">武器</string>
     <string name="agents_matches">%1$d試合</string>
     <string name="record_wins_losses">%1$d勝%2$d敗</string>
+    <string name="record_wins_losses_draws">%1$d勝%2$d敗%3$d分</string>
     <string name="column_win_rate">勝率</string>
     <string name="profile_weapon_kills">%1$sキル</string>
     <!-- 무기 세 칸의 좁은 줄이라 일본 유저가 흔히 쓰는 약칭 HS率로 줄였다 -->
@@ -164,6 +165,12 @@
     <string name="new_matches_count">%1$d / %2$d</string>
     <string name="new_matches_description">新しい%2$d試合のうち%1$d試合を読み込みました</string>
     <string name="new_matches_in_background">アプリを閉じても読み込みを続けます</string>
+    <string name="notification_primer_title">フレンドに誘われたら通知でお知らせしますか？</string>
+    <string name="notification_primer_body">フレンドからパーティー募集で誘われたときや、自分の募集に返事があったときにすぐお知らせします。設定からいつでもオフにできます。</string>
+    <string name="notification_primer_allow">通知を受け取る</string>
+    <string name="notification_primer_later">あとで</string>
+    <string name="refresh_received">新しく%1$d試合を読み込みました</string>
+    <string name="refresh_none">新しく終わった試合はありません</string>
     <string name="error_offline">インターネットに接続されていません</string>
     <string name="error_session_expired">ログインが切れました · もう一度ログインしてください</string>
     <string name="error_riot_busy">Riotサーバーが混み合っています · しばらくしてからもう一度お試しください</string>

@@ -48,6 +48,8 @@ class DataStoreUserPreferencesRepository(
                 notifyPing = stored[Keys.notifyPing] ?: default.notifyPing,
                 focus = stored[Keys.focus].toEnumOr(default.focus),
                 seenProfileHint = stored[Keys.seenProfileHint] ?: default.seenProfileHint,
+                seenNotificationPrimer = stored[Keys.seenNotificationPrimer] ?: default.seenNotificationPrimer,
+                askedNotificationPermission = stored[Keys.askedNotificationPermission] ?: default.askedNotificationPermission,
                 adFreeUntil = stored[Keys.adFreeUntil]?.let(Instant::fromEpochMilliseconds),
             )
         }
@@ -66,6 +68,10 @@ class DataStoreUserPreferencesRepository(
 
     override suspend fun setSeenProfileHint() = set(Keys.seenProfileHint, true)
 
+    override suspend fun setSeenNotificationPrimer() = set(Keys.seenNotificationPrimer, true)
+
+    override suspend fun setAskedNotificationPermission() = set(Keys.askedNotificationPermission, true)
+
     override suspend fun setAdFreeUntil(until: Instant) = set(Keys.adFreeUntil, until.toEpochMilliseconds())
 
     private suspend fun <T> set(key: Preferences.Key<T>, value: T) {
@@ -83,6 +89,8 @@ class DataStoreUserPreferencesRepository(
         val notifyPing = booleanPreferencesKey("notify_ping")
         val focus = stringPreferencesKey("focus")
         val seenProfileHint = booleanPreferencesKey("seen_profile_hint")
+        val seenNotificationPrimer = booleanPreferencesKey("seen_notification_primer")
+        val askedNotificationPermission = booleanPreferencesKey("asked_notification_permission")
         val adFreeUntil = longPreferencesKey("ad_free_until")
     }
 }

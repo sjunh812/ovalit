@@ -119,6 +119,7 @@
     <string name="profile_weapons">무기</string>
     <string name="agents_matches">%1$d판</string>
     <string name="record_wins_losses">%1$d승 %2$d패</string>
+    <string name="record_wins_losses_draws">%1$d승 %2$d패 %3$d무</string>
     <string name="column_win_rate">승률</string>
     <string name="profile_weapon_kills">%1$s킬</string>
     <string name="profile_weapon_headshot">헤드샷 %1$s</string>
@@ -172,6 +173,14 @@
     <string name="new_matches_count">%1$d / %2$d</string>
     <string name="new_matches_description">새 경기 %2$d판 중 %1$d판을 불러왔어요</string>
     <string name="new_matches_in_background">앱을 닫아도 계속 불러와요</string>
+    <!-- 알림을 꺼 둔 사람에게 친구 요청을 수락했을 때나 파티를 모집했을 때 한 번만 묻는 시트 -->
+    <string name="notification_primer_title">친구가 부르면 알려드릴까요?</string>
+    <string name="notification_primer_body">친구가 파티 모집으로 부르거나 내 초대에 답하면 바로 알려드려요. 설정에서 언제든 끌 수 있어요.</string>
+    <string name="notification_primer_allow">알림 받기</string>
+    <string name="notification_primer_later">나중에</string>
+    <!-- 홈과 경기 탭을 당겨 새 경기를 받은 결과. 화면 아래에 잠깐 띄우는 한 줄이다. -->
+    <string name="refresh_received">새 경기 %1$d판을 불러왔어요</string>
+    <string name="refresh_none">새로 끝난 경기가 없어요</string>
     <!-- 사용자가 한 일이 실패했을 때 화면 아래에 잠깐 띄우는 한 줄. 까닭을 알면 까닭을, 모르면 무엇을 못 했는지 적는다 -->
     <string name="error_offline">인터넷에 연결되어 있지 않아요</string>
     <string name="error_session_expired">로그인이 풀렸어요 · 다시 로그인해 주세요</string>

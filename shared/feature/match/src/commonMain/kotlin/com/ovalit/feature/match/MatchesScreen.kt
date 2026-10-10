@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -54,6 +55,7 @@ import com.ovalit.core.ui.MatchRow
 import com.ovalit.core.ui.MatchRowStyle
 import com.ovalit.core.ui.MatchRowsSkeleton
 import com.ovalit.core.ui.NewMatchesLine
+import com.ovalit.core.ui.RefreshResultsEffect
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.dayLabel
 import com.ovalit.core.ui.label
@@ -61,6 +63,8 @@ import com.ovalit.core.ui.mapName
 import com.ovalit.core.ui.matchTimeLabel
 import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.loading
+import com.ovalit.core.ui.resources.record_wins_losses
+import com.ovalit.core.ui.resources.record_wins_losses_draws
 import com.ovalit.feature.match.resources.Res
 import com.ovalit.feature.match.resources.empty_filter
 import com.ovalit.feature.match.resources.empty_queue
@@ -87,6 +91,7 @@ fun MatchesRoute(
     viewModel: MatchesViewModel = koinViewModel(),
 ) {
     FailureNoticesEffect(viewModel.notices)
+    RefreshResultsEffect(viewModel.refreshed)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val newMatches by viewModel.newMatches.collectAsStateWithLifecycle()
@@ -182,7 +187,7 @@ internal fun MatchesScreen(
                     }
                     rowsSinceAd += day.matches.size
                     item(key = "day-${day.date}") {
-                        DayHeader(day.date, today = uiState.now.toLocalDateTime(uiState.timeZone).date)
+                        DayHeader(day, today = uiState.now.toLocalDateTime(uiState.timeZone).date)
                     }
                     items(day.matches, key = { it.id.value }) { match ->
                         Column {
@@ -235,16 +240,35 @@ private fun FilterButton(active: Boolean, onClick: () -> Unit) {
     }
 }
 
+// 그날 승패는 날짜와 같은 글자로 오른쪽 끝에 둔다. 둘이 한 줄에 안 들어가면 승패를 다음 줄로 내린다.
 @Composable
-private fun DayHeader(date: LocalDate, today: LocalDate) {
-    OvalitText(
-        text = dayLabel(date, today),
+private fun DayHeader(day: MatchDay, today: LocalDate) {
+    val style = OvalitTheme.typography.label
+    val color = OvalitTheme.colors.t3
+    FlowRow(
         modifier = Modifier
+            .fillMaxWidth()
             .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.lg, bottom = OvalitSpacing.xs)
-            .semantics { heading() },
-        style = OvalitTheme.typography.label,
-        color = OvalitTheme.colors.t3,
-    )
+            .semantics(mergeDescendants = true) { heading() },
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        OvalitText(
+            text = dayLabel(day.date, today),
+            modifier = Modifier.padding(end = OvalitSpacing.md).alignByBaseline(),
+            style = style,
+            color = color,
+        )
+        day.record?.let { record ->
+            OvalitText(text = recordText(record), modifier = Modifier.alignByBaseline(), style = style, color = color, maxLines = 1)
+        }
+    }
+}
+
+@Composable
+private fun recordText(record: DayRecord): String = if (record.draws > 0) {
+    stringResource(CoreUiRes.string.record_wins_losses_draws, record.wins, record.losses, record.draws)
+} else {
+    stringResource(CoreUiRes.string.record_wins_losses, record.wins, record.losses)
 }
 
 @Composable

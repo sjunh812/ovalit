@@ -2,6 +2,7 @@ package com.ovalit.app
 
 import androidx.compose.runtime.Composable
 import com.ovalit.core.designsystem.component.OvalitToastState
+import com.ovalit.core.ui.NotificationPermission
 import com.ovalit.feature.settings.NotificationBlocks
 
 /** 안드로이드와 iOS가 다르게 하는 일입니다. [OvalitApp]이 부릅니다. */
@@ -20,9 +21,12 @@ interface OvalitPlatform {
     @Composable
     fun HomeBackHandler(toast: OvalitToastState) {}
 
-    /** S0-4에 들어올 때 부릅니다. 안드로이드는 다 모으면 보낼 알림의 권한을 여기서 묻습니다. */
+    /**
+     * 알림 권한과 그걸 묻는 길입니다. 앱 맨 위에서 한 번 부르고, 앱으로 돌아올 때마다 다시 확인합니다. 알림을 보내지 않는 iOS는
+     * 물을 게 없습니다.
+     */
     @Composable
-    fun ImportEntered() {}
+    fun rememberNotificationPermission(): NotificationPermission = NotificationPermission.NotNeeded
 
     /** 초대 화면을 열 때 그 초대의 알림을 거둡니다. 알림이 없는 iOS는 아무것도 하지 않습니다. */
     fun clearPingNotification(pingId: String) {}

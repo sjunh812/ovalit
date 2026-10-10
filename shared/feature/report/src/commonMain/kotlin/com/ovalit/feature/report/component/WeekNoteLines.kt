@@ -89,60 +89,68 @@ private val LeadGap = 10.dp
 private val ValueGap = 12.dp
 
 /**
- * 고정 칸 바로 밑에 붙는 "이번 주 짚을 점"입니다. 크게 움직인 고정 지표 하나를 문장으로 풀고, 그 변화를 가장 크게
- * 끌어간 무기와 요원을 숫자로 붙입니다. 변화의 절반 이상이 이코 라운드나 오퍼레이터처럼 비중이 바뀐 데서 왔으면 무기와
- * 요원 대신 그 비중과, 비중에 휘둘리지 않은 묶음의 성적을 붙입니다. 오른 값이 이번 액트 어느 주보다 높으면 헤드라인에
- * "이번 액트 최고"를 넣습니다. "쓰세요"나 "추천"은 쓰지 않습니다(CLAUDE.md 지켜야 할 선).
+ * "이번 주 짚을 점"의 헤드라인입니다. 기간과 승패 칸 바로 밑, 고정 칸 위에 둡니다. 크게 움직인 고정 지표 하나를 문장으로 풀고, 오른
+ * 값이 이번 액트 어느 주보다 높으면 "이번 액트 최고"를 넣습니다. 근거가 되는 무기와 요원 줄은 고정 칸 밑의 [WeekNoteLines]가
+ * 맡습니다. "쓰세요"나 "추천"은 쓰지 않습니다(CLAUDE.md 지켜야 할 선).
+ */
+@Composable
+internal fun WeekNoteHeadline(note: WeekNote, modifier: Modifier = Modifier) {
+    if (!note.isShown) return
+    val moved = note.moved
+    val format = moved.metric.format
+    // 보이는 자릿수로 이전 최고와 같으면 최고라고 할 수 없다
+    val best = note.previousBest?.let { format.steps(moved.current) > format.steps(it) } == true
+    // 평균이 얼마에서 얼마가 됐는지는 바로 밑 고정 칸에 있어 헤드라인에 다시 적지 않는다
+    OvalitText(text = movedHeadline(moved, best), modifier = modifier.padding(horizontal = OvalitSpacing.gutter), style = headlineStyle())
+}
+
+/**
+ * 고정 칸 밑에 붙는 짚을 점의 근거 줄입니다. 헤드라인의 변화를 가장 크게 끌어간 무기와 요원을 숫자로 붙입니다. 변화의 절반
+ * 이상이 이코 라운드나 오퍼레이터처럼 비중이 바뀐 데서 왔으면 무기와 요원 대신 그 비중과, 비중에 휘둘리지 않은 묶음의 성적을
+ * 붙입니다. 헤드라인([WeekNoteHeadline])이 없으면 이 줄도 두지 않습니다.
  *
  * 줄의 숫자에는 색을 입히지 않습니다. 오르내림은 헤드라인이 말하고, 비중 줄은 늘어난 게 좋은지 나쁜지 정해져 있지 않으며,
  * 평소와 같았다는 줄에 빨강이 붙으면 틀린 말이 됩니다.
  */
 @Composable
 internal fun WeekNoteLines(note: WeekNote, catalog: ContentCatalog, modifier: Modifier = Modifier) {
-    val moved = note.moved
-    val format = moved.metric.format
-    // 보이는 자릿수로 뺀 차이가 0이면 "0 올랐어요"가 되니 칸을 두지 않는다. 무기와 요원 줄도 "140 → 140"이면 뺀다.
-    if (format.steps(moved.current) == format.steps(moved.usual)) return
+    if (!note.isShown) return
+    val format = note.moved.metric.format
+    // 무기와 요원 줄도 "140 → 140"이면 뺀다
     fun visible(current: Double, usual: Double) = format.steps(current) != format.steps(usual)
     val weapon = note.weapon?.takeIf { visible(it.current, it.usual) }
     val agent = note.agent?.takeIf { visible(it.current, it.usual) }
-    // 보이는 자릿수로 이전 최고와 같으면 최고라고 할 수 없다
-    val best = note.previousBest?.let { format.steps(moved.current) > format.steps(it) } == true
-
-    Column(modifier = modifier.padding(horizontal = OvalitSpacing.gutter)) {
-        // 평균이 얼마에서 얼마가 됐는지는 바로 위 고정 칸에 있어 헤드라인에 다시 적지 않는다
-        OvalitText(text = movedHeadline(moved, best), style = headlineStyle())
-        val rows = listOfNotNull(
-            note.mix?.let { mixRow(it, catalog) },
-            note.mix?.steady?.let { steadyRow(moved, it, catalog) },
-            weapon?.let {
-                val name = catalog.weaponName(it.weapon)
-                NoteRow(
-                    lead = NoteLead.Weapon(it.weapon, name),
-                    name = name,
-                    sample = stringResource(Res.string.note_case_rounds, it.rounds),
-                    usual = format.valueText(it.usual),
-                    current = format.valueText(it.current),
-                )
-            },
-            agent?.let {
-                val name = catalog.agentName(it.agent)
-                NoteRow(
-                    lead = NoteLead.Agent(it.agent, name),
-                    name = name,
-                    sample = stringResource(Res.string.note_case_matches, it.matches),
-                    usual = format.valueText(it.usual),
-                    current = format.valueText(it.current),
-                )
-            },
-        )
-        if (rows.isNotEmpty()) {
-            // 헤드라인과 첫 줄 사이는 줄끼리보다 넓게 띄워 문장과 근거가 갈려 보이게 한다
-            Spacer(Modifier.height(10.dp))
-            NoteRows(rows)
-        }
-    }
+    val rows = listOfNotNull(
+        note.mix?.let { mixRow(it, catalog) },
+        note.mix?.steady?.let { steadyRow(note.moved, it, catalog) },
+        weapon?.let {
+            val name = catalog.weaponName(it.weapon)
+            NoteRow(
+                lead = NoteLead.Weapon(it.weapon, name),
+                name = name,
+                sample = stringResource(Res.string.note_case_rounds, it.rounds),
+                usual = format.valueText(it.usual),
+                current = format.valueText(it.current),
+            )
+        },
+        agent?.let {
+            val name = catalog.agentName(it.agent)
+            NoteRow(
+                lead = NoteLead.Agent(it.agent, name),
+                name = name,
+                sample = stringResource(Res.string.note_case_matches, it.matches),
+                usual = format.valueText(it.usual),
+                current = format.valueText(it.current),
+            )
+        },
+    )
+    if (rows.isEmpty()) return
+    Column(modifier = modifier.padding(horizontal = OvalitSpacing.gutter)) { NoteRows(rows) }
 }
+
+// 보이는 자릿수로 뺀 차이가 0이면 "0 올랐어요"가 되니 헤드라인도 근거 줄도 두지 않는다
+private val WeekNote.isShown: Boolean
+    get() = moved.metric.format.let { it.steps(moved.current) != it.steps(moved.usual) }
 
 /** 짚을 점 한 줄입니다. 앞에 무기나 요원 그림, 이름과 표본, 오른쪽에 "평소 → 이번" 숫자 순서입니다. */
 private class NoteRow(

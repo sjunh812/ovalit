@@ -5,6 +5,7 @@ import com.ovalit.core.data.FakeMatchRepository
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.Focus
+import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.OvalitError
 import com.ovalit.core.model.OvalitException
 import com.ovalit.core.model.Queue
@@ -19,6 +20,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -27,6 +29,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -34,6 +37,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -96,6 +100,47 @@ class MatchesViewModelTest {
         assertEquals(state.agents.map { counts.getValue(it) }, state.agents.map { counts.getValue(it) }.sortedDescending())
     }
 
+    // 데스매치와 건틀릿은 등수로 끝나 승패가 없다. 경기 줄도 그런 판에는 승패를 적지 않는다.
+    @Test
+    fun `날짜 머리 승패는 두 팀이 겨룬 경기만 세고 비긴 판은 따로 센다`() {
+        val won = MatchPreviewData.detailMatch
+        val day = MatchDay(
+            date = LocalDate(2026, 9, 24),
+            matches = listOf(
+                won,
+                won.copy(myTeamWon = false),
+                won.copy(myTeamWon = null),
+                MatchPreviewData.deathmatch,
+                MatchPreviewData.gauntlet,
+            ),
+        )
+
+        assertEquals(DayRecord(wins = 1, losses = 1, draws = 1), day.record)
+    }
+
+    @Test
+    fun `이기거나 진 판이 없는 날은 승패를 적지 않는다`() {
+        val date = LocalDate(2026, 9, 24)
+
+        assertNull(MatchDay(date, listOf(MatchPreviewData.deathmatch, MatchPreviewData.gauntlet)).record)
+        assertNull(MatchDay(date, listOf(MatchPreviewData.detailMatch.copy(myTeamWon = null))).record)
+    }
+
+    @Test
+    fun `날짜 머리 승패는 고른 큐와 필터에 맞는 경기만 센다`() = runTest {
+        val viewModel = viewModel()
+        val all = collect(viewModel)
+        val agent = all.agents.last()
+
+        viewModel.setFilter(MatchFilter(agent = agent))
+
+        val days = assertIs<MatchesUiState.Success>(viewModel.uiState.value).days
+        val decided = days.sumOf { (it.record?.wins ?: 0) + (it.record?.losses ?: 0) }
+        assertTrue(days.isNotEmpty() && days.all { day -> day.matches.all { it.myAgent == agent } })
+        assertEquals(days.sumOf { day -> day.matches.count { it.myTeamWon != null } }, decided)
+        assertTrue(decided < all.days.sumOf { day -> day.matches.count { it.myTeamWon != null } })
+    }
+
     @Test
     fun `당겨서 새로고침하면 방금 끝난 경기를 맨 위에 올린다`() = runTest {
         val viewModel = viewModel()
@@ -109,6 +154,41 @@ class MatchesViewModelTest {
         assertFalse(viewModel.isRefreshing.value)
         assertEquals(before + 1, state.days.sumOf { it.matches.size })
         assertEquals("fresh-1-0", state.days.first().matches.first().id.value)
+    }
+
+    @Test
+    fun `당겨서 새 경기를 받으면 받은 판 수를 화면 아래 한 줄로 넘긴다`() = runTest {
+        val viewModel = viewModel()
+        val refreshed = mutableListOf<Int>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.refreshed.collect { refreshed += it } }
+
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        assertEquals(listOf(1), refreshed)
+    }
+
+    // 앱이 다시 보여 받던 것에 붙으면 저장소는 0을 돌려준다. 그사이 목록에 들어온 경기는 당긴 사람에게도 새 경기다.
+    @Test
+    fun `받던 것에 붙어도 그사이 들어온 경기를 센다`() = runTest {
+        val first = MatchPreviewData.detailMatch
+        val stored = MutableStateFlow(listOf(first))
+        val joined = object : MatchRepository by FakeMatchRepository(ThursdayClock, scope = this) {
+            override fun observeMatches() = stored
+
+            override suspend fun refresh(): Int {
+                stored.update { it + first.copy(id = MatchId("joined-1")) + first.copy(id = MatchId("joined-2")) }
+                return 0
+            }
+        }
+        val viewModel = MatchesViewModel(joined, StubPreferences(UserPreferences.Default), FakeContentRepository(), ThursdayClock, Seoul)
+        val refreshed = mutableListOf<Int>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.refreshed.collect { refreshed += it } }
+
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        assertEquals(listOf(2), refreshed)
     }
 
     // 받는 중에 또 받으면 레이트 리밋을 두 배로 쓴다
@@ -132,12 +212,16 @@ class MatchesViewModelTest {
         }
         val viewModel = MatchesViewModel(failing, StubPreferences(UserPreferences.Default), FakeContentRepository(), ThursdayClock, Seoul)
         val notices = mutableListOf<FailureNotice>()
+        val refreshed = mutableListOf<Int>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.notices.toList(notices) }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.refreshed.collect { refreshed += it } }
 
         viewModel.refresh()
         advanceUntilIdle()
 
         assertEquals(listOf(FailureNotice(FailedAction.REFRESH, OvalitError.Offline)), notices)
+        // 실패하면 받은 결과 대신 까닭만 띄운다
+        assertEquals(emptyList(), refreshed)
         assertFalse(viewModel.isRefreshing.value)
     }
 
@@ -171,6 +255,10 @@ internal class StubPreferences(initial: UserPreferences = UserPreferences.Defaul
     override suspend fun setFocus(focus: Focus) = Unit
 
     override suspend fun setSeenProfileHint() = Unit
+
+    override suspend fun setSeenNotificationPrimer() = Unit
+
+    override suspend fun setAskedNotificationPermission() = Unit
 
     override suspend fun setAdFreeUntil(until: Instant) = Unit
 }

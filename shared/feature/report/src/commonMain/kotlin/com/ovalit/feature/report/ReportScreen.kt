@@ -53,6 +53,7 @@ import com.ovalit.core.ui.AdSlot
 import com.ovalit.core.ui.FailureNoticesEffect
 import com.ovalit.core.ui.NewMatchesLine
 import com.ovalit.core.ui.PlayerBadge
+import com.ovalit.core.ui.RefreshResultsEffect
 import com.ovalit.feature.report.component.DynamicMetricSection
 import com.ovalit.feature.report.component.DynamicMetricSheet
 import com.ovalit.feature.report.component.FixedMetricRow
@@ -72,6 +73,7 @@ import com.ovalit.feature.report.component.RivalPickerSheet
 import com.ovalit.feature.report.component.RivalSection
 import com.ovalit.feature.report.component.TrendEntry
 import com.ovalit.feature.report.component.TrendSheet
+import com.ovalit.feature.report.component.WeekNoteHeadline
 import com.ovalit.feature.report.component.WeekNoteLines
 import com.ovalit.feature.report.component.dynamicSubLines
 import com.ovalit.feature.report.component.fixedSubLines
@@ -106,6 +108,7 @@ fun ReportRoute(
     viewModel: ReportViewModel = koinViewModel(),
 ) {
     FailureNoticesEffect(viewModel.notices)
+    RefreshResultsEffect(viewModel.refreshed)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val badge by viewModel.badge.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
@@ -279,6 +282,9 @@ private fun ReportContent(
     val subLines = fixedSubLines(report.metrics, report.baseline, queueFilter.fixedMetrics) +
         if (dynamicShown) dynamicSubLines(report) else emptyList()
 
+    // 짚을 점은 기타 모드에 없다
+    val note = report.note?.takeIf { queueFilter.hasDynamicMetrics }
+
     // 한 프레임에 한 묶음씩 그린다. 무거운 칸(고정 칸, 달라진 점, 요원·무기)은 따로 묶는다.
     OvalitCard {
         OvalitStage {
@@ -286,6 +292,9 @@ private fun ReportContent(
             Spacer(Modifier.height(OvalitSpacing.md))
             RecordStrip(report)
         }
+        // 짚을 점 헤드라인은 그 주에 무엇이 달라졌는지가 숫자보다 먼저 읽히게 승패 칸 바로 밑, 고정 칸 위에 둔다(docs/screens.md).
+        // 보이는 차이가 0이면 아무것도 그리지 않으니 위 간격도 그 안에 준다.
+        note?.let { OvalitStage { WeekNoteHeadline(note = it, modifier = Modifier.padding(top = 18.dp)) } }
         Spacer(Modifier.height(OvalitSpacing.lg))
         OvalitStage {
             FixedMetricRow(
@@ -297,14 +306,9 @@ private fun ReportContent(
             )
             FixedMetricSummary(baseline = report.baseline)
         }
-        // 짚을 점은 바로 위 숫자를 풀어 말하는 문장이라 고정 칸과 한 카드에 둔다(docs/screens.md)
-        if (queueFilter.hasDynamicMetrics) {
-            // 보이는 차이가 0이면 WeekNoteLines가 아무것도 그리지 않으니 위 간격도 그 안에 준다
-            report.note?.let { note ->
-                OvalitStage { WeekNoteLines(note = note, catalog = catalog, modifier = Modifier.padding(top = 18.dp)) }
-            }
-        }
-        // 흐름 입구는 짚을 점 뒤에 둔다. 앞에 두면 숫자와 그 설명 사이가 벌어진다.
+        // 헤드라인의 근거인 무기와 요원 줄은 바로 위 숫자와 같이 읽히게 고정 칸 밑에 둔다
+        note?.let { OvalitStage { WeekNoteLines(note = it, catalog = catalog, modifier = Modifier.padding(top = 18.dp)) } }
+        // 흐름 입구는 짚을 점 줄 뒤에 둔다. 앞에 두면 숫자와 그 근거 사이가 벌어진다.
         OvalitStage {
             TrendEntry(
                 report = report,

@@ -24,6 +24,8 @@
     <string name="import_loading">試合を読み込んでいます</string>
     <string name="import_count">%1$d / %2$d</string>
     <string name="import_background">アプリを閉じても読み込みは続きます。読み込みが終わったら通知でお知らせします。</string>
+    <string name="import_background_silent">アプリを閉じても読み込みは続きます。</string>
+    <string name="import_notify_when_done">読み込みが終わったら通知を受け取る</string>
     <string name="import_done">%1$d試合を読み込みました</string>
     <string name="import_done_none">直近8週間にプレイした試合がありません</string>
     <string name="import_open_report">レポートを見る</string>

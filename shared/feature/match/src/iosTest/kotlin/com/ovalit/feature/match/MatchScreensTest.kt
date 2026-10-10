@@ -1,8 +1,14 @@
 package com.ovalit.feature.match
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasStateDescription
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
@@ -13,12 +19,15 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.PlayerId
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlinx.datetime.LocalDate
 
 @OptIn(ExperimentalTestApi::class)
 class MatchScreensTest {
@@ -33,6 +42,52 @@ class MatchScreensTest {
         onNodeWithText("ACS 237").performClick()
 
         assertEquals(MatchId("ascent"), opened)
+    }
+
+    // 날짜 머리와 같은 글자로 오른쪽 끝에 둔다
+    @Test
+    fun `날짜 머리 오른쪽에 그날 승패를 적는다`() = runComposeUiTest {
+        setContent { Themed { MatchesScreen(MatchPreviewData.matches, {}, {}, {}) } }
+
+        val today = onNodeWithText("오늘", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val record = onNodeWithText("1승 1패", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        assertEquals(today.top, record.top)
+        assertTrue(record.left > today.right)
+        onNodeWithText("2승 0패", useUnmergedTree = true).assertExists()
+        // 화면 읽기 프로그램이 날짜와 승패를 한 머리로 읽는다
+        onNode(hasText("오늘") and hasText("1승 1패")).assertExists()
+    }
+
+    @Test
+    fun `비긴 판이 있으면 승패 뒤에 무를 붙이고 등수로 끝난 경기는 세지 않는다`() = runComposeUiTest {
+        val won = MatchPreviewData.detailMatch
+        val days = listOf(
+            MatchDay(LocalDate(2026, 9, 24), listOf(won, won.copy(id = MatchId("draw"), myTeamWon = null), MatchPreviewData.deathmatch)),
+            MatchDay(LocalDate(2026, 9, 23), listOf(MatchPreviewData.gauntlet)),
+        )
+        setContent { Themed { MatchesScreen(MatchPreviewData.matches.copy(days = days), {}, {}, {}) } }
+
+        onNodeWithText("1승 0패 1무", useUnmergedTree = true).assertExists()
+        onNode(hasText("어제") and hasText("승", substring = true)).assertDoesNotExist()
+    }
+
+    // 좁은 화면에서 글자를 키우면 한 줄에 안 들어간다. 날짜를 꺾지 않고 승패를 다음 줄로 내린다.
+    @Test
+    fun `날짜 머리가 한 줄에 안 들어가면 승패를 다음 줄로 내린다`() = runComposeUiTest {
+        val day = MatchDay(LocalDate(2026, 9, 20), listOf(MatchPreviewData.detailMatch))
+        setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale = 2f)) {
+                Themed {
+                    Box(Modifier.width(240.dp)) { MatchesScreen(MatchPreviewData.matches.copy(days = listOf(day)), {}, {}, {}) }
+                }
+            }
+        }
+
+        val date = onNodeWithText("9월 20일 일요일", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val record = onNodeWithText("1승 0패", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        assertTrue(record.top >= date.bottom, "승패가 날짜와 같은 줄에 겹쳐 있다")
+        assertTrue(record.right <= 240.dp, "승패가 화면 밖으로 넘친다")
     }
 
     // 스코어 색만으로는 화면 읽기 프로그램 사용자가 이겼는지 모른다

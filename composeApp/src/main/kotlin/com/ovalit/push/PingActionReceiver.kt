@@ -64,7 +64,7 @@ class PingActionReceiver : BroadcastReceiver(), KoinComponent {
     }
 
     companion object {
-        // 리시버 객체는 onReceive가 끝나면 버려지니 범위는 여기 둔다. 프로세스는 goAsync가 붙잡는다.
+        // 리시버 객체는 onReceive가 끝나면 버려지니 스코프는 여기 둔다. 프로세스는 goAsync가 붙잡는다.
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
         fun reply(context: Context, pingId: String, answer: String): PendingIntent = broadcast(

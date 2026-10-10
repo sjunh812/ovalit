@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-/** 주간 리포트 토픽입니다. 서버 `src/scheduled.ts`의 이름과 같아야 합니다. */
+/** 서버 `src/scheduled.ts`의 토픽 이름과 같아야 합니다. */
 internal const val WEEKLY_REPORT_TOPIC = "weekly_report"
 
 /** FCM 토큰을 서버에 맡기고 주간 리포트 토픽을 구독합니다. Firebase 값이 없으면 아무것도 하지 않고 푸시 없이 돕니다. */
@@ -28,7 +28,6 @@ internal object OvalitPush {
         preferences: UserPreferencesRepository,
         push: PushRepository,
     ) {
-        // Firebase는 OvalitFirebase가 앱 시작 맨 앞에서 띄운다
         if (!enabled) return
         val messaging = FirebaseMessaging.getInstance()
         messaging.isAutoInitEnabled = true

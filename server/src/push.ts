@@ -56,8 +56,8 @@ export function pushFrom(env: Env, upstream: typeof fetch): Push | undefined {
 }
 
 /**
- * 응답을 기다리게 하지 않고 뒤에서 보냅니다. 알림이 실패해도 요청은 그대로 성공합니다. `FCM_SERVICE_ACCOUNT`가 없으면
- * 토큰도 읽지 않습니다.
+ * 응답을 기다리게 하지 않고 뒤에서 보냅니다. 알림이 실패해도 요청은 그대로 성공합니다.
+ * `FCM_SERVICE_ACCOUNT`가 없으면 토큰도 읽지 않습니다.
  */
 export function notify(c: Context<AppEnv>, notices: Notice[]): void {
   if (notices.length === 0) return;
@@ -241,9 +241,9 @@ function pemToDer(pem: string): Uint8Array {
 }
 
 /**
- * 다시 보내도 안 닿는 토큰인지 봅니다. 앱을 지웠거나 토큰이 바뀌면 404 `UNREGISTERED`가 옵니다. 형식이 틀린 토큰은
- * 400 `INVALID_ARGUMENT`인데, 우리가 보낸 내용이 틀려도 같은 코드가 와서 그때는 BadRequest가 토큰 말고 다른 필드를
- * 짚습니다. 그런 응답에는 토큰을 지우지 않습니다. 잘못 보낸 알림 하나에 모두의 토큰이 지워지면 안 됩니다.
+ * 다시 보내도 안 닿는 토큰인지 봅니다. 앱을 지웠거나 토큰이 바뀌면 404 `UNREGISTERED`가 옵니다.
+ * 형식이 틀린 토큰은 400 `INVALID_ARGUMENT`인데, 우리가 보낸 내용이 틀려도 같은 코드가 와서 그때는 BadRequest가 토큰 말고 다른 필드를 짚습니다.
+ * 그런 응답에는 토큰을 지우지 않습니다. 잘못 보낸 알림 하나에 모두의 토큰이 지워지면 안 됩니다.
  */
 async function isDeadToken(res: Response): Promise<boolean> {
   if (res.ok) {

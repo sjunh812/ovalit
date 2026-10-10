@@ -7,8 +7,8 @@ type Html = HtmlEscapedString | Promise<HtmlEscapedString>;
 export const ANDROID_PACKAGE = "com.ovalit";
 
 /**
- * 같은 주소를 우리 패키지에만 넘기는 intent 주소입니다. 앱이 없으면 아무 데도 열리지 않습니다. 커스텀 스킴(`ovalit://`)은
- * 다른 앱이 같은 이름을 등록해 가로챌 수 있어 쓰지 않습니다(docs/backend.md).
+ * 같은 주소를 우리 패키지에만 넘기는 intent 주소입니다. 앱이 없으면 아무 데도 열리지 않습니다.
+ * 커스텀 스킴(`ovalit://`)은 다른 앱이 같은 이름을 등록해 가로챌 수 있어 쓰지 않습니다(docs/backend.md).
  *
  * `pathAndQuery`는 `/`로 시작하고 이미 모양을 확인한 값만 넘깁니다.
  */
@@ -18,8 +18,9 @@ export function appIntent(pageUrl: URL, pathAndQuery: string): string {
 }
 
 /**
- * 앱이 안 열린 기기에서 브라우저에 뜨는 작은 페이지입니다(`/auth/done`, `/i/:code`). 밖에서 불러오는 것이 없고 스크립트도
- * 없습니다. `main`은 제목 밑에 들어갈 본문이고, `head`에는 미리보기 태그처럼 머리에 더할 것을 넣습니다.
+ * 앱이 안 열린 기기에서 브라우저에 뜨는 작은 페이지입니다(`/auth/done`, `/i/:code`).
+ * 밖에서 불러오는 것이 없고 스크립트도 없습니다.
+ * `main`은 제목 밑에 들어갈 본문이고, `head`에는 미리보기 태그처럼 머리에 더할 것을 넣습니다.
  */
 export function appPage(c: Context, page: { title: string; head?: Html; main: Html }): Response | Promise<Response> {
   // 다른 사이트가 이 페이지를 iframe에 넣고 "앱으로 돌아가기"를 누르게 꾸밀 수 없게 막는다.

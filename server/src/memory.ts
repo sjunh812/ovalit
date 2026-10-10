@@ -1,9 +1,9 @@
 /**
- * isolate 하나의 메모리에 두는 캐시입니다. isolate가 내려가거나 요청이 다른 isolate로 가면 비어 있으니, 없을 수
- * 있다고 보고 씁니다.
+ * isolate 하나의 메모리에 두는 캐시입니다.
+ * isolate가 내려가거나 요청이 다른 isolate로 가면 비어 있으니, 없을 수 있다고 보고 씁니다.
  *
- * 오래 안 꺼낸 것부터 버립니다. 크기는 글자당 2바이트로 셉니다. V8은 Latin-1 밖의 글자가 하나라도 섞인 문자열을
- * 통째로 글자당 2바이트로 들고 있고, 한국 서버 경기에는 대개 한글 이름이 섞여 있습니다.
+ * 오래 안 꺼낸 것부터 버립니다. 크기는 글자당 2바이트로 셉니다.
+ * V8은 Latin-1 밖의 글자가 하나라도 섞인 문자열을 통째로 글자당 2바이트로 들고 있고, 한국 서버 경기에는 대개 한글 이름이 섞여 있습니다.
  */
 export class MemoryCache {
   private readonly entries = new Map<string, { body: string; expiresAt: number; bytes: number }>();
@@ -55,8 +55,9 @@ export class MemoryCache {
 }
 
 /**
- * 키마다 창 하나에 `limit`번까지 받습니다. 창은 그 키의 첫 요청에서 시작해 `windowMs` 뒤에 끝나므로, `limit`이 1이면
- * 최소 간격이 됩니다. isolate마다 따로 세니 여러 isolate로 나뉘어 들어온 요청은 한도를 넘길 수 있습니다.
+ * 키마다 창 하나에 `limit`번까지 받습니다.
+ * 창은 그 키의 첫 요청에서 시작해 `windowMs` 뒤에 끝나므로, `limit`이 1이면 최소 간격이 됩니다.
+ * isolate마다 따로 세니 여러 isolate로 나뉘어 들어온 요청은 한도를 넘길 수 있습니다.
  */
 export class Quota {
   private readonly windows = new Map<string, { endsAt: number; used: number }>();

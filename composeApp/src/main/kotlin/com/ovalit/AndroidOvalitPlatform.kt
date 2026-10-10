@@ -69,7 +69,7 @@ internal class AndroidOvalitPlatform(private val context: Context) : OvalitPlatf
     @Composable
     override fun HomeBackHandler(toast: OvalitToastState) = ExitOnSecondBack(toast)
 
-    // 휴대폰 설정에서 켜고 돌아오면 바로 맞게 화면으로 돌아올 때마다 다시 본다
+    // 휴대폰 설정에서 켜고 돌아와도 바로 맞도록 화면으로 돌아올 때마다 다시 읽는다
     @Composable
     override fun rememberNotificationPermission(): NotificationPermission {
         var enabled by remember { mutableStateOf(NotificationManagerCompat.from(context).areNotificationsEnabled()) }
@@ -98,7 +98,7 @@ internal class AndroidOvalitPlatform(private val context: Context) : OvalitPlatf
 
     override fun clearPingNotification(pingId: String) = PingNotifications.clear(context, pingId)
 
-    // 휴대폰 설정에서 바꾸고 돌아오면 바로 맞게 화면으로 돌아올 때마다 다시 본다
+    // 휴대폰 설정에서 바꾸고 돌아와도 바로 맞도록 화면으로 돌아올 때마다 다시 읽는다
     @Composable
     override fun rememberNotificationBlocks(): NotificationBlocks {
         var blocks by remember { mutableStateOf(notificationBlocks(context)) }
@@ -133,8 +133,8 @@ private fun notificationBlocks(context: Context): NotificationBlocks {
 }
 
 /**
- * 토스처럼 홈에서 뒤로 가기를 한 번 누르면 안내만 띄우고, 안내가 떠 있는 동안 한 번 더 누르면 앱을 닫습니다. 한 번에 닫히면 위로
- * 스크롤하려다 실수로 닫히기 쉽습니다.
+ * 토스처럼 홈에서 뒤로 가기를 한 번 누르면 안내만 띄우고, 안내가 떠 있는 동안 한 번 더 누르면 앱을 닫습니다.
+ * 한 번에 닫히면 위로 스크롤하려다 실수로 닫히기 쉽습니다.
  */
 @Composable
 private fun ExitOnSecondBack(toast: OvalitToastState) {
@@ -143,8 +143,8 @@ private fun ExitOnSecondBack(toast: OvalitToastState) {
     val activity = LocalActivity.current
     val scope = rememberCoroutineScope()
     BackHandler {
-        // 두 번째는 시스템에 넘기지 않고 직접 닫는다. 안드로이드 12부터 시스템 뒤로 가기는 첫 화면을 닫지 않고 앱을 뒤로 보내기만
-        // 해서, 다시 열면 홈이 그대로 떠 있다.
+        // 두 번째는 시스템에 넘기지 않고 직접 닫는다.
+        // 안드로이드 12부터 시스템 뒤로 가기는 첫 화면을 닫지 않고 앱을 뒤로 보내기만 해서, 다시 열면 홈이 그대로 떠 있다.
         if (armed) {
             activity?.finish()
             return@BackHandler
@@ -162,9 +162,10 @@ private fun ExitOnSecondBack(toast: OvalitToastState) {
 
 private val ExitWindow = 2.seconds
 
-// 시스템 권한 창을 띄울 수 있는지다. 안드로이드 12까지는 권한 창이 없고, 권한이 있는데 알림이 꺼졌으면 사용자가 설정에서 끈
-// 것이라 둘 다 설정 화면에서만 켤 수 있다. 두 번 거절하면 시스템이 창을 더는 띄우지 않고 바로 거절로 돌려준다. 그때 다시 띄우면
-// 아무 일도 일어나지 않아서, 띄운 적이 있는데 다시 물어도 된다는 신호(rationale)가 없으면 설정 화면을 연다.
+// 시스템 권한 창을 띄울 수 있는지다.
+// 안드로이드 12까지는 권한 창이 없고, 권한이 있는데 알림이 꺼졌으면 사용자가 설정에서 끈 것이라 둘 다 설정 화면에서만 켤 수 있다.
+// 두 번 거절하면 시스템이 창을 더는 띄우지 않고 바로 거절로 돌려준다.
+// 그때 다시 띄우면 아무 일도 일어나지 않아서, 띄운 적이 있는데 다시 물어도 된다는 신호(rationale)가 없으면 설정 화면을 연다.
 private fun Context.canAskPermission(activity: Activity?, askedBefore: Boolean): Boolean {
     if (Build.VERSION.SDK_INT < 33) return false
     if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) return false

@@ -10,8 +10,8 @@ const CLOCK_SKEW_MS = 60 * 1000;
 // challenge.만든시각.임의값.서명이다. 시각은 epoch ms를 36진수로 적었다. 모두 주소에 그대로 실리는 글자다.
 const STATE = /^([A-Za-z0-9_-]{43})\.([0-9a-z]{1,12})\.([A-Za-z0-9_-]{16})\.([A-Za-z0-9_-]{43})$/;
 
-// 같은 state가 다시 오면 막는다. isolate 메모리라 다른 isolate로 간 재사용은 못 막지만, 그때도 Riot 인가 코드는 한 번만
-// 쓸 수 있어 로그인 코드가 두 번 나오지 않는다.
+// 같은 state가 다시 오면 막는다.
+// isolate 메모리라 다른 isolate로 간 재사용은 못 막지만, 그때도 Riot 인가 코드는 한 번만 쓸 수 있어 로그인 코드가 두 번 나오지 않는다.
 const used = new MemoryCache({ maxEntries: 10_000, maxBytes: Number.POSITIVE_INFINITY });
 let cachedKey: { secret: string; key: Promise<CryptoKey> } | undefined;
 
@@ -26,8 +26,8 @@ export function stateSecret(value: string | undefined): string | undefined {
 }
 
 /**
- * 앱이 넘긴 challenge를 담아 서명한 state를 만듭니다. D1에 적지 않고 콜백이 서명으로 확인합니다. 로그인 시작은 세션
- * 없이 열려 있어서, 시작마다 D1에 쓰면 누구나 되풀이해 불러 하루 쓰기 한도를 다 쓰게 할 수 있습니다.
+ * 앱이 넘긴 challenge를 담아 서명한 state를 만듭니다. D1에 적지 않고 콜백이 서명으로 확인합니다.
+ * 로그인 시작은 세션 없이 열려 있어서, 시작마다 D1에 쓰면 누구나 되풀이해 불러 하루 쓰기 한도를 다 쓰게 할 수 있습니다.
  */
 export async function signState(secret: string, challenge: string, now: number): Promise<string> {
   const payload = `${challenge}.${now.toString(36)}.${randomToken(12)}`;

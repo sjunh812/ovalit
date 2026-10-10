@@ -205,8 +205,9 @@ pings.post("/:id/reply", async (c) => {
 });
 
 /**
- * 호스트가 시작 시각을 옮깁니다. 그 시각을 제안한 친구는 가기로 한 것으로 바꾸고, 나머지는 가기로 했던 친구까지 모두
- * 다시 묻습니다. 시각이 바뀌면 전에 한 대답이 그대로 맞는지 알 수 없습니다.
+ * 호스트가 시작 시각을 옮깁니다.
+ * 그 시각을 제안한 친구는 가기로 한 것으로 바꾸고, 나머지는 가기로 했던 친구까지 모두 다시 묻습니다.
+ * 시각이 바뀌면 전에 한 대답이 그대로 맞는지 알 수 없습니다.
  */
 pings.post("/:id/time", async (c) => {
   const id = pingId(c.req.param("id"));
@@ -252,8 +253,9 @@ pings.post("/:id/time", async (c) => {
 });
 
 /**
- * 호스트가 친구를 더 부릅니다. 누가 못 간다고 했거나 깜빡 빠뜨린 친구를 나중에 더할 때 씁니다. 못 간다고 한 사람은 자리를
- * 비운 것으로 쳐서, 그 사람을 뺀 인원이 넷을 넘지 않을 때까지 받습니다. 더한 친구만 새로 불렸다는 알림을 받습니다.
+ * 호스트가 친구를 더 부릅니다. 누가 못 간다고 했거나 깜빡 빠뜨린 친구를 나중에 더할 때 씁니다.
+ * 못 간다고 한 사람은 자리를 비운 것으로 쳐서, 그 사람을 뺀 인원이 넷을 넘지 않을 때까지 받습니다.
+ * 더한 친구만 새로 불렸다는 알림을 받습니다.
  */
 pings.post("/:id/members", async (c) => {
   const id = pingId(c.req.param("id"));
@@ -289,8 +291,8 @@ pings.post("/:id/members", async (c) => {
   if (friends.some((friend) => friend.invited)) throw new ApiError(409, "already_invited");
   const added = puuids.map((puuid) => friends.find((friend) => friend.puuid === puuid)!);
 
-  // 자리와 살아 있는지를 INSERT 조건으로 다시 건다. 두 번 눌러 요청이 겹쳐도 넷을 넘지 않는다. 자리는 앞사람 뒤로 이어
-  // 붙인다. 이미 쓴 자리 번호는 anon-N이라 다시 쓰지 않는다.
+  // 자리와 살아 있는지를 INSERT 조건으로 다시 건다. 두 번 눌러 요청이 겹쳐도 넷을 넘지 않는다.
+  // 자리는 앞사람 뒤로 이어 붙인다. 이미 쓴 자리 번호는 anon-N이라 다시 쓰지 않는다.
   const inserted = await db
     .prepare(
       `INSERT INTO ping_members (ping_id, user_id, position, updated_at)
@@ -396,9 +398,9 @@ async function pingById(db: D1Database, id: string, viewerId: number): Promise<P
 }
 
 /**
- * 같이 불린 사람 중 보는 사람과 서로 수락한 친구가 아닌 사람은 PUUID를 `anon-N`으로 바꾸고 태그를 비웁니다. N은 그 사람이
- * 불린 순서라 같은 ㅇㅂㅇ 안에서는 늘 같고, 다른 ㅇㅂㅇ의 같은 이름과는 이어지지 않습니다. 이름과 대답은 그대로 둡니다.
- * 호스트와 나 자신은 가리지 않습니다.
+ * 같이 불린 사람 중 보는 사람과 서로 수락한 친구가 아닌 사람은 PUUID를 `anon-N`으로 바꾸고 태그를 비웁니다.
+ * N은 그 사람이 불린 순서라 같은 ㅇㅂㅇ 안에서는 늘 같고, 다른 ㅇㅂㅇ의 같은 이름과는 이어지지 않습니다.
+ * 이름과 대답은 그대로 둡니다. 호스트와 나 자신은 가리지 않습니다.
  */
 function toPings(rows: PingRow[], viewerId: number): Ping[] {
   const byId = new Map<string, Ping>();

@@ -25,8 +25,8 @@ val localProperties = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
 
-// local.properties의 값이다. 키만 적고 값을 비워 둔 것도 없는 것으로 친다. 빈 admob.appId가 그대로 들어가면 광고 SDK가 앱
-// 시작 때 죽는다.
+// 키만 적고 값을 비워 둔 것도 없는 것으로 친다.
+// 빈 admob.appId가 그대로 들어가면 광고 SDK가 앱 시작 때 죽는다.
 fun localProperty(key: String): String? = localProperties.getProperty(key)?.trim()?.takeIf { it.isNotEmpty() }
 
 android {
@@ -36,23 +36,24 @@ android {
         applicationId = "com.ovalit"
         versionCode = 1
         versionName = "0.1.0"
-        // RSO 로그인을 마치면 서버가 돌려보내는 App Link의 호스트다(server/README.md). 비밀값은 아니지만 배포 주소가
-        // 정해지기 전이라 local.properties에서 받는다. 없으면 아무 데도 이어지지 않는 예약 도메인을 쓴다.
+        // RSO 로그인을 마치면 서버가 돌려보내는 App Link의 호스트다(server/README.md).
+        // 배포 주소가 정해지기 전이라 local.properties에서 받고, 없으면 아무 데도 이어지지 않는 예약 도메인을 쓴다.
         manifestPlaceholders["ovalitServerHost"] = localProperty("ovalit.server.host") ?: "ovalit.invalid"
         buildConfigField("boolean", "FIREBASE_ENABLED", firebaseConfigured.toString())
-        // 광고 단위 ID가 없으면 광고를 요청하지 않는다. 제품이 승인되기 전에는 수익을 낼 수 없어 실제 ID를 넣지 않는다
-        // (CLAUDE.md 지켜야 할 선). SDK는 앱 ID가 없으면 시작하지 않아서 그때는 Google 테스트 앱 ID를 넣는다.
+        // 광고 단위 ID가 없으면 광고를 요청하지 않는다.
+        // 제품이 승인되기 전에는 수익을 낼 수 없어 실제 ID를 넣지 않는다(CLAUDE.md 지켜야 할 선).
+        // SDK는 앱 ID가 없으면 시작하지 않아서 그때는 Google 테스트 앱 ID를 넣는다.
         manifestPlaceholders["admobAppId"] = localProperty("admob.appId") ?: ADMOB_TEST_APP_ID
         buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", "\"${localProperty("admob.nativeUnitId").orEmpty()}\"")
         // "24시간 광고 없이 보기"에 쓰는 보상형 광고다. 없으면 광고 줄의 ×가 그 광고만 바로 닫고 설정 줄이 없다.
         buildConfigField("String", "ADMOB_REWARDED_UNIT_ID", "\"${localProperty("admob.rewardedUnitId").orEmpty()}\"")
-        // 설정의 "피드백 보내기"가 여는 메일의 받는 주소다. 개인 주소를 저장소에 넣지 않으려고 local.properties에서 받고, 없으면
-        // 그 줄이 없다.
+        // 설정의 "피드백 보내기"가 여는 메일의 받는 주소다.
+        // 개인 주소를 저장소에 넣지 않으려고 local.properties에서 받고, 없으면 그 줄이 없다.
         buildConfigField("String", "FEEDBACK_EMAIL", "\"${localProperty("ovalit.feedback.email").orEmpty()}\"")
     }
 
-    // 안드로이드 13부터 앱 설정에서 앱만 따로 일본어로 고를 수 있게 지원 언어 목록을 만든다. 기본 values는 한국어다
-    // (src/main/res/resources.properties).
+    // 안드로이드 13부터 앱 설정에서 앱만 따로 일본어로 고를 수 있게 지원 언어 목록을 만든다.
+    // 기본 values는 한국어다(src/main/res/resources.properties).
     androidResources {
         generateLocaleConfig = true
     }
@@ -81,8 +82,9 @@ android {
                 "proguard-rules.pro",
             )
         }
-        // 릴리스처럼 줄이고 최적화하되 디버그 키로 서명한다. 개발 기기에서 사용자가 느낄 속도를 볼 때 Build Variants에서
-        // 고른다. 디버그 빌드는 Compose가 몇 배 느려서 릴리스에 없는 끊김이 보인다.
+        // 릴리스처럼 줄이고 최적화하되 디버그 키로 서명한다.
+        // 개발 기기에서 사용자가 느낄 속도를 볼 때 Build Variants에서 고른다.
+        // 디버그 빌드는 Compose가 몇 배 느려서 릴리스에 없는 끊김이 보인다.
         create("benchmark") {
             initWith(getByName("release"))
             signingConfig = signingConfigs.getByName("debug")
@@ -100,8 +102,8 @@ dependencies {
     implementation(projects.shared.core.data)
     implementation(projects.shared.core.designsystem)
     implementation(projects.shared.core.ui)
-    // 기능 모듈과 그 Koin 모듈은 shared/app을 거쳐 들어온다. settings만 OvalitPlatform이 돌려주는 NotificationBlocks를
-    // 여기서 만들어서 직접 건다.
+    // 기능 모듈과 그 Koin 모듈은 shared/app을 거쳐 들어온다.
+    // settings만 OvalitPlatform이 돌려주는 NotificationBlocks를 여기서 만들어서 직접 건다.
     implementation(projects.shared.feature.settings)
 
     implementation(libs.compose.runtime)

@@ -16,8 +16,8 @@ import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
 
 // 화면 전환은 iOS 내비게이션을 따른다(docs/design.md).
-// 아래 화면은 불투명도를 낮춰 NavDisplay 뒤에 깐 검은 바탕이 비치게 해서 어둡게 한다. 그래서 위 화면은 늘 불투명해야 하고
-// 크로스페이드는 쓰지 않는다. 쓰면 전환 가운데서 검은 바탕이 드러난다.
+// 아래 화면은 불투명도를 낮춰 NavDisplay 뒤에 깐 검은 바탕이 비치게 해서 어둡게 한다.
+// 그래서 위 화면은 늘 불투명해야 하고 크로스페이드는 쓰지 않는다. 쓰면 전환 가운데서 검은 바탕이 드러난다.
 
 private const val SLIDE_MILLIS = 300
 private const val PARALLAX_DIVISOR = 4
@@ -29,10 +29,8 @@ private val SlideEasing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
 private const val LIGHT_DIMMED_ALPHA = 0.9f
 private const val DARK_DIMMED_ALPHA = 0.6f
 
-/** 밀려난 아래 화면의 불투명도입니다. */
 internal fun dimmedAlpha(isDark: Boolean): Float = if (isDark) DARK_DIMMED_ALPHA else LIGHT_DIMMED_ALPHA
 
-/** 새 화면을 쌓을 때의 전환입니다. */
 internal fun <T : Any> pushTransition(dimmedAlpha: Float): AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform = {
     val spec = tween<Float>(SLIDE_MILLIS, easing = SlideEasing)
     val offset = tween<IntOffset>(SLIDE_MILLIS, easing = SlideEasing)

@@ -19,8 +19,9 @@ riot.get("/matches/:matchId", async (c) => {
 });
 
 /**
- * 스코어보드에서 누구에게 친구 요청을 보낼 수 있는지 알려줍니다. 내가 뛴 경기의 다른 플레이어 중 앱에 연동한 사람과
- * 나와의 관계만 돌려줍니다. 앱을 쓰는지는 같이 뛴 사람에게만 알려줘서 내가 없는 경기는 403입니다.
+ * 스코어보드에서 누구에게 친구 요청을 보낼 수 있는지 알려줍니다.
+ * 내가 뛴 경기의 다른 플레이어 중 앱에 연동한 사람과 나와의 관계만 돌려줍니다.
+ * 앱을 쓰는지는 같이 뛴 사람에게만 알려줘서 내가 없는 경기는 403입니다.
  */
 riot.get("/matches/:matchId/app-users", async (c) => {
   const players = await riotFor(c).participants(validate.matchId(c.req.param("matchId")));

@@ -15,11 +15,11 @@ import androidx.navigation3.runtime.NavKey
 import androidx.savedstate.compose.LocalSavedStateRegistryOwner
 
 /**
- * 탭을 바꿔도 탭 화면의 스크롤과 ViewModel을 남겨 두는 장식입니다. 탭을 고르면 앞 탭이 스택에서 빠지는데, Navigation 3 기본
- * 장식은 빠질 때 둘 다 지웁니다.
+ * 탭을 바꿔도 탭 화면의 스크롤과 ViewModel을 남겨 두는 장식입니다.
+ * 탭을 고르면 앞 탭이 스택에서 빠지는데, Navigation 3 기본 장식은 빠질 때 둘 다 지웁니다.
  *
- * 탭 화면은 홈이 스택에 있는 동안 남겨 두고, 연동을 해제해 홈까지 빠지면 [clearKept]로 지웁니다. 탭이 아닌 화면은 기본 장식처럼
- * 빠질 때 지웁니다. 저장한 상태와 ViewModel은 함께 지워야 해서 한 장식에 둡니다.
+ * 탭 화면은 홈이 스택에 있는 동안 남겨 두고, 연동을 해제해 홈까지 빠지면 [clearKept]로 지웁니다.
+ * 탭이 아닌 화면은 기본 장식처럼 빠질 때 지웁니다. 저장한 상태와 ViewModel은 함께 지워야 해서 한 장식에 둡니다.
  */
 internal class TabStateDecorator(
     private val holder: SaveableStateHolder,

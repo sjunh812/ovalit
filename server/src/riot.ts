@@ -17,9 +17,10 @@ const STATUS_TTL = 60;
 const MISSING_TTL = 10 * 60;
 const MB = 1024 * 1024;
 
-// isolate가 살아 있는 동안 요청끼리 나눠 쓴다. isolate 메모리는 128MB라 캐시는 모두 합쳐 40MB 안쪽으로 두고 나머지는
-// 요청을 처리하는 데 남긴다. 경기 원문은 한 판에 800KB 안팎이라 글자당 2바이트로 세도 15판쯤 담긴다. 가린 친구 경기도
-// matches에 같이 담아 원문과 함께 오래 안 꺼낸 것부터 버린다.
+// isolate가 살아 있는 동안 요청끼리 나눠 쓴다.
+// isolate 메모리는 128MB라 캐시는 모두 합쳐 40MB 안쪽으로 두고 나머지는 요청을 처리하는 데 남긴다.
+// 경기 원문은 한 판에 800KB 안팎이라 글자당 2바이트로 세도 15판쯤 담긴다.
+// 가린 친구 경기도 matches에 같이 담아 원문과 함께 오래 안 꺼낸 것부터 버린다.
 const memory = {
   content: new MemoryCache({ maxEntries: 1, maxBytes: 10 * MB }),
   status: new MemoryCache({ maxEntries: 1, maxBytes: 1 * MB }),
@@ -37,8 +38,9 @@ const quotas = {
   matchDetails: new Quota(120, 60_000),
 };
 
-// 지금 Riot에서 받고 있는 경로다. 첫 수집과 경기 상세가 같은 경기를 거의 같이 부르거나 친구 여럿이 같은 경기를 열면
-// Riot에는 한 번만 간다. 끝나면 바로 빼니 오래 들고 있지 않는다.
+// 지금 Riot에서 받고 있는 경로다.
+// 첫 수집과 경기 상세가 같은 경기를 거의 같이 부르거나 친구 여럿이 같은 경기를 열면 Riot에는 한 번만 간다.
+// 끝나면 바로 빼니 오래 들고 있지 않는다.
 const inflight = new Map<string, Promise<string>>();
 
 /** 테스트가 메모리 캐시를 비우고 D1이나 Cache API만으로 도는지 볼 때 씁니다. */
@@ -88,9 +90,10 @@ export class RiotMatch {
 }
 
 /**
- * Riot 호출과 캐시를 한곳에 모았습니다. isolate 메모리, Cache API, Riot 순서로 찾습니다. 메모리는 isolate가 내려가거나
- * 요청이 다른 isolate로 가면 비어 있고, Cache API는 사용자 정의 도메인에서만 담깁니다(`*.workers.dev`에서는 아무것도
- * 담기지 않습니다). 그래서 둘 다 비어 있을 수 있습니다. 경기 참가자만 필요할 때는 D1의 `match_players`를 먼저 봅니다.
+ * Riot 호출과 캐시를 한곳에 모았습니다. isolate 메모리, Cache API, Riot 순서로 찾습니다.
+ * 메모리는 isolate가 내려가거나 요청이 다른 isolate로 가면 비어 있고,
+ * Cache API는 사용자 정의 도메인에서만 담깁니다(`*.workers.dev`에서는 아무것도 담기지 않습니다).
+ * 그래서 둘 다 비어 있을 수 있습니다. 경기 참가자만 필요할 때는 D1의 `match_players`를 먼저 봅니다.
  */
 export class Riot {
   constructor(
@@ -122,8 +125,8 @@ export class Riot {
   }
 
   /**
-   * `puuid`가 뛴 경기일 때만 경기를 받고, 아니면 `undefined`입니다. D1에 적어 둔 경기면 거기서 먼저
-   * 걸러서 남의 경기를 Riot에 묻지 않습니다.
+   * `puuid`가 뛴 경기일 때만 경기를 받고, 아니면 `undefined`입니다.
+   * D1에 적어 둔 경기면 거기서 먼저 걸러서 남의 경기를 Riot에 묻지 않습니다.
    */
   async matchWith(matchId: string, puuid: string): Promise<RiotMatch | undefined> {
     const recorded = await this.recordedPlayers(matchId);
@@ -133,8 +136,9 @@ export class Riot {
   }
 
   /**
-   * 친구와 `viewer`만 남기고 가린 경기 JSON입니다. `viewer`가 경기 어디에도 없으면 누가 보든 결과가 같아서, 끝난 경기는
-   * 가린 결과를 isolate 메모리에 (경기, 친구)로 담아 둡니다. 친구 여럿이 같은 친구의 경기를 열 때 다시 가리지 않습니다.
+   * 친구와 `viewer`만 남기고 가린 경기 JSON입니다.
+   * `viewer`가 경기 어디에도 없으면 누가 보든 결과가 같아서, 끝난 경기는 가린 결과를 isolate 메모리에 (경기, 친구)로 담아 둡니다.
+   * 친구 여럿이 같은 친구의 경기를 열 때 다시 가리지 않습니다.
    */
   redactedFor(matchId: string, match: RiotMatch, friend: string, viewer: string): string {
     const key = `redacted:${matchId}:${friend}`;
@@ -173,8 +177,8 @@ export class Riot {
     }
     const data = parse(raw);
     // 담거나 적는 건 다음 요청을 아끼려는 것이라 실패해도 Riot이 준 경기는 그대로 내려보낸다.
-    // 끝났다고 적힌 경기만 담고 적는다. 진행 중이거나 matchInfo가 없으면 참가자와 결과가 아직 바뀔 수 있다. 참가자는 부른 사람이
-    // 뛴 경기일 때만 적는다. 남의 경기 ID를 마구 물어 D1 쓰기 한도(하루 10만 행)를 쓰게 할 수 없다.
+    // 끝났다고 적힌 경기만 담고 적는다. 진행 중이거나 matchInfo가 없으면 참가자와 결과가 아직 바뀔 수 있다.
+    // 참가자는 부른 사람이 뛴 경기일 때만 적는다. 남의 경기 ID를 마구 물어 D1 쓰기 한도(하루 10만 행)를 쓰게 할 수 없다.
     if (data.matchInfo?.isCompleted === true) {
       const record = !recorded && playersIn(data).has(this.caller.puuid);
       await Promise.all([
@@ -217,8 +221,8 @@ export class Riot {
   }
 
   /**
-   * 같은 경로를 이미 받고 있으면 그 결과를 같이 기다립니다. 같이 기다리는 쪽은 사용자 몫을 쓰지 않고, 먼저 부른 쪽이 받은
-   * Riot 실패(429, 404 등)도 같이 받습니다.
+   * 같은 경로를 이미 받고 있으면 그 결과를 같이 기다립니다.
+   * 같이 기다리는 쪽은 사용자 몫을 쓰지 않고, 먼저 부른 쪽이 받은 Riot 실패(429, 404 등)도 같이 받습니다.
    */
   private async fetchText(path: string, limit?: { quota: Quota; key: string }): Promise<string> {
     const apiKey = this.env.RIOT_API_KEY;
@@ -254,8 +258,8 @@ export class Riot {
       logFailure("riot_cache", err);
       return undefined;
     }
-    // Cache API에 남은 기한을 몰라 메모리에는 기한을 처음부터 다시 준다. 그래서 점검 안내는 길게는 2분,
-    // 콘텐츠는 12시간까지 늦게 바뀔 수 있다.
+    // Cache API에 남은 기한을 몰라 메모리에는 기한을 처음부터 다시 준다.
+    // 그래서 점검 안내는 길게는 2분, 콘텐츠는 12시간까지 늦게 바뀔 수 있다.
     store.set(path, body, ttlSeconds);
     return body;
   }

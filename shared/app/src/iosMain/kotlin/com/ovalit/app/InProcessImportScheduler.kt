@@ -9,8 +9,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
- * 앱이 떠 있는 동안 첫 수집을 앱 안에서 받습니다. iOS에는 WorkManager가 없고 앱을 닫은 뒤 이어 받기와 끝났다는 알림은 범위 밖이라,
- * 새 경기를 넘겨받는 일([continueNewMatches])은 하지 않습니다. 앱이 살아 있으면 받던 것이 끝까지 갑니다.
+ * 앱이 떠 있는 동안 첫 수집을 앱 안에서 받습니다.
+ * iOS에는 WorkManager가 없고 앱을 닫은 뒤 이어 받기와 끝났다는 알림은 범위 밖이라, 새 경기를 넘겨받는 일([continueNewMatches])은 하지 않습니다.
+ * 앱이 살아 있으면 받던 것이 끝까지 갑니다.
  */
 internal class InProcessImportScheduler(
     private val scope: CoroutineScope,

@@ -45,9 +45,11 @@ private const val NEW_MATCHES_TAG = "new_matches"
 /**
  * 같은 작업이 이미 돌거나 기다리고 있으면 새로 걸지 않습니다([retry]만 갈아 끼웁니다).
  *
- * 첫 수집은 네트워크를 기다리지 않고 바로 시작합니다. 연결을 조건으로 걸면 인터넷이 없을 때 작업이 아예 시작하지 않아 저장소가
- * 멈춘 까닭을 적지 못하고, S0-4가 오프라인 안내와 다시 시도 버튼 없이 "불러오는 중"에 머뭅니다. 받는 중에 끊겨도 작업을 멈추지 않고
- * 저장소가 끊긴 까닭을 적게 둡니다. 새 경기 이어 받기는 화면 밖 일이라 연결될 때까지 기다립니다.
+ * 첫 수집은 네트워크를 기다리지 않고 바로 시작합니다.
+ * 연결을 조건으로 걸면 인터넷이 없을 때 작업이 아예 시작하지 않아 저장소가 멈춘 까닭을 적지 못하고,
+ * S0-4가 오프라인 안내와 다시 시도 버튼 없이 "불러오는 중"에 머뭅니다.
+ * 받는 중에 끊겨도 작업을 멈추지 않고 저장소가 끊긴 까닭을 적게 둡니다.
+ * 새 경기 이어 받기는 화면 밖 일이라 연결될 때까지 기다립니다.
  */
 class WorkManagerImportScheduler(private val context: Context) : ImportScheduler {
     override fun start() {
@@ -91,7 +93,7 @@ class FirstImportWorker(context: Context, params: WorkerParameters) : CoroutineW
     private val analytics: Analytics by inject()
 
     override suspend fun doWork(): Result {
-        // 연동을 해제한 뒤 기다리던 작업이 돌면 RSO 세션 없이 전적을 요청하게 된다(CLAUDE.md 지켜야 할 선)
+        // 연동을 해제한 뒤 기다리던 작업이 돌면 RSO 세션 없이 전적을 요청한다(CLAUDE.md 지켜야 할 선)
         if (account.account.first() == null) return Result.success()
         // 실패하면 WorkManager가 30초부터 늘려 가며 다시 띄운다. 받은 경기는 그대로라 남은 것만 받는다.
         try {
@@ -124,8 +126,9 @@ class FirstImportWorker(context: Context, params: WorkerParameters) : CoroutineW
 }
 
 /**
- * 오래 쉬었다 와서 쌓인 새 경기를 앱을 닫아도 이어 받습니다. 다 받으면 "분석 완료" 알림 설정을 따라 알립니다. 받을 판 수는
- * 넘길 때 입력으로 받아 두어서, 작업이 시작되기 전에 앱에서 다 받았어도 알립니다.
+ * 오래 쉬었다 와서 쌓인 새 경기를 앱을 닫아도 이어 받습니다.
+ * 다 받으면 "분석 완료" 알림 설정을 따라 알립니다.
+ * 받을 판 수는 넘길 때 입력으로 받아 두어서, 작업이 시작되기 전에 앱에서 다 받았어도 알립니다.
  */
 class NewMatchesWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params), KoinComponent {
     private val account: AccountRepository by inject()

@@ -10,7 +10,7 @@
 | `docs/design.md` | 색 토큰, 글자, 면, 움직임, 로고, 에셋 |
 | `docs/backend.md` | 서버 규칙 |
 | `docs/DECISIONS.md` | 기획서와 달라진 결정, 날짜와 까닭 |
-| `docs/CONVENTIONS.md` | 글, 커밋, 테스트, 프리뷰, 주석 규칙 |
+| `docs/CONVENTIONS.md` | 글, 커밋, 테스트, 빌드, 프리뷰, 주석 규칙 |
 | `docs/i18n-ja.md` | 일본어 용어와 말투 |
 | `docs/RELEASE.md` | 출시 전에 채울 값과 순서 |
 | `server/README.md` | 서버 실행과 배포 |

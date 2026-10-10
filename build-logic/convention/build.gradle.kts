@@ -35,5 +35,9 @@ gradlePlugin {
             id = "ovalit.kmp.library"
             implementationClass = "OvalitKmpLibraryConventionPlugin"
         }
+        register("kmpFeature") {
+            id = "ovalit.kmp.feature"
+            implementationClass = "OvalitKmpFeatureConventionPlugin"
+        }
     }
 }

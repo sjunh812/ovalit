@@ -202,7 +202,7 @@ Refs: CLAUDE.md#지표-규칙
 | `docs/i18n-ja.md` | 일본어 용어와 말투 | 한국어 문구 규칙 |
 | `docs/RELEASE.md` | 출시 전에 채울 값과 순서 | 개발 중 설정 |
 | `docs/DECISIONS.md` | 기획과 달라진 결정. 날짜·무엇·왜 | 안 바뀐 결정, 긴 논의 |
-| `docs/CONVENTIONS.md` | 글, 커밋, 테스트, 프리뷰, 주석 규칙 | 코드 스타일 세부. 포매터가 할 일 |
+| `docs/CONVENTIONS.md` | 글, 커밋, 테스트, 빌드, 프리뷰, 주석 규칙 | 코드 스타일 세부. 포매터가 할 일 |
 
 규칙 문서가 길어지면 규칙 사이에 배경 설명이 섞인 겁니다. 배경은 `DECISIONS.md`로 옮기고 결론과
 지키는 까닭만 남깁니다. "처음에는 ~했는데 ~해서 바꿨다"는 DECISIONS에 씁니다. 사용자가 다른 안과
@@ -302,6 +302,21 @@ xcrun simctl launch booted com.ovalit
 ```
 
 iOS에는 광고, 푸시, 사용 통계가 없고 첫 수집은 앱이 떠 있는 동안 앱 안에서 받습니다. 피드백 메일 줄도 없습니다.
+
+## 빌드
+
+모듈 빌드 파일에는 convention plugin과 그 모듈에만 필요한 것만 적습니다. 여러 모듈이 같이 쓰는 설정은
+`build-logic/convention`에 둡니다. 모듈마다 복사해 두면 한 곳만 고치다 어긋납니다.
+
+| 플러그인 | 쓰는 곳 | 거는 것 |
+| --- | --- | --- |
+| `ovalit.android.application` | `composeApp` | SDK 버전, 자바·코틀린 타깃 |
+| `ovalit.kmp.library` | `shared/` 아래 모든 모듈 | 안드로이드와 iOS 시뮬레이터 타깃, 호스트 테스트, 안드로이드 리소스, 테스트 의존성 |
+| `ovalit.kmp.feature` | `shared/feature/*` | `ovalit.kmp.library`, Compose, core 모듈과 lifecycle·Koin 의존성, Res 클래스 설정 |
+
+기능 모듈을 새로 만들면 빌드 파일은 `alias(libs.plugins.ovalit.kmp.feature)` 한 줄로 시작합니다. Res 클래스 패키지는 모듈
+경로에서 정해집니다(`:shared:feature:report` → `com.ovalit.feature.report.resources`). 그 모듈만 쓰는 의존성은 모듈 빌드
+파일에 덧붙입니다.
 
 ## 프리뷰
 

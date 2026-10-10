@@ -5,6 +5,7 @@ import com.ovalit.core.data.FakeMatchRepository
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.Focus
+import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.OvalitError
 import com.ovalit.core.model.OvalitException
 import com.ovalit.core.model.PingReminder
@@ -29,6 +30,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -155,6 +157,41 @@ class MatchesViewModelTest {
         assertEquals("fresh-1-0", state.days.first().matches.first().id.value)
     }
 
+    @Test
+    fun `당겨서 새 경기를 받으면 받은 판 수를 화면 아래 한 줄로 넘긴다`() = runTest {
+        val viewModel = viewModel()
+        val refreshed = mutableListOf<Int>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.refreshed.collect { refreshed += it } }
+
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        assertEquals(listOf(1), refreshed)
+    }
+
+    // 앱이 다시 보여 받던 것에 붙으면 저장소는 0을 돌려준다. 그사이 목록에 들어온 경기는 당긴 사람에게도 새 경기다.
+    @Test
+    fun `받던 것에 붙어도 그사이 들어온 경기를 센다`() = runTest {
+        val first = MatchPreviewData.detailMatch
+        val stored = MutableStateFlow(listOf(first))
+        val joined = object : MatchRepository by FakeMatchRepository(ThursdayClock, scope = this) {
+            override fun observeMatches() = stored
+
+            override suspend fun refresh(): Int {
+                stored.update { it + first.copy(id = MatchId("joined-1")) + first.copy(id = MatchId("joined-2")) }
+                return 0
+            }
+        }
+        val viewModel = MatchesViewModel(joined, StubPreferences(UserPreferences.Default), FakeContentRepository(), ThursdayClock, Seoul)
+        val refreshed = mutableListOf<Int>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.refreshed.collect { refreshed += it } }
+
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        assertEquals(listOf(2), refreshed)
+    }
+
     // 받는 중에 또 받으면 레이트 리밋을 두 배로 쓴다
     @Test
     fun `받는 중에 또 당겨도 한 번만 받는다`() = runTest {
@@ -176,12 +213,16 @@ class MatchesViewModelTest {
         }
         val viewModel = MatchesViewModel(failing, StubPreferences(UserPreferences.Default), FakeContentRepository(), ThursdayClock, Seoul)
         val notices = mutableListOf<FailureNotice>()
+        val refreshed = mutableListOf<Int>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.notices.toList(notices) }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.refreshed.collect { refreshed += it } }
 
         viewModel.refresh()
         advanceUntilIdle()
 
         assertEquals(listOf(FailureNotice(FailedAction.REFRESH, OvalitError.Offline)), notices)
+        // 실패하면 받은 결과 대신 까닭만 띄운다
+        assertEquals(emptyList(), refreshed)
         assertFalse(viewModel.isRefreshing.value)
     }
 

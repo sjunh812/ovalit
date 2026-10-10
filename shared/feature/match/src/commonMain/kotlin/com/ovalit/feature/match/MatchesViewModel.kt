@@ -8,6 +8,7 @@ import com.ovalit.core.data.ContentRepository
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.NoAnalytics
 import com.ovalit.core.data.UserPreferencesRepository
+import com.ovalit.core.data.countNewMatches
 import com.ovalit.core.data.logRefresh
 import com.ovalit.core.model.AgentId
 import com.ovalit.core.model.ContentCatalog
@@ -19,6 +20,7 @@ import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.ui.FailedAction
 import com.ovalit.core.ui.FailureNotice
 import com.ovalit.core.ui.FailureNotices
+import com.ovalit.core.ui.RefreshResults
 import com.ovalit.core.ui.launchNotifying
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -101,6 +103,11 @@ class MatchesViewModel(
     /** 사용자가 한 일이 실패했을 때 화면 아래에 띄울 안내입니다. */
     val notices: Flow<FailureNotice> = failures.flow
 
+    private val refreshResults = RefreshResults()
+
+    /** 당겨서 새 경기를 다 받으면 몇 판을 받았는지입니다. 화면 아래에 한 줄 띄웁니다. 받는 동안 진행 줄이 떴어도 다 받으면 보냅니다. */
+    val refreshed: Flow<Int> = refreshResults.flow
+
     /** 새 경기를 여러 판 받는 중이면 몇 판 중 몇 판을 받았는지입니다. 목록 맨 위 진행 줄로 띄우고, 띄울 만큼 많지 않으면 `null`입니다. */
     val newMatches: StateFlow<NewMatchesProgress?> = matchRepository.newMatchesProgress
         .map { progress -> progress?.takeIf { it.isShown } }
@@ -153,12 +160,13 @@ class MatchesViewModel(
                 matchRepository.newMatchesProgress.first { it?.isShown == true }
                 refreshing.value = false
             }
-            try {
-                logRefresh(analytics, source = "matches") { matchRepository.refresh() }
+            val received = try {
+                matchRepository.countNewMatches { logRefresh(analytics, source = "matches") { matchRepository.refresh() } }
             } finally {
                 untilLineShows.cancel()
                 refreshing.value = false
             }
+            received?.let(refreshResults::send)
         }
     }
 

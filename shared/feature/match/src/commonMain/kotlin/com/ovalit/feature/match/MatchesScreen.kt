@@ -55,6 +55,7 @@ import com.ovalit.core.ui.MatchRow
 import com.ovalit.core.ui.MatchRowStyle
 import com.ovalit.core.ui.MatchRowsSkeleton
 import com.ovalit.core.ui.NewMatchesLine
+import com.ovalit.core.ui.RefreshResultsEffect
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.dayLabel
 import com.ovalit.core.ui.label
@@ -90,6 +91,7 @@ fun MatchesRoute(
     viewModel: MatchesViewModel = koinViewModel(),
 ) {
     FailureNoticesEffect(viewModel.notices)
+    RefreshResultsEffect(viewModel.refreshed)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val newMatches by viewModel.newMatches.collectAsStateWithLifecycle()

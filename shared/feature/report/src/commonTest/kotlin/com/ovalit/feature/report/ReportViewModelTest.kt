@@ -342,6 +342,47 @@ class ReportViewModelTest {
         assertEquals(false, viewModel.isRefreshing.value)
     }
 
+    @Test
+    fun `홈을 당겨 새 경기를 받으면 받은 판 수를 화면 아래 한 줄로 넘긴다`() = runTest {
+        val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock, scope = this), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
+        val refreshed = mutableListOf<Int>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.refreshed.collect { refreshed += it } }
+
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        assertEquals(listOf(1), refreshed)
+    }
+
+    @Test
+    fun `당겼는데 새로 끝난 경기가 없으면 0을 넘긴다`() = runTest {
+        val matches = FakeMatchRepository(ThursdayClock).observeMatches().first()
+        val done = flowOf<ImportProgress?>(ImportProgress(total = matches.size, results = matches.map { it.myTeamWon }))
+        val repository = StubRepository(MutableStateFlow(matches), importProgress = done)
+        val viewModel = ReportViewModel(repository, NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
+        val refreshed = mutableListOf<Int>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.refreshed.collect { refreshed += it } }
+
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        assertEquals(listOf(0), refreshed)
+    }
+
+    // 저장된 데이터를 지운 뒤에는 첫 수집 전이라 새 경기를 받지 않는다. "새로 끝난 경기가 없어요"는 틀린 말이다.
+    @Test
+    fun `첫 수집 전에 당기면 결과를 넘기지 않는다`() = runTest {
+        val repository = StubRepository(MutableStateFlow(emptyList()))
+        val viewModel = ReportViewModel(repository, NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
+        val refreshed = mutableListOf<Int>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.refreshed.collect { refreshed += it } }
+
+        viewModel.refresh()
+        advanceUntilIdle()
+
+        assertEquals(emptyList(), refreshed)
+    }
+
     // 받는 대로 숫자가 바뀌면 첫 수집처럼 믿을 수 없다. 이번 주를 보고 있었으면 새 경기도 이번 주라 기간은 그대로다.
     @Test
     fun `새 경기를 여러 판 받는 동안 숫자는 그대로 두고 다 받은 뒤 한 번만 바꾼다`() = runTest {
@@ -354,6 +395,8 @@ class ReportViewModelTest {
             viewModel.uiState.collect { (it as? ReportUiState.Success)?.let { state -> reports += state.report } }
         }
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.newMatches.collect() }
+        val refreshed = mutableListOf<Int>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.refreshed.collect { refreshed += it } }
         val before = reports.single()
         clock.now += 10.minutes
 
@@ -365,11 +408,15 @@ class ReportViewModelTest {
         assertFalse(viewModel.isRefreshing.value)
         assertEquals(listOf(before), reports.distinct())
         assertFalse(assertIs<ReportUiState.Success>(viewModel.uiState.value).waitingForNewMatches)
+        // 진행 줄이 떠 있는 동안에는 결과를 띄우지 않는다
+        assertEquals(emptyList(), refreshed)
 
         advanceUntilIdle()
 
         assertNull(viewModel.newMatches.value)
         assertEquals(listOf(before, matches.observeMatches().first().weeklyReport(clock.now, Seoul)), reports.distinct())
+        // 줄은 말없이 접혀서 다 받은 뒤 몇 판을 받았는지 한 줄로 알린다
+        assertEquals(listOf(receiving.total), refreshed)
     }
 
     // 일주일 넘게 쉬면 받기 전 경기로는 "지난주"를 센다. 그 숫자를 띄우면 다 받은 뒤 기간까지 바뀌어 틀린 말이 된다.

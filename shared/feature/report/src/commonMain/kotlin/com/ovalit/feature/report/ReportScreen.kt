@@ -53,6 +53,7 @@ import com.ovalit.core.ui.AdSlot
 import com.ovalit.core.ui.FailureNoticesEffect
 import com.ovalit.core.ui.NewMatchesLine
 import com.ovalit.core.ui.PlayerBadge
+import com.ovalit.core.ui.RefreshResultsEffect
 import com.ovalit.feature.report.component.DynamicMetricSection
 import com.ovalit.feature.report.component.DynamicMetricSheet
 import com.ovalit.feature.report.component.FixedMetricRow
@@ -107,6 +108,7 @@ fun ReportRoute(
     viewModel: ReportViewModel = koinViewModel(),
 ) {
     FailureNoticesEffect(viewModel.notices)
+    RefreshResultsEffect(viewModel.refreshed)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val badge by viewModel.badge.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()

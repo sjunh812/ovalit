@@ -69,7 +69,7 @@
     <string name="report_damage">피해량</string>
     <string name="report_headshot">헤드샷</string>
     <string name="report_weapons_note">킬은 적을 쓰러뜨린 무기로 셌어요. 피해량은 그 무기를 들고 시작한 라운드의 라운드당 피해량이고, 헤드샷은 그 무기로만 킬을 낸 라운드에서 셌어요.</string>
-    <string name="economy_upsets">장비가 상대보다 1,000 넘게 적었는데 %1$d라운드를 이겼어요</string>
+    <string name="economy_upsets">장비가 상대보다 1,000 넘게 적었는데도 %1$d번 이겼어요</string>
     <string name="overview_first_blood_ours">우리 팀 첫 킬</string>
     <string name="overview_first_blood_theirs">상대 팀 첫 킬</string>
     <string name="overview_attack">공격</string>

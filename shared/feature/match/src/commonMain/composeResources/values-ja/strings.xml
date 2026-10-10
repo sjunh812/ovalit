@@ -69,7 +69,7 @@
     <string name="report_damage">ダメージ</string>
     <string name="report_headshot">HS率</string>
     <string name="report_weapons_note">キルは敵を倒した武器で数えています。ダメージはその武器を持って始めたラウンドのラウンド平均ダメージで、ヘッドショット率はその武器だけでキルしたラウンドで数えています。</string>
-    <string name="economy_upsets">装備が相手より1,000を超えて少なかったのに、%1$dラウンド勝ちました</string>
+    <string name="economy_upsets">装備が相手より1,000を超えて少なかったのに、%1$d回勝ちました</string>
     <string name="overview_first_blood_ours">味方ファーストキル</string>
     <string name="overview_first_blood_theirs">敵ファーストキル</string>
     <string name="overview_attack">攻撃</string>

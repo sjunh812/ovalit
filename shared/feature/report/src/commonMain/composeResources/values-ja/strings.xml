@@ -100,8 +100,8 @@
     <!-- 홈 고정 칸 밑 8주 흐름 입구와 시트 -->
     <string name="trend_entry">過去8週間の推移をひと目で見る</string>
     <string name="trend_title">過去8週間の推移</string>
-    <string name="trend_body">濃く塗った棒がレポートの期間です。棒をタップすると、その週の値を見られます。</string>
-    <string name="trend_body_baseline">濃く塗った棒がレポートの期間で、点線は過去%1$d週間の平均です。棒をタップすると、その週の値を見られます。</string>
+    <string name="trend_body">赤い棒がレポートの期間です。棒をタップすると、その週の値を見られます。</string>
+    <string name="trend_body_baseline">赤い棒がレポートの期間で、点線は過去%1$d週間の平均です。棒をタップすると、その週の値を見られます。</string>
     <string name="trend_week_sample">%1$d試合 · %2$dラウンド</string>
     <string name="trend_week_empty">試合なし</string>
     <string name="trend_baseline_note">点線は過去%1$d週間の平均です。</string>

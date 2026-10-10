@@ -35,6 +35,10 @@ const quotas = {
   matchDetails: new Quota(120, 60_000),
 };
 
+// 지금 Riot에서 받고 있는 경로다. 첫 수집과 경기 상세가 같은 경기를 거의 같이 부르거나 친구 여럿이 같은 경기를 열면
+// Riot에는 한 번만 간다. 끝나면 바로 빼니 오래 들고 있지 않는다.
+const inflight = new Map<string, Promise<string>>();
+
 /** 테스트가 메모리 캐시를 비우고 D1이나 Cache API만으로 도는지 볼 때 씁니다. */
 export function clearMemoryCaches(): void {
   for (const cache of Object.values(memory)) cache.clear();
@@ -192,15 +196,29 @@ export class Riot {
     return raw;
   }
 
+  /**
+   * 같은 경로를 이미 받고 있으면 그 결과를 같이 기다립니다. 같이 기다리는 쪽은 사용자 몫을 쓰지 않고, 먼저 부른 쪽이 받은
+   * Riot 실패(429, 404 등)도 같이 받습니다.
+   */
   private async fetchText(path: string, limit?: { quota: Quota; key: string }): Promise<string> {
     const apiKey = this.env.RIOT_API_KEY;
     if (!apiKey) throw new ApiError(503, "riot_key_missing");
     const url = `${RIOT_HOST}${path}`;
+    const joined = inflight.get(url);
+    if (joined) return joined;
     // Riot이 막혀 있어 어차피 부르지 않을 요청으로 사용자 몫을 깎지 않는다.
     await throwIfBlocked(this.env.DB, url);
+    // 기다리는 사이에 누가 먼저 부르기 시작했을 수 있다. 여기서부터 등록까지는 기다리는 곳이 없다.
+    const started = inflight.get(url);
+    if (started) return started;
     if (limit) spend(limit.quota, limit.key);
-    const res = await send(this.upstream, this.env.DB, url, { headers: { "X-Riot-Token": apiKey } });
-    return res.text();
+    const request = send(this.upstream, this.env.DB, url, { headers: { "X-Riot-Token": apiKey } }).then((res) => res.text());
+    inflight.set(url, request);
+    try {
+      return await request;
+    } finally {
+      inflight.delete(url);
+    }
   }
 
   private async lookup(store: MemoryCache, path: string, ttlSeconds: number): Promise<string | undefined> {

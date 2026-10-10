@@ -58,6 +58,26 @@ describe("내 경기", () => {
     expect(t.upstream.callsTo(matchUrl(id))).toHaveLength(1);
   });
 
+  it("같은 경기를 동시에 부르면 Riot에는 한 번만 간다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const friend = await t.login();
+    const id = crypto.randomUUID();
+    const fixture = matchFixture(id, [me, friend, ...strangers(8)]);
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    t.upstream.on(matchUrl(id), async () => {
+      await gate;
+      return Response.json(fixture);
+    });
+    const both = Promise.all([me, friend].map((user) => t.call("GET", `/riot/matches/${id}`, user.token)));
+    await vi.waitFor(() => expect(t.upstream.callsTo(matchUrl(id))).toHaveLength(1));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    release();
+    for (const res of await both) expect(await res.json()).toEqual(fixture);
+    expect(t.upstream.callsTo(matchUrl(id))).toHaveLength(1);
+  });
+
   it("대문자로 온 경기 ID도 같은 캐시를 쓴다", async () => {
     const t = setup();
     const me = await t.login();

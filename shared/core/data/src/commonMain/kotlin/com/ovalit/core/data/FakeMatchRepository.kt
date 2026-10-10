@@ -5,7 +5,6 @@ import com.ovalit.core.model.ImportProgress
 import com.ovalit.core.model.KillEvent
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.MatchId
-import com.ovalit.core.model.NewMatchesProgress
 import com.ovalit.core.model.PlayerCardId
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.Queue
@@ -16,184 +15,61 @@ import com.ovalit.core.model.Scoreline
 import com.ovalit.core.model.Shots
 import com.ovalit.core.model.Side
 import com.ovalit.core.model.WeaponId
-import com.ovalit.core.model.forFirstImport
 import com.ovalit.core.model.metrics
 import kotlin.math.abs
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
-import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 /**
- * 프로덕션 키가 나오기 전까지 화면에 띄울 가짜 경기입니다.
+ * 프로덕션 키가 나오기 전까지 쓰는 내 경기 저장소입니다. 받기 규칙은 [OfflineFirstMatchRepository]가 지키고, 여기서는 가짜
+ * 서버([FakeMatchRemoteSource])와 메모리 저장([InMemoryMatchStore])을 묶기만 합니다.
  *
- * 시드가 고정이라 매번 같은 경기가 나오고 날짜만 [clock]을 따라 움직입니다. 홈에 움직인 지표가 뜨도록
- * 최근 7일은 첫 교전, 공격과 수비의 킬, 팬텀 헤드샷, 피해량, 승률을 일부러 바꿔 뒀습니다(`RECENT_`로 시작하는 상수).
- * 최근 두 주에는 데스매치, 건틀릿, 스파이크 돌격 같은 다른 모드를 몇 판 섞어 기타 칩과 경기 탭에서 모양을 볼 수 있습니다
- * ([OtherModeDays]).
+ * 처음부터 첫 수집을 마친 채로 시작합니다. 실제 저장소도 앱을 다시 켜면 마친 진행도를 기기에서 읽습니다. 비워 두면 첫 수집을
+ * 마쳤는지 보는 곳(새 경기 확인, 당겨서 받기)마다 판단이 갈립니다.
  *
- * 새 경기는 마지막으로 확인한 뒤 [FAKE_MATCH_EVERY]마다 한 판씩 끝난 것으로 칩니다. 당기면 늘 한 판은 받고, 앱을 10분 넘게
- * 떠났다 오면 스무 판이 넘게 쌓여 진행 줄과 WorkManager로 이어 받기를 볼 수 있습니다.
- *
- * @param downloadDelay 새 경기 한 판을 받는 시간입니다. 서버가 경기 상세를 1분에 120번까지 받으니 실제와 비슷하게 둡니다.
+ * @param importDelay 첫 수집에서 한 판을 받는 시간입니다.
+ * @param downloadDelay 새 경기 한 판을 받는 시간입니다.
  * @param scope 새 경기를 받는 곳입니다. 부른 화면이 사라져도 받기가 끝까지 가도록 앱이 사는 동안 도는 스코프를 넘깁니다.
  * 테스트는 가상 시간으로 돌리려고 `TestScope`를 넘깁니다.
  */
-class FakeMatchRepository(
-    private val clock: Clock = Clock.System,
-    private val importDelay: Duration = 70.milliseconds,
-    private val downloadDelay: Duration = 500.milliseconds,
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
-) : MatchRepository {
+class FakeMatchRepository private constructor(
+    private val remote: FakeMatchRemoteSource,
+    private val repository: OfflineFirstMatchRepository,
+) : MatchRepository by repository {
 
-    private val matches = MutableStateFlow(imported())
+    constructor(
+        clock: Clock = Clock.System,
+        importDelay: Duration = 70.milliseconds,
+        downloadDelay: Duration = 500.milliseconds,
+        scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+    ) : this(FakeMatchRemoteSource(clock, importDelay, downloadDelay), clock, scope)
 
-    // 처음부터 경기가 차 있으니 앞서 첫 수집을 마친 것으로 둔다. 실제 저장소도 앱을 다시 켜면 마친 진행도를 기기에서 읽는다.
-    // 비워 두면 첫 수집을 마쳤는지 보는 곳(새 경기 확인, 당겨서 받기)마다 판단이 갈린다.
-    private val progress = MutableStateFlow<ImportProgress?>(
-        matches.value.let { saved -> ImportProgress(total = saved.size, results = saved.map { it.myTeamWon }) },
+    private constructor(remote: FakeMatchRemoteSource, clock: Clock, scope: CoroutineScope) : this(
+        remote,
+        OfflineFirstMatchRepository(remote, importedStore(remote.startImported()), clock, scope),
     )
-    private val newMatches = MutableStateFlow<NewMatchesProgress?>(null)
 
-    // 마지막으로 경기 ID 목록을 본 시각이다. 그 뒤로 지난 시간만큼 새 경기가 끝난 것으로 친다.
-    private val checked = MutableStateFlow<Instant?>(null)
-
-    override fun observeMatches(): Flow<List<Match>> = matches
-
-    override val importProgress: Flow<ImportProgress?> = progress
-
-    override val newMatchesProgress: Flow<NewMatchesProgress?> = newMatches
-
-    override val checkedAt: Flow<Instant?> = checked
-
-    // 지울 때마다 늘린다. 받던 첫 수집은 저장하기 전에 이 값을 보고, 그사이 지웠으면 멈춘다.
-    private var generation = 0
-
-    // 목록에는 있는데 아직 받지 못한 경기다. 받다 끊기면 다음에 이것부터 받는다.
-    private var pending: List<Match> = emptyList()
-
-    // S0-4 막대가 차오르는 걸 볼 수 있게 한 판씩 틈을 두고 받는다. 중간에 끊겼다 다시 돌면 이미 받은 경기는 건너뛴다.
-    // 받기는 부른 쪽(WorkManager)에서 돌아 지우기가 멈출 수 없다. 그래서 한 판씩 저장할 때마다 그사이 지웠는지 보고 멈춘다.
-    override suspend fun importRecent() {
-        val (started, picked) = lock.withLock {
-            val saved = matches.value.map { it.id }.toSet()
-            val picked = imported()
-            progress.value = ImportProgress(total = picked.size, results = picked.filter { it.id in saved }.map { it.myTeamWon })
-            generation to picked.filterNot { it.id in saved }
-        }
-        for (match in picked) {
-            delay(importDelay)
-            val stillLinked = lock.withLock {
-                (generation == started).also { current ->
-                    if (current) {
-                        save(match)
-                        progress.update { it?.copy(results = it.results + match.myTeamWon) }
-                    }
-                }
-            }
-            if (!stillLinked) return
-        }
-        lock.withLock { if (generation == started) checked.value = clock.now() }
-    }
-
-    // 지운 뒤에는 진행도가 비어 다시 첫 수집을 기다린다
-    private fun firstImportDone(): Boolean = progress.value?.isDone == true
-
-    override suspend fun refresh(): Int {
-        if (!firstImportDone()) return 0
-        // 홈과 경기 탭이 같이 당기면 한 번만 받는다. 뒤에 온 쪽은 앞의 것이 끝날 때까지 기다리고 새로 받지 않는다.
-        val (receiving, joined) = lock.withLock {
-            inFlight?.takeIf { it.isActive }?.let { it to true } ?: (scope.async { receiveNew() }.also { inFlight = it } to false)
-        }
-        val received = receiving.await()
-        return if (joined) 0 else received
-    }
-
-    private suspend fun receiveNew(): Int = try {
-        delay(REFRESH_DELAY)
-        val now = clock.now()
-        if (pending.isEmpty()) pending = finishedSince(checked.value, now)
-        checked.value = now
-        val total = pending.size
-        newMatches.value = NewMatchesProgress(total = total, received = 0)
-        // 최신 경기부터 한 판씩 받아 바로 저장한다. 당겨서 한 판만 받을 때는 당김 표시가 오래 돌지 않게 바로 넣는다.
-        while (pending.isNotEmpty()) {
-            if (total > 1) delay(downloadDelay)
-            save(pending.first())
-            pending = pending.drop(1)
-            newMatches.value = NewMatchesProgress(total = total, received = total - pending.size)
-        }
-        total
-    } finally {
-        newMatches.value = null
-    }
-
-    // 끝난 경기는 바뀌지 않아 같은 ID는 다시 넣지 않는다. 경기 목록은 ID를 키로 써서 같은 ID가 둘이면 화면이 죽는다.
-    private fun save(match: Match) {
-        matches.update { saved -> if (saved.any { it.id == match.id }) saved else saved + match }
-    }
-
-    // 경쟁전으로 고른다. 일반전을 받으면 홈 칩이 경쟁일 때 숫자가 그대로라 새로고침한 티가 안 난다.
-    private fun finishedSince(since: Instant?, now: Instant): List<Match> {
-        refreshed++
-        val away = since?.let { now - it } ?: Duration.ZERO
-        val count = (away / FAKE_MATCH_EVERY).toInt().coerceIn(1, MAX_FAKE_NEW_MATCHES)
-        val picked = fakeMatches(now, seed = SEED + refreshed, withFriends = false)
-            .filter { it.queue == Queue.COMPETITIVE }
-            .sortedByDescending { it.startedAt }
-            .take(count)
-        // 맨 앞 경기는 방금 끝났고, 그 앞 경기는 한 시간씩 일찍 시작했다. 한 판이 한 시간을 넘지 않아 시작 순서가 뒤집히지 않는다.
-        val latestStart = now - JUST_FINISHED - picked.first().lengthMillis.milliseconds
-        return picked.mapIndexed { index, match ->
-            match.copy(id = MatchId("fresh-$refreshed-$index"), startedAt = latestStart - FAKE_SESSION_GAP * index)
-        }
-    }
-
-    private val lock = Mutex()
-    private var inFlight: Deferred<Int>? = null
-    private var refreshed = 0
-
-    // 진행도도 같이 비운다. 남겨 두면 다시 연동했을 때 S0-4가 새 수집 전에 지난 수집의 "리포트 보기"를 띄운다. 받던 새 경기는
-    // 멈출 때까지 기다린 뒤에 지운다. 기다리지 않으면 막 받은 한 판이 지운 뒤에 들어온다.
+    /** 가짜 서버도 끝난 경기를 잊게 합니다. 지운 뒤 다시 받는 첫 수집은 늘 같은 50경기를 받습니다. */
     override suspend fun deleteAll() {
-        lock.withLock {
-            inFlight?.cancelAndJoin()
-            inFlight = null
-            generation++
-            pending = emptyList()
-            checked.value = null
-            matches.value = emptyList()
-            progress.value = null
-            newMatches.value = null
-        }
+        repository.deleteAll()
+        remote.forget()
     }
-
-    private fun imported(): List<Match> = fakeMatches(clock.now()).forFirstImport(clock.now()) { it.startedAt }
 }
 
-private const val SEED = 923
-private val REFRESH_DELAY = 700.milliseconds
-private val JUST_FINISHED = 3.minutes
-private val FAKE_MATCH_EVERY = 30.seconds
-private val FAKE_SESSION_GAP = 1.hours
-private const val MAX_FAKE_NEW_MATCHES = 40
+private fun importedStore(matches: List<Match>) = InMemoryMatchStore(
+    matches = matches,
+    importProgress = ImportProgress(total = matches.size, results = matches.map { it.myTeamWon }),
+)
+
+internal const val SEED = 923
 private const val DAYS = 70
 
 private const val USUAL_FIRST_DUEL_RATE = 0.28
@@ -252,6 +128,12 @@ internal class Owner(val id: PlayerId, val riotId: String, val card: PlayerCardI
 internal val Myself = Owner(Me, MY_RIOT_ID, MyCard, MY_TIER)
 
 /**
+ * 프로덕션 키가 나오기 전까지 화면에 띄울 가짜 경기입니다.
+ *
+ * 시드가 고정이라 매번 같은 경기가 나오고 날짜만 [now]를 따라 움직입니다. 홈에 움직인 지표가 뜨도록 최근 7일은 첫 교전, 공격과
+ * 수비의 킬, 팬텀 헤드샷, 피해량, 승률을 일부러 바꿔 뒀습니다(`RECENT_`로 시작하는 상수). 최근 두 주에는 데스매치, 건틀릿,
+ * 스파이크 돌격 같은 다른 모드를 몇 판 섞어 기타 칩과 경기 탭에서 모양을 볼 수 있습니다([OtherModeDays]).
+ *
  * @param withFriends 내 경기일 때만 켭니다. 친구 경기에 다른 친구를 끼우면 S5의 같이 뛴 경기 수가 틀어집니다.
  */
 internal fun fakeMatches(

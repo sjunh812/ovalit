@@ -168,7 +168,7 @@
     <string name="nudge_invite_title">一緒にプレイするフレンドを招待してみましょう</string>
     <string name="nudge_invite_body">招待リンクでフレンドになると、毎週の記録を並べて見られます</string>
     <string name="nudge_rival_title">ライバルを選んでみましょう</string>
-    <string name="nudge_rival_body">選んだフレンドとダメージ、K/D、KDA、ヘッドショットを毎週競います</string>
+    <string name="nudge_rival_body">選んだフレンドとダメージ、K/D、KDA、バトルスコア、ヘッドショットを毎週競います</string>
     <string name="rival_pick_title">ライバルを選ぶ</string>
     <string name="rival_pick_body">戦績を公開しているフレンドだけ選べます。フレンドのプロフィールからいつでも変更できます。</string>
     <string name="rival_pick_no_matches">%1$sの試合なし</string>

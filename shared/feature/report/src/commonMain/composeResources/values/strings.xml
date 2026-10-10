@@ -170,7 +170,7 @@
     <string name="nudge_invite_title">같이 뛰는 친구를 초대해 보세요</string>
     <string name="nudge_invite_body">초대 링크로 친구가 되면 매주 기록을 나란히 놓고 볼 수 있어요</string>
     <string name="nudge_rival_title">라이벌을 골라 보세요</string>
-    <string name="nudge_rival_body">고른 친구와 피해량, K/D, KDA, 헤드샷을 매주 겨뤄요</string>
+    <string name="nudge_rival_body">고른 친구와 피해량, K/D, KDA, 전투점수, 헤드샷을 매주 겨뤄요</string>
     <string name="rival_pick_title">라이벌 고르기</string>
     <string name="rival_pick_body">전적을 공개한 친구만 고를 수 있어요. 친구 프로필에서 언제든 바꿀 수 있어요.</string>
     <string name="rival_pick_no_matches">%1$s 경기 없음</string>

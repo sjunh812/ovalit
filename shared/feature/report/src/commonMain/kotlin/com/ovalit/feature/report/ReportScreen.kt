@@ -47,6 +47,7 @@ import com.ovalit.core.model.PingId
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.ui.QueueChips
 import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdSlot
 import com.ovalit.core.ui.FailureNoticesEffect
@@ -64,7 +65,6 @@ import com.ovalit.feature.report.component.PeriodHeader
 import com.ovalit.feature.report.component.PeriodPicksSection
 import com.ovalit.feature.report.component.PingHomeCard
 import com.ovalit.feature.report.component.ProfileHint
-import com.ovalit.feature.report.component.QueueChips
 import com.ovalit.feature.report.component.RecordStrip
 import com.ovalit.feature.report.component.ReportSkeleton
 import com.ovalit.feature.report.component.ReportTopBar

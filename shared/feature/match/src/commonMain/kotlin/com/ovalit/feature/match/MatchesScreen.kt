@@ -2,7 +2,6 @@ package com.ovalit.feature.match
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,6 +46,7 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.NewMatchesProgress
 import com.ovalit.core.model.QueueFilter
+import com.ovalit.core.ui.QueueChips
 import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdSlot
 import com.ovalit.core.ui.FailureNoticesEffect
@@ -232,20 +231,6 @@ private fun FilterButton(active: Boolean, onClick: () -> Unit) {
                     .size(6.dp)
                     .background(OvalitTheme.colors.t1, CircleShape),
             )
-        }
-    }
-}
-
-@Composable
-private fun QueueChips(selected: QueueFilter, onSelect: (QueueFilter) -> Unit) {
-    Row(
-        modifier = Modifier
-            .horizontalScroll(rememberScrollState())
-            .padding(horizontal = OvalitSpacing.gutter),
-        horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.xs),
-    ) {
-        QueueFilter.entries.forEach { filter ->
-            OvalitChip(text = stringResource(filter.label), selected = filter == selected, onClick = { onSelect(filter) })
         }
     }
 }

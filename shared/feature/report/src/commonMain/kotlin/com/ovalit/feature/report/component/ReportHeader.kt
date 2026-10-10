@@ -1,8 +1,6 @@
 package com.ovalit.feature.report.component
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,7 +9,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,7 +23,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.ovalit.core.designsystem.component.OvalitChip
 import com.ovalit.core.designsystem.component.OvalitLogo
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
@@ -34,7 +30,6 @@ import com.ovalit.core.designsystem.resources.Res as DesignSystemRes
 import com.ovalit.core.designsystem.resources.app_name
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
-import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.PlayerAvatar
 import com.ovalit.core.ui.PlayerBadge
@@ -107,28 +102,6 @@ internal fun ReportTopBar(
                     role = Role.Image
                 },
         )
-    }
-}
-
-@Composable
-internal fun QueueChips(
-    selected: QueueFilter,
-    onSelect: (QueueFilter) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier
-            .horizontalScroll(rememberScrollState())
-            .padding(horizontal = OvalitSpacing.gutter),
-        horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.xs),
-    ) {
-        QueueFilter.entries.forEach { filter ->
-            OvalitChip(
-                text = stringResource(filter.label),
-                selected = filter == selected,
-                onClick = { onSelect(filter) },
-            )
-        }
     }
 }
 

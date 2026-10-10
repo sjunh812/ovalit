@@ -451,6 +451,50 @@ describe("친구 경기", () => {
       });
     });
 
+    it("가린 사람의 줄에는 정해 둔 필드만 남고 모르는 필드는 빠진다", () => {
+      const kept = makePuuid();
+      const other = makePuuid();
+      const coach = makePuuid();
+      const stats = { score: 4000, roundsPlayed: 20, kills: 15, deaths: 10, assists: 5, playtimeMillis: 1 };
+      const player = (puuid: string) => ({
+        puuid,
+        gameName: "이름",
+        tagLine: "KR1",
+        teamId: "Blue",
+        partyId: "p",
+        characterId: "c",
+        stats,
+        competitiveTier: 12,
+        isObserver: false,
+        playerCard: "card",
+        playerTitle: "title",
+        accountLevel: 120,
+        newIdentity: "누군지 알 수 있는 새 값",
+      });
+      const match = {
+        matchInfo: { matchId: "m", customGameName: "우리끼리 내전", premierMatchInfo: { tournamentId: "t" } },
+        players: [player(kept), player(other)],
+        coaches: [{ puuid: coach, teamId: "Blue", coachCard: "card" }],
+        teams: [{ teamId: "Blue", won: true, premierRosterId: "roster" }],
+      };
+      const out = redactMatch(match, new Set([kept]));
+      expect(out.players[0]).toMatchObject({ puuid: kept, gameName: "이름", newIdentity: "누군지 알 수 있는 새 값" });
+      expect(out.players[1]).toEqual({
+        puuid: "anon-1",
+        gameName: "",
+        tagLine: "",
+        teamId: "Blue",
+        partyId: "party-1",
+        characterId: "c",
+        stats,
+        competitiveTier: 12,
+        isObserver: false,
+      });
+      expect(out.coaches[0]).toEqual({ puuid: "anon-2", teamId: "Blue" });
+      expect(out.matchInfo).toEqual({ matchId: "m", customGameName: "" });
+      expect(out.teams[0]).toEqual({ teamId: "Blue", won: true });
+    });
+
     it("킬, 어시스트, 피해량이 가린 뒤에도 같은 사람을 가리킨다", async () => {
       const { match, fixture } = await redacted();
       const alias = new Map(fixture.players.map((p, i) => [p.puuid, match.players[i]!.puuid]));

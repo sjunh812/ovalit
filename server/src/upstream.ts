@@ -33,6 +33,8 @@ export async function send(upstream: typeof fetch, db: D1Database, url: string, 
     throw new ApiError(502, "riot_unavailable");
   }
   if (res.ok) return res;
+  // 실패한 응답의 본문은 읽지 않는다. 그대로 두면 연결이 본문을 다 받을 때까지 묶여 있다.
+  await res.body?.cancel().catch(() => {});
   if (res.status === 429) throw await rateLimitedBy(db, url, res);
   if (res.status === 404) throw new ApiError(404, "not_found");
   throw new ApiError(502, "riot_unavailable");

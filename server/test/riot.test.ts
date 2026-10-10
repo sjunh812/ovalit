@@ -123,6 +123,17 @@ describe("Riot 에러 옮기기", () => {
     expect(await res.json()).toEqual({ error: "riot_unavailable" });
   });
 
+  it.each([404, 429, 500])("%i 응답의 본문은 읽지 않고 닫는다", async (status) => {
+    let canceled = false;
+    const body = new ReadableStream({
+      cancel() {
+        canceled = true;
+      },
+    });
+    await matchWith(() => new Response(body, { status }));
+    expect(canceled).toBe(true);
+  });
+
   it("404는 그대로 404다", async () => {
     const res = await matchWith(() => new Response(null, { status: 404 }));
     expect(res.status).toBe(404);

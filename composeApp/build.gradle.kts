@@ -7,12 +7,13 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
-// Firebase 콘솔이 주는 google-services.json이 있을 때만 Firebase를 붙인다. 공개 저장소라 이 파일은 올리지 않아서(.gitignore),
-// 없는 체크아웃에서도 빌드되고 앱은 푸시, 사용 통계, 비정상 종료 보고 없이 돈다.
+// google-services.json이 있을 때만 Firebase를 붙인다.
+// 공개 저장소라 이 파일은 올리지 않는다(.gitignore). 없으면 푸시, 사용 통계, 비정상 종료 보고 없이 빌드된다.
+// plugins {}는 조건을 걸 수 없어서 pluginManager로 붙인다. 두 플러그인은 루트 build.gradle.kts에 apply false로 올려 두었다.
 val firebaseConfigured = file("google-services.json").exists()
 if (firebaseConfigured) {
-    apply(plugin = libs.plugins.google.services.get().pluginId)
-    apply(plugin = libs.plugins.firebase.crashlytics.get().pluginId)
+    pluginManager.apply(libs.plugins.google.services.get().pluginId)
+    pluginManager.apply(libs.plugins.firebase.crashlytics.get().pluginId)
 }
 
 // Google이 공개한 테스트용 ID다. 실제 광고가 아니라 노출과 클릭이 계정에 잡히지 않는다.

@@ -73,7 +73,8 @@ class FakeFriendRepository(
     // 받을 것은 없지만 당긴 티가 나게 잠깐 기다린다
     override suspend fun refresh() = delay(REFRESH_DELAY)
 
-    override fun inviteLink(): String = "https://ovalit.netlify.app/invite/K7Q2M"
+    // 실제 링크는 서버가 만들어 준다. 경로만 서버의 초대 페이지(`/i/:code`)와 App Link에 맞춘다.
+    override fun inviteLink(): String = "https://ovalit.netlify.app/i/K7Q2M"
 
     /** 가짜 ㅇㅂㅇ이 친구 이름을 찾을 때 씁니다. */
     internal fun currentFriends(): List<Friend> = friendList.value

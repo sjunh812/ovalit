@@ -104,14 +104,14 @@ Refs: CLAUDE.md#지표-규칙
 
 `ui`는 표준 Conventional Commits에 없는데 따로 뒀습니다. 이 앱은 화면 규칙이 곧 제품
 규칙이라 "버튼 간격 4dp 조정"을 `feat`이나 `fix`에 넣으면 이력이 탁해집니다. `style`은
-ktlint나 Spotless가 만든 변경에만 씁니다.
+포매터가 만든 변경에만 씁니다. 지금은 ktlint도 Spotless도 붙이지 않았습니다.
 
 ### 스코프
 
 모듈 이름을 그대로 씁니다.
 
-`onboarding` · `report` · `match` · `friend` · `settings` · `model` · `network` · `data` ·
-`designsystem` · `app` · `build` · `docs`
+`onboarding` · `report` · `match` · `friend` · `profile` · `settings` · `model` · `network` · `data` ·
+`ui`(`core/ui`) · `designsystem` · `app` · `server` · `build` · `docs`
 
 여러 모듈에 걸치면 스코프를 뺍니다. 세 개 넘게 걸쳤으면 대개 커밋을 쪼갤 때입니다.
 
@@ -202,7 +202,7 @@ Refs: CLAUDE.md#지표-규칙
 | `docs/i18n-ja.md` | 일본어 용어와 말투 | 한국어 문구 규칙 |
 | `docs/RELEASE.md` | 출시 전에 채울 값과 순서 | 개발 중 설정 |
 | `docs/DECISIONS.md` | 기획과 달라진 결정. 날짜·무엇·왜 | 안 바뀐 결정, 긴 논의 |
-| `docs/CONVENTIONS.md` | 글, 커밋, 테스트, 프리뷰, 주석 규칙 | 코드 스타일 세부. ktlint가 할 일 |
+| `docs/CONVENTIONS.md` | 글, 커밋, 테스트, 프리뷰, 주석 규칙 | 코드 스타일 세부. 포매터가 할 일 |
 
 규칙 문서가 길어지면 규칙 사이에 배경 설명이 섞인 겁니다. 배경은 `DECISIONS.md`로 옮기고 결론과
 지키는 까닭만 남깁니다. "처음에는 ~했는데 ~해서 바꿨다"는 DECISIONS에 씁니다. 사용자가 다른 안과

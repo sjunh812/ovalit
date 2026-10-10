@@ -34,7 +34,6 @@ import com.ovalit.core.ui.resources.ping_time_dawn
 import com.ovalit.core.ui.resources.ping_time_now
 import com.ovalit.core.ui.resources.ping_time_tomorrow
 import com.ovalit.core.ui.resources.ping_when
-import com.ovalit.core.ui.resources.time_clock
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -172,9 +171,4 @@ fun pingAnswerText(member: PingMember, now: Instant, timeZone: TimeZone): String
 }
 
 @Composable
-private fun clockOf(at: Instant, timeZone: TimeZone): String {
-    val local = at.toLocalDateTime(timeZone)
-    return stringResource(Res.string.time_clock, local.hour.twoDigits(), local.minute.twoDigits())
-}
-
-private fun Int.twoDigits() = toString().padStart(2, '0')
+private fun clockOf(at: Instant, timeZone: TimeZone): String = clockText(at.toLocalDateTime(timeZone))

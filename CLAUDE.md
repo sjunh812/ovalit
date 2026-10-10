@@ -163,15 +163,20 @@ individually"에 걸릴 수 있다. 홈 고정 칸, 라이벌 대결, 친구 비
 `server/`의 Cloudflare Worker다(TypeScript, Hono, D1). 무료 플랜 한도 안에서 돌고, 한 요청이 하는 일을 작게 둔다. 서버 코드를
 고치기 전에 `docs/backend.md`를 본다. 실행과 배포는 `server/README.md`에 있다. 어기면 안 되는 것만 여기 둔다.
 
-- Riot 키, RSO `client_secret`, `FCM_SERVICE_ACCOUNT`는 서버 비밀값이다. 세션 토큰과 로그인 코드는 SHA-256 해시만 저장한다.
-- RSO 콜백은 커스텀 스킴이 아니라 PKCE를 한 겹 더 둔 App Link다. `/auth/dev`는 `DEV_LOGIN=true`인 로컬에서만 열린다.
+- Riot 키, RSO `client_secret`, `STATE_SECRET`, `FCM_SERVICE_ACCOUNT`는 서버 비밀값이다. 세션 토큰과 로그인 코드는 SHA-256
+  해시만 저장한다. RSO state는 `STATE_SECRET`으로 서명해 로그인 시작은 D1에 쓰지 않는다.
+- RSO 콜백은 커스텀 스킴이 아니라 PKCE를 한 겹 더 둔 App Link다. `/auth/dev`는 `DEV_LOGIN=true`인 로컬에서만 열리고
+  `RSO_CLIENT_SECRET`이 있으면 닫힌다.
 - 전적에 닿는 경로는 모두 세션이 있어야 한다. 남의 경기는 서로 수락한 친구가 전적을 공개했을 때만 내려주고, 내가 안 뛴 친구
-  경기는 친구와 나 말고 모두 가린다(`anon-N`).
+  경기는 친구와 나 말고 모두 가린다(`anon-N`). 가린 사람의 줄은 남길 필드만 두는 허용 목록이다.
 - 친구 요청은 같이 뛴 경기를 확인한 뒤에만 받는다. 상대가 앱을 쓰는지는 같이 뛴 사람에게만 알려준다.
 - 친구는 200명까지이고 새 친구 요청은 하루 30번, 초대 링크 하나로는 요청 20개까지다(시작 기준선). 친구 비교 숫자는 친구 경기를
   다 받지 않고 각자 앱이 올린 주간 요약으로 센다(`docs/backend.md`, 실제 친구 저장소를 붙일 때 넣는다).
 - 푸시에는 글을 넣지 않고 종류, 이름, 시각만 보낸다. 문구는 앱이 정한다.
-- Riot 429는 `Retry-After`까지 그 호스트를 부르지 않고, 사용자마다 Riot 호출을 센다.
+- Riot 429는 `X-Rate-Limit-Type`에 따라 호스트나 경로를 `Retry-After`까지 부르지 않고 D1로 isolate끼리 나눈다. 사용자마다
+  Riot 호출을 센다.
+- D1 하루 쓰기는 로그인과 같이 쓴다. 세션 없이 열린 경로는 D1에 쓰지 않고, 경기 참가자는 경기마다 한 줄이며 10주 뒤 크론이
+  지운다.
 
 ## 비용
 

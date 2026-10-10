@@ -26,7 +26,8 @@ class NotificationPrimerTest {
 
         runOnIdle { primer!!.offer() }
         onNodeWithText("친구가 부르면 알려드릴까요?").assertExists()
-        // 띄우자마자 물었다고 적는다. 대답하지 않고 닫아도 다시 묻지 않는다.
+        // 띄우자마자 물었다고 적는다.
+        // 대답하지 않고 닫아도 다시 묻지 않는다.
         assertEquals(true, seen)
 
         onNodeWithText("알림 받기").performClick()

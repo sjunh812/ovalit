@@ -52,8 +52,9 @@ fun MetricFormat.valueText(value: Double): String =
     if (this == MetricFormat.PERCENT) stringResource(Res.string.value_percent, format(value)) else format(value)
 
 /**
- * 화면에 띄우는 변화량입니다. 퍼센트 지표는 "+11%p"처럼 단위를 붙입니다. 옆의 "평소 28%"와 같은 단위인지 한 번 더 생각하지 않게
- * 하고, 짚을 점 헤드라인("9%p 올랐어요")과 맞춥니다.
+ * 화면에 띄우는 변화량입니다.
+ * 퍼센트 지표는 "+11%p"처럼 단위를 붙입니다.
+ * 옆의 "평소 28%"와 같은 단위인지 한 번 더 생각하지 않게 하고, 짚을 점 헤드라인("9%p 올랐어요")과 맞춥니다.
  */
 @Composable
 fun MetricFormat.changeText(current: Double, baseline: Double): String {

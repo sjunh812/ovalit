@@ -54,8 +54,9 @@ fun pingClockText(at: Instant, now: Instant, timeZone: TimeZone): String {
 enum class PingDay { TODAY, DAWN, TOMORROW }
 
 /**
- * [at]이 오늘인지, 자정을 넘긴 오늘 밤인지, 내일인지 가립니다. 밤 11시에 고른 0시 30분을 "내일"이라 하면 하루 뒤처럼 읽혀서,
- * 다음 날 6시 전이면 [PingDay.DAWN]입니다. 지금이 이미 새벽이면 다음 날 새벽은 하루 뒤라 [PingDay.TOMORROW]입니다.
+ * [at]이 오늘인지, 자정을 넘긴 오늘 밤인지, 내일인지 가립니다.
+ * 밤 11시에 고른 0시 30분을 "내일"이라 하면 하루 뒤처럼 읽혀서, 다음 날 6시 전이면 [PingDay.DAWN]입니다.
+ * 지금이 이미 새벽이면 다음 날 새벽은 하루 뒤라 [PingDay.TOMORROW]입니다.
  */
 fun pingDayOf(at: Instant, now: Instant, timeZone: TimeZone): PingDay {
     val target = at.toLocalDateTime(timeZone)
@@ -75,8 +76,9 @@ fun pingHeroTime(ping: Ping, timeZone: TimeZone): String =
     if (ping.isNow) stringResource(Res.string.ping_time_now) else clockOf(ping.startsAt, timeZone)
 
 /**
- * 큰 시각 앞에 같이 크게 적는 "내일"이나 "새벽"입니다. 오늘이면 `null`입니다. 옆 작은 글자에만 두면 큰 "16:00"이 오늘로
- * 읽힙니다.
+ * 큰 시각 앞에 같이 크게 적는 "내일"이나 "새벽"입니다.
+ * 오늘이면 `null`입니다.
+ * 옆 작은 글자에만 두면 큰 "16:00"이 오늘로 읽힙니다.
  */
 @Composable
 fun pingHeroDay(ping: Ping, now: Instant, timeZone: TimeZone): String? {
@@ -89,8 +91,9 @@ fun pingHeroDay(ping: Ping, now: Instant, timeZone: TimeZone): String? {
 }
 
 /**
- * 큰 시각 옆 "오늘 · 35분 뒤"입니다. 오늘이 아니면 날짜는 큰 글자 앞에 있어서 "19시간 35분 뒤"만 적습니다. 바로 하자고 한 것은
- * 큰 글자가 이미 "지금"이라 "3분 전에 불렀어요"로 언제 불렀는지를 적고, 시각이 지나면 "시작했어요"입니다.
+ * 큰 시각 옆 "오늘 · 35분 뒤"입니다.
+ * 오늘이 아니면 날짜는 큰 글자 앞에 있어서 "19시간 35분 뒤"만 적습니다.
+ * 바로 하자고 한 것은 큰 글자가 이미 "지금"이라 "3분 전에 불렀어요"로 언제 불렀는지를 적고, 시각이 지나면 "시작했어요"입니다.
  */
 @Composable
 fun pingWhenText(ping: Ping, now: Instant, timeZone: TimeZone): String {
@@ -100,7 +103,9 @@ fun pingWhenText(ping: Ping, now: Instant, timeZone: TimeZone): String {
     }
     val left = ping.startsAt - now
     if (!left.isPositive()) return stringResource(Res.string.ping_started)
-    // 1분 안쪽 끝자리는 올린다. 35분 40초 남았으면 "36분 뒤"다. 0분 뒤라고 적지 않는다.
+    // 1분 안쪽 끝자리는 올린다.
+    // 35분 40초 남았으면 "36분 뒤"다.
+    // 0분 뒤라고 적지 않는다.
     val minutes = (left.inWholeSeconds + 59) / 60
     val hours = (minutes / 60).toInt()
     val rest = (minutes % 60).toInt()
@@ -114,10 +119,11 @@ fun pingWhenText(ping: Ping, now: Instant, timeZone: TimeZone): String {
 }
 
 /**
- * 카드 머리의 "민석의 초대"나 "내 초대"입니다. 받은 것과 보낸 것이 여기서 갈립니다.
+ * 카드 머리의 "민석의 초대"나 "내 초대"입니다.
+ * 받은 것과 보낸 것이 여기서 갈립니다.
  *
- * 닉네임 뒤에는 받침에 따라 바뀌는 조사를 붙이지 않습니다(CLAUDE.md 용어). "봉봉이"는 "봉봉이이"로 읽히고 "Tom"은 받침을
- * 알 수 없어서 "의", "에게"처럼 늘 같은 조사만 씁니다.
+ * 닉네임 뒤에는 받침에 따라 바뀌는 조사를 붙이지 않습니다(CLAUDE.md 용어).
+ * "봉봉이"는 "봉봉이이"로 읽히고 "Tom"은 받침을 알 수 없어서 "의", "에게"처럼 늘 같은 조사만 씁니다.
  */
 @Composable
 fun pingCalledBy(ping: Ping, me: PlayerId): String =

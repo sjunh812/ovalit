@@ -64,14 +64,16 @@ enum class FailedAction {
 }
 
 /**
- * 화면 아래에 잠깐 띄울 실패 안내입니다. [error]가 [OvalitError.Unknown]이 아니면 까닭을 적고("인터넷에 연결되어 있지
- * 않아요"), 모르면 무엇을 못 했는지 적습니다("수락하지 못했어요").
+ * 화면 아래에 잠깐 띄울 실패 안내입니다.
+ * [error]가 [OvalitError.Unknown]이 아니면 까닭을 적고("인터넷에 연결되어 있지 않아요"),
+ * 모르면 무엇을 못 했는지 적습니다("수락하지 못했어요").
  */
 data class FailureNotice(val action: FailedAction, val error: OvalitError = OvalitError.Unknown)
 
 /**
- * ViewModel이 실패를 화면으로 넘기는 통로입니다. 화면이 잠깐 없을 때 생긴 안내는 최근 네 개까지 쌓아 두고 다시 붙으면
- * 띄웁니다. 화면은 [FailureNoticesEffect]로 받습니다.
+ * ViewModel이 실패를 화면으로 넘기는 통로입니다.
+ * 화면이 잠깐 없을 때 생긴 안내는 최근 네 개까지 쌓아 두고 다시 붙으면 띄웁니다.
+ * 화면은 [FailureNoticesEffect]로 받습니다.
  */
 class FailureNotices {
     private val channel = Channel<FailureNotice>(capacity = 4, onBufferOverflow = BufferOverflow.DROP_OLDEST)
@@ -84,8 +86,9 @@ class FailureNotices {
 }
 
 /**
- * [block]을 띄우고, 실패하면 [onFailure]를 부른 뒤 [notices]로 알립니다. 취소는 그대로 던집니다. `viewModelScope`에는
- * 예외 처리기가 없어서 그냥 `launch`에서 던지면 앱이 죽습니다.
+ * [block]을 띄우고, 실패하면 [onFailure]를 부른 뒤 [notices]로 알립니다.
+ * 취소는 그대로 던집니다.
+ * `viewModelScope`에는 예외 처리기가 없어서 그냥 `launch`에서 던지면 앱이 죽습니다.
  */
 fun CoroutineScope.launchNotifying(
     notices: FailureNotices,

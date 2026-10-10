@@ -14,15 +14,21 @@ import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitText
 
 /**
- * 항목을 한 줄에 늘어놓다가 안 들어가면 다음 줄로 넘깁니다. [separator]는 같은 줄에 있는 항목 사이에만
- * 둡니다. FlowRow에 점을 항목처럼 넣으면 줄이 바뀔 때 "· 이번 액트 66경기"처럼 점이 줄 맨 앞에 옵니다.
+ * 항목을 한 줄에 늘어놓다가 안 들어가면 다음 줄로 넘깁니다.
+ * [separator]는 같은 줄에 있는 항목 사이에만 둡니다.
+ * FlowRow에 점을 항목처럼 넣으면 줄이 바뀔 때 "· 이번 액트 66경기"처럼 점이 줄 맨 앞에 옵니다.
  *
- * 항목 하나는 레이아웃 하나만 그려야 합니다. 글자 둘을 나란히 두려면 `Row`로 감쌉니다. 둘을 그대로 내보내면 한
- * 항목이 둘로 세어져 구분점이 어긋납니다. 구분점은 화면 읽기 프로그램이 읽지 않습니다.
+ * 항목 하나는 레이아웃 하나만 그려야 합니다.
+ * 글자 둘을 나란히 두려면 `Row`로 감쌉니다.
+ * 둘을 그대로 내보내면 한 항목이 둘로 세어져 구분점이 어긋납니다.
+ * 구분점은 화면 읽기 프로그램이 읽지 않습니다.
  *
- * @param stacked 한 줄에 들어가도 항목마다 줄을 바꿉니다. 나란한 칸 중 하나라도 넘치면 모든 칸을 같은 모양으로
- *   꺾을 때 씁니다([rememberFitsOnOneLine]). 한 칸만 꺾이면 그 칸만 높아집니다.
- * @param alignBaseline 한 줄 안에서 글자 기준선을 맞춥니다. 크기가 다른 글자를 나란히 둘 때 씁니다. 끄면 가운데를 맞춥니다.
+ * @param stacked 한 줄에 들어가도 항목마다 줄을 바꿉니다.
+ *   나란한 칸 중 하나라도 넘치면 모든 칸을 같은 모양으로 꺾을 때 씁니다([rememberFitsOnOneLine]).
+ *   한 칸만 꺾이면 그 칸만 높아집니다.
+ * @param alignBaseline 한 줄 안에서 글자 기준선을 맞춥니다.
+ *   크기가 다른 글자를 나란히 둘 때 씁니다.
+ *   끄면 가운데를 맞춥니다.
  */
 @Composable
 fun SeparatedRow(
@@ -99,8 +105,9 @@ const val SEPARATOR = " · "
 const val WRAPPING_SEPARATOR = "\u00a0· "
 
 /**
- * 항목들을 한 글자 안에서 [WRAPPING_SEPARATOR]로 잇습니다. 항목 안의 띄어쓰기도 붙여 두어 줄은 항목 사이에서만
- * 바뀝니다. 그대로 이으면 좁은 화면에서 "레이즈 2승 / 1패"처럼 한 항목이 두 줄로 갈립니다.
+ * 항목들을 한 글자 안에서 [WRAPPING_SEPARATOR]로 잇습니다.
+ * 항목 안의 띄어쓰기도 붙여 두어 줄은 항목 사이에서만 바뀝니다.
+ * 그대로 이으면 좁은 화면에서 "레이즈 2승 / 1패"처럼 한 항목이 두 줄로 갈립니다.
  */
 fun joinKeepingParts(parts: List<String>): String = parts.joinToString(WRAPPING_SEPARATOR) { it.keepTogether() }
 

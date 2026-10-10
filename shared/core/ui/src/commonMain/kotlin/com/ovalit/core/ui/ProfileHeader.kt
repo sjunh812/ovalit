@@ -57,25 +57,27 @@ import com.ovalit.core.ui.resources.main_role
 import com.ovalit.core.ui.resources.profile_loading
 import org.jetbrains.compose.resources.stringResource
 
-// 상태 표시줄 밑의 배너 높이다. 머리 줄이 64dp라 아바타는 그보다 8dp 아래에서 시작한다.
+// 상태 표시줄 밑의 배너 높이다.
+// 머리 줄이 64dp라 아바타는 그보다 8dp 아래에서 시작한다.
 private val BannerHeight = 104.dp
 private val AvatarSize = 64.dp
 
 /**
  * 내 프로필과 S5 머리의 배너와 아바타입니다.
  *
- * 배너는 상태 표시줄 밑까지 깔리고 그 높이만큼 길어집니다. 높이를 고정하면 상태 표시줄이 높은 기기에서 아바타가 뒤로
- * 가기 버튼을 덮습니다.
+ * 배너는 상태 표시줄 밑까지 깔리고 그 높이만큼 길어집니다.
+ * 높이를 고정하면 상태 표시줄이 높은 기기에서 아바타가 뒤로 가기 버튼을 덮습니다.
  *
- * 플레이어 카드는 서버에서 받으므로 그때까지 배너는 면만 칠하고 아바타는 Riot ID 첫 글자를 띄웁니다. 카드를 깔 때는
- * 목업처럼 아래쪽을 바탕색 흐림막으로 잇습니다.
+ * 플레이어 카드는 서버에서 받으므로 그때까지 배너는 면만 칠하고 아바타는 Riot ID 첫 글자를 띄웁니다.
+ * 카드를 깔 때는 목업처럼 아래쪽을 바탕색 흐림막으로 잇습니다.
  */
 @Composable
 fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Composable BoxScope.() -> Unit) {
     val colors = OvalitTheme.colors
     val top = WindowInsets.safeDrawing.asPaddingValues().calculateTopPadding()
     Box(modifier = modifier.fillMaxWidth()) {
-        // 카드 그림이 올 자리라 다른 그림 자리처럼 `--fill`이다. `--card`는 라이트에서 흰 띠로 보인다.
+        // 카드 그림이 올 자리라 다른 그림 자리처럼 `--fill`이다.
+        // `--card`는 라이트에서 흰 띠로 보인다.
         Box(modifier = Modifier.fillMaxWidth().height(top + BannerHeight).background(colors.fill)) {
             Box(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)), content = topBar)
         }
@@ -90,8 +92,8 @@ fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Co
 }
 
 /**
- * 내 프로필과 S5를 세는 동안의 모양입니다. 배너와 머리 줄은 그대로 그리고 이름과 첫 카드 자리만 잡아서, 밀려 들어오는
- * 동안에도 머리가 보입니다.
+ * 내 프로필과 S5를 세는 동안의 모양입니다.
+ * 배너와 머리 줄은 그대로 그리고 이름과 첫 카드 자리만 잡아서, 밀려 들어오는 동안에도 머리가 보입니다.
  */
 @Composable
 fun ProfileSkeleton(topBar: @Composable BoxScope.() -> Unit) {
@@ -119,8 +121,9 @@ fun ProfileSkeleton(topBar: @Composable BoxScope.() -> Unit) {
 }
 
 /**
- * 배너가 상태 표시줄 밑을 벗어나면 그 자리를 바탕색으로 덮습니다. 머리가 화면 맨 위까지 깔려 있어서, 안 덮으면
- * 내린 글자가 시계와 겹칩니다. 배너가 아직 그 자리에 있을 때는 배너 색이 보이게 비워 둡니다.
+ * 배너가 상태 표시줄 밑을 벗어나면 그 자리를 바탕색으로 덮습니다.
+ * 머리가 화면 맨 위까지 깔려 있어서, 안 덮으면 내린 글자가 시계와 겹칩니다.
+ * 배너가 아직 그 자리에 있을 때는 배너 색이 보이게 비워 둡니다.
  */
 @Composable
 fun BoxScope.ProfileStatusBarScrim(scrollState: ScrollState) {
@@ -142,12 +145,15 @@ fun BoxScope.ProfileStatusBarScrim(scrollState: ScrollState) {
 }
 
 /**
- * Riot ID와 티어, 가장 많이 뛴 역할입니다. 목업 S5처럼 이름 옆에 엠블럼을 두고, 아래 줄에 "다이아몬드 2 ·
- * 타격대 78%"를 씁니다. 역할 이름만 한 단계 밝고 굵게 올립니다. [trailing]은 그 뒤에 붙는 말입니다.
+ * Riot ID와 티어, 가장 많이 뛴 역할입니다.
+ * 목업 S5처럼 이름 옆에 엠블럼을 두고, 아래 줄에 "다이아몬드 2 · 타격대 78%"를 씁니다.
+ * 역할 이름만 한 단계 밝고 굵게 올립니다.
+ * [trailing]은 그 뒤에 붙는 말입니다.
  *
- * @param showTier 밑에 티어 카드를 크게 두는 화면은 `false`를 넘겨 이름 줄에서 티어를 뺍니다. 이번 액트에 경쟁전이 없어
- * 카드가 없으면 `true`로 두어 이름 줄에 남깁니다.
- * @param mainRoleShare 역할을 아는 라운드 중 [mainRole]로 뛴 비중입니다. 역할만 적으면 그 역할만 한 것처럼 읽힙니다.
+ * @param showTier 밑에 티어 카드를 크게 두는 화면은 `false`를 넘겨 이름 줄에서 티어를 뺍니다.
+ *   이번 액트에 경쟁전이 없어 카드가 없으면 `true`로 두어 이름 줄에 남깁니다.
+ * @param mainRoleShare 역할을 아는 라운드 중 [mainRole]로 뛴 비중입니다.
+ *   역할만 적으면 그 역할만 한 것처럼 읽힙니다.
  */
 @Composable
 fun ProfileIdentity(
@@ -189,8 +195,8 @@ fun mainRoleText(role: Role, share: Double?): String {
     return share?.let { stringResource(Res.string.main_role, name, MetricFormat.PERCENT.valueText(it)) } ?: name
 }
 
-// 아이콘은 역할에 딸린 것이라 역할 이름 바로 앞에 둔다. 글자 안에 넣어야 줄이 넘어가도 아이콘과 이름이
-// 떨어지지 않는다.
+// 아이콘은 역할에 딸린 것이라 역할 이름 바로 앞에 둔다.
+// 글자 안에 넣어야 줄이 넘어가도 아이콘과 이름이 떨어지지 않는다.
 @Composable
 private fun MainRole(role: Role, share: Double?) {
     val colors = OvalitTheme.colors

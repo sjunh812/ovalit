@@ -33,15 +33,18 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.decodeToImageBitmap
 
-// 게임 이미지는 콘텐츠 카탈로그에서 골라 `files/`에 넣어 둔다(tools/bundle_assets.py). 서버가 이미지를
-// 내려주게 되면 그쪽을 먼저 보고, 못 받으면 여기서 찾는다. 여기에도 없으면 이름 첫 글자로 자리를 잡는다.
+// 게임 이미지는 콘텐츠 카탈로그에서 골라 `files/`에 넣어 둔다(tools/bundle_assets.py).
+// 서버가 이미지를 내려주게 되면 그쪽을 먼저 보고, 못 받으면 여기서 찾는다.
+// 여기에도 없으면 이름 첫 글자로 자리를 잡는다.
 // ID에서 파일 이름으로 가는 표는 스크립트가 만든 GameAssetIndex에 있다.
 
 enum class MapImageStyle { THUMBNAIL, BANNER }
 
 /**
- * 요원 얼굴입니다. 번들에 얼굴이 없는 새 요원이면 [name]의 첫 글자를 띄웁니다. [name]이 `null`이면 카탈로그에 이름도 없는
- * 요원(건틀릿: 글리치의 로봇 등)이라 글자 없이 빈 면만 둡니다. "알 수 없는 요원"의 "알"은 아무것도 알려 주지 않습니다.
+ * 요원 얼굴입니다.
+ * 번들에 얼굴이 없는 새 요원이면 [name]의 첫 글자를 띄웁니다.
+ * [name]이 `null`이면 카탈로그에 이름도 없는 요원(건틀릿: 글리치의 로봇 등)이라 글자 없이 빈 면만 둡니다.
+ * "알 수 없는 요원"의 "알"은 아무것도 알려 주지 않습니다.
  */
 @Composable
 fun AgentImage(agent: AgentId?, name: String?, modifier: Modifier = Modifier) {
@@ -50,10 +53,13 @@ fun AgentImage(agent: AgentId?, name: String?, modifier: Modifier = Modifier) {
 }
 
 /**
- * 사람을 나타내는 동그란 아바타입니다. 플레이어 카드 자리인데 카드는 서버에서 받으므로, 그때까지는 Riot ID
- * 첫 글자를 띄웁니다. 요원 얼굴은 경기 기록에만 씁니다. 그 판에 고른 요원이지 그 사람 얼굴이 아닙니다.
+ * 사람을 나타내는 동그란 아바타입니다.
+ * 플레이어 카드 자리인데 카드는 서버에서 받으므로, 그때까지는 Riot ID 첫 글자를 띄웁니다.
+ * 요원 얼굴은 경기 기록에만 씁니다.
+ * 그 판에 고른 요원이지 그 사람 얼굴이 아닙니다.
  *
- * 첫 글자는 화면 읽기 프로그램이 읽지 않습니다. 이름은 옆이나 밑에 따로 있습니다.
+ * 첫 글자는 화면 읽기 프로그램이 읽지 않습니다.
+ * 이름은 옆이나 밑에 따로 있습니다.
  */
 @Composable
 fun PlayerAvatar(riotId: String, size: Dp, modifier: Modifier = Modifier) {
@@ -62,7 +68,8 @@ fun PlayerAvatar(riotId: String, size: Dp, modifier: Modifier = Modifier) {
         modifier = modifier.size(size).clip(CircleShape).background(colors.fill),
         contentAlignment = Alignment.Center,
     ) {
-        // 글자를 아바타 크기에 맞춘다. 글꼴 배율을 따라 커지면 원 밖으로 넘친다.
+        // 글자를 아바타 크기에 맞춘다.
+        // 글꼴 배율을 따라 커지면 원 밖으로 넘친다.
         val fontSize = with(LocalDensity.current) { (size * 0.42f).toSp() }
         OvalitText(
             text = riotId.take(1).uppercase(),
@@ -88,8 +95,8 @@ fun MapImage(map: MapId, style: MapImageStyle, modifier: Modifier = Modifier) {
 }
 
 /**
- * 무기는 기본 스킨 그림을 [tint] 한 가지로 칠한 실루엣입니다. 카탈로그의 무기 그림은 흰 선화라 밝은 바탕에서 안 보이고,
- * 스킨 그림을 그대로 두면 짙은 총이 다크 바탕에 묻힙니다(docs/design.md 에셋).
+ * 무기는 기본 스킨 그림을 [tint] 한 가지로 칠한 실루엣입니다.
+ * 카탈로그의 무기 그림은 흰 선화라 밝은 바탕에서 안 보이고, 스킨 그림을 그대로 두면 짙은 총이 다크 바탕에 묻힙니다(docs/design.md 에셋).
  */
 @Composable
 fun WeaponImage(
@@ -150,8 +157,8 @@ private fun BundledImage(
     fallbackText: String? = null,
     alignment: Alignment = Alignment.Center,
 ) {
-    // produceState는 키가 바뀌어도 이전 값을 들고 있어서 경로마다 상태를 새로 만든다. 안 그러면 칸의 무기가 바뀌어도
-    // 옛 그림이 남는다.
+    // produceState는 키가 바뀌어도 이전 값을 들고 있어서 경로마다 상태를 새로 만든다.
+    // 안 그러면 칸의 무기가 바뀌어도 옛 그림이 남는다.
     val holder = remember(path) { mutableStateOf(ImageCache[path]) }
     LaunchedEffect(path) {
         if (path == null || holder.value != LoadState.Pending) return@LaunchedEffect
@@ -189,8 +196,10 @@ private sealed interface LoadState {
     data class Ready(val image: ImageBitmap) : LoadState
 }
 
-// 목록을 내릴 때마다 같은 그림을 다시 읽어 들이지 않도록 최근에 쓴 것만 들고 있는다. 꺼낼 때마다 맨 뒤로 옮겨서
-// 오래 안 쓴 것부터 버린다. 파일이 없었던 경로도 기억해서 없는 파일을 거듭 찾지 않는다. 컴포지션 스레드에서만 만진다.
+// 목록을 내릴 때마다 같은 그림을 다시 읽어 들이지 않도록 최근에 쓴 것만 들고 있는다.
+// 꺼낼 때마다 맨 뒤로 옮겨서 오래 안 쓴 것부터 버린다.
+// 파일이 없었던 경로도 기억해서 없는 파일을 거듭 찾지 않는다.
+// 컴포지션 스레드에서만 만진다.
 private object ImageCache {
     private const val MAX_ENTRIES = 160
     private val entries = LinkedHashMap<String, LoadState>()

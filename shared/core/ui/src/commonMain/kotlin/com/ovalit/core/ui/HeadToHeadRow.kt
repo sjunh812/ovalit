@@ -27,11 +27,12 @@ private val MaxLabelWidth = 76.dp
 private val ValueWidth = 40.dp
 
 /**
- * 라이벌 대결과 S5 "나와 비교"의 한 줄입니다. 앞선 쪽이 차지하는 몫만큼 그쪽 끝에서부터 막대를
- * 채웁니다. 내가 앞서면 밝게, 상대가 앞서면 흐리게 칠합니다.
+ * 라이벌 대결과 S5 "나와 비교"의 한 줄입니다.
+ * 앞선 쪽이 차지하는 몫만큼 그쪽 끝에서부터 막대를 채웁니다.
+ * 내가 앞서면 밝게, 상대가 앞서면 흐리게 칠합니다.
  *
- * @param rowMetrics 위아래로 같이 놓이는 지표 전부입니다. 이름과 숫자를 줄마다 따로 줄이면 "전투점수"만 작아지므로,
- *   가장 긴 것에 맞춘 크기를 모든 줄에 씁니다.
+ * @param rowMetrics 위아래로 같이 놓이는 지표 전부입니다.
+ *   이름과 숫자를 줄마다 따로 줄이면 "전투점수"만 작아져서 가장 긴 것에 맞춘 크기를 모든 줄에 씁니다.
  */
 @Composable
 fun HeadToHeadRow(
@@ -42,8 +43,8 @@ fun HeadToHeadRow(
 ) {
     val colors = OvalitTheme.colors
     val typography = OvalitTheme.typography
-    // 이름 칸은 가장 긴 이름에 맞추되 막대가 너무 짧아지지 않게 76dp에서 멈춘다. 폭을 48dp로 묶어 두면 글자를 키웠을 때
-    // 이름이 숫자보다 훨씬 작아진다.
+    // 이름 칸은 가장 긴 이름에 맞추되 막대가 너무 짧아지지 않게 76dp에서 멈춘다.
+    // 폭을 48dp로 묶어 두면 글자를 키웠을 때 이름이 숫자보다 훨씬 작아진다.
     val labels = rowMetrics.map { stringResource(it.label) }
     val labelWidth = rememberWidestWidth(labels, typography.caption).coerceIn(LabelWidth, MaxLabelWidth)
     val labelStyle = rememberFittingStyle(labels, typography.caption, labelWidth)

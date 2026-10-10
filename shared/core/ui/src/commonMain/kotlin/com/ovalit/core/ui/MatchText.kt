@@ -82,8 +82,8 @@ fun ContentCatalog.agentName(id: AgentId): String = agents[id] ?: stringResource
 fun ContentCatalog.mapName(id: MapId): String = maps[id] ?: stringResource(Res.string.unknown_map)
 
 /**
- * 날짜 머리 아래 놓이는 경기 줄의 시각입니다. 오늘 경기는 "2시간 전"처럼, 그 전 경기는 날짜가 머리에
- * 있으니 "23:40"처럼 시각만 적습니다.
+ * 날짜 머리 아래 놓이는 경기 줄의 시각입니다.
+ * 오늘 경기는 "2시간 전"처럼, 그 전 경기는 날짜가 머리에 있으니 "23:40"처럼 시각만 적습니다.
  */
 @Composable
 fun matchTimeLabel(startedAt: Instant, now: Instant, timeZone: TimeZone): String {

@@ -81,7 +81,8 @@ import com.ovalit.core.ui.resources.record_wins_losses
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-// 내 프로필과 S5 친구 프로필이 같이 쓰는 덩어리들이다. 한쪽만 고치면 두 프로필의 같은 칸이 다르게 보인다.
+// 내 프로필과 S5 친구 프로필이 같이 쓰는 덩어리들이다.
+// 한쪽만 고치면 두 프로필의 같은 칸이 다르게 보인다.
 
 private val TierEmblemBoxSize = 56.dp
 private val TierEmblemSize = 42.dp
@@ -114,7 +115,8 @@ fun ProfileTierCard(record: CompetitiveRecord, catalog: ContentCatalog) {
                     style = OvalitTheme.typography.titleM,
                 )
                 Spacer(Modifier.height(2.dp))
-                // 글자를 키워 한 줄에 안 들어가면 승패가 통째로 다음 줄로 내려간다. 점은 줄 끝에 두지 않는다.
+                // 글자를 키워 한 줄에 안 들어가면 승패가 통째로 다음 줄로 내려간다.
+                // 점은 줄 끝에 두지 않는다.
                 val caption = OvalitTheme.typography.caption
                 SeparatedRow(
                     items = listOf(
@@ -127,7 +129,8 @@ fun ProfileTierCard(record: CompetitiveRecord, catalog: ContentCatalog) {
             Spacer(Modifier.width(OvalitSpacing.md))
             Column(horizontalAlignment = Alignment.End, modifier = Modifier.semantics(mergeDescendants = true) {}) {
                 OvalitText(text = stringResource(Res.string.column_win_rate), style = OvalitTheme.typography.caption, color = colors.t3)
-                // 승률을 티어 이름보다 크게 두면 티어보다 먼저 읽힌다. 같은 크기에 숫자 폭만 고정한다.
+                // 승률을 티어 이름보다 크게 두면 티어보다 먼저 읽힌다.
+                // 같은 크기에 숫자 폭만 고정한다.
                 OvalitText(
                     text = percentText(record.winRate),
                     style = StatValueStyle(),
@@ -139,8 +142,10 @@ fun ProfileTierCard(record: CompetitiveRecord, catalog: ContentCatalog) {
 }
 
 /**
- * 이번 액트 합계입니다. 피해량, K/D, 전투점수, 최다 킬, KDA, 플레이 시간, 에이스, 클러치 순서로 한 줄에 세 칸씩
- * 놓습니다. 좁은 화면에서 글자를 키우면 같은 순서로 두 칸씩 놓습니다. 내 프로필과 S5가 같이 씁니다.
+ * 이번 액트 합계입니다.
+ * 피해량, K/D, 전투점수, 최다 킬, KDA, 플레이 시간, 에이스, 클러치 순서로 한 줄에 세 칸씩 놓습니다.
+ * 좁은 화면에서 글자를 키우면 같은 순서로 두 칸씩 놓습니다.
+ * 내 프로필과 S5가 같이 씁니다.
  */
 @Composable
 fun ProfileStatsSection(summary: ProfileSummary) {
@@ -150,7 +155,8 @@ fun ProfileStatsSection(summary: ProfileSummary) {
     }
     val records = listOf(
         StatCell(stringResource(Res.string.profile_most_kills), summary.mostKills?.toString()),
-        // KDA 숫자만으로는 몇 킬 몇 데스인지 모른다. 판당 K/D/A를 그 밑에 붙인다.
+        // KDA 숫자만으로는 몇 킬 몇 데스인지 모른다.
+        // 판당 K/D/A를 그 밑에 붙인다.
         StatCell(
             label = stringResource(Res.string.profile_kda),
             value = metrics.kda?.let { MetricFormat.TWO_DECIMALS.format(it) },
@@ -201,12 +207,14 @@ private val STAT_MIN_SIZE = 11.sp
 private class StatStyles(val label: TextStyle, val value: TextStyle, val detail: TextStyle)
 
 /**
- * @property detail 숫자 밑에 작게 붙이는 풀이입니다. KDA 밑의 판당 K/D/A가 그렇습니다.
+ * @property detail 숫자 밑에 작게 붙이는 풀이입니다.
+ *   KDA 밑의 판당 K/D/A가 그렇습니다.
  * @property kda KDA 칸이면 구간 색을 고르는 값입니다.
  */
 private class StatCell(val label: String, val value: String?, val detail: String? = null, val kda: Double? = null)
 
-// 자릿수는 다른 화면의 판당 K/D/A와 같다(perMatchKda). 칸이 좁아 빗금 양옆에 공백을 두지 않는다.
+// 자릿수는 다른 화면의 판당 K/D/A와 같다(perMatchKda).
+// 칸이 좁아 빗금 양옆에 공백을 두지 않는다.
 @Composable
 private fun perMatchText(metrics: MatchMetrics): String? {
     val (kills, deaths, assists) = metrics.perMatchKda() ?: return null
@@ -256,8 +264,9 @@ private fun StatRow(cells: List<StatCell>, columns: Int, styles: StatStyles) {
     }
 }
 
-// "45시간", "10번 중 5번"의 글자 부분을 한 단계 작게 둔다. 토스나 애플 피트니스처럼 숫자만 크게 두어야 숫자가 먼저 읽히고 칸이
-// 무거워지지 않는다. 숫자와 기호(%, ., /)는 그대로다.
+// "45시간", "10번 중 5번"의 글자 부분을 한 단계 작게 둔다.
+// 토스나 애플 피트니스처럼 숫자만 크게 두어야 숫자가 먼저 읽히고 칸이 무거워지지 않는다.
+// 숫자와 기호(%, ., /)는 그대로다.
 private fun withSmallUnits(text: String): AnnotatedString = buildAnnotatedString {
     text.forEach { char ->
         if (char.isLetter()) withStyle(SpanStyle(fontSize = UnitScale.em)) { append(char) } else append(char)
@@ -266,12 +275,13 @@ private fun withSmallUnits(text: String): AnnotatedString = buildAnnotatedString
 
 private const val UnitScale = 0.8f
 
-// 목업처럼 티어 이름(titleM)과 같은 크기다. 홈의 큰 지표 숫자 크기를 쓰면 통계 칸들이 제목보다 커진다.
+// 목업처럼 티어 이름(titleM)과 같은 크기다.
+// 홈의 큰 지표 숫자 크기를 쓰면 통계 칸들이 제목보다 커진다.
 @Composable
 private fun StatValueStyle(): TextStyle =
     OvalitTheme.typography.metricM.copy(fontSize = OvalitTheme.typography.titleM.fontSize, lineHeight = 24.sp)
 
-// 열 시간부터는 분을 버린다. 칸이 좁다.
+// 칸이 좁아 열 시간부터는 분을 버린다.
 @Composable
 private fun playTimeText(millis: Long): String {
     val minutes = (millis / 60_000).toInt()
@@ -284,7 +294,8 @@ private fun playTimeText(millis: Long): String {
 }
 
 /**
- * 맞힌 탄을 머리, 몸, 다리로 나눈 막대입니다. 홈 헤드샷과 같은 맞힌 탄 기준이고, 탄이 하나도 없으면 그리지 않습니다.
+ * 맞힌 탄을 머리, 몸, 다리로 나눈 막대입니다.
+ * 홈 헤드샷과 같은 맞힌 탄 기준이고, 탄이 하나도 없으면 그리지 않습니다.
  */
 @Composable
 fun ProfileShotsSection(shots: Shots) {
@@ -318,10 +329,11 @@ fun ShotsBreakdown(shots: Shots) {
             }
         }
         Spacer(Modifier.height(12.dp))
-        // 부위마다 따로 반올림해서 합이 99%나 101%일 수 있다. 합을 100에 맞추려고 한 칸을 고치면 머리 비율이 다른 화면의
-        // 헤드샷과 달라진다.
+        // 부위마다 따로 반올림해서 합이 99%나 101%일 수 있다.
+        // 합을 100에 맞추려고 한 칸을 고치면 머리 비율이 다른 화면의 헤드샷과 달라진다.
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            // 한 칸이라도 탄 수가 비율 옆에 안 들어가면 세 칸 모두 탄 수를 아래로 내린다. 한 칸만 내리면 그 칸만 높아진다.
+            // 한 칸이라도 탄 수가 비율 옆에 안 들어가면 세 칸 모두 탄 수를 아래로 내린다.
+            // 한 칸만 내리면 그 칸만 높아진다.
             val typography = OvalitTheme.typography
             val lines = parts.map { part ->
                 buildAnnotatedString {
@@ -348,7 +360,8 @@ private fun ShotLegend(part: ShotPart, total: Int, stacked: Boolean, modifier: M
     Column(modifier = modifier.semantics(mergeDescendants = true) {}) {
         OvalitText(text = stringResource(part.label), style = typography.caption, color = colors.t2)
         Spacer(Modifier.height(3.dp))
-        // 비율과 탄 수는 따로 두고 칸이 좁으면 탄 수를 통째로 다음 줄에 내린다. 한 글줄로 두면 "3,737"이 쉼표에서 갈라진다.
+        // 비율과 탄 수는 따로 두고 칸이 좁으면 탄 수를 통째로 다음 줄에 내린다.
+        // 한 글줄로 두면 "3,737"이 쉼표에서 갈라진다.
         SeparatedRow(
             items = listOf(
                 { OvalitText(text = percentText(part.count.toDouble() / total), style = typography.label.copy(fontWeight = FontWeight.SemiBold)) },
@@ -361,8 +374,10 @@ private fun ShotLegend(part: ShotPart, total: Int, stacked: Boolean, modifier: M
 }
 
 /**
- * 많이 뛴 요원 셋입니다. 판 수와 승률, KDA를 적습니다.
- * [onOpen]이 있으면 섹션 전체가 눌립니다. 내 프로필은 내 S7을, S5는 친구 기록으로 S7을 엽니다.
+ * 많이 뛴 요원 셋입니다.
+ * 판 수와 승률, KDA를 적습니다.
+ * [onOpen]이 있으면 섹션 전체가 눌립니다.
+ * 내 프로필은 내 S7을, S5는 친구 기록으로 S7을 엽니다.
  */
 @Composable
 fun ProfileAgentsSection(report: AgentReport, catalog: ContentCatalog, onOpen: (() -> Unit)? = null) {
@@ -378,11 +393,14 @@ fun ProfileAgentsSection(report: AgentReport, catalog: ContentCatalog, onOpen: (
 }
 
 /**
- * 요원 세 칸입니다. 내 프로필, S5, 홈이 같이 씁니다.
+ * 요원 세 칸입니다.
+ * 내 프로필, S5, 홈이 같이 씁니다.
  *
- * 승률과 KDA는 표본이 적어도 그대로 적습니다. 견주는 숫자가 아니라 그 사람의 기록이라 표본으로 가리지 않습니다.
+ * 승률과 KDA는 표본이 적어도 그대로 적습니다.
+ * 견주는 숫자가 아니라 그 사람의 기록이라 표본으로 가리지 않습니다.
  *
- * @param showRecord 판 수 대신 "2승 1패"를 적습니다. 홈처럼 기간이 짧은 곳에 씁니다.
+ * @param showRecord 판 수 대신 "2승 1패"를 적습니다.
+ *   홈처럼 기간이 짧은 곳에 씁니다.
  */
 @Composable
 fun AgentTileRow(agents: List<AgentStats>, catalog: ContentCatalog, showRecord: Boolean = false) {
@@ -444,8 +462,9 @@ private fun AgentTile(agent: AgentStats, catalog: ContentCatalog, stacked: Boole
 }
 
 /**
- * S6 위쪽 세 줄과 같은 무기입니다. 이번 액트 킬 수, 헤드샷, 라운드당 피해량을 적습니다. [onOpen]이 있으면 섹션 전체가
- * 눌리고 S6으로 갑니다.
+ * S6 위쪽 세 줄과 같은 무기입니다.
+ * 이번 액트 킬 수, 헤드샷, 라운드당 피해량을 적습니다.
+ * [onOpen]이 있으면 섹션 전체가 눌리고 S6으로 갑니다.
  */
 @Composable
 fun ProfileWeaponsSection(report: WeaponReport, catalog: ContentCatalog, onOpen: (() -> Unit)? = null) {
@@ -472,7 +491,8 @@ fun WeaponTileRow(weapons: List<WeaponStats>, catalog: ContentCatalog) {
             OvalitTheme.typography.caption,
             tileWidth,
         )
-        // 요원 칸과 같은 세 칸 격자에 놓는다. 무기가 셋이 안 되면 빈칸을 남겨 요원과 줄을 맞춘다.
+        // 요원 칸과 같은 세 칸 격자에 놓는다.
+        // 무기가 셋이 안 되면 빈칸을 남겨 요원과 줄을 맞춘다.
         Row(horizontalArrangement = Arrangement.spacedBy(TileGap)) {
             shown.forEachIndexed { index, weapon -> WeaponTile(weapon, lines[index], stacked, catalog, Modifier.weight(1f)) }
             repeat(SHOWN_TILES - shown.size) { Spacer(Modifier.weight(1f)) }
@@ -495,7 +515,8 @@ private fun weaponLine(weapon: WeaponStats): WeaponLine {
 }
 
 /**
- * "헤드샷 42%"에서 숫자만 진하게 칠합니다. 이름과 단위까지 한 회색으로 두면 바로 위 요원 칸의 승률·KDA와 달리 숫자가 묻힙니다.
+ * "헤드샷 42%"에서 숫자만 진하게 칠합니다.
+ * 이름과 단위까지 한 회색으로 두면 바로 위 요원 칸의 승률·KDA와 달리 숫자가 묻힙니다.
  * 이름이 앞인지 뒤인지는 언어마다 달라 문구에서 숫자 자리를 찾습니다.
  */
 @Composable
@@ -532,8 +553,9 @@ private fun WeaponTile(weapon: WeaponStats, line: WeaponLine, stacked: Boolean, 
 }
 
 /**
- * 프로필 화면의 한 덩어리입니다. 카드 하나에 담고 위 덩어리와 카드 간격만큼 띄웁니다. [onClick]이 있으면 카드 전체가
- * 눌립니다.
+ * 프로필 화면의 한 덩어리입니다.
+ * 카드 하나에 담고 위 덩어리와 카드 간격만큼 띄웁니다.
+ * [onClick]이 있으면 카드 전체가 눌립니다.
  */
 @Composable
 fun ProfileSection(onClick: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {

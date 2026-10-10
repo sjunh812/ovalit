@@ -12,10 +12,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import org.jetbrains.compose.resources.getString
 
 /**
- * 홈과 경기 탭을 당겨 새 경기를 받은 결과를 화면으로 넘기는 통로입니다. 화면은 [RefreshResultsEffect]로 받아 "새 경기 3판을
- * 불러왔어요"를 한 줄 띄웁니다. 앱이 다시 보일 때처럼 저절로 받은 것은 보내지 않습니다.
+ * 홈과 경기 탭을 당겨 새 경기를 받은 결과를 화면으로 넘기는 통로입니다.
+ * 화면은 [RefreshResultsEffect]로 받아 "새 경기 3판을 불러왔어요"를 한 줄 띄웁니다.
+ * 앱이 다시 보일 때처럼 저절로 받은 것은 보내지 않습니다.
  *
- * [FailureNotices]와 달리 받는 화면이 없을 때 생긴 결과는 버립니다. 다른 탭에 갔다 돌아온 뒤에 띄우면 언제 당긴 결과인지 모릅니다.
+ * [FailureNotices]와 달리 받는 화면이 없을 때 생긴 결과는 버립니다.
+ * 다른 탭에 갔다 돌아온 뒤에 띄우면 언제 당긴 결과인지 모릅니다.
  */
 class RefreshResults {
     private val results = MutableSharedFlow<Int>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)

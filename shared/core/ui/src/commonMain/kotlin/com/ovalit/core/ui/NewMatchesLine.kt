@@ -41,16 +41,21 @@ import com.ovalit.core.ui.resources.new_matches_receiving
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * 오래 쉬었다 와서 새 경기를 여러 판 받는 동안 홈과 경기 탭 맨 위에 두는 한 줄입니다. 몇 판 중 몇 판을 받았는지 적고 가는
- * 막대를 채웁니다. 다 받으면 접혀 사라집니다. [progress]가 `null`이면 그리지 않습니다.
+ * 오래 쉬었다 와서 새 경기를 여러 판 받는 동안 홈과 경기 탭 맨 위에 두는 한 줄입니다.
+ * 몇 판 중 몇 판을 받았는지 적고 가는 막대를 채웁니다.
+ * 다 받으면 접혀 사라집니다.
+ * [progress]가 `null`이면 그리지 않습니다.
  *
- * 받는 동안 홈 숫자는 그대로라 왜 안 바뀌는지 여기서 알 수 있습니다. 앱을 닫아도 이어 받을 만큼 많으면 그렇다고 한 줄 더 적습니다.
+ * 받는 동안 홈 숫자는 그대로라 왜 안 바뀌는지 여기서 알 수 있습니다.
+ * 앱을 닫아도 이어 받을 만큼 많으면 그렇다고 한 줄 더 적습니다.
  *
- * @param bottomSpacing 줄이 보일 때만 밑에 두는 간격입니다. 사라질 때 같이 접혀 아래 내용이 한 번에 올라옵니다.
+ * @param bottomSpacing 줄이 보일 때만 밑에 두는 간격입니다.
+ *   사라질 때 같이 접혀 아래 내용이 한 번에 올라옵니다.
  */
 @Composable
 fun NewMatchesLine(progress: NewMatchesProgress?, modifier: Modifier = Modifier, bottomSpacing: Dp = 0.dp) {
-    // 사라지는 동안에도 마지막 숫자를 그대로 둔다. null로 바로 바꾸면 접히는 중에 글자가 비어 보인다.
+    // 사라지는 동안에도 마지막 숫자를 그대로 둔다.
+    // null로 바로 바꾸면 접히는 중에 글자가 비어 보인다.
     val shown = remember { LastShown<NewMatchesProgress>() }.update(progress)
     AnimatedVisibility(
         visible = progress != null,
@@ -75,7 +80,8 @@ private fun Line(progress: NewMatchesProgress) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = OvalitSpacing.gutter)
-            // 한 판 받을 때마다 화면 읽기 프로그램이 읽으면 시끄럽다. 진행도로만 알려 사용자가 짚을 때 읽게 한다.
+            // 한 판 받을 때마다 화면 읽기 프로그램이 읽으면 시끄럽다.
+            // 진행도로만 알려 사용자가 짚을 때 읽게 한다.
             .clearAndSetSemantics {
                 contentDescription = description
                 progressBarRangeInfo = ProgressBarRangeInfo(progress.received.toFloat(), 0f..progress.total.toFloat())

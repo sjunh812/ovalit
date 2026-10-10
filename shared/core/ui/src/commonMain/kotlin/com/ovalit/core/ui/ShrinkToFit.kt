@@ -20,13 +20,13 @@ import kotlin.math.floor
 val MinFittingTextSize = 7.sp
 
 /**
- * 폭이 정해진 칸에서 글자를 키운 사용자에게 "전투점수"가 "전투"로 잘리지 않게, 줄을 바꾸는 대신 글자를
- * 줄입니다. `maxLines = 1`과 같이 씁니다.
+ * 폭이 정해진 칸에서 글자를 키운 사용자에게 "전투점수"가 "전투"로 잘리지 않게, 줄을 바꾸는 대신 글자를 줄입니다.
+ * `maxLines = 1`과 같이 씁니다.
  */
 fun shrinkToFit(size: TextUnit, min: TextUnit = MinFittingTextSize): TextAutoSize = FitFirstAutoSize(min = min, max = size)
 
-// 기본 StepBased는 다 들어가도 범위를 반씩 좁혀 가며 예닐곱 번 다시 잰다. 홈 고정 칸처럼 칸마다 붙이면 첫 화면 한 프레임이
-// 수십 ms 늘어서, 원래 크기로 한 번 재 보고 넘칠 때만 줄여 찾는다.
+// 기본 StepBased는 다 들어가도 범위를 반씩 좁혀 가며 예닐곱 번 다시 잰다.
+// 홈 고정 칸처럼 칸마다 붙이면 첫 화면 한 프레임이 수십 ms 늘어서, 원래 크기로 한 번 재 보고 넘칠 때만 줄여 찾는다.
 private data class FitFirstAutoSize(val min: TextUnit, val max: TextUnit) : TextAutoSize {
     private val shrinking = TextAutoSize.StepBased(minFontSize = min, maxFontSize = max)
 
@@ -36,17 +36,18 @@ private data class FitFirstAutoSize(val min: TextUnit, val max: TextUnit) : Text
     }
 }
 
-// 말줄임이 붙었으면 넘친 것으로 본다. StepBased도 그렇게 본다.
+// StepBased처럼 말줄임이 붙었으면 넘친 것으로 본다.
 private fun TextLayoutResult.fits(): Boolean =
     !didOverflowWidth && !didOverflowHeight && (lineCount == 0 || !isLineEllipsized(lineCount - 1))
 
 /**
- * 나란히 놓인 칸들의 글자를 한 크기로 맞춥니다. 칸마다 따로 줄이면 긴 글자만 작아져서 "전투점수" 옆의 "K/D"가
- * 더 커 보이고, 줄 높이도 달라져 아래 숫자의 높이가 칸마다 어긋납니다. 가장 긴 글자가 [width]에 한 줄로
- * 들어가는 크기를 모든 칸에 씁니다. 다 들어가면 [style]을 그대로 돌려줍니다.
+ * 나란히 놓인 칸들의 글자를 한 크기로 맞춥니다.
+ * 칸마다 따로 줄이면 긴 글자만 작아져서 "전투점수" 옆의 "K/D"가 더 커 보이고, 줄 높이도 달라져 아래 숫자의 높이가 칸마다 어긋납니다.
+ * 가장 긴 글자가 [width]에 한 줄로 들어가는 크기를 모든 칸에 씁니다.
+ * 다 들어가면 [style]을 그대로 돌려줍니다.
  *
- * 크기를 재는 데 칸 폭이 필요하므로 `BoxWithConstraints` 안에서 부릅니다. 세로 구분선 높이를 맞추려고
- * `IntrinsicSize.Min`을 건 줄 안에서는 부르지 않습니다.
+ * 크기를 재는 데 칸 폭이 필요해서 `BoxWithConstraints` 안에서 부릅니다.
+ * 세로 구분선 높이를 맞추려고 `IntrinsicSize.Min`을 건 줄 안에서는 부르지 않습니다.
  *
  * @param width 한 칸에서 글자가 쓸 수 있는 폭입니다.
  */
@@ -56,7 +57,8 @@ fun rememberFittingStyle(texts: List<String>, style: TextStyle, width: Dp, min: 
     val density = LocalDensity.current
     return remember(texts, style, width, min, density, measurer) {
         val widest = texts.maxOfOrNull { measurer.measure(it, style, softWrap = false, maxLines = 1).size.width } ?: 0
-        // 잰 폭은 올림한 정수라 같은 비율로 줄여도 1px 넘칠 수 있다. 1px 덜 쓰게 잡는다.
+        // 잰 폭은 올림한 정수라 같은 비율로 줄여도 1px 넘칠 수 있다.
+        // 1px 덜 쓰게 잡는다.
         val available = with(density) { width.toPx() } - 1f
         if (widest == 0 || widest <= available) return@remember style
         val scale = available / widest
@@ -69,7 +71,8 @@ fun rememberFittingStyle(texts: List<String>, style: TextStyle, width: Dp, min: 
 }
 
 /**
- * 나란한 칸마다 놓인 짧은 줄이 모두 [width] 안에 한 줄로 들어가는지 봅니다. 하나라도 넘치면 false입니다.
+ * 나란한 칸마다 놓인 짧은 줄이 모두 [width] 안에 한 줄로 들어가는지 봅니다.
+ * 하나라도 넘치면 `false`입니다.
  * [rememberFittingStyle]처럼 `BoxWithConstraints` 안에서 부릅니다.
  *
  * @param extra 줄 안에서 글자가 아닌 간격입니다(항목 사이 Spacer 같은 것).

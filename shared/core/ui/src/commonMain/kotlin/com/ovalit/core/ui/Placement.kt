@@ -65,7 +65,7 @@ fun standingText(standing: Standing, format: MatchFormat): String = stringResour
 @Composable
 fun standingColor(rank: Int): Color = if (rank == 1) OvalitTheme.colors.pos else OvalitTheme.colors.t1
 
-/** 그 판에서의 자리입니다. MVP와 팀 MVP는 색 칩, 나머지는 "3등"을 적은 흐린 칩입니다. */
+/** 그 판의 자리입니다. MVP와 팀 MVP는 색 칩, 나머지는 "3등"을 적은 흐린 칩입니다. */
 @Composable
 fun PlacementLabel(placement: MatchPlacement, modifier: Modifier = Modifier) {
     val award = awardText(placement.award)
@@ -100,7 +100,8 @@ fun MatchChip(text: String, tone: MatchChipTone, modifier: Modifier = Modifier) 
         MatchChipTone.CLUTCH -> colors.clutchContainer to colors.clutch
         MatchChipTone.QUIET -> colors.fill to colors.t2
     }
-    // 이름 옆에 붙는 작은 표시라 글자보다 한 단계 작게 둔다. 더 키우면 이름보다 칩이 먼저 보인다.
+    // 이름 옆에 붙는 작은 표시라 글자보다 한 단계 작게 둔다.
+    // 더 키우면 이름보다 칩이 먼저 보인다.
     Box(
         modifier = modifier
             .heightIn(min = 19.dp)

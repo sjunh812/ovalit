@@ -17,7 +17,8 @@ class KdaTierTest {
         assertEquals(KdaTier.THREE, kdaTier(5.5))
     }
 
-    // 1.995는 화면에 "2.00"으로 뜬다. 1~2 구간 색이면 틀려 보인다.
+    // 1.995는 화면에 "2.00"으로 뜬다.
+    // 1~2 구간 색이면 틀려 보인다.
     @Test
     fun `구간은 화면에 보이는 두 자리로 가른다`() {
         assertEquals(KdaTier.TWO, kdaTier(1.995))

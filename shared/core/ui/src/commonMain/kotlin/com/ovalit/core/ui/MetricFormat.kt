@@ -6,8 +6,8 @@ import kotlin.math.roundToInt
 /**
  * 지표 숫자를 몇 자리까지 보여줄지 정합니다.
  *
- * 변화량은 원래 값이 아니라 화면에 보이는 자릿수로 반올림한 값끼리 뺍니다. 74%와 69%를
- * 나란히 띄워 놓고 변화량에 +6을 쓰면 틀려 보입니다.
+ * 변화량은 원래 값이 아니라 화면에 보이는 자릿수로 반올림한 값끼리 뺍니다.
+ * 74%와 69%를 나란히 띄워 놓고 변화량에 +6을 쓰면 틀려 보입니다.
  */
 enum class MetricFormat(private val scale: Int) {
     INTEGER(scale = 1),
@@ -33,11 +33,13 @@ enum class MetricFormat(private val scale: Int) {
 
     fun direction(current: Double, baseline: Double): Int = (steps(current) - steps(baseline)).coerceIn(-1, 1)
 
-    // 곱한 값을 아주 조금 키운 뒤 반올림한다. 57/200(0.285)에 100을 곱하면 28.4999…가 되어 그대로는 손으로 센 29%가 아니라
-    // 28%가 뜬다. 1e-9배는 보이는 자릿수에 닿지 않을 만큼 작다.
+    // 곱한 값을 아주 조금 키운 뒤 반올림한다.
+    // 57/200(0.285)에 100을 곱하면 28.4999…가 되어 그대로는 손으로 센 29%가 아니라 28%가 뜬다.
+    // 1e-9배는 보이는 자릿수에 닿지 않을 만큼 작다.
     fun steps(value: Double): Int = (value * scale).let { it + it * ROUNDING_NUDGE }.roundToInt()
 
-    // 음수는 부호를 떼고 자리를 나눈 뒤 다시 붙인다. 나머지 연산에 부호가 남으면 "0.-5"가 된다.
+    // 음수는 부호를 떼고 자리를 나눈 뒤 다시 붙인다.
+    // 나머지 연산에 부호가 남으면 "0.-5"가 된다.
     private fun digits(steps: Int): String {
         val sign = if (steps < 0) "−" else ""
         val size = abs(steps)

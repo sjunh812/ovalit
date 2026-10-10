@@ -10,13 +10,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitTheme
 
-val OvalitCardShape: Shape = RoundedCornerShape(20.dp)
+private val CardCorner = 20.dp
+
+val OvalitCardShape: Shape = RoundedCornerShape(CardCorner)
 
 /** 화면 가장자리와 카드 사이, 카드와 카드 사이입니다. */
 val OvalitCardGap = 12.dp
@@ -61,6 +64,37 @@ fun OvalitCard(
             .clip(OvalitCardShape)
             .background(OvalitTheme.colors.card)
             .padding(top = CardVerticalPadding, bottom = bottomPadding),
+        content = content,
+    )
+}
+
+/**
+ * 줄이 수백 개일 수 있는 카드를 `LazyColumn` 항목마다 한 조각씩 나눠 그립니다. 맨 위 조각은 위 모서리와 위 안쪽 여백을, 맨 아래
+ * 조각은 아래 모서리와 아래 안쪽 여백을 가집니다. 조각을 위에서부터 모두 이으면 [OvalitCard] 하나와 똑같이 보입니다.
+ *
+ * 카드 하나를 한 항목에 담으면 안의 줄을 모두 한 번에 그립니다.
+ */
+@Composable
+fun OvalitCardSlice(
+    modifier: Modifier = Modifier,
+    first: Boolean = false,
+    last: Boolean = false,
+    bottomPadding: Dp = CardVerticalPadding,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val shape = when {
+        first && last -> OvalitCardShape
+        first -> RoundedCornerShape(topStart = CardCorner, topEnd = CardCorner)
+        last -> RoundedCornerShape(bottomStart = CardCorner, bottomEnd = CardCorner)
+        else -> RectangleShape
+    }
+    Column(
+        modifier = modifier
+            .padding(horizontal = OvalitCardGap)
+            .fillMaxWidth()
+            .clip(shape)
+            .background(OvalitTheme.colors.card)
+            .padding(top = if (first) CardVerticalPadding else 0.dp, bottom = if (last) bottomPadding else 0.dp),
         content = content,
     )
 }

@@ -88,6 +88,8 @@ individually"에 걸릴 수 있다. 홈 고정 칸, 라이벌 대결, 친구 비
   WorkManager, Firebase는 `composeApp`에만 있고 iOS에는 없다.
 - 백엔드가 있다. RSO가 Authorization Code 방식이라 `client_secret` 교환이 서버에서 일어나야 하고 RGAPI 키도 앱에 넣을 수 없다.
   앱은 서버가 준 세션 토큰만 든다.
+- 서버가 보고 움직이는 설정(전적 공개, 시작 전 알림)은 서버에 두고 서버 값을 따른다(`AccountSettingsRepository`, `PATCH /me`).
+  기기 설정(`UserPreferencesRepository`, DataStore)에 두면 전적 공개를 꺼도 서버가 몰라 친구에게 그대로 보인다.
 - RSO는 Custom Tabs로 띄운다. WebView는 쓰지 않는다. 앱이 비밀번호를 만지지 않는다고 신청서에 적었다.
 - 로컬 DB는 아직 안 고른다. `core/data`에는 Repository 인터페이스와 가짜 구현만 두고, 프로덕션 키로 실제 응답을 본 뒤에 정한다.
 - 지표 표기(보이는 자릿수 반올림, 고정 지표 이름, 기간 이름, 라이벌 대결 줄), 역할과 구매 유형 이름, 게임 이미지, 프로필 머리와

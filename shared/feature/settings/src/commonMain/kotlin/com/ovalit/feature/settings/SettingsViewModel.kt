@@ -3,10 +3,12 @@ package com.ovalit.feature.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ovalit.core.data.AccountRepository
+import com.ovalit.core.data.AccountSettingsRepository
 import com.ovalit.core.data.ImportScheduler
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.Account
+import com.ovalit.core.model.AccountSettings
 import com.ovalit.core.model.Focus
 import com.ovalit.core.model.PingReminder
 import com.ovalit.core.model.QueueFilter
@@ -16,6 +18,7 @@ import com.ovalit.core.ui.FailedAction
 import com.ovalit.core.ui.FailureNotice
 import com.ovalit.core.ui.FailureNotices
 import com.ovalit.core.ui.launchNotifying
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +26,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 sealed interface SettingsUiState {
     data object Loading : SettingsUiState
@@ -30,6 +34,7 @@ sealed interface SettingsUiState {
     data class Success(
         val account: Account?,
         val preferences: UserPreferences,
+        val accountSettings: AccountSettings,
         val storedMatches: Int,
     ) : SettingsUiState
 }
@@ -37,6 +42,7 @@ sealed interface SettingsUiState {
 class SettingsViewModel(
     private val accountRepository: AccountRepository,
     private val preferencesRepository: UserPreferencesRepository,
+    private val accountSettingsRepository: AccountSettingsRepository,
     private val matchRepository: MatchRepository,
     private val importScheduler: ImportScheduler,
 ) : ViewModel() {
@@ -48,26 +54,39 @@ class SettingsViewModel(
     val uiState: StateFlow<SettingsUiState> = combine(
         accountRepository.account,
         preferencesRepository.preferences,
+        accountSettingsRepository.settings,
         matchRepository.observeMatches().map { it.size },
-    ) { account, preferences, storedMatches ->
-        SettingsUiState.Success(account, preferences, storedMatches)
+    ) { account, preferences, accountSettings, storedMatches ->
+        SettingsUiState.Success(account, preferences, accountSettings, storedMatches)
     }.filter { !unlinking }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = SettingsUiState.Loading,
     )
 
-    fun setStatsPublic(public: Boolean) = launch { preferencesRepository.setStatsPublic(public) }
+    // 앱을 다시 깔고 연동했으면 서버에 둔 값이 기본값과 다를 수 있다. 저절로 한 일이라 받지 못해도 알리지 않는다.
+    init {
+        viewModelScope.launch {
+            try {
+                accountSettingsRepository.refresh()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // 다음에 설정을 열 때 다시 받는다
+            }
+        }
+    }
+
+    // 서버에 두는 설정이다. 스위치는 바로 움직이고, 서버에 보내지 못하면 저장소가 되돌린 뒤 토스트로 까닭을 알린다.
+    fun setStatsPublic(public: Boolean) = launch { accountSettingsRepository.setStatsPublic(public) }
+
+    fun setPingReminder(reminder: PingReminder) = launch { accountSettingsRepository.setPingReminder(reminder) }
 
     fun setNotifyAnalysisDone(enabled: Boolean) = launch { preferencesRepository.setNotifyAnalysisDone(enabled) }
 
     fun setNotifyWeeklyReport(enabled: Boolean) = launch { preferencesRepository.setNotifyWeeklyReport(enabled) }
 
     fun setNotifyPing(enabled: Boolean) = launch { preferencesRepository.setNotifyPing(enabled) }
-
-    /** 실제 저장소가 붙으면 서버(`PATCH /me`의 `remindBefore`)에도 맡깁니다. 파티 시작 전 알림은 서버가 이 시간에 맞춰 보냅니다. */
-    fun setPingReminder(reminder: PingReminder) = launch { preferencesRepository.setPingReminder(reminder) }
-
 
     fun setTheme(theme: ThemePreference) = launch { preferencesRepository.setTheme(theme) }
 

@@ -15,6 +15,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Focus
+import com.ovalit.core.model.PingReminder
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdRenderer
@@ -152,7 +153,27 @@ class SettingsScreenTest {
     fun `꺼 둔 알림은 꺼진 채로 그린다`() = runComposeUiTest {
         setContent { Settings(SettingsPreviewData.allOff) }
 
+        onNodeWithText("전적 공개").assertIsOff()
         onNodeWithText("분석 완료").assertIsOff()
+    }
+
+    // 시작 전 알림은 서버 크론이 보내서 값도 서버에 둔다
+    @Test
+    fun `시작 전 알림은 서버에 둔 시간을 보여주고 고르면 넘긴다`() = runComposeUiTest {
+        val linked = SettingsPreviewData.linked as SettingsUiState.Success
+        var reminder: PingReminder? = null
+        setContent {
+            Settings(
+                uiState = linked.copy(accountSettings = linked.accountSettings.copy(pingReminder = PingReminder.ONE_HOUR)),
+                actions = SettingsActions(onPingReminderChange = { reminder = it }),
+            )
+        }
+
+        onNodeWithText("1시간 전").performScrollTo().assertExists()
+        onNodeWithText("시작 전 알림").performScrollTo().performClick()
+        onNodeWithText("받지 않기").performClick()
+
+        assertEquals(PingReminder.OFF, reminder)
     }
 
     // 주간 리포트는 서버가 월요일 9시에 FCM 토픽으로 보낸다

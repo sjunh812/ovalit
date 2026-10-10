@@ -181,7 +181,7 @@ internal fun SettingsScreen(
             .fillMaxSize()
             .background(OvalitTheme.colors.canvas),
     ) {
-        // 처음 열 때 머리 줄까지 비었다가 한꺼번에 뜨지 않게 머리는 바로 그린다. 설정은 기기에 있어 곧 뜬다.
+        // 처음 열 때 머리 줄까지 비었다가 한꺼번에 뜨지 않게 머리는 바로 그린다. 설정은 서버를 기다리지 않아 곧 뜬다.
         if (uiState !is SettingsUiState.Success) {
             OvalitTabHeader(title = stringResource(Res.string.settings_title), modifier = Modifier.safeDrawingPadding())
             return@Box
@@ -206,7 +206,7 @@ internal fun SettingsScreen(
                     ToggleRow(
                         title = stringResource(Res.string.stats_public),
                         description = stringResource(Res.string.stats_public_description),
-                        checked = preferences.statsPublic,
+                        checked = uiState.accountSettings.statsPublic,
                         onCheckedChange = actions.onStatsPublicChange,
                     )
                 }
@@ -247,7 +247,7 @@ internal fun SettingsScreen(
                     ValueRow(
                         title = stringResource(Res.string.ping_reminder),
                         description = stringResource(Res.string.ping_reminder_description),
-                        value = stringResource(preferences.pingReminder.label),
+                        value = stringResource(uiState.accountSettings.pingReminder.label),
                         enabled = preferences.notifyPing && !notificationBlocks.ping,
                         onClick = { openSheet = SettingsSheet.PING_REMINDER },
                     )

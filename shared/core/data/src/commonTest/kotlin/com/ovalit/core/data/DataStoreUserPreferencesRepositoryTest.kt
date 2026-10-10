@@ -25,12 +25,6 @@ class DataStoreUserPreferencesRepositoryTest {
         assertEquals(UserPreferences.Default, repository().preferences.first())
     }
 
-    // docs/screens.md: 전적 공개 토글은 기본으로 켜져 있다
-    @Test
-    fun `전적 공개는 기본으로 켜져 있다`() = runTest {
-        assertEquals(true, repository().preferences.first().statsPublic)
-    }
-
     // 깨진 파일을 읽다가 예외가 나면 테마를 읽는 MainActivity부터 앱이 켜지자마자 죽는다.
     @Test
     fun `저장 파일이 깨졌으면 기본값으로 다시 시작한다`() = runTest {
@@ -49,7 +43,6 @@ class DataStoreUserPreferencesRepositoryTest {
 
         repository.setTheme(ThemePreference.DARK)
         repository.setDefaultQueue(QueueFilter.COMPETITIVE)
-        repository.setStatsPublic(false)
         repository.setNotifyAnalysisDone(false)
         repository.setNotifyWeeklyReport(false)
         repository.setFocus(Focus.ROUND_PLAY)
@@ -60,7 +53,6 @@ class DataStoreUserPreferencesRepositoryTest {
             UserPreferences(
                 theme = ThemePreference.DARK,
                 defaultQueue = QueueFilter.COMPETITIVE,
-                statsPublic = false,
                 notifyAnalysisDone = false,
                 notifyWeeklyReport = false,
                 focus = Focus.ROUND_PLAY,

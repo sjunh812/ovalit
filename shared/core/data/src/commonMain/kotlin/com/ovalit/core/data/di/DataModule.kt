@@ -1,9 +1,11 @@
 package com.ovalit.core.data.di
 
 import com.ovalit.core.data.AccountRepository
+import com.ovalit.core.data.AccountSettingsRepository
 import com.ovalit.core.data.ContentRepository
 import com.ovalit.core.data.DataStoreUserPreferencesRepository
 import com.ovalit.core.data.FakeAccountRepository
+import com.ovalit.core.data.FakeAccountSettingsRepository
 import com.ovalit.core.data.FakeContentRepository
 import com.ovalit.core.data.FakeFriendRepository
 import com.ovalit.core.data.FakeMatchRepository
@@ -49,7 +51,8 @@ fun dataModule(
     single { FakeFriendRepository() } bind FriendRepository::class
     single { FakePingRepository(get()) } bind PingRepository::class
     single<PushRepository> { FakePushRepository() }
-    single { FakeAccountRepository(get(), friendRepository = get(), pingRepository = get()) } bind AccountRepository::class
+    single { FakeAccountSettingsRepository() } bind AccountSettingsRepository::class
+    single { FakeAccountRepository(get(), friendRepository = get(), pingRepository = get(), accountSettingsRepository = get()) } bind AccountRepository::class
     single<ContentRepository> { FakeContentRepository(language) }
     // ImportScheduler는 앱 모듈이 넣는다
     single { NewMatchesWatcher(get(), get(), get(), get(ApplicationScope), analytics = get()) }

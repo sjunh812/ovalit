@@ -143,8 +143,8 @@ internal class PingActions(
 )
 
 /**
- * 친구 탭입니다. 맨 위에 ㅇㅂㅇ, 그 밑에 받은 요청과 친구 목록을 카드로 둡니다. ㅇㅂㅇ 카드는 초대마다 한 줄이고 누르면 초대
- * 화면으로 들어가며, 부르기는 시트에서 합니다.
+ * 친구 탭입니다. 맨 위에 ㅇㅂㅇ, 그 밑에 받은 요청과 친구 목록을 카드로 둡니다.
+ * ㅇㅂㅇ 카드는 초대마다 한 줄이고 누르면 초대 화면으로 들어갑니다. 부르기는 시트에서 합니다.
  */
 @Composable
 internal fun FriendsScreen(
@@ -198,8 +198,10 @@ internal fun FriendsScreen(
         ) {
             val list = rememberLazyListState()
             ScrollToTopOnReselect(list)
-            // 친구가 수백 명일 수 있어 보이는 줄만 그린다. 친구 카드는 줄마다 한 조각(OvalitCardSlice)으로 나눠 이어 붙인다.
-            // 카드 사이 간격은 그 카드와 한 항목에 담는다. 받은 요청이나 광고가 없을 때 간격만 남으면 그 자리가 벌어진다.
+            // 친구가 수백 명일 수 있어 보이는 줄만 그린다.
+            // 친구 카드는 줄마다 한 조각(OvalitCardSlice)으로 나눠 이어 붙인다.
+            // 카드 사이 간격은 그 카드와 한 항목에 담는다.
+            // 받은 요청이나 광고가 없을 때 간격만 남으면 그 자리가 벌어진다.
             LazyColumn(state = list, modifier = Modifier.fillMaxSize()) {
                 item(key = "header") {
                     Column {
@@ -256,7 +258,8 @@ internal fun FriendsScreen(
                     }
                     item(key = "friends-invite") { OvalitCardSlice(last = true) { InviteButton(onInvite) } }
                 }
-                // 광고는 맨 아래 카드 하나로 둔다. 버튼이 있는 오발있?과 받은 요청 사이에 끼우면 초대처럼 읽히고 잘못 누르기 쉽다.
+                // 광고는 맨 아래 카드 하나로 둔다.
+                // 버튼이 있는 오발있?과 받은 요청 사이에 끼우면 초대처럼 읽히고 잘못 누르기 쉽다.
                 item(key = "ad") {
                     AdSlot(AdPlacement.FRIENDS) { ad ->
                         Column {
@@ -288,8 +291,8 @@ internal fun FriendsScreen(
     }
 }
 
-// 받은 요청 카드와 그 밑 간격이다. 요청을 처리하면 아래 목록이 한 번에 튀어 오르지 않게 높이를 천천히 줄인다. 마지막 요청이면
-// 구역이 접히는 동안 그 줄을 그대로 둔다. 빈 목록을 그리면 "받은 요청 0"이 잠깐 뜬다.
+// 받은 요청 카드와 그 밑 간격이다. 요청을 처리하면 아래 목록이 한 번에 튀어 오르지 않게 높이를 천천히 줄인다.
+// 마지막 요청이면 구역이 접히는 동안 그 줄을 그대로 둔다. 빈 목록을 그리면 "받은 요청 0"이 잠깐 뜬다.
 @Composable
 private fun RequestsCard(requests: List<FriendRequest>, onAccept: (PlayerId) -> Unit, onDecline: (PlayerId) -> Unit) {
     var lastRequests by remember { mutableStateOf(requests) }

@@ -92,8 +92,9 @@ import org.koin.core.parameter.parametersOf
 private const val RECENT_MATCHES = 3
 
 /**
- * S5 친구 프로필입니다. 머리 바로 밑에 같이 뛴 경기를 두고, 전적을 공개한 친구면 그 아래로 티어 카드, 통계, 나와 비교,
- * 맞힌 부위, 요원, 무기, 최근 경기를 둡니다. 비공개면 같이 뛴 경기만 보여줍니다.
+ * S5 친구 프로필입니다. 머리 바로 밑에 같이 뛴 경기를 둡니다.
+ * 전적을 공개한 친구면 그 아래로 티어 카드, 통계, 나와 비교, 맞힌 부위, 요원, 무기, 최근 경기를 둡니다.
+ * 비공개면 같이 뛴 경기만 보여줍니다.
  */
 @Composable
 fun FriendProfileRoute(
@@ -292,8 +293,8 @@ private fun CompareSection(mine: WeeklyReport.Ready, uiState: FriendProfileUiSta
     }
 }
 
-// 친구 경기에는 내가 안 뛴 경기의 다른 사람 기록이 섞여 있다. 앱을 안 쓰는 사람의 기록은 내가 뛴 경기 안에서만
-// 보여줄 수 있어서 줄을 눌러도 열지 않는다(CLAUDE.md 지켜야 할 선).
+// 친구 경기에는 내가 안 뛴 경기의 다른 사람 기록이 섞여 있다.
+// 앱을 안 쓰는 사람의 기록은 내가 뛴 경기 안에서만 보여줄 수 있어서 줄을 눌러도 열지 않는다(CLAUDE.md 지켜야 할 선).
 @Composable
 private fun RecentMatches(uiState: FriendProfileUiState.Success, name: String, onOpenMatches: () -> Unit) {
     val matches = uiState.friend.matches.sortedByDescending { it.startedAt }

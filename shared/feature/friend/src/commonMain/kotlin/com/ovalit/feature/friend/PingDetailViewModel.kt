@@ -85,7 +85,8 @@ class PingDetailViewModel(
     )
 
     init {
-        // 알림을 눌러 들어오면 푸시보다 서버가 앞서 있을 수 있어 열 때 한 번 받는다. 저절로 한 일이라 받지 못해도 알리지 않는다.
+        // 알림을 눌러 들어오면 푸시보다 서버가 앞서 있을 수 있어 열 때 한 번 받는다.
+        // 저절로 한 일이라 받지 못해도 알리지 않는다.
         viewModelScope.launch { runCatching { pingRepository.refresh() } }
     }
 

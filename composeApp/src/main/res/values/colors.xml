@@ -2,9 +2,9 @@
 <!--
   Compose가 올라오기 전, 창 배경과 스플래시를 칠할 때만 쓰는 값입니다.
 
-  원시 hex를 화면에 직접 쓰지 않는다는 규칙에서 예외로 둔 곳입니다. Compose 밖이라 색 토큰을
-  읽을 방법이 없습니다. 여기 값은 core/designsystem의 OvalitColors를 따라갑니다.
-  토큰이 바뀌면 values-night도 같이 고칩니다.
+  원시 hex를 화면에 직접 쓰지 않는다는 규칙에서 예외로 둔 곳입니다.
+  Compose 밖이라 색 토큰을 읽을 방법이 없습니다.
+  여기 값은 core/designsystem의 OvalitColors를 따라가고, 토큰이 바뀌면 values-night도 같이 고칩니다.
 -->
 <resources>
     <!-- 창 배경만 테마를 따릅니다. OvalitLightColors.bg -->

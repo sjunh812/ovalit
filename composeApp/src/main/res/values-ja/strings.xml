@@ -4,8 +4,9 @@
     <string name="app_name">Ovalit</string>
     <!-- 네이티브 광고 앞에 붙는 표시다. AdMob 정책상 광고인 줄 알아볼 수 있어야 한다. -->
     <string name="ad_label">広告</string>
-    <!-- 보상형 광고로 24시간 광고를 숨긴다. AdMob 정책상 무엇을 보고 무엇을 받는지 보기 전에 알려야 하고, 보지 않아도 앱을
-         평소처럼 쓸 수 있어야 한다. 광고는 한 번에 두 편이 이어질 수 있다. -->
+    <!-- 보상형 광고로 24시간 광고를 숨긴다.
+         AdMob 정책상 무엇을 보고 무엇을 받는지 보기 전에 알려야 하고, 보지 않아도 앱을 평소처럼 쓸 수 있어야 한다.
+         광고는 한 번에 두 편이 이어질 수 있다. -->
     <string name="ad_close">広告を閉じる</string>
     <string name="ad_close_title">広告を閉じますか？</string>
     <string name="ad_close_body">この広告だけを閉じるか、広告を最後まで見て、明日のこの時間まですべての広告を消せます。広告は1〜2本で、1本あたり30秒以内です。</string>
@@ -25,8 +26,8 @@
     <string name="notification_analysis_body_none">直近8週間はプレイした試合がありません</string>
     <string name="notification_new_matches_title">新しい試合をすべて読み込みました</string>
     <string name="notification_new_matches_body">その間に終わった%1$d試合でレポートを更新しました</string>
-    <!-- ㅇㅂㅇ와 주간 리포트 알림. 받는 쪽 이름은 서버가 Riot ID의 이름 부분만 보낸다. 친구의 답은 앱 화면처럼 参加・不参加로,
-         내가 누르는 버튼은 です・ます로 쓴다. -->
+    <!-- ㅇㅂㅇ과 주간 리포트 알림. 받는 쪽 이름은 서버가 Riot ID의 이름 부분만 보낸다.
+         친구의 답은 앱 화면처럼 参加・不参加로, 내가 누르는 버튼은 です・ます로 쓴다. -->
     <string name="notification_channel_ping">今日やる？ パーティー募集</string>
     <string name="notification_channel_weekly">週間レポート</string>
     <string name="ping_time_now">今から</string>

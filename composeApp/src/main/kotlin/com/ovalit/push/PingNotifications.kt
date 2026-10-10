@@ -33,8 +33,8 @@ internal const val EXTRA_OPEN_PING = "com.ovalit.OPEN_PING"
 private const val DAWN_END_HOUR = 6
 
 /**
- * 서버가 보낸 FCM 데이터 메시지를 알림으로 바꿉니다. 서버는 종류, 이름, 시각만 보내고 문구는 앱이 정해서, 문구를 고쳐도 서버를
- * 다시 배포하지 않습니다.
+ * 서버가 보낸 FCM 데이터 메시지를 알림으로 바꿉니다.
+ * 서버는 종류, 이름, 시각만 보내고 문구는 앱이 정해서, 문구를 고쳐도 서버를 다시 배포하지 않습니다.
  *
  * 받은 ㅇㅂㅇ의 갈게요와 못 가요는 앱을 열지 않고 [PingActionReceiver]가 답하고, 다른 시간은 시각을 골라야 해서 초대 화면을 엽니다.
  *
@@ -113,8 +113,8 @@ internal object PingNotifications {
     }
 
     /**
-     * 그 초대의 알림을 거둡니다. 앱에서 초대를 열면 부릅니다. 남겨 두면 나중에 알림의 "못 가요"를 눌러 앱에서 한 답을 조용히
-     * 덮어쓸 수 있습니다.
+     * 그 초대의 알림을 거둡니다. 앱에서 초대를 열면 부릅니다.
+     * 남겨 두면 나중에 알림의 "못 가요"를 눌러 앱에서 한 답을 조용히 덮어쓸 수 있습니다.
      */
     fun clear(context: Context, pingId: String) {
         NotificationManagerCompat.from(context).cancel(pingTag(pingId), 0)
@@ -124,8 +124,9 @@ internal object PingNotifications {
     private fun pingTag(pingId: String?): String = "ping:${pingId.orEmpty()}"
 
     /**
-     * 알림 버튼마다 다른 [PendingIntent]가 되게 붙이는 주소입니다. 안드로이드는 extra를 보지 않고 액션과 주소로 PendingIntent를
-     * 가르니, 이게 없으면 다른 초대의 버튼이 앞 초대의 것으로 덮입니다. 명시적 인텐트에만 붙여 다른 앱이 받을 수 없습니다.
+     * 알림 버튼마다 다른 [PendingIntent]가 되게 붙이는 주소입니다.
+     * 안드로이드는 extra를 보지 않고 액션과 주소로 PendingIntent를 가르니, 이게 없으면 다른 초대의 버튼이 앞 초대의 것으로 덮입니다.
+     * 명시적 인텐트에만 붙여 다른 앱이 받을 수 없습니다.
      */
     fun actionUri(pingId: String?, action: String): Uri = Uri.Builder().scheme("ovalit-notification").authority(action).appendPath(pingId.orEmpty()).build()
 

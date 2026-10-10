@@ -92,7 +92,7 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
-/** 화면 키입니다. 스택을 저장할 때 쓸 직렬화기를 한 번에 등록하려고 봉인 인터페이스로 묶습니다([BackStackConfiguration]). */
+/** 스택을 저장할 때 쓸 직렬화기를 한 번에 등록하려고 화면 키를 봉인 인터페이스로 묶습니다([BackStackConfiguration]). */
 @Serializable
 private sealed interface Screen : NavKey
 
@@ -167,8 +167,8 @@ private val BackStackConfiguration = SavedStateConfiguration {
 @Composable
 fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<String> = emptyFlow()) {
     val backStack = rememberNavBackStack(BackStackConfiguration, Intro)
-    // ㅇㅂㅇ 알림을 누르면 친구 탭 위에 그 초대 화면을 연다. 연동 전이면 무시한다. 다시 불러오는 중(S0-4)이면 탭을 바꾸지
-    // 않고 그 위에 연다. 탭을 바꾸면 불러오는 화면이 닫혀 돌아갈 곳이 없다.
+    // ㅇㅂㅇ 알림을 누르면 친구 탭 위에 그 초대 화면을 연다. 연동 전이면 무시한다.
+    // 다시 불러오는 중(S0-4)이면 탭을 바꾸지 않고 그 위에 연다. 탭을 바꾸면 불러오는 화면이 닫혀 돌아갈 곳이 없다.
     LaunchedEffect(openPing) {
         openPing.collect { id ->
             if (Report !in backStack || backStack.last() == PingDetail(id)) return@collect
@@ -190,8 +190,8 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
     val toast = rememberOvalitToastState()
     val analytics = koinInject<Analytics>()
 
-    // 알림 권한은 앱을 열 때 묻지 않고 쓸모를 알 때 묻는다. S0-4는 사용자가 직접 켜는 버튼을 두고, 친구를 맺거나 파티를
-    // 모집하면 한 번만 시트로 묻는다(docs/screens.md).
+    // 알림 권한은 앱을 열 때 묻지 않고 쓸모를 알 때 묻는다.
+    // S0-4는 사용자가 직접 켜는 버튼을 두고, 친구를 맺거나 파티를 모집하면 한 번만 시트로 묻는다(docs/screens.md).
     val notifications = platform.rememberNotificationPermission()
     val preferences = koinInject<UserPreferencesRepository>()
     // 기기에서 읽기 전에는 물은 적이 있는 것으로 둔다
@@ -355,15 +355,15 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
     }
 }
 
-// 탭바는 탭 화면마다 안에 둔다(docs/screens.md). 밖에 하나만 두면 새 화면으로 넘어갈 때 탭바가 먼저 사라져서
-// 밀려나는 화면이 탭바 높이만큼 늘어나고 목록이 튄다.
+// 탭바는 탭 화면마다 안에 둔다(docs/screens.md).
+// 밖에 하나만 두면 새 화면으로 넘어갈 때 탭바가 먼저 사라져서 밀려나는 화면이 탭바 높이만큼 늘어나고 목록이 튄다.
 @Composable
 private fun TabScaffold(selected: NavKey, onSelect: (NavKey) -> Unit, content: @Composable () -> Unit) {
     // 지금 탭을 한 번 더 누르면 그 탭 화면을 맨 위로 올린다(ScrollToTopOnReselect)
     val reselects = remember { MutableSharedFlow<Unit>(extraBufferCapacity = 1) }
     Column(modifier = Modifier.fillMaxSize()) {
-        // 아래 내비게이션 바 여백은 탭바가 두니 본문은 또 두지 않는다. 가로 화면에서 옆에 붙는 내비게이션 바는 본문도 피해야
-        // 해서 아래쪽만 소비한다.
+        // 아래 내비게이션 바 여백은 탭바가 두니 본문은 또 두지 않는다.
+        // 가로 화면에서 옆에 붙는 내비게이션 바는 본문도 피해야 해서 아래쪽만 소비한다.
         Box(
             modifier = Modifier.weight(1f).consumeWindowInsets(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)),
         ) { CompositionLocalProvider(LocalTabReselects provides reselects) { content() } }
@@ -383,8 +383,8 @@ private fun TabScaffold(selected: NavKey, onSelect: (NavKey) -> Unit, content: @
     }
 }
 
-// 화면마다 바탕을 깐다. 바탕이 빈 화면이 있으면 전환 중에 뒤의 검은 바탕이 비친다. 양옆 바깥의 선은 평소에는 화면 밖이라
-// 안 보이고 전환 중에만 두 화면 사이에 보인다.
+// 화면마다 바탕을 깐다. 바탕이 빈 화면이 있으면 전환 중에 뒤의 검은 바탕이 비친다.
+// 양옆 바깥의 선은 평소에는 화면 밖이라 안 보이고 전환 중에만 두 화면 사이에 보인다.
 @Composable
 private fun rememberOpaqueEntryDecorator(): NavEntryDecorator<NavKey> {
     val background = OvalitTheme.colors.bg
@@ -412,8 +412,8 @@ private fun rememberOpaqueEntryDecorator(): NavEntryDecorator<NavKey> {
 
 private val EdgeWidth = 1.dp
 
-// 사용 통계에 쓰는 화면 이름이다. 키를 그대로 쓰면 친구·경기 ID가 섞이고 릴리스에서는 난독화된 이름이 된다. Screen을 받아
-// else 없이 갈라서 새 화면을 표에 빠뜨리면 컴파일이 멈춘다.
+// 사용 통계에 쓰는 화면 이름이다. 키를 그대로 쓰면 친구·경기 ID가 섞이고 릴리스에서는 난독화된 이름이 된다.
+// Screen을 받아 else 없이 갈라서 새 화면을 표에 빠뜨리면 컴파일이 멈춘다.
 private fun screenName(key: Screen): String = when (key) {
     Intro -> "intro"
     Consent -> "consent"
@@ -439,8 +439,8 @@ private fun NavBackStack<NavKey>.push(key: NavKey) {
     if (lastOrNull() != key) add(key)
 }
 
-// 홈은 늘 스택 맨 아래에 두고 다른 탭은 그 위에 하나만 둔다. 그래야 어느 탭에서 뒤로 가도 홈이 나오고 홈에서 뒤로 가면
-// 앱이 닫힌다(docs/screens.md).
+// 홈은 늘 스택 맨 아래에 두고 다른 탭은 그 위에 하나만 둔다.
+// 그래야 어느 탭에서 뒤로 가도 홈이 나오고 홈에서 뒤로 가면 앱이 닫힌다(docs/screens.md).
 private fun NavBackStack<NavKey>.selectTab(tab: NavKey) {
     if (last() == tab) return
     while (size > 1) removeAt(lastIndex)

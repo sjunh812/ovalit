@@ -157,8 +157,8 @@ private fun AdLabel() {
 }
 
 /**
- * [NativeAdView] 안에 Compose로 그린 광고를 담습니다. 요소가 모두 등록된 뒤에 광고를 붙여야 눌림이 이어져서, 안쪽이 두 프레임
- * 그려진 뒤에 붙입니다.
+ * [NativeAdView] 안에 Compose로 그린 광고를 담습니다.
+ * 요소가 모두 등록된 뒤에 광고를 붙여야 눌림이 이어져서, 안쪽이 두 프레임 그려진 뒤에 붙입니다.
  */
 @Composable
 private fun NativeAdFrame(ad: NativeAd, content: @Composable (NativeAdView) -> Unit) {

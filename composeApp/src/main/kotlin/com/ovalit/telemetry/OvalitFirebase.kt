@@ -13,8 +13,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
- * Firebase는 google-services 플러그인이 넣은 값으로 앱 시작 때 스스로 뜹니다. `composeApp/google-services.json` 없이 빌드했으면
- * [enabled]가 `false`이고 푸시, 사용 통계, 비정상 종료 보고 없이 돕니다.
+ * Firebase는 google-services 플러그인이 넣은 값으로 앱 시작 때 스스로 뜹니다.
+ * `composeApp/google-services.json` 없이 빌드했으면 [enabled]가 `false`이고 푸시, 사용 통계, 비정상 종료 보고 없이 돕니다.
  */
 internal object OvalitFirebase {
 
@@ -38,7 +38,6 @@ internal object OvalitFirebase {
     }
 }
 
-/** [Analytics]를 Firebase Analytics로 보냅니다. */
 internal class FirebaseAnalyticsLogger(context: Context) : Analytics {
     private val firebase = FirebaseAnalytics.getInstance(context)
 

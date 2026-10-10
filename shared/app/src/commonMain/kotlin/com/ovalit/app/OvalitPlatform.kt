@@ -22,8 +22,8 @@ interface OvalitPlatform {
     fun HomeBackHandler(toast: OvalitToastState) {}
 
     /**
-     * 알림 권한과 그걸 묻는 길입니다. 앱 맨 위에서 한 번 부르고, 앱으로 돌아올 때마다 다시 확인합니다. 알림을 보내지 않는 iOS는
-     * 물을 게 없습니다.
+     * 알림 권한과 그걸 묻는 길입니다. 앱 맨 위에서 한 번 부르고, 앱으로 돌아올 때마다 다시 확인합니다.
+     * 알림을 보내지 않는 iOS는 [NotificationPermission.NotNeeded]입니다.
      */
     @Composable
     fun rememberNotificationPermission(): NotificationPermission = NotificationPermission.NotNeeded
@@ -31,7 +31,7 @@ interface OvalitPlatform {
     /** 초대 화면을 열 때 그 초대의 알림을 거둡니다. 알림이 없는 iOS는 아무것도 하지 않습니다. */
     fun clearPingNotification(pingId: String) {}
 
-    /** 휴대폰 설정에서 막아 둔 알림입니다. 앱으로 돌아올 때마다 다시 확인합니다. 알림을 보내지 않는 iOS는 막힌 게 없습니다. */
+    /** 휴대폰 설정에서 막아 둔 알림입니다. 앱으로 돌아올 때마다 다시 확인합니다. 알림을 보내지 않는 iOS는 [NotificationBlocks.None]입니다. */
     @Composable
     fun rememberNotificationBlocks(): NotificationBlocks = NotificationBlocks.None
 

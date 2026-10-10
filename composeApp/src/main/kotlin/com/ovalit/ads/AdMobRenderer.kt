@@ -42,9 +42,9 @@ import kotlinx.coroutines.launch
 /**
  * AdMob 네이티브 광고를 받아 광고 자리에 그립니다. 광고 단위 ID가 없으면 [enabled]가 `false`라 앱이 이 렌더러를 깔지 않습니다.
  *
- * 받은 광고는 자리 키마다 하나씩 [MAX_ADS]개까지 들고 있다가 같은 키가 다시 보이면 그대로 써서, 목록을 오르내려도 새로 요청하지
- * 않습니다. AdMob이 받은 광고를 한 시간 넘게 두지 말라고 해서 한 시간이 지나면 버리고 새로 받습니다. 못 받은 키는 이 렌더러가
- * 사는 동안 다시 요청하지 않습니다.
+ * 받은 광고는 자리 키마다 하나씩 [MAX_ADS]개까지 들고 있다가 같은 키가 다시 보이면 그대로 써서, 목록을 오르내려도 새로 요청하지 않습니다.
+ * AdMob이 받은 광고를 한 시간 넘게 두지 말라고 해서 한 시간이 지나면 버리고 새로 받습니다.
+ * 못 받은 키는 이 렌더러가 사는 동안 다시 요청하지 않습니다.
  *
  * 보상형 광고를 끝까지 보면 24시간 동안 광고 자리를 비웁니다([offerAdFree]). 끝나는 시각은 설정에 적어 앱을 다시 켜도 이어집니다.
  */
@@ -59,9 +59,9 @@ internal class AdMobRenderer(
     private val loading = mutableSetOf<String>()
     private val failed = mutableSetOf<String>()
 
-    // 광고 자리를 비울지입니다. 설정을 읽기 전에는 숨길지 모르니 `null`이고 광고를 그리지 않는다. 그리다가 숨기면 광고가 한 번
-    // 번쩍인다. 광고 없이 보기가 끝나는 순간 `false`로 바꾼다. 그릴 때만 시각을 견주면 홈처럼 광고 자리가 계속 화면에 남는 곳은
-    // 끝나도 다른 화면을 오가기 전까지 광고가 돌아오지 않는다.
+    // 설정을 읽기 전에는 숨길지 모르니 `null`이고 광고를 그리지 않는다. 그리다가 숨기면 광고가 한 번 번쩍인다.
+    // 광고 없이 보기가 끝나는 순간 `false`로 바꾼다.
+    // 그릴 때만 시각을 견주면 홈처럼 광고 자리가 계속 화면에 남는 곳은 끝나도 다른 화면을 오가기 전까지 광고가 돌아오지 않는다.
     @OptIn(ExperimentalCoroutinesApi::class)
     private val hidden: StateFlow<Boolean?> = preferences.preferences
         .map { it.adFreeUntil?.toEpochMilliseconds() }
@@ -199,8 +199,8 @@ internal class AdMobRenderer(
         private const val MAX_ADS = 6
         private val AD_LIFETIME = 1.hours
 
-        // 하루 몇 번 짧게 여는 앱이라 이보다 짧으면 다음에 열 때쯤 끝나 있다. 다시 보려면 끝날 때까지 기다려야 해서 하루 한 번이
-        // 저절로 지켜진다.
+        // 하루 몇 번 짧게 여는 앱이라 이보다 짧으면 다음에 열 때쯤 끝나 있다.
+        // 다시 보려면 끝날 때까지 기다려야 해서 하루 한 번이 저절로 지켜진다.
         private val AD_FREE = 24.hours
 
     }

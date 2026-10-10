@@ -44,8 +44,6 @@
     <string name="note_case_change">%1$s → %2$s</string>
     <string name="note_mix_buy">%1$sラウンドの割合</string>
     <string name="note_mix_share">%1$sの割合</string>
-    <string name="note_case_rounds">%1$dラウンド</string>
-    <string name="note_case_matches">%1$d試合</string>
     <string name="note_steady_buy">%1$sラウンドだけ見ると</string>
     <!-- 한국어는 코드가 조사를 붙이지만 일본어는 이름만 넘어와 조사를 틀에 쓴다 -->
     <string name="note_steady_weapon">%1$sを持ったラウンドだけ見ると</string>

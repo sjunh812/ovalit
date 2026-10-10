@@ -23,6 +23,7 @@ import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasScrollToIndexAction
+import androidx.compose.ui.test.hasAnySibling
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
@@ -739,8 +740,8 @@ class ReportScreenTest {
         onNodeWithText("피해량이 평소보다 10 올랐어요").assertExists()
         // 평균이 얼마였는지는 고정 칸에 이미 있어 다시 적지 않는다
         onNodeWithText("→ 이번 주", substring = true).assertDoesNotExist()
-        onNode(noteRow("밴달", "118 → 140", "44라운드")).assertExists()
-        onNode(noteRow("제트", "124 → 146", "4판")).assertExists()
+        onNode(noteRow("밴달", "118 → 140")).assertExists()
+        onNode(noteRow("제트", "124 → 146")).assertExists()
         // 줄마다 "끌어올린 무기" 같은 이름표나 지표 이름을 붙이지 않는다
         onNodeWithText("끌어올린", substring = true, useUnmergedTree = true).assertDoesNotExist()
         // 이긴 판이 더 많았던 요원은 바로 밑 이번 주 요원 칸의 승패와 겹쳐 적지 않는다
@@ -758,7 +759,7 @@ class ReportScreenTest {
         val headline = onNodeWithText("피해량이 평소보다 10 올랐어요").getUnclippedBoundsInRoot()
         val firstCell = onNodeWithText("피해량").getUnclippedBoundsInRoot()
         val lastCell = onNodeWithText("헤드샷").getUnclippedBoundsInRoot()
-        val weapon = onNode(noteRow("밴달", "118 → 140", "44라운드")).getUnclippedBoundsInRoot()
+        val weapon = onNode(noteRow("밴달", "118 → 140")).getUnclippedBoundsInRoot()
         val trend = onNodeWithText("지난 8주 흐름", substring = true).getUnclippedBoundsInRoot()
 
         assertTrue(headline.top >= record.bottom, "헤드라인이 승패 칸 위에 있다")
@@ -773,7 +774,7 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(note = null), catalog = NamedCatalog) }
 
         onNodeWithText("평소보다", substring = true).assertDoesNotExist()
-        onNode(noteRow("밴달", "118 → 140", "44라운드")).assertDoesNotExist()
+        onNode(noteRow("밴달", "118 → 140")).assertDoesNotExist()
         onNodeWithText("피해량").assertExists()
     }
 
@@ -969,30 +970,30 @@ class ReportScreenTest {
         onNodeWithText("팬텀을 든 라운드는 헤드샷이 밴달보다 11%p 높아요").assertExists()
     }
 
-    // 줄끼리는 한 묶음으로 읽히게 고정 칸과의 간격보다 덜 띄운다
+    // 근거 두 칸을 한 줄에 나란히 두어 고정 칸이 덜 내려가게 한다
     @Test
-    fun `짚을 점 줄끼리는 8dp 띄운다`() = runComposeUiTest {
+    fun `짚을 점 무기와 요원은 한 줄에 나란히 둔다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
 
-        val first = onNode(noteRow("밴달", "118 → 140", "44라운드")).getUnclippedBoundsInRoot()
-        val second = onNode(noteRow("제트", "124 → 146", "4판")).getUnclippedBoundsInRoot()
-        assertEquals(8.dp, second.top - first.bottom)
+        val weapon = onNode(noteRow("밴달", "118 → 140")).getUnclippedBoundsInRoot()
+        val agent = onNode(noteRow("제트", "124 → 146")).getUnclippedBoundsInRoot()
+        assertTrue(agent.left > weapon.right, "요원 칸이 무기 칸 오른쪽에 있어야 한다")
+        assertEquals((weapon.top + weapon.bottom) / 2, (agent.top + agent.bottom) / 2)
     }
 
-    // 그림 폭이 달라도 이름은 같은 자리에서 시작하고, 숫자는 오른쪽 끝에 모은다
+    // 반쪽에 안 들어가면 한 줄에 하나씩 두고, 그림 폭이 달라도 이름은 같은 자리에서 시작한다
     @Test
-    fun `짚을 점 줄은 이름을 같은 자리에서 시작하고 숫자를 오른쪽에 모은다`() = runComposeUiTest {
-        setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
+    fun `짚을 점 칸이 반쪽에 안 들어가면 한 줄에 하나씩 두고 이름을 맞춘다`() = runComposeUiTest {
+        setContent { Box(Modifier.width(280.dp)) { Report(ReportPreviewData.moved, catalog = NamedCatalog) } }
 
-        val weaponName = onNodeWithText(noteLabel("밴달", "44라운드"), useUnmergedTree = true).getUnclippedBoundsInRoot()
-        val agentName = onNodeWithText(noteLabel("제트", "4판"), useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val weaponName = onNode(noteName("밴달", "118 → 140"), useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val agentName = onNode(noteName("제트", "124 → 146"), useUnmergedTree = true).getUnclippedBoundsInRoot()
         val weaponChange = onNodeWithText(noteChange("118 → 140"), useUnmergedTree = true).getUnclippedBoundsInRoot()
-        val agentChange = onNodeWithText(noteChange("124 → 146"), useUnmergedTree = true).getUnclippedBoundsInRoot()
         val headline = onNodeWithText("피해량이 평소보다 10 올랐어요").getUnclippedBoundsInRoot()
+        assertTrue(agentName.top >= weaponName.bottom, "요원 칸이 무기 칸 밑에 있어야 한다")
         assertEquals(weaponName.left, agentName.left)
         // 그림 자리를 두어 이름이 헤드라인보다 안쪽에서 시작한다
         assertTrue(weaponName.left > headline.left)
-        assertEquals(weaponChange.right, agentChange.right)
         assertTrue(weaponChange.left > weaponName.right, "숫자가 이름 옆에 있어야 한다")
     }
 
@@ -1026,9 +1027,10 @@ class ReportScreenTest {
             }
         }
 
-        listOf(noteLabel("밴달", "44라운드") to noteChange("118 → 140"), noteLabel("제트", "4판") to noteChange("124 → 146"))
-            .forEach { (label, change) ->
-                val name = onNodeWithText(label, useUnmergedTree = true).getUnclippedBoundsInRoot()
+        listOf("밴달" to "118 → 140", "제트" to "124 → 146")
+            .forEach { (label, rawChange) ->
+                val change = noteChange(rawChange)
+                val name = onNode(noteName(label, rawChange), useUnmergedTree = true).getUnclippedBoundsInRoot()
                 val value = onNodeWithText(change, useUnmergedTree = true).getUnclippedBoundsInRoot()
                 assertTrue(value.top >= name.bottom, "$change 이 이름 밑으로 내려가지 않았다")
                 assertEquals(name.left, value.left)
@@ -1069,8 +1071,8 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(note = flat), catalog = NamedCatalog) }
 
         onNodeWithText("피해량이 평소보다 10 올랐어요").assertExists()
-        onNode(noteRow("밴달", "140 → 140", "44라운드")).assertDoesNotExist()
-        onNode(noteRow("제트", "124 → 146", "4판")).assertExists()
+        onNode(noteRow("밴달", "140 → 140")).assertDoesNotExist()
+        onNode(noteRow("제트", "124 → 146")).assertExists()
     }
 
     // 21.4%와 21.2%는 둘 다 21%로 보인다. "0%p 올랐어요"라고 쓰지 않고, 빈 칸 몫의 간격도 남기지 않는다.
@@ -1455,10 +1457,13 @@ private fun insightLine(period: String?, vararg parts: Triple<String, String, St
     }
 
 // 짚을 점 한 줄은 이름과 표본을 한 글자로, "평소 → 이번" 숫자를 또 한 글자로 둔다. 화면 읽기 프로그램이 한 번에 읽게 한 줄로 묶는다.
-private fun noteRow(name: String, change: String, sample: String? = null): SemanticsMatcher =
-    hasText(noteLabel(name, sample)) and hasText(noteChange(change))
+private fun noteRow(name: String, change: String): SemanticsMatcher = hasText(noteLabel(name)) and hasText(noteChange(change))
 
-private fun noteLabel(name: String, sample: String? = null) = name.keepTogether() + (sample?.let { "\u00a0" + it.keepTogether() } ?: "")
+private fun noteLabel(name: String) = name.keepTogether()
+
+// 이번 주 무기·요원 칸에도 같은 이름이 있어서 짚을 점 칸의 이름은 옆의 숫자로 가린다
+private fun noteName(name: String, change: String): SemanticsMatcher =
+    hasText(noteLabel(name)) and hasAnySibling(hasText(noteChange(change)))
 
 private fun noteChange(change: String) = change.keepTogether()
 

@@ -45,8 +45,6 @@
     <string name="note_mix_share">%1$s 비중</string>
     <!-- 이번 기간 비중에 평소와의 차이를 곱해 전체 변화에 가장 많이 보탠 것이다. 많이 달라진 것과 다르다. -->
     <!-- "팬텀 피해량 130 → 230 · 42라운드" -->
-    <string name="note_case_rounds">%1$d라운드</string>
-    <string name="note_case_matches">%1$d판</string>
     <string name="note_steady_buy">%1$s 라운드만 보면</string>
     <string name="note_steady_weapon">%1$s 든 라운드만 보면</string>
     <string name="note_steady_agent">%1$s 뛴 판만 보면</string>

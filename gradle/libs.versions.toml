@@ -121,3 +121,4 @@ firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "
 # build-logic이 등록하는 자체 플러그인. id는 build-logic/convention/build.gradle.kts에서 정의한다.
 ovalit-android-application = { id = "ovalit.android.application" }
 ovalit-kmp-library = { id = "ovalit.kmp.library" }
+ovalit-kmp-feature = { id = "ovalit.kmp.feature" }

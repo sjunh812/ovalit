@@ -202,7 +202,7 @@ Refs: CLAUDE.md#지표-규칙
 | `docs/i18n-ja.md` | 일본어 용어와 말투 | 한국어 문구 규칙 |
 | `docs/RELEASE.md` | 출시 전에 채울 값과 순서 | 개발 중 설정 |
 | `docs/DECISIONS.md` | 기획과 달라진 결정. 날짜·무엇·왜 | 안 바뀐 결정, 긴 논의 |
-| `docs/CONVENTIONS.md` | 글, 커밋, 테스트, 프리뷰, 주석 규칙 | 코드 스타일 세부. 포매터가 할 일 |
+| `docs/CONVENTIONS.md` | 글, 커밋, 테스트, 빌드, 프리뷰, 주석 규칙 | 코드 스타일 세부. 포매터가 할 일 |
 
 규칙 문서가 길어지면 규칙 사이에 배경 설명이 섞인 겁니다. 배경은 `DECISIONS.md`로 옮기고 결론과
 지키는 까닭만 남깁니다. "처음에는 ~했는데 ~해서 바꿨다"는 DECISIONS에 씁니다. 사용자가 다른 안과
@@ -302,6 +302,42 @@ xcrun simctl launch booted com.ovalit
 ```
 
 iOS에는 광고, 푸시, 사용 통계가 없고 첫 수집은 앱이 떠 있는 동안 앱 안에서 받습니다. 피드백 메일 줄도 없습니다.
+
+## 빌드
+
+모듈 빌드 파일에는 convention plugin과 그 모듈에만 필요한 것만 적습니다. 여러 모듈이 같이 쓰는 설정은
+`build-logic/convention`에 둡니다. 모듈마다 복사해 두면 한 곳만 고치다 어긋납니다.
+
+| 플러그인 | 쓰는 곳 | 거는 것 |
+| --- | --- | --- |
+| `ovalit.android.application` | `composeApp` | SDK 버전, 자바·코틀린 타깃 |
+| `ovalit.kmp.library` | `shared/` 아래 모든 모듈 | 안드로이드와 iOS 시뮬레이터 타깃, 호스트 테스트, 안드로이드 리소스, 테스트 의존성 |
+| `ovalit.kmp.feature` | `shared/feature/*` | `ovalit.kmp.library`, Compose, core 모듈과 lifecycle·Koin 의존성, Res 클래스 설정 |
+
+기능 모듈을 새로 만들면 빌드 파일은 `alias(libs.plugins.ovalit.kmp.feature)` 한 줄로 시작합니다. Res 클래스 패키지는 모듈
+경로에서 정해집니다(`:shared:feature:report` → `com.ovalit.feature.report.resources`). 그 모듈만 쓰는 의존성은 모듈 빌드
+파일에 덧붙입니다.
+
+`composeApp`은 기능 모듈을 직접 걸지 않습니다. 화면과 Koin 모듈은 `shared/app`을 거쳐 들어오고 APK에도 그대로 들어갑니다.
+`composeApp` 코드가 기능 모듈의 타입을 직접 쓸 때만 그 모듈을 겁니다. 지금은 `settings`의 `NotificationBlocks` 하나입니다.
+
+### CI
+
+GitHub Actions(`.github/workflows/ci.yml`)가 `main`에 푸시할 때와 PR마다 돕니다. 공개 저장소라 표준 러너는 무료입니다.
+마크다운만 바뀐 커밋에는 돌지 않습니다. 같은 브랜치에 새 커밋이 올라오면 앞선 실행은 취소됩니다.
+
+| 작업 | 러너 | 돌리는 것 |
+| --- | --- | --- |
+| Android | ubuntu | `./gradlew testAndroidHostTest :composeApp:testDebugUnitTest :composeApp:assembleDebug` |
+| iOS | macOS | `./gradlew iosSimulatorArm64Test` |
+| Server | ubuntu | `server/`에서 `npm ci`, `npm run typecheck`, `npm test` |
+
+CI 체크아웃에는 `local.properties`와 `composeApp/google-services.json`이 없습니다. Firebase 플러그인 없이, 광고 ID 없이
+빌드되고 SDK 위치는 러너의 `ANDROID_HOME`에서 읽습니다. 두 파일이 있어야만 빌드되는 설정을 넣으면 CI가 깨집니다. 서버
+테스트는 `server/test/helpers.ts`의 가짜 비밀값을 써서 `.dev.vars`가 없어도 됩니다.
+
+Gradle 캐시는 `setup-gradle`의 `cache-provider: basic`을 씁니다. 기본값인 enhanced는 Gradle 이용약관에 동의해야 쓰는
+비공개 라이브러리입니다. Kotlin/Native 컴파일러(`~/.konan`)는 코틀린 버전마다 따로 캐시합니다.
 
 ## 프리뷰
 

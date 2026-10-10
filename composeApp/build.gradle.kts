@@ -99,11 +99,8 @@ dependencies {
     implementation(projects.shared.core.data)
     implementation(projects.shared.core.designsystem)
     implementation(projects.shared.core.ui)
-    implementation(projects.shared.feature.onboarding)
-    implementation(projects.shared.feature.report)
-    implementation(projects.shared.feature.match)
-    implementation(projects.shared.feature.friend)
-    implementation(projects.shared.feature.profile)
+    // 기능 모듈과 그 Koin 모듈은 shared/app을 거쳐 들어온다. settings만 OvalitPlatform이 돌려주는 NotificationBlocks를
+    // 여기서 만들어서 직접 건다.
     implementation(projects.shared.feature.settings)
 
     implementation(libs.compose.runtime)

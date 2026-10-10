@@ -18,6 +18,8 @@ import kotlin.time.Instant
  * 들어갑니다. 스코어와 라운드 막대는 이걸로 그립니다.
  * @property players 스코어보드입니다. 나도 들어갑니다. 앱을 쓰지 않는 사람은 이 경기 안의 기록까지만
  * 보여줄 수 있습니다.
+ * @property teams 응답의 `teams[]`입니다. 두 팀이 라운드를 겨루는 모드는 비워 둬도 [roundOutcomes]와 [Scoreline.onMyTeam]으로
+ * 그립니다. 데스매치는 사람마다, 건틀릿은 두 사람마다 한 팀이라 셋 이상이면 등수로 끝나는 경기로 봅니다([format]).
  */
 data class Match(
     val id: MatchId,
@@ -35,9 +37,29 @@ data class Match(
     val roundOutcomes: List<Boolean>,
     val rounds: List<Round>,
     val players: List<Scoreline>,
+    val teams: List<MatchTeam> = emptyList(),
 ) {
+    val format: MatchFormat
+        get() = when {
+            teams.size > 2 -> if (teams.all { it.members.size <= 1 }) MatchFormat.FREE_FOR_ALL else MatchFormat.TEAM_PLACEMENT
+            queue == Queue.DEATHMATCH -> MatchFormat.FREE_FOR_ALL
+            queue.halfRounds != null -> MatchFormat.ROUNDS
+            else -> MatchFormat.TEAM_POINTS
+        }
+
+    /**
+     * 라운드제 모드는 이긴 라운드 수이고 내가 튕겨서 못 뛴 라운드까지 셉니다. 팀 데스매치처럼 라운드가 없는 두 팀 모드는 응답의
+     * 팀 점수(`numPoints`)입니다. 등수로 끝나는 모드에는 맞지 않아 [myStanding]을 씁니다.
+     */
     val score: Score
-        get() = Score(myTeam = roundOutcomes.count { it }, enemyTeam = roundOutcomes.count { !it })
+        get() = teamPoints().takeIf { format == MatchFormat.TEAM_POINTS }
+            ?: Score(myTeam = roundOutcomes.count { it }, enemyTeam = roundOutcomes.count { !it })
+
+    private fun teamPoints(): Score? {
+        val mine = teams.firstOrNull { me in it.members }?.points ?: return null
+        val theirs = teams.firstOrNull { me !in it.members }?.points ?: return null
+        return Score(myTeam = mine, enemyTeam = theirs)
+    }
 
     val myScoreline: Scoreline?
         get() = players.firstOrNull { it.player == me }
@@ -46,6 +68,36 @@ data class Match(
 data class Score(
     val myTeam: Int,
     val enemyTeam: Int,
+)
+
+/** 경기가 어떤 모양으로 끝나는지입니다. 스코어, 스코어보드, 탭을 이걸로 고릅니다. */
+enum class MatchFormat {
+    /** 두 팀이 라운드를 겨룹니다. 경쟁, 일반, 프리미어, 스파이크 돌격, 신속 플레이, 복제입니다. */
+    ROUNDS,
+
+    /** 두 팀이 라운드 없이 점수를 겨룹니다. 팀 데스매치, 에스컬레이션, 눈싸움이고 큐를 모르는 두 팀 모드도 여기입니다. */
+    TEAM_POINTS,
+
+    /** 모두가 혼자 등수를 다툽니다. 데스매치입니다. */
+    FREE_FOR_ALL,
+
+    /** 작은 팀 여럿이 등수를 다툽니다. 건틀릿: 글리치가 두 명씩 여덟 팀입니다. */
+    TEAM_PLACEMENT,
+}
+
+/**
+ * 응답의 `teams[]` 한 줄에 그 팀 사람을 붙였습니다.
+ *
+ * @property members 응답의 `players[].teamId`가 이 팀인 사람입니다. 데스매치는 한 사람입니다.
+ * @property won 응답의 `won`입니다.
+ * @property points 응답의 `numPoints`입니다. 데스매치는 그 사람의 킬, 팀 데스매치는 팀 킬입니다. 모르면 `null`입니다.
+ * @property placement 등수로 끝나는 모드에서 응답이 준 등수입니다. 1부터 셉니다. `null`이면 [points]로 셉니다.
+ */
+data class MatchTeam(
+    val members: Set<PlayerId>,
+    val won: Boolean?,
+    val points: Int?,
+    val placement: Int? = null,
 )
 
 /**

@@ -33,7 +33,9 @@ enum class MetricFormat(private val scale: Int) {
 
     fun direction(current: Double, baseline: Double): Int = (steps(current) - steps(baseline)).coerceIn(-1, 1)
 
-    fun steps(value: Double): Int = (value * scale).roundToInt()
+    // 곱한 값을 아주 조금 키운 뒤 반올림한다. 57/200(0.285)에 100을 곱하면 28.4999…가 되어 그대로는 손으로 센 29%가 아니라
+    // 28%가 뜬다. 1e-9배는 보이는 자릿수에 닿지 않을 만큼 작다.
+    fun steps(value: Double): Int = (value * scale).let { it + it * ROUNDING_NUDGE }.roundToInt()
 
     // 음수는 부호를 떼고 자리를 나눈 뒤 다시 붙인다. 나머지 연산에 부호가 남으면 "0.-5"가 된다.
     private fun digits(steps: Int): String {
@@ -46,6 +48,8 @@ enum class MetricFormat(private val scale: Int) {
         }
     }
 }
+
+private const val ROUNDING_NUDGE = 1e-9
 
 fun Int.withThousands(): String {
     val grouped = abs(this).toString().reversed().chunked(3).joinToString(",").reversed()

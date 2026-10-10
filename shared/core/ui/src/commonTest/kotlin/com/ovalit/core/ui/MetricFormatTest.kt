@@ -30,6 +30,14 @@ class MetricFormatTest {
     }
 
     // 74%와 69%를 띄워 놓고 변화량에 +6을 쓰면 틀려 보인다. 원래 값으로 빼면 5.8이라 6이 나온다.
+    // 0.285에 100을 곱하면 부동소수 오차로 28.4999…가 된다. 손으로 센 57/200은 29%다.
+    @Test
+    fun `부동소수 오차로 반올림이 내려가지 않는다`() {
+        assertEquals("29", MetricFormat.PERCENT.format(57.0 / 200))
+        assertEquals("1.15", MetricFormat.TWO_DECIMALS.format(23.0 / 20))
+        assertEquals("28", MetricFormat.PERCENT.format(0.2849))
+    }
+
     @Test
     fun `변화량은 화면에 보이는 자릿수끼리 뺀다`() {
         assertEquals("+5", MetricFormat.PERCENT.formatChange(current = 0.744, baseline = 0.686))

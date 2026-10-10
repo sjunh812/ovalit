@@ -193,6 +193,53 @@ class NewMatchesTest {
         settle()
     }
 
+    // 지운 뒤 홈의 "다시 불러오기"를 당기면 첫 수집 없이 8주치를 다 받고, 첫 수집과 같은 경기를 두 번 받는다
+    @Test
+    fun `첫 수집 전에는 당겨도 새 경기를 받지 않는다`() = runTest {
+        val clock = StepClock(Thursday)
+        val repository = FakeMatchRepository(clock, scope = this)
+        repository.deleteAll()
+        clock.now += 10.minutes
+
+        assertEquals(0, repository.refresh())
+
+        assertEquals(emptyList(), repository.observeMatches().first())
+    }
+
+    // 첫 수집은 WorkManager 쪽에서 돌아 지우기가 멈출 수 없다. 지운 뒤에 받던 경기가 들어오면 연동을 해제해도 전적이 남는다.
+    @Test
+    fun `첫 수집 중에 지우면 지운 뒤에 경기가 들어오지 않는다`() = runTest {
+        val repository = FakeMatchRepository(ThursdayClock, scope = this)
+        repository.deleteAll()
+        val importing = launch { repository.importRecent() }
+        advanceTimeBy(500.milliseconds)
+        assertTrue(repository.observeMatches().first().isNotEmpty())
+
+        repository.deleteAll()
+        importing.join()
+
+        assertEquals(emptyList(), repository.observeMatches().first())
+        assertNull(repository.importProgress.first())
+    }
+
+    // 당긴 직후 앱을 나갔다 오면 방금 받은 목록을 또 받는다
+    @Test
+    fun `당겨서 받은 것도 확인으로 쳐서 곧 다시 열면 받지 않는다`() = runTest {
+        val clock = StepClock(Thursday)
+        val (matches, watcher) = watching(clock)
+        matches.importRecent()
+        settle()
+        clock.now += 11.minutes
+        matches.refresh()
+        val pulled = matches.observeMatches().first().size
+
+        clock.now += 2.minutes
+        watcher.onAppVisible()
+        settle()
+
+        assertEquals(pulled, matches.observeMatches().first().size)
+    }
+
     // watcher는 backgroundScope에서 돈다. advanceUntilIdle은 거기 띄운 일을 기다리지 않아서 시간을 직접 넘긴다.
     private fun TestScope.settle() {
         advanceTimeBy(1.minutes)

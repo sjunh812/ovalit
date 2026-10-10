@@ -4,6 +4,7 @@ import com.ovalit.core.model.ImportProgress
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.NewMatchesProgress
 import com.ovalit.core.model.forFirstImport
+import kotlin.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
@@ -19,8 +20,18 @@ interface MatchRepository {
     /**
      * 연동 직후 첫 수집입니다. 최근 50경기를 받되 8주를 넘는 경기는 잘라냅니다([forFirstImport]).
      * 받는 대로 [observeMatches]에 채웁니다. 끝난 경기는 결과가 바뀌지 않아 이미 받은 경기는 다시 요청하지 않습니다.
+     *
+     * 받다 실패하면 [importProgress]의 `stoppedBy`에 까닭을 적고 던집니다. 적지 않으면 S0-4가 멈춘 까닭과 다시 시도 버튼을
+     * 띄우지 못하고 "불러오는 중"에 머뭅니다. [deleteAll]을 부른 뒤에는 받던 경기를 더 저장하지 않습니다.
      */
     suspend fun importRecent()
+
+    /**
+     * 마지막으로 경기 ID 목록을 받은 시각입니다. 첫 수집을 마치거나 [refresh]가 목록을 받으면 바뀌고, 앱이 다시 보일 때 이 시각으로
+     * 다시 확인할지 정합니다([NewMatchesWatcher]). 당겨서 받은 것도 확인으로 쳐야 해서 저장소가 듭니다. 실제 저장소는 기기에 저장해
+     * 앱을 다시 켜도 이어 갑니다.
+     */
+    val checkedAt: Flow<Instant?>
 
     /**
      * 새로 끝난 경기를 받는 중이면 몇 판 중 몇 판을 받았는지입니다. 받는 중이 아니면 `null`입니다. 실제 저장소는 받다 끊긴 경기가
@@ -29,7 +40,8 @@ interface MatchRepository {
     val newMatchesProgress: Flow<NewMatchesProgress?>
 
     /**
-     * 첫 수집 뒤에 새로 끝난 경기를 받습니다. 홈과 경기 탭을 당기거나, 앱이 다시 보일 때 부릅니다. 끝난 경기는 결과가 바뀌지
+     * 첫 수집 뒤에 새로 끝난 경기를 받습니다. 홈과 경기 탭을 당기거나, 앱이 다시 보일 때 부릅니다. 첫 수집이 끝나지 않았으면 받지
+     * 않고 0을 돌려줍니다. 그때 받으면 50판 제한 없이 8주치를 다 받고, 첫 수집과 같은 경기를 두 번 받습니다. 끝난 경기는 결과가 바뀌지
      * 않아 저장해 둔 경기는 다시 받지 않고 목록에 없는 경기만 받습니다. 첫 수집처럼 8주를 넘는 경기는 받지 않습니다.
      *
      * 최신 경기부터 한 판씩 받아 바로 저장하고 [newMatchesProgress]를 올립니다. 중간에 끊기거나 Riot이 429를 주면 거기서 멈추고,

@@ -65,32 +65,52 @@ class FakeMatchRepository(
     private val progress = MutableStateFlow<ImportProgress?>(null)
     private val newMatches = MutableStateFlow<NewMatchesProgress?>(null)
 
+    // 마지막으로 경기 ID 목록을 본 시각이다. 그 뒤로 지난 시간만큼 새 경기가 끝난 것으로 친다.
+    private val checked = MutableStateFlow<Instant?>(null)
+
     override fun observeMatches(): Flow<List<Match>> = matches
 
     override val importProgress: Flow<ImportProgress?> = progress
 
     override val newMatchesProgress: Flow<NewMatchesProgress?> = newMatches
 
-    // 마지막으로 경기 ID 목록을 본 시각이다. 그 뒤로 지난 시간만큼 새 경기가 끝난 것으로 친다.
-    private var checkedAt: Instant? = null
+    override val checkedAt: Flow<Instant?> = checked
+
+    // 지울 때마다 늘린다. 받던 첫 수집은 저장하기 전에 이 값을 보고, 그사이 지웠으면 멈춘다.
+    private var generation = 0
 
     // 목록에는 있는데 아직 받지 못한 경기다. 받다 끊기면 다음에 이것부터 받는다.
     private var pending: List<Match> = emptyList()
 
     // S0-4 막대가 차오르는 걸 볼 수 있게 한 판씩 틈을 두고 받는다. 중간에 끊겼다 다시 돌면 이미 받은 경기는 건너뛴다.
+    // 받기는 부른 쪽(WorkManager)에서 돌아 지우기가 멈출 수 없다. 그래서 한 판씩 저장할 때마다 그사이 지웠는지 보고 멈춘다.
     override suspend fun importRecent() {
-        val saved = matches.value.map { it.id }.toSet()
-        val picked = imported()
-        progress.value = ImportProgress(total = picked.size, results = picked.filter { it.id in saved }.map { it.myTeamWon })
-        for (match in picked.filterNot { it.id in saved }) {
-            delay(importDelay)
-            save(match)
-            progress.update { it?.copy(results = it.results + match.myTeamWon) }
+        val (started, picked) = lock.withLock {
+            val saved = matches.value.map { it.id }.toSet()
+            val picked = imported()
+            progress.value = ImportProgress(total = picked.size, results = picked.filter { it.id in saved }.map { it.myTeamWon })
+            generation to picked.filterNot { it.id in saved }
         }
-        checkedAt = clock.now()
+        for (match in picked) {
+            delay(importDelay)
+            val stillLinked = lock.withLock {
+                (generation == started).also { current ->
+                    if (current) {
+                        save(match)
+                        progress.update { it?.copy(results = it.results + match.myTeamWon) }
+                    }
+                }
+            }
+            if (!stillLinked) return
+        }
+        lock.withLock { if (generation == started) checked.value = clock.now() }
     }
 
+    // 처음부터 저장된 경기가 있으면 앞서 첫 수집을 마친 것으로 친다. 지운 뒤에는 경기도 진행도도 비어 다시 첫 수집을 기다린다.
+    private fun firstImportDone(): Boolean = progress.value?.isDone ?: matches.value.isNotEmpty()
+
     override suspend fun refresh(): Int {
+        if (!firstImportDone()) return 0
         // 홈과 경기 탭이 같이 당기면 한 번만 받는다. 뒤에 온 쪽은 앞의 것이 끝날 때까지 기다리고 새로 받지 않는다.
         val (receiving, joined) = lock.withLock {
             inFlight?.takeIf { it.isActive }?.let { it to true } ?: (scope.async { receiveNew() }.also { inFlight = it } to false)
@@ -102,8 +122,8 @@ class FakeMatchRepository(
     private suspend fun receiveNew(): Int = try {
         delay(REFRESH_DELAY)
         val now = clock.now()
-        if (pending.isEmpty()) pending = finishedSince(checkedAt, now)
-        checkedAt = now
+        if (pending.isEmpty()) pending = finishedSince(checked.value, now)
+        checked.value = now
         val total = pending.size
         newMatches.value = NewMatchesProgress(total = total, received = 0)
         // 최신 경기부터 한 판씩 받아 바로 저장한다. 당겨서 한 판만 받을 때는 당김 표시가 오래 돌지 않게 바로 넣는다.
@@ -149,8 +169,9 @@ class FakeMatchRepository(
         lock.withLock {
             inFlight?.cancelAndJoin()
             inFlight = null
+            generation++
             pending = emptyList()
-            checkedAt = null
+            checked.value = null
             matches.value = emptyList()
             progress.value = null
             newMatches.value = null

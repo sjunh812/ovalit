@@ -41,18 +41,24 @@ private const val KEY_TOTAL = "total"
 private const val FIRST_IMPORT_TAG = "first_import"
 private const val NEW_MATCHES_TAG = "new_matches"
 
-/** 같은 작업이 이미 돌거나 기다리고 있으면 새로 걸지 않습니다([retry]만 갈아 끼웁니다). 네트워크가 연결돼야 시작합니다. */
+/**
+ * 같은 작업이 이미 돌거나 기다리고 있으면 새로 걸지 않습니다([retry]만 갈아 끼웁니다).
+ *
+ * 첫 수집은 네트워크를 기다리지 않고 바로 시작합니다. 연결을 조건으로 걸면 인터넷이 없을 때 작업이 아예 시작하지 않아 저장소가
+ * 멈춘 까닭을 적지 못하고, S0-4가 오프라인 안내와 다시 시도 버튼 없이 "불러오는 중"에 머뭅니다. 받는 중에 끊겨도 작업을 멈추지 않고
+ * 저장소가 끊긴 까닭을 적게 둡니다. 새 경기 이어 받기는 화면 밖 일이라 연결될 때까지 기다립니다.
+ */
 class WorkManagerImportScheduler(private val context: Context) : ImportScheduler {
     override fun start() {
-        enqueue<FirstImportWorker>(WORK_NAME)
+        enqueue<FirstImportWorker>(WORK_NAME, needsNetwork = false)
     }
 
     override fun retry() {
-        enqueue<FirstImportWorker>(WORK_NAME, policy = ExistingWorkPolicy.REPLACE)
+        enqueue<FirstImportWorker>(WORK_NAME, policy = ExistingWorkPolicy.REPLACE, needsNetwork = false)
     }
 
     override fun continueNewMatches(total: Int) {
-        enqueue<NewMatchesWorker>(NEW_MATCHES_WORK_NAME, workDataOf(KEY_TOTAL to total))
+        enqueue<NewMatchesWorker>(NEW_MATCHES_WORK_NAME, workDataOf(KEY_TOTAL to total), needsNetwork = true)
     }
 
     override fun cancel() {
@@ -66,9 +72,11 @@ class WorkManagerImportScheduler(private val context: Context) : ImportScheduler
         name: String,
         input: Data = Data.EMPTY,
         policy: ExistingWorkPolicy = ExistingWorkPolicy.KEEP,
+        needsNetwork: Boolean,
     ) {
+        val network = if (needsNetwork) NetworkType.CONNECTED else NetworkType.NOT_REQUIRED
         val request = OneTimeWorkRequestBuilder<W>()
-            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+            .setConstraints(Constraints.Builder().setRequiredNetworkType(network).build())
             .setInputData(input)
             .build()
         WorkManager.getInstance(context).enqueueUniqueWork(name, policy, request)

@@ -464,6 +464,8 @@ private class StubRepository(
     override val importProgress: Flow<ImportProgress?> = flowOf(null),
     override val newMatchesProgress: Flow<NewMatchesProgress?> = flowOf(null),
 ) : MatchRepository {
+    override val checkedAt: Flow<Instant?> = flowOf(null)
+
     override fun observeMatches(): Flow<List<Match>> = matches
 
     override suspend fun importRecent() = Unit

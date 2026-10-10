@@ -254,8 +254,9 @@ private fun game(
 }
 
 /**
- * 팬텀만 쓴 [rounds]라운드를 5경기에 나눠 담습니다. 라운드마다 4발을 맞히고 모두 합쳐 [head]발이 머리입니다. 라운드마다
- * [damage]를 넣고, 앞의 [carried]라운드만 팬텀을 들고 시작합니다.
+ * 팬텀만 쓴 [rounds]라운드를 5경기에 나눠 담습니다.
+ * 라운드마다 4발을 맞히고 모두 합쳐 [head]발이 머리입니다.
+ * 라운드마다 [damage]를 넣고, 앞의 [carried]라운드만 팬텀을 들고 시작합니다.
  */
 private fun phantomWeek(weeksAgo: Int, head: Int, rounds: Int = 25, carried: Int = rounds, damage: Int = 140): List<Match> {
     val all = List(rounds) { index ->

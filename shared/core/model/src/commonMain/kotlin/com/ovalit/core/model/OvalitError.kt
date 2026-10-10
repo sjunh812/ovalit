@@ -1,8 +1,8 @@
 package com.ovalit.core.model
 
 /**
- * 저장소가 실패한 까닭입니다. 실제 저장소는 HTTP 응답과 네트워크 예외를 이것으로 바꿔 [OvalitException]으로 던지고, 화면은
- * 이것으로 안내 문구를 고릅니다.
+ * 저장소가 실패한 까닭입니다.
+ * 실제 저장소는 HTTP 응답과 네트워크 예외를 이것으로 바꿔 [OvalitException]으로 던지고, 화면은 이것으로 안내 문구를 고릅니다.
  */
 sealed interface OvalitError {
     data object Offline : OvalitError

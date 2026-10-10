@@ -3,9 +3,9 @@ package com.ovalit.core.model
 /**
  * 경기 하나, 또는 여러 경기를 합친 지표입니다.
  *
- * 총량만 들고 있고 비율은 그때그때 나눠서 냅니다. 경기마다 ACS를 먼저 구해 평균 내면
- * 13-2로 끝난 경기와 13-11로 끝난 경기가 같은 무게로 섞입니다. 총량을 [plus]로 더한 뒤
- * 나누면 라운드 수만큼 무게가 실립니다.
+ * 총량만 들고 있고 비율은 그때그때 나눠서 냅니다.
+ * 경기마다 ACS를 먼저 구해 평균 내면 13-2로 끝난 경기와 13-11로 끝난 경기가 같은 무게로 섞입니다.
+ * 총량을 [plus]로 더한 뒤 나누면 라운드 수만큼 무게가 실립니다.
  *
  * 비율은 분모가 0이면 `null`입니다. 0으로 채우면 "헤드샷 0%"처럼 틀린 숫자가 뜹니다.
  */
@@ -42,8 +42,8 @@ data class MatchMetrics(
     val kd: Double? get() = kills over deaths
 
     /**
-     * (킬 + 어시스트) ÷ 데스입니다. 데스가 없으면 `null`입니다. 킬과 어시를 더한 값이라 "평점"이라 부르지
-     * 않습니다(CLAUDE.md 지켜야 할 선).
+     * (킬 + 어시스트) ÷ 데스이고, 데스가 없으면 `null`입니다.
+     * 킬과 어시를 더한 값이라 "평점"이라 부르지 않습니다(CLAUDE.md 지켜야 할 선).
      */
     val kda: Double? get() = (kills + assists) over deaths
 
@@ -76,8 +76,8 @@ data class MatchMetrics(
     val multiKillRate: Double? get() = multiKillRounds over rounds
 
     /**
-     * 내 데스 중 [TRADE_WINDOW_MILLIS] 안에 우리 팀이 내 킬러를 잡은 비율입니다. 트레이드는 라운드 킬 기록으로 가려서 라운드가 없는
-     * 경기만 모였으면 0%가 아니라 `null`입니다.
+     * 내 데스 중 [TRADE_WINDOW_MILLIS] 안에 우리 팀이 내 킬러를 잡은 비율입니다.
+     * 트레이드는 라운드 킬 기록으로 가려서, 라운드가 없는 경기만 모였으면 0%가 아니라 `null`입니다.
      */
     val tradedDeathRate: Double? get() = if (rounds == 0) null else tradedDeaths over deaths
 

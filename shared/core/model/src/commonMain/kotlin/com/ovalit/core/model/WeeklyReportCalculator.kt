@@ -20,8 +20,8 @@ const val MIN_TREND_ROUNDS = 40
 /**
  * 주는 [timeZone] 기준 월요일 0시에 바뀝니다. 이번 주는 [now]가 속한, 아직 끝나지 않은 주입니다.
  *
- * 이번 주에 뛴 경기가 없으면 지난주에서 끝나는 기간을 봅니다. 그 기간이
- * [MIN_MATCHES_PER_REPORT]경기에 못 미치면 한 주씩 넓혀 [MAX_REPORT_WEEKS]주까지 봅니다.
+ * 이번 주에 뛴 경기가 없으면 지난주에서 끝나는 기간을 봅니다.
+ * 그 기간이 [MIN_MATCHES_PER_REPORT]경기에 못 미치면 한 주씩 넓혀 [MAX_REPORT_WEEKS]주까지 봅니다.
  *
  * @param weaponCategories 개선 포인트가 같은 계열의 무기끼리 견줄 때 씁니다. 비어 있으면 무기끼리는 견주지 않습니다.
  */
@@ -81,8 +81,9 @@ private fun Iterable<Match>.notCountedRecently(queueFilter: QueueFilter, now: In
     return count { it.queue in queueFilter.queues && it.queue !in queueFilter.countedQueues && it.startedAt.weekStart(timeZone) >= since }
 }
 
-// 한 주 경기를 둘로 나누면 표본이 작아 우연한 차이가 대부분이다. 이번 액트 경기로 견주고, 그 차이가 이번 기간에도
-// 이어졌는지 기간 값을 붙인다. 기간이 액트 경기를 모두 담으면 위 숫자와 같아서 붙이지 않는다.
+// 한 주 경기를 둘로 나누면 표본이 작아 우연한 차이가 대부분이다.
+// 이번 액트 경기로 견주고, 그 차이가 이번 기간에도 이어졌는지 기간 값을 붙인다.
+// 기간이 액트 경기를 모두 담으면 위 숫자와 같아서 붙이지 않는다.
 private fun Map<LocalDate, List<Match>>.actInsight(
     periodMatches: List<Match>,
     role: Role?,
@@ -204,8 +205,9 @@ private fun Map<LocalDate, List<Match>>.choosePeriod(now: Instant, timeZone: Tim
 
 private val ReportPeriod.end: LocalDate get() = firstDay.plusWeeks(weeks)
 
-// 비교 기준은 기간 바로 앞 4주다. 이번 액트 첫 경기가 4주 안쪽이면 거기서부터 센다. 안 그러면 2주치 경기에 "지난 4주
-// 평균"이 붙는다. 홈 리포트, 짚을 점의 무기, S6이 같은 창을 써야 숫자가 갈리지 않는다.
+// 비교 기준은 기간 바로 앞 4주다.
+// 이번 액트 첫 경기가 4주 안쪽이면 거기서부터 세야 2주치 경기에 "지난 4주 평균"이 붙지 않는다.
+// 홈 리포트, 짚을 점의 무기, S6이 같은 창을 써야 숫자가 갈리지 않는다.
 private fun Map<LocalDate, List<Match>>.baselineStart(periodStart: LocalDate): LocalDate =
     maxOf(periodStart.minusWeeks(BASELINE_WEEKS), keys.min())
 
@@ -238,8 +240,8 @@ fun Iterable<Match>.currentActMatches(queueFilter: QueueFilter): List<Match> {
 }
 
 /**
- * S6 무기 화면에 쓰는 집계입니다. 목록은 이번 액트 전체를 보고, 위쪽 세 무기는 기간과 비교 기준을
- * 홈 리포트와 똑같이 잡습니다.
+ * S6 무기 화면에 쓰는 집계입니다.
+ * 목록은 이번 액트 전체를 보고, 위쪽 세 무기는 기간과 비교 기준을 홈 리포트와 똑같이 잡습니다.
  */
 fun Iterable<Match>.weaponReport(
     now: Instant,

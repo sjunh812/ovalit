@@ -22,8 +22,9 @@ value class ActId(val value: String)
 value class WeaponId(val value: String)
 
 /**
- * 경기 응답의 `matchInfo.mapId`입니다. UUID로 올지 `/Game/Maps/Ascent/Ascent` 같은 경로로 올지 아직
- * 확인하지 못했습니다. 어느 쪽이든 VAL-CONTENT의 맵 목록으로 이름과 UUID를 찾을 수 있습니다.
+ * 경기 응답의 `matchInfo.mapId`입니다.
+ * UUID로 올지 `/Game/Maps/Ascent/Ascent` 같은 경로로 올지 아직 확인하지 못했습니다.
+ * 어느 쪽이든 VAL-CONTENT의 맵 목록으로 이름과 UUID를 찾을 수 있습니다.
  */
 @JvmInline
 value class MapId(val value: String)

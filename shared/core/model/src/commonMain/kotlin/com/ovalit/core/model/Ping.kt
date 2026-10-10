@@ -28,8 +28,8 @@ value class PingId(val value: String)
 /**
  * 서로 수락한 친구를 시각을 정해 부르는 ㅇㅂㅇ입니다. 화면에서는 "오발있?"이라 부릅니다.
  *
- * 받은 친구는 갈게요, 다른 시간, 못 가요 중 하나로 답하고, 보낸 사람이 다른 시간으로 옮기면 모두에게 다시 묻습니다. 정해 둔
- * 답만 오가고 글을 적는 칸이 없어서 신고나 차단을 둘 글이 생기지 않습니다.
+ * 받은 친구는 갈게요, 다른 시간, 못 가요 중 하나로 답하고, 보낸 사람이 다른 시간으로 옮기면 모두에게 다시 묻습니다.
+ * 정해 둔 답만 오가고 글을 적는 칸이 없어서 신고나 차단을 둘 글이 생기지 않습니다.
  *
  * @property startsAt 하자고 한 시각입니다. "지금"으로 보내면 보낸 시각과 같습니다.
  * @property members 받은 친구들입니다. 보낸 사람은 들어 있지 않습니다.
@@ -91,8 +91,9 @@ fun Ping.invited(people: List<PingPerson>): Ping = copy(
 )
 
 /**
- * 보낸 사람이 시각을 옮깁니다. 그 시각을 낸 친구만 참석으로 두고 나머지는 모두 다시 묻습니다. 9시에 간다던 친구가 10시에도
- * 되는지는 모르고, 9시에 안 된다던 친구가 10시에는 될 수도 있습니다.
+ * 보낸 사람이 시각을 옮깁니다.
+ * 그 시각을 낸 친구만 참석으로 두고 나머지는 모두 다시 묻습니다.
+ * 9시에 간다던 친구가 10시에도 되는지는 모르고, 9시에 안 된다던 친구가 10시에는 될 수도 있습니다.
  */
 fun Ping.movedTo(startsAt: Instant): Ping = copy(
     startsAt = startsAt,
@@ -109,13 +110,15 @@ fun List<Ping>.forHome(me: PlayerId): Ping? =
         ?: firstOrNull()
 
 /**
- * 시간 고르기에 띄우는 시각입니다. [now] 뒤 첫 정각이나 30분부터 30분마다 다음 날 같은 시각 전까지입니다. "지금"은 따로
- * 둡니다. 13시 12분이면 13시 30분, 14시, … 다음 날 12시 30분입니다.
+ * 시간 고르기에 띄우는 시각입니다.
+ * [now] 뒤 첫 정각이나 30분부터 30분마다 다음 날 같은 시각 전까지이고, "지금"은 따로 둡니다.
+ * 13시 12분이면 13시 30분, 14시, … 다음 날 12시 30분입니다.
  */
 fun pingSlots(now: Instant, timeZone: TimeZone): List<Instant> {
     val local = now.toLocalDateTime(timeZone)
-    // 지난 30분 칸의 시작으로 내린 뒤 한 칸 올린다. 나노초까지 다 빼야 언제 불러도 같은 칸이 같은 시각이 된다. 1ms보다 작은
-    // 자투리가 남으면 초대를 만들 때의 17:00과 휠을 열 때의 17:00이 서로 다른 시각이 되어 휠에 두 번 뜬다.
+    // 지난 30분 칸의 시작으로 내린 뒤 한 칸 올린다.
+    // 나노초까지 다 빼야 언제 불러도 같은 칸이 같은 시각이 된다.
+    // 1ms보다 작은 자투리가 남으면 초대를 만들 때의 17:00과 휠을 열 때의 17:00이 서로 다른 시각이 되어 휠에 두 번 뜬다.
     val passed = (local.minute % 30).minutes + local.second.seconds + local.nanosecond.nanoseconds
     val first = now - passed + SlotStep
     return List(SLOT_COUNT) { index -> first + SlotStep * index }

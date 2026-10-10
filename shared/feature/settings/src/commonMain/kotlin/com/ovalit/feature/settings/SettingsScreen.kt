@@ -181,7 +181,8 @@ internal fun SettingsScreen(
             .fillMaxSize()
             .background(OvalitTheme.colors.canvas),
     ) {
-        // 처음 열 때 머리 줄까지 비었다가 한꺼번에 뜨지 않게 머리는 바로 그린다. 설정은 서버를 기다리지 않아 곧 뜬다.
+        // 처음 열 때 머리 줄까지 비었다가 한꺼번에 뜨지 않게 머리는 바로 그린다.
+        // 설정은 서버를 기다리지 않아 곧 뜬다.
         if (uiState !is SettingsUiState.Success) {
             OvalitTabHeader(title = stringResource(Res.string.settings_title), modifier = Modifier.safeDrawingPadding())
             return@Box
@@ -198,7 +199,8 @@ internal fun SettingsScreen(
         ) {
             OvalitTabHeader(title = stringResource(Res.string.settings_title))
             Spacer(Modifier.height(OvalitSpacing.xs))
-            // 홈, 친구 탭처럼 묶음마다 카드 하나다. 묶음이 많아 선으로만 나누면 지금 어느 묶음인지 한눈에 안 들어온다.
+            // 홈, 친구 탭처럼 묶음마다 카드 하나다.
+            // 묶음이 많아 선으로만 나누면 지금 어느 묶음인지 한눈에 안 들어온다.
             Column(verticalArrangement = Arrangement.spacedBy(OvalitCardGap)) {
                 AccountCard(uiState.account, onOpenProfile = actions.onOpenProfile)
 
@@ -211,8 +213,8 @@ internal fun SettingsScreen(
                     )
                 }
 
-                // 휴대폰 설정에서 막혀 있으면 스위치가 켜져 있어도 알림이 오지 않는다. 켜러 가는 줄을 맨 위에 두고 막힌 스위치는
-                // 흐리게 둔다. 앱으로 돌아오면 다시 확인한다.
+                // 휴대폰 설정에서 막혀 있으면 스위치가 켜져 있어도 알림이 오지 않는다.
+                // 켜러 가는 줄을 맨 위에 두고 막힌 스위치는 흐리게 둔다. 앱으로 돌아오면 다시 확인한다.
                 SettingsCard(stringResource(Res.string.section_notifications)) {
                     if (notificationBlocks.analysisDone || notificationBlocks.weeklyReport) {
                         NotificationsBlockedRow(onClick = actions.onOpenNotificationSettings)
@@ -233,7 +235,8 @@ internal fun SettingsScreen(
                     )
                 }
 
-                // 오발있? 알림과 거기 딸린 시작 전 알림을 한 카드에 둔다. 스위치를 끄면 시작 전 알림도 오지 않아 그 줄을 흐리게 남긴다.
+                // 오발있? 알림과 거기 딸린 시작 전 알림을 한 카드에 둔다.
+                // 스위치를 끄면 시작 전 알림도 오지 않아 그 줄을 흐리게 남긴다.
                 // 숨기면 화면이 튀고 그런 설정이 있다는 것도 안 보인다.
                 SettingsCard(stringResource(Res.string.notify_ping)) {
                     if (notificationBlocks.ping) NotificationsBlockedRow(onClick = actions.onOpenNotificationSettings)
@@ -269,7 +272,8 @@ internal fun SettingsScreen(
                         value = stringResource(preferences.focus.label),
                         onClick = { openSheet = SettingsSheet.FOCUS },
                     )
-                    // 보상형 광고로 24시간 광고를 숨긴다. 광고 줄의 ×로도 같은 광고를 본다. 숨기는 동안에는 언제까지인지만 적는다.
+                    // 보상형 광고로 24시간 광고를 숨긴다. 광고 줄의 ×로도 같은 광고를 본다.
+                    // 숨기는 동안에는 언제까지인지만 적는다.
                     val ads = LocalAdRenderer.current
                     if (ads != null && ads.canOfferAdFree) {
                         val until = rememberStillAhead(preferences.adFreeUntil, now)
@@ -480,8 +484,8 @@ private fun ValueRow(
 }
 
 /**
- * [until]이 [now]보다 뒤면 그대로, 지났으면 `null`입니다. 지나는 순간 `null`로 바꿔 다시 그립니다. 그릴 때만 견주면 광고 없이
- * 보기가 끝난 뒤에도 "오늘 16:20까지"에 멈춰 다시 누를 수 없습니다.
+ * [until]이 [now]보다 뒤면 그대로, 지났으면 `null`입니다. 지나는 순간 `null`로 바꿔 다시 그립니다.
+ * 그릴 때만 견주면 광고 없이 보기가 끝난 뒤에도 "오늘 16:20까지"에 멈춰 다시 누를 수 없습니다.
  */
 @Composable
 private fun rememberStillAhead(until: Instant?, now: Instant): Instant? {

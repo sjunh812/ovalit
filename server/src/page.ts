@@ -22,7 +22,11 @@ export function appIntent(pageUrl: URL, pathAndQuery: string): string {
  * 없습니다. `main`은 제목 밑에 들어갈 본문이고, `head`에는 미리보기 태그처럼 머리에 더할 것을 넣습니다.
  */
 export function appPage(c: Context, page: { title: string; head?: Html; main: Html }): Response | Promise<Response> {
-  c.header("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'");
+  // 다른 사이트가 이 페이지를 iframe에 넣고 "앱으로 돌아가기"를 누르게 꾸밀 수 없게 막는다.
+  c.header(
+    "Content-Security-Policy",
+    "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+  );
   c.header("Referrer-Policy", "no-referrer");
   c.header("X-Robots-Tag", "noindex");
   return c.html(html`<!doctype html>

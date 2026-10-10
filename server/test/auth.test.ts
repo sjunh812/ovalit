@@ -318,6 +318,7 @@ describe("로그인을 마친 뒤 앱이 안 열렸을 때", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("Cache-Control")).toBe("no-store");
     expect(res.headers.get("Referrer-Policy")).toBe("no-referrer");
+    expect(res.headers.get("Content-Security-Policy")).toContain("frame-ancestors 'none'");
     expect(page).toContain(`href="intent://localhost/auth/done?code=${code}#Intent;scheme=http;package=com.ovalit;end"`);
   });
 

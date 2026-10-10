@@ -462,12 +462,11 @@ private class TestMatchRemote(
 
     val fetched = mutableListOf<MatchId>()
 
-    /** 새 경기가 끝납니다. */
     fun finish(played: List<Match>) {
         matches += played
     }
 
-    /** 목록의 큐가 커스텀 게임입니다. [listedAs]를 주면 목록에는 그 큐로 오고 상세를 받아야 커스텀 게임인 걸 압니다. */
+    /** 커스텀 게임을 뜁니다. 목록에도 커스텀 게임으로 오지만, [listedAs]를 주면 그 큐로 와서 상세를 받아야 커스텀 게임인 걸 압니다. */
     fun playCustomGame(id: String, startedAt: Instant, listedAs: Queue? = null) {
         customGames += MatchListEntry(MatchId(id), startedAt, listedAs)
     }

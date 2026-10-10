@@ -7,8 +7,9 @@ import com.ovalit.core.model.OvalitError
 import com.ovalit.core.model.OvalitException
 
 /**
- * 내 경기를 주는 서버입니다. 우리 서버가 넘긴 Riot 응답을 매퍼가 `core/model` 타입으로 옮겨 돌려줍니다. 무엇을 언제 받을지는
- * [OfflineFirstMatchRepository]가 정하고, 여기는 부른 것만 그대로 받아 옵니다.
+ * 내 경기를 주는 서버입니다.
+ * 우리 서버가 넘긴 Riot 응답을 매퍼가 `core/model` 타입으로 옮겨 돌려줍니다.
+ * 무엇을 언제 받을지는 [OfflineFirstMatchRepository]가 정하고, 여기는 부른 것만 그대로 받아 옵니다.
  *
  * 실패하면 까닭을 [OvalitException]으로 실어 던집니다. Riot 429는 [OvalitError.RiotBusy]입니다.
  */

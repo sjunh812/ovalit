@@ -1,7 +1,8 @@
 package com.ovalit.core.network
 
-// Riot 문서의 VAL-MATCH-V1 모양을 따라 손으로 짠 응답이다. 실제 응답을 아직 못 봐서 값은 지어냈다. 라운드마다 열 명의 장비
-// 줄을 다 적으면 읽을 수 없어서 줄을 만드는 함수만 두고, 무엇이 일어났는지는 경기마다 손으로 적는다.
+// Riot 문서의 VAL-MATCH-V1 모양을 따라 손으로 짠 응답이다.
+// 실제 응답을 아직 못 봐서 값은 지어냈다.
+// 라운드마다 열 명의 장비 줄을 다 적으면 읽을 수 없어서 줄을 만드는 함수만 두고, 무엇이 일어났는지는 경기마다 손으로 적는다.
 
 internal const val ME = "p-me"
 internal const val A1 = "p-ally-1"
@@ -335,8 +336,9 @@ internal val CompetitiveMatch: String = matchJson(
 ).replace("\"premierMatchInfo\": {}", "\"premierMatchInfo\": {}, \"newField\": [1, 2, 3]")
 
 /**
- * 4대1로 이긴 스파이크 돌격입니다. 두 명씩만 둡니다. 이 응답은 `roundNum`을 1부터 줍니다. 실제 응답은 한쪽일 텐데 어느
- * 쪽이든 1부터 세는 [com.ovalit.core.model.Round.number]로 옮겨지는지 봅니다.
+ * 4대1로 이긴 스파이크 돌격이고 팀마다 두 명씩만 둡니다.
+ * 이 응답은 `roundNum`을 1부터 줍니다.
+ * 실제 응답은 한쪽일 텐데 어느 쪽이든 1부터 세는 [com.ovalit.core.model.Round.number]로 옮기는지 봅니다.
  */
 internal val SpikeRushMatch: String = run {
     val blue = listOf(ME, A1)
@@ -367,8 +369,10 @@ internal const val DM2 = "p-dm-2"
 internal const val DM3 = "p-dm-3"
 
 /**
- * 네 명이 각자 싸운 데스매치입니다. Riot 문서대로 `teams[]`가 사람마다 한 줄이고 팀 ID가 그 사람의 PUUID이며 `numPoints`가
- * 킬입니다. 라운드 기록이 한 라운드로 온다고 보고 맞힌 부위를 거기에 둡니다. `roundsPlayed`는 1로 옵니다.
+ * 네 명이 각자 싸운 데스매치입니다.
+ * Riot 문서대로 `teams[]`가 사람마다 한 줄이고 팀 ID가 그 사람의 PUUID이며 `numPoints`가 킬입니다.
+ * 라운드 기록이 한 라운드로 온다고 보고 맞힌 부위를 거기에 둡니다.
+ * `roundsPlayed`는 1로 옵니다.
  */
 internal val DeathmatchMatch: String = matchJson(
     queueId = "deathmatch",
@@ -395,8 +399,11 @@ internal val DeathmatchMatch: String = matchJson(
 )
 
 /**
- * 두 명씩 여덟 팀이 등수를 다툰 건틀릿: 글리치입니다. 큐 ID를 몰라 지어냈고 기타로 옮겨져야 합니다. 등수가 응답에 없어서
- * `numPoints`로 셉니다. 우리 팀(`Team1`)은 2점으로 `Team8`과 같이 2등입니다. 라운드 기록은 비어 있습니다.
+ * 두 명씩 여덟 팀이 등수를 다툰 건틀릿: 글리치입니다.
+ * 큐 ID를 몰라 지어냈고 기타로 옮겨야 합니다.
+ * 등수가 응답에 없어서 `numPoints`로 셉니다.
+ * 우리 팀(`Team1`)은 2점으로 `Team8`과 같이 2등입니다.
+ * 라운드 기록은 비어 있습니다.
  */
 internal val GauntletMatch: String = run {
     val points = listOf(2, 3, 1, 1, 0, 0, 0, 2)
@@ -416,8 +423,10 @@ internal val GauntletMatch: String = run {
 internal const val FRIEND = "p-friend"
 
 /**
- * 내가 안 뛴 친구 경기를 서버가 가려서 준 모양입니다(server/src/redact.ts). 친구 말고는 `anon-N`이고 이름과 태그가 비었으며
- * 플레이어 카드, 칭호, 계정 레벨이 빠졌습니다. 파티 ID도 경기 안에서만 통하는 값입니다. 친구는 블루 팀이고 2대1로 이깁니다.
+ * 내가 안 뛴 친구 경기를 서버가 가려서 준 모양입니다(server/src/redact.ts).
+ * 친구 말고는 `anon-N`이고 이름과 태그가 비었으며 플레이어 카드, 칭호, 계정 레벨이 빠졌습니다.
+ * 파티 ID도 경기 안에서만 통하는 값입니다.
+ * 친구는 블루 팀이고 2대1로 이깁니다.
  */
 internal val RedactedFriendMatch: String = run {
     val blue = listOf(FRIEND, "anon-1")

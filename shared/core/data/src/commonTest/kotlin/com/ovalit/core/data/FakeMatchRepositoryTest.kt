@@ -57,8 +57,9 @@ class FakeMatchRepositoryTest {
         assertTrue(report.metrics.kd!! < baseline.kd!!)
     }
 
-    // 가짜 경기는 늘 공격에서 첫 교전을 더 잘 이긴다. 개선 포인트는 이번 액트 경기로 견주니 한 주만 바꾼 멀티킬보다 이
-    // 차이가 먼저다. 에임 올리기를 고르면 관심사라서 봤다는 말이 붙는다. 앱이 첫 수집으로 받는 50경기로 본다.
+    // 가짜 경기는 늘 공격에서 첫 교전을 더 잘 이긴다.
+    // 개선 포인트는 이번 액트 경기로 견주니 한 주만 바꾼 멀티킬보다 이 차이가 먼저다.
+    // 에임 올리기를 고르면 관심사라서 봤다는 말이 붙는다. 앱이 첫 수집으로 받는 50경기로 본다.
     @Test
     fun `가짜 경기의 개선 포인트는 이번 액트 공수 첫 교전 승률 차이다`() {
         val imported = fakeMatches(Thursday).forFirstImport(Thursday) { it.startedAt }

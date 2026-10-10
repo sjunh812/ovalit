@@ -13,14 +13,14 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.transformLatest
 
 /**
- * 친구에게 보내는 ㅇㅂㅇ(오발있?)입니다. 서버의 `/pings`를 그대로 옮깁니다. 받은 친구에게는 서버가 FCM으로 알리고, 앱은 알림을
- * 받거나 화면을 열 때 [refresh]로 다시 받습니다.
+ * 친구에게 보내는 ㅇㅂㅇ(오발있?)입니다. 서버의 `/pings`를 그대로 옮깁니다.
+ * 받은 친구에게는 서버가 FCM으로 알리고, 앱은 알림을 받거나 화면을 열 때 [refresh]로 다시 받습니다.
  */
 interface PingRepository {
 
     /**
-     * 아직 끝나지 않은 ㅇㅂㅇ입니다. 내가 보낸 것과 받은 것이 섞여 있고 최근 것이 앞에 옵니다. 취소한 것은 빠집니다. 끝날 시각이
-     * 지나면 목록이 바뀌지 않아도 빼서 다시 내보냅니다([whileActive]).
+     * 아직 끝나지 않은 ㅇㅂㅇ입니다. 내가 보낸 것과 받은 것이 섞여 있고 최근 것이 앞에 옵니다. 취소한 것은 빠집니다.
+     * 끝날 시각이 지나면 목록이 바뀌지 않아도 빼서 다시 내보냅니다([whileActive]).
      */
     val pings: Flow<List<Ping>>
 
@@ -34,8 +34,8 @@ interface PingRepository {
     suspend fun moveTo(id: PingId, startsAt: Instant)
 
     /**
-     * 보낸 ㅇㅂㅇ에 친구를 더 부릅니다. 누가 못 간다고 했거나 깜빡 빠뜨린 친구를 더할 때 씁니다. 못 간다고 한 친구를 뺀 인원이
-     * [com.ovalit.core.model.MAX_PING_FRIENDS]를 넘으면 부르지 않습니다.
+     * 보낸 ㅇㅂㅇ에 친구를 더 부릅니다. 누가 못 간다고 했거나 깜빡 빠뜨린 친구를 더할 때 씁니다.
+     * 못 간다고 한 친구를 뺀 인원이 [com.ovalit.core.model.MAX_PING_FRIENDS]를 넘으면 부르지 않습니다.
      */
     suspend fun invite(id: PingId, friends: List<PlayerId>): PingInviteResult
 
@@ -45,8 +45,9 @@ interface PingRepository {
 }
 
 /**
- * 끝날 시각([Ping.expiresAt])이 지난 ㅇㅂㅇ을 빼고 내보냅니다. 남은 것 가운데 가장 먼저 끝나는 시각에 다시 걸러 내보내서, 목록이
- * 바뀌지 않아도 끝난 초대가 홈과 친구 탭에 남지 않습니다. 받아 온 목록만 거르면 앱을 켜 둔 채 한 시간이 지나도 지난 초대가 남는다.
+ * 끝날 시각([Ping.expiresAt])이 지난 ㅇㅂㅇ을 빼고 내보냅니다.
+ * 남은 것 가운데 가장 먼저 끝나는 시각에 다시 걸러 내보내서, 목록이 바뀌지 않아도 끝난 초대가 홈과 친구 탭에 남지 않습니다.
+ * 받아 온 목록만 거르면 앱을 켜 둔 채 한 시간이 지나도 지난 초대가 남습니다.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 fun Flow<List<Ping>>.whileActive(clock: Clock): Flow<List<Ping>> = transformLatest { pings ->

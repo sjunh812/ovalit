@@ -79,8 +79,8 @@ class DataStoreUserPreferencesRepository(
     }
 
     // enum을 이름으로 저장한다. 이름을 바꾸면 전에 저장한 값을 못 읽고 기본값으로 돌아간다.
-    // stats_public과 ping_reminder는 서버로 옮겨 더 읽지 않는다. 전에 저장한 값이 파일에 남아 있으니 그 이름을 다른 뜻으로 다시
-    // 쓰지 않는다.
+    // stats_public과 ping_reminder는 서버로 옮겨 더 읽지 않는다.
+    // 전에 저장한 값이 파일에 남아 있으니 그 이름을 다른 뜻으로 다시 쓰지 않는다.
     private object Keys {
         val theme = stringPreferencesKey("theme")
         val defaultQueue = stringPreferencesKey("default_queue")

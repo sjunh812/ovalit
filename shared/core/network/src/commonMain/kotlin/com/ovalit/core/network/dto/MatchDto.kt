@@ -2,12 +2,14 @@ package com.ovalit.core.network.dto
 
 import kotlinx.serialization.Serializable
 
-// VAL-MATCH-V1 `/val/match/v1/matches/{matchId}`의 응답이다. 우리 서버가 Riot 응답을 그대로 넘겨주고, 내가 안 뛴 친구 경기만
-// 다른 사람을 가려서 준다(docs/backend.md). 필드 이름과 타입은 Riot 개발자 문서를 따랐다.
+// VAL-MATCH-V1 `/val/match/v1/matches/{matchId}`의 응답이다.
+// 우리 서버가 Riot 응답을 그대로 넘겨주고, 내가 안 뛴 친구 경기만 다른 사람을 가려서 준다(docs/backend.md).
+// 필드 이름과 타입은 Riot 개발자 문서를 따랐다.
 //
-// 실제 응답을 아직 못 봤다. 문서가 필수라고 적은 필드도 모드에 따라 빠지거나 null로 올 수 있고, 가린 사람의 줄은 서버가 남긴
-// 필드만 있다. 그래서 거의 모든 필드를 null이나 빈 목록으로 받아 두고, 무엇이 빠졌을 때 어떻게 할지는 옮겨 담는 쪽(MatchMapper)이
-// 정한다. 쓰지 않는 필드도 문서에 있는 것은 적어 둔다. 교전 거리처럼 나중에 셀 지표가 쓴다.
+// 실제 응답을 아직 못 봤다.
+// 문서가 필수라고 적은 필드도 모드에 따라 빠지거나 null로 올 수 있고, 가린 사람의 줄은 서버가 남긴 필드만 있다.
+// 그래서 거의 모든 필드를 null이나 빈 목록으로 받아 두고, 무엇이 빠졌을 때 어떻게 할지는 옮겨 담는 쪽(MatchMapper)이 정한다.
+// 쓰지 않는 필드도 교전 거리처럼 나중에 셀 지표가 쓰니 문서에 있는 것은 적어 둔다.
 
 @Serializable
 data class MatchDto(
@@ -44,8 +46,7 @@ data class MatchInfoDto(
 )
 
 /**
- * 가린 사람의 줄은 [puuid]가 `anon-N`이고 [gameName]과 [tagLine]이 빈 값이며, [playerCard], [playerTitle], [accountLevel]이
- * 빠져 있습니다.
+ * 가린 사람의 줄은 [puuid]가 `anon-N`이고 [gameName]과 [tagLine]이 빈 값이며, [playerCard], [playerTitle], [accountLevel]이 빠져 있습니다.
  *
  * @property teamId 라운드제 모드는 `Red`나 `Blue`이고, 데스매치는 그 사람의 PUUID입니다.
  * @property competitiveTier 0이면 티어가 없습니다.

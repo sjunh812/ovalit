@@ -8,8 +8,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
 /**
- * 친구 목록과 라이벌을 정해 두는 [FriendRepository]입니다. 받은 요청도 보낸 요청도 없고, 수락하거나 라이벌을 바꿔도 목록은
- * 그대로입니다. [refresh]는 부른 횟수만 셉니다.
+ * 친구 목록과 라이벌을 정해 두는 [FriendRepository]입니다.
+ * 받은 요청도 보낸 요청도 없고, 수락하거나 라이벌을 바꿔도 목록은 그대로입니다.
+ * [refresh]는 부른 횟수만 셉니다.
  *
  * 요청을 수락하거나 라이벌을 고르면 목록이 바뀌어야 하는 테스트는 [com.ovalit.core.data.FakeFriendRepository]를 씁니다.
  */

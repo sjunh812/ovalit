@@ -29,16 +29,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 
 /**
- * 프로덕션 키가 나오기 전까지 쓰는 내 경기 저장소입니다. 받기 규칙은 [OfflineFirstMatchRepository]가 지키고, 여기서는 가짜
- * 서버([FakeMatchRemoteSource])와 메모리 저장([InMemoryMatchStore])을 묶기만 합니다.
+ * 프로덕션 키가 나오기 전까지 쓰는 내 경기 저장소입니다.
+ * 받기 규칙은 [OfflineFirstMatchRepository]가 지키고, 여기서는 가짜 서버([FakeMatchRemoteSource])와 메모리 저장([InMemoryMatchStore])을 묶기만 합니다.
  *
- * 처음부터 첫 수집을 마친 채로 시작합니다. 실제 저장소도 앱을 다시 켜면 마친 진행도를 기기에서 읽습니다. 비워 두면 첫 수집을
- * 마쳤는지 보는 곳(새 경기 확인, 당겨서 받기)마다 판단이 갈립니다.
+ * 처음부터 첫 수집을 마친 채로 시작합니다. 실제 저장소도 앱을 다시 켜면 마친 진행도를 기기에서 읽습니다.
+ * 비워 두면 첫 수집을 마쳤는지 보는 곳(새 경기 확인, 당겨서 받기)마다 판단이 갈립니다.
  *
  * @param importDelay 첫 수집에서 한 판을 받는 시간입니다.
  * @param downloadDelay 새 경기 한 판을 받는 시간입니다.
  * @param scope 새 경기를 받는 곳입니다. 부른 화면이 사라져도 받기가 끝까지 가도록 앱이 사는 동안 도는 스코프를 넘깁니다.
- * 테스트는 가상 시간으로 돌리려고 `TestScope`를 넘깁니다.
+ *   테스트는 가상 시간으로 돌리려고 `TestScope`를 넘깁니다.
  */
 class FakeMatchRepository private constructor(
     private val remote: FakeMatchRemoteSource,
@@ -74,12 +74,12 @@ private const val DAYS = 70
 
 private const val USUAL_FIRST_DUEL_RATE = 0.28
 private const val RECENT_FIRST_DUEL_RATE = 0.42
-// 수비에서 첫 교전을 더 자주 지게 해서 홈에 개선 포인트 문장이 뜨게 했다. 둘의 평균은 0.55다. 첫 교전은 판마다 몇 번뿐이라
-// 첫 수집 50경기에서도 우연 거르기(흔들림의 3.5배)를 넘도록 넉넉히 벌렸다.
+// 수비에서 첫 교전을 더 자주 지게 해서 홈에 개선 포인트 문장이 뜨게 했다. 둘의 평균은 0.55다.
+// 첫 교전은 판마다 몇 번뿐이라 첫 수집 50경기에서도 우연 거르기(흔들림의 3.5배)를 넘도록 넉넉히 벌렸다.
 private const val ATTACK_FIRST_DUEL_WIN_RATE = 0.72
 private const val DEFENSE_FIRST_DUEL_WIN_RATE = 0.38
-// 최근 7일은 첫 교전을 공수 같게 둔다. 첫 교전 차이가 아래 멀티킬 차이보다 크면 에임 올리기를 골라도 첫 교전 문장이
-// 앞선다.
+// 최근 7일은 첫 교전을 공수 같게 둔다.
+// 첫 교전 차이가 아래 멀티킬 차이보다 크면 에임 올리기를 골라도 첫 교전 문장이 앞선다.
 private const val RECENT_FIRST_DUEL_WIN_RATE = 0.55
 private const val HALF_ROUNDS = 12
 private const val EXTRA_KILL_RATE = 0.35
@@ -103,13 +103,15 @@ internal val FakeAct = ActId("fake-act")
 // 최근 7일은 팬텀 헤드샷을 크게 올려서 무기 화면에 "요즘 잘 맞아요"가 뜨게 했다
 private const val RECENT_PHANTOM_HEADSHOT_RATE = 0.45
 
-// 최근 7일은 공격에서만 교전을 이어 이기고 수비에서는 첫 교전 뒤로 거의 못 잡는다. 멀티킬 라운드 비율이 공수로 크게
-// 벌어져서 에임 올리기를 고르면 개선 포인트에 멀티킬 문장이 뜬다. 평균 킬은 평소보다 적어 K/D는 내려간다.
+// 최근 7일은 공격에서만 교전을 이어 이기고 수비에서는 첫 교전 뒤로 거의 못 잡는다.
+// 멀티킬 라운드 비율이 공수로 크게 벌어져서 에임 올리기를 고르면 개선 포인트에 멀티킬 문장이 뜬다.
+// 평균 킬은 평소보다 적어 K/D는 내려간다.
 private const val RECENT_ATTACK_EXTRA_KILL_RATE = 0.5
 private const val RECENT_DEFENSE_EXTRA_KILL_RATE = 0.05
 
-// 최근 7일은 맞히고도 마무리하지 못한 피해가 늘어 피해량이 오른다. 홈 "이번 주 짚을 점"이 헤드샷 말고 다른 지표로도
-// 뜨는지 보려고 넣었다. 이긴 판도 조금 늘려서 짚을 점에 요원 줄이 뜨게 했다.
+// 최근 7일은 맞히고도 마무리하지 못한 피해가 늘어 피해량이 오른다.
+// 홈 "이번 주 짚을 점"이 헤드샷 말고 다른 지표로도 뜨는지 보려고 넣었다.
+// 이긴 판도 조금 늘려서 짚을 점에 요원 줄이 뜨게 했다.
 private const val RECENT_CHIP_DAMAGE = 90
 private const val RECENT_WIN_BONUS = 0.04
 
@@ -130,9 +132,9 @@ internal val Myself = Owner(Me, MY_RIOT_ID, MyCard, MY_TIER)
 /**
  * 프로덕션 키가 나오기 전까지 화면에 띄울 가짜 경기입니다.
  *
- * 시드가 고정이라 매번 같은 경기가 나오고 날짜만 [now]를 따라 움직입니다. 홈에 움직인 지표가 뜨도록 최근 7일은 첫 교전, 공격과
- * 수비의 킬, 팬텀 헤드샷, 피해량, 승률을 일부러 바꿔 뒀습니다(`RECENT_`로 시작하는 상수). 최근 두 주에는 데스매치, 건틀릿,
- * 스파이크 돌격 같은 다른 모드를 몇 판 섞어 기타 칩과 경기 탭에서 모양을 볼 수 있습니다([OtherModeDays]).
+ * 시드가 고정이라 매번 같은 경기가 나오고 날짜만 [now]를 따라 움직입니다.
+ * 홈에 움직인 지표가 뜨도록 최근 7일은 첫 교전, 공격과 수비의 킬, 팬텀 헤드샷, 피해량, 승률을 일부러 바꿔 뒀습니다(`RECENT_`로 시작하는 상수).
+ * 최근 두 주에는 데스매치, 건틀릿, 스파이크 돌격 같은 다른 모드를 몇 판 섞어 기타 칩과 경기 탭에서 모양을 볼 수 있습니다([OtherModeDays]).
  *
  * @param withFriends 내 경기일 때만 켭니다. 친구 경기에 다른 친구를 끼우면 S5의 같이 뛴 경기 수가 틀어집니다.
  */
@@ -143,8 +145,8 @@ internal fun fakeMatches(
     owner: Owner = Myself,
 ): List<Match> {
     val random = Random(seed)
-    // 팀 구성, 스코어보드, 에이스·클러치 장면은 난수를 따로 쓴다. 같은 난수에서 뽑으면 친구를 넣는 순간 내 경기 숫자가
-    // 다 바뀐다.
+    // 팀 구성, 스코어보드, 에이스·클러치 장면은 난수를 따로 쓴다.
+    // 같은 난수에서 뽑으면 친구를 넣는 순간 내 경기 숫자가 다 바뀐다.
     val party = Random(seed + 1)
     val board = Random(seed + 2)
     val scenes = Random(seed + 3)
@@ -175,9 +177,10 @@ internal fun fakeMatches(
 }
 
 /**
- * 경쟁·일반 밖의 모드를 섞을 날(며칠 전)과 모드입니다. 첫 수집이 최근 50경기라 더 넣으면 홈 리포트에 쓸 경쟁·일반 경기가 그만큼
- * 빠집니다. 리포트에 넣는 모드(스파이크 돌격, 신속 플레이, 프리미어)가 다섯 판이라 기타 칩 리포트도 만들어집니다. 건틀릿: 글리치는
- * 큐 ID를 몰라 [Queue.OTHER]로 옵니다.
+ * 경쟁·일반 밖의 모드를 섞을 날(며칠 전)과 모드입니다.
+ * 첫 수집이 최근 50경기라 더 넣으면 홈 리포트에 쓸 경쟁·일반 경기가 그만큼 빠집니다.
+ * 리포트에 넣는 모드(스파이크 돌격, 신속 플레이, 프리미어)가 다섯 판이라 기타 칩 리포트도 나옵니다.
+ * 건틀릿: 글리치는 큐 ID를 몰라 [Queue.OTHER]로 옵니다.
  */
 internal val OtherModeDays = listOf(
     0 to Queue.DEATHMATCH,
@@ -284,8 +287,8 @@ private fun Random.fakeMatch(
     )
 }
 
-// 경쟁전과 프리미어 연장은 두 라운드 차이가 날 때까지 간다. 일반전은 12:12에서 한 라운드로 끝내고, 스파이크 돌격과 신속
-// 플레이도 마지막 한 라운드로 끝난다.
+// 경쟁전과 프리미어 연장은 두 라운드 차이가 날 때까지 간다.
+// 일반전은 12:12에서 한 라운드로 끝내고, 스파이크 돌격과 신속 플레이도 마지막 한 라운드로 끝난다.
 private fun isOver(rounds: List<Round>, queue: Queue, half: Int): Boolean {
     val won = rounds.count { it.won }
     val lost = rounds.size - won
@@ -421,12 +424,13 @@ private fun Random.fakeRound(
 }
 
 /**
- * 가끔 에이스와 클러치가 나오게 킬 기록을 바꿉니다. 승패는 그대로 둬서 스코어가 바뀌지 않습니다. 난수를 따로 써서
- * 나머지 가짜 숫자가 흔들리지 않게 합니다.
+ * 가끔 에이스와 클러치가 나오게 킬 기록을 바꿉니다.
+ * 승패는 그대로 둬서 스코어가 바뀌지 않습니다. 난수를 따로 써서 나머지 가짜 숫자가 흔들리지 않게 합니다.
  *
- * 관여율, 생존율, 첫 킬 쪽 지표가 그대로인 라운드만 고릅니다. 홈 동적 칸이 이 장면 때문에 움직이면 가짜 데이터로
- * "움직인 칸과 그대로인 칸"을 같이 보여줄 수 없습니다. 이긴 장면은 내가 첫 킬을 내고 살아남은 라운드에, 진 장면은
- * 킬도 어시스트도 트레이드도 없이 죽은 라운드에만 넣습니다. 피해량과 맞힌 탄은 그대로라 그 라운드만 조금 어긋납니다.
+ * 관여율, 생존율, 첫 킬 쪽 지표가 그대로인 라운드만 고릅니다.
+ * 홈 동적 칸이 이 장면 때문에 움직이면 가짜 데이터로 "움직인 칸과 그대로인 칸"을 같이 보여줄 수 없습니다.
+ * 이긴 장면은 내가 첫 킬을 내고 살아남은 라운드에, 진 장면은 킬도 어시스트도 트레이드도 없이 죽은 라운드에만 넣습니다.
+ * 피해량과 맞힌 탄은 그대로라 그 라운드만 조금 어긋납니다.
  */
 private fun Match.withHighlights(random: Random): Match {
     if (allies.size != 4) return this
@@ -504,8 +508,9 @@ private fun Random.ending(won: Boolean, attacking: Boolean): RoundEnding {
 }
 
 /**
- * 스코어보드를 붙입니다. 내 줄(친구 경기면 친구 줄)은 라운드에서 센 숫자를 그대로 쓰고, 나머지 아홉
- * 명은 그럴듯한 범위에서 뽑습니다. 킬 기록 속 적 자리(`enemy-0`…)도 실제 상대 ID로 바꿉니다.
+ * 스코어보드를 붙입니다.
+ * 내 줄(친구 경기면 친구 줄)은 라운드에서 센 숫자를 그대로 쓰고, 나머지 아홉 명은 그럴듯한 범위에서 뽑습니다.
+ * 킬 기록 속 적 자리(`enemy-0`…)도 실제 상대 ID로 바꿉니다.
  */
 private fun Match.withScoreboard(
     random: Random,
@@ -579,8 +584,8 @@ private fun randomShots(random: Random, rounds: Int): Shots {
 }
 
 
-// 상대마다 주고받은 피해다. 내가 잡은 상대에게는 한 번에 110~150을, 남은 피해는 아무 상대에게 준다. 내가 죽었으면 잡은 상대에게
-// 100~150을 받고, 가끔 다른 상대에게도 조금 받는다.
+// 상대마다 주고받은 피해다. 내가 잡은 상대에게는 한 번에 110~150을, 남은 피해는 아무 상대에게 준다.
+// 내가 죽었으면 잡은 상대에게 100~150을 받고, 가끔 다른 상대에게도 조금 받는다.
 private fun Round.withDamageMaps(random: Random, me: PlayerId, enemies: List<PlayerId>): Round {
     if (enemies.isEmpty()) return this
     val dealt = mutableMapOf<PlayerId, Int>()

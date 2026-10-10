@@ -206,6 +206,21 @@ export async function makeFriends(a: TestUser, b: TestUser): Promise<void> {
   await env.DB.prepare("INSERT INTO friendships (user_a, user_b, created_at) VALUES (?, ?, ?)").bind(x, y, Date.now()).run();
 }
 
+/** [user]에게 앱 사용자 [n]명을 바로 친구로 맺어 줍니다. 친구 한도를 볼 때 씁니다. */
+export async function addFriends(user: TestUser, n: number): Promise<void> {
+  const me = await userId(user.puuid);
+  const now = Date.now();
+  const insertUser = env.DB.prepare(
+    "INSERT INTO users (puuid, game_name, tag_line, created_at, updated_at) VALUES (?, 'filler', 'KR1', ?, ?)",
+  );
+  const befriend = env.DB.prepare(
+    "INSERT INTO friendships (user_a, user_b, created_at) SELECT MIN(id, ?1), MAX(id, ?1), ?2 FROM users WHERE puuid = ?3",
+  );
+  await env.DB.batch(
+    Array.from({ length: n }, () => makePuuid()).flatMap((puuid) => [insertUser.bind(puuid, now, now), befriend.bind(me, now, puuid)]),
+  );
+}
+
 /**
  * D1을 감싸 준비한 SQL을 `sql`에 적어 둡니다. `failBatch`를 주면 `batch`가 그 에러로 실패합니다. 로그인처럼
  * `batch`를 쓰는 준비를 마친 뒤 `t.env.DB`에 넣어 씁니다.

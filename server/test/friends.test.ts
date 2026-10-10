@@ -2,6 +2,7 @@ import { env } from "cloudflare:workers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { redactMatch } from "../src/redact";
 import {
+  addFriends,
   makeFriends,
   makePuuid,
   matchFixture,
@@ -169,6 +170,123 @@ describe("수락, 거절, 끊기", () => {
     expect(await friendsOf(t, me)).toEqual([]);
     expect(await friendsOf(t, other)).toEqual([]);
     expect((await t.call("DELETE", `/friends/${other.puuid}`, me.token)).status).toBe(404);
+  });
+});
+
+describe("친구 한도", () => {
+  it("친구가 200명이면 요청을 보낼 수 없다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const other = await t.login();
+    await addFriends(me, 200);
+    const res = await t.call("POST", "/friends/requests", me.token, { puuid: other.puuid, matchId: playedMatch(t, me, other) });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: "friends_full" });
+    expect(await requestRows(me, other)).toBe(0);
+  });
+
+  it("상대 친구가 200명이면 요청을 보낼 수 없다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const other = await t.login();
+    await addFriends(other, 200);
+    const res = await t.call("POST", "/friends/requests", me.token, { puuid: other.puuid, matchId: playedMatch(t, me, other) });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: "their_friends_full" });
+  });
+
+  it("친구가 199명이면 한 명 더 받는다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const other = await t.login();
+    await addFriends(me, 199);
+    await sendRequestRow(other, me);
+    expect(await (await t.call("POST", `/friends/requests/${other.puuid}/accept`, me.token)).json()).toEqual({ status: "friends" });
+    expect(await friendsOf(t, me)).toHaveLength(200);
+  });
+
+  // 친구를 정리한 뒤 다시 수락할 수 있게 요청은 지우지 않는다
+  it("친구가 200명이면 수락하지 못하고 요청은 남는다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const other = await t.login();
+    await sendRequestRow(other, me);
+    await addFriends(me, 200);
+    const res = await t.call("POST", `/friends/requests/${other.puuid}/accept`, me.token);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: "friends_full" });
+    expect(await requestRows(other, me)).toBe(1);
+    expect(await friendsOf(t, other)).toEqual([]);
+  });
+
+  it("보낸 사람의 친구가 그사이 200명이 되면 수락하지 못한다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const other = await t.login();
+    await sendRequestRow(other, me);
+    await addFriends(other, 200);
+    const res = await t.call("POST", `/friends/requests/${other.puuid}/accept`, me.token);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: "their_friends_full" });
+  });
+
+  it("친구 목록과 받은 요청은 200개까지만 내려준다", async () => {
+    const t = setup();
+    const me = await t.login();
+    // 한도를 두기 전에 쌓인 줄이 있어도 응답은 한도를 넘지 않는다
+    await addFriends(me, 201);
+    const fillers = await env.DB.prepare("SELECT id FROM users WHERE game_name = 'filler' ORDER BY id DESC LIMIT 201").all<{ id: number }>();
+    const meId = await userId(me.puuid);
+    await env.DB.batch(
+      fillers.results.map(({ id }) =>
+        env.DB.prepare("INSERT INTO friend_requests (from_user, to_user, source, created_at) VALUES (?, ?, 'invite_link', ?)").bind(
+          id,
+          meId,
+          Date.now(),
+        ),
+      ),
+    );
+    expect(await friendsOf(t, me)).toHaveLength(200);
+    const requests = await (await t.call("GET", "/friends/requests", me.token)).json<{ received: unknown[] }>();
+    expect(requests.received).toHaveLength(200);
+  });
+});
+
+describe("하루 요청 한도", () => {
+  async function countToday(user: TestUser): Promise<number> {
+    const row = await env.DB.prepare("SELECT requests_today FROM users WHERE puuid = ?").bind(user.puuid).first<{ requests_today: number }>();
+    return row!.requests_today;
+  }
+
+  it("새로 보낸 요청만 세고 이미 보낸 요청은 다시 세지 않는다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const other = await t.login();
+    const matchId = playedMatch(t, me, other);
+    await t.call("POST", "/friends/requests", me.token, { puuid: other.puuid, matchId });
+    await t.call("POST", "/friends/requests", me.token, { puuid: other.puuid, matchId });
+    expect(await countToday(me)).toBe(1);
+  });
+
+  it("하루 30번 보내면 다음 날 0시(UTC)까지 보낼 수 없다", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(Date.UTC(2026, 9, 10, 15, 0));
+    const t = setup();
+    const me = await t.login();
+    const other = await t.login();
+    const today = Math.floor(Date.now() / (24 * 60 * 60 * 1000));
+    await env.DB.prepare("UPDATE users SET requests_day = ?, requests_today = 30 WHERE puuid = ?").bind(today, me.puuid).run();
+
+    const matchId = playedMatch(t, me, other);
+    const res = await t.call("POST", "/friends/requests", me.token, { puuid: other.puuid, matchId });
+    expect(res.status).toBe(429);
+    expect(await res.json()).toEqual({ error: "too_many_friend_requests" });
+    expect(res.headers.get("Retry-After")).toBe(String(9 * 60 * 60));
+    expect(await requestRows(me, other)).toBe(0);
+
+    vi.setSystemTime(Date.UTC(2026, 9, 11, 0, 0));
+    expect((await t.call("POST", "/friends/requests", me.token, { puuid: other.puuid, matchId })).status).toBe(201);
+    expect(await countToday(me)).toBe(1);
   });
 });
 

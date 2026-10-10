@@ -76,15 +76,15 @@ npm run typecheck
 | GET | `/riot/matchlist` | 필요 | 내 경기 ID 목록. 담아 두지 않고 10초에 한 번만 Riot에 갑니다 |
 | GET | `/riot/matches/:matchId` | 필요 | 내가 뛴 경기만. 30일 담아 둡니다 |
 | GET | `/riot/matches/:matchId/app-users` | 필요 | 그 경기의 앱 사용자와 나의 관계. 적어 둔 경기면 Riot을 부르지 않습니다 |
-| GET | `/friends` | 필요 | `[{puuid, gameName, tagLine, statsPublic, since}]` |
-| GET | `/friends/requests` | 필요 | `{received: [...], sent: [puuid]}` |
+| GET | `/friends` | 필요 | `[{puuid, gameName, tagLine, statsPublic, since}]`. 최근에 친구가 된 순서로 200명까지 |
+| GET | `/friends/requests` | 필요 | `{received: [...], sent: [puuid]}`. 둘 다 최근 것부터 200개까지 |
 | POST | `/friends/requests` | 필요 | `{puuid, matchId}`. 같이 뛴 경기가 있어야 합니다 |
-| POST | `/friends/requests/:puuid/accept` | 필요 | 받은 요청 수락 |
+| POST | `/friends/requests/:puuid/accept` | 필요 | 받은 요청 수락. 한도에 걸리면 요청은 남습니다 |
 | POST | `/friends/requests/:puuid/decline` | 필요 | 받은 요청 거절 |
 | DELETE | `/friends/:puuid` | 필요 | 친구 끊기. 서로 띄운 오발있에서도 빠집니다 |
 | GET | `/friends/:puuid/matchlist` | 필요 | 친구가 전적을 공개했을 때만. 같은 친구는 1분에 한 번만 Riot에 갑니다 |
 | GET | `/friends/:puuid/matches/:matchId` | 필요 | 내가 안 뛴 경기면 친구와 나 말고는 가립니다 |
-| POST | `/invites` | 필요 | 7일짜리 초대 링크 `{code, url, expiresAt}`. 하루 넘게 남은 링크가 있으면 그 링크를 200으로 줍니다 |
+| POST | `/invites` | 필요 | 7일짜리 초대 링크 `{code, url, expiresAt}`. 하루 넘게 남고 다 쓰지 않은 링크가 있으면 그 링크를 200으로 줍니다 |
 | POST | `/invites/:code/redeem` | 필요 | 초대한 사람에게 친구 요청을 보냅니다 |
 | GET | `/pings` | 필요 | `{pings: [Ping]}`. 내가 띄웠거나 불려 간 것 중 취소하지 않았고 끝나지 않은 것. 최근에 띄운 것부터 |
 | POST | `/pings` | 필요 | `{friends: [puuid], startsAt}` → 201 `{ping}`. 서로 수락한 친구를 1~4명 부릅니다 |
@@ -97,6 +97,16 @@ npm run typecheck
 200 `{status: "already_friends"}`입니다. 초대 링크는 단톡방에 올려 여럿이 누르는 것이라 이미 친구인 사람이 다시
 눌러도 에러가 나지 않게 했습니다. 스코어보드는 친구가 아닌 사람에게만 요청 버튼이 뜨니, 거기서 409가 오면 앱이
 들고 있는 관계가 낡은 것입니다.
+
+친구 요청과 수락에는 한도가 있습니다. 숫자는 모두 시작 기준선입니다. 새로 요청을 만들 때만 세고, 이미 보내 둔 요청을
+다시 보내거나 이미 친구인 사람이 초대 링크를 누르는 건 세지 않습니다.
+
+| 상태 | 코드 | 언제 |
+| --- | --- | --- |
+| 409 | `friends_full` | 내 친구가 200명일 때. 요청을 보낼 때와 수락할 때 모두 |
+| 409 | `their_friends_full` | 상대 친구가 200명일 때. 초대 링크면 링크를 만든 사람 |
+| 429 | `too_many_friend_requests` | 오늘(UTC) 요청을 30번 보냈을 때. `Retry-After`(초)는 다음 날 0시(UTC)까지 |
+| 410 | `invite_used_up` | 그 초대 링크로 요청을 20개 만들었을 때. `POST /invites`가 새 링크를 줍니다 |
 
 ### 오발있
 
@@ -209,7 +219,7 @@ isolate로 나뉘면 한도를 넘길 수 있습니다. 막는 장치가 아니�
 | Worker 요청 | 하루 100,000 | 첫 수집 한 번이 약 51건(경기 목록 1 + 경기 50) |
 | 요청당 CPU | 10ms | 가장 무거운 건 친구 경기 가리기. 800KB 경기로 재 보니 이 맥에서 약 3ms |
 | 요청당 하위 요청 | 50 | 많아야 2건(RSO 콜백) |
-| 요청당 D1 쿼리 | 50 | 많아야 5건(스코어보드 친구 요청) |
+| 요청당 D1 쿼리 | 50 | 많아야 7건(스코어보드 친구 요청) |
 | D1 크기 | DB당 500MB | 사용자, 세션, 친구 관계와 경기 참가자. 경기 원문은 두지 않습니다. 참가자는 경기당 약 1.3KB라 38만 경기쯤 들어갑니다 |
 | D1 쓰기 | 하루 10만 행 | 새 경기 하나에 약 10행(참가자 수). 다른 쓰기가 없으면 하루 새 경기 약 1만 개까지 적습니다 |
 | D1 읽기 | 하루 500만 행 | 참가자 확인 한 번에 약 10행 |

@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { INVITE_CODE, inviteCode } from "../crypto";
 import type { AppEnv } from "../env";
 import { ApiError } from "../errors";
-import { relationsTo, sendRequest } from "../relations";
+import { INVITE_REQUEST_LIMIT, relationsTo, sendRequest } from "../relations";
 import { requireSession } from "../session";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -17,16 +17,19 @@ export const invites = new Hono<AppEnv>();
 invites.use(requireSession);
 
 /**
- * 단톡방에 한 번 올린 링크를 여럿이 누를 수 있게 만료 전까지 몇 번이든 씁니다. 기한이 하루 넘게 남은 링크가 있으면
- * 새로 만들지 않고 그 링크를 200으로 돌려주고, 새로 만들면 201입니다.
+ * 단톡방에 한 번 올린 링크를 여럿이 누를 수 있게 만료 전까지 요청 [INVITE_REQUEST_LIMIT]개를 만들 때까지 씁니다. 기한이 하루
+ * 넘게 남고 다 쓰지 않은 링크가 있으면 새로 만들지 않고 그 링크를 200으로 돌려주고, 새로 만들면 201입니다.
  */
 invites.post("/", async (c) => {
   const db = c.env.DB;
   const origin = new URL(c.req.url).origin;
   const now = Date.now();
   const live = await db
-    .prepare("SELECT code, expires_at FROM invites WHERE user_id = ? AND expires_at > ? ORDER BY expires_at DESC LIMIT 1")
-    .bind(c.var.user.id, now + REUSE_MIN_REMAINING_MS)
+    .prepare(
+      `SELECT code, expires_at FROM invites WHERE user_id = ? AND expires_at > ? AND uses < ?
+       ORDER BY expires_at DESC LIMIT 1`,
+    )
+    .bind(c.var.user.id, now + REUSE_MIN_REMAINING_MS, INVITE_REQUEST_LIMIT)
     .first<{ code: string; expires_at: number }>();
   if (live) return c.json({ code: live.code, url: `${origin}/i/${live.code}`, expiresAt: live.expires_at });
 
@@ -48,10 +51,10 @@ invites.post("/:code/redeem", async (c) => {
   const code = c.req.param("code").toUpperCase();
   if (!INVITE_CODE.test(code)) throw new ApiError(404, "invite_not_found");
   const invite = await c.env.DB.prepare(
-    "SELECT i.user_id, i.expires_at, u.puuid FROM invites i JOIN users u ON u.id = i.user_id WHERE i.code = ?",
+    "SELECT i.user_id, i.expires_at, i.uses, u.puuid FROM invites i JOIN users u ON u.id = i.user_id WHERE i.code = ?",
   )
     .bind(code)
-    .first<{ user_id: number; expires_at: number; puuid: string }>();
+    .first<{ user_id: number; expires_at: number; uses: number; puuid: string }>();
   if (!invite) throw new ApiError(404, "invite_not_found");
   if (invite.user_id === c.var.user.id) throw new ApiError(400, "own_invite");
   if (invite.expires_at <= Date.now()) throw new ApiError(410, "invite_expired");
@@ -59,5 +62,5 @@ invites.post("/:code/redeem", async (c) => {
   const related = (await relationsTo(c.env.DB, c.var.user.id, [invite.puuid])).get(invite.puuid);
   // 단톡방에 올린 링크는 이미 친구인 사람도 누르니 409 대신 200으로 답한다(스코어보드는 sendRequest가 409를 준다)
   if (related?.relation === "friend") return c.json({ status: "already_friends" });
-  return sendRequest(c, invite.user_id, related?.relation ?? "app_user", "invite_link");
+  return sendRequest(c, invite.user_id, related?.relation ?? "app_user", "invite_link", { code, uses: invite.uses });
 });

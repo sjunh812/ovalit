@@ -47,6 +47,26 @@ class KastTest {
         assertEquals(1, metrics.kastRounds)
     }
 
+    // 스코어보드도 두 번 죽으면 데스 2다. 1로 세면 K/D와 KDA가 게임보다 높게 나온다.
+    @Test
+    fun `세이지 부활로 두 번 죽으면 데스를 두 번 센다`() {
+        val metrics = match(round(kill(10.0, Enemy, Me), kill(30.0, OtherEnemy, Me))).metrics()
+
+        assertEquals(2, metrics.deaths)
+        assertEquals(0, metrics.survivedRounds)
+    }
+
+    // 트레이드 받은 데스 비율은 데스마다 센다. 분모가 데스 수라 분자도 데스로 세야 비율이 1을 넘지 않는다.
+    @Test
+    fun `두 번 죽은 라운드는 갚은 데스마다 트레이드로 센다`() {
+        val metrics = match(
+            round(kill(10.0, Enemy, Me), kill(12.0, Ally, Enemy), kill(30.0, OtherEnemy, Me), kill(33.0, Ally, OtherEnemy)),
+        ).metrics()
+
+        assertEquals(2, metrics.deaths)
+        assertEquals(2, metrics.tradedDeaths)
+    }
+
     @Test
     fun `트레이드는 정확히 5초까지 인정한다`() {
         val metrics = match(round(kill(10.0, Enemy, Me), kill(15.0, Ally, Enemy))).metrics()

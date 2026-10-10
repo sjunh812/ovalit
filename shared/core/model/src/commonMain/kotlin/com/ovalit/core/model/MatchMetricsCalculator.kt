@@ -34,7 +34,7 @@ private fun Match.metricsOf(rounds: List<Round>, combatScore: Int): MatchMetrics
         matches = 1,
         rounds = rounds.size,
         kills = perRound.sumOf { it.kills },
-        deaths = perRound.count { it.died },
+        deaths = perRound.sumOf { it.deaths },
         assists = perRound.sumOf { it.assists },
         combatScore = combatScore,
         damage = rounds.sumOf { it.myDamage },
@@ -52,19 +52,27 @@ private fun Match.metricsOf(rounds: List<Round>, combatScore: Int): MatchMetrics
         fullBuyRoundsWon = won(BuyType.FULL_BUY),
         // 킬은 적을 잡은 것만 센다(analyze). 스킬로 우리 팀을 죽인 건 멀티킬에도 들어가지 않는다.
         multiKillRounds = perRound.count { it.kills >= 2 },
-        tradedDeaths = perRound.count { it.traded },
+        tradedDeaths = perRound.sumOf { it.tradedDeaths },
     )
 }
 
+/**
+ * @property deaths 이 라운드에 죽은 횟수입니다. 세이지 부활로 두 번 죽으면 2입니다. 스코어보드의 데스와 같게 셉니다.
+ * @property died 한 번이라도 죽었는지입니다. 생존율과 관여율은 라운드 단위라 이걸 씁니다.
+ * @property traded 먼저 죽은 데스를 우리 팀이 갚았는지입니다. 관여율의 T입니다.
+ * @property tradedDeaths 우리 팀이 갚은 데스 수입니다. 트레이드 받은 데스 비율의 분자라 [deaths]처럼 데스마다 셉니다.
+ */
 internal class RoundResult(
     val won: Boolean,
     val kills: Int,
     val assists: Int,
+    val deaths: Int,
     val died: Boolean,
     val kast: Boolean,
     val firstKill: Boolean,
     val firstDeath: Boolean,
     val traded: Boolean,
+    val tradedDeaths: Int,
 )
 
 internal fun Round.analyze(me: PlayerId, allies: Set<PlayerId>): RoundResult {
@@ -74,24 +82,29 @@ internal fun Round.analyze(me: PlayerId, allies: Set<PlayerId>): RoundResult {
 
     val myKills = enemyKills.count { it.killer == me }
     val myAssists = enemyKills.count { me in it.assistants }
-    // 세이지 부활로 한 라운드에 두 번 죽을 수 있어서, 목록 순서가 아니라 시각으로 먼저 죽은 것을 고른다.
-    val myDeath = kills.filter { it.victim == me }.minByOrNull { it.atMillis }
+    // 세이지 부활로 한 라운드에 두 번 죽을 수 있다. 데스는 모두 세고, 관여율의 트레이드는 목록 순서가 아니라 시각으로 먼저
+    // 죽은 것을 본다.
+    val myDeaths = kills.filter { it.victim == me }.sortedBy { it.atMillis }
+    val myDeath = myDeaths.firstOrNull()
     val firstBlood = enemyKills.minByOrNull { it.atMillis }
 
-    val traded = myDeath != null && enemyKills.any { revenge ->
-        revenge.victim == myDeath.killer &&
+    fun isTraded(death: KillEvent) = enemyKills.any { revenge ->
+        revenge.victim == death.killer &&
             revenge.killer in allies &&
-            revenge.atMillis - myDeath.atMillis in 0..TRADE_WINDOW_MILLIS
+            revenge.atMillis - death.atMillis in 0..TRADE_WINDOW_MILLIS
     }
+    val traded = myDeath != null && isTraded(myDeath)
 
     return RoundResult(
         won = won,
         kills = myKills,
         assists = myAssists,
+        deaths = myDeaths.size,
         died = myDeath != null,
         kast = myKills > 0 || myAssists > 0 || myDeath == null || traded,
         firstKill = firstBlood?.killer == me,
         firstDeath = firstBlood?.victim == me,
         traded = traded,
+        tradedDeaths = myDeaths.count(::isTraded),
     )
 }

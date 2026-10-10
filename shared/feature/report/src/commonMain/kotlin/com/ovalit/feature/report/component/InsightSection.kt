@@ -194,8 +194,8 @@ private fun InsightPart.sampleText(): String = when (subject) {
 /** 견주는 한쪽입니다. "공격 58% 388라운드"처럼 이름, 값, 표본 순서입니다. */
 private class LinePart(val name: String, val value: String, val sample: String? = null)
 
-// 짚을 점 줄처럼 이름을 가장 진하게, 값을 그다음, 기간과 표본을 가장 옅게 칠한다. 값을 이름 바로 뒤에 두어 "공격 58%"로
-// 읽히게 하고, 줄은 두 쪽 사이에서만 바뀐다.
+// 값을 가장 진하고 굵게, 이름을 그다음, 기간과 표본을 가장 옅게 칠한다. 이름을 가장 진하게 두었더니 "공격", "수비"만 눈에
+// 들어오고 정작 견줄 숫자가 묻혔다. 값을 이름 바로 뒤에 두어 "공격 58%"로 읽히게 하고, 줄은 두 쪽 사이에서만 바뀐다.
 @Composable
 private fun comparisonLine(period: String?, parts: List<LinePart>): AnnotatedString {
     val colors = OvalitTheme.colors
@@ -204,8 +204,8 @@ private fun comparisonLine(period: String?, parts: List<LinePart>): AnnotatedStr
         period?.let { withStyle(faint) { append(it.keepTogether() + NBSP) } }
         parts.forEachIndexed { index, part ->
             if (index > 0) withStyle(faint) { append(WRAPPING_SEPARATOR) }
-            withStyle(SpanStyle(color = colors.t1, fontWeight = FontWeight.Medium)) { append(part.name.keepTogether()) }
-            append(NBSP + part.value)
+            append(part.name.keepTogether() + NBSP)
+            withStyle(SpanStyle(color = colors.t1, fontWeight = FontWeight.SemiBold)) { append(part.value) }
             part.sample?.let { withStyle(faint) { append(NBSP + it.keepTogether()) } }
         }
     }

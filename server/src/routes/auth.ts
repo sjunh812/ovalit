@@ -82,7 +82,7 @@ auth.get("/rso/callback", async (c) => {
     if (!challenge) throw new ApiError(400, "invalid_state");
     const code = validate.text(c.req.query("code"), 1024, "rso_failed");
 
-    const account = await readAccount(c.var.upstream, config.client, code, callbackUrl(c));
+    const account = await readAccount(c.var.upstream, c.env.DB, config.client, code, callbackUrl(c));
     const userId = await upsertUser(c.env.DB, account.puuid, account.gameName, account.tagLine);
     const loginCode = randomToken();
     await c.env.DB.batch([

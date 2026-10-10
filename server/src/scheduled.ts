@@ -43,6 +43,8 @@ async function cleanUp(db: D1Database, now: number): Promise<void> {
     db
       .prepare("DELETE FROM match_players WHERE match_id IN (SELECT match_id FROM match_players WHERE recorded_at < ? LIMIT ?)")
       .bind(now - MATCH_PLAYERS_KEEP_MS, CLEANUP_LIMIT),
+    // 풀린 차단을 지워 둔다. isolate마다 5초에 한 번 이 표를 읽으니 비어 있어야 읽는 행이 거의 없다.
+    db.prepare("DELETE FROM riot_blocks WHERE blocked_until <= ?").bind(now),
   ]);
 }
 

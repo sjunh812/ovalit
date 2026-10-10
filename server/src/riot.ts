@@ -197,9 +197,9 @@ export class Riot {
     if (!apiKey) throw new ApiError(503, "riot_key_missing");
     const url = `${RIOT_HOST}${path}`;
     // Riot이 막혀 있어 어차피 부르지 않을 요청으로 사용자 몫을 깎지 않는다.
-    throwIfBlocked(url);
+    await throwIfBlocked(this.env.DB, url);
     if (limit) spend(limit.quota, limit.key);
-    const res = await send(this.upstream, url, { headers: { "X-Riot-Token": apiKey } });
+    const res = await send(this.upstream, this.env.DB, url, { headers: { "X-Riot-Token": apiKey } });
     return res.text();
   }
 

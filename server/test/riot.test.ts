@@ -1,6 +1,9 @@
+import { createExecutionContext, createScheduledController, waitOnExecutionContext } from "cloudflare:test";
 import { env } from "cloudflare:workers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { relationsTo } from "../src/relations";
+import { createScheduled } from "../src/scheduled";
+import { clearRiotBlocks } from "../src/upstream";
 import {
   makeFriends,
   matchFixture,
@@ -11,6 +14,7 @@ import {
   setup,
   strangers,
   userId,
+  watchDb,
 } from "./helpers";
 
 afterEach(() => {
@@ -143,14 +147,23 @@ describe("Riot 에러 옮기기", () => {
 });
 
 describe("Riot 레이트 리밋", () => {
-  it("429를 받으면 Retry-After가 지날 때까지 같은 호스트는 부르지 않고 503을 준다", async () => {
+  const limited = (headers: Record<string, string>) => () => new Response(null, { status: 429, headers });
+  const matchlistUrl = (puuid: string) => `${RIOT}/val/match/v1/matchlists/by-puuid/${puuid}`;
+
+  async function blockRows(): Promise<{ scope: string; blocked_until: number }[]> {
+    const { results } = await env.DB.prepare("SELECT scope, blocked_until FROM riot_blocks").all<{ scope: string; blocked_until: number }>();
+    return results;
+  }
+
+  it("application 429는 Retry-After가 지날 때까지 그 호스트를 부르지 않고 503을 준다", async () => {
     const t = setup();
     const me = await t.login();
-    const limited = crypto.randomUUID();
+    const first = crypto.randomUUID();
     const next = crypto.randomUUID();
-    t.upstream.on(matchUrl(limited), () => new Response(null, { status: 429, headers: { "Retry-After": "12" } }));
+    t.upstream.on(matchUrl(first), limited({ "Retry-After": "12", "X-Rate-Limit-Type": "application" }));
     t.upstream.json(matchUrl(next), matchFixture(next, [me, ...strangers(9)]));
-    await t.call("GET", `/riot/matches/${limited}`, me.token);
+    t.upstream.json(matchlistUrl(me.puuid), { puuid: me.puuid, history: [] });
+    await t.call("GET", `/riot/matches/${first}`, me.token);
 
     for (const path of [`/riot/matches/${next}`, "/riot/matchlist"]) {
       const res = await t.call("GET", path, me.token);
@@ -161,21 +174,65 @@ describe("Riot 레이트 리밋", () => {
       expect(retryAfter).toBeLessThanOrEqual(12);
     }
     expect(t.upstream.calls).toHaveLength(1);
+    expect((await blockRows()).map((row) => row.scope)).toEqual(["kr.api.riotgames.com"]);
   });
 
-  it("Retry-After 없이 온 429는 10초 동안 막고, 지나면 다시 부른다", async () => {
+  it("method 429는 그 경로만 막고 다른 경로는 그대로 부른다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const first = crypto.randomUUID();
+    const next = crypto.randomUUID();
+    t.upstream.on(matchUrl(first), limited({ "Retry-After": "30", "X-Rate-Limit-Type": "method" }));
+    t.upstream.json(matchUrl(next), matchFixture(next, [me, ...strangers(9)]));
+    t.upstream.json(matchlistUrl(me.puuid), { puuid: me.puuid, history: [] });
+    expect((await t.call("GET", `/riot/matches/${first}`, me.token)).status).toBe(503);
+
+    const blocked = await t.call("GET", `/riot/matches/${next}`, me.token);
+    expect(blocked.status).toBe(503);
+    expect(t.upstream.callsTo(matchUrl(next))).toHaveLength(0);
+    expect((await t.call("GET", "/riot/matchlist", me.token)).status).toBe(200);
+    expect((await blockRows()).map((row) => row.scope)).toEqual(["kr.api.riotgames.com/val/match/v1/matches/{id}"]);
+  });
+
+  it.each([
+    ["service", { "X-Rate-Limit-Type": "service" }],
+    ["종류가 없는", {}],
+  ])("%s 429는 이 isolate에서만 그 경로를 5초 쉬고 D1에 적지 않는다", async (_, headers) => {
     vi.useFakeTimers({ toFake: ["Date"] });
     const t = setup();
     const me = await t.login();
     const id = crypto.randomUUID();
-    let limited = true;
+    let busy = true;
     const fixture = matchFixture(id, [me, ...strangers(9)]);
-    t.upstream.on(matchUrl(id), () => (limited ? new Response(null, { status: 429 }) : Response.json(fixture)));
+    t.upstream.on(matchUrl(id), () => (busy ? limited(headers)() : Response.json(fixture)));
+    t.upstream.json(matchlistUrl(me.puuid), { puuid: me.puuid, history: [] });
+
+    const first = await t.call("GET", `/riot/matches/${id}`, me.token);
+    expect(first.status).toBe(503);
+    expect(first.headers.get("Retry-After")).toBe("5");
+    expect((await t.call("GET", "/riot/matchlist", me.token)).status).toBe(200);
+    expect(await blockRows()).toEqual([]);
+    busy = false;
+    vi.advanceTimersByTime(4_000);
+    expect((await t.call("GET", `/riot/matches/${id}`, me.token)).status).toBe(503);
+    vi.advanceTimersByTime(1_000);
+    expect((await t.call("GET", `/riot/matches/${id}`, me.token)).status).toBe(200);
+    expect(t.upstream.callsTo(matchUrl(id))).toHaveLength(2);
+  });
+
+  it("Retry-After 없이 온 application 429는 10초 동안 막고, 지나면 다시 부른다", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const t = setup();
+    const me = await t.login();
+    const id = crypto.randomUUID();
+    let busy = true;
+    const fixture = matchFixture(id, [me, ...strangers(9)]);
+    t.upstream.on(matchUrl(id), () => (busy ? limited({ "X-Rate-Limit-Type": "application" })() : Response.json(fixture)));
 
     const first = await t.call("GET", `/riot/matches/${id}`, me.token);
     expect(first.status).toBe(503);
     expect(first.headers.get("Retry-After")).toBe("10");
-    limited = false;
+    busy = false;
     vi.advanceTimersByTime(9_000);
     const blocked = await t.call("GET", `/riot/matches/${id}`, me.token);
     expect(blocked.status).toBe(503);
@@ -183,6 +240,55 @@ describe("Riot 레이트 리밋", () => {
     vi.advanceTimersByTime(1_000);
     expect((await t.call("GET", `/riot/matches/${id}`, me.token)).status).toBe(200);
     expect(t.upstream.callsTo(matchUrl(id))).toHaveLength(2);
+  });
+
+  it("다른 isolate가 받은 429도 D1에서 읽어 와 Riot을 부르지 않는다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const first = crypto.randomUUID();
+    t.upstream.on(matchUrl(first), limited({ "Retry-After": "60", "X-Rate-Limit-Type": "application" }));
+    t.upstream.json(matchlistUrl(me.puuid), { puuid: me.puuid, history: [] });
+    await t.call("GET", `/riot/matches/${first}`, me.token);
+    // 메모리가 빈 새 isolate처럼 만든다.
+    clearRiotBlocks();
+
+    const res = await t.call("GET", "/riot/matchlist", me.token);
+    expect(res.status).toBe(503);
+    expect(Number(res.headers.get("Retry-After"))).toBeGreaterThan(50);
+    expect(t.upstream.callsTo(matchlistUrl(me.puuid))).toHaveLength(0);
+  });
+
+  it("D1의 차단은 5초에 한 번까지만 읽는다", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const t = setup();
+    const me = await t.login();
+    const other = await t.login();
+    for (const user of [me, other]) t.upstream.json(matchlistUrl(user.puuid), { puuid: user.puuid, history: [] });
+    const watched = watchDb(t.env.DB);
+    t.env.DB = watched.db;
+    expect((await t.call("GET", "/riot/matchlist", me.token)).status).toBe(200);
+    // 그사이 다른 isolate가 429를 받아 적었다.
+    await env.DB.prepare("INSERT INTO riot_blocks (scope, blocked_until) VALUES ('kr.api.riotgames.com', ?)")
+      .bind(Date.now() + 60_000)
+      .run();
+
+    vi.advanceTimersByTime(4_000);
+    expect((await t.call("GET", "/riot/matchlist", other.token)).status).toBe(200);
+    vi.advanceTimersByTime(1_000);
+    expect((await t.call("GET", "/riot/matchlist", other.token)).status).toBe(503);
+    expect(watched.sql.filter((sql) => sql.includes("FROM riot_blocks"))).toHaveLength(2);
+    expect(watched.sql.filter((sql) => sql.includes("INSERT INTO riot_blocks"))).toEqual([]);
+  });
+
+  it("풀린 차단은 크론이 지운다", async () => {
+    await env.DB.batch([
+      env.DB.prepare("INSERT INTO riot_blocks (scope, blocked_until) VALUES ('gone', ?)").bind(Date.now() - 1),
+      env.DB.prepare("INSERT INTO riot_blocks (scope, blocked_until) VALUES ('kept', ?)").bind(Date.now() + 60_000),
+    ]);
+    const ctx = createExecutionContext();
+    await createScheduled()(createScheduledController({ cron: "*/5 * * * *" }), env, ctx);
+    await waitOnExecutionContext(ctx);
+    expect((await blockRows()).map((row) => row.scope)).toEqual(["kept"]);
   });
 });
 

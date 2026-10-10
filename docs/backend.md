@@ -85,8 +85,13 @@
 
 ## 레이트 리밋
 
-- Riot이 429를 주면 `Retry-After`(없으면 10초)가 지날 때까지 그 호스트는 부르지 않고 503 `riot_rate_limited`로 답한다. Riot이
-  없다고 한 경기 ID는 10분 동안 기억해 다시 묻지 않는다.
+- Riot이 429를 주면 `Retry-After`가 지날 때까지 막고 503 `riot_rate_limited`로 답한다. 막는 범위는 `X-Rate-Limit-Type`을
+  따른다. `application`은 우리 키의 몫이라 그 호스트 전체, `method`는 그 호스트의 같은 경로 틀(경로의 PUUID와 경기 ID를 묶은
+  것)이다. 둘은 `Retry-After`가 없으면 10초다. `service`나 종류가 없는 429는 Riot 쪽 서비스가 바쁜 것이라 이 isolate에서만 그
+  경로를 `Retry-After`(없으면 5초) 동안 쉰다.
+- `application`과 `method` 차단은 D1 `riot_blocks`에 한 줄 적어 isolate끼리 나눈다. 429를 받을 때만 쓰고, isolate는 Riot을
+  부르기 전에 5초에 한 번까지만 읽는다. 그래서 다른 isolate가 막힌 걸 알기까지 5초가 걸릴 수 있다. 풀린 줄은 크론이 지운다.
+- Riot이 없다고 한 경기 ID는 10분 동안 기억해 다시 묻지 않는다.
 - 한 사람이 앱 전체 몫을 몰아 쓰지 못하게 사용자마다 Riot 호출을 센다. 내 경기 목록은 10초에 한 번, 같은 친구의 경기 목록은
   1분에 한 번, 캐시에 없는 경기 상세는 1분에 120번까지이고 넘기면 429 `too_many_requests`와 `Retry-After`를 준다. isolate
   메모리에서 세니 막는다기보다 줄이는 장치다. 앱은 이 429를 받으면 새로 받을 경기가 없는 것처럼 둔다.

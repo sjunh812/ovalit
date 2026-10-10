@@ -318,6 +318,9 @@ iOS에는 광고, 푸시, 사용 통계가 없고 첫 수집은 앱이 떠 있�
 경로에서 정해집니다(`:shared:feature:report` → `com.ovalit.feature.report.resources`). 그 모듈만 쓰는 의존성은 모듈 빌드
 파일에 덧붙입니다.
 
+`composeApp`은 기능 모듈을 직접 걸지 않습니다. 화면과 Koin 모듈은 `shared/app`을 거쳐 들어오고 APK에도 그대로 들어갑니다.
+`composeApp` 코드가 기능 모듈의 타입을 직접 쓸 때만 그 모듈을 겁니다. 지금은 `settings`의 `NotificationBlocks` 하나입니다.
+
 ## 프리뷰
 
 화면을 만들면 프리뷰를 같이 답니다. 최소 세 가지를 봅니다.

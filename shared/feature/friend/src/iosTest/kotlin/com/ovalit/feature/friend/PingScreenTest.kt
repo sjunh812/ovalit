@@ -7,7 +7,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -103,6 +105,53 @@ class PingScreenTest {
 
         assertEquals(listOf(PlayerId("junho")), sentTo)
         assertEquals(NineThirty, at)
+    }
+
+    // 친구를 모두 펼쳐 두면 시각 휠과 버튼이 화면 밖으로 밀린다
+    @Test
+    fun `친구가 150명이어도 부르기 시트는 친구를 한 줄로 두고 시각과 버튼을 화면 안에 둔다`() = runComposeUiTest {
+        var sentTo: List<PlayerId>? = null
+        setContent {
+            Friends(
+                pings = emptyList(),
+                friends = FriendPreviewData.manyFriends(150).friends,
+                actions = PingActions(slots = { listOf(Nine, NineThirty) }, send = { friends, _, _ -> sentTo = friends }),
+            )
+        }
+
+        onNodeWithText("파티 모집").performClick()
+
+        onNodeWithText("친구를 골라 주세요").assertIsDisplayed()
+        onNodeWithText("지금").assertIsDisplayed()
+        onNodeWithText("친구150").assertDoesNotExist()
+        onNodeWithText("친구1").performClick()
+        onNodeWithText("1명 부르기").assertIsDisplayed().performClick()
+
+        assertEquals(listOf(PlayerId("f1")), sentTo)
+    }
+
+    // 최근에 같이 뛴 친구가 앞이라 대개 밀지 않고 고른다
+    @Test
+    fun `부르기 시트는 최근에 같이 뛴 친구부터 둔다`() = runComposeUiTest {
+        val old = Seoyeon.copy(id = PlayerId("old"), riotId = "예전#KR1", lastPlayedTogether = Now - 30.minutes * 100)
+        val recent = Seoyeon.copy(id = PlayerId("recent"), riotId = "최근#KR1", lastPlayedTogether = Now - 30.minutes)
+        setContent { Detail(sent(), invitable = listOf(Seoyeon, old, recent)) }
+
+        onNodeWithText("친구 더 부르기").performScrollTo().performClick()
+
+        val lefts = listOf("최근", "예전", "서연").map { onNodeWithText(it).getUnclippedBoundsInRoot().left }
+        assertEquals(lefts.sorted(), lefts)
+    }
+
+    @Test
+    fun `친구 더 부르기 시트도 친구가 많으면 한 줄로 두고 버튼을 화면 안에 둔다`() = runComposeUiTest {
+        val many = FriendPreviewData.manyFriends(150).friends.map { it.friend }
+        setContent { Detail(sent(), invitable = many) }
+
+        onNodeWithText("친구 더 부르기").performScrollTo().performClick()
+
+        onNodeWithText("친구를 골라 주세요").assertIsDisplayed()
+        onNodeWithText("친구150").assertDoesNotExist()
     }
 
     // 한 번에 하나만 보낸다
@@ -329,10 +378,10 @@ private fun AnsweringDetail(initial: Ping, onReply: (PingAnswer) -> Unit) {
 }
 
 @Composable
-private fun Friends(pings: List<Ping>, actions: PingActions = PingActions()) {
+private fun Friends(pings: List<Ping>, actions: PingActions = PingActions(), friends: List<FriendRow> = FriendPreviewData.friends.friends) {
     OvalitTheme {
         FriendsScreen(
-            uiState = FriendPreviewData.friends.copy(pings = pings, me = Me.id, now = Now),
+            uiState = FriendPreviewData.friends.copy(pings = pings, me = Me.id, now = Now, friends = friends),
             onOpenFriend = {},
             onInvite = {},
             onAccept = {},

@@ -15,6 +15,7 @@ import com.ovalit.core.data.logRefresh
 import com.ovalit.core.data.settledMatches
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Focus
+import com.ovalit.core.model.Friend
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.NewMatchesProgress
@@ -57,7 +58,7 @@ sealed interface ReportUiState {
     /**
      * @property rival 고른 라이벌입니다. 고르지 않았거나 라이벌이 전적을 공개하지 않았거나 리포트가 없으면 `null`입니다.
      * @property friends 전적을 공개한 친구 전부입니다. 리포트 기간에 경기가 없는 친구도 들어 있고, 라이벌은 이 안에서
-     * 고릅니다. 리포트가 없으면 빈 목록입니다.
+     * 고릅니다. 순서는 [standingsIn]을 따릅니다. 리포트가 없으면 빈 목록입니다.
      * @property nudge 라이벌 칸 자리에 두는 유도 칸입니다([homeNudge]).
      * @property waitingForNewMatches 새 경기를 여러 판 받는 중이라 [report]의 기간이 바뀔 수 있는지입니다. 그동안 리포트
      * 자리에 스켈레톤을 둡니다. "지난주"를 보던 사람에게 받기 전 숫자를 띄우면 틀린 말이 됩니다.
@@ -107,12 +108,25 @@ internal fun homeNudge(
     else -> null
 }
 
-/** @property metrics 내 리포트와 같은 기간의 합계입니다. 그 기간에 경기가 없으면 `null`입니다. */
+/**
+ * @property metrics 내 리포트와 같은 기간의 합계입니다. 그 기간에 경기가 없으면 `null`입니다.
+ * @property lastPlayedTogether [Friend.lastPlayedTogether]입니다.
+ */
 data class FriendStanding(
     val id: PlayerId,
     val riotId: String,
     val metrics: MatchMetrics?,
+    val lastPlayedTogether: Instant? = null,
 )
+
+/**
+ * 전적을 공개한 친구마다 내 리포트와 같은 기간의 합계를 셉니다. 최근에 같이 뛴 친구부터 세우고, 같이 뛴 기록이 없으면 그 기간
+ * 경기가 많은 친구부터 둡니다. 라이벌 고르기 시트와 유도 칸의 얼굴이 이 순서를 씁니다.
+ */
+internal fun List<Friend>.standingsIn(report: WeeklyReport.Ready, queueFilter: QueueFilter, timeZone: TimeZone): List<FriendStanding> =
+    filter { it.statsPublic }
+        .map { FriendStanding(it.id, it.riotId, it.metricsIn(report, queueFilter, timeZone), it.lastPlayedTogether) }
+        .sortedWith(compareByDescending<FriendStanding> { it.lastPlayedTogether }.thenByDescending { it.metrics?.matches ?: 0 })
 
 /**
  * @param weekChanges 흐를 때마다 리포트를 다시 셉니다. 앱은 [weekStarts]를 넘겨 월요일 0시에 "이번 주"를 바꾸고,
@@ -192,13 +206,7 @@ class ReportViewModel(
             focus = preferences.focus,
             weaponCategories = inputs.weaponCategories,
         )
-        val standings = if (report is WeeklyReport.Ready) {
-            friends
-                .filter { it.statsPublic }
-                .map { FriendStanding(it.id, it.riotId, it.metricsIn(report, filter, timeZone)) }
-        } else {
-            emptyList()
-        }
+        val standings = if (report is WeeklyReport.Ready) friends.standingsIn(report, filter, timeZone) else emptyList()
         val rival = standings.firstOrNull { it.id == rivalId }
         // 이번 주를 보고 있었으면 새 경기도 이번 주라 기간은 그대로다. 숫자만 다 받은 뒤 바뀐다.
         val periodMayChange = !(report is WeeklyReport.Ready && report.period.includesThisWeek)

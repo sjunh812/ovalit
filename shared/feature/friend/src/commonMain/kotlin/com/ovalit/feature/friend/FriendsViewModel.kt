@@ -15,20 +15,25 @@ import com.ovalit.core.model.Ping
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.model.byLastPlayedTogether
 import com.ovalit.core.model.pingSlots
 import com.ovalit.core.model.weeklyReport
 import com.ovalit.core.ui.FailedAction
 import com.ovalit.core.ui.FailureNotice
 import com.ovalit.core.ui.FailureNotices
 import com.ovalit.core.ui.launchNotifying
+import kotlin.coroutines.CoroutineContext
 import kotlin.time.Clock
 import kotlin.time.Instant
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -37,6 +42,7 @@ sealed interface FriendsUiState {
     data object Loading : FriendsUiState
 
     /**
+     * @property friends 라이벌이 맨 앞이고 그 뒤는 최근에 같이 뛴 친구부터입니다([byLastPlayedTogether]).
      * @property pings 아직 끝나지 않은 ㅇㅂㅇ입니다. 받은 것과 내가 보낸 것이 섞여 있습니다.
      * @property me 내 PUUID입니다. 연동하지 않았으면 `null`이고 ㅇㅂㅇ을 띄우지 않습니다.
      * @property now 시각 글자("21:00", "내일 01:00")를 정할 때 쓰는 지금입니다.
@@ -57,6 +63,10 @@ data class FriendRow(
     val report: WeeklyReport?,
 )
 
+/**
+ * @param computation 친구마다 주간 리포트를 세는 곳입니다. 친구가 수백 명이면 메인 스레드에서 세는 동안 탭이 멈춰서 기본이
+ * [Dispatchers.Default]입니다. 테스트는 값을 바로 읽으려고 부르는 쪽에서 셉니다.
+ */
 class FriendsViewModel(
     private val friendRepository: FriendRepository,
     private val pingRepository: PingRepository,
@@ -64,6 +74,7 @@ class FriendsViewModel(
     private val clock: Clock,
     val timeZone: TimeZone,
     private val analytics: Analytics = NoAnalytics,
+    computation: CoroutineContext = Dispatchers.Default,
 ) : ViewModel() {
 
     private val refreshing = MutableStateFlow(false)
@@ -71,22 +82,30 @@ class FriendsViewModel(
     /** 친구 탭을 당겨 새로 받는 중인지입니다. */
     val isRefreshing: StateFlow<Boolean> = refreshing
 
-    val uiState: StateFlow<FriendsUiState> = combine(
-        friendRepository.friends,
-        friendRepository.requests,
-        friendRepository.rival,
-        pingRepository.pings,
-        accountRepository.account,
-    ) { friends, requests, rival, pings, account ->
-        FriendsUiState.Success(
-            requests = requests,
-            friends = friends.map { friend ->
+    // 친구 목록이 바뀔 때만 센다. ㅇㅂㅇ 답이나 라이벌이 바뀔 때마다 친구 수백 명의 리포트를 다시 세지 않는다.
+    private val friendRows = friendRepository.friends
+        .map { friends ->
+            friends.byLastPlayedTogether().map { friend ->
                 FriendRow(
                     friend = friend,
                     report = friend.takeIf { it.statsPublic }?.matches
                         ?.weeklyReport(now = clock.now(), timeZone = timeZone, queueFilter = QueueFilter.PROFILE),
                 )
-            },
+            }
+        }
+        .flowOn(computation)
+
+    val uiState: StateFlow<FriendsUiState> = combine(
+        friendRows,
+        friendRepository.requests,
+        friendRepository.rival,
+        pingRepository.pings,
+        accountRepository.account,
+    ) { rows, requests, rival, pings, account ->
+        FriendsUiState.Success(
+            requests = requests,
+            // 라이벌은 가장 자주 보는 친구라 맨 앞에 둔다. 나머지는 이미 최근에 같이 뛴 순서다.
+            friends = rows.sortedByDescending { it.friend.id == rival },
             rivalId = rival,
             pings = if (account == null) emptyList() else pings,
             me = account?.id,

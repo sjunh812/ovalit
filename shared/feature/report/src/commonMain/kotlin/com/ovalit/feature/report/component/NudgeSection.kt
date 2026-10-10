@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,9 +22,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitCard
 import com.ovalit.core.designsystem.component.OvalitDivider
+import com.ovalit.core.designsystem.component.OvalitLazyBottomSheet
 import com.ovalit.core.designsystem.component.OvalitPressOutset
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.pressIndication
@@ -114,7 +115,10 @@ private fun StackedAvatars(riotIds: List<String>) {
     }
 }
 
-/** 전적을 공개한 친구 중에서 라이벌을 고릅니다. 고르면 시트가 닫히고 그 자리에 라이벌 대결이 뜹니다. */
+/**
+ * 전적을 공개한 친구 중에서 라이벌을 고릅니다. 고르면 시트가 닫히고 그 자리에 라이벌 대결이 뜹니다. 친구가 수백 명일 수 있어서
+ * 보이는 줄만 그립니다. 줄은 ViewModel이 세운 순서대로 최근에 같이 뛴 친구부터입니다.
+ */
 @Composable
 internal fun RivalPickerSheet(
     report: WeeklyReport.Ready,
@@ -126,12 +130,12 @@ internal fun RivalPickerSheet(
     val haptics = rememberOvalitHaptics()
     val period = periodLabel(report.period)
 
-    OvalitBottomSheet(
+    OvalitLazyBottomSheet(
         title = stringResource(Res.string.rival_pick_title),
         body = stringResource(Res.string.rival_pick_body),
         onDismiss = onDismiss,
     ) {
-        candidates.forEachIndexed { index, friend ->
+        itemsIndexed(candidates, key = { _, friend -> friend.id.value }) { index, friend ->
             if (index > 0) OvalitDivider(Modifier.padding(start = 52.dp), color = colors.lineWeak)
             val caption = friend.metrics?.let { stringResource(Res.string.period_label_matches, period, it.matches) }
                 ?: stringResource(Res.string.rival_pick_no_matches, period)

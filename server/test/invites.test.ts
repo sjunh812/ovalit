@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
-import { makeFriends, sendRequestRow, setup, type TestUser, userId } from "./helpers";
+import { addFriends, makeFriends, sendRequestRow, setup, type TestUser, userId } from "./helpers";
 
 type T = ReturnType<typeof setup>;
 
@@ -8,6 +8,11 @@ async function invite(t: T, user: TestUser) {
   const res = await t.call("POST", "/invites", user.token);
   expect(res.status).toBe(201);
   return res.json<{ code: string; url: string; expiresAt: number }>();
+}
+
+async function uses(code: string): Promise<number> {
+  const row = await env.DB.prepare("SELECT uses FROM invites WHERE code = ?").bind(code).first<{ uses: number }>();
+  return row!.uses;
 }
 
 describe("초대 링크", () => {
@@ -77,6 +82,66 @@ describe("초대 링크", () => {
     for (const guest of [await t.login(), await t.login()]) {
       expect((await t.call("POST", `/invites/${code}/redeem`, guest.token)).status).toBe(201);
     }
+  });
+
+  it("링크 하나로는 요청을 20개까지 만들고, 다 쓰면 새 링크를 준다", async () => {
+    const t = setup();
+    const inviter = await t.login();
+    const { code } = await invite(t, inviter);
+    expect((await t.call("POST", `/invites/${code}/redeem`, (await t.login()).token)).status).toBe(201);
+    expect(await uses(code)).toBe(1);
+
+    await env.DB.prepare("UPDATE invites SET uses = 20 WHERE code = ?").bind(code).run();
+    const late = await t.login();
+    const res = await t.call("POST", `/invites/${code}/redeem`, late.token);
+    expect(res.status).toBe(410);
+    expect(await res.json()).toEqual({ error: "invite_used_up" });
+    expect(await (await t.call("GET", "/friends/requests", inviter.token)).json()).toMatchObject({ received: [expect.anything()] });
+    // 하루 한도는 요청을 만든 만큼만 센다
+    const row = await env.DB.prepare("SELECT requests_today FROM users WHERE puuid = ?").bind(late.puuid).first<{ requests_today: number }>();
+    expect(row!.requests_today).toBe(0);
+
+    const fresh = await invite(t, inviter);
+    expect(fresh.code).not.toBe(code);
+  });
+
+  it("이미 친구거나 요청이 가 있으면 링크 횟수를 쓰지 않는다", async () => {
+    const t = setup();
+    const inviter = await t.login();
+    const friend = await t.login();
+    const guest = await t.login();
+    await makeFriends(inviter, friend);
+    const { code } = await invite(t, inviter);
+    await t.call("POST", `/invites/${code}/redeem`, friend.token);
+    await t.call("POST", `/invites/${code}/redeem`, guest.token);
+    await t.call("POST", `/invites/${code}/redeem`, guest.token);
+    expect(await uses(code)).toBe(1);
+  });
+
+  // 한도에 걸린 사람이 거듭 눌러 남의 링크를 다 쓰게 하지 못한다
+  it("하루 요청 한도에 걸리면 링크 횟수를 쓰지 않는다", async () => {
+    const t = setup();
+    const inviter = await t.login();
+    const guest = await t.login();
+    const today = Math.floor(Date.now() / (24 * 60 * 60 * 1000));
+    await env.DB.prepare("UPDATE users SET requests_day = ?, requests_today = 30 WHERE puuid = ?").bind(today, guest.puuid).run();
+    const { code } = await invite(t, inviter);
+    for (let i = 0; i < 3; i++) {
+      expect((await t.call("POST", `/invites/${code}/redeem`, guest.token)).status).toBe(429);
+    }
+    expect(await uses(code)).toBe(0);
+  });
+
+  it("초대한 사람의 친구가 200명이면 요청을 만들지 않는다", async () => {
+    const t = setup();
+    const inviter = await t.login();
+    const guest = await t.login();
+    await addFriends(inviter, 200);
+    const { code } = await invite(t, inviter);
+    const res = await t.call("POST", `/invites/${code}/redeem`, guest.token);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: "their_friends_full" });
+    expect(await uses(code)).toBe(0);
   });
 
   it("내 링크는 내가 쓸 수 없다", async () => {

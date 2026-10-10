@@ -4,6 +4,7 @@ import com.ovalit.core.model.Friend
 import com.ovalit.core.model.FriendRequest
 import com.ovalit.core.model.FriendRequestSource
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.model.lastPlayedWith
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
@@ -94,6 +95,8 @@ class FakeFriendRepository(
 
     private fun fakeFriends(): List<Friend> {
         val now = clock.now()
+        // 가짜 내 경기에 친구가 우리 팀으로 끼어 있다. 실제 저장소도 기기에 저장된 내 경기에서 찾는다.
+        val mine = fakeMatches(now)
         // 목업 S5의 민석은 다이아몬드 2다
         val seeds = listOf(101 to 17, 202 to 19, 303 to 14)
         return FakeFriendPlayers.zip(seeds) { player, (seed, tier) ->
@@ -103,6 +106,7 @@ class FakeFriendRepository(
                 playerCard = player.card,
                 statsPublic = true,
                 matches = fakeMatches(now, seed, withFriends = false, owner = Owner(player.id, player.riotId, player.card, tier)),
+                lastPlayedTogether = mine.lastPlayedWith(player.id),
             )
         } + Friend(PlayerId("fake-seoyeon"), "서연#KR7", FakeCards[10], statsPublic = false, matches = emptyList())
     }

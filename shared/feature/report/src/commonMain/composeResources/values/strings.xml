@@ -178,6 +178,9 @@
     <string name="friends_me">나</string>
     <string name="friends_choose_metric">비교할 지표</string>
     <string name="friends_metric_button">%1$s, 비교할 지표 바꾸기</string>
+    <!-- 홈 친구 비교 카드 밑 입구다. 나까지 센 사람 수다. -->
+    <string name="friends_all">전체 %1$d명 보기</string>
+    <string name="friends_ranking_caption">%1$s · %2$d명</string>
     <string name="record_recent">최근 %1$d경기</string>
     <string name="record_cells_description">최근 경기부터 %1$s</string>
     <string name="record_win">승</string>

@@ -54,8 +54,10 @@ import com.ovalit.core.designsystem.component.rememberOvalitToastState
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.model.QueueFilter
 import com.ovalit.feature.friend.FriendMatchesRoute
 import com.ovalit.feature.friend.FriendProfileRoute
 import com.ovalit.feature.friend.FriendsRoute
@@ -69,6 +71,7 @@ import com.ovalit.feature.profile.AgentsRoute
 import com.ovalit.feature.profile.ProfileRoute
 import com.ovalit.feature.profile.RecordsOwner
 import com.ovalit.feature.profile.WeaponsRoute
+import com.ovalit.feature.report.FriendRankingRoute
 import com.ovalit.feature.report.ReportRoute
 import com.ovalit.feature.settings.SettingsRoute
 import kotlinx.coroutines.flow.Flow
@@ -134,6 +137,10 @@ private data class PingDetail(val id: String) : Screen
 
 @Serializable
 private data class FriendWeapons(val id: String) : Screen
+
+/** 홈 친구 비교의 전체 순위입니다. 큐 칩은 저장하지 않아서 홈에서 고른 큐와 지표를 이름으로 들고 갑니다. */
+@Serializable
+private data class FriendRanking(val queue: String, val metric: String) : Screen
 
 private val TopLevel: List<NavKey> = listOf(Report, Matches, Friends, Settings)
 
@@ -223,6 +230,7 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
                                     importScheduler.start()
                                     backStack.push(Import)
                                 },
+                                onOpenFriendRanking = { queue, metric -> backStack.push(FriendRanking(queue.name, metric.name)) },
                             )
                         }
                     }
@@ -278,6 +286,13 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
                     }
                     entry<FriendWeapons> { key ->
                         WeaponsRoute(owner = RecordsOwner.Friend(PlayerId(key.id)), onBack = { backStack.removeLastOrNull() })
+                    }
+                    entry<FriendRanking> { key ->
+                        FriendRankingRoute(
+                            queueFilter = QueueFilter.valueOf(key.queue),
+                            metric = FixedMetric.valueOf(key.metric),
+                            onBack = { backStack.removeLastOrNull() },
+                        )
                     }
                     entry<Agents> { AgentsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }) }
                     entry<Weapons> { WeaponsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }) }
@@ -387,6 +402,7 @@ private fun screenName(key: NavKey): String = when (key) {
     is FriendAgents -> "friend_agents"
     is FriendWeapons -> "friend_weapons"
     is PingDetail -> "ping_detail"
+    is FriendRanking -> "friend_ranking"
     Settings -> "settings"
     else -> "other"
 }

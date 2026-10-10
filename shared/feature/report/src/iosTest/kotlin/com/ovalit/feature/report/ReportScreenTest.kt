@@ -22,6 +22,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
+import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
@@ -31,6 +32,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipe
 import androidx.compose.ui.test.swipeUp
@@ -1320,6 +1322,74 @@ class ReportScreenTest {
         assertEquals(PlayerId("junho"), picked)
     }
 
+    // 친구가 수백 명이어도 홈 카드는 다섯 줄과 내 줄로 끝난다(docs/screens.md). 나는 피해량 138이라 151등이다.
+    @Test
+    fun `친구가 많으면 친구 비교는 위 다섯 줄과 내 줄만 두고 전체 보기로 넘어간다`() = runComposeUiTest {
+        var opened: Pair<QueueFilter, FixedMetric>? = null
+        setContent { Social(friends = ManyFriends, onOpenFriendRanking = { queue, metric -> opened = queue to metric }) }
+
+        onNodeWithText("친구5", useUnmergedTree = true).assertExists()
+        onNodeWithText("친구6", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("151", useUnmergedTree = true).assertExists()
+        val fifth = onNodeWithText("친구5", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val me = onNodeWithText("나", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        // 바로 붙이면 6등처럼 읽혀서 내 줄 앞을 한 줄 넘게 띄운다
+        assertTrue(me.top - fifth.bottom > 11.dp * 2, "내 줄 앞이 띄워져 있지 않다")
+
+        onNodeWithText("전체 151명 보기").performScrollTo().performClick()
+
+        assertEquals(QueueFilter.COMPETITIVE_AND_UNRATED to FixedMetric.DAMAGE, opened)
+    }
+
+    @Test
+    fun `친구 비교 줄이 다섯 줄과 내 줄 안이면 전체 보기를 두지 않는다`() = runComposeUiTest {
+        setContent { Social(friends = ManyFriends.take(5)) }
+
+        onNodeWithText("친구5", useUnmergedTree = true).assertExists()
+        // 내 줄은 6등이고 빠진 줄이 없어 바로 붙는다
+        onNode(hasText("나") and hasText("6")).assertExists()
+        onNodeWithText("명 보기", substring = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun `전체 순위는 친구 150명을 모두 세우고 보이는 줄만 그린다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved
+        setContent {
+            OvalitTheme {
+                FriendRankingScreen(
+                    FriendRankingUiState.Success(report.period, report.metrics, ManyFriends),
+                    initialMetric = FixedMetric.DAMAGE,
+                    onBack = {},
+                )
+            }
+        }
+
+        onNodeWithText("이번 주 · 151명").assertExists()
+        onNodeWithText("친구1", useUnmergedTree = true).assertExists()
+        onNodeWithText("친구150", useUnmergedTree = true).assertDoesNotExist()
+
+        onNode(hasScrollToIndexAction()).performScrollToNode(hasText("나"))
+
+        // 피해량이 151인 친구도 있어서 내 줄 안의 등수로 본다
+        onNode(hasText("나") and hasText("151")).assertExists()
+        onNodeWithText("친구150", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun `라이벌 고르기 시트는 친구가 많아도 열리고 끝까지 내려 고른다`() = runComposeUiTest {
+        var picked: PlayerId? = null
+        setContent { Social(friends = ManyFriends, nudge = HomeNudge.PICK_RIVAL, onSelectRival = { picked = it }) }
+
+        onNodeWithText("라이벌을 골라 보세요").performScrollTo().performClick()
+        onNodeWithText("친구1#KR1").assertExists()
+        onNodeWithText("친구150#KR1").assertDoesNotExist()
+
+        onNode(hasScrollToIndexAction()).performScrollToNode(hasText("친구150#KR1"))
+        onNodeWithText("친구150#KR1").performClick()
+
+        assertEquals(PlayerId("f150"), picked)
+    }
+
     // 수집 중에는 숫자를 띄우지 않고 자리만 잡는다. 화면 읽기 프로그램에는 칸마다가 아니라 한 줄로 알린다.
     @Test
     fun `리포트를 만들기 전에는 자리만 잡고 숫자를 띄우지 않는다`() = runComposeUiTest {
@@ -1418,6 +1488,7 @@ private fun Social(
     nudge: HomeNudge? = null,
     onShareInvite: () -> Unit = {},
     onSelectRival: (PlayerId) -> Unit = {},
+    onOpenFriendRanking: (QueueFilter, FixedMetric) -> Unit = { _, _ -> },
 ) {
     val report = if (queueFilter == QueueFilter.OTHER) ReportPreviewData.otherQueue else ReportPreviewData.moved
     OvalitTheme {
@@ -1426,9 +1497,13 @@ private fun Social(
             onSelectQueue = {},
             onShareInvite = onShareInvite,
             onSelectRival = onSelectRival,
+            onOpenFriendRanking = onOpenFriendRanking,
         )
     }
 }
+
+// 모두 나(피해량 138)보다 피해량이 높은 친구 150명이다. 친구1이 가장 높다.
+private val ManyFriends = ReportPreviewData.manyFriends(150)
 
 // "+13", "−0.10", "+3%p"처럼 부호로 시작하는 변화량 글자다
 private val ChangeText = Regex("^[+−-]\\d.*")

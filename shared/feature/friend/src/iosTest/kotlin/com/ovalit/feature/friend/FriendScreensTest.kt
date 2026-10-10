@@ -4,23 +4,34 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
+import androidx.compose.ui.test.hasScrollToIndexAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.core.data.FakeAccountRepository
 import com.ovalit.core.data.FakeContentRepository
 import com.ovalit.core.data.FakeFriendRepository
 import com.ovalit.core.data.FakeMatchRepository
+import com.ovalit.core.data.FakePingRepository
+import com.ovalit.core.data.FriendRepository
+import com.ovalit.core.model.Friend
 import com.ovalit.core.model.PlayerId
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.random.Random
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.datetime.TimeZone
 
 // 앱은 Dispatchers.Default에서 세지만 테스트는 값을 바로 읽으려고 부르는 쪽에서 센다
@@ -35,6 +46,8 @@ class FriendScreensTest {
         var invited = false
         setContent { Themed { FriendsScreen(FriendPreviewData.friends, {}, { invited = true }, {}, {}) } }
 
+        // 친구 목록은 보이는 줄만 그려서 버튼까지 내려 본다
+        onNode(hasScrollToIndexAction()).performScrollToNode(hasText("초대 링크 보내기"))
         onNodeWithText("초대 링크 보내기").performClick()
 
         assertTrue(invited)
@@ -61,6 +74,37 @@ class FriendScreensTest {
         onNodeWithText("전적 비공개").assertExists()
         onNodeWithText("라이벌").assertExists()
         onNodeWithText("이번 주 9경기").assertExists()
+    }
+
+    // 친구가 수백 명이면 다시 같이 할 사람을 찾기 어렵다. 라이벌은 가장 자주 보는 친구라 맨 앞이다.
+    @Test
+    fun `친구가 150명이어도 라이벌을 맨 앞에 두고 최근에 같이 뛴 친구부터 세운다`() = runComposeUiTest {
+        val now = Clock.System.now()
+        // 저장소는 친구가 된 순서로 주니 같이 뛴 순서와 상관없이 섞여 온다
+        val friends = (1..150).shuffled(Random(7)).map { i ->
+            Friend(PlayerId("f$i"), "친구$i#KR1", playerCard = null, statsPublic = i % 2 == 0, matches = emptyList(), lastPlayedTogether = now - i.hours)
+        }
+        val viewModel = FriendsViewModel(
+            ShuffledFriends(friends, rival = PlayerId("f100")),
+            FakePingRepository(FakeFriendRepository()),
+            FakeAccountRepository(FakeMatchRepository()),
+            Clock.System,
+            TimeZone.of("Asia/Seoul"),
+            computation = SameThread,
+        )
+        setContent { Themed { FriendsRoute(onOpenFriend = {}, onOpenPing = {}, onShareInvite = {}, viewModel = viewModel) } }
+
+        onNodeWithText("친구 150명").assertExists()
+        val order = listOf("친구100#KR1", "친구1#KR1", "친구2#KR1", "친구3#KR1")
+            .map { onNodeWithText(it).getUnclippedBoundsInRoot().top }
+        assertEquals(order.sorted(), order)
+        // 보이는 줄만 그린다
+        onNodeWithText("친구150#KR1").assertDoesNotExist()
+
+        onNode(hasScrollToIndexAction()).performScrollToNode(hasText("친구150#KR1"))
+        onNodeWithText("친구150#KR1").assertExists()
+        onNode(hasScrollToIndexAction()).performScrollToNode(hasText("초대 링크 보내기"))
+        onNodeWithText("초대 링크 보내기").assertExists()
     }
 
     @Test
@@ -221,4 +265,9 @@ class FriendScreensTest {
 @Composable
 private fun Themed(content: @Composable () -> Unit) {
     OvalitTheme(content = content)
+}
+
+private class ShuffledFriends(list: List<Friend>, rival: PlayerId?) : FriendRepository by FakeFriendRepository() {
+    override val friends: Flow<List<Friend>> = flowOf(list)
+    override val rival: Flow<PlayerId?> = flowOf(rival)
 }

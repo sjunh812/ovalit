@@ -29,6 +29,13 @@ private fun FriendsSmallLargeFontPreview() {
     OvalitThemePreview { FriendsScreen(FriendPreviewData.friends, {}, {}, {}, {}) }
 }
 
+// 친구가 수백 명이어도 보이는 줄만 그리고 카드는 끊기지 않고 이어진다
+@Preview(widthDp = 390, heightDp = 844)
+@Composable
+private fun FriendsManyPreview() {
+    OvalitThemePreview(darkTheme = false) { FriendsScreen(FriendPreviewData.manyFriends(150), {}, {}, {}, {}) }
+}
+
 @Preview(widthDp = 390, heightDp = 1000)
 @Composable
 private fun FriendProfileDarkPreview() {

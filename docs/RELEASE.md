@@ -52,6 +52,38 @@ Play에 앱을 올릴 때 보는 문서입니다. 처음 한 번 해 둘 것, �
    - Play Console의 Android vitals도 AAB에 든 매핑으로 비정상 종료를 풀어 줍니다.
 3. `composeApp/build/outputs/bundle/release/`의 AAB를 Play Console에 올립니다.
 
+## 사용 통계 이벤트
+
+Firebase는 이벤트 이름에 영문, 숫자, 밑줄만 받아서 이름은 영어로 두고 뜻은 여기와 코드(`AnalyticsEvents`)에 적습니다. 이벤트 자체에는
+설명 칸이 없고, 매개변수를 GA4 관리 > 맞춤 정의 > 맞춤 측정기준(범위: 이벤트)으로 등록할 때 설명을 한국어로 적을 수 있습니다.
+등록해야 보고서에서 매개변수로 나눠 볼 수 있습니다. Riot이 준 값은 어느 이벤트에도 넣지 않습니다(CLAUDE.md 지켜야 할 선).
+
+| 이벤트 | 뜻 | 매개변수 |
+| --- | --- | --- |
+| `screen_view` | 화면을 열었다. Firebase가 정한 이름이다 | `screen_name`: 화면마다 정한 이름(`intro`, `report`, `match_detail` 등, `OvalitApp.kt`의 `screenName`) |
+| `tutorial_complete` | 연동 뒤 첫 수집을 마쳤다. 온보딩을 끝까지 간 사람 수다 | `match_bucket`: 받은 경기 수 구간(0, 1-9, 10-29, 30-50), `finished_in_background`: 앱을 닫은 채 마쳤는지 |
+| `refresh` | 새로 끝난 경기를 받으려 했다 | `source`: home, matches(당김) 또는 app_open(다시 열어 저절로), `result`: new, none, error, `new_bucket`: 받은 수 구간(0, 1-4, 5-19, 20+) |
+| `friend_request` | 친구 요청을 보내거나 답했다 | `action`: send, accept, decline, `source`: scoreboard(경기 상세), friends_tab |
+| `ping_send` | 오발있?으로 파티 모집을 보냈다 | `friend_count`: 부른 친구 수 |
+| `ping_reply` | 받은 파티 모집에 답했다 | `answer`: yes, no, other_time, `via`: app, notification |
+| `share` | 초대 링크를 공유 창으로 보냈다. Firebase가 정한 이름이다 | `method`: invite_link, `content_type`: invite |
+| `ad_free_start` | 보상형 광고를 끝까지 봐서 24시간 광고 없이 보기를 시작했다 | `entry`: ad_row(광고 줄의 ×), settings |
+
+맞춤 측정기준으로 등록할 매개변수와 설명은 이렇습니다.
+
+| 매개변수 | 설명 |
+| --- | --- |
+| `source` | 새 경기를 받거나 친구 요청을 한 곳 |
+| `result` | 새 경기 받기 결과(새 경기 있음, 없음, 실패) |
+| `new_bucket` | 새로 받은 경기 수 구간 |
+| `match_bucket` | 첫 수집으로 받은 경기 수 구간 |
+| `finished_in_background` | 첫 수집을 앱을 닫은 채 마쳤는지 |
+| `action` | 친구 요청 동작(보내기, 수락, 거절) |
+| `friend_count` | 파티 모집으로 부른 친구 수 |
+| `answer` | 파티 모집에 한 답(참석, 불참, 다른 시간) |
+| `via` | 파티 모집에 답한 곳(앱, 알림 버튼) |
+| `entry` | 광고 없이 보기를 시작한 곳(광고 줄, 설정) |
+
 ## Play Console 양식
 
 ### 데이터 보안

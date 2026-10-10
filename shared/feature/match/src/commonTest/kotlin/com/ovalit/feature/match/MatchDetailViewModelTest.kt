@@ -7,6 +7,7 @@ import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.model.Queue
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -146,7 +147,8 @@ class MatchDetailViewModelTest {
         assertTrue(relations.none { it == PlayerRelation.APP_USER || it == PlayerRelation.NOT_APP_USER })
     }
 
-    private suspend fun anyMatch(): Match = matches.observeMatches().first().first()
+    // 가짜 경기에는 데스매치처럼 라운드가 없는 모드도 섞여 있어 경쟁전을 고른다
+    private suspend fun anyMatch(): Match = matches.observeMatches().first().first { it.queue == Queue.COMPETITIVE }
 
     private fun viewModel(match: Match) =
         MatchDetailViewModel(MatchId(match.id.value), friends, matches, FakeContentRepository(), TimeZone.of("Asia/Seoul"))

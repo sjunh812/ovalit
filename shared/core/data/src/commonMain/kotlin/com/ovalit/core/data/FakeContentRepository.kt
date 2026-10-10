@@ -23,7 +23,7 @@ class FakeContentRepository(language: Flow<String> = flowOf("ko")) : ContentRepo
         return ContentCatalog(
             agents = AgentPool.associate { it.id to name(it.name) },
             weapons = (FakeRifles + FakePistols).associate { it.id to WeaponInfo(name(it.name), it.category) },
-            maps = FakeMaps.associate { it.id to name(it.name) },
+            maps = (FakeMaps + FakeTeamDeathmatchMaps).associate { it.id to name(it.name) },
             tiers = if (japanese) FakeTiersJa else FakeTiers,
         )
     }

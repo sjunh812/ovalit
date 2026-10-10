@@ -4,13 +4,17 @@ import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.Focus
 import com.ovalit.core.model.InsightMetric
 import com.ovalit.core.model.InsightSubject
+import com.ovalit.core.model.MatchFormat
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.Queue
+import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.Role
 import com.ovalit.core.model.Side
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.model.forFirstImport
 import com.ovalit.core.model.metrics
+import com.ovalit.core.model.myStanding
+import com.ovalit.core.model.standings
 import com.ovalit.core.model.weeklyReport
 import kotlin.math.abs
 import kotlin.test.Test
@@ -20,6 +24,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -102,24 +107,86 @@ class FakeMatchRepositoryTest {
         assertEquals(fakeMatches(Thursday), fakeMatches(Thursday))
     }
 
-    // 스코어가 14:10처럼 나오면 경기 목록이 가짜로 보인다
+    // 스코어가 14:10처럼 나오면 경기 목록이 가짜로 보인다. 스파이크 돌격은 4승, 신속 플레이는 5승을 먼저 하면 끝난다.
     @Test
-    fun `가짜 경기는 13승을 먼저 한 쪽이 이기고 경쟁전 연장은 두 라운드 차이로 끝난다`() {
-        for (match in fakeMatches(Thursday)) {
+    fun `가짜 라운드제 경기는 정해진 승수를 먼저 한 쪽이 이기고 경쟁전 연장은 두 라운드 차이로 끝난다`() {
+        for (match in fakeMatches(Thursday).filter { it.format == MatchFormat.ROUNDS }) {
             val (mine, theirs) = match.score
-            assertEquals(13, minOf(maxOf(mine, theirs), 13), match.score.toString())
-            if (match.queue == Queue.COMPETITIVE) assertTrue(abs(mine - theirs) >= 2, match.score.toString())
+            val toWin = assertNotNull(match.queue.halfRounds) + 1
+            assertEquals(toWin, minOf(maxOf(mine, theirs), toWin), "${match.queue} ${match.score}")
+            if (match.queue == Queue.COMPETITIVE || match.queue == Queue.PREMIER) assertTrue(abs(mine - theirs) >= 2, match.score.toString())
         }
     }
 
     @Test
     fun `스코어보드는 우리 팀과 상대 팀 다섯 명씩이고 내 줄은 라운드에서 센 숫자와 같다`() {
-        for (match in fakeMatches(Thursday)) {
+        for (match in fakeMatches(Thursday).filter { it.format == MatchFormat.ROUNDS }) {
             assertEquals(5, match.players.count { it.onMyTeam })
             assertEquals(5, match.players.count { !it.onMyTeam })
             val mine = assertNotNull(match.myScoreline)
             assertEquals(match.metrics().kills, mine.kills)
             assertEquals(match.metrics().deaths, mine.deaths)
         }
+    }
+
+    // 기타 칩과 경기 탭에서 다른 모드의 모양을 볼 수 있어야 한다
+    @Test
+    fun `가짜 경기에는 최근 두 주에 다른 모드가 몇 판 섞인다`() {
+        val others = fakeMatches(Thursday).filter { it.queue !in QueueFilter.COMPETITIVE_AND_UNRATED.queues }
+
+        assertEquals(
+            setOf(Queue.DEATHMATCH, Queue.TEAM_DEATHMATCH, Queue.OTHER, Queue.SPIKE_RUSH, Queue.SWIFTPLAY, Queue.PREMIER),
+            others.map { it.queue }.toSet(),
+        )
+        assertTrue(others.all { Thursday - it.startedAt < 14.days }, others.map { it.startedAt }.toString())
+    }
+
+    @Test
+    fun `가짜 데스매치는 열네 명이 각자 싸우고 40킬을 채운 사람이 1등이다`() {
+        val match = fakeMatches(Thursday).single { it.queue == Queue.DEATHMATCH }
+        val standings = match.standings()
+
+        assertEquals(MatchFormat.FREE_FOR_ALL, match.format)
+        assertEquals(14, match.players.size)
+        assertTrue(standings.all { it.members.size == 1 })
+        assertEquals(40, standings.first().points)
+        assertEquals(14, assertNotNull(match.myStanding).teams)
+    }
+
+    @Test
+    fun `가짜 팀 데스매치는 다섯 명씩이고 스코어는 팀 킬이다`() {
+        val match = fakeMatches(Thursday).single { it.queue == Queue.TEAM_DEATHMATCH }
+
+        assertEquals(MatchFormat.TEAM_POINTS, match.format)
+        assertEquals(5, match.players.count { it.onMyTeam })
+        assertEquals(100, maxOf(match.score.myTeam, match.score.enemyTeam))
+        assertEquals(match.score.myTeam, match.players.filter { it.onMyTeam }.sumOf { it.kills })
+    }
+
+    // 건틀릿: 글리치는 큐 ID를 몰라 기타로 온다. 로봇은 카탈로그에 없어 이름도 역할도 없다.
+    @Test
+    fun `가짜 건틀릿은 두 명씩 여덟 팀이고 로봇 요원은 카탈로그에 없다`() = runTest {
+        val match = fakeMatches(Thursday).single { it.queue == Queue.OTHER }
+        val catalog = FakeContentRepository().catalog.first()
+
+        assertEquals(MatchFormat.TEAM_PLACEMENT, match.format)
+        assertEquals(16, match.players.size)
+        assertEquals((1..8).toList(), match.standings().map { it.rank })
+        assertTrue(match.standings().all { it.members.size == 2 })
+        assertNull(match.myRole)
+        assertTrue(match.players.none { it.agent in catalog.agents })
+        assertTrue(match.map !in catalog.maps)
+    }
+
+    // 첫 수집 50경기에 다른 모드가 섞이면 그만큼 경쟁·일반이 빠진다. 그래도 홈 리포트가 움직인 칸과 짚을 점을 보여야 한다.
+    @Test
+    fun `첫 수집한 가짜 경기로도 홈 리포트에 움직인 지표와 짚을 점이 뜨고 기타 리포트도 만들어진다`() {
+        val imported = fakeMatches(Thursday).forFirstImport(Thursday) { it.startedAt }
+        val report = assertIs<WeeklyReport.Ready>(imported.weeklyReport(Thursday, Seoul))
+
+        assertTrue(report.dynamic.any { it.movement == Movement.MOVED }, report.dynamic.toString())
+        assertTrue(report.dynamic.any { it.movement == Movement.STEADY }, report.dynamic.toString())
+        assertNotNull(report.note)
+        assertIs<WeeklyReport.Ready>(imported.weeklyReport(Thursday, Seoul, queueFilter = QueueFilter.OTHER))
     }
 }

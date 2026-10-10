@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { AppEnv } from "./env";
 import { ApiError } from "./errors";
+import { logFailure } from "./log";
 import { auth } from "./routes/auth";
 import { content } from "./routes/content";
 import { friends } from "./routes/friends";
@@ -41,8 +42,7 @@ export function createApp(deps: Deps = {}) {
 
   app.onError((err, c) => {
     if (err instanceof ApiError) return c.json({ error: err.code }, err.status, err.headers);
-    // 요청 본문과 헤더에 토큰이 실리므로 에러 객체를 통째로 찍지 않는다.
-    console.error("unhandled", err.name);
+    logFailure("unhandled", err);
     return c.json({ error: "internal" }, 500);
   });
 

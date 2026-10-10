@@ -1,6 +1,7 @@
 import type { Context } from "hono";
 import type { AppEnv, Env, User } from "./env";
 import { ApiError } from "./errors";
+import { logFailure } from "./log";
 import { MemoryCache, Quota } from "./memory";
 import { send, throwIfBlocked } from "./upstream";
 
@@ -149,13 +150,14 @@ export class Riot {
       throw err;
     }
     const data = parse(raw);
+    // 담거나 적는 건 다음 요청을 아끼려는 것이라 실패해도 Riot이 준 경기는 그대로 내려보낸다.
     // 끝났다고 적힌 경기만 담고 적는다. 진행 중이거나 matchInfo가 없으면 참가자와 결과가 아직 바뀔 수 있다. 참가자는 부른 사람이
     // 뛴 경기일 때만 적는다. 남의 경기 ID를 마구 물어 D1 쓰기 한도(하루 10만 행)를 쓰게 할 수 없다.
     if (data.matchInfo?.isCompleted === true) {
       const record = !recorded && playersIn(data).has(this.caller.puuid);
       await Promise.all([
-        this.remember(memory.matches, path, raw, MATCH_TTL).catch(logFailure("match_cache")),
-        record ? this.recordPlayers(matchId, data).catch(logFailure("match_players")) : undefined,
+        this.remember(memory.matches, path, raw, MATCH_TTL).catch((err) => logFailure("match_cache", err)),
+        record ? this.recordPlayers(matchId, data).catch((err) => logFailure("match_players", err)) : undefined,
       ]);
     }
     return new RiotMatch(raw, data, recorded);
@@ -224,12 +226,6 @@ export class Riot {
 function spend(quota: Quota, key: string): void {
   const retryAfter = quota.take(key);
   if (retryAfter !== undefined) throw new ApiError(429, "too_many_requests", { "Retry-After": String(retryAfter) });
-}
-
-// 담거나 적는 건 다음 요청을 아끼려는 것이라, 실패해도 Riot이 준 경기는 그대로 내려보낸다.
-// D1 에러 메시지에는 SQL과 PUUID가 섞일 수 있어 이름만 남긴다.
-function logFailure(label: string): (err: unknown) => void {
-  return (err) => console.error(label, err instanceof Error ? err.name : typeof err);
 }
 
 function parse(raw: string): MatchData {

@@ -75,7 +75,7 @@ class OvalitColorsTest {
             assertContrast(name, "t3", colors.t3, colors.card, atLeast = 3.0)
             assertContrast(name, "pos", colors.pos, colors.card, atLeast = 3.0)
             assertContrast(name, "neg", colors.neg, colors.card, atLeast = 3.0)
-            listOf("kda1" to colors.kda1, "kda2" to colors.kda2, "kda3" to colors.kda3).forEach { (token, color) ->
+            listOf("statHigh" to colors.statHigh, "statTop" to colors.statTop).forEach { (token, color) ->
                 assertContrast(name, token, color, colors.card, atLeast = 4.5)
             }
         }
@@ -88,44 +88,35 @@ class OvalitColorsTest {
         }
     }
 
-    // KDA는 목록의 작은 글자로도 뜬다.
+    // KDA와 승률은 목록의 작은 글자로도 뜬다.
     // 두 바탕 어디서든 본문 대비를 넘겨야 한다.
     @Test
-    fun `KDA 구간 색은 두 바탕 모두에서 4_5 대 1을 넘는다`() {
+    fun `구간 색은 두 바탕 모두에서 4_5 대 1을 넘는다`() {
         forEachTheme { name, colors ->
-            listOf("kda1" to colors.kda1, "kda2" to colors.kda2, "kda3" to colors.kda3).forEach { (token, color) ->
+            listOf("statHigh" to colors.statHigh, "statTop" to colors.statTop).forEach { (token, color) ->
                 assertContrast(name, token, color, colors.bg, atLeast = 4.5)
                 assertContrast(name, token, color, colors.raised, atLeast = 4.5)
             }
         }
     }
 
-    // 흰 바탕에서 읽히는 초록과 빨강은 오르내림 색과 거리가 5 안팎이다.
-    // 그래서 거리로는 같은 색만 막고, 색상이 연두와 산호 쪽으로 옮겨 갔는지 따로 본다.
+    // 주황은 빨강과 이웃이라 거리만으로는 모자라고, 색상이 노랑 쪽으로 옮겨 갔는지도 본다.
     @Test
-    fun `KDA 구간 색은 오르내림 색이나 액센트와 섞여 보이지 않는다`() {
+    fun `구간 색은 오르내림 색이나 액센트와 섞여 보이지 않는다`() {
         forEachTheme { name, colors ->
-            val tokens = listOf("kda1" to colors.kda1, "kda2" to colors.kda2, "kda3" to colors.kda3)
-            tokens.forEach { (token, color) ->
+            listOf("statHigh" to colors.statHigh, "statTop" to colors.statTop).forEach { (token, color) ->
                 mapOf("pos" to colors.pos, "neg" to colors.neg).forEach { (other, otherColor) ->
                     val distance = oklabDistance(color, otherColor)
                     assertTrue(distance >= 4.0, "$name $token 와 $other 의 OKLab 거리가 ${distance.rounded()}라 4에 못 미친다")
                 }
             }
-            assertTrue(oklabHue(colors.pos) - oklabHue(colors.kda1) >= 15.0, "$name kda1 이 pos보다 연두 쪽으로 15도 넘게 옮겨 가지 않았다")
-            assertTrue(oklabHue(colors.kda3) - oklabHue(colors.neg) >= 4.0, "$name kda3 이 neg보다 산호 쪽으로 옮겨 가지 않았다")
-            listOf("kda1" to colors.kda1, "kda2" to colors.kda2).forEach { (token, color) ->
-                mapOf("accentInk" to colors.accentInk, "kda3" to colors.kda3).forEach { (other, otherColor) ->
-                    val distance = oklabDistance(color, otherColor)
-                    assertTrue(distance >= 15.0, "$name $token 와 $other 의 OKLab 거리가 ${distance.rounded()}라 15에 못 미친다")
-                }
+            assertTrue(oklabHue(colors.statTop) - oklabHue(colors.neg) >= 4.0, "$name statTop 이 neg보다 노랑 쪽으로 옮겨 가지 않았다")
+            mapOf("accentInk" to colors.accentInk, "statTop" to colors.statTop).forEach { (other, otherColor) ->
+                val distance = oklabDistance(colors.statHigh, otherColor)
+                assertTrue(distance >= 15.0, "$name statHigh 와 $other 의 OKLab 거리가 ${distance.rounded()}라 15에 못 미친다")
             }
-            val bands = oklabDistance(colors.kda1, colors.kda2)
-            assertTrue(bands >= 15.0, "$name kda1 과 kda2 의 OKLab 거리가 ${bands.rounded()}라 15에 못 미친다")
-            // 맨 위 칸은 빨강이라 액센트와 같은 계열이다.
-            // 라이트에서는 산호 쪽으로 옮겨 8 남짓만 뗀다.
-            val top = oklabDistance(colors.kda3, colors.accentInk)
-            assertTrue(top >= 8.0, "$name kda3 와 accentInk 의 OKLab 거리가 ${top.rounded()}라 8에 못 미친다")
+            val top = oklabDistance(colors.statTop, colors.accentInk)
+            assertTrue(top >= 8.0, "$name statTop 와 accentInk 의 OKLab 거리가 ${top.rounded()}라 8에 못 미친다")
         }
     }
 

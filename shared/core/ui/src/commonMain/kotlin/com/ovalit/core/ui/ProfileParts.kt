@@ -27,17 +27,29 @@ const val NO_VALUE = "–"
 @Composable
 fun percentText(rate: Double?): String = rate?.let { MetricFormat.PERCENT.valueText(it) } ?: NO_VALUE
 
-// 목업대로 50%를 넘으면 초록, 밑돌면 빨강이다.
-// 색은 변화량에만 쓴다는 규칙의 예외로 docs/design.md에 적었다.
+/**
+ * 승률을 KDA와 같은 구간 색으로 칠합니다.
+ * 55% 미만은 [below], 55~60%는 `statHigh`, 60% 이상은 `statTop`입니다. 보이는 %로 가릅니다.
+ * 승패가 갈린 판이 [MIN_COLORED_WIN_RATE_GAMES]판보다 적으면 운이 크게 섞여 칠하지 않습니다. 승률이 없으면 `t3`입니다.
+ *
+ * 경계를 바꾸거나 구간에 이름을 붙이면 등급처럼 읽혀서 그 전에 묻습니다(CLAUDE.md 지켜야 할 선).
+ *
+ * @param decided 승패가 갈린 판 수입니다. 비긴 판은 넣지 않습니다.
+ */
 @Composable
-fun winRateColor(rate: Double?): Color {
-    val steps = rate?.let { MetricFormat.PERCENT.steps(it) } ?: return OvalitTheme.colors.t3
+fun winRateColor(rate: Double?, decided: Int, below: Color): Color {
+    val colors = OvalitTheme.colors
+    val steps = rate?.let { MetricFormat.PERCENT.steps(it) } ?: return colors.t3
+    if (decided < MIN_COLORED_WIN_RATE_GAMES) return below
     return when {
-        steps > 50 -> OvalitTheme.colors.pos
-        steps < 50 -> OvalitTheme.colors.neg
-        else -> OvalitTheme.colors.t2
+        steps >= 60 -> colors.statTop
+        steps >= 55 -> colors.statHigh
+        else -> below
     }
 }
+
+// 4판 4승처럼 판이 적으면 운으로 오른 승률까지 잘한 것처럼 칠하게 된다. 시작 기준선이다.
+private const val MIN_COLORED_WIN_RATE_GAMES = 5
 
 @Composable
 fun ContentCatalog.weaponName(id: WeaponId): String = weapons[id]?.name ?: stringResource(Res.string.unknown_weapon)
@@ -57,9 +69,8 @@ fun WeaponThumb(weapon: WeaponId, name: String, width: Dp, height: Dp) {
 
 /**
  * KDA를 구간마다 칠합니다.
- * 1 미만은 [below], 1~2는 `kda1`, 2~3은 `kda2`, 3 이상은 `kda3`입니다.
- * 보이는 두 자리로 반올림한 값으로 가릅니다.
- * 1.995가 "2.00"으로 보이는데 1~2 색이면 틀려 보입니다.
+ * 2 미만은 [below], 2~3은 `statHigh`, 3 이상은 `statTop`입니다. 평균대는 칠하지 않고 잘한 구간만 눈에 띄게 합니다.
+ * 보이는 두 자리로 반올림한 값으로 가릅니다. 1.995가 "2.00"으로 보이는데 칠하지 않으면 틀려 보입니다.
  *
  * 경계를 바꾸거나 구간에 이름을 붙이면 등급처럼 읽혀서 그 전에 묻습니다(CLAUDE.md 지켜야 할 선).
  */
@@ -67,14 +78,13 @@ fun WeaponThumb(weapon: WeaponId, name: String, width: Dp, height: Dp) {
 fun kdaColor(kda: Double, below: Color): Color {
     val colors = OvalitTheme.colors
     return when (kdaTier(kda)) {
-        KdaTier.BELOW_ONE -> below
-        KdaTier.ONE -> colors.kda1
-        KdaTier.TWO -> colors.kda2
-        KdaTier.THREE -> colors.kda3
+        KdaTier.BELOW_TWO -> below
+        KdaTier.TWO -> colors.statHigh
+        KdaTier.THREE -> colors.statTop
     }
 }
 
-internal enum class KdaTier { BELOW_ONE, ONE, TWO, THREE }
+internal enum class KdaTier { BELOW_TWO, TWO, THREE }
 
 internal fun kdaTier(kda: Double): KdaTier {
     // 두 자리로 반올림한 값을 100배 한 정수다(1.00 → 100)
@@ -82,8 +92,7 @@ internal fun kdaTier(kda: Double): KdaTier {
     return when {
         steps >= 300 -> KdaTier.THREE
         steps >= 200 -> KdaTier.TWO
-        steps >= 100 -> KdaTier.ONE
-        else -> KdaTier.BELOW_ONE
+        else -> KdaTier.BELOW_TWO
     }
 }
 
@@ -117,7 +126,7 @@ fun KdaText.annotated(): AnnotatedString {
  * "KDA 2.13"입니다.
  * 숫자만 굵게 두고 구간 색을 칠합니다.
  *
- * @param below 1 미만일 때 숫자 색입니다.
+ * @param below 2 미만일 때 숫자 색입니다.
  * @param label "KDA" 글자에 덧씌울 모양입니다.
  *   홈처럼 숫자보다 글자를 작게 둘 때 씁니다.
  */

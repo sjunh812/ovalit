@@ -134,7 +134,7 @@ fun ProfileTierCard(record: CompetitiveRecord, catalog: ContentCatalog) {
                 OvalitText(
                     text = percentText(record.winRate),
                     style = StatValueStyle(),
-                    color = winRateColor(record.winRate),
+                    color = winRateColor(record.winRate, decided = record.wins + record.losses, below = colors.t1),
                 )
             }
         }
@@ -437,7 +437,7 @@ private fun AgentTile(agent: AgentStats, catalog: ContentCatalog, stacked: Boole
     val name = catalog.agentName(agent.agent)
     val matches = agentFirstLine(agent, showRecord)
     val winRate = percentText(agent.winRate)
-    val winColor = winRateColor(agent.winRate)
+    val winColor = winRateColor(agent.winRate, decided = agent.decided, below = colors.t2)
 
     Column(modifier = modifier.semantics(mergeDescendants = true) {}) {
         AgentImage(agent.agent, name, Modifier.size(AgentFaceSize).clip(RoundedCornerShape(10.dp)))

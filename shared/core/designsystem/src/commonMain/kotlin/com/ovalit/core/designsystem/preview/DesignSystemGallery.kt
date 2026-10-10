@@ -98,9 +98,8 @@ private fun ColorTokens() {
 
         Spacer(Modifier.height(OvalitSpacing.sm))
         SectionTitle("KDA 구간")
-        TextSwatch("kda1", colors.kda1)
-        TextSwatch("kda2", colors.kda2)
-        TextSwatch("kda3", colors.kda3)
+        TextSwatch("statHigh", colors.statHigh)
+        TextSwatch("statTop", colors.statTop)
     }
 }
 

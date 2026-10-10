@@ -25,9 +25,8 @@ data class OvalitColors(
     val accent: Color,
     val accentInk: Color,
     val onAccent: Color,
-    val kda1: Color,
-    val kda2: Color,
-    val kda3: Color,
+    val statHigh: Color,
+    val statTop: Color,
     val mvp: Color,
     val mvpContainer: Color,
     val teamMvp: Color,
@@ -44,8 +43,8 @@ data class OvalitColors(
 // - card와 canvas를 bg, raised와 따로 둔다.
 //   라이트는 bg가 흰색이라 bg 위에 raised 카드를 올리면 카드가 바탕보다 어둡다.
 // - accent는 neg와 거의 같은 빨강이고, 그 위 흰 글자(onAccent) 대비가 3.4:1인 걸 알고 고른 값이다.
-// - KDA 구간 색은 오르내림 색(pos, neg)과 거리가 아니라 색상으로 가른다.
-//   초록은 연두 쪽, 빨강은 산호 쪽이다.
+// - KDA와 승률의 구간 색(statHigh, statTop)은 잘한 구간에만 칠한다.
+//   초록을 쓰지 않아 오르면 초록인 변화량과 겹치지 않고, 주황은 빨강(neg, accent)과 색상으로 가른다.
 internal val OvalitDarkColors = OvalitColors(
     bg = Color(0xFF101012),
     raised = Color(0xFF1C1C1F),
@@ -65,9 +64,8 @@ internal val OvalitDarkColors = OvalitColors(
     accent = Color(0xFFFF4655),
     accentInk = Color(0xFFFF4655),
     onAccent = Color(0xFFFFFFFF),
-    kda1 = Color(0xFFADDB88),
-    kda2 = Color(0xFF7FB9F9),
-    kda3 = Color(0xFFF8875A),
+    statHigh = Color(0xFF7FB9F9),
+    statTop = Color(0xFFFF8526),
     mvp = Color(0xFFF5C04F),
     mvpContainer = Color(0xFF3A3020),
     teamMvp = Color(0xFFC3CDD9),
@@ -80,7 +78,7 @@ internal val OvalitDarkColors = OvalitColors(
 )
 
 // 라이트는 다크를 뒤집은 값이 아니다.
-// pos, neg, KDA 구간 색은 흰 바탕에서 읽히게 어둡게 내렸고, accent는 글자로 쓰면 대비가 모자라 accentInk를 따로 둔다.
+// pos, neg, 구간 색은 흰 바탕에서 읽히게 어둡게 내렸고, accent는 글자로 쓰면 대비가 모자라 accentInk를 따로 둔다.
 // pos와 t3는 목업보다 한 단계 어둡다.
 // t3를 더 내리면 t2와 거의 같아져서 raised 위에서는 4.2:1에 머문다.
 internal val OvalitLightColors = OvalitColors(
@@ -102,9 +100,8 @@ internal val OvalitLightColors = OvalitColors(
     accent = Color(0xFFFF4655),
     accentInk = Color(0xFFDA1638),
     onAccent = Color(0xFFFFFFFF),
-    kda1 = Color(0xFF447924),
-    kda2 = Color(0xFF336ABB),
-    kda3 = Color(0xFFB34917),
+    statHigh = Color(0xFF336ABB),
+    statTop = Color(0xFFBD4B00),
     mvp = Color(0xFF8A5A00),
     mvpContainer = Color(0xFFFFF1CC),
     teamMvp = Color(0xFF3B4A5C),

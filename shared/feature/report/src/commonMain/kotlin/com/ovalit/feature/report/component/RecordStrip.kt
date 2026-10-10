@@ -112,7 +112,8 @@ internal fun RecordStrip(report: WeeklyReport.Ready, modifier: Modifier = Modifi
         fun Record() {
             OvalitText(text = record, style = caption, color = colors.t2)
             OvalitText(text = SEPARATOR, modifier = Modifier.clearAndSetSemantics {}, style = caption, color = colors.t3)
-            OvalitText(text = rate, style = rateStyle, color = winRateColor(report.winRate))
+            val rateColor = winRateColor(report.winRate, decided = report.wins + report.losses, below = colors.t2)
+            OvalitText(text = rate, style = rateStyle, color = rateColor)
         }
 
         if (stacked) {

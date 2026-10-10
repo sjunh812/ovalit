@@ -461,7 +461,7 @@ private fun AgentRow(agent: AgentStats, columns: List<MetricColumnSpec>, catalog
             text = percentText(agent.winRate),
             modifier = Modifier.width(WinColumn).padding(start = ColumnGap),
             style = winStyle,
-            color = winRateColor(agent.winRate),
+            color = winRateColor(agent.winRate, decided = agent.decided, below = OvalitTheme.colors.t1),
             textAlign = TextAlign.End,
             maxLines = 1,
             autoSize = shrinkToFit(winStyle.fontSize),

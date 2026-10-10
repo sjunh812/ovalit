@@ -25,10 +25,13 @@ import com.ovalit.core.designsystem.component.rememberContentShown
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.ui.AdPlacement
+import com.ovalit.core.ui.AdSlot
 import com.ovalit.core.ui.MatchRow
 import com.ovalit.core.ui.MatchRowStyle
 import com.ovalit.core.ui.MatchRowsSkeleton
 import com.ovalit.core.ui.dayLabel
+import com.ovalit.core.ui.listAdBefore
 import com.ovalit.core.ui.matchTimeLabel
 import com.ovalit.feature.friend.resources.Res
 import com.ovalit.feature.friend.resources.matches_hidden
@@ -87,7 +90,12 @@ internal fun FriendMatchesScreen(uiState: FriendProfileUiState, onBack: () -> Un
                     )
                 }
             }
-            days.forEach { (date, matches) ->
+            // 광고는 경기 목록과 같은 규칙으로 날짜 묶음 사이에만 둔다
+            val adBefore = listAdBefore(days.values.map { it.size })
+            days.entries.forEachIndexed { dayIndex, (date, matches) ->
+                if (dayIndex in adBefore) {
+                    item(key = "ad-$dayIndex") { AdSlot(AdPlacement.FRIEND_MATCH_LIST, key = "friend-matches-$dayIndex") }
+                }
                 item(key = "day-$date") {
                     OvalitText(
                         text = dayLabel(date, today),

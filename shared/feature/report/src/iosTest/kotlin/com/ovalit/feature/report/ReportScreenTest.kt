@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import com.ovalit.core.designsystem.component.LocalScreenEntering
+import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitColors
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.AgentId
@@ -74,6 +75,9 @@ import com.ovalit.core.model.WeaponId
 import com.ovalit.core.model.WeaponInfo
 import com.ovalit.core.model.WeekNote
 import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.ui.AdPlacement
+import com.ovalit.core.ui.AdRenderer
+import com.ovalit.core.ui.LocalAdRenderer
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.core.ui.WRAPPING_SEPARATOR
@@ -1149,6 +1153,18 @@ class ReportScreenTest {
         assertTrue(dynamic.bottom <= title.top && title.bottom <= headline.top && headline.bottom <= agents.top)
     }
 
+    // 광고는 이번 주 숫자를 다 본 바로 뒤에 둔다. 기간, 고정 칸, 달라진 점 사이에는 두지 않는다.
+    @Test
+    fun `홈 광고는 달라진 점과 이번 액트 돌아보기 사이에 둔다`() = runComposeUiTest {
+        setContent { CompositionLocalProvider(LocalAdRenderer provides LabelAds) { Report(ReportPreviewData.moved) } }
+
+        val fixed = onNodeWithText("전투점수", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val dynamic = onNodeWithText("달라진 점", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val ad = onNodeWithText("광고 HOME", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val insight = onNodeWithText("이번 액트 돌아보기", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        assertTrue(fixed.bottom <= dynamic.top && dynamic.bottom <= ad.top && ad.bottom <= insight.top)
+    }
+
     // 한 주 경기를 둘로 나누면 우연한 차이가 대부분이라 이번 액트 경기로 견준다
     @Test
     fun `개선 포인트는 이번 액트 공수를 높은 쪽부터 사실만 적는다`() = runComposeUiTest {
@@ -1449,6 +1465,18 @@ private fun Report(
     catalog: ContentCatalog = ContentCatalog.Empty,
 ) {
     OvalitTheme { ReportScreen(ReportUiState.Success(queueFilter, report), onSelectQueue = {}, catalog = catalog) }
+}
+
+// 받은 광고 대신 자리 이름을 그린다
+private object LabelAds : AdRenderer {
+    @Composable
+    override fun Render(placement: AdPlacement, key: String, frame: @Composable (content: @Composable () -> Unit) -> Unit) {
+        frame { OvalitText("광고 ${placement.name}") }
+    }
+
+    override val canOfferAdFree = false
+
+    override fun offerAdFree() = Unit
 }
 
 // 짚을 점 문장에 이름이 들어가서 프리뷰 데이터의 요원과 무기에 이름을 붙였다

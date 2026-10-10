@@ -26,6 +26,7 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.ui.PlayerBadge
+import com.ovalit.core.ui.ProfileAdSlot
 import com.ovalit.core.ui.ProfileAgentsSection
 import com.ovalit.core.ui.ProfileBanner
 import com.ovalit.core.ui.ProfileIdentity
@@ -115,6 +116,7 @@ internal fun ProfileScreen(
                     OvalitStage { ProfileShotsSection(uiState.summary.metrics.shots) }
                     OvalitStage { ProfileAgentsSection(uiState.agents, uiState.catalog, onOpenAgents) }
                     OvalitStage { ProfileWeaponsSection(uiState.weapons, uiState.catalog, onOpenWeapons) }
+                    ProfileAdSlot(key = "profile-me")
                 }
                 OvalitStage { RecentMatchesSection(uiState, onOpenMatch, onOpenMatches) }
                 Spacer(Modifier.height(OvalitSpacing.xxl))

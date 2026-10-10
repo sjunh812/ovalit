@@ -61,6 +61,7 @@ import com.ovalit.core.ui.SeparatorDot
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.dayLabel
 import com.ovalit.core.ui.label
+import com.ovalit.core.ui.listAdBefore
 import com.ovalit.core.ui.mapName
 import com.ovalit.core.ui.matchTimeLabel
 import com.ovalit.core.ui.resources.Res as CoreUiRes
@@ -178,17 +179,12 @@ internal fun MatchesScreen(
                     }
                 }
 
-                // 광고는 날짜 묶음 사이에만 둔다. 한 날짜 안에 끼우면 그날 경기처럼 읽힌다.
-                // 다섯 줄을 지난 첫 묶음 뒤에 하나, 그 뒤로는 여덟 줄이 넘을 때마다 하나다.
-                var rowsSinceAd = 0
-                var ads = 0
-                uiState.days.forEach { day ->
-                    if (rowsSinceAd >= if (ads == 0) FIRST_AD_AFTER else AD_EVERY) {
-                        val index = ads++
-                        item(key = "ad-$index") { AdSlot(AdPlacement.MATCH_LIST, key = "match-list-$index") }
-                        rowsSinceAd = 0
+                // 광고는 날짜 묶음 사이에만 둔다(listAdBefore)
+                val adBefore = listAdBefore(uiState.days.map { it.matches.size })
+                uiState.days.forEachIndexed { dayIndex, day ->
+                    if (dayIndex in adBefore) {
+                        item(key = "ad-$dayIndex") { AdSlot(AdPlacement.MATCH_LIST, key = "match-list-$dayIndex") }
                     }
-                    rowsSinceAd += day.matches.size
                     item(key = "day-${day.date}") {
                         DayHeader(day, today = uiState.now.toLocalDateTime(uiState.timeZone).date)
                     }
@@ -217,8 +213,6 @@ internal fun MatchesScreen(
     }
 }
 
-private const val FIRST_AD_AFTER = 5
-private const val AD_EVERY = 8
 
 @Composable
 private fun FilterButton(active: Boolean, onClick: () -> Unit) {

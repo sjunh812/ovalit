@@ -329,6 +329,8 @@ private fun ReportContent(
         if (dynamicShown) {
             OvalitStage { OvalitCard { DynamicMetricSection(report, onOpenMetric = { openDynamic = it }, subLines = subLines) } }
         }
+        // 광고는 이번 주 숫자(기간, 고정 칸, 달라진 점)를 다 본 바로 뒤에 둔다. 그 사이에는 두지 않는다(docs/screens.md).
+        AdSlot(AdPlacement.HOME) { ad -> OvalitCard { ad() } }
         report.insight?.let { insight ->
             OvalitStage {
                 OvalitCard { InsightSection(insight = insight, role = report.mainRole, period = report.period, catalog = catalog) }
@@ -336,8 +338,6 @@ private fun ReportContent(
         }
         // S6과 S7이 경쟁 + 일반만 보니 기타 모드에는 두지 않는다
         OvalitStage { PeriodPicksSection(report, catalog, onOpenAgents = onOpenAgents, onOpenWeapons = onOpenWeapons) }
-        // 광고는 이번 주 숫자를 다 본 뒤에 둔다. 기간, 고정 칸, 달라진 점 사이에는 두지 않는다(docs/screens.md).
-        AdSlot(AdPlacement.HOME) { ad -> OvalitCard { ad() } }
         rival?.let {
             OvalitStage { OvalitCard { RivalSection(report = report, mine = report.metrics, rival = it) } }
         }

@@ -557,6 +557,21 @@ private fun WeaponTile(weapon: WeaponStats, line: WeaponLine, stacked: Boolean, 
  * 카드 하나에 담고 위 덩어리와 카드 간격만큼 띄웁니다.
  * [onClick]이 있으면 카드 전체가 눌립니다.
  */
+/**
+ * 프로필의 무기 카드와 최근 경기 카드 사이에 두는 광고 카드입니다.
+ * 내 프로필과 친구 프로필이 같은 자리에 둡니다.
+ * 광고를 받기 전이나 못 받으면 카드 사이 간격도 두지 않습니다.
+ */
+@Composable
+fun ProfileAdSlot(key: String) {
+    AdSlot(AdPlacement.PROFILE, key = key) { ad ->
+        Column {
+            Spacer(Modifier.height(OvalitCardGap))
+            OvalitCard { ad() }
+        }
+    }
+}
+
 @Composable
 fun ProfileSection(onClick: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
     Spacer(Modifier.height(OvalitCardGap))

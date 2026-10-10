@@ -52,6 +52,7 @@ import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.FailureNoticesEffect
 import com.ovalit.core.ui.HeadToHeadRow
 import com.ovalit.core.ui.MatchRow
+import com.ovalit.core.ui.ProfileAdSlot
 import com.ovalit.core.ui.MatchRowStyle
 import com.ovalit.core.ui.ProfileAgentsSection
 import com.ovalit.core.ui.ProfileBanner
@@ -233,6 +234,7 @@ internal fun FriendProfileScreen(
                         ProfileShotsSection(profile.summary.metrics.shots)
                         ProfileAgentsSection(profile.agents, uiState.catalog, onOpen = onOpenAgents)
                         ProfileWeaponsSection(profile.weapons, uiState.catalog, onOpen = onOpenWeapons)
+                        ProfileAdSlot(key = "profile-friend")
                     }
                     RecentMatches(uiState, name, onOpenMatches)
                 }

@@ -155,7 +155,6 @@
     <string name="insight_session_late">세 번째 판부터</string>
     <string name="insight_session_early">첫 두 판</string>
     <string name="insight_title">이번 액트 돌아보기</string>
-    <string name="insight_act">이번 액트</string>
     <string name="insight_title_matches">%1$d경기</string>
     <string name="insight_matches">%1$d판</string>
     <string name="insight_rounds">%1$d라운드</string>

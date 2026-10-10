@@ -152,7 +152,6 @@
     <string name="insight_session_late">3試合目以降</string>
     <string name="insight_session_early">最初の2試合</string>
     <string name="insight_title">今ACTの振り返り</string>
-    <string name="insight_act">今ACT</string>
     <string name="insight_title_matches">%1$d試合</string>
     <string name="insight_matches">%1$d試合</string>
     <string name="insight_rounds">%1$dラウンド</string>

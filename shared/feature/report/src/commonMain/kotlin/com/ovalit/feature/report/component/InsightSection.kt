@@ -9,13 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitText
@@ -46,7 +44,6 @@ import com.ovalit.core.ui.weaponName
 import com.ovalit.core.ui.withLocalJosa
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.gap_percent
-import com.ovalit.feature.report.resources.insight_act
 import com.ovalit.feature.report.resources.insight_higher
 import com.ovalit.feature.report.resources.insight_lower
 import com.ovalit.feature.report.resources.insight_map
@@ -124,10 +121,16 @@ internal fun InsightSection(
     )
     // 적게 뛴 쪽의 숫자는 크게 흔들려서 몇 판, 몇 라운드로 센 숫자인지 같이 적는다.
     // 한 주 표본이라 판단은 하지 않고, 액트 동안의 차이가 이번 주에도 이어졌는지 숫자만 붙인다.
-    val rows = listOfNotNull(
-        InsightRow(stringResource(Res.string.insight_act), lead, other),
-        insight.recent?.let { InsightRow(periodLabel(period), it.lead, it.other) },
-    )
+    val actValues = valuesText(leadName to lead, otherName to other, format, SpanStyle(color = OvalitTheme.colors.t1, fontWeight = FontWeight.SemiBold))
+    val actSample = totalSample(lead, other)
+    val recent = insight.recent?.let {
+        val values = valuesText(leadName to it.lead, otherName to it.other, format, SpanStyle(color = OvalitTheme.colors.t2))
+        buildAnnotatedString {
+            append(periodLabel(period).withLocalJosa(Josa.EUN_NEUN).keepTogether() + " ")
+            append(values)
+            append(WRAPPING_SEPARATOR + totalSample(it.lead, it.other))
+        }
+    }
     val focus = insight.focus
     val reason = when {
         focus != null -> stringResource(Res.string.insight_reason_focus, stringResource(focus.label).withLocalJosa(Josa.EUL_REUL))
@@ -151,7 +154,26 @@ internal fun InsightSection(
         )
         Spacer(Modifier.height(6.dp))
         OvalitText(text = headline, style = headlineStyle())
-        InsightLines(leadName, otherName, rows, format, Modifier.padding(top = OvalitSpacing.xs))
+        // 제목과 문장이 이번 액트 이야기라 액트 값만 본문 크기로 굵게 두고, 그 액트 전체 표본을 줄 끝에 옅게 붙인다.
+        // 이번 주 값은 한 주 표본이라 같은 무게로 두면 근거처럼 읽혀서, 밑에 작은 회색 한 줄로 참고만 하게 둔다.
+        Column(modifier = Modifier.padding(top = OvalitSpacing.xs), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Row(modifier = Modifier.semantics(mergeDescendants = true) {}) {
+                OvalitText(
+                    text = actValues,
+                    modifier = Modifier.weight(1f).alignByBaseline(),
+                    style = OvalitTheme.typography.body,
+                    color = OvalitTheme.colors.t2,
+                )
+                Spacer(Modifier.width(OvalitSpacing.md))
+                OvalitText(
+                    text = actSample,
+                    modifier = Modifier.alignByBaseline(),
+                    style = OvalitTheme.typography.caption,
+                    color = OvalitTheme.colors.t3,
+                )
+            }
+            recent?.let { OvalitText(text = it, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t3) }
+        }
         // 왜 이 지표를 먼저 봤는지는 숫자 칸과 다른 이야기라 붙이지 않고 띄운다
         reason?.let {
             OvalitText(
@@ -164,40 +186,17 @@ internal fun InsightSection(
     }
 }
 
-/** 기간 한 줄입니다. 기간 이름과 그 기간의 두 쪽입니다. */
-private class InsightRow(val period: String, val lead: InsightPart, val other: InsightPart)
-
-// 기간마다 한 줄로 "이번 액트 공격 72% · 수비 35%"를 적고, 그 기간 전체 표본을 줄 끝에 옅게 붙인다.
-// 줄끼리 위아래로 놓여 액트와 이번 주를 견주고, 기간 이름 폭을 맞춰 두 줄의 값이 같은 자리에서 시작한다.
-// 값을 가장 진하고 굵게, 쪽 이름을 그다음, 기간과 표본을 가장 옅게 칠한다.
-// 이름이 가장 진하면 "공격", "수비"만 눈에 들어오고 정작 견줄 숫자가 묻힌다.
+// "공격 72% · 수비 35%"다. 이름을 가장 진하게 두면 "공격", "수비"만 눈에 들어오고 정작 견줄 숫자가 묻혀서 값에만 [value]를 입힌다.
+// 값은 이름 바로 뒤에 붙여 "공격 72%"로 읽히게 하고, 줄은 두 쪽 사이에서만 바뀐다.
 @Composable
-private fun InsightLines(leadName: String, otherName: String, rows: List<InsightRow>, format: MetricFormat, modifier: Modifier) {
-    val colors = OvalitTheme.colors
-    val caption = OvalitTheme.typography.caption
-    val measurer = rememberTextMeasurer()
-    val periodWidth = with(LocalDensity.current) { rows.maxOf { measurer.measure(it.period, caption).size.width }.toDp() }
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(OvalitSpacing.xs)) {
-        rows.forEach { row ->
-            val values = buildAnnotatedString {
-                listOf(leadName to row.lead, otherName to row.other).forEachIndexed { index, (name, part) ->
-                    if (index > 0) withStyle(SpanStyle(color = colors.t4)) { append(WRAPPING_SEPARATOR) }
-                    append(name.keepTogether() + NBSP)
-                    withStyle(SpanStyle(color = colors.t1, fontWeight = FontWeight.SemiBold)) { append(format.valueText(part.value)) }
-                }
-            }
-            Row(modifier = Modifier.semantics(mergeDescendants = true) {}) {
-                OvalitText(text = row.period, modifier = Modifier.width(periodWidth).alignByBaseline(), style = caption, color = colors.t3)
-                Spacer(Modifier.width(LineGap))
-                OvalitText(text = values, modifier = Modifier.weight(1f).alignByBaseline(), style = OvalitTheme.typography.body, color = colors.t2)
-                Spacer(Modifier.width(LineGap))
-                OvalitText(text = totalSample(row.lead, row.other), modifier = Modifier.alignByBaseline(), style = caption, color = colors.t3)
-            }
+private fun valuesText(lead: Pair<String, InsightPart>, other: Pair<String, InsightPart>, format: MetricFormat, value: SpanStyle) =
+    buildAnnotatedString {
+        listOf(lead, other).forEachIndexed { index, (name, part) ->
+            if (index > 0) append(WRAPPING_SEPARATOR)
+            append(name.keepTogether() + NBSP)
+            withStyle(value) { append(format.valueText(part.value)) }
         }
     }
-}
-
-private val LineGap = 12.dp
 
 private const val NBSP = "\u00a0"
 

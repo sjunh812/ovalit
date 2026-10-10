@@ -597,8 +597,7 @@ class ReportScreenTest {
     fun `이번 주에 뛴 경기가 없으면 지난주 리포트라고 알려준다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.lastWeek) }
 
-        // 돌아보기 줄에도 기간 이름이 있어 맨 위의 기간 머리를 본다
-        onAllNodesWithText("지난주").onFirst().assertExists()
+        onNodeWithText("지난주").assertExists()
         onNodeWithText("이번 주는 아직 경기가 없어요").assertExists()
     }
 
@@ -874,7 +873,7 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
 
         onNodeWithText("공격에서 멀티킬 라운드 비율이 수비보다 25%p 높아요").assertExists()
-        onNode(insightLine("이번 액트", "공격" to "30%", "수비" to "5%", "80라운드")).assertExists()
+        onNode(actLine("공격" to "30%", "수비" to "5%", "80라운드")).assertExists()
         onNodeWithText("에임 올리기를 고르셔서 먼저 봤어요").assertExists()
     }
 
@@ -891,7 +890,7 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
 
         onNodeWithText("제트로 뛴 판은 생존율이 레이즈보다 25%p 높아요").assertExists()
-        onNode(insightLine("이번 액트", "제트" to "75%", "레이즈" to "50%", "15판")).assertExists()
+        onNode(actLine("제트" to "75%", "레이즈" to "50%", "15판")).assertExists()
     }
 
     @Test
@@ -941,8 +940,8 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
 
         onNodeWithText("연달아 뛴 세 번째 판부터는 관여율이 첫 두 판보다 12%p 낮아요").assertExists()
-        onNode(insightLine("이번 액트", "세 번째 판부터" to "61%", "첫 두 판" to "73%", "50판")).assertExists()
-        onNode(insightLine("이번 주", "세 번째 판부터" to "55%", "첫 두 판" to "70%", "14판")).assertExists()
+        onNode(actLine("세 번째 판부터" to "61%", "첫 두 판" to "73%", "50판")).assertExists()
+        onNodeWithText(recentLine("이번 주", "세 번째 판부터" to "55%", "첫 두 판" to "70%", "14판")).assertExists()
         onNodeWithText("쉬", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
@@ -971,10 +970,10 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
 
         onNodeWithText("헤이븐에서는 관여율이 다른 맵보다 14%p 낮아요").assertExists()
-        onNode(insightLine("이번 액트", "헤이븐" to "58%", "다른 맵" to "72%", "50판")).assertExists()
+        onNode(actLine("헤이븐" to "58%", "다른 맵" to "72%", "50판")).assertExists()
         insight = rifles
         onNodeWithText("밴달을 든 라운드는 헤드샷이 다른 소총보다 11%p 낮아요").assertExists()
-        onNode(insightLine("이번 액트", "밴달" to "14%", "다른 소총" to "25%", "392라운드")).assertExists()
+        onNode(actLine("밴달" to "14%", "다른 소총" to "25%", "392라운드")).assertExists()
         insight = twoRifles
         onNodeWithText("팬텀을 든 라운드는 헤드샷이 밴달보다 11%p 높아요").assertExists()
     }
@@ -1069,7 +1068,7 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = damage)) }
 
         onNodeWithText("공격에서 피해량이 수비보다 22 높아요").assertExists()
-        onNode(insightLine("이번 액트", "공격" to "143", "수비" to "121", "146라운드")).assertExists()
+        onNode(actLine("공격" to "143", "수비" to "121", "146라운드")).assertExists()
     }
 
     // 무기 값도 보이는 자릿수로 같으면 "140 → 140"이 돼서 무기 줄을 두지 않는다
@@ -1168,17 +1167,17 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved) }
 
         onNodeWithText("공격에서 첫 교전 승률이 수비보다 14%p 높아요").assertExists()
-        onNode(insightLine("이번 액트", "공격" to "58%", "수비" to "44%", "776라운드")).assertExists()
+        onNode(actLine("공격" to "58%", "수비" to "44%", "776라운드")).assertExists()
         onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요").assertExists()
     }
 
-    // 이번 액트 줄 밑에 이번 주 줄을 붙여 위아래로 견준다. 줄 끝에 그 기간 전체 표본을 적는다. 까닭 줄은 그 밑이다.
+    // 제목과 문장이 이번 액트 이야기라 액트 줄이 먼저다. 이번 주는 그 밑에 참고로 붙이고, 까닭 줄은 그 밑이다.
     @Test
-    fun `개선 포인트는 이번 액트와 이번 주를 한 줄씩 적는다`() = runComposeUiTest {
+    fun `개선 포인트는 액트 줄 밑에 이번 주를 참고로 붙인다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        val act = onNode(insightLine("이번 액트", "공격" to "58%", "수비" to "44%", "776라운드")).getUnclippedBoundsInRoot()
-        val recent = onNode(insightLine("이번 주", "공격" to "71%", "수비" to "45%", "138라운드")).getUnclippedBoundsInRoot()
+        val act = onNode(actLine("공격" to "58%", "수비" to "44%", "776라운드")).getUnclippedBoundsInRoot()
+        val recent = onNodeWithText(recentLine("이번 주", "공격" to "71%", "수비" to "45%", "138라운드")).getUnclippedBoundsInRoot()
         val reason = onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요").getUnclippedBoundsInRoot()
         assertTrue(act.bottom <= recent.top && recent.bottom <= reason.top)
     }
@@ -1188,14 +1187,14 @@ class ReportScreenTest {
     fun `이번 주 값은 리포트 기간 이름으로 적는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.steady.copy(insight = ReportPreviewData.moved.insight)) }
 
-        onNode(insightLine("최근 2주", "공격" to "71%", "수비" to "45%", "138라운드")).assertExists()
+        onNodeWithText(recentLine("최근 2주", "공격" to "71%", "수비" to "45%", "138라운드")).assertExists()
     }
 
     @Test
     fun `이번 주 값이 없으면 그 줄을 두지 않는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved.let { it.copy(insight = it.insight?.copy(recent = null)) }) }
 
-        onNode(insightLine("이번 주", "공격" to "71%", "수비" to "45%", "138라운드")).assertDoesNotExist()
+        onNodeWithText(recentLine("이번 주", "공격" to "71%", "수비" to "45%", "138라운드")).assertDoesNotExist()
 
     }
 
@@ -1482,11 +1481,16 @@ private val NamedCatalog = ContentCatalog.Empty.copy(
 )
 
 // 개선 포인트 밑 줄은 기간 이름(액트 줄은 제목에 있어 없음) 뒤에 두 쪽을 (이름, 값, 표본)으로 잇는다. 줄은 두 쪽 사이에서만 바뀐다.
-// 개선 포인트 한 줄은 기간, 두 쪽 값, 기간 전체 표본을 묶어 화면 읽기 프로그램이 한 번에 읽는다
-private fun insightLine(period: String, lead: Pair<String, String>, other: Pair<String, String>, total: String): SemanticsMatcher {
-    val values = listOf(lead, other).joinToString(WRAPPING_SEPARATOR) { (name, value) -> name.keepTogether() + "\u00a0" + value }
-    return hasText(period) and hasText(values) and hasText(total)
-}
+// 개선 포인트의 액트 줄은 두 쪽 값과 액트 전체 표본을 묶어 화면 읽기 프로그램이 한 번에 읽는다
+private fun actLine(lead: Pair<String, String>, other: Pair<String, String>, total: String): SemanticsMatcher =
+    hasText(insightValues(lead, other)) and hasText(total)
+
+// 이번 주 줄은 "이번 주는 공격 47% · 수비 52% · 166라운드"처럼 한 글자로 적는다
+private fun recentLine(period: String, lead: Pair<String, String>, other: Pair<String, String>, total: String) =
+    "${period}는".keepTogether() + " " + insightValues(lead, other) + WRAPPING_SEPARATOR + total
+
+private fun insightValues(lead: Pair<String, String>, other: Pair<String, String>) =
+    listOf(lead, other).joinToString(WRAPPING_SEPARATOR) { (name, value) -> name.keepTogether() + "\u00a0" + value }
 
 // 짚을 점 한 줄은 이름과 표본을 한 글자로, "평소 → 이번" 숫자를 또 한 글자로 둔다. 화면 읽기 프로그램이 한 번에 읽게 한 줄로 묶는다.
 private fun noteRow(name: String, change: String): SemanticsMatcher = hasText(noteLabel(name)) and hasText(noteChange(change))

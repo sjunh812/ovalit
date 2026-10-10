@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -61,16 +62,22 @@ internal class AndroidOvalitPlatform(private val context: Context) : OvalitPlatf
 }
 
 /**
- * 토스처럼 홈에서 뒤로 가기를 한 번 누르면 안내만 띄우고, 안내가 떠 있는 동안 한 번 더 누르면 앱을 닫습니다. 홈에서 뒤로 가면 앱이
- * 닫히는데, 한 번에 닫히면 위로 스크롤하려다 실수로 닫히기 쉽습니다.
+ * 토스처럼 홈에서 뒤로 가기를 한 번 누르면 안내만 띄우고, 안내가 떠 있는 동안 한 번 더 누르면 앱을 닫습니다. 한 번에 닫히면 위로
+ * 스크롤하려다 실수로 닫히기 쉽습니다.
  */
 @Composable
 private fun ExitOnSecondBack(toast: OvalitToastState) {
     var armed by remember { mutableStateOf(false) }
     val message = stringResource(R.string.exit_confirm)
+    val activity = LocalActivity.current
     val scope = rememberCoroutineScope()
-    // 안내가 떠 있는 동안은 가로채지 않아 시스템이 앱을 닫는다
-    BackHandler(enabled = !armed) {
+    BackHandler {
+        // 두 번째는 시스템에 넘기지 않고 직접 닫는다. 안드로이드 12부터 시스템 뒤로 가기는 첫 화면을 닫지 않고 앱을 뒤로 보내기만
+        // 해서, 다시 열면 홈이 그대로 떠 있다.
+        if (armed) {
+            activity?.finish()
+            return@BackHandler
+        }
         armed = true
         scope.launch {
             try {

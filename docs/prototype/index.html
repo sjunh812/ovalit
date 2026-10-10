@@ -362,6 +362,11 @@
       .stage { --sw: min(370px, calc(100vw - 52px)); }
     }
     .panel { max-width: none; }
+    /* 폰 틀이 화면을 거의 채워서, 틀 안에서 끝까지 내려가면 페이지가 이어서 내려가게 둔다 */
+    .scroller { overscroll-behavior: auto; }
+  }
+  @media (hover: none) {
+    .kbd-only { display: none; }
   }
   @media (max-width: 380px) {
     .groups { grid-template-columns: minmax(0, 1fr); }
@@ -378,7 +383,7 @@
       <svg viewBox="152 280 720 544" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M272 280H752A120 120 0 0 1 872 400V598A120 120 0 0 1 752 718H432L322.5 813.8Q312 823 312 809V718H272A120 120 0 0 1 152 598V400A120 120 0 0 1 272 280ZM228 499a88 88 0 1 0 176 0a88 88 0 1 0-176 0ZM272 499a44 44 0 1 0 88 0a44 44 0 1 0-88 0ZM620 499a88 88 0 1 0 176 0a88 88 0 1 0-176 0ZM664 499a44 44 0 1 0 88 0a44 44 0 1 0-88 0ZM430 422A8 8 0 0 1 438 414H466A8 8 0 0 1 474 422V463H550V422A8 8 0 0 1 558 414H586A8 8 0 0 1 594 422V573A10 10 0 0 1 584 583H440A10 10 0 0 1 430 573ZM474 499H550V548H474Z"/></svg>
       <div>
         <h1>오발있</h1>
-        <p>최근 경기에서 지표가 어떻게 움직였는지, 그 주에 무엇이 달라졌는지 짚어주는 발로란트 전적 앱이에요.</p>
+        <p>발로란트 전적 앱이에요. 최근 경기를 평소의 나와 견줘 그 주에 무엇이 달라졌는지 짚어드려요.</p>
       </div>
     </div>
     <a class="prd-link" href="https://github.com/sjunh812/ovalit/blob/main/docs/PRD.md" target="_blank" rel="noopener">PRD 보기 ›</a>
@@ -391,13 +396,13 @@
         <button class="btn" id="hotToggle" type="button" aria-pressed="false">누를 수 있는 곳 보기</button>
         <div class="seg" role="group" aria-label="테마">
           <button type="button" id="themeLight" aria-pressed="true">라이트</button>
-          <button type="button" id="themeDark" aria-pressed="false" title="다크 캡처는 홈과 경기 상세만 있어요">다크</button>
+          <button type="button" id="themeDark" aria-pressed="false" title="다크 캡처는 홈과 경기 상세 스코어보드만 있어요">다크</button>
         </div>
       </div>
       <div class="phone">
         <div class="screen" id="screen"></div>
       </div>
-      <p class="hint" id="hint">화면 속 버튼을 눌러 이동해요. 빈 곳을 누르면 누를 수 있는 곳이 잠깐 보여요. ← 키로 뒤로 가요.</p>
+      <p class="hint" id="hint">화면 속 버튼을 눌러 이동해요. 빈 곳을 누르면 누를 수 있는 곳이 잠깐 보여요.<span class="kbd-only"> ← 키로 뒤로 가요.</span></p>
     </section>
 
     <aside class="panel">
@@ -419,7 +424,7 @@
   </main>
 
   <footer class="foot">
-    <p>Ovalit isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
+    <p lang="en">Ovalit isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
     <p>화면은 예시 데이터로 찍은 앱 캡처예요. 실제 플레이어의 경기 기록이 아니에요.</p>
   </footer>
 </div>
@@ -464,7 +469,7 @@
     consent: {
       h: 1600, group: '시작하기', name: 'S0-2 연동 동의',
       desc: '연동하기 전에 무엇을 불러오고 누구에게 보이는지 먼저 알려요. 비밀번호는 Riot 로그인 페이지에서만 입력하고 앱은 받지 않아요.',
-      note: '계속하면 실제 앱은 Riot 로그인(S0-3)을 Custom Tabs로 열어요. 프로토타입은 그 단계를 건너뛰어요.',
+      note: '출시 앱에서는 계속하기를 누르면 Riot 로그인(S0-3)이 Custom Tabs로 열려요. 지금은 Riot 승인 전이라 앱도 프로토타입도 이 단계를 건너뛰어요.',
       hot: [BACK, { r: [42, 1375, 636, 90], go: 'import', label: 'Riot 계정으로 계속하기' }],
     },
     import: {
@@ -474,16 +479,16 @@
       hot: [{ r: [0, 48, 720, 1552], finish: 'home', label: '화면 아무 곳' }],
     },
     home: {
-      h: 2960, tab: 'home', dark: 'home-dark', group: '홈', name: 'S1 홈 · 주간 리포트',
+      h: 3024, tab: 'home', dark: 'home-dark', group: '홈', name: 'S1 홈 · 주간 리포트',
       desc: '이번 주 지표를 지난 4주의 나와 견줘요. 고정 칸 다섯은 늘 같은 자리에 두고, 그 주에 평소보다 크게 움직인 지표는 달라진 점에 올려요.',
       note: '친구 비교는 서로 수락한 친구끼리만 줄을 세워요. 여러 지표를 합친 점수는 만들지 않아요.',
       hot: [
         { r: [484, 70, 222, 70], go: 'my-profile', label: '오른쪽 위 티어와 아바타' },
         { r: [22, 262, 676, 130], go: 'ping-detail', label: '민석의 초대' },
-        { r: [40, 682, 206, 126], go: 'metric-sheet', sheet: true, label: '피해량 칸' },
-        { r: [57, 973, 606, 75], go: 'trend-sheet', sheet: true, label: '지난 8주 흐름 한눈에 보기' },
-        { r: [22, 1647, 676, 296], go: 'agents', label: '이번 주 요원 카드' },
-        { r: [22, 1969, 676, 294], go: 'weapons', label: '이번 주 무기 카드' },
+        { r: [40, 703, 206, 126], go: 'metric-sheet', sheet: true, label: '피해량 칸' },
+        { r: [57, 994, 606, 75], go: 'trend-sheet', sheet: true, label: '지난 8주 흐름 한눈에 보기' },
+        { r: [22, 1714, 676, 296], go: 'agents', label: '이번 주 요원 카드' },
+        { r: [22, 2036, 676, 294], go: 'weapons', label: '이번 주 무기 카드' },
       ],
     },
     'metric-sheet': {
@@ -504,17 +509,17 @@
       hot: [{ r: [0, 524, 720, 100], go: 'match-detail', label: '어제 코로드 경기 줄' }],
     },
     'match-detail': {
-      h: 1636, dark: 'match-detail-dark', banner: matchBanner, group: '경기', name: 'S3 경기 상세 · 스코어보드',
+      h: 1640, dark: 'match-detail-dark', banner: matchBanner, group: '경기', name: 'S3 경기 상세 · 스코어보드',
       desc: '스코어와 전후반, 라운드 막대 밑에 탭 셋을 둬요. 스코어보드는 팀마다 라운드당 전투점수 순이고, 친구는 요원 얼굴에 표시가 붙어요.',
       note: '"나"를 누르면 내 프로필, 친구 "민석"을 누르면 친구 프로필이 열려요.',
       hot: [
         BACK, roundsTab, mineTab,
-        { r: [28, 587, 222, 76], go: 'my-profile', label: '내 줄 (나)' },
+        { r: [28, 587, 222, 76], go: 'my-profile', reuse: true, label: '내 줄(나)' },
         { r: [28, 748, 282, 77], go: 'friend-profile', label: '친구 민석' },
       ],
     },
     'match-rounds': {
-      h: 1884, banner: matchBanner, group: '경기', name: 'S3 경기 상세 · 라운드',
+      h: 1886, banner: matchBanner, group: '경기', name: 'S3 경기 상세 · 라운드',
       desc: '첫 킬을 낸 라운드를 몇 번 이겼는지, 공격과 수비 승패를 먼저 요약해요. 라운드를 골라 두 팀의 구매와 킬 순서를 보고, 맨 밑에서 구매 유형별 승패를 봐요.',
       hot: [BACK, scoreTab, mineTab],
     },
@@ -540,12 +545,12 @@
     },
     'ping-detail': {
       h: 1600, group: '친구', name: '파티 모집 초대',
-      desc: '맨 위에 시각을 크게 두고 친구마다 답을 적어요. 받은 초대에는 갈게요 · 다른 시간 · 못 가요로 답해요.',
+      desc: '맨 위에 시각을 크게 두고 친구마다 답을 적어요. 받은 초대에는 맨 밑의 갈게요, 다른 시간, 못 가요 버튼으로 답해요.',
       hot: [BACK],
     },
     'friend-profile': {
       h: 2888, banner: profileBanner, group: '친구', name: 'S5 친구 프로필',
-      desc: '같이 뛴 경기와 승패를 맨 위에 둬요. 나와 비교는 내 리포트 기간 값을 이 친구와 나란히 놓고, 전적을 공개한 친구만 볼 수 있어요.',
+      desc: '같이 뛴 경기와 승패를 맨 위에 둬요. 나와 비교는 내 리포트와 같은 기간으로 두 사람의 고정 지표를 나란히 놓아요. 전적을 공개하지 않은 친구면 같이 뛴 경기만 보여요.',
       hot: [
         BACK,
         { r: [22, 1745, 676, 293], go: 'friend-agents', label: '요원 카드' },
@@ -554,7 +559,7 @@
     },
     'friend-weapons': {
       h: 1714, group: '친구', name: 'S6 무기 · 친구 기록',
-      desc: '민석의 이번 액트 주력 무기 셋과 계열별 기록이에요. 친구 프로필의 무기 칸을 누르면 열려요.',
+      desc: '민석의 이번 액트 주력 무기 셋과 계열별 기록이에요. 친구 프로필의 무기 카드를 누르면 열려요.',
       hot: [BACK],
     },
     'friend-agents': {
@@ -580,18 +585,18 @@
     },
     agents: {
       h: 1600, group: '내 기록', name: 'S7 요원',
-      desc: '주 역할과 역할 비중, 요원별 승률과 첫 교전 지표예요. 승률은 50%를 넘으면 초록, 밑돌면 빨강이에요.',
+      desc: '주 역할과 역할 비중, 요원별 승률과 첫 교전 지표예요. 승률은 55%부터 파랑, 60%부터 주황으로 칠하고, 승패가 갈린 판이 5판보다 적으면 칠하지 않아요.',
       hot: [BACK],
     },
     settings: {
       h: 2738, tab: 'settings', group: '설정', name: 'S4 설정',
-      desc: '전적 공개, 알림, 파티 모집 알림, 표시, 데이터를 묶음마다 카드로 나눠요. 연동 해제는 카드 밖 맨 아래에 따로 두고, 그 밑에 비공식 고지를 둬요.',
+      desc: '계정부터 문의까지 일곱 묶음을 카드로 나눠요. 파티 모집 알림은 "오발있?" 카드에 있어요. 연동 해제는 카드 밖 맨 아래에 따로 두고, 그 밑에 비공식 고지를 둬요.',
       hot: [{ r: [22, 166, 676, 140], go: 'my-profile', label: '계정 줄' }],
     },
   };
 
   // 다크 캡처의 높이
-  const FILE_H = { 'home-dark': 2960, 'match-detail-dark': 1636 };
+  const FILE_H = { 'home-dark': 3024, 'match-detail-dark': 1640 };
 
   const TABS = [
     { id: 'home', label: '홈' },
@@ -795,6 +800,8 @@
   // 이동
   function act(h) {
     if (h.back) return back();
+    // 앱처럼 내 프로필에서 들어온 경기 상세면 프로필을 또 쌓지 않고 그 프로필로 돌아간다
+    if (h.reuse && stack.length > 1 && stack[stack.length - 2].id === h.go) return back();
     if (h.finish) return go([entry(h.finish)], 'push');
     if (h.tab) return tab(h.tab);
     if (h.swap) {
@@ -926,7 +933,7 @@
     $('name').textContent = s.name;
     $('desc').textContent = s.desc;
     const note = $('note');
-    const darkNote = dark && !s.dark ? '다크 캡처는 홈과 경기 상세만 있어서 이 화면은 라이트로 보여요.' : '';
+    const darkNote = dark && !s.dark ? '다크 캡처는 홈과 경기 상세 스코어보드만 있어서 이 화면은 라이트로 보여요.' : '';
     const text = [s.note, darkNote].filter(Boolean).join(' ');
     note.hidden = !text;
     note.textContent = text;
@@ -951,7 +958,7 @@
     if (s.tab) {
       const li = document.createElement('li');
       li.className = 'empty';
-      li.textContent = '아래 탭바로 홈 · 경기 · 친구 · 설정을 오가요.';
+      li.textContent = '아래 탭바로 홈, 경기, 친구, 설정을 오가요.';
       taps.appendChild(li);
     }
 

@@ -35,4 +35,11 @@ class FirstImportTest {
         assertTrue(ImportProgress(total = 3, results = listOf(true, false, null)).isDone)
         assertTrue(ImportProgress(total = 0, results = emptyList()).isDone)
     }
+
+    // 목록부터 받지 못하면 몇 판을 받을지 몰라 total이 0이다. 끝난 것으로 보면 S0-4가 다시 시도 대신 "리포트 보기"를 띄운다.
+    @Test
+    fun `멈춘 첫 수집은 끝나지 않은 것이다`() {
+        assertFalse(ImportProgress(total = 0, results = emptyList(), stoppedBy = OvalitError.Offline).isDone)
+        assertFalse(ImportProgress(total = 3, results = listOf(true), stoppedBy = OvalitError.RiotBusy).isDone)
+    }
 }

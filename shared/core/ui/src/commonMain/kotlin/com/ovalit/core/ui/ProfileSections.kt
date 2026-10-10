@@ -318,6 +318,8 @@ fun ShotsBreakdown(shots: Shots) {
             }
         }
         Spacer(Modifier.height(12.dp))
+        // 부위마다 따로 반올림해서 합이 99%나 101%일 수 있다. 합을 100에 맞추려고 한 칸을 고치면 머리 비율이 다른 화면의
+        // 헤드샷과 달라진다.
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             // 한 칸이라도 탄 수가 비율 옆에 안 들어가면 세 칸 모두 탄 수를 아래로 내린다. 한 칸만 내리면 그 칸만 높아진다.
             val typography = OvalitTheme.typography

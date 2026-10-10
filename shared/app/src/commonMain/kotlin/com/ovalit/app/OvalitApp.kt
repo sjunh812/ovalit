@@ -183,7 +183,7 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
     val toast = rememberOvalitToastState()
     val analytics = koinInject<Analytics>()
     val top = backStack.lastOrNull()
-    LaunchedEffect(top) { top?.let { analytics.screen(screenName(it)) } }
+    LaunchedEffect(top) { (top as? Screen)?.let { analytics.screen(screenName(it)) } }
 
     // 전환 중에 아래 화면이 어두워 보이게 하는 검은 바탕이다(OvalitTransitions). 화면이 모두 불투명해서 평소에는 안 보인다.
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
@@ -389,8 +389,9 @@ private fun rememberOpaqueEntryDecorator(): NavEntryDecorator<NavKey> {
 
 private val EdgeWidth = 1.dp
 
-// 사용 통계에 쓰는 화면 이름이다. 키를 그대로 쓰면 친구·경기 ID가 섞이고 릴리스에서는 난독화된 이름이 된다.
-private fun screenName(key: NavKey): String = when (key) {
+// 사용 통계에 쓰는 화면 이름이다. 키를 그대로 쓰면 친구·경기 ID가 섞이고 릴리스에서는 난독화된 이름이 된다. Screen을 받아
+// else 없이 갈라서 새 화면을 표에 빠뜨리면 컴파일이 멈춘다.
+private fun screenName(key: Screen): String = when (key) {
     Intro -> "intro"
     Consent -> "consent"
     Import -> "import"
@@ -408,7 +409,6 @@ private fun screenName(key: NavKey): String = when (key) {
     is PingDetail -> "ping_detail"
     is FriendRanking -> "friend_ranking"
     Settings -> "settings"
-    else -> "other"
 }
 
 // 전환 중에 같은 줄을 두 번 누르면 같은 화면이 두 번 쌓인다. 같은 키가 둘이면 저장 상태 키가 겹쳐 앱이 죽는다.

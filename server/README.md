@@ -70,7 +70,7 @@ npm run typecheck
 | POST | `/auth/logout` | 필요 | 이 세션을 끊습니다 |
 | GET | `/me` | 필요 | `{puuid, gameName, tagLine, statsPublic}` |
 | PATCH | `/me` | 필요 | `{statsPublic}` |
-| DELETE | `/me` | 필요 | 연동 해제. 세션, 친구, 요청, 초대, 오발있, 기기 토큰이 같이 지워집니다 |
+| DELETE | `/me` | 필요 | 연동 해제. 세션, 친구, 요청, 초대, 오발있, 기기 토큰이 같이 지워집니다. 띄워 둔 오발있이 살아 있으면 불린 친구에게 `ping_cancel`이 갑니다 |
 | PUT | `/me/push-token` | 필요 | `{token}`. FCM 기기 토큰을 등록합니다. 다른 계정이 쓰던 토큰이면 옮겨 오고, 사람마다 최근 셋만 둡니다 |
 | DELETE | `/me/push-token` | 필요 | `{token}`. 내 토큰일 때만 지우고 없어도 204입니다. 로그아웃하기 전에 부릅니다 |
 | GET | `/content` | 필요 | VAL-CONTENT(ko-KR). 6시간 담아 둡니다 |
@@ -151,7 +151,7 @@ TTL 1시간이고, 주간 리포트는 `NORMAL`입니다. 이름 목록은 쉼�
 | `ping_new` | 불려 간 친구 | `pingId`, `startsAt`, `hostName`, `others`(같이 불린 친구 이름. 없으면 빈 문자열) |
 | `ping_reply` | 호스트 | `pingId`, `startsAt`, `memberName`, `answer`, `proposedAt`(없으면 빈 문자열) |
 | `ping_time` | 불려 간 친구 | `pingId`, `startsAt`(새 시각), `hostName` |
-| `ping_cancel` | 불려 간 친구 | `pingId`, `hostName` |
+| `ping_cancel` | 불려 간 친구. 호스트가 취소하거나 연동을 해제했을 때 | `pingId`, `hostName` |
 | `ping_remind` | 호스트와 `yes`인 친구 | `pingId`, `startsAt`, `names`(호스트, `yes`인 친구 순서) |
 | `weekly_report` | `weekly_report` 주제를 구독한 기기 | 없음 |
 

@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { AppEnv, User } from "../env";
 import { ApiError } from "../errors";
+import { notify } from "../push";
 import { requireSession } from "../session";
 import { jsonBody, text } from "../validate";
 
@@ -49,10 +50,24 @@ me.patch("/", async (c) => {
 
 /**
  * 연동 해제입니다. 사용자 한 줄을 지우면 세션, 친구, 요청, 초대, ㅇㅂㅇ과 불려 간 자리, 기기 토큰이 스키마의
- * CASCADE로 같이 지워집니다.
+ * CASCADE로 같이 지워집니다. 띄워 둔 ㅇㅂㅇ이 살아 있으면 불려 간 친구에게 호스트가 취소했을 때와 같은 알림을 보냅니다.
  */
 me.delete("/", async (c) => {
-  await c.env.DB.prepare("DELETE FROM users WHERE id = ?").bind(c.var.user.id).run();
+  const db = c.env.DB;
+  const user = c.var.user;
+  // 지운 뒤에는 누구를 불렀는지 알 수 없어 먼저 읽는다
+  const { results: invited } = await db
+    .prepare(
+      `SELECT m.ping_id, m.user_id FROM pings p JOIN ping_members m ON m.ping_id = p.id
+       WHERE p.host = ? AND p.canceled = 0 AND p.expires_at > ?`,
+    )
+    .bind(user.id, Date.now())
+    .all<{ ping_id: string; user_id: number }>();
+  await db.prepare("DELETE FROM users WHERE id = ?").bind(user.id).run();
+  notify(
+    c,
+    invited.map((row) => ({ userId: row.user_id, data: { type: "ping_cancel", pingId: row.ping_id, hostName: user.gameName } })),
+  );
   return c.body(null, 204);
 });
 

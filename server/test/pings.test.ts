@@ -809,6 +809,38 @@ describe("알림", () => {
     for (const message of sent) expect(message.data).toEqual({ type: "ping_cancel", pingId: ping.id, hostName: "host" });
   });
 
+  it("호스트가 연동을 해제하면 살아 있는 오발있에 불린 친구들에게 취소 알림이 간다", async () => {
+    const t = withPush();
+    const sent = fakeFcm(t);
+    const host = await t.login("host");
+    const a = await friendOf(t, host);
+    const b = await friendOf(t, host);
+    const tokens = [await registerToken(t, a), await registerToken(t, b)];
+    const canceled = await open(t, host, [a]);
+    await t.call("DELETE", `/pings/${canceled.id}`, host.token);
+    const ping = await open(t, host, [a, b]);
+    await reply(t, b, ping, "no");
+
+    sent.length = 0;
+    expect((await t.call("DELETE", "/me", host.token)).status).toBe(204);
+    expect(sent.map((message) => message.token).sort()).toEqual([...tokens].sort());
+    for (const message of sent) expect(message.data).toEqual({ type: "ping_cancel", pingId: ping.id, hostName: "host" });
+    expect(await visible(t, a)).toEqual([]);
+  });
+
+  it("불려 간 친구가 연동을 해제하면 아무에게도 알리지 않는다", async () => {
+    const t = withPush();
+    const sent = fakeFcm(t);
+    const host = await t.login("host");
+    const friend = await friendOf(t, host);
+    await registerToken(t, host);
+    await open(t, host, [friend]);
+
+    sent.length = 0;
+    expect((await t.call("DELETE", "/me", friend.token)).status).toBe(204);
+    expect(sent).toEqual([]);
+  });
+
   it("FCM이 받을 수 없다고 한 토큰은 지우고 보낸 내용이 틀렸다는 응답에는 남긴다", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     const t = withPush();

@@ -9,8 +9,8 @@ import { clearAuthQuotas } from "../src/routes/auth";
 import { clearUsedStates } from "../src/state";
 import { clearRiotBlocks } from "../src/upstream";
 
-// 실제 키는 쓰지 않는다. wrangler가 .dev.vars를 읽어 오더라도 여기 값으로 덮어쓴다. RSO_CLIENT_SECRET이 있으면
-// /auth/dev가 닫혀서 login()을 못 쓰니 비워 두고, RSO를 보는 테스트만 넣는다.
+// 실제 키는 쓰지 않는다. wrangler가 .dev.vars를 읽어 오더라도 여기 값으로 덮어쓴다.
+// RSO_CLIENT_SECRET이 있으면 /auth/dev가 닫혀서 login()을 못 쓰니 비워 두고, RSO를 보는 테스트만 넣는다.
 const TEST_SECRETS = {
   RIOT_API_KEY: "test-riot-key",
   RSO_CLIENT_ID: "test-client",
@@ -128,9 +128,9 @@ export interface FixturePlayer {
 }
 
 /**
- * VAL-MATCH-V1 모양을 흉내 낸 경기입니다. 앞 절반이 Blue, 뒤 절반이 Red이고 라운드마다 i번째가
- * 맞은편 i번째를 잡습니다. Blue에는 앱을 안 쓰는 코치가 한 명 붙습니다. 가리기 테스트가 킬, 피해량,
- * 라운드 기록, 코치 자리의 PUUID까지 보게 합니다.
+ * VAL-MATCH-V1 모양을 흉내 낸 경기입니다.
+ * 앞 절반이 Blue, 뒤 절반이 Red이고 라운드마다 i번째가 맞은편 i번째를 잡습니다. Blue에는 앱을 안 쓰는 코치가 한 명 붙습니다.
+ * 가리기 테스트가 킬, 피해량, 라운드 기록, 코치 자리의 PUUID까지 보게 합니다.
  */
 export function matchFixture(matchId: string, players: FixturePlayer[], rounds = 2) {
   const half = Math.ceil(players.length / 2);
@@ -228,8 +228,9 @@ export async function addFriends(user: TestUser, n: number): Promise<void> {
 }
 
 /**
- * D1을 감싸 준비한 SQL을 `sql`에 적어 둡니다. `failBatch`를 주면 `batch`가 그 에러로 실패하고, `failSql`을 주면 그 패턴에
- * 맞는 SQL을 돌릴 때 실패합니다. 로그인처럼 `batch`를 쓰는 준비를 마친 뒤 `t.env.DB`에 넣어 씁니다.
+ * D1을 감싸 준비한 SQL을 `sql`에 적어 둡니다.
+ * `failBatch`를 주면 `batch`가 그 에러로 실패하고, `failSql`을 주면 그 패턴에 맞는 SQL을 돌릴 때 실패합니다.
+ * 로그인처럼 `batch`를 쓰는 준비를 마친 뒤 `t.env.DB`에 넣어 씁니다.
  */
 export function watchDb(
   db: D1Database,

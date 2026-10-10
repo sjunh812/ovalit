@@ -15,8 +15,9 @@ CREATE INDEX pings_host_expires_at ON pings (host, expires_at);
 CREATE INDEX pings_starts_at ON pings (starts_at);
 
 -- 제안한 시각은 "다른 시간"에만 있다. 시간을 바꾸면 모두에게 다시 물으니 그때 같이 비운다.
--- position은 호스트가 고른 순서로 1부터 센다. 나와 친구가 아닌 사람의 PUUID를 anon-N으로 가릴 때 N으로 쓰니,
--- 앞사람이 빠져도 고치지 않는다. 그래야 같은 사람이 그 ㅇㅂㅇ 안에서 늘 같은 이름으로 보인다.
+-- position은 호스트가 고른 순서로 1부터 센다.
+-- 나와 친구가 아닌 사람의 PUUID를 anon-N으로 가릴 때 N으로 쓰니, 앞사람이 빠져도 고치지 않는다.
+-- 그래야 같은 사람이 그 ㅇㅂㅇ 안에서 늘 같은 이름으로 보인다.
 CREATE TABLE ping_members (
   ping_id TEXT NOT NULL REFERENCES pings (id) ON DELETE CASCADE,
   user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,

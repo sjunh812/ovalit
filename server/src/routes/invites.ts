@@ -17,8 +17,8 @@ export const invites = new Hono<AppEnv>();
 invites.use(requireSession);
 
 /**
- * 단톡방에 한 번 올린 링크를 여럿이 누를 수 있게 만료 전까지 요청 [INVITE_REQUEST_LIMIT]개를 만들 때까지 씁니다. 기한이 하루
- * 넘게 남고 다 쓰지 않은 링크가 있으면 새로 만들지 않고 그 링크를 200으로 돌려주고, 새로 만들면 201입니다.
+ * 단톡방에 한 번 올린 링크를 여럿이 누를 수 있게 만료 전까지 요청 [INVITE_REQUEST_LIMIT]개를 만들 때까지 씁니다.
+ * 기한이 하루 넘게 남고 다 쓰지 않은 링크가 있으면 새로 만들지 않고 그 링크를 200으로 돌려주고, 새로 만들면 201입니다.
  */
 invites.post("/", async (c) => {
   const db = c.env.DB;

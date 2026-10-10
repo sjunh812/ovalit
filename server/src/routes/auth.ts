@@ -29,8 +29,8 @@ const RETURN_ERRORS = new Set([...CALLBACK_ERRORS, "rso_failed"]);
 // 세션 토큰이 담긴 응답이다. 중간 프록시나 기기 캐시에 남지 않게 한다.
 const NO_STORE = { "Cache-Control": "no-store" };
 
-// 로그인 시작과 콜백은 세션 없이 열려 있고 콜백은 Riot을 부른다. 그래서 IP마다 센다. isolate 메모리에서 세니 막는다기보다
-// 줄이는 장치다. 휴대폰 통신사는 여럿이 IP 하나를 같이 쓰니 넉넉히 둔다. 시작 기준선이다.
+// 로그인 시작과 콜백은 세션 없이 열려 있고 콜백은 Riot을 부른다. 그래서 IP마다 센다.
+// isolate 메모리에서 세니 막는다기보다 줄이는 장치다. 휴대폰 통신사는 여럿이 IP 하나를 같이 쓰니 넉넉히 둔다. 시작 기준선이다.
 const perIp = new Quota(20, 60_000);
 
 export const auth = new Hono<AppEnv>();
@@ -60,8 +60,8 @@ function appReturn(c: Context, query: string): string {
 }
 
 /**
- * 앱이 만든 verifier의 해시(challenge)를 서명한 state에 담아 Riot 로그인으로 보냅니다. 콜백이 앱으로 넘기는
- * 일회용 코드를 누가 가로채도 verifier가 없으면 세션으로 바꿀 수 없습니다. D1에는 아무것도 쓰지 않습니다.
+ * 앱이 만든 verifier의 해시(challenge)를 서명한 state에 담아 Riot 로그인으로 보냅니다.
+ * 콜백이 앱으로 넘기는 일회용 코드를 누가 가로채도 verifier가 없으면 세션으로 바꿀 수 없습니다. D1에는 아무것도 쓰지 않습니다.
  */
 auth.get("/rso/start", async (c) => {
   const config = rsoConfig(c.env);
@@ -104,8 +104,8 @@ auth.get("/rso/callback", async (c) => {
 });
 
 /**
- * 로그인을 마친 뒤 앱이 열리지 않았을 때 브라우저에 보이는 페이지입니다. 앱이 없거나 App Link 검증이 아직 안 된
- * 기기에서 여기에 머뭅니다. 버튼은 우리 패키지를 지정한 intent 주소라 다른 앱이 받지 못합니다.
+ * 로그인을 마친 뒤 앱이 열리지 않았을 때 브라우저에 보이는 페이지입니다.
+ * 앱이 없거나 App Link 검증이 아직 안 된 기기에서 여기에 머뭅니다. 버튼은 우리 패키지를 지정한 intent 주소라 다른 앱이 받지 못합니다.
  *
  * 코드는 이미 주소창에 있는 값이라 페이지에 한 번 더 적어도 더 새지 않습니다. 모양이 맞을 때만 버튼에 넣습니다.
  */
@@ -143,12 +143,12 @@ auth.post("/session", async (c) => {
 });
 
 /**
- * RSO 없이 친구 흐름을 로컬에서 돌려 보는 문입니다. `DEV_LOGIN`이 `"true"`이고 로컬 주소로 들어왔을 때만
- * 열립니다. 아무 PUUID로나 로그인할 수 있어서 배포 환경에서 열리면 남의 전적을 볼 수 있게 됩니다.
+ * RSO 없이 친구 흐름을 로컬에서 돌려 보는 문입니다. `DEV_LOGIN`이 `"true"`이고 로컬 주소로 들어왔을 때만 열립니다.
+ * 아무 PUUID로나 로그인할 수 있어서 배포 환경에서 열리면 남의 전적을 볼 수 있습니다.
  *
- * 로컬 주소는 요청의 Host 헤더로 가리므로 보내는 쪽이 얼마든지 꾸밀 수 있습니다. 그래서 `RSO_CLIENT_SECRET`이
- * 있으면 `DEV_LOGIN`과 상관없이 닫습니다. 배포 환경에는 그 값이 꼭 있으니 `DEV_LOGIN`을 실수로 넣어도 열리지
- * 않습니다. `wrangler dev`도 localhost에만 붙여 둬야 합니다.
+ * 로컬 주소는 요청의 Host 헤더로 가리므로 보내는 쪽이 얼마든지 꾸밀 수 있습니다.
+ * 그래서 `RSO_CLIENT_SECRET`이 있으면 `DEV_LOGIN`과 상관없이 닫습니다.
+ * 배포 환경에는 그 값이 꼭 있으니 `DEV_LOGIN`을 실수로 넣어도 열리지 않습니다. `wrangler dev`도 localhost에만 붙여 둬야 합니다.
  */
 auth.post("/dev", async (c) => {
   const open = c.env.DEV_LOGIN === "true" && !c.env.RSO_CLIENT_SECRET && DEV_HOSTS.has(new URL(c.req.url).hostname);

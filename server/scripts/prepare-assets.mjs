@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * 콘텐츠 카탈로그 압축 파일에서 플레이어 카드를 꺼내 public/cards/에 둡니다. 정적 에셋으로 나가서
- * Worker를 거치지 않습니다. 카탈로그가 바뀌면 다시 돌립니다. 결과는 저장소에 올리지 않습니다.
+ * 콘텐츠 카탈로그 압축 파일에서 플레이어 카드를 꺼내 public/cards/에 둡니다. 정적 에셋으로 나가서 Worker를 거치지 않습니다.
+ * 카탈로그가 바뀌면 다시 돌립니다. 결과는 저장소에 올리지 않습니다.
  *
  *     node scripts/prepare-assets.mjs <catalog.zip>
  *
- * 카탈로그 파일 이름은 대문자 UUID지만 여기서는 소문자로 맞춥니다(`/cards/{uuid}_small.png`,
- * `/cards/{uuid}_wide.png`). 경기 응답의 `players[].playerCard`가 어느 쪽으로 오든 앱이 소문자로 바꿔 부릅니다.
+ * 카탈로그 파일 이름은 대문자 UUID지만 여기서는 소문자로 맞춥니다(`/cards/{uuid}_small.png`, `/cards/{uuid}_wide.png`).
+ * 경기 응답의 `players[].playerCard`가 어느 쪽으로 오든 앱이 소문자로 바꿔 부릅니다.
  */
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readdirSync, renameSync, rmSync } from "node:fs";

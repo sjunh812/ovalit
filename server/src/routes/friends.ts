@@ -80,8 +80,9 @@ friends.post("/requests", async (c) => {
 });
 
 /**
- * 받은 요청을 수락합니다. 두 사람 중 한쪽이라도 친구가 [FRIEND_CAP]명이면 409 `friends_full`(내 쪽)이나
- * `their_friends_full`(상대 쪽)이고, 요청은 지우지 않고 남겨 친구를 정리한 뒤 다시 수락할 수 있게 합니다.
+ * 받은 요청을 수락합니다.
+ * 두 사람 중 한쪽이라도 친구가 [FRIEND_CAP]명이면 409 `friends_full`(내 쪽)이나 `their_friends_full`(상대 쪽)이고,
+ * 요청은 지우지 않고 남겨 친구를 정리한 뒤 다시 수락할 수 있게 합니다.
  */
 friends.post("/requests/:puuid/accept", async (c) => {
   const other = validate.puuid(c.req.param("puuid"));
@@ -89,8 +90,8 @@ friends.post("/requests/:puuid/accept", async (c) => {
   const db = c.env.DB;
   const otherId = "(SELECT id FROM users WHERE puuid = ?1)";
   const befriended = `EXISTS (SELECT 1 FROM friendships WHERE user_a = MIN(${otherId}, ?2) AND user_b = MAX(${otherId}, ?2))`;
-  // 한 배치는 한 트랜잭션으로 돈다. 요청이 있고 두 사람 모두 자리가 있을 때만 친구가 된다. 요청은 친구가 됐을 때만 양쪽을
-  // 같이 지운다. 동시에 여러 요청을 수락해도 한도 검사와 넣기가 한 문장이라 한도를 넘지 않는다.
+  // 한 배치는 한 트랜잭션으로 돈다. 요청이 있고 두 사람 모두 자리가 있을 때만 친구가 된다.
+  // 요청은 친구가 됐을 때만 양쪽을 같이 지운다. 동시에 여러 요청을 수락해도 한도 검사와 넣기가 한 문장이라 한도를 넘지 않는다.
   const [, forward] = await db.batch([
     db
       .prepare(

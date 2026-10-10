@@ -49,8 +49,9 @@ async function cleanUp(db: D1Database, now: number): Promise<void> {
 }
 
 /**
- * 곧 시작하는 ㅇㅂㅇ을 호스트와 가기로 한 친구에게 알립니다. 사람마다 고른 시간(`users.remind_before`) 안에 들어오면 한 번만
- * 보내고, 0을 고른 사람에게는 보내지 않습니다. 아무도 가기로 하지 않았으면 호스트에게도 알리지 않습니다.
+ * 곧 시작하는 ㅇㅂㅇ을 호스트와 가기로 한 친구에게 알립니다.
+ * 사람마다 고른 시간(`users.remind_before`) 안에 들어오면 한 번만 보내고, 0을 고른 사람에게는 보내지 않습니다.
+ * 아무도 가기로 하지 않았으면 호스트에게도 알리지 않습니다.
  */
 async function remind(db: D1Database, push: Push, now: number): Promise<void> {
   const { results: due } = await db

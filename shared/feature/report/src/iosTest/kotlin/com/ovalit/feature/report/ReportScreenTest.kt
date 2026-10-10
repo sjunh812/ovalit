@@ -747,6 +747,36 @@ class ReportScreenTest {
         onNodeWithText("이긴 판이 더 많았던", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
+    // 그 주에 무엇이 달라졌는지를 숫자보다 먼저 읽히게 헤드라인만 위로 올렸다. 근거 줄은 숫자와 같이 읽히게 고정 칸 밑에 둔다.
+    // 둘 다 제목과 선 없이 고정 칸과 한 카드에 둔다.
+    @Test
+    fun `짚을 점 헤드라인은 승패 칸과 고정 칸 사이에 두고 무기와 요원 줄은 고정 칸 밑에 둔다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
+
+        onNodeWithText("짚을 점", substring = true).assertDoesNotExist()
+        val record = onNodeWithText("5승 2패", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val headline = onNodeWithText("피해량이 평소보다 10 올랐어요").getUnclippedBoundsInRoot()
+        val firstCell = onNodeWithText("피해량").getUnclippedBoundsInRoot()
+        val lastCell = onNodeWithText("헤드샷").getUnclippedBoundsInRoot()
+        val weapon = onNode(noteRow("밴달", "118 → 140", "44라운드")).getUnclippedBoundsInRoot()
+        val trend = onNodeWithText("지난 8주 흐름", substring = true).getUnclippedBoundsInRoot()
+
+        assertTrue(headline.top >= record.bottom, "헤드라인이 승패 칸 위에 있다")
+        assertTrue(firstCell.top >= headline.bottom, "헤드라인이 고정 칸 밑에 있다")
+        assertTrue(weapon.top >= lastCell.bottom, "무기 줄이 고정 칸 위에 있다")
+        assertTrue(trend.top >= weapon.bottom, "흐름 입구가 무기 줄 위에 있다")
+        assertTrue(onNodeWithText("달라진 점").getUnclippedBoundsInRoot().top >= trend.bottom, "짚을 점이 고정 칸 카드 밖에 있다")
+    }
+
+    @Test
+    fun `짚을 점이 없으면 승패 칸 바로 밑에 고정 칸을 둔다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved.copy(note = null), catalog = NamedCatalog) }
+
+        onNodeWithText("평소보다", substring = true).assertDoesNotExist()
+        onNode(noteRow("밴달", "118 → 140", "44라운드")).assertDoesNotExist()
+        onNodeWithText("피해량").assertExists()
+    }
+
     // 최고 기록은 따로 줄을 두지 않고 헤드라인 한 문장에 넣는다
     @Test
     fun `이번 액트 주간 최고면 헤드라인에 적는다`() = runComposeUiTest {
@@ -939,16 +969,13 @@ class ReportScreenTest {
         onNodeWithText("팬텀을 든 라운드는 헤드샷이 밴달보다 11%p 높아요").assertExists()
     }
 
-    // 헤드라인과 첫 줄이 붙으면 문장과 근거가 한 덩어리로 뭉개진다
+    // 줄끼리는 한 묶음으로 읽히게 고정 칸과의 간격보다 덜 띄운다
     @Test
-    fun `짚을 점 헤드라인과 첫 줄은 10dp 줄끼리는 8dp 띄운다`() = runComposeUiTest {
+    fun `짚을 점 줄끼리는 8dp 띄운다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
 
-        val headline = onNodeWithText("피해량이 평소보다 10 올랐어요").getUnclippedBoundsInRoot()
         val first = onNode(noteRow("밴달", "118 → 140", "44라운드")).getUnclippedBoundsInRoot()
         val second = onNode(noteRow("제트", "124 → 146", "4판")).getUnclippedBoundsInRoot()
-        assertEquals(10.dp, first.top - headline.bottom)
-        // 줄끼리는 한 묶음으로 읽히게 덜 띄운다
         assertEquals(8.dp, second.top - first.bottom)
     }
 
@@ -1015,18 +1042,6 @@ class ReportScreenTest {
 
         onNodeWithText("추천", substring = true, useUnmergedTree = true).assertDoesNotExist()
         onNodeWithText("쓰세요", substring = true, useUnmergedTree = true).assertDoesNotExist()
-    }
-
-    // 짚을 점은 바로 위 숫자를 풀어 말하는 문장이라 제목과 선 없이 고정 칸 밑에 붙인다
-    @Test
-    fun `짚을 점은 제목 없이 고정 칸 바로 밑에 둔다`() = runComposeUiTest {
-        setContent { Report(ReportPreviewData.moved) }
-
-        onNodeWithText("짚을 점", substring = true).assertDoesNotExist()
-        val kda = onNodeWithText("KDA").getUnclippedBoundsInRoot()
-        val note = onNodeWithText("피해량이 평소보다 10 올랐어요").getUnclippedBoundsInRoot()
-        val dynamic = onNodeWithText("달라진 점").getUnclippedBoundsInRoot()
-        assertTrue(kda.bottom <= note.top && note.bottom <= dynamic.top)
     }
 
     @Test

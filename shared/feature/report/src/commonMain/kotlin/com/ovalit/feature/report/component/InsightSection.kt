@@ -10,8 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -31,14 +30,15 @@ import com.ovalit.core.model.ReportPeriod
 import com.ovalit.core.model.Role
 import com.ovalit.core.model.Side
 import com.ovalit.core.ui.Josa
+import com.ovalit.core.ui.WRAPPING_SEPARATOR
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.agentName
+import com.ovalit.core.ui.keepTogether
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.mapName
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.column_win_rate
-import com.ovalit.core.ui.resources.list_separator
 import com.ovalit.core.ui.resources.metric_damage
 import com.ovalit.core.ui.resources.metric_headshot
 import com.ovalit.core.ui.valueText
@@ -151,7 +151,7 @@ internal fun InsightSection(
         )
         Spacer(Modifier.height(6.dp))
         OvalitText(text = headline, style = headlineStyle())
-        InsightTable(leadName, otherName, rows, format, Modifier.padding(top = OvalitSpacing.xs))
+        InsightLines(leadName, otherName, rows, format, Modifier.padding(top = OvalitSpacing.xs))
         // 왜 이 지표를 먼저 봤는지는 숫자 칸과 다른 이야기라 붙이지 않고 띄운다
         reason?.let {
             OvalitText(
@@ -164,60 +164,50 @@ internal fun InsightSection(
     }
 }
 
-/** 표의 한 줄입니다. 기간 이름과 그 기간의 두 쪽입니다. */
+/** 기간 한 줄입니다. 기간 이름과 그 기간의 두 쪽입니다. */
 private class InsightRow(val period: String, val lead: InsightPart, val other: InsightPart)
 
-// 열은 두 쪽, 줄은 이번 액트와 리포트 기간이다. 옆으로 두 쪽을, 위아래로 액트와 이번 주를 견준다.
+// 기간마다 한 줄로 "이번 액트 공격 72% · 수비 35%"를 적고, 그 기간 전체 표본을 줄 끝에 옅게 붙인다.
+// 줄끼리 위아래로 놓여 액트와 이번 주를 견주고, 기간 이름 폭을 맞춰 두 줄의 값이 같은 자리에서 시작한다.
 // 값을 가장 진하고 굵게, 쪽 이름을 그다음, 기간과 표본을 가장 옅게 칠한다.
 // 이름이 가장 진하면 "공격", "수비"만 눈에 들어오고 정작 견줄 숫자가 묻힌다.
 @Composable
-private fun InsightTable(leadName: String, otherName: String, rows: List<InsightRow>, format: MetricFormat, modifier: Modifier) {
+private fun InsightLines(leadName: String, otherName: String, rows: List<InsightRow>, format: MetricFormat, modifier: Modifier) {
     val colors = OvalitTheme.colors
     val caption = OvalitTheme.typography.caption
     val measurer = rememberTextMeasurer()
-    // 기간 열을 가장 긴 기간 이름에 맞춰 두 쪽 열이 줄마다 같은 자리에서 시작한다
     val periodWidth = with(LocalDensity.current) { rows.maxOf { measurer.measure(it.period, caption).size.width }.toDp() }
-    val separator = stringResource(CoreUiRes.string.list_separator)
-    val values = rows.map { listOf(format.valueText(it.lead.value), format.valueText(it.other.value)) }
-    val samples = rows.map { listOf(it.lead.sampleText(), it.other.sampleText()) }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(OvalitSpacing.xs)) {
-        // 쪽 이름은 줄마다 화면 읽기 프로그램에 같이 읽히게 해서 머리 줄은 읽지 않는다
-        Row(modifier = Modifier.clearAndSetSemantics {}) {
-            Spacer(Modifier.width(periodWidth + TableGap))
-            OvalitText(text = leadName, modifier = Modifier.weight(1f), style = caption, color = colors.t2)
-            Spacer(Modifier.width(TableGap))
-            OvalitText(text = otherName, modifier = Modifier.weight(1f), style = caption, color = colors.t2)
-        }
-        rows.forEachIndexed { index, row ->
-            val names = listOf(leadName, otherName)
-            val description = row.period + " " + names.indices.joinToString(separator) { side ->
-                "${names[side]} ${values[index][side]} ${samples[index][side]}"
-            }
-            Row(modifier = Modifier.clearAndSetSemantics { contentDescription = description }) {
-                OvalitText(
-                    text = row.period,
-                    modifier = Modifier.width(periodWidth).alignByBaseline(),
-                    style = caption,
-                    color = colors.t3,
-                )
-                names.indices.forEach { side ->
-                    Spacer(Modifier.width(TableGap))
-                    // 좁으면 표본만 다음 줄로 내린다
-                    OvalitText(
-                        text = buildAnnotatedString {
-                            withStyle(SpanStyle(color = colors.t1, fontWeight = FontWeight.SemiBold)) { append(values[index][side]) }
-                            withStyle(SpanStyle(color = colors.t3, fontSize = caption.fontSize)) { append(" " + samples[index][side]) }
-                        },
-                        modifier = Modifier.weight(1f).alignByBaseline(),
-                        style = OvalitTheme.typography.body,
-                    )
+        rows.forEach { row ->
+            val values = buildAnnotatedString {
+                listOf(leadName to row.lead, otherName to row.other).forEachIndexed { index, (name, part) ->
+                    if (index > 0) withStyle(SpanStyle(color = colors.t4)) { append(WRAPPING_SEPARATOR) }
+                    append(name.keepTogether() + NBSP)
+                    withStyle(SpanStyle(color = colors.t1, fontWeight = FontWeight.SemiBold)) { append(format.valueText(part.value)) }
                 }
+            }
+            Row(modifier = Modifier.semantics(mergeDescendants = true) {}) {
+                OvalitText(text = row.period, modifier = Modifier.width(periodWidth).alignByBaseline(), style = caption, color = colors.t3)
+                Spacer(Modifier.width(LineGap))
+                OvalitText(text = values, modifier = Modifier.weight(1f).alignByBaseline(), style = OvalitTheme.typography.body, color = colors.t2)
+                Spacer(Modifier.width(LineGap))
+                OvalitText(text = totalSample(row.lead, row.other), modifier = Modifier.alignByBaseline(), style = caption, color = colors.t3)
             }
         }
     }
 }
 
-private val TableGap = 12.dp
+private val LineGap = 12.dp
+
+private const val NBSP = "\u00a0"
+
+// 기간 전체 표본이다. 두 쪽을 더하면 공수는 그 기간에 뛴 라운드 전부, 요원과 맵은 견준 판 전부다.
+@Composable
+private fun totalSample(lead: InsightPart, other: InsightPart): String = when (lead.subject) {
+    is InsightSubject.OnSide, is InsightSubject.WithWeapon, is InsightSubject.OtherWeapons ->
+        stringResource(Res.string.insight_rounds, lead.rounds + other.rounds)
+    else -> stringResource(Res.string.insight_matches, lead.matches + other.matches)
+}
 
 @Composable
 private fun InsightSubject.name(catalog: ContentCatalog): String = when (this) {
@@ -238,13 +228,6 @@ private fun InsightSubject.name(catalog: ContentCatalog): String = when (this) {
     InsightSubject.EarlyInSession -> stringResource(Res.string.insight_session_early)
 }
 
-// 공수와 무기는 라운드로, 요원과 역할과 맵은 판으로 센다
-@Composable
-private fun InsightPart.sampleText(): String = when (subject) {
-    is InsightSubject.OnSide, is InsightSubject.WithWeapon, is InsightSubject.OtherWeapons ->
-        stringResource(Res.string.insight_rounds, rounds)
-    else -> stringResource(Res.string.insight_matches, matches)
-}
 
 
 private val InsightMetric.label: StringResource

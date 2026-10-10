@@ -12,6 +12,7 @@
     <string name="filter_all">すべて</string>
     <string name="filter_reset">リセット</string>
     <string name="empty_queue">このモードでプレイした試合はありません</string>
+    <string name="empty_stored">保存された試合がありません · ホームで読み込み直せます</string>
     <string name="empty_filter">条件に合う試合はありません</string>
 
     <!-- S3 경기 상세 -->

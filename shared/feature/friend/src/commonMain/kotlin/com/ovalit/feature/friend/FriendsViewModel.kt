@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -75,6 +76,7 @@ class FriendsViewModel(
     val timeZone: TimeZone,
     private val analytics: Analytics = NoAnalytics,
     computation: CoroutineContext = Dispatchers.Default,
+    minuteChanges: Flow<Unit> = flowOf(Unit),
 ) : ViewModel() {
 
     private val refreshing = MutableStateFlow(false)
@@ -99,7 +101,8 @@ class FriendsViewModel(
         friendRows,
         friendRepository.requests,
         friendRepository.rival,
-        pingRepository.pings,
+        // 초대 줄의 시각 글자가 분마다 흐르게 지금을 같이 받는다. 친구 리포트는 다시 세지 않는다.
+        combine(pingRepository.pings, minuteChanges) { pings, _ -> pings },
         accountRepository.account,
     ) { rows, requests, rival, pings, account ->
         FriendsUiState.Success(
@@ -156,12 +159,14 @@ class FriendsViewModel(
     /** 지금부터 고를 수 있는 시각입니다. 시트를 열 때마다 다시 셉니다. */
     fun pingSlots(): List<Instant> = pingSlots(clock.now(), timeZone)
 
-    fun now(): Instant = clock.now()
-
-    /** 서버가 답하면 막혔든 보냈든 [onResult]를 부릅니다. 보내다 실패하면 부르지 않고 안내만 띄워 시트를 그대로 둡니다. */
-    fun sendPing(friends: List<PlayerId>, startsAt: Instant, onResult: (PingSendResult) -> Unit) {
+    /**
+     * 서버가 답하면 막혔든 보냈든 [onResult]를 부릅니다. 보내다 실패하면 부르지 않고 안내만 띄워 시트를 그대로 둡니다.
+     *
+     * @param startsAt `null`이면 "지금"이라 보내는 순간의 시각을 씁니다.
+     */
+    fun sendPing(friends: List<PlayerId>, startsAt: Instant?, onResult: (PingSendResult) -> Unit) {
         viewModelScope.launchNotifying(failures, FailedAction.PING_SEND) {
-            val result = pingRepository.send(friends, startsAt)
+            val result = pingRepository.send(friends, startsAt ?: clock.now())
             if (result == PingSendResult.SENT) analytics.log(AnalyticsEvents.PING_SEND, mapOf("friend_count" to friends.size.toString()))
             // 보낸 것이 끝나기 전에는 부르기 버튼이 없으니, 이 결과는 그사이 다른 기기에서 보낸 경우다
             if (result == PingSendResult.ALREADY_ACTIVE) failures.send(FailureNotice(FailedAction.PING_ALREADY_ACTIVE))

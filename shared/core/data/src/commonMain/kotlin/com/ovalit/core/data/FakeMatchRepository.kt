@@ -64,7 +64,12 @@ class FakeMatchRepository(
 ) : MatchRepository {
 
     private val matches = MutableStateFlow(imported())
-    private val progress = MutableStateFlow<ImportProgress?>(null)
+
+    // 처음부터 경기가 차 있으니 앞서 첫 수집을 마친 것으로 둔다. 실제 저장소도 앱을 다시 켜면 마친 진행도를 기기에서 읽는다.
+    // 비워 두면 첫 수집을 마쳤는지 보는 곳(새 경기 확인, 당겨서 받기)마다 판단이 갈린다.
+    private val progress = MutableStateFlow<ImportProgress?>(
+        matches.value.let { saved -> ImportProgress(total = saved.size, results = saved.map { it.myTeamWon }) },
+    )
     private val newMatches = MutableStateFlow<NewMatchesProgress?>(null)
 
     // 마지막으로 경기 ID 목록을 본 시각이다. 그 뒤로 지난 시간만큼 새 경기가 끝난 것으로 친다.
@@ -108,8 +113,8 @@ class FakeMatchRepository(
         lock.withLock { if (generation == started) checked.value = clock.now() }
     }
 
-    // 처음부터 저장된 경기가 있으면 앞서 첫 수집을 마친 것으로 친다. 지운 뒤에는 경기도 진행도도 비어 다시 첫 수집을 기다린다.
-    private fun firstImportDone(): Boolean = progress.value?.isDone ?: matches.value.isNotEmpty()
+    // 지운 뒤에는 진행도가 비어 다시 첫 수집을 기다린다
+    private fun firstImportDone(): Boolean = progress.value?.isDone == true
 
     override suspend fun refresh(): Int {
         if (!firstImportDone()) return 0

@@ -462,7 +462,7 @@ internal fun PingComposeSheet(
     now: Instant,
     timeZone: TimeZone,
     tooMany: Boolean,
-    onSend: (List<PlayerId>, Instant) -> Unit,
+    onSend: (List<PlayerId>, Instant?) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val colors = OvalitTheme.colors
@@ -515,7 +515,9 @@ internal fun PingComposeSheet(
             enabled = picked.isNotEmpty() && !tooMany,
             onClick = {
                 haptics.confirm()
-                onSend(picked.map(::PlayerId), startsAt ?: now)
+                // "지금"은 시각을 비워 보낸다. 보내는 순간 ViewModel이 채운다. 화면에 들고 있는 지금은 목록이 바뀔 때만 다시 정해져
+                // 탭을 열어 둔 만큼 지난 시각이 되고, 서버는 1분 넘게 지난 시각을 받지 않는다.
+                onSend(picked.map(::PlayerId), startsAt)
             },
         )
     }

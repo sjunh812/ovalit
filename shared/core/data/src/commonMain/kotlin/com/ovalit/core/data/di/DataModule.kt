@@ -12,6 +12,7 @@ import com.ovalit.core.data.FakePushRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.NewMatchesWatcher
+import com.ovalit.core.data.SocialWatcher
 import com.ovalit.core.data.PingRepository
 import com.ovalit.core.data.PushRepository
 import com.ovalit.core.data.UserPreferencesRepository
@@ -47,6 +48,7 @@ fun dataModule(preferencesPath: () -> String, language: Flow<String> = flowOf("k
     single<ContentRepository> { FakeContentRepository(language) }
     // ImportScheduler는 앱 모듈이 넣는다
     single { NewMatchesWatcher(get(), get(), get(), get(ApplicationScope), analytics = get()) }
+    single { SocialWatcher(get(), get(), get(), get(ApplicationScope)) }
     single<UserPreferencesRepository> {
         DataStoreUserPreferencesRepository(createPreferencesDataStore(preferencesPath()))
     }

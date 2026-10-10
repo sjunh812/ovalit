@@ -65,6 +65,7 @@ import com.ovalit.core.ui.resources.loading
 import com.ovalit.feature.match.resources.Res
 import com.ovalit.feature.match.resources.empty_filter
 import com.ovalit.feature.match.resources.empty_queue
+import com.ovalit.feature.match.resources.empty_stored
 import com.ovalit.feature.match.resources.filter
 import com.ovalit.feature.match.resources.filter_active
 import com.ovalit.feature.match.resources.filter_agent
@@ -156,7 +157,13 @@ internal fun MatchesScreen(
                 if (uiState.days.isEmpty()) {
                     item {
                         OvalitText(
-                            text = stringResource(if (uiState.filter.isActive) Res.string.empty_filter else Res.string.empty_queue),
+                            text = stringResource(
+                                when {
+                                    uiState.noStoredMatches -> Res.string.empty_stored
+                                    uiState.filter.isActive -> Res.string.empty_filter
+                                    else -> Res.string.empty_queue
+                                },
+                            ),
                             modifier = Modifier.padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.xl),
                             style = OvalitTheme.typography.body,
                             color = colors.t2,

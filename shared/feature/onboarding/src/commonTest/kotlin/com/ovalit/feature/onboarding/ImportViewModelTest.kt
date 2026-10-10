@@ -46,6 +46,8 @@ class ImportViewModelTest {
     @Test
     fun `첫 수집이 진행되는 대로 받은 경기 수가 늘어난다`() = runTest {
         val matches = FakeMatchRepository(importDelay = Duration.ZERO)
+        // 연동하면 저장된 경기와 지난 진행도를 지운 뒤 첫 수집을 시작한다
+        matches.deleteAll()
         val viewModel = ImportViewModel(matches, InMemoryPreferences(), NoScheduler)
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
         assertNull(assertIs<ImportUiState.Success>(viewModel.uiState.value).progress)

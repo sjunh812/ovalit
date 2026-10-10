@@ -11,6 +11,7 @@
     <string name="filter_all">전체</string>
     <string name="filter_reset">초기화</string>
     <string name="empty_queue">이 큐로 뛴 경기가 없어요</string>
+    <string name="empty_stored">저장된 경기가 없어요 · 홈에서 다시 불러올 수 있어요</string>
     <string name="empty_filter">조건에 맞는 경기가 없어요</string>
 
     <!-- S3 경기 상세 -->

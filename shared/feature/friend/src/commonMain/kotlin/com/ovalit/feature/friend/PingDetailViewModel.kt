@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -56,13 +57,16 @@ class PingDetailViewModel(
     private val clock: Clock,
     val timeZone: TimeZone,
     private val analytics: Analytics = NoAnalytics,
+    minuteChanges: Flow<Unit> = flowOf(Unit),
 ) : ViewModel() {
 
+    // 분마다 다시 내보낸다. "31분 뒤"가 줄고, 시작 시각이 지나면 "시작했어요"로 바뀌어야 한다.
     val uiState: StateFlow<PingDetailUiState> = combine(
         pingRepository.pings,
         friendRepository.friends,
         accountRepository.account,
-    ) { pings, friends, account ->
+        minuteChanges,
+    ) { pings, friends, account, _ ->
         val ping = pings.firstOrNull { it.id == pingId }
         if (account == null || ping == null) {
             PingDetailUiState.Gone
@@ -79,6 +83,11 @@ class PingDetailViewModel(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = PingDetailUiState.Loading,
     )
+
+    init {
+        // 알림을 눌러 들어오면 푸시보다 서버가 앞서 있을 수 있어 열 때 한 번 받는다. 저절로 한 일이라 받지 못해도 알리지 않는다.
+        viewModelScope.launch { runCatching { pingRepository.refresh() } }
+    }
 
     /** 지금부터 고를 수 있는 시각입니다. 시트를 열 때마다 다시 셉니다. */
     fun slots(): List<Instant> = pingSlots(clock.now(), timeZone)
@@ -106,7 +115,11 @@ class PingDetailViewModel(
         }
     }
 
-    fun cancel() {
-        viewModelScope.launchNotifying(failures, FailedAction.PING_CANCEL) { pingRepository.cancel(pingId) }
+    /** 취소하면 [onCancelled]를 부릅니다. 실패하면 부르지 않고 안내만 띄워 화면을 그대로 둡니다. */
+    fun cancel(onCancelled: () -> Unit = {}) {
+        viewModelScope.launchNotifying(failures, FailedAction.PING_CANCEL) {
+            pingRepository.cancel(pingId)
+            onCancelled()
+        }
     }
 }

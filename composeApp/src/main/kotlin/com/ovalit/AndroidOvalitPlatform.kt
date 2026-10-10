@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import com.ovalit.app.OvalitPlatform
 import com.ovalit.core.designsystem.component.OvalitToastState
+import com.ovalit.push.PingNotifications
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.launch
 
@@ -59,6 +60,8 @@ internal class AndroidOvalitPlatform(private val context: Context) : OvalitPlatf
 
     @Composable
     override fun ImportEntered() = RequestNotificationPermission()
+
+    override fun clearPingNotification(pingId: String) = PingNotifications.clear(context, pingId)
 }
 
 /**

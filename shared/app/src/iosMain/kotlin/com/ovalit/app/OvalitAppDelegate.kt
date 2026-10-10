@@ -3,6 +3,7 @@
 package com.ovalit.app
 
 import com.ovalit.core.data.NewMatchesWatcher
+import com.ovalit.core.data.SocialWatcher
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCObjectBase.OverrideInit
@@ -38,6 +39,7 @@ class OvalitAppDelegate @OverrideInit constructor() : UIResponder(), UIApplicati
 
     override fun applicationDidBecomeActive(application: UIApplication) {
         KoinPlatform.getKoin().get<NewMatchesWatcher>().onAppVisible()
+        KoinPlatform.getKoin().get<SocialWatcher>().onAppVisible()
     }
 
     override fun applicationDidEnterBackground(application: UIApplication) {

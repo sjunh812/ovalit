@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -40,6 +41,8 @@ sealed interface MatchesUiState {
     /**
      * @property days 고른 큐와 필터에 맞는 경기를 날짜별로 묶었습니다. 최근 날짜가 위입니다.
      * @property agents 필터에서 고를 수 있는 요원입니다. 고른 큐에서 많이 한 순입니다.
+     * @property noStoredMatches 설정에서 저장된 데이터를 지워 기기에 경기가 하나도 없는지입니다. "이 큐로 뛴 경기가 없어요"는
+     *   틀린 말이라 다시 불러올 곳을 알려 줍니다.
      */
     data class Success(
         val queueFilter: QueueFilter,
@@ -50,6 +53,7 @@ sealed interface MatchesUiState {
         val catalog: ContentCatalog,
         val now: Instant,
         val timeZone: TimeZone,
+        val noStoredMatches: Boolean = false,
     ) : MatchesUiState
 }
 
@@ -67,6 +71,7 @@ class MatchesViewModel(
     private val clock: Clock,
     private val timeZone: TimeZone,
     private val analytics: Analytics = NoAnalytics,
+    minuteChanges: Flow<Unit> = flowOf(Unit),
 ) : ViewModel() {
 
     // 홈과 마찬가지로 칩을 고르기 전까지는 설정의 기본 큐를 따른다
@@ -92,9 +97,12 @@ class MatchesViewModel(
         preferencesRepository.preferences,
         selectedQueue,
         filter,
-        contentRepository.catalog,
-    ) { matches, preferences, selected, filter, catalog ->
+        // "N분 전"과 오늘·어제 머리가 화면을 켜 둔 동안에도 흐르게 분마다 다시 센다
+        combine(contentRepository.catalog, minuteChanges) { catalog, _ -> catalog },
+    ) { matches, preferences, selected, chosen, catalog ->
         val queueFilter = selected ?: preferences.defaultQueue
+        // 경기를 모두 지웠으면 남겨 둔 요원·맵 필터도 소용없다. 그대로 두면 다시 불러온 뒤에도 "조건에 맞는 경기가 없어요"가 뜬다.
+        val filter = if (matches.isEmpty()) MatchFilter() else chosen
         val inQueue = matches.filter { it.queue in queueFilter.queues }.sortedByDescending { it.startedAt }
         val shown = inQueue.filter { match ->
             (filter.agent == null || match.myAgent == filter.agent) && (filter.map == null || match.map == filter.map)
@@ -111,6 +119,7 @@ class MatchesViewModel(
             catalog = catalog,
             now = clock.now(),
             timeZone = timeZone,
+            noStoredMatches = matches.isEmpty(),
         )
     }.stateIn(
         scope = viewModelScope,

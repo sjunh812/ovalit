@@ -22,4 +22,7 @@ interface OvalitPlatform {
     /** S0-4에 들어올 때 부릅니다. 안드로이드는 다 모으면 보낼 알림의 권한을 여기서 묻습니다. */
     @Composable
     fun ImportEntered() {}
+
+    /** 초대 화면을 열 때 그 초대의 알림을 거둡니다. 알림이 없는 iOS는 아무것도 하지 않습니다. */
+    fun clearPingNotification(pingId: String) {}
 }

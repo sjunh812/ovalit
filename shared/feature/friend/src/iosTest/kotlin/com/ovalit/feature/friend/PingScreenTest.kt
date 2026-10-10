@@ -25,6 +25,7 @@ import com.ovalit.core.model.PingPerson
 import com.ovalit.core.model.PlayerId
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
@@ -105,6 +106,26 @@ class PingScreenTest {
 
         assertEquals(listOf(PlayerId("junho")), sentTo)
         assertEquals(NineThirty, at)
+    }
+
+    // 화면이 들고 있는 지금은 탭을 열어 둔 만큼 지난 시각이라, "지금"은 시각을 비워 보내고 보내는 순간에 채운다
+    @Test
+    fun `지금으로 부르면 시각을 비워 보낸다`() = runComposeUiTest {
+        var sent = false
+        var at: Instant? = Nine
+        setContent {
+            Friends(
+                pings = emptyList(),
+                actions = PingActions(slots = { listOf(Nine, NineThirty) }, send = { _, startsAt, _ -> sent = true; at = startsAt }),
+            )
+        }
+
+        onNodeWithText("파티 모집").performClick()
+        onNodeWithText("준호").performClick()
+        onNodeWithText("1명 부르기").performScrollTo().performClick()
+
+        assertTrue(sent)
+        assertNull(at)
     }
 
     // 친구를 모두 펼쳐 두면 시각 휠과 버튼이 화면 밖으로 밀린다

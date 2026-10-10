@@ -21,7 +21,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -44,7 +44,18 @@ class FakePingRepository(
     private val all = MutableStateFlow(listOf(seedIncoming()))
     private var nextId = 0
 
-    override val pings: Flow<List<Ping>> = all.map { list -> list.sortedByDescending { it.createdAt } }.whileActive(clock)
+    // 서버처럼 친구를 끊으면 둘 사이의 ㅇㅂㅇ에서 서로를 뺀다. 끊은 친구가 보낸 초대는 내가 빠져 사라지고, 내가 보낸 초대에서는 그
+    // 친구가 빠진다.
+    override val pings: Flow<List<Ping>> = combine(all, friendRepository.friends) { list, friends ->
+        val ids = friends.map { it.id }.toSet()
+        list.mapNotNull { ping ->
+            when {
+                ping.isHostedBy(Me) -> ping.copy(members = ping.members.filter { it.person.id in ids })
+                ping.host.id in ids -> ping
+                else -> null
+            }
+        }.sortedByDescending { it.createdAt }
+    }.whileActive(clock)
 
     override suspend fun send(friends: List<PlayerId>, startsAt: Instant): PingSendResult {
         val now = clock.now()

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.ovalit.core.data.ContentRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.MatchRepository
+import com.ovalit.core.data.PingRepository
 import com.ovalit.core.model.AgentReport
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Friend
@@ -37,6 +38,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -87,19 +89,23 @@ sealed interface FriendProfileUiState {
 class FriendProfileViewModel(
     private val friendId: PlayerId,
     private val friendRepository: FriendRepository,
+    private val pingRepository: PingRepository,
     matchRepository: MatchRepository,
     contentRepository: ContentRepository,
     clock: Clock,
     timeZone: TimeZone,
     computation: CoroutineContext = Dispatchers.Default,
+    weekChanges: Flow<Unit> = flowOf(Unit),
 ) : ViewModel() {
 
+    // 화면을 켜 둔 채 월요일 0시를 넘기면 "이번 주"를 다시 잡는다(홈과 같다)
     val uiState: StateFlow<FriendProfileUiState> = combine(
         friendRepository.friends,
         friendRepository.rival,
         matchRepository.observeMatches(),
         contentRepository.catalog,
-    ) { friends, rival, myMatches, catalog ->
+        weekChanges,
+    ) { friends, rival, myMatches, catalog, _ ->
         // 전적을 비공개로 바꾼 친구는 기기에 경기가 남아 있어도 경기 목록, 티어, 최근 경기까지 모두 가린다
         val found = friends.firstOrNull { it.id == friendId } ?: return@combine FriendProfileUiState.Gone
         val friend = if (found.statsPublic) found else found.copy(matches = emptyList())
@@ -144,6 +150,11 @@ class FriendProfileViewModel(
 
     /** 끊고 나면 상태가 [FriendProfileUiState.Gone]이 되고, 화면은 그걸 보고 닫힙니다. */
     fun unfriend() {
-        viewModelScope.launchNotifying(failures, FailedAction.UNFRIEND) { friendRepository.unfriend(friendId) }
+        viewModelScope.launchNotifying(failures, FailedAction.UNFRIEND) {
+            friendRepository.unfriend(friendId)
+            // 서버는 끊을 때 둘 사이의 ㅇㅂㅇ에서 서로를 뺀다. 홈과 친구 탭에 그 친구의 초대가 남지 않게 다시 받는다. 끊기는
+            // 이미 됐으니 다시 받지 못해도 알리지 않고 다음에 받을 때 맞춘다.
+            runCatching { pingRepository.refresh() }
+        }
     }
 }

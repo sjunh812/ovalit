@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import com.ovalit.ads.AdMobRenderer
 import com.ovalit.app.ovalitModules
 import com.ovalit.core.data.NewMatchesWatcher
+import com.ovalit.core.data.SocialWatcher
 import com.ovalit.di.appModule
 import com.ovalit.importing.AppVisibility
 import com.ovalit.push.OvalitPush
@@ -38,9 +39,17 @@ class OvalitApplication : Application() {
         OvalitFirebase.follow(this, appScope, account = get())
         OvalitPush.start(this, appScope, account = get(), preferences = get(), push = get())
         AdMobRenderer.start(this, appScope)
-        // 앱을 다시 열면 그사이 끝난 경기를 받고, 많이 남은 채로 떠나면 WorkManager가 이어 받는다
+        // 앱을 다시 열면 그사이 끝난 경기와 ㅇㅂㅇ, 친구를 받고, 경기가 많이 남은 채로 떠나면 WorkManager가 이어 받는다
         val newMatches = get<NewMatchesWatcher>()
-        AppVisibility.onChange = { visible -> if (visible) newMatches.onAppVisible() else newMatches.onAppHidden() }
+        val social = get<SocialWatcher>()
+        AppVisibility.onChange = { visible ->
+            if (visible) {
+                newMatches.onAppVisible()
+                social.onAppVisible()
+            } else {
+                newMatches.onAppHidden()
+            }
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

@@ -123,7 +123,8 @@ fun FriendsRoute(
  */
 internal class PingActions(
     val slots: () -> List<Instant> = { emptyList() },
-    val send: (List<PlayerId>, Instant, (PingSendResult) -> Unit) -> Unit = { _, _, _ -> },
+    /** 두 번째 값이 `null`이면 "지금"입니다. */
+    val send: (List<PlayerId>, Instant?, (PingSendResult) -> Unit) -> Unit = { _, _, _ -> },
     val open: (PingId) -> Unit = {},
 )
 

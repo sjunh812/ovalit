@@ -112,6 +112,14 @@ internal object PingNotifications {
     }
 
     // 같은 ㅇㅂㅇ의 알림은 쌓이지 않고 한 자리에서 바뀌게 초대 ID를 태그로 쓴다
+    /**
+     * 그 초대의 알림을 거둡니다. 앱에서 초대를 열면 부릅니다. 남겨 두면 나중에 알림의 "못 가요"를 눌러 앱에서 한 답을 조용히
+     * 덮어쓸 수 있습니다.
+     */
+    fun clear(context: Context, pingId: String) {
+        NotificationManagerCompat.from(context).cancel(pingTag(pingId), 0)
+    }
+
     private fun pingTag(pingId: String?): String = "ping:${pingId.orEmpty()}"
 
     /**

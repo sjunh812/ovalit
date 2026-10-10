@@ -219,8 +219,15 @@ class FriendScreensTest {
     @Test
     fun `친구를 끊으면 화면을 한 번만 닫는다`() = runComposeUiTest {
         val minseok = PlayerId("fake-minseok")
+        val friends = FakeFriendRepository()
         val viewModel = FriendProfileViewModel(
-            minseok, FakeFriendRepository(), FakeMatchRepository(), FakeContentRepository(), Clock.System, TimeZone.of("Asia/Seoul"),
+            minseok,
+            friends,
+            FakePingRepository(friends),
+            FakeMatchRepository(),
+            FakeContentRepository(),
+            Clock.System,
+            TimeZone.of("Asia/Seoul"),
             computation = SameThread,
         )
         var backs = 0

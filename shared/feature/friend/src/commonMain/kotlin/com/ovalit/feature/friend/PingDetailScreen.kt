@@ -78,10 +78,8 @@ fun PingDetailRoute(
             reply = viewModel::reply,
             moveTo = viewModel::moveTo,
             invite = viewModel::invite,
-            cancel = {
-                viewModel.cancel()
-                onBack()
-            },
+            // 취소가 끝난 뒤에 닫는다. 먼저 닫으면 화면과 함께 ViewModel이 지워져 취소 요청이 중간에 끊기고 실패해도 알리지 못한다.
+            cancel = { viewModel.cancel(onCancelled = onBack) },
         ),
     )
 }

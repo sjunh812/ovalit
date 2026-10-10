@@ -276,6 +276,8 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
                         )
                     }
                     entry<PingDetail> { key ->
+                        // 앱에서 초대를 열면 그 초대의 알림을 거둔다. 남은 알림 버튼을 나중에 누르면 앱에서 한 답을 덮어쓴다.
+                        LaunchedEffect(key.id) { platform.clearPingNotification(key.id) }
                         PingDetailRoute(pingId = key.id, onBack = { backStack.removeLastOrNull() })
                     }
                     entry<FriendMatches> { key ->

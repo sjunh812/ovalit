@@ -44,9 +44,7 @@ class FakePingRepository(
     private val all = MutableStateFlow(listOf(seedIncoming()))
     private var nextId = 0
 
-    override val pings: Flow<List<Ping>> = all.map { list ->
-        list.filter { it.isActive(clock.now()) }.sortedByDescending { it.createdAt }
-    }
+    override val pings: Flow<List<Ping>> = all.map { list -> list.sortedByDescending { it.createdAt } }.whileActive(clock)
 
     override suspend fun send(friends: List<PlayerId>, startsAt: Instant): PingSendResult {
         val now = clock.now()

@@ -8,11 +8,15 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -23,6 +27,7 @@ import kotlinx.datetime.toInstant
 private val Seoul = TimeZone.of("Asia/Seoul")
 private val Evening = LocalDateTime(2026, 10, 3, 20, 10).toInstant(Seoul)
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class FakePingRepositoryTest {
 
     @Test
@@ -33,6 +38,26 @@ class FakePingRepositoryTest {
 
         assertEquals("민석#KR3", ping.host.riotId)
         assertEquals(PingAnswer.PENDING, ping.memberOf(Me)?.answer)
+    }
+
+    // 받아 온 목록만 거르면 앱을 켜 둔 채 한 시간이 지나도 지난 초대가 홈과 친구 탭에 남는다
+    @Test
+    fun `끝날 시각이 지나면 목록이 바뀌지 않아도 초대가 빠진다`() = runTest {
+        val clock = object : Clock {
+            override fun now(): Instant = Evening + testScheduler.currentTime.milliseconds
+        }
+        val repository = repository(clock)
+        val sizes = mutableListOf<Int>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { repository.pings.collect { sizes += it.size } }
+        val ping = repository.pings.first().single()
+
+        advanceTimeBy(ping.expiresAt - Evening - 1.seconds)
+        runCurrent()
+        assertEquals(listOf(1), sizes)
+
+        advanceTimeBy(2.seconds)
+        runCurrent()
+        assertEquals(listOf(1, 0), sizes)
     }
 
     @Test

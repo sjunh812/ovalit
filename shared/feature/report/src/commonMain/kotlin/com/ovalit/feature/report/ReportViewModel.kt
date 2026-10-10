@@ -130,7 +130,7 @@ class ReportViewModel(
     val timeZone: TimeZone,
     weekChanges: Flow<Unit> = flowOf(Unit),
     computation: CoroutineContext = Dispatchers.Default,
-    pingRepository: PingRepository? = null,
+    private val pingRepository: PingRepository? = null,
     private val analytics: Analytics = NoAnalytics,
 ) : ViewModel() {
 
@@ -256,7 +256,7 @@ class ReportViewModel(
 
     /**
      * 새로 끝난 경기를 받습니다. 당김 표시나 진행 줄이 떠 있으면 이미 받는 중이라 무시합니다. 실패하면 저장해 둔 경기는
-     * 그대로 두고 안내만 띄웁니다.
+     * 그대로 두고 안내만 띄웁니다. 홈 맨 위 ㅇㅂㅇ도 같이 다시 받습니다. 당겼는데 그사이 취소된 초대가 남아 있으면 안 됩니다.
      */
     fun refresh() {
         if (refreshing.value || newMatches.value != null) return
@@ -266,6 +266,8 @@ class ReportViewModel(
                 matchRepository.newMatchesProgress.first { it?.isShown == true }
                 refreshing.value = false
             }
+            // ㅇㅂㅇ은 곁다리라 받지 못해도 경기 받기는 그대로 하고 따로 알리지 않는다. 친구 탭을 당기면 실패를 알린다.
+            launch { runCatching { pingRepository?.refresh() } }
             try {
                 logRefresh(analytics, source = "home") { matchRepository.refresh() }
             } finally {

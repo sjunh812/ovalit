@@ -14,6 +14,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.ovalit.MainActivity
 import com.ovalit.R
+import com.ovalit.core.model.PingLength
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -43,8 +44,11 @@ internal object PingNotifications {
     fun show(context: Context, data: Map<String, String>) {
         if (!canNotify(context)) return
         val pingId = data["pingId"]
+        // 끝난 ㅇㅂㅇ의 알림은 버튼을 눌러도 답할 수 없어서 끝날 시각에 거둔다. 늦게 와서 이미 끝났으면 띄우지 않는다.
+        val expiresAt = data["startsAt"]?.toLongOrNull()?.plus(PingLength.inWholeMilliseconds)
+        if (expiresAt != null && expiresAt <= System.currentTimeMillis()) return
         val notification = when (data["type"]) {
-            "ping_new" -> pingNotification(context, pingId) {
+            "ping_new" -> pingNotification(context, pingId, expiresAt) {
                 val host = data["hostName"].orEmpty()
                 setContentTitle(
                     if (isNow(data)) {
@@ -56,12 +60,12 @@ internal object PingNotifications {
                 setContentText(others(context, data["others"]))
                 addAnswerActions(context, pingId)
             }
-            "ping_time" -> pingNotification(context, pingId) {
+            "ping_time" -> pingNotification(context, pingId, expiresAt) {
                 setContentTitle(context.getString(R.string.ping_time_title, data["hostName"].orEmpty()))
                 setContentText(context.getString(R.string.ping_time_body, timeText(context, data)))
                 addAnswerActions(context, pingId)
             }
-            "ping_reply" -> pingNotification(context, pingId) {
+            "ping_reply" -> pingNotification(context, pingId, expiresAt) {
                 val name = data["memberName"].orEmpty()
                 val proposed = data["proposedAt"]?.toLongOrNull()
                 setContentTitle(
@@ -77,10 +81,10 @@ internal object PingNotifications {
                     addAction(0, context.getString(R.string.ping_action_move), PingActionReceiver.move(context, pingId, proposed))
                 }
             }
-            "ping_cancel" -> pingNotification(context, pingId) {
+            "ping_cancel" -> pingNotification(context, pingId, expiresAt) {
                 setContentTitle(context.getString(R.string.ping_cancel_title, data["hostName"].orEmpty()))
             }
-            "ping_remind" -> pingNotification(context, pingId) {
+            "ping_remind" -> pingNotification(context, pingId, expiresAt) {
                 setContentTitle(remindTitle(context, data))
                 setContentText(context.getString(R.string.ping_remind_body, data["names"].orEmpty().split(",").joinToString(context.getString(R.string.list_separator))))
             }
@@ -116,14 +120,20 @@ internal object PingNotifications {
      */
     fun actionUri(pingId: String?, action: String): Uri = Uri.Builder().scheme("ovalit-notification").authority(action).appendPath(pingId.orEmpty()).build()
 
-    private fun pingNotification(context: Context, pingId: String?, build: NotificationCompat.Builder.() -> Unit) =
-        NotificationCompat.Builder(context, channel(context, PING_CHANNEL, R.string.notification_channel_ping, NotificationManager.IMPORTANCE_HIGH))
-            .setSmallIcon(R.drawable.ic_notification)
-            .setCategory(NotificationCompat.CATEGORY_SOCIAL)
-            .setContentIntent(openApp(context, pingId, action = "open"))
-            .setAutoCancel(true)
-            .apply(build)
-            .build()
+    /** @param expiresAt ㅇㅂㅇ이 끝나는 시각(epoch 밀리초)입니다. 있으면 그때 알림을 거둡니다. */
+    private fun pingNotification(
+        context: Context,
+        pingId: String?,
+        expiresAt: Long? = null,
+        build: NotificationCompat.Builder.() -> Unit,
+    ) = NotificationCompat.Builder(context, channel(context, PING_CHANNEL, R.string.notification_channel_ping, NotificationManager.IMPORTANCE_HIGH))
+        .setSmallIcon(R.drawable.ic_notification)
+        .setCategory(NotificationCompat.CATEGORY_SOCIAL)
+        .setContentIntent(openApp(context, pingId, action = "open"))
+        .setAutoCancel(true)
+        .apply { expiresAt?.let { setTimeoutAfter((it - System.currentTimeMillis()).coerceAtLeast(1L)) } }
+        .apply(build)
+        .build()
 
     private fun NotificationCompat.Builder.addAnswerActions(context: Context, pingId: String?) {
         if (pingId == null) return

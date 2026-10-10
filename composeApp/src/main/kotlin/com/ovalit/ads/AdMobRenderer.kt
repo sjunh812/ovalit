@@ -29,9 +29,14 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Instant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 
 /**
@@ -54,10 +59,22 @@ internal class AdMobRenderer(
     private val loading = mutableSetOf<String>()
     private val failed = mutableSetOf<String>()
 
-    // 설정을 읽기 전에는 숨길지 모르니 광고를 그리지 않는다. 그리다가 숨기면 광고가 한 번 번쩍인다.
-    private val adFreeUntilMillis = preferences.preferences
-        .map { it.adFreeUntil?.toEpochMilliseconds() ?: NOT_HIDDEN }
-        .stateIn(scope, SharingStarted.Eagerly, UNKNOWN)
+    // 광고 자리를 비울지입니다. 설정을 읽기 전에는 숨길지 모르니 `null`이고 광고를 그리지 않는다. 그리다가 숨기면 광고가 한 번
+    // 번쩍인다. 광고 없이 보기가 끝나는 순간 `false`로 바꾼다. 그릴 때만 시각을 견주면 홈처럼 광고 자리가 계속 화면에 남는 곳은
+    // 끝나도 다른 화면을 오가기 전까지 광고가 돌아오지 않는다.
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val hidden: StateFlow<Boolean?> = preferences.preferences
+        .map { it.adFreeUntil?.toEpochMilliseconds() }
+        .distinctUntilChanged()
+        .transformLatest { until ->
+            val left = until?.let { it - System.currentTimeMillis() } ?: 0L
+            if (left > 0) {
+                emit(true)
+                delay(left)
+            }
+            emit(false)
+        }
+        .stateIn(scope, SharingStarted.Eagerly, null)
 
     // ×로 닫은 광고 자리다. 다시 스크롤해 와도 렌더러가 사는 동안은 비워 둔다.
     private val closed = mutableStateListOf<String>()
@@ -83,8 +100,8 @@ internal class AdMobRenderer(
 
     @Composable
     override fun Render(placement: AdPlacement, key: String, frame: @Composable (content: @Composable () -> Unit) -> Unit) {
-        val hiddenUntil by adFreeUntilMillis.collectAsState()
-        if (hiddenUntil == UNKNOWN || System.currentTimeMillis() < hiddenUntil || key in closed) return
+        val hidden by hidden.collectAsState()
+        if (hidden != false || key in closed) return
         val loaded = ads[key]
         LaunchedEffect(key) {
             val current = ads[key]
@@ -186,7 +203,5 @@ internal class AdMobRenderer(
         // 저절로 지켜진다.
         private val AD_FREE = 24.hours
 
-        private const val UNKNOWN = -1L
-        private const val NOT_HIDDEN = 0L
     }
 }

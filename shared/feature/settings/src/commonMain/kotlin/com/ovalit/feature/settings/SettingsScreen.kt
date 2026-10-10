@@ -22,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -90,6 +91,7 @@ import com.ovalit.feature.settings.resources.version
 import com.ovalit.feature.settings.resources.view_profile
 import kotlin.time.Clock
 import kotlin.time.Instant
+import kotlinx.coroutines.delay
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
@@ -253,7 +255,7 @@ internal fun SettingsScreen(
                     // 보상형 광고로 24시간 광고를 숨긴다. 광고 줄의 ×로도 같은 광고를 본다. 숨기는 동안에는 언제까지인지만 적는다.
                     val ads = LocalAdRenderer.current
                     if (ads != null && ads.canOfferAdFree) {
-                        val until = preferences.adFreeUntil?.takeIf { it > now }
+                        val until = rememberStillAhead(preferences.adFreeUntil, now)
                         ValueRow(
                             title = stringResource(Res.string.ad_free),
                             description = stringResource(Res.string.ad_free_description),
@@ -449,6 +451,23 @@ private fun ValueRow(
 }
 
 // 끝나는 시각이 오늘이면 "오늘 23:00까지", 내일이면 "내일 16:20까지"다
+/**
+ * [until]이 [now]보다 뒤면 그대로, 지났으면 `null`입니다. 지나는 순간 `null`로 바꿔 다시 그립니다. 그릴 때만 견주면 광고 없이
+ * 보기가 끝난 뒤에도 "오늘 16:20까지"에 멈춰 다시 누를 수 없습니다.
+ */
+@Composable
+private fun rememberStillAhead(until: Instant?, now: Instant): Instant? {
+    val ahead by produceState(until?.takeIf { it > now }, until, now) {
+        val left = until?.let { it - now }
+        if (left != null && left.isPositive()) {
+            value = until
+            delay(left)
+        }
+        value = null
+    }
+    return ahead
+}
+
 @Composable
 private fun adFreeUntilText(until: Instant, now: Instant, timeZone: TimeZone): String {
     val end = until.toLocalDateTime(timeZone)

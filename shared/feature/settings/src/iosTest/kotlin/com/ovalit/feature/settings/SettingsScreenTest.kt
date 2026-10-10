@@ -22,6 +22,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 
@@ -47,6 +48,22 @@ class SettingsScreenTest {
 
         onNodeWithText("내일 16:30까지").performScrollTo().assertExists()
         onNodeWithText("광고 없이 보기").assertHasNoClickAction()
+    }
+
+    // 그릴 때만 시각을 견주면 끝난 뒤에도 "오늘 16:20까지"에 멈춰 다시 누를 수 없다
+    @Test
+    fun `광고 없이 보기가 끝나면 줄을 다시 누를 수 있다`() = runComposeUiTest {
+        val now = Instant.parse("2026-10-04T08:00:00Z")
+        val linked = SettingsPreviewData.linked as SettingsUiState.Success
+        val hidden = linked.copy(preferences = linked.preferences.copy(adFreeUntil = now + 2.seconds))
+        val ads = CountingAds()
+        setContent { Settings(uiState = hidden, ads = ads, now = now) }
+        onNodeWithText("광고 없이 보기").performScrollTo().assertHasNoClickAction()
+
+        mainClock.advanceTimeBy(3_000)
+
+        onNodeWithText("광고 없이 보기").performScrollTo().performClick()
+        assertEquals(1, ads.offered)
     }
 
     @Test

@@ -8,6 +8,7 @@ import {
   matchFixture,
   matchUrl,
   RIOT,
+  recordPlayers,
   sendRequestRow,
   setup,
   strangers,
@@ -19,6 +20,7 @@ type T = ReturnType<typeof setup>;
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.restoreAllMocks();
 });
 
 function playedMatch(t: T, ...players: { puuid: string; gameName: string }[]): string {
@@ -525,6 +527,21 @@ describe("친구 경기", () => {
       expect(match.players[0]!.partyId).toBe(match.players[1]!.partyId);
       expect(match.players[0]!.partyId).toMatch(/^party-\d+$/);
       expect(match.players[2]!.partyId).not.toBe(match.players[0]!.partyId);
+    });
+
+    it("같은 친구의 같은 경기는 다른 사람이 열어도 다시 가리지 않고 담아 둔 결과를 준다", async () => {
+      const first = await redacted();
+      await recordPlayers(first.fixture.matchInfo.matchId, first.fixture.players.map((p) => p.puuid));
+      const t = setup();
+      const another = await t.login();
+      await makeFriends(another, first.friend);
+      const parse = vi.spyOn(JSON, "parse");
+      const res = await t.call("GET", `/friends/${first.friend.puuid}/matches/${first.fixture.matchInfo.matchId}`, another.token);
+      expect(await res.text()).toBe(first.body);
+      expect(parse.mock.calls.filter(([text]) => typeof text === "string" && text.includes(first.fixture.matchInfo.matchId))).toEqual(
+        [],
+      );
+      expect(t.upstream.calls).toHaveLength(0);
     });
 
     it("같은 경기를 다시 열어도 같은 이름으로 가린다", async () => {

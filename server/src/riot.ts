@@ -3,6 +3,7 @@ import type { AppEnv, Env, User } from "./env";
 import { ApiError } from "./errors";
 import { logFailure } from "./log";
 import { MemoryCache, Quota } from "./memory";
+import { redactMatch } from "./redact";
 import { send, throwIfBlocked } from "./upstream";
 
 const RIOT_HOST = "https://kr.api.riotgames.com";
@@ -17,7 +18,8 @@ const MISSING_TTL = 10 * 60;
 const MB = 1024 * 1024;
 
 // isolate가 살아 있는 동안 요청끼리 나눠 쓴다. isolate 메모리는 128MB라 캐시는 모두 합쳐 40MB 안쪽으로 두고 나머지는
-// 요청을 처리하는 데 남긴다. 경기 원문은 한 판에 800KB 안팎이라 글자당 2바이트로 세도 15판쯤 담긴다.
+// 요청을 처리하는 데 남긴다. 경기 원문은 한 판에 800KB 안팎이라 글자당 2바이트로 세도 15판쯤 담긴다. 가린 친구 경기도
+// matches에 같이 담아 원문과 함께 오래 안 꺼낸 것부터 버린다.
 const memory = {
   content: new MemoryCache({ maxEntries: 1, maxBytes: 10 * MB }),
   status: new MemoryCache({ maxEntries: 1, maxBytes: 1 * MB }),
@@ -128,6 +130,24 @@ export class Riot {
     if (recorded && !recorded.has(puuid)) return undefined;
     const match = await this.match(matchId, recorded);
     return match.players.has(puuid) ? match : undefined;
+  }
+
+  /**
+   * 친구와 `viewer`만 남기고 가린 경기 JSON입니다. `viewer`가 경기 어디에도 없으면 누가 보든 결과가 같아서, 끝난 경기는
+   * 가린 결과를 isolate 메모리에 (경기, 친구)로 담아 둡니다. 친구 여럿이 같은 친구의 경기를 열 때 다시 가리지 않습니다.
+   */
+  redactedFor(matchId: string, match: RiotMatch, friend: string, viewer: string): string {
+    const key = `redacted:${matchId}:${friend}`;
+    const shared = !match.raw.includes(viewer);
+    if (shared) {
+      const hit = memory.matches.get(key);
+      if (hit !== undefined) return hit;
+    }
+    const data = match.data;
+    const completed = data.matchInfo?.isCompleted === true;
+    const body = JSON.stringify(redactMatch(data, new Set([friend, viewer])));
+    if (shared && completed) memory.matches.set(key, body, MATCH_TTL);
+    return body;
   }
 
   content(): Promise<string> {

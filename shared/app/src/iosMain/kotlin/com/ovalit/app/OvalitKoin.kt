@@ -5,12 +5,14 @@ import com.ovalit.core.data.ImportScheduler
 import com.ovalit.core.data.NoAnalytics
 import com.ovalit.core.data.di.ApplicationScope
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.flowOf
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSLocale
+import platform.Foundation.NSLog
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
 import platform.Foundation.preferredLanguages
@@ -23,7 +25,13 @@ private val iosModule = module {
 
 internal fun startOvalitKoin() {
     startKoin {
-        modules(ovalitModules(preferencesPath = ::preferencesPath, language = flowOf(appLanguage())) + iosModule)
+        modules(
+            ovalitModules(
+                preferencesPath = ::preferencesPath,
+                language = flowOf(appLanguage()),
+                backgroundFailure = CoroutineExceptionHandler { _, error -> NSLog("background work failed: %@", error.toString()) },
+            ) + iosModule,
+        )
     }
 }
 

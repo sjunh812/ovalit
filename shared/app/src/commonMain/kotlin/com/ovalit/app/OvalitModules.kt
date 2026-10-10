@@ -7,6 +7,7 @@ import com.ovalit.feature.onboarding.di.onboardingModule
 import com.ovalit.feature.profile.di.profileModule
 import com.ovalit.feature.report.di.reportModule
 import com.ovalit.feature.settings.di.settingsModule
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.Flow
 import org.koin.core.module.Module
 
@@ -15,9 +16,14 @@ import org.koin.core.module.Module
  *
  * @param preferencesPath 설정을 담을 파일 경로입니다.
  * @param language 화면 언어입니다. 요원·맵·무기·티어 이름을 이 언어로 받습니다.
+ * @param backgroundFailure 앱 수명 스코프에서 놓친 실패를 받아 로그를 남깁니다.
  */
-fun ovalitModules(preferencesPath: () -> String, language: Flow<String>): List<Module> = listOf(
-    dataModule(preferencesPath = preferencesPath, language = language),
+fun ovalitModules(
+    preferencesPath: () -> String,
+    language: Flow<String>,
+    backgroundFailure: CoroutineExceptionHandler,
+): List<Module> = listOf(
+    dataModule(preferencesPath = preferencesPath, language = language, backgroundFailure = backgroundFailure),
     onboardingModule,
     reportModule,
     matchModule,

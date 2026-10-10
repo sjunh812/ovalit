@@ -6,13 +6,12 @@ import com.ovalit.ads.AdMobRenderer
 import com.ovalit.app.ovalitModules
 import com.ovalit.core.data.NewMatchesWatcher
 import com.ovalit.core.data.SocialWatcher
+import com.ovalit.core.data.di.ApplicationScope
 import com.ovalit.di.appModule
 import com.ovalit.importing.AppVisibility
 import com.ovalit.push.OvalitPush
 import com.ovalit.telemetry.OvalitFirebase
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import org.koin.android.ext.android.get
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -33,9 +32,12 @@ class OvalitApplication : Application() {
                 ovalitModules(
                     preferencesPath = { filesDir.resolve("ovalit.preferences_pb").absolutePath },
                     language = AppLanguage.current,
+                    backgroundFailure = LogBackgroundFailure,
                 ) + appModule,
             )
         }
+        // 화면 밖에서 도는 일은 공유 모듈과 같은 앱 수명 스코프 하나에서 한다
+        val appScope = get<CoroutineScope>(ApplicationScope)
         OvalitFirebase.follow(this, appScope, account = get())
         OvalitPush.start(this, appScope, account = get(), preferences = get(), push = get())
         AdMobRenderer.start(this, appScope)
@@ -56,6 +58,4 @@ class OvalitApplication : Application() {
         super.onConfigurationChanged(newConfig)
         AppLanguage.update(this)
     }
-
-    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default + LogBackgroundFailure)
 }

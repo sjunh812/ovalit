@@ -1,12 +1,9 @@
 package com.ovalit.feature.onboarding
 
 import com.ovalit.core.data.FakeMatchRepository
-import com.ovalit.core.data.ImportScheduler
-import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.Focus
-import com.ovalit.core.model.QueueFilter
-import com.ovalit.core.model.ThemePreference
-import com.ovalit.core.model.UserPreferences
+import com.ovalit.core.testing.TestImportScheduler
+import com.ovalit.core.testing.TestUserPreferencesRepository
 import com.ovalit.feature.onboarding.importing.ImportUiState
 import com.ovalit.feature.onboarding.importing.ImportViewModel
 import kotlin.test.AfterTest
@@ -18,12 +15,9 @@ import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration
-import kotlin.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -48,7 +42,7 @@ class ImportViewModelTest {
         val matches = FakeMatchRepository(importDelay = Duration.ZERO)
         // 연동하면 저장된 경기와 지난 진행도를 지운 뒤 첫 수집을 시작한다
         matches.deleteAll()
-        val viewModel = ImportViewModel(matches, InMemoryPreferences(), NoScheduler)
+        val viewModel = ImportViewModel(matches, TestUserPreferencesRepository(), TestImportScheduler())
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
         assertNull(assertIs<ImportUiState.Success>(viewModel.uiState.value).progress)
 
@@ -61,8 +55,8 @@ class ImportViewModelTest {
 
     @Test
     fun `고른 관심사를 설정에 저장한다`() = runTest {
-        val preferences = InMemoryPreferences()
-        val viewModel = ImportViewModel(FakeMatchRepository(), preferences, NoScheduler)
+        val preferences = TestUserPreferencesRepository()
+        val viewModel = ImportViewModel(FakeMatchRepository(), preferences, TestImportScheduler())
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         viewModel.selectFocus(Focus.CONSISTENCY)
@@ -74,8 +68,8 @@ class ImportViewModelTest {
     // 설정에서 분석 완료 알림을 껐으면 S0-4가 다 불러오면 알리겠다고 적지 않는다
     @Test
     fun `설정의 분석 완료 알림을 따른다`() = runTest {
-        val preferences = InMemoryPreferences()
-        val viewModel = ImportViewModel(FakeMatchRepository(), preferences, NoScheduler)
+        val preferences = TestUserPreferencesRepository()
+        val viewModel = ImportViewModel(FakeMatchRepository(), preferences, TestImportScheduler())
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
         assertTrue(assertIs<ImportUiState.Success>(viewModel.uiState.value).notifyWhenDone)
 
@@ -83,38 +77,4 @@ class ImportViewModelTest {
 
         assertFalse(assertIs<ImportUiState.Success>(viewModel.uiState.value).notifyWhenDone)
     }
-}
-
-private class InMemoryPreferences : UserPreferencesRepository {
-    override val preferences = MutableStateFlow(UserPreferences.Default)
-
-    override suspend fun setTheme(theme: ThemePreference) = Unit
-
-    override suspend fun setDefaultQueue(queue: QueueFilter) = Unit
-
-    override suspend fun setNotifyAnalysisDone(enabled: Boolean) = preferences.update { it.copy(notifyAnalysisDone = enabled) }
-
-    override suspend fun setNotifyWeeklyReport(enabled: Boolean) = Unit
-
-    override suspend fun setNotifyPing(enabled: Boolean) = Unit
-
-    override suspend fun setFocus(focus: Focus) = preferences.update { it.copy(focus = focus) }
-
-    override suspend fun setSeenProfileHint() = Unit
-
-    override suspend fun setSeenNotificationPrimer() = Unit
-
-    override suspend fun setAskedNotificationPermission() = Unit
-
-    override suspend fun setAdFreeUntil(until: Instant) = Unit
-}
-
-private object NoScheduler : ImportScheduler {
-    override fun start() = Unit
-
-    override fun retry() = Unit
-
-    override fun continueNewMatches(total: Int) = Unit
-
-    override fun cancel() = Unit
 }

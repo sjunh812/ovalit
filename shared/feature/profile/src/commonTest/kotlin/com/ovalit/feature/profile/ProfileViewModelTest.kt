@@ -3,7 +3,8 @@ package com.ovalit.feature.profile
 import com.ovalit.core.data.FakeAccountRepository
 import com.ovalit.core.data.FakeContentRepository
 import com.ovalit.core.data.FakeMatchRepository
-import kotlin.coroutines.EmptyCoroutineContext
+import com.ovalit.core.testing.SameThread
+import com.ovalit.core.testing.StepClock
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -25,11 +26,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
-
-// 앱은 Dispatchers.Default에서 세지만 테스트는 값을 바로 읽으려고 부르는 쪽에서 센다
-private val SameThread = EmptyCoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModelTest {
@@ -68,10 +65,7 @@ class ProfileViewModelTest {
     @Test
     fun `분이 바뀌면 경기를 다시 세지 않고 지금만 새로 넣는다`() = runTest {
         val start = Clock.System.now()
-        var now = start
-        val clock = object : Clock {
-            override fun now(): Instant = now
-        }
+        val clock = StepClock(start)
         val minuteChanges = MutableSharedFlow<Unit>(replay = 1).apply { tryEmit(Unit) }
         val matches = FakeMatchRepository()
         val viewModel = ProfileViewModel(
@@ -86,7 +80,7 @@ class ProfileViewModelTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
         val before = assertIs<ProfileUiState.Success>(viewModel.uiState.value)
 
-        now = start + 5.minutes
+        clock.now = start + 5.minutes
         minuteChanges.emit(Unit)
 
         val after = assertIs<ProfileUiState.Success>(viewModel.uiState.value)

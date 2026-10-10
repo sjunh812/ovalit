@@ -111,7 +111,7 @@ Refs: CLAUDE.md#지표-규칙
 모듈 이름을 그대로 씁니다.
 
 `onboarding` · `report` · `match` · `friend` · `profile` · `settings` · `model` · `network` · `data` ·
-`ui`(`core/ui`) · `designsystem` · `app` · `server` · `build` · `docs`
+`ui`(`core/ui`) · `designsystem` · `testing` · `app` · `server` · `build` · `docs`
 
 여러 모듈에 걸치면 스코프를 뺍니다. 세 개 넘게 걸쳤으면 대개 커밋을 쪼갤 때입니다.
 
@@ -260,6 +260,27 @@ fun `시작 버튼을 누르면 onStart가 한 번 불린다`() = runComposeUiTe
 반대로 Compose 레이아웃이 픽셀 단위로 맞는지는 테스트로 좇지 않습니다. 그건 프리뷰가
 할 일입니다.
 
+### 테스트 대역
+
+여러 테스트 파일이 같이 쓰는 대역은 `shared/core/testing`에 둡니다. 기기 설정, 수집 예약,
+계정, 친구, ㅇㅂㅇ 저장소의 대역과 `SameThread`, 테스트용 시계가 있습니다. 기능 모듈은
+convention plugin이 `commonTest`에 걸어 주고, `core/data`는 빌드 파일에서 겁니다. 테스트에만
+걸어서 앱에는 들어가지 않습니다.
+
+파일마다 복사해 두면 인터페이스에 메서드 하나가 늘 때마다 복사본을 다 찾아 고쳐야 합니다.
+그래서 같은 대역이 두 번째 파일에서 필요해지면 `core/testing`으로 옮깁니다. 한 테스트만 쓰는
+대역은 그 파일에 둡니다. 실패를 던지는 저장소나 친구 하나만 비공개로 바꾸는 저장소 같은
+것입니다.
+
+설정처럼 테스트가 바꾼 값을 다시 읽는 대역은 메서드가 상태를 실제로 바꾸게 합니다. 아무 일도
+하지 않는 메서드가 있으면 KDoc에 적어서, 가져다 쓰는 테스트가 조용히 넘어가는 메서드에 걸리지
+않게 합니다.
+
+`core/data`의 `Fake…Repository`는 프로덕션 키가 나오기 전까지 앱이 쓰는 구현이라 `core/data`에
+그대로 둡니다. 헷갈리지 않게 `core/testing`의 저장소 대역은 `Test…`로 시작합니다. 늘 비어 있기만
+한 것은 `NoAccount`, `NoPings`처럼 `No…`로 부릅니다. `core/testing`은 `core/data`와 기능 모듈의
+테스트에만 겁니다. 다른 모듈의 테스트는 저장소를 쓰지 않습니다.
+
 ### 돌리는 법
 
 로직은 JVM에서 돌립니다. 몇 초면 끝나니 코드를 고칠 때마다 돌려도 됩니다.
@@ -312,7 +333,7 @@ iOS에는 광고, 푸시, 사용 통계가 없고 첫 수집은 앱이 떠 있�
 | --- | --- | --- |
 | `ovalit.android.application` | `composeApp` | SDK 버전, 자바·코틀린 타깃 |
 | `ovalit.kmp.library` | `shared/` 아래 모든 모듈 | 안드로이드와 iOS 시뮬레이터 타깃, 호스트 테스트, 안드로이드 리소스, 테스트 의존성 |
-| `ovalit.kmp.feature` | `shared/feature/*` | `ovalit.kmp.library`, Compose, core 모듈과 lifecycle·Koin 의존성, Res 클래스 설정 |
+| `ovalit.kmp.feature` | `shared/feature/*` | `ovalit.kmp.library`, Compose, core 모듈과 lifecycle·Koin 의존성, Res 클래스 설정, `commonTest`에 `core/testing` |
 
 기능 모듈을 새로 만들면 빌드 파일은 `alias(libs.plugins.ovalit.kmp.feature)` 한 줄로 시작합니다. Res 클래스 패키지는 모듈
 경로에서 정해집니다(`:shared:feature:report` → `com.ovalit.feature.report.resources`). 그 모듈만 쓰는 의존성은 모듈 빌드

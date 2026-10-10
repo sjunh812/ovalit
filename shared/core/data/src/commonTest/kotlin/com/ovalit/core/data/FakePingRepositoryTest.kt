@@ -3,6 +3,8 @@ package com.ovalit.core.data
 import com.ovalit.core.model.PingAnswer
 import com.ovalit.core.model.PingLength
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.testing.Seoul
+import com.ovalit.core.testing.StepClock
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -21,10 +23,8 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 
-private val Seoul = TimeZone.of("Asia/Seoul")
 private val Evening = LocalDateTime(2026, 10, 3, 20, 10).toInstant(Seoul)
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -63,8 +63,8 @@ class FakePingRepositoryTest {
     // 서버는 끊을 때 둘 사이의 ㅇㅂㅇ에서 서로를 뺀다. 가짜도 같아야 끊은 친구의 초대가 홈에 남는 걸 앱에서 볼 수 있다.
     @Test
     fun `친구를 끊으면 그 친구가 보낸 초대가 빠진다`() = runTest {
-        val friends = FakeFriendRepository(MovableClock(Evening))
-        val repository = FakePingRepository(friends, clock = MovableClock(Evening), timeZone = Seoul, scope = backgroundScope)
+        val friends = FakeFriendRepository(StepClock(Evening))
+        val repository = FakePingRepository(friends, clock = StepClock(Evening), timeZone = Seoul, scope = backgroundScope)
         val host = repository.pings.first().single().host.id
 
         friends.unfriend(host)
@@ -165,7 +165,7 @@ class FakePingRepositoryTest {
 
     @Test
     fun `하자고 한 시각에서 한 시간이 지나면 내려주지 않는다`() = runTest {
-        val clock = MovableClock(Evening)
+        val clock = StepClock(Evening)
         val repository = repository(clock)
         val ping = repository.pings.first().single()
 
@@ -175,11 +175,7 @@ class FakePingRepositoryTest {
     }
 }
 
-private class MovableClock(var now: Instant) : Clock {
-    override fun now(): Instant = now
-}
-
-private fun TestScope.repository(clock: Clock = MovableClock(Evening)) = FakePingRepository(
+private fun TestScope.repository(clock: Clock = StepClock(Evening)) = FakePingRepository(
     friendRepository = FakeFriendRepository(clock),
     clock = clock,
     timeZone = Seoul,

@@ -80,7 +80,8 @@ individually"에 걸릴 수 있다. 홈 고정 칸, 라이벌 대결, 친구 비
   (`docs/CONVENTIONS.md`).
 - DI는 Koin 4다. Hilt는 KMP를 지원하지 않는다. 회사 코드와 다르니 주의한다.
 - nowinandroid에서 UDF, `sealed interface UiState`, `stateIn(WhileSubscribed(5_000))`, Repository 분리, `build-logic` convention
-  plugin을 가져온다. SyncWorker 주기 동기화 계층, FTS 전문 검색, 20여 개 모듈 구조는 버린다.
+  plugin, 테스트 대역을 모은 `core/testing`을 가져온다. SyncWorker 주기 동기화 계층, FTS 전문 검색, 20여 개 모듈 구조는 버린다.
+  여러 테스트가 같이 쓰는 대역은 파일마다 복사하지 않고 `core/testing`에 둔다(`docs/CONVENTIONS.md`).
 - 화면 전환은 Navigation 3이고 `shared/app`에 두어 안드로이드와 iOS가 같은 뼈대를 쓴다(사용자 결정). 런타임은 Google 것이
   멀티플랫폼이고 `NavDisplay`는 JetBrains 것이다. 안드로이드에서는 JetBrains 것이 Google `navigation3-ui`로 풀린다. 기능 모듈은
   `ReportRoute`처럼 ViewModel을 받아 그리는 진입 컴포저블까지만 내놓고, 어디서 어디로 가는지는 `shared/app`이 정한다.

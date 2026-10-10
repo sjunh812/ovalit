@@ -5,8 +5,6 @@ import com.ovalit.core.data.AccountSettingsRepository
 import com.ovalit.core.data.FakeAccountRepository
 import com.ovalit.core.data.FakeAccountSettingsRepository
 import com.ovalit.core.data.FakeMatchRepository
-import com.ovalit.core.data.ImportScheduler
-import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.AccountSettings
 import com.ovalit.core.model.Focus
 import com.ovalit.core.model.OvalitError
@@ -14,6 +12,8 @@ import com.ovalit.core.model.PingReminder
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.model.UserPreferences
+import com.ovalit.core.testing.TestImportScheduler
+import com.ovalit.core.testing.TestUserPreferencesRepository
 import com.ovalit.core.ui.FailedAction
 import com.ovalit.core.ui.FailureNotice
 import kotlin.test.AfterTest
@@ -25,13 +25,10 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -45,10 +42,10 @@ class SettingsViewModelTest {
 
     private val matches = FakeMatchRepository()
     private val account = RecordingAccount(FakeAccountRepository(matches))
-    private val preferences = InMemoryPreferences()
+    private val preferences = TestUserPreferencesRepository()
     private val server = FakeAccountSettingsRepository(latency = 1.seconds)
     private val accountSettings = CountingSettings(server)
-    private val importScheduler = RecordingScheduler()
+    private val importScheduler = TestImportScheduler()
     private val viewModel by lazy { SettingsViewModel(account, preferences, accountSettings, matches, importScheduler) }
 
     @BeforeTest
@@ -214,21 +211,6 @@ class SettingsViewModelTest {
     private fun success() = assertIs<SettingsUiState.Success>(viewModel.uiState.value)
 }
 
-private class RecordingScheduler : ImportScheduler {
-    var cancelled = false
-        private set
-
-    override fun start() = Unit
-
-    override fun retry() = Unit
-
-    override fun continueNewMatches(total: Int) = Unit
-
-    override fun cancel() {
-        cancelled = true
-    }
-}
-
 private class RecordingAccount(private val delegate: FakeAccountRepository) : AccountRepository by delegate {
     var unlinked = false
         private set
@@ -249,30 +231,4 @@ private class CountingSettings(
         refreshed++
         delegate.refresh()
     }
-}
-
-private class InMemoryPreferences : UserPreferencesRepository {
-    override val preferences = MutableStateFlow(UserPreferences.Default)
-
-    override suspend fun setTheme(theme: ThemePreference) = preferences.update { it.copy(theme = theme) }
-
-    override suspend fun setDefaultQueue(queue: QueueFilter) = preferences.update { it.copy(defaultQueue = queue) }
-
-    override suspend fun setNotifyAnalysisDone(enabled: Boolean) =
-        preferences.update { it.copy(notifyAnalysisDone = enabled) }
-
-    override suspend fun setNotifyWeeklyReport(enabled: Boolean) =
-        preferences.update { it.copy(notifyWeeklyReport = enabled) }
-
-    override suspend fun setNotifyPing(enabled: Boolean) = preferences.update { it.copy(notifyPing = enabled) }
-
-    override suspend fun setFocus(focus: Focus) = preferences.update { it.copy(focus = focus) }
-
-    override suspend fun setSeenProfileHint() = preferences.update { it.copy(seenProfileHint = true) }
-
-    override suspend fun setSeenNotificationPrimer() = preferences.update { it.copy(seenNotificationPrimer = true) }
-
-    override suspend fun setAskedNotificationPermission() = preferences.update { it.copy(askedNotificationPermission = true) }
-
-    override suspend fun setAdFreeUntil(until: Instant) = preferences.update { it.copy(adFreeUntil = until) }
 }

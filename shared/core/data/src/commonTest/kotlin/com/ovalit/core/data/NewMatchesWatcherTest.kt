@@ -1,6 +1,10 @@
 package com.ovalit.core.data
 
-import com.ovalit.core.model.Account
+import com.ovalit.core.testing.NoAccount
+import com.ovalit.core.testing.StepClock
+import com.ovalit.core.testing.TestImportScheduler
+import com.ovalit.core.testing.Thursday
+import com.ovalit.core.testing.ThursdayClock
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -9,21 +13,13 @@ import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-
-private val Thursday = LocalDateTime(2026, 9, 24, 22, 0).toInstant(TimeZone.of("Asia/Seoul"))
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class NewMatchesWatcherTest {
@@ -55,7 +51,7 @@ class NewMatchesWatcherTest {
         val matches = FakeMatchRepository(ThursdayClock)
         matches.importRecent()
         val before = matches.observeMatches().first().size
-        val watcher = NewMatchesWatcher(matches, NoAccount, RecordingScheduler(), backgroundScope, ThursdayClock)
+        val watcher = NewMatchesWatcher(matches, NoAccount, TestImportScheduler(), backgroundScope, ThursdayClock)
 
         watcher.onAppVisible()
         settle()
@@ -79,7 +75,7 @@ class NewMatchesWatcherTest {
     @Test
     fun `스무 판 넘게 남은 채 앱이 가려지면 이어 받기를 맡긴다`() = runTest {
         val clock = StepClock(Thursday)
-        val scheduler = RecordingScheduler()
+        val scheduler = TestImportScheduler()
         val (matches, watcher) = watching(clock, scheduler)
         matches.importRecent()
         settle()
@@ -98,7 +94,7 @@ class NewMatchesWatcherTest {
     @Test
     fun `몇 판만 남았으면 앱이 가려져도 맡기지 않는다`() = runTest {
         val clock = StepClock(Thursday)
-        val scheduler = RecordingScheduler()
+        val scheduler = TestImportScheduler()
         val (matches, watcher) = watching(clock, scheduler)
         matches.importRecent()
         settle()
@@ -140,37 +136,11 @@ class NewMatchesWatcherTest {
     // 계정은 처음부터 연동돼 있고, 경기는 첫 수집이 채운다
     private suspend fun TestScope.watching(
         clock: Clock,
-        scheduler: ImportScheduler = RecordingScheduler(),
+        scheduler: ImportScheduler = TestImportScheduler(),
     ): Pair<FakeMatchRepository, NewMatchesWatcher> {
         val matches = FakeMatchRepository(clock, scope = this)
         val account = FakeAccountRepository(matches, clock)
         account.link()
         return matches to NewMatchesWatcher(matches, account, scheduler, backgroundScope, clock)
     }
-}
-
-private val ThursdayClock = object : Clock {
-    override fun now(): Instant = Thursday
-}
-
-
-private object NoAccount : AccountRepository {
-    override val account: Flow<Account?> = flowOf(null)
-
-    override suspend fun unlink() = Unit
-}
-
-private class RecordingScheduler : ImportScheduler {
-    var continued = false
-        private set
-
-    override fun start() = Unit
-
-    override fun retry() = Unit
-
-    override fun continueNewMatches(total: Int) {
-        continued = true
-    }
-
-    override fun cancel() = Unit
 }

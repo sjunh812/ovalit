@@ -466,7 +466,7 @@ fun WeaponTileRow(weapons: List<WeaponStats>, catalog: ContentCatalog) {
         val lines = shown.map { weaponLine(it) }
         // 한 칸이라도 헤드샷과 피해량이 한 줄에 안 들어가면 모든 칸에서 피해량을 아래로 내린다
         val stacked = !rememberFitsOnOneLine(
-            lines.map { AnnotatedString(it.headshot + TILE_SEPARATOR + it.damage) },
+            lines.map { it.headshot + AnnotatedString(TILE_SEPARATOR) + it.damage },
             OvalitTheme.typography.caption,
             tileWidth,
         )
@@ -478,17 +478,33 @@ fun WeaponTileRow(weapons: List<WeaponStats>, catalog: ContentCatalog) {
     }
 }
 
-private class WeaponLine(val kills: String, val headshot: String, val damage: String)
+private class WeaponLine(val kills: AnnotatedString, val headshot: AnnotatedString, val damage: AnnotatedString)
 
 @Composable
-private fun weaponLine(weapon: WeaponStats) = WeaponLine(
-    kills = stringResource(Res.string.profile_weapon_kills, weapon.kills.withThousands()),
-    headshot = stringResource(Res.string.profile_weapon_headshot, percentText(weapon.headshotRate)),
-    damage = stringResource(
-        Res.string.profile_weapon_damage,
-        weapon.damagePerRound?.let { MetricFormat.INTEGER.format(it) } ?: NO_VALUE,
-    ),
-)
+private fun weaponLine(weapon: WeaponStats): WeaponLine {
+    val kills = weapon.kills.withThousands()
+    val headshot = percentText(weapon.headshotRate)
+    val damage = weapon.damagePerRound?.let { MetricFormat.INTEGER.format(it) } ?: NO_VALUE
+    return WeaponLine(
+        kills = valueFirst(stringResource(Res.string.profile_weapon_kills, kills), kills),
+        headshot = valueFirst(stringResource(Res.string.profile_weapon_headshot, headshot), headshot),
+        damage = valueFirst(stringResource(Res.string.profile_weapon_damage, damage), damage),
+    )
+}
+
+/**
+ * "헤드샷 42%"에서 숫자만 진하게 칠합니다. 이름과 단위까지 한 회색으로 두면 바로 위 요원 칸의 승률·KDA와 달리 숫자가 묻힙니다.
+ * 이름이 앞인지 뒤인지는 언어마다 달라 문구에서 숫자 자리를 찾습니다.
+ */
+@Composable
+private fun valueFirst(text: String, value: String): AnnotatedString {
+    val colors = OvalitTheme.colors
+    val start = text.indexOf(value)
+    return buildAnnotatedString {
+        withStyle(SpanStyle(color = colors.t3)) { append(text) }
+        if (start >= 0) addStyle(SpanStyle(color = colors.t1, fontWeight = FontWeight.Medium), start, start + value.length)
+    }
+}
 
 @Composable
 private fun WeaponTile(weapon: WeaponStats, line: WeaponLine, stacked: Boolean, catalog: ContentCatalog, modifier: Modifier) {
@@ -501,11 +517,11 @@ private fun WeaponTile(weapon: WeaponStats, line: WeaponLine, stacked: Boolean, 
         Spacer(Modifier.height(8.dp))
         OvalitText(text = name, style = OvalitTheme.typography.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(2.dp))
-        OvalitText(text = line.kills, style = caption, color = colors.t2)
+        OvalitText(text = line.kills, style = caption)
         SeparatedRow(
             items = listOf(
-                { OvalitText(text = line.headshot, style = caption, color = colors.t3) },
-                { OvalitText(text = line.damage, style = caption, color = colors.t3) },
+                { OvalitText(text = line.headshot, style = caption) },
+                { OvalitText(text = line.damage, style = caption) },
             ),
             separator = { OvalitText(text = TILE_SEPARATOR, style = caption, color = colors.t5) },
             stacked = stacked,

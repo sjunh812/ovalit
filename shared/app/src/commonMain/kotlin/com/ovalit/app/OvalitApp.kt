@@ -161,11 +161,12 @@ private val BackStackConfiguration = SavedStateConfiguration {
 @Composable
 fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<String> = emptyFlow()) {
     val backStack = rememberNavBackStack(BackStackConfiguration, Intro)
-    // ㅇㅂㅇ 알림을 누르면 친구 탭 위에 그 초대 화면을 연다. 연동 전이면 무시한다.
+    // ㅇㅂㅇ 알림을 누르면 친구 탭 위에 그 초대 화면을 연다. 연동 전이면 무시한다. 다시 불러오는 중(S0-4)이면 탭을 바꾸지
+    // 않고 그 위에 연다. 탭을 바꾸면 불러오는 화면이 닫혀 돌아갈 곳이 없다.
     LaunchedEffect(openPing) {
         openPing.collect { id ->
             if (Report !in backStack || backStack.last() == PingDetail(id)) return@collect
-            backStack.selectTab(Friends)
+            if (Import !in backStack) backStack.selectTab(Friends)
             backStack.push(PingDetail(id))
         }
     }

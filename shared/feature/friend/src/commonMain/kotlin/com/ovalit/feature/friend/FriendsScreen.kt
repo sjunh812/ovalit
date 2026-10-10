@@ -17,8 +17,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -36,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.data.PingSendResult
 import com.ovalit.core.designsystem.component.OvalitCard
 import com.ovalit.core.designsystem.component.OvalitCardGap
+import com.ovalit.core.designsystem.component.OvalitCardSlice
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitExpandable
 import com.ovalit.core.designsystem.component.OvalitOutlinedButton
@@ -179,45 +181,40 @@ internal fun FriendsScreen(
             onRefresh = onRefresh,
             modifier = Modifier.fillMaxSize().safeDrawingPadding(),
         ) {
-            val scroll = rememberScrollState()
-            ScrollToTopOnReselect(scroll)
-            Column(modifier = Modifier.fillMaxSize().verticalScroll(scroll)) {
-                OvalitTabHeader(title = stringResource(Res.string.friends_title))
-                Spacer(Modifier.height(OvalitSpacing.xs))
-                Column(verticalArrangement = Arrangement.spacedBy(OvalitCardGap)) {
-                    // 친구가 없으면 부를 사람도, 받을 초대도 없다
-                    if (me != null && (uiState.friends.isNotEmpty() || uiState.pings.isNotEmpty())) {
-                        PingListCard(
-                            // 받은 것은 답해야 해서 보낸 것보다 위에 둔다
-                            pings = incoming + listOfNotNull(outgoing),
-                            me = me,
-                            now = now,
-                            timeZone = timeZone,
-                            canCompose = outgoing == null && uiState.friends.isNotEmpty(),
-                            onOpen = { ping.open(it.id) },
-                            onCompose = { composing = true },
-                        )
+            val list = rememberLazyListState()
+            ScrollToTopOnReselect(list)
+            // 친구가 수백 명일 수 있어 보이는 줄만 그린다. 친구 카드는 줄마다 한 조각(OvalitCardSlice)으로 나눠 이어 붙인다.
+            // 카드 사이 간격은 그 카드와 한 항목에 담는다. 받은 요청이나 광고가 없을 때 간격만 남으면 그 자리가 벌어진다.
+            LazyColumn(state = list, modifier = Modifier.fillMaxSize()) {
+                item(key = "header") {
+                    Column {
+                        OvalitTabHeader(title = stringResource(Res.string.friends_title))
+                        Spacer(Modifier.height(OvalitSpacing.xs))
                     }
-
-                    // 요청을 처리하면 아래 목록이 한 번에 튀어 오르지 않게 높이를 천천히 줄인다. 마지막 요청이면 구역이 접히는 동안
-                    // 그 줄을 그대로 둔다. 빈 목록을 그리면 "받은 요청 0"이 잠깐 뜬다.
-                    var lastRequests by remember { mutableStateOf(uiState.requests) }
-                    SideEffect { if (uiState.requests.isNotEmpty()) lastRequests = uiState.requests }
-                    val shownRequests = uiState.requests.ifEmpty { lastRequests }
-                    OvalitExpandable(visible = uiState.requests.isNotEmpty()) {
-                        OvalitCard(modifier = Modifier.animateContentSize()) {
-                            CardTitle(stringResource(Res.string.requests_title, shownRequests.size))
-                            shownRequests.forEachIndexed { index, request ->
-                                key(request.id.value) {
-                                    if (index > 0) RowDivider()
-                                    RequestRow(request, onAccept = { onAccept(request.id) }, onDecline = { onDecline(request.id) })
-                                }
-                            }
+                }
+                // 친구가 없으면 부를 사람도, 받을 초대도 없다
+                if (me != null && (uiState.friends.isNotEmpty() || uiState.pings.isNotEmpty())) {
+                    item(key = "pings") {
+                        Column {
+                            PingListCard(
+                                // 받은 것은 답해야 해서 보낸 것보다 위에 둔다
+                                pings = incoming + listOfNotNull(outgoing),
+                                me = me,
+                                now = now,
+                                timeZone = timeZone,
+                                canCompose = outgoing == null && uiState.friends.isNotEmpty(),
+                                onOpen = { ping.open(it.id) },
+                                onCompose = { composing = true },
+                            )
+                            Spacer(Modifier.height(OvalitCardGap))
                         }
                     }
+                }
+                item(key = "requests") { RequestsCard(uiState.requests, onAccept = onAccept, onDecline = onDecline) }
 
-                    OvalitCard {
-                        if (uiState.friends.isEmpty()) {
+                if (uiState.friends.isEmpty()) {
+                    item(key = "empty") {
+                        OvalitCard {
                             Column(
                                 modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
                                 verticalArrangement = Arrangement.spacedBy(OvalitSpacing.sm),
@@ -229,28 +226,31 @@ internal fun FriendsScreen(
                                     color = colors.t2,
                                 )
                             }
-                        } else {
-                            CardTitle(stringResource(Res.string.friends_count, uiState.friends.size))
-                            uiState.friends.forEachIndexed { index, row ->
-                                if (index > 0) RowDivider()
-                                FriendRowItem(row, isRival = row.friend.id == uiState.rivalId, onClick = { onOpenFriend(row.friend.id) })
-                            }
-                        }
-                        Spacer(Modifier.height(OvalitSpacing.md))
-                        Column(modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
-                            OvalitOutlinedButton(text = stringResource(Res.string.invite), onClick = onInvite)
-                            Spacer(Modifier.height(OvalitSpacing.sm))
-                            OvalitText(
-                                text = stringResource(Res.string.invite_note),
-                                style = OvalitTheme.typography.caption,
-                                color = colors.t3,
-                            )
+                            InviteButton(onInvite)
                         }
                     }
-                    // 광고는 맨 아래 카드 하나로 둔다. 버튼이 있는 오발있?과 받은 요청 사이에 끼우면 초대처럼 읽히고 잘못 누르기 쉽다.
-                    AdSlot(AdPlacement.FRIENDS) { ad -> OvalitCard { ad() } }
+                } else {
+                    item(key = "friends-title") {
+                        OvalitCardSlice(first = true) { CardTitle(stringResource(Res.string.friends_count, uiState.friends.size)) }
+                    }
+                    itemsIndexed(uiState.friends, key = { _, row -> row.friend.id.value }) { index, row ->
+                        OvalitCardSlice {
+                            if (index > 0) RowDivider()
+                            FriendRowItem(row, isRival = row.friend.id == uiState.rivalId, onClick = { onOpenFriend(row.friend.id) })
+                        }
+                    }
+                    item(key = "friends-invite") { OvalitCardSlice(last = true) { InviteButton(onInvite) } }
                 }
-                Spacer(Modifier.height(OvalitSpacing.xxl))
+                // 광고는 맨 아래 카드 하나로 둔다. 버튼이 있는 오발있?과 받은 요청 사이에 끼우면 초대처럼 읽히고 잘못 누르기 쉽다.
+                item(key = "ad") {
+                    AdSlot(AdPlacement.FRIENDS) { ad ->
+                        Column {
+                            Spacer(Modifier.height(OvalitCardGap))
+                            OvalitCard { ad() }
+                        }
+                    }
+                }
+                item(key = "bottom") { Spacer(Modifier.height(OvalitSpacing.xxl)) }
             }
         }
 
@@ -270,6 +270,43 @@ internal fun FriendsScreen(
                 onDismiss = { composing = false },
             )
         }
+    }
+}
+
+// 받은 요청 카드와 그 밑 간격이다. 요청을 처리하면 아래 목록이 한 번에 튀어 오르지 않게 높이를 천천히 줄인다. 마지막 요청이면
+// 구역이 접히는 동안 그 줄을 그대로 둔다. 빈 목록을 그리면 "받은 요청 0"이 잠깐 뜬다.
+@Composable
+private fun RequestsCard(requests: List<FriendRequest>, onAccept: (PlayerId) -> Unit, onDecline: (PlayerId) -> Unit) {
+    var lastRequests by remember { mutableStateOf(requests) }
+    SideEffect { if (requests.isNotEmpty()) lastRequests = requests }
+    val shownRequests = requests.ifEmpty { lastRequests }
+    OvalitExpandable(visible = requests.isNotEmpty()) {
+        Column {
+            OvalitCard(modifier = Modifier.animateContentSize()) {
+                CardTitle(stringResource(Res.string.requests_title, shownRequests.size))
+                shownRequests.forEachIndexed { index, request ->
+                    key(request.id.value) {
+                        if (index > 0) RowDivider()
+                        RequestRow(request, onAccept = { onAccept(request.id) }, onDecline = { onDecline(request.id) })
+                    }
+                }
+            }
+            Spacer(Modifier.height(OvalitCardGap))
+        }
+    }
+}
+
+@Composable
+private fun InviteButton(onInvite: () -> Unit) {
+    Spacer(Modifier.height(OvalitSpacing.md))
+    Column(modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+        OvalitOutlinedButton(text = stringResource(Res.string.invite), onClick = onInvite)
+        Spacer(Modifier.height(OvalitSpacing.sm))
+        OvalitText(
+            text = stringResource(Res.string.invite_note),
+            style = OvalitTheme.typography.caption,
+            color = OvalitTheme.colors.t3,
+        )
     }
 }
 

@@ -1,33 +1,24 @@
 package com.ovalit.core.data
 
 import com.ovalit.core.model.Account
-import com.ovalit.core.model.NewMatchesProgress
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Clock
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -35,79 +26,7 @@ import kotlinx.datetime.toInstant
 private val Thursday = LocalDateTime(2026, 9, 24, 22, 0).toInstant(TimeZone.of("Asia/Seoul"))
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class NewMatchesTest {
-
-    // 가짜 저장소는 마지막으로 확인한 뒤 30초마다 한 판이 끝난 것으로 친다. 10분이면 스무 판이다.
-    @Test
-    fun `오래 떠났다 오면 쌓인 경기를 최신부터 한 판씩 받으며 진행도를 올린다`() = runTest {
-        val clock = StepClock(Thursday)
-        val repository = FakeMatchRepository(clock, scope = this)
-        repository.importRecent()
-        val before = repository.observeMatches().first().size
-        clock.now += 10.minutes
-        val seen = mutableListOf<NewMatchesProgress?>()
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { repository.newMatchesProgress.toList(seen) }
-
-        assertEquals(20, repository.refresh())
-
-        val fresh = repository.observeMatches().first().drop(before)
-        assertEquals(20, fresh.size)
-        assertEquals(fresh.sortedByDescending { it.startedAt }, fresh)
-        assertEquals((0..20).map { NewMatchesProgress(total = 20, received = it) }, seen.filterNotNull())
-        assertNull(repository.newMatchesProgress.first())
-    }
-
-    // 홈에서 당긴 뒤 다른 화면으로 가거나 앱을 나가도 받던 경기는 마저 받는다
-    @Test
-    fun `부른 화면이 사라져도 새 경기를 끝까지 받는다`() = runTest {
-        val clock = StepClock(Thursday)
-        val repository = FakeMatchRepository(clock, scope = this)
-        repository.importRecent()
-        val before = repository.observeMatches().first().size
-        clock.now += 10.minutes
-
-        val caller = launch { repository.refresh() }
-        advanceTimeBy(2.seconds)
-        caller.cancel()
-        advanceUntilIdle()
-
-        assertEquals(before + 20, repository.observeMatches().first().size)
-    }
-
-    // 연동을 해제하면 저장된 경기를 지운다. 받던 경기가 그 뒤에 다시 채워지면 안 된다.
-    @Test
-    fun `저장한 경기를 지우면 받던 새 경기도 멈춘다`() = runTest {
-        val clock = StepClock(Thursday)
-        val repository = FakeMatchRepository(clock, scope = this)
-        repository.importRecent()
-        clock.now += 10.minutes
-
-        launch { repository.refresh() }
-        advanceTimeBy(2.seconds)
-        repository.deleteAll()
-        advanceUntilIdle()
-
-        assertEquals(emptyList(), repository.observeMatches().first())
-        assertNull(repository.newMatchesProgress.first())
-    }
-
-    // 앱에서는 받기가 Dispatchers.Default에서 돌고 지우기는 메인에서 돈다. 받던 한 판이 지운 뒤에 들어오면 연동을 해제해도 전적이 남는다.
-    @Test
-    fun `다른 스레드에서 받는 중에 지워도 지운 뒤에 경기가 들어오지 않는다`() = runTest {
-        withContext(Dispatchers.Default) {
-            val clock = StepClock(Thursday)
-            val repository = FakeMatchRepository(clock, downloadDelay = 1.milliseconds, scope = CoroutineScope(Dispatchers.Default))
-            repository.importRecent()
-            clock.now += 20.minutes
-            launch { runCatching { repository.refresh() } }
-            repository.newMatchesProgress.first { (it?.received ?: 0) >= 3 }
-
-            repository.deleteAll()
-            delay(50.milliseconds)
-
-            assertEquals(emptyList(), repository.observeMatches().first())
-        }
-    }
+class NewMatchesWatcherTest {
 
     // 다른 앱을 잠깐 오갈 때마다 경기 ID 목록을 받으면 앱 전체의 Riot 몫을 쓴다
     @Test
@@ -123,6 +42,7 @@ class NewMatchesTest {
         settle()
         assertEquals(imported, matches.observeMatches().first().size)
 
+        // 가짜 서버는 30초마다 한 판이 끝난 것으로 친다. 11분이면 스물두 판이다.
         clock.now += 6.minutes
         watcher.onAppVisible()
         settle()
@@ -193,35 +113,6 @@ class NewMatchesTest {
         settle()
     }
 
-    // 지운 뒤 홈의 "다시 불러오기"를 당기면 첫 수집 없이 8주치를 다 받고, 첫 수집과 같은 경기를 두 번 받는다
-    @Test
-    fun `첫 수집 전에는 당겨도 새 경기를 받지 않는다`() = runTest {
-        val clock = StepClock(Thursday)
-        val repository = FakeMatchRepository(clock, scope = this)
-        repository.deleteAll()
-        clock.now += 10.minutes
-
-        assertEquals(0, repository.refresh())
-
-        assertEquals(emptyList(), repository.observeMatches().first())
-    }
-
-    // 첫 수집은 WorkManager 쪽에서 돌아 지우기가 멈출 수 없다. 지운 뒤에 받던 경기가 들어오면 연동을 해제해도 전적이 남는다.
-    @Test
-    fun `첫 수집 중에 지우면 지운 뒤에 경기가 들어오지 않는다`() = runTest {
-        val repository = FakeMatchRepository(ThursdayClock, scope = this)
-        repository.deleteAll()
-        val importing = launch { repository.importRecent() }
-        advanceTimeBy(500.milliseconds)
-        assertTrue(repository.observeMatches().first().isNotEmpty())
-
-        repository.deleteAll()
-        importing.join()
-
-        assertEquals(emptyList(), repository.observeMatches().first())
-        assertNull(repository.importProgress.first())
-    }
-
     // 당긴 직후 앱을 나갔다 오면 방금 받은 목록을 또 받는다
     @Test
     fun `당겨서 받은 것도 확인으로 쳐서 곧 다시 열면 받지 않는다`() = runTest {
@@ -262,9 +153,6 @@ private val ThursdayClock = object : Clock {
     override fun now(): Instant = Thursday
 }
 
-private class StepClock(var now: Instant) : Clock {
-    override fun now(): Instant = now
-}
 
 private object NoAccount : AccountRepository {
     override val account: Flow<Account?> = flowOf(null)

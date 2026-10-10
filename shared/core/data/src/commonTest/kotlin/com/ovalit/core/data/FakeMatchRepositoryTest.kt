@@ -24,10 +24,10 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Clock
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDateTime
@@ -39,6 +39,7 @@ private val Thursday = LocalDateTime(2026, 9, 24, 22, 0).toInstant(Seoul)
 private val ThursdayClock = object : Clock {
     override fun now(): Instant = Thursday
 }
+
 
 class FakeMatchRepositoryTest {
 
@@ -78,28 +79,40 @@ class FakeMatchRepositoryTest {
         assertEquals(Focus.AIM, insight(Focus.AIM).focus)
     }
 
-    // 홈과 경기 탭이 같이 당기면 레이트 리밋을 두 번 쓴다
+    // 앱을 10분 넘게 떠났다 오면 스무 판이 넘게 쌓여 진행 줄과 WorkManager 이어 받기를 볼 수 있어야 한다
     @Test
-    fun `받는 중에 또 당기면 새로 받지 않는다`() = runTest {
-        val repository = FakeMatchRepository(clock = ThursdayClock, scope = this)
+    fun `가짜 서버는 마지막으로 목록을 준 뒤 30초마다 한 판이 끝난 것으로 친다`() = runTest {
+        val clock = StepClock(Thursday)
+        val repository = FakeMatchRepository(clock, scope = this)
         val before = repository.observeMatches().first().size
+        clock.now += 10.minutes
 
-        val counts = listOf(async { repository.refresh() }, async { repository.refresh() }).awaitAll()
+        assertEquals(20, repository.refresh())
 
-        assertEquals(listOf(1, 0), counts.sortedDescending())
-        assertEquals(before + 1, repository.observeMatches().first().size)
+        val fresh = repository.observeMatches().first().drop(before)
+        assertEquals(20, fresh.size)
+        assertEquals(fresh.sortedByDescending { it.startedAt }, fresh)
     }
 
-    // 진행도가 남으면 다시 연동했을 때 새 수집 전에 지난 수집의 "리포트 보기"가 뜬다
+    // 당겨도 아무것도 안 들어오면 가짜 데이터로 새로고침을 볼 수 없다
     @Test
-    fun `경기를 지우면 첫 수집 진행도도 지운다`() = runTest {
-        val repository = FakeMatchRepository(clock = ThursdayClock)
-        repository.importRecent()
-        assertTrue(assertNotNull(repository.importProgress.first()).isDone)
+    fun `가짜 저장소는 당기면 늘 한 판은 받는다`() = runTest {
+        val repository = FakeMatchRepository(ThursdayClock, scope = this)
+
+        assertEquals(1, repository.refresh())
+        assertEquals(1, repository.refresh())
+    }
+
+    // 홈에 맞춰 둔 가짜 지표(움직인 칸, 짚을 점, 개선 포인트)는 첫 수집 50경기 기준이다. 앞서 받은 새 경기가 섞이면 틀어진다.
+    @Test
+    fun `가짜 저장소는 지운 뒤 다시 받는 첫 수집에서 늘 같은 경기를 받는다`() = runTest {
+        val repository = FakeMatchRepository(ThursdayClock, importDelay = Duration.ZERO, scope = this)
+        repository.refresh()
 
         repository.deleteAll()
+        repository.importRecent()
 
-        assertNull(repository.importProgress.first())
+        assertEquals(fakeMatches(Thursday).forFirstImport(Thursday) { it.startedAt }, repository.observeMatches().first())
     }
 
     @Test

@@ -22,7 +22,7 @@ fun <T> Iterable<T>.forFirstImport(now: Instant, startedAt: (T) -> Instant): Lis
  *
  * @property results 받은 경기의 승패를 받은 순서대로 담습니다. S0-4 아래 막대를 이걸로 칠합니다.
  * @property stoppedBy 받다 멈췄으면 그 까닭이고, 다시 받기 시작하면 `null`로 돌아갑니다. 받은 경기는 그대로 두고 남은 것만
- * 이어 받습니다.
+ * 이어 받습니다. 경기 ID 목록부터 받지 못했으면 몇 판을 받을지 몰라 [total]이 0입니다.
  */
 data class ImportProgress(
     val total: Int,
@@ -31,5 +31,6 @@ data class ImportProgress(
 ) {
     val loaded: Int get() = results.size
 
-    val isDone: Boolean get() = loaded >= total
+    /** 멈춘 수집은 끝난 게 아닙니다. 목록부터 받지 못해 [total]이 0이어도 S0-4가 "리포트 보기" 대신 다시 시도를 띄웁니다. */
+    val isDone: Boolean get() = loaded >= total && stoppedBy == null
 }

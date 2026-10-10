@@ -28,11 +28,13 @@ npm run dev
 `riot_key_missing`을 돌려줍니다.
 
 RSO는 프로덕션 키가 나와야 붙일 수 있습니다. 그 전에는 `/auth/dev`로 아무 PUUID나 넣어 세션을
-받습니다. `.dev.vars`의 `DEV_LOGIN=true`이고 로컬 주소로 들어올 때만 열립니다. 에뮬레이터에서는
+받습니다. `.dev.vars`의 `DEV_LOGIN=true`이고 `RSO_CLIENT_SECRET`이 비어 있고 로컬 주소로 들어올 때만
+열립니다. 로컬에서 RSO를 돌려 보려고 `RSO_CLIENT_SECRET`을 넣으면 `/auth/dev`는 닫힙니다. 에뮬레이터에서는
 `http://10.0.2.2:8787`로 부르거나 `adb reverse tcp:8787 tcp:8787`을 걸고 `localhost`로 부릅니다.
 
 로컬 주소인지는 요청의 Host 헤더로 가립니다. 이 헤더는 보내는 쪽이 마음대로 적을 수 있어서 실제로 막는 건
-`DEV_LOGIN` 하나입니다. `wrangler dev`는 기본으로 localhost에만 붙습니다. `--ip 0.0.0.0`이나 `dev.ip` 설정으로
+`DEV_LOGIN`과 `RSO_CLIENT_SECRET`입니다. 배포 환경에는 RSO 비밀값이 늘 있어서 `DEV_LOGIN`을 실수로 넣어도
+열리지 않습니다. `wrangler dev`는 기본으로 localhost에만 붙습니다. `--ip 0.0.0.0`이나 `dev.ip` 설정으로
 바깥에 열지 마세요. 같은 네트워크의 누구든 Host 헤더만 바꿔 아무 PUUID로 로그인할 수 있게 됩니다. 기기에서 닿지
 않으면 바깥에 여는 대신 `adb reverse`를 씁니다.
 
@@ -64,7 +66,7 @@ npm run typecheck
 | GET | `/auth/done` | | 앱이 안 열렸을 때 보이는 쪽. 우리 패키지를 지정한 intent 버튼을 둡니다 |
 | GET | `/.well-known/assetlinks.json` | | App Link 검증 파일. `ANDROID_CERT_SHA256`이 없으면 404 |
 | POST | `/auth/session` | | `{code, verifier}` → `{token, expiresAt}` |
-| POST | `/auth/dev` | | 로컬 전용. `{puuid, gameName, tagLine}` → `{token, expiresAt}` |
+| POST | `/auth/dev` | | 로컬 전용. `{puuid, gameName, tagLine}` → `{token, expiresAt}`. RSO 비밀값이 있으면 404 |
 | POST | `/auth/logout` | 필요 | 이 세션을 끊습니다 |
 | GET | `/me` | 필요 | `{puuid, gameName, tagLine, statsPublic}` |
 | PATCH | `/me` | 필요 | `{statsPublic}` |

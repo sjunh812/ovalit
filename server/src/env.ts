@@ -10,7 +10,8 @@ export interface Env {
   STATE_SECRET?: string;
   /**
    * `"true"`이고 로컬 주소(localhost, 127.0.0.1, [::1], 10.0.2.2)로 들어온 요청에만 `/auth/dev`가 열립니다. 주소는
-   * Host 헤더로 가려서 꾸밀 수 있으니 배포 환경에는 절대 넣지 않습니다.
+   * Host 헤더로 가려서 꾸밀 수 있으니 배포 환경에는 절대 넣지 않습니다. `RSO_CLIENT_SECRET`이 있으면 이 값과 상관없이
+   * 닫힙니다.
    */
   DEV_LOGIN?: string;
   /**

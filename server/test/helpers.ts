@@ -9,11 +9,12 @@ import { clearAuthQuotas } from "../src/routes/auth";
 import { clearUsedStates } from "../src/state";
 import { clearRiotBlocks } from "../src/upstream";
 
-// 실제 키는 쓰지 않는다. wrangler가 .dev.vars를 읽어 오더라도 여기 값으로 덮어쓴다.
+// 실제 키는 쓰지 않는다. wrangler가 .dev.vars를 읽어 오더라도 여기 값으로 덮어쓴다. RSO_CLIENT_SECRET이 있으면
+// /auth/dev가 닫혀서 login()을 못 쓰니 비워 두고, RSO를 보는 테스트만 넣는다.
 const TEST_SECRETS = {
   RIOT_API_KEY: "test-riot-key",
   RSO_CLIENT_ID: "test-client",
-  RSO_CLIENT_SECRET: "test-secret",
+  RSO_CLIENT_SECRET: undefined,
   STATE_SECRET: "test-state-secret-0123456789abcdef",
   DEV_LOGIN: "true",
   FCM_SERVICE_ACCOUNT: undefined,

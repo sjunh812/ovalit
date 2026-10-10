@@ -16,6 +16,11 @@ function pkce() {
   return { verifier, challenge: sha256(verifier) };
 }
 
+/** RSO 비밀값을 넣은 환경입니다. 그 값이 있으면 `/auth/dev`가 닫혀서 기본 `setup()`에는 넣지 않습니다. */
+function withRso(overrides: Parameters<typeof setup>[0] = {}) {
+  return setup({ RSO_CLIENT_SECRET: "test-secret", ...overrides });
+}
+
 /** RSO를 띄워 state를 받아 둡니다. 콜백에 무엇을 돌려줄지는 부르는 쪽이 정합니다. */
 async function rsoState(t: ReturnType<typeof setup>): Promise<string> {
   const start = await t.call("GET", `/auth/rso/start?challenge=${await pkce().challenge}`);
@@ -41,7 +46,7 @@ async function rsoLogin(t: ReturnType<typeof setup>, account = { puuid: makePuui
 
 describe("RSO 로그인", () => {
   it("Riot 로그인으로 보내고 콜백에서 App Link로 일회용 코드를 넘긴다", async () => {
-    const t = setup();
+    const t = withRso();
     const { start, authorize, callback, deepLink } = await rsoLogin(t);
 
     expect(start.status).toBe(302);
@@ -67,7 +72,7 @@ describe("RSO 로그인", () => {
   });
 
   it("코드와 verifier를 맞춰 보내야 세션이 나온다", async () => {
-    const t = setup();
+    const t = withRso();
     const { deepLink, verifier, account } = await rsoLogin(t);
     const res = await t.call("POST", "/auth/session", undefined, { code: deepLink.searchParams.get("code"), verifier });
     expect(res.status).toBe(200);
@@ -79,7 +84,7 @@ describe("RSO 로그인", () => {
   });
 
   it("Riot 토큰은 어디에도 저장하지 않는다", async () => {
-    const t = setup();
+    const t = withRso();
     await rsoLogin(t);
     const tables = ["users", "sessions", "login_codes"];
     for (const table of tables) {
@@ -90,7 +95,7 @@ describe("RSO 로그인", () => {
   });
 
   it("verifier가 틀리면 세션을 주지 않고 코드도 버린다", async () => {
-    const t = setup();
+    const t = withRso();
     const { deepLink, verifier } = await rsoLogin(t);
     const code = deepLink.searchParams.get("code");
     const wrong = await t.call("POST", "/auth/session", undefined, { code, verifier: pkce().verifier });
@@ -102,7 +107,7 @@ describe("RSO 로그인", () => {
   });
 
   it("쓴 코드는 다시 쓸 수 없다", async () => {
-    const t = setup();
+    const t = withRso();
     const { deepLink, verifier } = await rsoLogin(t);
     const code = deepLink.searchParams.get("code");
     expect((await t.call("POST", "/auth/session", undefined, { code, verifier })).status).toBe(200);
@@ -110,7 +115,7 @@ describe("RSO 로그인", () => {
   });
 
   it("2분이 지난 코드는 쓸 수 없다", async () => {
-    const t = setup();
+    const t = withRso();
     const { deepLink, verifier } = await rsoLogin(t);
     const code = deepLink.searchParams.get("code")!;
     await env.DB.prepare("UPDATE login_codes SET expires_at = ? WHERE code_hash = ?")
@@ -120,7 +125,7 @@ describe("RSO 로그인", () => {
   });
 
   it("모르는 state로 들어온 콜백은 Riot을 부르지 않고 앱에 실패를 알린다", async () => {
-    const t = setup();
+    const t = withRso();
     for (const state of [randomToken(), "", `${randomToken()}.0.${randomToken(12)}.${randomToken()}`]) {
       const res = await t.call("GET", `/auth/rso/callback?code=riot-code&state=${state}`);
       expect(res.headers.get("Location")).toBe("http://localhost/auth/done?error=invalid_state");
@@ -129,7 +134,7 @@ describe("RSO 로그인", () => {
   });
 
   it("로그인을 시작해도 D1에 아무것도 쓰지 않는다", async () => {
-    const t = setup();
+    const t = withRso();
     const watched = watchDb(t.env.DB);
     t.env.DB = watched.db;
     const start = await t.call("GET", `/auth/rso/start?challenge=${await pkce().challenge}`);
@@ -138,7 +143,7 @@ describe("RSO 로그인", () => {
   });
 
   it("state의 challenge를 바꿔 끼우면 서명이 맞지 않아 받지 않는다", async () => {
-    const t = setup();
+    const t = withRso();
     const state = await rsoState(t);
     const [, ...rest] = state.split(".");
     const forged = [await pkce().challenge, ...rest].join(".");
@@ -148,7 +153,7 @@ describe("RSO 로그인", () => {
   });
 
   it("다른 비밀값으로 서명한 state는 받지 않는다", async () => {
-    const t = setup();
+    const t = withRso();
     const state = await rsoState(t);
     t.env.STATE_SECRET = "another-state-secret-0123456789abcdef";
     const res = await t.call("GET", `/auth/rso/callback?code=riot-code&state=${state}`);
@@ -157,7 +162,7 @@ describe("RSO 로그인", () => {
   });
 
   it("state는 한 번만 쓸 수 있다", async () => {
-    const t = setup();
+    const t = withRso();
     const { state } = await rsoLogin(t);
     const again = await t.call("GET", `/auth/rso/callback?code=riot-code&state=${state}`);
     expect(again.headers.get("Location")).toBe("http://localhost/auth/done?error=invalid_state");
@@ -166,7 +171,7 @@ describe("RSO 로그인", () => {
 
   it("10분이 지난 state는 쓸 수 없다", async () => {
     vi.useFakeTimers({ toFake: ["Date"] });
-    const t = setup();
+    const t = withRso();
     t.upstream.json(TOKEN_URL, { access_token: "riot-access" });
     t.upstream.json(ACCOUNT_ME_URL, { puuid: makePuuid(), gameName: "제트장인", tagLine: "KR1" });
     const late = await rsoState(t);
@@ -180,13 +185,13 @@ describe("RSO 로그인", () => {
   });
 
   it("유저가 Riot 로그인을 취소하면 앱에 알린다", async () => {
-    const t = setup();
+    const t = withRso();
     const res = await t.call("GET", "/auth/rso/callback?error=access_denied");
     expect(res.headers.get("Location")).toBe("http://localhost/auth/done?error=access_denied");
   });
 
   it("Riot이 레이트 리밋에 걸리면 앱에 그대로 알린다", async () => {
-    const t = setup();
+    const t = withRso();
     const start = await t.call("GET", `/auth/rso/start?challenge=${await pkce().challenge}`);
     const state = new URL(start.headers.get("Location")!).searchParams.get("state")!;
     t.upstream.on(TOKEN_URL, () => new Response(null, { status: 429, headers: { "Retry-After": "7" } }));
@@ -195,7 +200,7 @@ describe("RSO 로그인", () => {
   });
 
   it("토큰 응답에 access_token이 없으면 계정을 읽지 않고 rso_failed로 돌려보낸다", async () => {
-    const t = setup();
+    const t = withRso();
     const state = await rsoState(t);
     t.upstream.json(TOKEN_URL, { token_type: "Bearer" });
     t.upstream.json(ACCOUNT_ME_URL, { puuid: makePuuid(), gameName: "제트장인", tagLine: "KR1" });
@@ -209,7 +214,7 @@ describe("RSO 로그인", () => {
     ["Riot ID가 빠진 계정", () => Response.json({ puuid: makePuuid() })],
     ["PUUID 모양이 틀린 계정", () => Response.json({ puuid: "../../riot", gameName: "제트장인", tagLine: "KR1" })],
   ])("%s이 오면 사용자를 만들지 않고 rso_failed로 돌려보낸다", async (_, account) => {
-    const t = setup();
+    const t = withRso();
     const state = await rsoState(t);
     t.upstream.json(TOKEN_URL, { access_token: "riot-access" });
     t.upstream.on(ACCOUNT_ME_URL, account);
@@ -220,7 +225,7 @@ describe("RSO 로그인", () => {
   });
 
   it("D1처럼 예상 밖의 곳에서 실패하면 에러 이름만 남기고 rso_failed로 돌려보낸다", async () => {
-    const t = setup();
+    const t = withRso();
     const state = await rsoState(t);
     t.upstream.json(TOKEN_URL, { access_token: "riot-access" });
     t.upstream.json(ACCOUNT_ME_URL, { puuid: makePuuid(), gameName: "제트장인", tagLine: "KR1" });
@@ -232,7 +237,7 @@ describe("RSO 로그인", () => {
   });
 
   it("다시 로그인하면 바뀐 Riot ID로 덮어쓴다", async () => {
-    const t = setup();
+    const t = withRso();
     const puuid = makePuuid();
     await rsoLogin(t, { puuid, gameName: "옛이름", tagLine: "KR1" });
     await rsoLogin(t, { puuid, gameName: "새이름", tagLine: "KR2" });
@@ -245,7 +250,7 @@ describe("RSO 로그인", () => {
     ["state 서명 키", { STATE_SECRET: undefined }],
     ["32자보다 짧은 state 서명 키", { STATE_SECRET: "x".repeat(31) }],
   ])("%s 설정이 없으면 로그인을 띄우지 않는다", async (_, overrides) => {
-    const t = setup(overrides);
+    const t = withRso(overrides);
     const res = await t.call("GET", `/auth/rso/start?challenge=${await pkce().challenge}`);
     expect(res.status).toBe(503);
     expect(await res.json()).toEqual({ error: "rso_not_configured" });
@@ -253,7 +258,7 @@ describe("RSO 로그인", () => {
 
   it("로그인 시작은 IP마다 1분에 20번까지다", async () => {
     vi.useFakeTimers({ toFake: ["Date"] });
-    const t = setup();
+    const t = withRso();
     const start = async (ip: string) =>
       t.app.request(`/auth/rso/start?challenge=${await pkce().challenge}`, { headers: { "CF-Connecting-IP": ip } }, t.env);
     for (let i = 0; i < 20; i++) expect((await start("203.0.113.7")).status).toBe(302);
@@ -267,7 +272,7 @@ describe("RSO 로그인", () => {
   });
 
   it("콜백도 IP마다 1분에 20번까지이고 넘기면 Riot을 부르지 않고 앱에 알린다", async () => {
-    const t = setup();
+    const t = withRso();
     const callback = () =>
       t.app.request(`/auth/rso/callback?code=riot-code&state=x`, { headers: { "CF-Connecting-IP": "203.0.113.7" } }, t.env);
     for (let i = 0; i < 20; i++) await callback();
@@ -277,7 +282,7 @@ describe("RSO 로그인", () => {
   });
 
   it("challenge 모양이 틀리면 받지 않는다", async () => {
-    const t = setup();
+    const t = withRso();
     const res = await t.call("GET", "/auth/rso/start?challenge=short");
     expect(res.status).toBe(400);
   });
@@ -306,6 +311,13 @@ describe("개발용 로그인", () => {
       t.env,
     );
     expect(res.status).toBe(404);
+  });
+
+  it("RSO 비밀값이 있는 환경이면 DEV_LOGIN을 켜도 열리지 않는다", async () => {
+    const t = withRso();
+    const res = await t.call("POST", "/auth/dev", undefined, body());
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: "not_found" });
   });
 
   it("켜져 있으면 Riot을 부르지 않고 세션을 준다", async () => {
@@ -346,10 +358,10 @@ describe("세션", () => {
   });
 
   it("세션 토큰을 주는 응답은 캐시에 남기지 않는다", async () => {
-    const t = setup();
+    const t = withRso();
     const { deepLink, verifier } = await rsoLogin(t);
     const session = await t.call("POST", "/auth/session", undefined, { code: deepLink.searchParams.get("code"), verifier });
-    const dev = await t.call("POST", "/auth/dev", undefined, { puuid: makePuuid(), gameName: "dev", tagLine: "KR1" });
+    const dev = await setup().call("POST", "/auth/dev", undefined, { puuid: makePuuid(), gameName: "dev", tagLine: "KR1" });
     for (const res of [session, dev]) {
       expect(res.status).toBe(200);
       expect(res.headers.get("Cache-Control")).toBe("no-store");

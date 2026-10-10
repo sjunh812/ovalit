@@ -32,8 +32,9 @@
   `/og/invite-v{N}.png`(1200×630 PNG, 카카오톡이 SVG를 받지 않는다)이고, 카카오톡이 주소로 기억하니 바꾸면 N을 올린다.
   `robots.txt`는 `/i/`와 `/og/`만 연다.
 - iOS Universal Link는 유료 개발자 계정이 있어야 해서 iOS에 RSO를 붙일 때 따로 정한다.
-- `/auth/dev`는 RSO 없이 친구 흐름을 돌려 보는 문이다. `DEV_LOGIN=true`이고 로컬 주소로 들어왔을 때만 열린다. 배포 환경에는
-  넣지 않는다. 로컬 주소 확인은 Host 헤더라 꾸밀 수 있어서 실제로 막는 건 `DEV_LOGIN`이고, `wrangler dev`는 localhost에만 붙인다.
+- `/auth/dev`는 RSO 없이 친구 흐름을 돌려 보는 문이다. `DEV_LOGIN=true`이고 `RSO_CLIENT_SECRET`이 없고 로컬 주소로 들어왔을
+  때만 열린다. 배포 환경에는 `DEV_LOGIN`을 넣지 않는다. 로컬 주소 확인은 Host 헤더라 꾸밀 수 있어서, 배포 환경에 늘 있는
+  `RSO_CLIENT_SECRET`으로 한 번 더 막는다. `wrangler dev`는 localhost에만 붙인다.
 
 ## 전적과 친구
 

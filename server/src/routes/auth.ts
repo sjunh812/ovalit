@@ -146,11 +146,13 @@ auth.post("/session", async (c) => {
  * RSO 없이 친구 흐름을 로컬에서 돌려 보는 문입니다. `DEV_LOGIN`이 `"true"`이고 로컬 주소로 들어왔을 때만
  * 열립니다. 아무 PUUID로나 로그인할 수 있어서 배포 환경에서 열리면 남의 전적을 볼 수 있게 됩니다.
  *
- * 로컬 주소는 요청의 Host 헤더로 가리므로 보내는 쪽이 얼마든지 꾸밀 수 있습니다. 실제로 막는 건 `DEV_LOGIN`
- * 하나이고, `wrangler dev`도 localhost에만 붙여 둬야 합니다.
+ * 로컬 주소는 요청의 Host 헤더로 가리므로 보내는 쪽이 얼마든지 꾸밀 수 있습니다. 그래서 `RSO_CLIENT_SECRET`이
+ * 있으면 `DEV_LOGIN`과 상관없이 닫습니다. 배포 환경에는 그 값이 꼭 있으니 `DEV_LOGIN`을 실수로 넣어도 열리지
+ * 않습니다. `wrangler dev`도 localhost에만 붙여 둬야 합니다.
  */
 auth.post("/dev", async (c) => {
-  if (c.env.DEV_LOGIN !== "true" || !DEV_HOSTS.has(new URL(c.req.url).hostname)) throw new ApiError(404, "not_found");
+  const open = c.env.DEV_LOGIN === "true" && !c.env.RSO_CLIENT_SECRET && DEV_HOSTS.has(new URL(c.req.url).hostname);
+  if (!open) throw new ApiError(404, "not_found");
   const body = await validate.jsonBody(c);
   const puuid = validate.puuid(body.puuid);
   const gameName = validate.text(body.gameName, 16, "invalid_game_name");

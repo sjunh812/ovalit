@@ -26,7 +26,8 @@ class OvalitBottomSheetTest {
         assertTrue(abs((titleBaseline - noteBaseline).value) < 1f, "기준선이 $titleBaseline, $noteBaseline 로 어긋났다")
     }
 
-    // 제목이 한 줄을 다 쓰면 약어가 남은 자리에 끼어 한 글자씩 꺾인다. 그럴 때는 약어를 다음 줄로 넘긴다.
+    // 제목이 한 줄을 다 쓰면 약어가 남은 자리에 끼어 한 글자씩 꺾인다.
+    // 그럴 때는 약어를 다음 줄로 넘긴다.
     @Test
     fun `제목이 길면 정식 약어를 다음 줄로 넘기고 꺾지 않는다`() = runComposeUiTest {
         val long = "아주 긴 제목이 들어와서 한 줄을 넘기고 두 줄까지 채우는 경우를 만들어 보려고 길게 적은 제목"

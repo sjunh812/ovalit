@@ -22,8 +22,8 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 private const val PULSE_MILLIS = 900
 
 /**
- * 불러오는 동안 화면 모양대로 자리만 잡아 두는 틀입니다. 안의 칸이 모두 같이 천천히 깜빡이고, 화면 화면 읽기 프로그램에는
- * [description] 한 줄만 읽힙니다.
+ * 불러오는 동안 화면 모양대로 자리만 잡아 두는 틀입니다.
+ * 안의 칸이 모두 같이 천천히 깜빡이고, 화면 읽기 프로그램에는 [description] 한 줄만 읽힙니다.
  */
 @Composable
 fun OvalitSkeleton(description: String, modifier: Modifier = Modifier, content: @Composable () -> Unit) {

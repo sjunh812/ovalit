@@ -9,8 +9,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
 /**
- * 지금 탭을 탭바에서 한 번 더 누를 때마다 흐릅니다. 화면 전환을 정하는 `composeApp`이 탭 화면마다 채웁니다. 탭 밖에서는 흐르지
- * 않습니다.
+ * 지금 탭을 탭바에서 한 번 더 누를 때마다 흐릅니다.
+ * 화면 전환을 정하는 `composeApp`이 탭 화면마다 채웁니다.
+ * 탭 밖에서는 흐르지 않습니다.
  */
 val LocalTabReselects = staticCompositionLocalOf<Flow<Unit>> { emptyFlow() }
 

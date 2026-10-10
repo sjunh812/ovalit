@@ -6,7 +6,8 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import kotlin.test.Test
 
-// Riot 개발자 포털 Core Policies가 지정한 문구다. 한 글자라도 바뀌면 키 심사에서 걸린다.
+// Riot 개발자 포털 Core Policies가 지정한 문구다.
+// 한 글자라도 바뀌면 키 심사에서 걸린다.
 private const val REQUIRED_BOILERPLATE =
     "Ovalit isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games " +
         "or anyone officially involved in producing or managing Riot Games properties. " +

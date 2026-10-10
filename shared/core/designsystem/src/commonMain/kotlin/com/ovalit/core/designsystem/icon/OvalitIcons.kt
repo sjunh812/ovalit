@@ -17,11 +17,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitTheme
 
-// 경로는 화면 목업의 SVG를 그대로 옮겼다(경기 아이콘만 다르다, DECISIONS). 20×20 격자에 선으로 그린다.
+// 경로는 화면 목업의 SVG를 그대로 옮겼다(경기 아이콘만 다르다, DECISIONS).
+// 20×20 격자에 선으로 그린다.
 object OvalitIcons {
     val Home: ImageVector by lazy { strokeIcon(HOME) }
 
-    // 채운 아이콘은 하단 탭의 고른 탭에만 쓴다. 같은 선을 한 번 더 그려 모서리를 선 아이콘처럼 둥글게 맞춘다.
+    // 채운 아이콘은 하단 탭의 고른 탭에만 쓴다.
+    // 같은 선을 한 번 더 그려 모서리를 선 아이콘처럼 둥글게 맞춘다.
     val HomeFilled: ImageVector by lazy { icon(fills = listOf(HOME), strokes = listOf(HOME)) }
 
     val Settings: ImageVector by lazy { strokeIcon(SETTINGS_RAILS, SETTINGS_KNOB_TOP, SETTINGS_KNOB_BOTTOM) }
@@ -37,7 +39,8 @@ object OvalitIcons {
 
     val Friends: ImageVector by lazy { strokeIcon(FRIEND_HEAD, FRIEND_BODY, FRIEND_BACK_HEAD, FRIEND_BACK_BODY) }
 
-    // 앞사람만 채우고 뒷사람은 선으로 둔다. 둘 다 채우면 겹친 자리가 한 덩어리로 뭉친다.
+    // 앞사람만 채우고 뒷사람은 선으로 둔다.
+    // 둘 다 채우면 겹친 자리가 한 덩어리로 뭉친다.
     val FriendsFilled: ImageVector by lazy {
         icon(
             fills = listOf(FRIEND_HEAD, "${FRIEND_BODY}z"),
@@ -45,7 +48,8 @@ object OvalitIcons {
         )
     }
 
-    // 목업은 채운 점 세 개다. 길이가 0인 선을 둥근 끝으로 그리면 같은 점이 된다.
+    // 목업은 채운 점 세 개다.
+    // 길이가 0인 선을 둥근 끝으로 그리면 같은 점이 된다.
     val More: ImageVector by lazy { strokeIcon("M10 4.5h0", "M10 10h0", "M10 15.5h0", strokeWidth = 3f) }
 
     val ChevronDown: ImageVector by lazy { strokeIcon("M4 8l6 6 6-6", strokeWidth = 2f) }
@@ -63,7 +67,8 @@ object OvalitIcons {
     // 목업의 세 줄은 메뉴 버튼처럼 읽혀서 경기 기록 한 장을 뜻하는 카드로 그린다
     val Matches: ImageVector by lazy { strokeIcon(MATCH_CARD, MATCH_LINES) }
 
-    // 카드를 채우고 안쪽 두 줄은 구멍으로 뚫는다. 색 하나로 칠하는 아이콘이라 줄을 다른 색으로 그릴 수 없다.
+    // 카드를 채우고 안쪽 두 줄은 구멍으로 뚫는다.
+    // 색 하나로 칠하는 아이콘이라 줄을 다른 색으로 그릴 수 없다.
     val MatchesFilled: ImageVector by lazy {
         icon(fills = listOf(MATCH_CARD + MATCH_LINE_HOLES), strokes = listOf(MATCH_CARD), evenOdd = true)
     }

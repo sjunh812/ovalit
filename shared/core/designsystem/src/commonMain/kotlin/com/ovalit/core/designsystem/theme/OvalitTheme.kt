@@ -15,8 +15,8 @@ import com.ovalit.core.designsystem.resources.Res
 import com.ovalit.core.designsystem.resources.text_locale
 import org.jetbrains.compose.resources.stringResource
 
-// 화면은 OvalitTheme.colors와 typography만 쓴다. 안쪽의 MaterialTheme은 바텀시트처럼 Material 컴포넌트가 스스로
-// 고르는 색과 글꼴을 우리 것에 맞추려고 깐다(MaterialBridge.kt).
+// 화면은 OvalitTheme.colors와 typography만 쓴다.
+// 안쪽의 MaterialTheme은 바텀시트처럼 Material 컴포넌트가 스스로 고르는 색과 글꼴을 우리 것에 맞추려고 깐다(MaterialBridge.kt).
 @Composable
 fun OvalitTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -30,7 +30,8 @@ fun OvalitTheme(
     val materialTypography = remember(typography) { typography.toMaterial() }
 
     MaterialTheme(colorScheme = materialColors, typography = materialTypography) {
-        // MaterialTheme이 까는 물결을 우리 누름 효과로 바꾼다. clickable만 단 줄과 아바타도 같은 효과를 받는다.
+        // MaterialTheme이 까는 물결을 우리 누름 효과로 바꾼다.
+        // clickable만 단 줄과 아바타도 같은 효과를 받는다.
         val indication = remember(colors) { OvalitPressIndication(colors.t2) }
         CompositionLocalProvider(
             LocalOvalitColors provides colors,

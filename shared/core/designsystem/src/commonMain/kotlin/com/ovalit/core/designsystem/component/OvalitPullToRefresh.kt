@@ -10,8 +10,8 @@ import androidx.compose.ui.Modifier
 import com.ovalit.core.designsystem.theme.OvalitTheme
 
 /**
- * 당겨서 새로고침입니다. [content]가 세로로 스크롤되어야 당김을 받습니다. 동그라미를 액센트로 칠하지 않는 건 액센트
- * 버튼과 헷갈려서입니다.
+ * [content]가 세로로 스크롤되어야 당김을 받습니다.
+ * 동그라미를 액센트로 칠하지 않는 건 액센트 버튼과 헷갈려서입니다.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

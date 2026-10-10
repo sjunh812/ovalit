@@ -22,15 +22,17 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 
 /**
- * 무엇을 보여 줄지 고르는 작은 버튼입니다. [text]에 지금 고른 것을 적고, [onClick]에서 [OvalitSheetOption]을 담은
- * 바텀시트를 엽니다. 제목 옆에 둘 때는 [OvalitPickerTitle]로 감쌉니다.
+ * 무엇을 보여 줄지 고르는 작은 버튼입니다.
+ * [text]에 지금 고른 것을 적고, [onClick]에서 [OvalitSheetOption]을 담은 바텀시트를 엽니다.
+ * 제목 옆에 둘 때는 [OvalitPickerTitle]로 감쌉니다.
  */
 @Composable
 fun OvalitPickerButton(text: String, onClickLabel: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .heightIn(min = PickerHeight)
-            // 오른쪽 끝을 본문 선에 맞추느라 안쪽 여백을 못 둔다. 누른 면을 양옆으로 넓혀 화살표에 붙지 않게 한다.
+            // 오른쪽 끝을 본문 선에 맞추느라 안쪽 여백을 못 둔다.
+            // 누른 면을 양옆으로 넓혀 화살표에 붙지 않게 한다.
             .clickable(
                 interactionSource = null,
                 indication = pressIndication(horizontalOutset = OvalitSpacing.sm),
@@ -56,8 +58,10 @@ fun OvalitPickerButton(text: String, onClickLabel: String, onClick: () -> Unit, 
 private val PickerHeight = 44.dp
 
 /**
- * 묶음 제목과 [OvalitPickerButton]을 한 줄에 둡니다. 줄 높이는 제목 글자에 맞추고 버튼의 눌리는 영역(44dp)만 위아래로
- * 넘치게 둡니다. 버튼 높이로 줄을 늘리면 이 묶음만 제목 위아래가 떠 보입니다. 제목은 버튼을 뺀 폭에서 꺾입니다.
+ * 묶음 제목과 [OvalitPickerButton]을 한 줄에 둡니다.
+ * 줄 높이는 제목 글자에 맞추고 버튼의 눌리는 영역(44dp)만 위아래로 넘치게 둡니다.
+ * 버튼 높이로 줄을 늘리면 이 묶음만 제목 위아래가 떠 보입니다.
+ * 제목은 버튼을 뺀 폭에서 꺾입니다.
  */
 @Composable
 fun OvalitPickerTitle(title: @Composable () -> Unit, picker: @Composable () -> Unit, modifier: Modifier = Modifier) {
@@ -74,7 +78,8 @@ fun OvalitPickerTitle(title: @Composable () -> Unit, picker: @Composable () -> U
 }
 
 /**
- * 바텀시트에서 하나를 고르는 줄입니다. 여러 줄을 `selectableGroup`으로 묶어서 씁니다.
+ * 바텀시트에서 하나를 고르는 줄입니다.
+ * 여러 줄을 `selectableGroup`으로 묶어서 씁니다.
  *
  * @param caption 이름 밑에 붙는 짧은 설명입니다("타격대 기준").
  */

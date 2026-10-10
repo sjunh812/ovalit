@@ -18,7 +18,8 @@ import kotlin.test.assertEquals
 @OptIn(ExperimentalTestApi::class)
 class CurrentMaxWidthTest {
 
-    // 설정에서 화면 크기만 바꾸면 픽셀 제약은 그대로이고 밀도만 바뀐다. maxWidth는 처음 잰 밀도로 센 dp를 그대로 준다.
+    // 설정에서 화면 크기만 바꾸면 픽셀 제약은 그대로이고 밀도만 바뀐다.
+    // maxWidth는 처음 잰 밀도로 센 dp를 그대로 준다.
     @Test
     fun `칸 폭과 높이는 지금 밀도로 다시 센다`() = runComposeUiTest {
         var width = 0.dp

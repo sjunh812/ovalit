@@ -33,8 +33,8 @@ private const val PRESS_MILLIS = 80
 private const val RELEASE_MILLIS = 180
 private const val HIGHLIGHT_ALPHA = 0.12f
 
-// 작은 버튼은 4%까지 줄이고, 화면 폭만 한 줄은 양옆이 4dp씩만 들어오게 줄인다. 같은 비율로 줄이면 긴 줄이
-// 눈에 띄게 오그라든다.
+// 작은 버튼은 4%까지 줄이고, 화면 폭만 한 줄은 양옆이 4dp씩만 들어오게 줄인다.
+// 같은 비율로 줄이면 긴 줄이 눈에 띄게 오그라든다.
 private const val MAX_SHRINK_RATIO = 0.04f
 private val MaxShrink = 8.dp
 
@@ -42,16 +42,18 @@ private val MaxShrink = 8.dp
 val OvalitPressShape: Shape = RoundedCornerShape(12.dp)
 
 /**
- * 글자에 딱 붙은 칸(홈 지표 칸, 시트의 고르기 줄)에서 누른 면을 칸 밖으로 넓히는 폭입니다. 안 넓히면 면이 글자 끝에서
- * 잘린 것처럼 보입니다. 배치는 그대로입니다.
+ * 글자에 딱 붙은 칸(홈 지표 칸, 시트의 고르기 줄)에서 누른 면을 칸 밖으로 넓히는 폭입니다.
+ * 안 넓히면 면이 글자 끝에서 잘린 것처럼 보입니다.
+ * 배치는 그대로입니다.
  */
 val OvalitPressOutset = 10.dp
 
 /**
  * 누르는 즉시 옅은 면을 깔고 누른 것을 살짝 줄였다가, 손을 떼면 되돌립니다.
  *
- * 물결은 쓰지 않습니다. 누른 뒤에 천천히 퍼져서 늦게 반응하는 것처럼 보입니다. 눌리는 영역보다 보이는 모양이 작으면
- * [shape]를 보이는 모양에 맞춥니다.
+ * 물결은 쓰지 않습니다.
+ * 누른 뒤에 천천히 퍼져서 늦게 반응하는 것처럼 보입니다.
+ * 눌리는 영역보다 보이는 모양이 작으면 [shape]를 보이는 모양에 맞춥니다.
  */
 @Stable
 class OvalitPressIndication(
@@ -72,10 +74,10 @@ class OvalitPressIndication(
 }
 
 /**
- * [OvalitPressIndication]을 만들어 둡니다. 면을 칠한 버튼은 면까지 같이 줄도록 `clip`과 `background`보다 앞에 답니다.
+ * 면을 칠한 버튼은 면까지 같이 줄도록 `clip`과 `background`보다 앞에 답니다.
  *
- * [horizontalOutset]과 [verticalOutset]은 내용에 딱 붙은 칸에만 줍니다. 넓힌 면이 잘리지 않게 바깥에 그만한 자리가
- * 있어야 합니다.
+ * [horizontalOutset]과 [verticalOutset]은 내용에 딱 붙은 칸에만 줍니다.
+ * 넓힌 면이 잘리지 않게 바깥에 그만한 자리가 있어야 합니다.
  */
 @Composable
 fun pressIndication(
@@ -98,7 +100,8 @@ private class PressNode(
     private var pressing: Job? = null
     private var releasing: Job? = null
 
-    // 목록에서 줄이 화면 밖으로 나가면 애니메이션이 도중에 끊긴다. 다시 쓰일 때 줄어든 채로 나오지 않게 되돌린다.
+    // 목록에서 줄이 화면 밖으로 나가면 애니메이션이 도중에 끊긴다.
+    // 다시 쓰일 때 줄어든 채로 나오지 않게 되돌린다.
     override fun onDetach() {
         pressed = Animatable(0f)
     }
@@ -128,7 +131,8 @@ private class PressNode(
     private fun release() {
         val pressedJob = pressing
         releasing = coroutineScope.launch {
-            // 톡 치고 바로 떼면 누른 모습이 한 번도 안 보인다. 다 눌린 뒤에 돌아오게 한다.
+            // 톡 치고 바로 떼면 누른 모습이 한 번도 안 보인다.
+            // 다 눌린 뒤에 돌아오게 한다.
             pressedJob?.join()
             pressed.animateTo(0f, tween(RELEASE_MILLIS)) { invalidateDraw() }
         }

@@ -12,7 +12,8 @@ import kotlin.test.Test
 @OptIn(ExperimentalTestApi::class)
 class OvalitRollingTextTest {
 
-    // 굴러가는 동안에는 두 숫자가 겹쳐 그려진다. 다 바뀐 뒤에 옛 숫자가 남아 있으면 칸에 숫자가 두 개 뜬다.
+    // 굴러가는 동안에는 두 숫자가 겹쳐 그려진다.
+    // 다 바뀐 뒤에 옛 숫자가 남아 있으면 칸에 숫자가 두 개 뜬다.
     @Test
     fun `숫자가 바뀌면 다 굴러간 뒤에는 새 숫자만 남는다`() = runComposeUiTest {
         var text by mutableStateOf("188")

@@ -54,8 +54,10 @@ fun OvalitBottomSheet(
 }
 
 /**
- * 줄이 수백 개일 수 있는 목록을 담는 바텀시트입니다. 머리 모양은 [OvalitBottomSheet]와 같고, 줄은 화면에 보이는 것만 그립니다.
- * 제목과 설명도 목록과 같이 스크롤됩니다. 양옆 여백은 목록 안쪽 여백이라 넓힌 누름 면이 잘리지 않습니다.
+ * 줄이 수백 개일 수 있는 목록을 담는 바텀시트입니다.
+ * 머리 모양은 [OvalitBottomSheet]와 같고, 줄은 화면에 보이는 것만 그립니다.
+ * 제목과 설명도 목록과 같이 스크롤됩니다.
+ * 양옆 여백은 목록 안쪽 여백이라 넓힌 누름 면이 잘리지 않습니다.
  */
 @Composable
 fun OvalitLazyBottomSheet(
@@ -75,12 +77,12 @@ fun OvalitLazyBottomSheet(
     }
 }
 
-/** 바텀시트 본문의 양옆 여백입니다. */
 val OvalitSheetGutter = OvalitSpacing.xl
 
 /**
- * 바텀시트 양옆 여백을 넘어 시트 끝까지 넓힙니다. 옆으로 미는 줄에 달고 같은 여백을 `contentPadding`으로 주면 첫 칸은 본문 선에
- * 맞고, 밀면 칸이 시트 끝까지 이어집니다. 여백 안에서 끝나면 칸이 본문 선에서 잘려 보입니다.
+ * 바텀시트 양옆 여백을 넘어 시트 끝까지 넓힙니다.
+ * 옆으로 미는 줄에 달고 같은 여백을 `contentPadding`으로 주면 첫 칸은 본문 선에 맞고, 밀면 칸이 시트 끝까지 이어집니다.
+ * 여백 안에서 끝나면 칸이 본문 선에서 잘려 보입니다.
  */
 fun Modifier.ovalitSheetFullWidth(): Modifier = layout { measurable, constraints ->
     if (!constraints.hasBoundedWidth) {
@@ -120,7 +122,8 @@ private fun SheetSurface(onDismiss: () -> Unit, content: @Composable ColumnScope
 private fun SheetHeader(title: String, titleNote: String?, body: String?) {
     val colors = OvalitTheme.colors
     Column {
-        // 제목이 길면 정식 약어를 다음 줄로 넘긴다. 한 줄에 우겨 넣으면 약어가 글자 단위로 꺾인다.
+        // 제목이 길면 정식 약어를 다음 줄로 넘긴다.
+        // 한 줄에 우겨 넣으면 약어가 글자 단위로 꺾인다.
         FlowRow(horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.sm)) {
             OvalitText(text = title, modifier = Modifier.alignByBaseline(), style = OvalitTheme.typography.titleM)
             if (titleNote != null) {

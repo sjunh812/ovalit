@@ -13,8 +13,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.ovalit.core.designsystem.theme.OvalitTheme
 
 /**
- * @param autoSize 폭이 정해진 칸에 씁니다. 글자를 키운 사용자에게 `1.29`가 `1.`로 잘리지 않고
- * 글자가 작아집니다. [maxLines]를 1로 같이 줘야 줄을 바꾸지 않고 줄어듭니다.
+ * @param autoSize 폭이 정해진 칸에 씁니다.
+ *   글자를 키운 사용자에게 `1.29`가 `1.`로 잘리지 않고 글자가 작아집니다.
+ *   [maxLines]를 1로 같이 줘야 줄을 바꾸지 않고 줄어듭니다.
  */
 @Composable
 fun OvalitText(
@@ -40,8 +41,10 @@ fun OvalitText(
 }
 
 /**
- * 한 문장 안에서 일부 글자만 다르게 보여야 할 때 씁니다. [color]는 스타일을 따로 주지 않은
- * 구간의 색입니다. 글자 사이에 아이콘을 넣으려면 [inlineContent]를 씁니다. [autoSize]는 위 함수와 같습니다.
+ * 한 문장 안에서 일부 글자만 다르게 보여야 할 때 씁니다.
+ * [color]는 스타일을 따로 주지 않은 구간의 색입니다.
+ * 글자 사이에 아이콘을 넣으려면 [inlineContent]를 씁니다.
+ * [autoSize]는 위 함수와 같습니다.
  */
 @Composable
 fun OvalitText(

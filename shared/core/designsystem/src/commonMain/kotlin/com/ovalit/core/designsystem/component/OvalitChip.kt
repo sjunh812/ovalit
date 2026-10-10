@@ -22,7 +22,8 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 
 private val ChipShape = RoundedCornerShape(8.dp)
 
-// 칩 자체는 28dp 남짓이라 손가락으로 누르기엔 작다. 눌리는 영역만 위아래로 늘린다.
+// 칩 자체는 28dp 남짓이라 손가락으로 누르기엔 작다.
+// 눌리는 영역만 위아래로 늘린다.
 private val ChipTouchHeight = 44.dp
 
 @Composable

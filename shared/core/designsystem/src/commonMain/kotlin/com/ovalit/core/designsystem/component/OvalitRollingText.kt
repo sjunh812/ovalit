@@ -29,12 +29,16 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 private const val ROLL_MILLIS = 240
 
 /**
- * 숫자가 바뀌면 바뀐 자리의 숫자만 굴립니다. "30%"가 "32%"가 되면 "0"만 "2"로 구르고 "3"과 "%"는 그대로입니다.
- * 커지면 아래에서 올라오고 작아지면 위에서 내려옵니다. 처음 그릴 때는 움직이지 않습니다.
+ * 숫자가 바뀌면 바뀐 자리의 숫자만 굴립니다.
+ * "30%"가 "32%"가 되면 "0"만 "2"로 구르고 "3"과 "%"는 그대로입니다.
+ * 커지면 아래에서 올라오고 작아지면 위에서 내려옵니다.
+ * 처음 그릴 때는 움직이지 않습니다.
  *
- * 큰 지표 숫자에만 씁니다. 옆의 변화량까지 움직이면 눈이 두 군데로 갈립니다.
+ * 큰 지표 숫자에만 씁니다.
+ * 옆의 변화량까지 움직이면 눈이 두 군데로 갈립니다.
  *
- * 같은 자리에 다른 지표가 올 수 있으면 부르는 쪽에서 지표로 `key`를 겁니다. 안 걸면 지표를 바꿀 때도 숫자가 굴러갑니다.
+ * 같은 자리에 다른 지표가 올 수 있으면 부르는 쪽에서 지표로 `key`를 겁니다.
+ * 안 걸면 지표를 바꿀 때도 숫자가 굴러갑니다.
  */
 @Composable
 fun OvalitRollingText(
@@ -45,8 +49,8 @@ fun OvalitRollingText(
     maxLines: Int = 1,
     autoSize: TextAutoSize? = null,
 ) {
-    // 배치는 BasicText 하나로 잡고 구르는 모습은 그리는 단계에서만 덧그린다. 배치까지 움직이면 기준선, 칸 폭,
-    // autoSize가 애니메이션 도중에 흔들린다.
+    // 배치는 BasicText 하나로 잡고 구르는 모습은 그리는 단계에서만 덧그린다.
+    // 배치까지 움직이면 기준선, 칸 폭, autoSize가 애니메이션 도중에 흔들린다.
     val last = remember { LastText(text) }
     val roll = remember(text) { Roll.between(last.value, text) }
     val progress = remember(text) { Animatable(if (roll.slots.isEmpty()) 1f else 0f) }
@@ -114,9 +118,10 @@ fun OvalitRollingText(
 private class LastText(var value: String)
 
 /**
- * @property slots 새 글자에서 바뀐 자리입니다. 글자를 오른쪽 끝부터 맞춰 비교해서 "9%"가 "10%"가 되면 "%"는
- * 그대로이고 "9" 자리와 새로 생긴 "1" 자리가 굴러갑니다.
- * @property oldIndex 바뀐 자리에 대응하는 옛 글자의 인덱스입니다. 새로 생긴 자리는 키가 없습니다.
+ * @property slots 새 글자에서 바뀐 자리입니다.
+ *   글자를 오른쪽 끝부터 맞춰 비교해서 "9%"가 "10%"가 되면 "%"는 그대로이고 "9" 자리와 새로 생긴 "1" 자리가 굴러갑니다.
+ * @property oldIndex 바뀐 자리가 옛 글자에서 놓였던 인덱스입니다.
+ *   새로 생긴 자리는 키가 없습니다.
  */
 private class Roll(val before: String, val slots: Set<Int>, val oldIndex: Map<Int, Int>, val direction: Float) {
     companion object {

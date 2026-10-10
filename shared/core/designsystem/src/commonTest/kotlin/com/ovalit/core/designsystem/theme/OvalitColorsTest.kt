@@ -12,8 +12,8 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /**
- * 색 토큰이 지켜야 할 대비를 검사합니다. 눈으로는 다크에서 통과한 조합이 라이트에서
- * 무너지는 걸 잘 못 잡습니다.
+ * 색 토큰이 지켜야 할 대비를 검사합니다.
+ * 눈으로는 다크에서 통과한 조합이 라이트에서 무너지는 걸 잘 못 잡습니다.
  */
 class OvalitColorsTest {
 
@@ -32,7 +32,7 @@ class OvalitColorsTest {
         }
     }
 
-    // 좋아짐과 나빠짐을 색으로만 구분하므로 여기서 대비가 모자라면 변화를 못 읽는다.
+    // 좋아짐과 나빠짐을 색으로만 구분해서 여기서 대비가 모자라면 변화를 못 읽는다.
     @Test
     fun `변화 색은 배경 대비 3 대 1을 넘는다`() {
         forEachTheme { name, colors ->
@@ -41,7 +41,8 @@ class OvalitColorsTest {
         }
     }
 
-    // 발로란트 빨강 위 흰 글자는 3.4:1이라 본문 기준(4.5)에 못 미치는 걸 알고 고른 값이다. 더 내려가지 않게 3:1을 바닥으로 둔다.
+    // 발로란트 빨강 위 흰 글자는 3.4:1이라 본문 기준(4.5)에 못 미치는 걸 알고 고른 값이다.
+    // 더 내려가지 않게 3:1을 바닥으로 둔다.
     @Test
     fun `버튼 글자는 accent 면 위에서 3 대 1을 넘는다`() {
         forEachTheme { name, colors ->
@@ -51,12 +52,13 @@ class OvalitColorsTest {
 
     @Test
     fun `액센트를 글자로 쓸 때는 accentInk를 쓴다`() {
-        // 라이트에서 accent를 그대로 글자로 올리면 대비가 모자란다. accentInk가 그 대안이다.
+        // 라이트에서 accent를 그대로 글자로 올리면 대비가 모자란다.
         assertContrast("라이트", "accentInk", OvalitLightColors.accentInk, OvalitLightColors.bg, atLeast = 4.5)
         assertContrast("다크", "accentInk", OvalitDarkColors.accentInk, OvalitDarkColors.bg, atLeast = 4.5)
     }
 
-    // 비공식 고지를 여기 색으로 찍는다. 안 읽히면 고지를 안 한 것과 같다.
+    // 비공식 고지를 여기 색으로 찍는다.
+    // 안 읽히면 고지를 안 한 것과 같다.
     @Test
     fun `고지에 쓰는 t3는 배경 대비 3 대 1을 넘는다`() {
         forEachTheme { name, colors ->
@@ -86,7 +88,8 @@ class OvalitColorsTest {
         }
     }
 
-    // KDA는 리스트의 작은 글자로도 뜬다. 두 바탕 어디서든 본문 대비를 넘겨야 한다.
+    // KDA는 목록의 작은 글자로도 뜬다.
+    // 두 바탕 어디서든 본문 대비를 넘겨야 한다.
     @Test
     fun `KDA 구간 색은 두 바탕 모두에서 4_5 대 1을 넘는다`() {
         forEachTheme { name, colors ->
@@ -97,8 +100,8 @@ class OvalitColorsTest {
         }
     }
 
-    // 흰 바탕에서 읽히는 초록과 빨강은 오르내림 색과 거리가 5 안팎이다. 그래서 거리로는 같은 색만 막고, 색상이 연두와
-    // 산호 쪽으로 옮겨 갔는지 따로 본다.
+    // 흰 바탕에서 읽히는 초록과 빨강은 오르내림 색과 거리가 5 안팎이다.
+    // 그래서 거리로는 같은 색만 막고, 색상이 연두와 산호 쪽으로 옮겨 갔는지 따로 본다.
     @Test
     fun `KDA 구간 색은 오르내림 색이나 액센트와 섞여 보이지 않는다`() {
         forEachTheme { name, colors ->
@@ -119,13 +122,15 @@ class OvalitColorsTest {
             }
             val bands = oklabDistance(colors.kda1, colors.kda2)
             assertTrue(bands >= 15.0, "$name kda1 과 kda2 의 OKLab 거리가 ${bands.rounded()}라 15에 못 미친다")
-            // 맨 위 칸은 빨강이라 액센트와 같은 계열이다. 라이트에서는 산호 쪽으로 옮겨 8 남짓만 뗀다.
+            // 맨 위 칸은 빨강이라 액센트와 같은 계열이다.
+            // 라이트에서는 산호 쪽으로 옮겨 8 남짓만 뗀다.
             val top = oklabDistance(colors.kda3, colors.accentInk)
             assertTrue(top >= 8.0, "$name kda3 와 accentInk 의 OKLab 거리가 ${top.rounded()}라 8에 못 미친다")
         }
     }
 
-    // 칩은 옅은 면에 같은 계열의 짙은 글자를 올린다. 작은 글자라 본문 기준을 넘겨야 한다.
+    // 칩은 옅은 면에 같은 계열의 짙은 글자를 올린다.
+    // 작은 글자라 본문 기준을 넘겨야 한다.
     @Test
     fun `MVP 칩 글자는 칩 면 위에서 4_5 대 1을 넘는다`() {
         forEachTheme { name, colors ->

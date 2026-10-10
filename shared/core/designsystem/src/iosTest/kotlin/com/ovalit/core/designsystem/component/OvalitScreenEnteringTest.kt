@@ -31,7 +31,8 @@ class OvalitScreenEnteringTest {
         assertTrue(shown)
     }
 
-    // 탭을 오가거나 뒤로 돌아온 화면은 내용이 이미 있다. 전환 중이라고 스켈레톤으로 되돌리면 깜빡인다.
+    // 탭을 오가거나 뒤로 돌아온 화면은 내용이 이미 있다.
+    // 전환 중이라고 스켈레톤으로 되돌리면 깜빡인다.
     @Test
     fun `처음부터 내용이 있으면 전환 중에도 바로 그린다`() = runComposeUiTest {
         var shown = false

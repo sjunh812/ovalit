@@ -16,7 +16,8 @@ import kotlin.test.assertEquals
 @OptIn(ExperimentalTestApi::class)
 class OvalitStagedTest {
 
-    // 탭을 오가거나 뒤로 돌아온 화면은 내용이 이미 있다. 자리 틀을 거치면 깜빡인다.
+    // 탭을 오가거나 뒤로 돌아온 화면은 내용이 이미 있다.
+    // 자리 틀을 거치면 깜빡인다.
     @Test
     fun `처음부터 준비돼 있으면 자리 틀 없이 한 번에 그린다`() = runComposeUiTest {
         mainClock.autoAdvance = false

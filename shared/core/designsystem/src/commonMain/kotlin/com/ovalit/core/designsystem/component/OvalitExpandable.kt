@@ -19,7 +19,8 @@ import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitTheme
 
-// 접을 때를 더 짧게 둔다. 오래 걸리면 누른 뒤 기다리는 느낌이 든다.
+// 접을 때를 더 짧게 둔다.
+// 오래 걸리면 누른 뒤 기다리는 느낌이 든다.
 private const val EXPAND_MILLIS = 240
 private const val COLLAPSE_MILLIS = 180
 
@@ -37,10 +38,12 @@ fun OvalitExpandable(visible: Boolean, modifier: Modifier = Modifier, content: @
 }
 
 /**
- * 펼침 여부를 보여주는 화살표입니다. 오른쪽을 보다가 펼치면 아래로 돕니다.
+ * 펼침 여부를 보여주는 화살표입니다.
+ * 오른쪽을 보다가 펼치면 아래로 돕니다.
  *
- * @param pointsDown 다른 화면으로 넘어가지 않고 그 자리에서 펼치기만 하는 줄이면 `true`입니다. 아래를 보다가 펼치면 위로
- * 돕니다. 오른쪽 화살표는 화면을 넘기는 줄에도 쓰여서 둘을 가릅니다.
+ * @param pointsDown 다른 화면으로 넘어가지 않고 그 자리에서 펼치기만 하는 줄이면 `true`입니다.
+ *   아래를 보다가 펼치면 위로 돕니다.
+ *   오른쪽 화살표는 화면을 넘기는 줄에도 쓰여서 둘을 가릅니다.
  */
 @Composable
 fun OvalitDisclosureIcon(

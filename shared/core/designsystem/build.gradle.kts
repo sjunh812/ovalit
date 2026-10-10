@@ -12,7 +12,8 @@ kotlin {
             api(libs.compose.ui)
             api(libs.compose.resources)
             api(libs.compose.ui.toolingPreview)
-            // MaterialTheme은 쓰지 않는다. ripple 하나 때문에 들인다.
+            // 바텀시트와 당겨서 새로고침에 쓴다.
+            // MaterialTheme은 Material 컴포넌트가 스스로 고르는 색과 글꼴을 우리 토큰에 맞추려고만 깐다(OvalitTheme.kt).
             implementation(libs.compose.material3)
         }
         androidMain.dependencies {

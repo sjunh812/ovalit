@@ -63,6 +63,7 @@ class RiotJsonTest {
 
     @Test
     fun `경기 ID 목록에서 커스텀 게임을 빼고 큐와 시작 시각을 옮긴다`() {
+        // 큐가 빠진 줄(m-5)은 모르는 모드처럼 받고, 커스텀 게임인지는 상세에서 가린다
         val entries = decodeMatchlist(
             """
             {
@@ -79,7 +80,7 @@ class RiotJsonTest {
         ).toEntries()
 
         assertEquals(listOf("m-1", "m-3", "m-4", "m-5").map(::MatchId), entries.map { it.id })
-        assertEquals(listOf(Queue.COMPETITIVE, Queue.DEATHMATCH, Queue.OTHER, null), entries.map { it.queue })
+        assertEquals(listOf(Queue.COMPETITIVE, Queue.DEATHMATCH, Queue.OTHER, Queue.OTHER), entries.map { it.queue })
         assertEquals(Instant.fromEpochMilliseconds(1_789_000_000_000), entries.first().startedAt)
     }
 

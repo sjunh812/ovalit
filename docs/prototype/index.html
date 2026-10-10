@@ -1,0 +1,1075 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>오발있 프로토타입</title>
+<meta name="description" content="오발있 화면 캡처를 이어 붙인 클릭형 프로토타입이에요.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1024 1024'%3E%3Crect width='1024' height='1024' rx='224' fill='%23FF4655'/%3E%3Cpath fill='%23fff' fill-rule='evenodd' d='M272 280H752A120 120 0 0 1 872 400V598A120 120 0 0 1 752 718H432L322.5 813.8Q312 823 312 809V718H272A120 120 0 0 1 152 598V400A120 120 0 0 1 272 280ZM228 499a88 88 0 1 0 176 0a88 88 0 1 0-176 0ZM272 499a44 44 0 1 0 88 0a44 44 0 1 0-88 0ZM620 499a88 88 0 1 0 176 0a88 88 0 1 0-176 0ZM664 499a44 44 0 1 0 88 0a44 44 0 1 0-88 0ZM430 422A8 8 0 0 1 438 414H466A8 8 0 0 1 474 422V463H550V422A8 8 0 0 1 558 414H586A8 8 0 0 1 594 422V573A10 10 0 0 1 584 583H440A10 10 0 0 1 430 573ZM474 499H550V548H474Z'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  /* 색 토큰은 docs/design.md의 표를 그대로 옮겼다 */
+  :root {
+    color-scheme: light;
+    --canvas: #F2F4F6;
+    --card: #FFFFFF;
+    --fill: #EBEEF1;
+    --line: #E5E8EB;
+    --t1: #191F28;
+    --t2: #5F6873;
+    --t3: #6B7684;
+    --t4: #A9B0B8;
+    --accent: #FF4655;
+    --accent-ink: #DA1638;
+    --on-accent: #FFFFFF;
+    --bezel: #1C1C1F;
+    --bezel-ring: #2A2A2E;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 16px 40px rgba(25, 31, 40, .14);
+    --hot: #2F7BEF;
+    --hot-fill: rgba(47, 123, 239, .16);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --canvas: #101012;
+      --card: #1C1C1F;
+      --fill: #2A2A2E;
+      --line: #26262A;
+      --t1: #F2F2F4;
+      --t2: #9E9EA6;
+      --t3: #6E6E76;
+      --t4: #58585F;
+      --accent-ink: #FF4655;
+      --bezel: #2A2A2E;
+      --bezel-ring: #34343A;
+      --shadow: 0 16px 40px rgba(0, 0, 0, .5);
+      --hot-fill: rgba(47, 123, 239, .22);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --canvas: #101012;
+    --card: #1C1C1F;
+    --fill: #2A2A2E;
+    --line: #26262A;
+    --t1: #F2F2F4;
+    --t2: #9E9EA6;
+    --t3: #6E6E76;
+    --t4: #58585F;
+    --accent-ink: #FF4655;
+    --bezel: #2A2A2E;
+    --bezel-ring: #34343A;
+    --shadow: 0 16px 40px rgba(0, 0, 0, .5);
+    --hot-fill: rgba(47, 123, 239, .22);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--t1);
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+
+  .page {
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 20px 16px 32px;
+  }
+
+  /* 머리 */
+  .top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1 1 320px;
+  }
+  .brand svg { width: 34px; height: auto; flex: none; color: var(--accent); }
+  .brand h1 { margin: 0; font-size: 20px; line-height: 1.3; font-weight: 700; letter-spacing: -.01em; }
+  .brand p { margin: 0; font-size: 13px; color: var(--t2); }
+  .prd-link {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 12px;
+    background: var(--card);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .prd-link:hover { background: var(--fill); }
+
+  /* 본문: 왼쪽 휴대폰, 오른쪽 설명 */
+  .main {
+    display: grid;
+    grid-template-columns: auto minmax(0, 460px);
+    justify-content: center;
+    gap: 40px;
+    align-items: start;
+  }
+  .stage {
+    --sw: clamp(260px, calc((100vh - 176px) * 0.45), 375px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  @supports (height: 100dvh) {
+    .stage { --sw: clamp(260px, calc((100dvh - 176px) * 0.45), 375px); }
+  }
+
+  .controls {
+    width: calc(var(--sw) + 20px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    height: 34px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--t1);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--fill); }
+  .btn:disabled { color: var(--t4); cursor: default; background: var(--card); }
+  .btn:focus-visible, .seg button:focus-visible, .hot:focus-visible, .list button:focus-visible, .prd-link:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .btn[aria-pressed="true"] { background: var(--t1); color: var(--canvas); }
+  .seg {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: 10px;
+    background: var(--card);
+    margin-left: auto;
+  }
+  .seg button {
+    height: 28px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--t3);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] { background: var(--fill); color: var(--t1); font-weight: 600; }
+
+  /* 휴대폰 */
+  .phone {
+    padding: 10px;
+    border-radius: 40px;
+    background: var(--bezel);
+    box-shadow: inset 0 0 0 1px var(--bezel-ring), var(--shadow);
+  }
+  .screen {
+    position: relative;
+    width: var(--sw);
+    aspect-ratio: 720 / 1600;
+    border-radius: 30px;
+    overflow: hidden;
+    background: #FFFFFF;
+    isolation: isolate;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .layer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    isolation: isolate;
+    background: #FFFFFF;
+  }
+  .layer.dark-bg { background: #101012; }
+  .screen.busy .layer { pointer-events: none; }
+  .scroller {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+  .scroller::-webkit-scrollbar { display: none; }
+  .content { position: relative; }
+  .content img {
+    display: block;
+    width: 100%;
+    height: auto;
+    -webkit-user-drag: none;
+    pointer-events: none;
+  }
+  .patch { position: absolute; left: 0; top: 0; width: 100%; pointer-events: none; }
+
+  /* 고정해 두는 띠: 같은 캡처를 잘라 덮는다 */
+  .bar {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    background-repeat: no-repeat;
+    background-size: 100% auto;
+    pointer-events: none;
+  }
+  .bar.top { top: 0; background-position: top center; }
+  .bar.bottom { bottom: 0; background-position: bottom center; }
+  .bar.blend-light { mix-blend-mode: darken; }
+  .bar.blend-dark { mix-blend-mode: lighten; }
+  .bar.tabbar { pointer-events: auto; }
+  .bar[hidden] { display: none; }
+
+  .dim {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* 누를 수 있는 곳 */
+  .hot {
+    position: absolute;
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .screen.show-hot .hot {
+    background: var(--hot-fill);
+    box-shadow: inset 0 0 0 2px var(--hot);
+  }
+  .screen.flash .hot { animation: flash .9s ease-out; }
+  @keyframes flash {
+    0%, 35% { background: var(--hot-fill); box-shadow: inset 0 0 0 2px var(--hot); }
+    100% { background: transparent; box-shadow: inset 0 0 0 2px transparent; }
+  }
+
+  .hint {
+    width: calc(var(--sw) + 20px);
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--t3);
+    text-align: center;
+  }
+
+  /* 설명 */
+  .panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 20px;
+  }
+  .where { margin: 0 0 4px; font-size: 13px; color: var(--t3); }
+  .card h2 { margin: 0 0 8px; font-size: 20px; line-height: 1.35; font-weight: 700; letter-spacing: -.01em; }
+  .card .desc { margin: 0; color: var(--t2); }
+  .card .note { margin: 10px 0 0; font-size: 13px; color: var(--t3); }
+  .card h3 { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--t3); }
+  .taps-wrap { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .taps { list-style: none; margin: 0; padding: 0; }
+  .taps li + li { margin-top: 2px; }
+  .taps button {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 6px;
+    padding: 6px 8px;
+    margin: 0 -8px;
+    width: calc(100% + 16px);
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .taps button:hover { background: var(--fill); }
+  .taps .from { color: var(--t1); }
+  .taps .to { color: var(--t3); }
+  .taps .empty { font-size: 14px; color: var(--t3); }
+
+  .groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 20px; }
+  .list { list-style: none; margin: 0; padding: 0; }
+  .list button {
+    display: block;
+    width: calc(100% + 16px);
+    margin: 0 -8px;
+    padding: 5px 8px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--t2);
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.4;
+    cursor: pointer;
+  }
+  .list button:hover { background: var(--fill); color: var(--t1); }
+  .list button[aria-current="page"] { background: var(--fill); color: var(--t1); font-weight: 600; }
+
+  .foot {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--t3);
+  }
+  .foot p { margin: 0; }
+  .foot p + p { margin-top: 6px; }
+
+  @media (max-width: 720px) {
+    .page { padding-top: 16px; }
+    .main { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+    .stage { --sw: min(370px, calc(100vw - 52px)); }
+    @supports (height: 100dvh) {
+      .stage { --sw: min(370px, calc(100vw - 52px)); }
+    }
+    .panel { max-width: none; }
+  }
+  @media (max-width: 380px) {
+    .groups { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .screen.flash .hot { animation: none; background: var(--hot-fill); box-shadow: inset 0 0 0 2px var(--hot); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="152 280 720 544" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M272 280H752A120 120 0 0 1 872 400V598A120 120 0 0 1 752 718H432L322.5 813.8Q312 823 312 809V718H272A120 120 0 0 1 152 598V400A120 120 0 0 1 272 280ZM228 499a88 88 0 1 0 176 0a88 88 0 1 0-176 0ZM272 499a44 44 0 1 0 88 0a44 44 0 1 0-88 0ZM620 499a88 88 0 1 0 176 0a88 88 0 1 0-176 0ZM664 499a44 44 0 1 0 88 0a44 44 0 1 0-88 0ZM430 422A8 8 0 0 1 438 414H466A8 8 0 0 1 474 422V463H550V422A8 8 0 0 1 558 414H586A8 8 0 0 1 594 422V573A10 10 0 0 1 584 583H440A10 10 0 0 1 430 573ZM474 499H550V548H474Z"/></svg>
+      <div>
+        <h1>오발있</h1>
+        <p>최근 경기에서 지표가 어떻게 움직였는지, 그 주에 무엇이 달라졌는지 짚어주는 발로란트 전적 앱이에요.</p>
+      </div>
+    </div>
+    <a class="prd-link" href="https://github.com/sjunh812/ovalit/blob/main/docs/PRD.md" target="_blank" rel="noopener">PRD 보기 ›</a>
+  </header>
+
+  <main class="main">
+    <section class="stage" aria-label="화면 미리보기">
+      <div class="controls">
+        <button class="btn" id="back" type="button" aria-keyshortcuts="ArrowLeft">← 뒤로</button>
+        <button class="btn" id="hotToggle" type="button" aria-pressed="false">누를 수 있는 곳 보기</button>
+        <div class="seg" role="group" aria-label="테마">
+          <button type="button" id="themeLight" aria-pressed="true">라이트</button>
+          <button type="button" id="themeDark" aria-pressed="false" title="다크 캡처는 홈과 경기 상세만 있어요">다크</button>
+        </div>
+      </div>
+      <div class="phone">
+        <div class="screen" id="screen"></div>
+      </div>
+      <p class="hint" id="hint">화면 속 버튼을 눌러 이동해요. 빈 곳을 누르면 누를 수 있는 곳이 잠깐 보여요. ← 키로 뒤로 가요.</p>
+    </section>
+
+    <aside class="panel">
+      <div class="card" aria-live="polite">
+        <p class="where" id="where"></p>
+        <h2 id="name"></h2>
+        <p class="desc" id="desc"></p>
+        <p class="note" id="note" hidden></p>
+        <div class="taps-wrap">
+          <h3>이 화면에서 누를 수 있는 곳</h3>
+          <ul class="taps" id="taps"></ul>
+        </div>
+      </div>
+      <div class="card">
+        <h3>모든 화면</h3>
+        <div class="groups" id="groups"></div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="foot">
+    <p>Ovalit isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
+    <p>화면은 예시 데이터로 찍은 앱 캡처예요. 실제 플레이어의 경기 기록이 아니에요.</p>
+  </footer>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // 캡처는 모두 720px 폭이다. 좌표는 캡처 원본 픽셀로 적고 그릴 때 %로 바꾼다.
+  const W = 720;
+  const VIEW_H = 1600;   // 기기 화면 높이. 이보다 긴 캡처는 프레임 안에서 스크롤한다
+  const SB = 48;         // 상태 표시줄
+  const TB = 152;        // 탭바와 제스처 막대
+  const GH = 40;         // 탭바 없는 화면의 제스처 막대
+  const src = (file) => `../prd/screens/${file}.png`;
+
+  // 상태 표시줄과 제스처 막대만 빌려 오는 캡처
+  const DONOR = {
+    whiteTop: 'agents',          // --bg 흰 바탕
+    canvasTop: 'home',           // --canvas 회색 바탕
+    darkTop: 'home-dark',        // 다크 바탕
+    whiteBottom: 'agents',
+    darkBottom: 'match-detail-dark',
+  };
+
+  const BACK = { r: [14, 68, 80, 76], back: true, label: '뒤로 가기 화살표' };
+  const scoreTab = { r: [20, 448, 130, 68], swap: 'match-detail', label: '스코어보드 탭' };
+  const roundsTab = { r: [151, 448, 92, 68], swap: 'match-rounds', label: '라운드 탭' };
+  const mineTab = { r: [244, 448, 96, 68], swap: 'match-mine', label: '내 기록 탭' };
+  const matchBanner = { after: 295, solid: 'white', copy: true };
+  // 캡처에 찍힌 상태 표시줄 글자 자리: 왼쪽 시각, 오른쪽 아이콘
+  const ICON_BOXES = [[16, 76], [604, 82]];
+  const ICON_H = 44;
+  const profileBanner = { after: 176, solid: 'canvas', patch: '#EBEEF1' };
+
+  const SCREENS = {
+    intro: {
+      h: 1600, group: '시작하기', name: 'S0-1 인트로',
+      desc: '앱 이름 "오발있"은 "오늘 발로란트 할 사람 있어?"를 줄인 말이에요. 로고 밑에 이름을 풀어 적고, 맨 아래에 Riot 비공식 앱 고지를 둬요.',
+      hot: [{ r: [42, 1258, 636, 90], go: 'consent', label: 'Riot 계정으로 시작하기' }],
+    },
+    consent: {
+      h: 1600, group: '시작하기', name: 'S0-2 연동 동의',
+      desc: '연동하기 전에 무엇을 불러오고 누구에게 보이는지 먼저 알려요. 비밀번호는 Riot 로그인 페이지에서만 입력하고 앱은 받지 않아요.',
+      note: '계속하면 실제 앱은 Riot 로그인(S0-3)을 Custom Tabs로 열어요. 프로토타입은 그 단계를 건너뛰어요.',
+      hot: [BACK, { r: [42, 1375, 636, 90], go: 'import', label: 'Riot 계정으로 계속하기' }],
+    },
+    import: {
+      h: 1600, group: '시작하기', name: 'S0-4 불러오는 중',
+      desc: '최근 50경기를 불러오는 동안 먼저 볼 관심사를 골라요. 받은 경기는 이긴 판과 진 판 색으로 한 칸씩 채우고, 집계 숫자는 다 불러온 뒤에 한 번만 보여줘요.',
+      note: '이 캡처는 아직 불러오는 중이라 "리포트 보기"가 없어요. 화면 아무 곳이나 누르면 홈으로 넘어가요.',
+      hot: [{ r: [0, 48, 720, 1552], finish: 'home', label: '화면 아무 곳' }],
+    },
+    home: {
+      h: 2960, tab: 'home', dark: 'home-dark', group: '홈', name: 'S1 홈 · 주간 리포트',
+      desc: '이번 주 지표를 지난 4주의 나와 견줘요. 고정 칸 다섯은 늘 같은 자리에 두고, 그 주에 평소보다 크게 움직인 지표는 달라진 점에 올려요.',
+      note: '친구 비교는 서로 수락한 친구끼리만 줄을 세워요. 여러 지표를 합친 점수는 만들지 않아요.',
+      hot: [
+        { r: [484, 70, 222, 70], go: 'my-profile', label: '오른쪽 위 티어와 아바타' },
+        { r: [22, 262, 676, 130], go: 'ping-detail', label: '민석의 초대' },
+        { r: [40, 682, 206, 126], go: 'metric-sheet', sheet: true, label: '피해량 칸' },
+        { r: [57, 973, 606, 75], go: 'trend-sheet', sheet: true, label: '지난 8주 흐름 한눈에 보기' },
+        { r: [22, 1647, 676, 296], go: 'agents', label: '이번 주 요원 카드' },
+        { r: [22, 1969, 676, 294], go: 'weapons', label: '이번 주 무기 카드' },
+      ],
+    },
+    'metric-sheet': {
+      h: 1600, sheet: true, group: '홈', name: 'S1-a 지표 설명 시트',
+      desc: '고정 칸을 누르면 떠요. 이번 주 값과 지난 4주 평균, 주별 막대, 평소 범위, 실제 합계로 쓴 계산식을 차례로 보여줘요.',
+      note: '평소 범위는 남의 기준이 아니라 내 지난 주들의 가장 낮은 값과 높은 값이에요.',
+      hot: [{ r: [0, 0, 720, 570], back: true, label: '바깥 어두운 곳' }],
+    },
+    'trend-sheet': {
+      h: 1600, sheet: true, group: '홈', name: '지난 8주 흐름 시트',
+      desc: '고정 지표 다섯의 8주 막대를 한 화면에 모았어요. 점선은 지난 4주 평균이고, 막대를 누르면 모든 줄이 그 주 값으로 바뀌어요.',
+      hot: [{ r: [0, 0, 720, 615], back: true, label: '바깥 어두운 곳' }],
+    },
+    matches: {
+      h: 3200, tab: 'matches', group: '경기', name: 'S2 경기 목록',
+      desc: '날짜별로 묶고 그날 승패를 머리에 적어요. 줄마다 결과, 스코어, K/D/A와 전투점수(ACS)를 두고, 줄 전체를 칠하지 않아 승패는 글자 색으로 읽어요.',
+      note: '경기 상세 캡처는 어제 뛴 코로드 경기라 그 줄을 누르면 열려요.',
+      hot: [{ r: [0, 524, 720, 100], go: 'match-detail', label: '어제 코로드 경기 줄' }],
+    },
+    'match-detail': {
+      h: 1636, dark: 'match-detail-dark', banner: matchBanner, group: '경기', name: 'S3 경기 상세 · 스코어보드',
+      desc: '스코어와 전후반, 라운드 막대 밑에 탭 셋을 둬요. 스코어보드는 팀마다 라운드당 전투점수 순이고, 친구는 요원 얼굴에 표시가 붙어요.',
+      note: '"나"를 누르면 내 프로필, 친구 "민석"을 누르면 친구 프로필이 열려요.',
+      hot: [
+        BACK, roundsTab, mineTab,
+        { r: [28, 587, 222, 76], go: 'my-profile', label: '내 줄 (나)' },
+        { r: [28, 748, 282, 77], go: 'friend-profile', label: '친구 민석' },
+      ],
+    },
+    'match-rounds': {
+      h: 1884, banner: matchBanner, group: '경기', name: 'S3 경기 상세 · 라운드',
+      desc: '첫 킬을 낸 라운드를 몇 번 이겼는지, 공격과 수비 승패를 먼저 요약해요. 라운드를 골라 두 팀의 구매와 킬 순서를 보고, 맨 밑에서 구매 유형별 승패를 봐요.',
+      hot: [BACK, scoreTab, mineTab],
+    },
+    'match-mine': {
+      h: 1840, banner: matchBanner, group: '경기', name: 'S3 경기 상세 · 내 기록',
+      desc: '그 판의 내 기록이에요. 맞힌 부위, 상대마다 잡고 잡힌 수와 주고받은 피해, 킬을 낸 무기를 내가 뛴 라운드로만 세요.',
+      hot: [BACK, scoreTab, roundsTab],
+    },
+    friends: {
+      h: 1666, tab: 'friends', group: '친구', name: '친구 탭',
+      desc: '친구는 서로 수락해야 맺어지고 닉네임으로는 찾을 수 없어요. 요청은 같이 뛴 경기의 스코어보드나 초대 링크로만 보내요.',
+      note: '맨 위 "오발있?" 카드에서 친구를 불러 같이 할 시각을 정해요(ㅇㅂㅇ).',
+      hot: [
+        { r: [532, 180, 134, 66], go: 'ping-compose', sheet: true, label: '파티 모집' },
+        { r: [40, 246, 640, 90], go: 'ping-detail', label: '민석의 초대' },
+        { r: [22, 934, 676, 110], go: 'friend-profile', label: '친구 민석#KR3' },
+      ],
+    },
+    'ping-compose': {
+      h: 1600, sheet: true, group: '친구', name: 'ㅇㅂㅇ 부르기 시트',
+      desc: '서로 수락한 친구를 4명까지 고르고 시각을 정해 한 번에 불러요. 정해 둔 답만 오가고 글을 적는 칸은 없어요.',
+      hot: [{ r: [0, 0, 720, 615], back: true, label: '바깥 어두운 곳' }],
+    },
+    'ping-detail': {
+      h: 1600, group: '친구', name: 'ㅇㅂㅇ 초대',
+      desc: '맨 위에 시각을 크게 두고 친구마다 답을 적어요. 받은 초대에는 갈게요 · 다른 시간 · 못 가요로 답해요.',
+      hot: [BACK],
+    },
+    'friend-profile': {
+      h: 2888, banner: profileBanner, group: '친구', name: 'S5 친구 프로필',
+      desc: '같이 뛴 경기와 승패를 맨 위에 둬요. 나와 비교는 내 리포트 기간 값을 이 친구와 나란히 놓고, 전적을 공개한 친구만 볼 수 있어요.',
+      hot: [
+        BACK,
+        { r: [22, 1745, 676, 293], go: 'friend-agents', label: '요원 카드' },
+        { r: [22, 2067, 676, 291], go: 'friend-weapons', label: '무기 카드' },
+      ],
+    },
+    'friend-weapons': {
+      h: 1714, group: '친구', name: 'S6 무기 · 친구 기록',
+      desc: '민석의 이번 액트 주력 무기 셋과 계열별 기록이에요. 친구 프로필의 무기 칸을 누르면 열려요.',
+      hot: [BACK],
+    },
+    'friend-agents': {
+      h: 1600, group: '친구', name: 'S7 요원 · 친구 기록',
+      desc: '민석의 주 역할과 역할 비중, 요원별 기록이에요. 오른쪽 두 열은 주 역할에 맞춰 시작하고 표 위 버튼으로 바꿔요.',
+      hot: [BACK],
+    },
+    'my-profile': {
+      h: 2419, banner: profileBanner, group: '내 기록', name: '내 프로필',
+      desc: '티어, 통계, 맞힌 부위, 요원, 무기, 최근 경기를 한곳에 모았어요. 홈 오른쪽 위 아바타, 경기 상세의 내 줄, 설정의 계정 줄에서 열려요.',
+      hot: [
+        BACK,
+        { r: [22, 1273, 676, 293], go: 'agents', label: '요원 카드' },
+        { r: [22, 1595, 676, 291], go: 'weapons', label: '무기 카드' },
+        { r: [556, 1930, 132, 60], tab: 'matches', label: '최근 경기 전체 보기' },
+        { r: [22, 2186, 676, 100], go: 'match-detail', label: '코로드 경기 줄' },
+      ],
+    },
+    weapons: {
+      h: 1714, group: '내 기록', name: 'S6 무기',
+      desc: '이번 액트 주력 무기 셋의 이번 주 값을 그 앞 4주 평균과 견줘요. 평소 흔들림보다 크게 움직였을 때만 변화량에 색을 칠해요.',
+      hot: [BACK],
+    },
+    agents: {
+      h: 1600, group: '내 기록', name: 'S7 요원',
+      desc: '주 역할과 역할 비중, 요원별 승률과 첫 교전 지표예요. 승률은 50%를 넘으면 초록, 밑돌면 빨강이에요.',
+      hot: [BACK],
+    },
+    settings: {
+      h: 2738, tab: 'settings', group: '설정', name: 'S4 설정',
+      desc: '전적 공개, 알림, 파티 모집 알림, 표시, 데이터를 묶음마다 카드로 나눠요. 연동 해제는 카드 밖 맨 아래에 따로 두고, 그 밑에 비공식 고지를 둬요.',
+      hot: [{ r: [22, 166, 676, 140], go: 'my-profile', label: '계정 줄' }],
+    },
+  };
+
+  // 다크 캡처의 높이
+  const FILE_H = { 'home-dark': 2960, 'match-detail-dark': 1636 };
+
+  const TABS = [
+    { id: 'home', label: '홈' },
+    { id: 'matches', label: '경기' },
+    { id: 'friends', label: '친구' },
+    { id: 'settings', label: '설정' },
+  ];
+
+  const GROUPS = [
+    ['시작하기', ['intro', 'consent', 'import']],
+    ['홈', ['home', 'metric-sheet', 'trend-sheet']],
+    ['경기', ['matches', 'match-detail', 'match-rounds', 'match-mine']],
+    ['친구', ['friends', 'ping-compose', 'ping-detail', 'friend-profile', 'friend-weapons', 'friend-agents']],
+    ['내 기록', ['my-profile', 'weapons', 'agents']],
+    ['설정', ['settings']],
+  ];
+
+  // 목록에서 바로 열 때 쌓아 둘 화면들. 앱처럼 홈이 늘 맨 아래다.
+  const PATHS = {
+    intro: ['intro'],
+    consent: ['intro', 'consent'],
+    import: ['intro', 'consent', 'import'],
+    home: ['home'],
+    'metric-sheet': ['home', 'metric-sheet'],
+    'trend-sheet': ['home', 'trend-sheet'],
+    matches: ['home', 'matches'],
+    'match-detail': ['home', 'matches', 'match-detail'],
+    'match-rounds': ['home', 'matches', 'match-rounds'],
+    'match-mine': ['home', 'matches', 'match-mine'],
+    friends: ['home', 'friends'],
+    'ping-compose': ['home', 'friends', 'ping-compose'],
+    'ping-detail': ['home', 'friends', 'ping-detail'],
+    'friend-profile': ['home', 'friends', 'friend-profile'],
+    'friend-weapons': ['home', 'friends', 'friend-profile', 'friend-weapons'],
+    'friend-agents': ['home', 'friends', 'friend-profile', 'friend-agents'],
+    'my-profile': ['home', 'my-profile'],
+    weapons: ['home', 'my-profile', 'weapons'],
+    agents: ['home', 'my-profile', 'agents'],
+    settings: ['home', 'settings'],
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const screenEl = $('screen');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+  let stack = [];
+  const tabScroll = {};
+  let dark = false;
+  let running = [];
+  let flashTimer = 0;
+
+  const top = () => stack[stack.length - 1];
+  const entry = (id) => ({ id, scroll: 0 });
+
+  function fileOf(id) {
+    const s = SCREENS[id];
+    return dark && s.dark ? s.dark : id;
+  }
+  function heightOf(file) {
+    return FILE_H[file] || SCREENS[file].h;
+  }
+  function pct(v, total) {
+    return (v / total * 100).toFixed(4) + '%';
+  }
+  function targetName(h) {
+    if (h.back) return SCREENS[top().id].sheet ? '시트 닫기' : '이전 화면';
+    if (h.finish) return SCREENS[h.finish].name;
+    if (h.tab) return SCREENS[h.tab].name;
+    if (h.swap) return SCREENS[h.swap].name;
+    return SCREENS[h.go].name;
+  }
+
+  // 화면 한 장을 그린다
+  function buildLayer(e) {
+    const s = SCREENS[e.id];
+    const file = fileOf(e.id);
+    const H = heightOf(file);
+    const isDark = file.endsWith('-dark');
+    const scrolls = H > VIEW_H;
+
+    const layer = document.createElement('div');
+    layer.className = 'layer' + (isDark ? ' dark-bg' : '');
+    layer.dataset.id = e.id;
+
+    const scroller = document.createElement('div');
+    scroller.className = 'scroller';
+    const content = document.createElement('div');
+    content.className = 'content';
+    const img = document.createElement('img');
+    img.src = src(file);
+    img.width = W;
+    img.height = H;
+    img.alt = s.name + ' 화면';
+    img.decoding = 'async';
+    content.appendChild(img);
+
+    // 프로필 배너에 찍힌 상태 표시줄 글자를 덮는다. 고정한 상태 표시줄이 그 위에 글자를 다시 얹는다.
+    if (scrolls && s.banner && s.banner.patch) {
+      const patch = document.createElement('div');
+      patch.className = 'patch';
+      patch.style.height = pct(SB, H);
+      patch.style.background = s.banner.patch;
+      content.appendChild(patch);
+    }
+    // 맵 배너는 면이 고르지 않아 글자 자리만 바로 밑의 그림으로 바꿔 덮는다
+    if (scrolls && s.banner && s.banner.copy) {
+      for (const [x, w] of ICON_BOXES) {
+        const patch = document.createElement('div');
+        patch.className = 'patch';
+        patch.style.left = pct(x, W);
+        patch.style.width = pct(w, W);
+        patch.style.height = pct(ICON_H, H);
+        patch.style.backgroundImage = `url("${src(file)}")`;
+        patch.style.backgroundSize = `${(W / w * 100).toFixed(4)}% auto`;
+        patch.style.backgroundPosition = `${(x / (W - w) * 100).toFixed(4)}% ${(ICON_H / (H - ICON_H) * 100).toFixed(4)}%`;
+        content.appendChild(patch);
+      }
+    }
+
+    for (const h of s.hot) {
+      content.appendChild(hotButton(h, h.r[0], h.r[1], h.r[2], h.r[3], W, H));
+    }
+    scroller.appendChild(content);
+    layer.appendChild(scroller);
+
+    // 고정 띠
+    let sbBlend = null;
+    let sbSolid = null;
+    if (scrolls) {
+      if (s.banner) {
+        // 배너가 상태 표시줄 밑을 지나는 동안은 글자만 얹고, 배너가 벗어나면 바탕색으로 덮는다
+        sbBlend = bar('top', isDark ? DONOR.darkTop : DONOR.whiteTop, SB, isDark ? 'blend-dark' : 'blend-light');
+        const solidFile = isDark ? DONOR.darkTop : (s.banner.solid === 'canvas' ? DONOR.canvasTop : DONOR.whiteTop);
+        sbSolid = bar('top', solidFile, SB);
+        sbSolid.hidden = true;
+        layer.appendChild(sbBlend);
+        layer.appendChild(sbSolid);
+      } else {
+        layer.appendChild(bar('top', file, SB));
+      }
+      if (!s.tab) {
+        layer.appendChild(bar('bottom', isDark ? DONOR.darkBottom : DONOR.whiteBottom, GH, isDark ? 'blend-dark' : 'blend-light'));
+      }
+    }
+    if (s.tab) {
+      const tb = bar('bottom', file, TB);
+      tb.classList.add('tabbar');
+      TABS.forEach((t, i) => {
+        tb.appendChild(hotButton({ tab: t.id, label: t.label + ' 탭' }, i * 180, 0, 180, 104, W, TB));
+      });
+      layer.appendChild(tb);
+    }
+
+    const dim = document.createElement('div');
+    dim.className = 'dim';
+    layer.appendChild(dim);
+
+    scroller.addEventListener('scroll', () => {
+      e.scroll = scroller.scrollTop;
+      if (s.tab) tabScroll[e.id] = scroller.scrollTop;
+      if (sbBlend) {
+        const k = scroller.clientWidth / W;
+        const past = scroller.scrollTop >= s.banner.after * k;
+        sbBlend.hidden = past;
+        sbSolid.hidden = !past;
+      }
+    }, { passive: true });
+
+    layer._scroller = scroller;
+    layer._restore = () => {
+      if (e.scroll) scroller.scrollTop = e.scroll;
+    };
+    return layer;
+  }
+
+  function bar(pos, file, sliceH, blend) {
+    const d = document.createElement('div');
+    d.className = 'bar ' + pos + (blend ? ' ' + blend : '');
+    d.style.backgroundImage = `url("${src(file)}")`;
+    d.style.aspectRatio = `${W} / ${sliceH}`;
+    return d;
+  }
+
+  function hotButton(h, x, y, w, hh, totalW, totalH) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'hot';
+    b.style.left = pct(x, totalW);
+    b.style.top = pct(y, totalH);
+    b.style.width = pct(w, totalW);
+    b.style.height = pct(hh, totalH);
+    b.setAttribute('aria-label', h.label);
+    b.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      act(h);
+    });
+    return b;
+  }
+
+  // 이동
+  function act(h) {
+    if (h.back) return back();
+    if (h.finish) return go([entry(h.finish)], 'push');
+    if (h.tab) return tab(h.tab);
+    if (h.swap) {
+      const next = stack.slice(0, -1).concat(entry(h.swap));
+      return go(next, 'none');
+    }
+    return go(stack.concat(entry(h.go)), h.sheet ? 'sheet-in' : 'push');
+  }
+
+  function tab(id) {
+    const cur = top();
+    if (cur.id === id) {
+      const layer = screenEl.querySelector('.layer:last-child');
+      if (layer) layer._scroller.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+      return;
+    }
+    const home = { id: 'home', scroll: tabScroll.home || 0 };
+    const next = id === 'home' ? [home] : [home, { id, scroll: tabScroll[id] || 0 }];
+    go(next, 'none');
+  }
+
+  function back() {
+    if (stack.length < 2) return;
+    const leaving = top();
+    go(stack.slice(0, -1), SCREENS[leaving.id].sheet ? 'sheet-out' : 'pop');
+  }
+
+  function finishRunning() {
+    for (const a of running) {
+      try { a.finish(); } catch (_) { /* 이미 끝난 애니메이션 */ }
+    }
+    running = [];
+  }
+
+  function go(next, how) {
+    finishRunning();
+    stack = next;
+    render(how);
+  }
+
+  // 새 화면은 캡처를 다 받은 뒤에 바꿔 끼운다. 받는 동안 빈 화면이 번쩍이지 않게 한다.
+  let navToken = 0;
+  function render(how) {
+    const token = ++navToken;
+    const layer = buildLayer(top());
+    const img = layer.querySelector('img');
+    updatePanel();
+    preload();
+    try {
+      history.replaceState(null, '', '#' + top().id);
+    } catch (_) { /* file:// 등에서 막히면 그냥 둔다 */ }
+
+    if (!screenEl.querySelector('.layer') || img.complete) {
+      swap(layer, how);
+      return;
+    }
+    screenEl.classList.add('busy');
+    let settled = false;
+    const ready = () => {
+      if (settled || token !== navToken) return;
+      settled = true;
+      swap(layer, how);
+    };
+    (img.decode ? img.decode() : Promise.reject(new Error('no decode'))).then(ready, () => {
+      if (img.complete) ready();
+      else img.addEventListener('load', ready, { once: true });
+    });
+    setTimeout(ready, 2500);
+  }
+
+  function swap(layer, how) {
+    screenEl.classList.remove('busy');
+    finishRunning();
+    const stale = Array.from(screenEl.children);
+    const old = stale[stale.length - 1];
+    const animate = old && how !== 'none' && !reduceMotion.matches;
+
+    if (old && (how === 'pop' || how === 'sheet-out')) {
+      screenEl.insertBefore(layer, old);
+    } else {
+      screenEl.appendChild(layer);
+    }
+    layer._restore();
+    requestAnimationFrame(() => layer._restore());
+
+    const done = () => {
+      for (const el of stale) el.remove();
+    };
+
+    if (!animate) {
+      done();
+      return;
+    }
+    const t = { duration: 300, easing: 'cubic-bezier(0.2, 0, 0, 1)', fill: 'both' };
+    let anims = [];
+    if (how === 'push') {
+      layer.style.boxShadow = '-1px 0 0 rgba(0,0,0,.08)';
+      anims = [
+        layer.animate([{ transform: 'translateX(100%)' }, { transform: 'translateX(0)' }], t),
+        old.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-25%)' }], t),
+        old.querySelector('.dim').animate([{ opacity: 0 }, { opacity: 0.1 }], t),
+      ];
+    } else if (how === 'pop') {
+      old.style.boxShadow = '-1px 0 0 rgba(0,0,0,.08)';
+      anims = [
+        old.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(100%)' }], t),
+        layer.animate([{ transform: 'translateX(-25%)' }, { transform: 'translateX(0)' }], t),
+        layer.querySelector('.dim').animate([{ opacity: 0.1 }, { opacity: 0 }], t),
+      ];
+    } else if (how === 'sheet-in') {
+      anims = [layer.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: 'ease-out', fill: 'both' })];
+    } else if (how === 'sheet-out') {
+      anims = [old.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 180, easing: 'ease-in', fill: 'both' })];
+    }
+    running = anims;
+    Promise.all(anims.map((a) => a.finished)).then(() => {
+      done();
+      anims.forEach((a) => { try { a.cancel(); } catch (_) { /* 무시 */ } });
+      layer.style.boxShadow = '';
+      if (running === anims) running = [];
+    }, () => {});
+  }
+
+  // 설명 패널
+  function updatePanel() {
+    const cur = top();
+    const s = SCREENS[cur.id];
+    $('where').textContent = s.group;
+    $('name').textContent = s.name;
+    $('desc').textContent = s.desc;
+    const note = $('note');
+    const darkNote = dark && !s.dark ? '다크 캡처는 홈과 경기 상세만 있어서 이 화면은 라이트로 보여요.' : '';
+    const text = [s.note, darkNote].filter(Boolean).join(' ');
+    note.hidden = !text;
+    note.textContent = text;
+
+    const taps = $('taps');
+    taps.textContent = '';
+    for (const h of s.hot) {
+      const li = document.createElement('li');
+      const b = document.createElement('button');
+      b.type = 'button';
+      const from = document.createElement('span');
+      from.className = 'from';
+      from.textContent = h.label;
+      const to = document.createElement('span');
+      to.className = 'to';
+      to.textContent = '→ ' + targetName(h);
+      b.append(from, to);
+      b.addEventListener('click', () => act(h));
+      li.appendChild(b);
+      taps.appendChild(li);
+    }
+    if (s.tab) {
+      const li = document.createElement('li');
+      li.className = 'empty';
+      li.textContent = '아래 탭바로 홈 · 경기 · 친구 · 설정을 오가요.';
+      taps.appendChild(li);
+    }
+
+    $('back').disabled = stack.length < 2;
+    for (const b of document.querySelectorAll('#groups button')) {
+      if (b.dataset.id === cur.id) b.setAttribute('aria-current', 'page');
+      else b.removeAttribute('aria-current');
+    }
+  }
+
+  function buildGroups() {
+    const wrap = $('groups');
+    for (const [title, ids] of GROUPS) {
+      const box = document.createElement('div');
+      const h = document.createElement('h3');
+      h.textContent = title;
+      const ul = document.createElement('ul');
+      ul.className = 'list';
+      for (const id of ids) {
+        const li = document.createElement('li');
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.dataset.id = id;
+        b.textContent = SCREENS[id].name;
+        b.addEventListener('click', () => go(PATHS[id].map(entry), 'none'));
+        li.appendChild(b);
+        ul.appendChild(li);
+      }
+      box.append(h, ul);
+      wrap.appendChild(box);
+    }
+  }
+
+  // 갈 수 있는 화면은 미리 받아 둔다
+  const loaded = new Set();
+  function preload() {
+    const s = SCREENS[top().id];
+    const ids = [];
+    for (const h of s.hot) {
+      const t = h.go || h.swap || h.tab || h.finish;
+      if (t) ids.push(t);
+    }
+    if (s.tab) TABS.forEach((t) => ids.push(t.id));
+    for (const id of ids) {
+      const f = fileOf(id);
+      if (loaded.has(f)) continue;
+      loaded.add(f);
+      const i = new Image();
+      i.decoding = 'async';
+      i.src = src(f);
+    }
+  }
+
+  // 누를 수 있는 곳 보기
+  const hotToggle = $('hotToggle');
+  hotToggle.addEventListener('click', () => {
+    const on = hotToggle.getAttribute('aria-pressed') !== 'true';
+    hotToggle.setAttribute('aria-pressed', String(on));
+    screenEl.classList.toggle('show-hot', on);
+  });
+  screenEl.addEventListener('click', (ev) => {
+    if (ev.target.closest('.hot')) return;
+    screenEl.classList.remove('flash');
+    void screenEl.offsetWidth;
+    screenEl.classList.add('flash');
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => screenEl.classList.remove('flash'), 900);
+  });
+
+  $('back').addEventListener('click', back);
+  document.addEventListener('keydown', (ev) => {
+    if (ev.altKey || ev.ctrlKey || ev.metaKey) return;
+    if (ev.key === 'ArrowLeft' || (ev.key === 'Escape' && SCREENS[top().id].sheet)) {
+      ev.preventDefault();
+      back();
+    }
+  });
+
+  // 테마
+  function readStored() {
+    try { return localStorage.getItem('ovalit-proto-theme'); } catch (_) { return null; }
+  }
+  function store(v) {
+    try { localStorage.setItem('ovalit-proto-theme', v); } catch (_) { /* 저장 못 해도 된다 */ }
+  }
+  function applyTheme(isDark, rerender) {
+    dark = isDark;
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    $('themeLight').setAttribute('aria-pressed', String(!isDark));
+    $('themeDark').setAttribute('aria-pressed', String(isDark));
+    if (rerender && stack.length) {
+      if (SCREENS[top().id].dark) render('none');
+      else updatePanel();
+    }
+  }
+  $('themeLight').addEventListener('click', () => { store('light'); applyTheme(false, true); });
+  $('themeDark').addEventListener('click', () => { store('dark'); applyTheme(true, true); });
+  darkQuery.addEventListener('change', (ev) => {
+    if (!readStored()) applyTheme(ev.matches, true);
+  });
+
+  // 시작
+  for (const f of [DONOR.whiteTop, DONOR.canvasTop]) {
+    loaded.add(f);
+    const i = new Image();
+    i.src = src(f);
+  }
+  const stored = readStored();
+  applyTheme(stored ? stored === 'dark' : darkQuery.matches, false);
+  buildGroups();
+  const fromHash = decodeURIComponent(location.hash.slice(1));
+  stack = (PATHS[fromHash] || PATHS.intro).map(entry);
+  render('none');
+  window.addEventListener('hashchange', () => {
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (PATHS[id] && id !== top().id) go(PATHS[id].map(entry), 'none');
+  });
+})();
+</script>
+</body>
+</html>

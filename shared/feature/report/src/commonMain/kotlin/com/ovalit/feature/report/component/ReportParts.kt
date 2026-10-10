@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.unit.Dp
@@ -136,9 +137,10 @@ internal fun rememberSubLineStyle(cells: List<Pair<String?, String>>, width: Dp)
     return remember(cells, change, usual, width, density, measurer) {
         val available = with(density) { width.toPx() }
         val gap = with(density) { SubLineGap.toPx() }
+        // 움직인 칸은 변화량을 굵게 그리니 굵은 글자로 잰다
         fun fits(change: TextStyle, usual: TextStyle) = cells.all { (delta, normal) ->
             if (delta == null) return@all true
-            val deltaWidth = measurer.measure(delta, change, softWrap = false, maxLines = 1).size.width
+            val deltaWidth = measurer.measure(delta, change.strong(), softWrap = false, maxLines = 1).size.width
             val normalWidth = measurer.measure(normal, usual, softWrap = false, maxLines = 1).size.width
             deltaWidth + gap + normalWidth <= available
         }
@@ -150,6 +152,8 @@ internal fun rememberSubLineStyle(cells: List<Pair<String?, String>>, width: Dp)
     }
 }
 
+private fun TextStyle.strong(): TextStyle = copy(fontWeight = FontWeight.SemiBold)
+
 private fun TextStyle.scaled(scale: Float): TextStyle =
     if (scale == 1f) this else copy(fontSize = fontSize * scale, lineHeight = lineHeight * scale)
 
@@ -158,9 +162,14 @@ private val SubLineScales = listOf(1f, 0.95f, 0.9f, 0.85f)
 
 private val SubLineGap = 6.dp
 
-/** 고정 칸과 달라진 점 칸의 숫자 밑 한 줄입니다. 변화량이 없으면 평소 값만 둡니다. */
+/**
+ * 고정 칸과 달라진 점 칸의 숫자 밑 한 줄입니다. 변화량이 없으면 평소 값만 둡니다.
+ *
+ * @param strong 달라진 점에서 평소 흔들림보다 크게 움직였다고 본 칸입니다. 변화량을 굵게 그립니다.
+ */
 @Composable
-internal fun MetricSubLine(change: String?, changeColor: Color, usual: String, style: MetricSubLineStyle) {
+internal fun MetricSubLine(change: String?, changeColor: Color, usual: String, style: MetricSubLineStyle, strong: Boolean = false) {
+    val changeStyle = if (strong) style.change.strong() else style.change
     val usualText: @Composable (Modifier) -> Unit = { modifier ->
         OvalitText(
             text = usual,
@@ -174,11 +183,11 @@ internal fun MetricSubLine(change: String?, changeColor: Color, usual: String, s
     when {
         change == null -> usualText(Modifier)
         style.stacked -> Column {
-            OvalitText(text = change, style = style.change, color = changeColor, maxLines = 1)
+            OvalitText(text = change, style = changeStyle, color = changeColor, maxLines = 1)
             usualText(Modifier)
         }
         else -> Row {
-            OvalitText(text = change, modifier = Modifier.alignByBaseline(), style = style.change, color = changeColor, maxLines = 1)
+            OvalitText(text = change, modifier = Modifier.alignByBaseline(), style = changeStyle, color = changeColor, maxLines = 1)
             Spacer(Modifier.width(SubLineGap))
             usualText(Modifier.alignByBaseline())
         }

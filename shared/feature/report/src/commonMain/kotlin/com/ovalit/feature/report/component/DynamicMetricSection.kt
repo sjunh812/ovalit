@@ -249,11 +249,12 @@ private fun DynamicMetricColumn(
             autoSize = shrinkToFit(styles.value.fontSize, min = 14.sp),
         )
         Spacer(Modifier.height(2.dp))
-        MetricSubLine(column.change, column.changeColor, column.usual, styles.subLine)
+        MetricSubLine(column.change, column.changeColor, column.usual, styles.subLine, strong = column.slot.movement == Movement.MOVED)
     }
 }
 
-// 움직였다고 판단한 칸만 오르내림 색을 칠한다(CLAUDE.md 지표 규칙). 나머지는 평소 값과 같은 회색이다. 달라진 점 시트도 이 색을 쓴다.
+// 오르내림은 움직였는지와 상관없이 고정 칸처럼 칠한다(CLAUDE.md 지표 규칙). 움직였다고 판단한 칸은 변화량을 굵게 해서 가른다.
+// 달라진 점 시트도 이 색을 쓴다.
 @Composable
 internal fun changeColor(slot: DynamicSlot, current: Double, usual: Double): Color =
-    if (slot.movement == Movement.MOVED) directionColor(slot.metric.format, current, usual) else OvalitTheme.colors.t3
+    directionColor(slot.metric.format, current, usual)

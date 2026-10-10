@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -77,6 +78,7 @@ import com.ovalit.core.ui.keepTogether
 import com.ovalit.feature.report.component.DynamicMetricSheetBody
 import com.ovalit.feature.report.component.MetricSheetBody
 import com.ovalit.feature.report.component.TrendSheetBody
+import com.ovalit.feature.report.component.changeColor
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -319,6 +321,24 @@ class ReportScreenTest {
                 assertEquals(1, usuals.map { it.height }.distinct().size, "${width}dp ×$fontScale: 칸마다 글자 크기가 다르다")
             }
         }
+    }
+
+    // 평소 범위 안의 변화를 회색으로 두면 증감이 아니라 그냥 글자처럼 읽힌다(CLAUDE.md 변화량과 색)
+    @Test
+    fun `움직이지 않은 달라진 점 칸도 오르면 초록 내리면 빨강으로 칠한다`() = runComposeUiTest {
+        var up: Color? = null
+        var down: Color? = null
+        var colors: OvalitColors? = null
+        setContent {
+            OvalitTheme {
+                up = changeColor(DynamicSlot(DynamicMetric.KAST, Movement.STEADY), current = 0.88, usual = 0.86)
+                down = changeColor(DynamicSlot(DynamicMetric.SURVIVAL_RATE, Movement.STEADY), current = 0.38, usual = 0.40)
+                colors = OvalitTheme.colors
+            }
+        }
+
+        assertEquals(colors?.pos, up)
+        assertEquals(colors?.neg, down)
     }
 
     @Test

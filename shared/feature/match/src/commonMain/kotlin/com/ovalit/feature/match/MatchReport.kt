@@ -43,7 +43,6 @@ import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.ProfileSectionTitle
 import com.ovalit.core.ui.ShotsBreakdown
 import com.ovalit.core.ui.WeaponThumb
-import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.percentText
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.weaponName
@@ -131,7 +130,7 @@ private fun Duels(duels: List<Duel>, uiState: MatchDetailUiState.Success) {
                         .padding(horizontal = OvalitSpacing.gutter, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    AgentImage(line.agent, uiState.catalog.agentName(line.agent), Modifier.size(FaceSize).clip(RoundedCornerShape(8.dp)))
+                    AgentImage(line.agent, uiState.catalog.agents[line.agent], Modifier.size(FaceSize).clip(RoundedCornerShape(8.dp)))
                     Spacer(Modifier.width(OvalitSpacing.sm))
                     if (showNames) {
                         OvalitText(

@@ -39,9 +39,12 @@ import org.jetbrains.compose.resources.decodeToImageBitmap
 
 enum class MapImageStyle { THUMBNAIL, BANNER }
 
-/** 요원 얼굴입니다. 요원을 모르거나 카탈로그에 없는 새 요원이면 [name]의 첫 글자를 띄웁니다. */
+/**
+ * 요원 얼굴입니다. 번들에 얼굴이 없는 새 요원이면 [name]의 첫 글자를 띄웁니다. [name]이 `null`이면 카탈로그에 이름도 없는
+ * 요원(건틀릿: 글리치의 로봇 등)이라 글자 없이 빈 면만 둡니다. "알 수 없는 요원"의 "알"은 아무것도 알려 주지 않습니다.
+ */
 @Composable
-fun AgentImage(agent: AgentId?, name: String, modifier: Modifier = Modifier) {
+fun AgentImage(agent: AgentId?, name: String?, modifier: Modifier = Modifier) {
     val file = agent?.let { GameAssetIndex.agents[it.value.uppercase()] }
     BundledImage(file?.let { "agents/$it.png" }, modifier, fallbackText = name)
 }

@@ -9,14 +9,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchAward
+import com.ovalit.core.model.MatchFormat
 import com.ovalit.core.model.MatchHighlights
 import com.ovalit.core.model.MatchPlacement
+import com.ovalit.core.model.Standing
 import com.ovalit.core.ui.resources.Res
 import com.ovalit.core.ui.resources.highlight_ace
 import com.ovalit.core.ui.resources.highlight_aces
@@ -25,6 +28,7 @@ import com.ovalit.core.ui.resources.highlight_clutches
 import com.ovalit.core.ui.resources.placement_mvp
 import com.ovalit.core.ui.resources.placement_rank
 import com.ovalit.core.ui.resources.placement_rank_of
+import com.ovalit.core.ui.resources.placement_rank_of_teams
 import com.ovalit.core.ui.resources.placement_team_mvp
 import org.jetbrains.compose.resources.stringResource
 
@@ -42,8 +46,24 @@ fun rankText(placement: MatchPlacement, withPlayers: Boolean = false): String =
     if (withPlayers) {
         stringResource(Res.string.placement_rank_of, placement.rank, placement.players)
     } else {
-        stringResource(Res.string.placement_rank, placement.rank)
+        rankText(placement.rank)
     }
+
+/** "3등"입니다. */
+@Composable
+fun rankText(rank: Int): String = stringResource(Res.string.placement_rank, rank)
+
+/** 등수로 끝나는 경기에서 내 등수입니다. 데스매치는 "14명 중 3등", 건틀릿처럼 팀이면 "8팀 중 2등"입니다. */
+@Composable
+fun standingText(standing: Standing, format: MatchFormat): String = stringResource(
+    if (format == MatchFormat.FREE_FOR_ALL) Res.string.placement_rank_of else Res.string.placement_rank_of_teams,
+    standing.rank,
+    standing.teams,
+)
+
+/** 등수의 색입니다. 1등만 이긴 것이라 `--pos`이고 나머지는 `--t1`입니다. 14명 중 2등을 패배 색으로 칠하면 틀린 말이 됩니다. */
+@Composable
+fun standingColor(rank: Int): Color = if (rank == 1) OvalitTheme.colors.pos else OvalitTheme.colors.t1
 
 /** 그 판에서의 자리입니다. MVP와 팀 MVP는 색 칩, 나머지는 "3등"을 적은 흐린 칩입니다. */
 @Composable

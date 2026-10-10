@@ -40,8 +40,10 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Match
+import com.ovalit.core.model.acsOf
 import com.ovalit.core.model.myHighlights
 import com.ovalit.core.model.myPlacement
+import com.ovalit.core.model.myStanding
 import com.ovalit.core.ui.resources.Res
 import com.ovalit.core.ui.resources.loading
 import com.ovalit.core.ui.resources.match_acs
@@ -67,7 +69,8 @@ private fun rowPadding(style: MatchRowStyle) = if (style == MatchRowStyle.COMPAC
 
 /**
  * 경기 한 줄입니다. 스코어는 이겼으면 `--pos`, 졌으면 `--neg`로 칠하고, 화면 읽기 프로그램에는 승패를 말로 읽어 줍니다. 숫자는 게임
- * 스코어보드와 같게 응답의 K/D/A와 전투점수를 그대로 씁니다.
+ * 스코어보드와 같게 응답의 K/D/A와 전투점수를 그대로 씁니다. 데스매치와 건틀릿은 스코어 자리에 등수를 적고, 라운드가 없는 모드는
+ * 전투점수를 비웁니다.
  *
  * @param onClick `null`이면 누를 수 없는 줄입니다. 친구 경기는 다른 사람 기록이 섞여 있어서 열지 않습니다.
  */
@@ -86,14 +89,17 @@ fun MatchRow(
     val mapName = catalog.mapName(match.map)
     val kda = line?.let { stringResource(Res.string.match_kda, it.kills, it.deaths, it.assists) }
     // K/D/A 옆은 ADR이 아니라 전투점수다. 등수와 MVP도 이걸로 센다. 목록은 폭이 좁아 한글 라벨 규칙의 예외로
-    // "ACS 243"처럼 약어를 쓴다.
-    val acs = line?.acs?.let { value ->
+    // "ACS 243"처럼 약어를 쓴다. 라운드가 없는 모드는 전투점수가 없다.
+    val acs = line?.let { match.acsOf(it) }?.let { value ->
         val digits = MetricFormat.INTEGER.format(value)
         if (style == MatchRowStyle.LIST) stringResource(Res.string.match_acs, digits) else digits
     }
-    val result = resultText(match.myTeamWon)
+    // 데스매치와 건틀릿은 승패 대신 등수로 끝나서 스코어 자리에 "14명 중 3등"을 적고 아랫줄의 승패를 뺀다
+    val standing = remember(match) { match.myStanding }
+    val standingText = standing?.let { standingText(it, match.format) }
+    val result = standingText ?: resultText(match.myTeamWon)
     val compact = style == MatchRowStyle.COMPACT
-    val placement = remember(match) { match.myPlacement }
+    val placement = remember(match) { match.myPlacement.takeIf { standing == null } }
     val highlights = remember(match) { match.myHighlights }
     val caption = OvalitTheme.typography.caption
     val small = OvalitTheme.typography.metricS
@@ -110,7 +116,7 @@ fun MatchRow(
             MatchRowStyle.LIST -> MapWithAgent(match, catalog)
             MatchRowStyle.COMPACT -> AgentImage(
                 agent = match.myAgent,
-                name = catalog.agentName(match.myAgent),
+                name = catalog.agents[match.myAgent],
                 modifier = Modifier.size(34.dp).clip(RoundedCornerShape(9.dp)),
             )
         }
@@ -119,10 +125,14 @@ fun MatchRow(
             OvalitText(text = mapName, style = OvalitTheme.typography.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis)
             // 색만으로는 승패를 못 읽어서 글자로 적는다. 아랫줄 맨 앞이어야 줄마다 같은 자리라 위아래로 훑어 읽힌다.
             val resultStyle = SpanStyle(color = resultColor(match.myTeamWon), fontWeight = FontWeight.SemiBold)
+            val queue = stringResource(match.queue.label)
             OvalitText(
                 text = buildAnnotatedString {
-                    withStyle(resultStyle) { append(result) }
-                    append(SEPARATOR + stringResource(match.queue.label) + SEPARATOR + timeLabel)
+                    if (standing == null) {
+                        withStyle(resultStyle) { append(result) }
+                        append(SEPARATOR)
+                    }
+                    append(queue + SEPARATOR + timeLabel)
                 },
                 style = caption,
                 color = colors.t3,
@@ -149,10 +159,10 @@ fun MatchRow(
                     modifier = Modifier.weight(1f, fill = false).padding(end = 6.dp),
                 )
                 OvalitText(
-                    text = stringResource(Res.string.match_score, score.myTeam, score.enemyTeam),
+                    text = standingText ?: stringResource(Res.string.match_score, score.myTeam, score.enemyTeam),
                     modifier = Modifier.weight(1f, fill = false),
                     style = scoreStyle,
-                    color = resultColor(match.myTeamWon),
+                    color = standing?.let { standingColor(it.rank) } ?: resultColor(match.myTeamWon),
                     maxLines = 1,
                     autoSize = shrinkToFit(scoreStyle.fontSize),
                 )
@@ -210,7 +220,7 @@ private fun MapWithAgent(match: Match, catalog: ContentCatalog) {
         MapImage(match.map, MapImageStyle.THUMBNAIL, Modifier.matchParentSize().clip(RoundedCornerShape(8.dp)))
         AgentImage(
             agent = match.myAgent,
-            name = catalog.agentName(match.myAgent),
+            name = catalog.agents[match.myAgent],
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .offset(x = (-5).dp, y = 4.dp)

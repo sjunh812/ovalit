@@ -62,9 +62,12 @@ import com.ovalit.core.designsystem.component.pressIndication
 import com.ovalit.core.designsystem.component.rememberContentShown
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.core.model.MatchFormat
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.model.Standing
 import com.ovalit.core.model.halfScores
+import com.ovalit.core.model.myStanding
 import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdSlot
 import com.ovalit.core.ui.FailureNoticesEffect
@@ -74,7 +77,10 @@ import com.ovalit.core.ui.ResultLabel
 import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.mapName
+import com.ovalit.core.ui.rankText
 import com.ovalit.core.ui.resultColor
+import com.ovalit.core.ui.standingColor
+import com.ovalit.core.ui.standingText
 import com.ovalit.feature.match.resources.Res
 import com.ovalit.feature.match.resources.detail_caption
 import com.ovalit.feature.match.resources.detail_date
@@ -82,6 +88,8 @@ import com.ovalit.feature.match.resources.half_first
 import com.ovalit.feature.match.resources.half_overtime
 import com.ovalit.feature.match.resources.half_second
 import com.ovalit.feature.match.resources.score_description
+import com.ovalit.feature.match.resources.standing_of_players
+import com.ovalit.feature.match.resources.standing_of_teams
 import com.ovalit.feature.match.resources.tab_report
 import com.ovalit.feature.match.resources.tab_rounds
 import com.ovalit.feature.match.resources.tab_scoreboard
@@ -155,10 +163,13 @@ internal fun MatchDetailScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             if (uiState !is MatchDetailUiState.Success) return@Box
             val match = uiState.match
+            // 라운드가 없는 모드는 라운드 기록이 어떻게 오는지 몰라 내 기록 탭도 두지 않는다
             val tabs = buildList {
                 add(DetailTab.SCOREBOARD)
-                if (match.queue.halfRounds != null) add(DetailTab.ROUNDS)
-                add(DetailTab.REPORT)
+                if (match.format == MatchFormat.ROUNDS) {
+                    if (match.queue.halfRounds != null) add(DetailTab.ROUNDS)
+                    add(DetailTab.REPORT)
+                }
             }
 
             val scrollState = rememberScrollState()
@@ -203,7 +214,7 @@ internal fun MatchDetailScreen(
     }
 
     val success = uiState as? MatchDetailUiState.Success
-    val selected = success?.let { state -> (state.myTeam + state.enemyTeam).firstOrNull { it.line.player.value == sheetFor } }
+    val selected = success?.let { state -> state.rows.firstOrNull { it.line.player.value == sheetFor } }
     if (selected != null) {
         PlayerSheet(
             row = selected,
@@ -275,8 +286,13 @@ private fun Banner(uiState: MatchDetailUiState.Success, onBack: () -> Unit) {
 
 @Composable
 private fun ScoreHeadline(uiState: MatchDetailUiState.Success, modifier: Modifier) {
-    val colors = OvalitTheme.colors
     val match = uiState.match
+    val standing = remember(match) { match.myStanding }
+    if (standing != null) {
+        StandingHeadline(uiState, standing, modifier)
+        return
+    }
+    val colors = OvalitTheme.colors
     val score = match.score
     val big = OvalitTheme.typography.metricL.copy(fontSize = 36.sp, fontWeight = FontWeight.Bold)
     val halves = match.halfScores.mapIndexed { index, half ->
@@ -322,6 +338,36 @@ private fun ScoreHeadline(uiState: MatchDetailUiState.Success, modifier: Modifie
                 color = colors.t2,
                 maxLines = 1,
             )
+        }
+    }
+}
+
+// 데스매치와 건틀릿은 승패 대신 등수로 끝나서 맵 이름 옆 승패를 빼고 스코어 자리에 "14명 중 3등"을 크게 둔다
+@Composable
+private fun StandingHeadline(uiState: MatchDetailUiState.Success, standing: Standing, modifier: Modifier) {
+    val match = uiState.match
+    val big = OvalitTheme.typography.metricL.copy(fontSize = 36.sp, fontWeight = FontWeight.Bold)
+    val description = standingText(standing, match.format)
+    val of = stringResource(
+        if (match.format == MatchFormat.FREE_FOR_ALL) Res.string.standing_of_players else Res.string.standing_of_teams,
+        standing.teams,
+    )
+
+    Column(modifier = modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = 14.dp)) {
+        OvalitText(
+            text = uiState.catalog.mapName(match.map),
+            style = OvalitTheme.typography.display,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Spacer(Modifier.height(6.dp))
+        Row(
+            modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = description },
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.spacedBy(9.dp),
+        ) {
+            OvalitText(text = of, style = OvalitTheme.typography.titleM, color = OvalitTheme.colors.t4, modifier = Modifier.padding(bottom = 6.dp))
+            OvalitText(text = rankText(standing.rank), style = big, color = standingColor(standing.rank))
         }
     }
 }

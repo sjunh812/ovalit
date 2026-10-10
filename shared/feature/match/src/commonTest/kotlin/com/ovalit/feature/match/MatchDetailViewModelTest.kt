@@ -12,6 +12,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,10 +45,34 @@ class MatchDetailViewModelTest {
     @Test
     fun `스코어보드는 팀마다 전투 점수 순이다`() = runTest {
         val state = collect(viewModel(anyMatch()))
+        val (myTeam, enemyTeam) = state.groups
 
-        assertEquals(state.myTeam.map { it.line.combatScore }.sortedDescending(), state.myTeam.map { it.line.combatScore })
-        assertEquals(state.enemyTeam.map { it.line.combatScore }.sortedDescending(), state.enemyTeam.map { it.line.combatScore })
-        assertEquals(1, state.myTeam.count { it.relation == PlayerRelation.ME })
+        assertEquals(listOf(ScoreboardSide.MY_TEAM, ScoreboardSide.ENEMY_TEAM), state.groups.map { it.side })
+        assertEquals(myTeam.rows.map { it.line.combatScore }.sortedDescending(), myTeam.rows.map { it.line.combatScore })
+        assertEquals(enemyTeam.rows.map { it.line.combatScore }.sortedDescending(), enemyTeam.rows.map { it.line.combatScore })
+        assertEquals(1, myTeam.rows.count { it.relation == PlayerRelation.ME })
+    }
+
+    // 데스매치는 팀이 없어 우리 팀과 상대 팀으로 나누면 열세 명이 모두 "상대 팀"이 된다
+    @Test
+    fun `데스매치 스코어보드는 모두를 등수 순으로 한 묶음에 둔다`() {
+        val groups = MatchPreviewData.deathmatch.scoreboardGroups { PlayerRelation.NOT_APP_USER }
+        val ranks = groups.single().rows.map { assertNotNull(it.placement).rank }
+
+        assertEquals(ScoreboardSide.EVERYONE, groups.single().side)
+        assertEquals(14, ranks.size)
+        assertEquals(ranks.sorted(), ranks)
+        assertEquals(3, groups.single().rows.indexOfFirst { it.line.player == MatchPreviewData.deathmatch.me } + 1)
+    }
+
+    @Test
+    fun `건틀릿 스코어보드는 두 명씩 팀마다 등수 순으로 묶는다`() {
+        val groups = MatchPreviewData.gauntlet.scoreboardGroups { PlayerRelation.NOT_APP_USER }
+
+        assertEquals((1..8).toList(), groups.map { it.rank })
+        assertTrue(groups.all { it.rows.size == 2 })
+        assertEquals(listOf(2), groups.filter { it.side == ScoreboardSide.MY_TEAM }.map { it.rank })
+        assertTrue(groups.flatMap { it.rows }.all { it.placement == null && it.stats == null })
     }
 
     @Test
@@ -57,7 +82,7 @@ class MatchDetailViewModelTest {
             match.players.any { it.player in friendIds } && friends.appUsersAmong(match.players.map { it.player }).size > 1
         }
 
-        val rows = collect(viewModel(match)).let { it.myTeam + it.enemyTeam }
+        val rows = collect(viewModel(match)).rows
         val appUsers = friends.appUsersAmong(match.players.map { it.player })
 
         rows.forEach { row ->
@@ -79,11 +104,11 @@ class MatchDetailViewModelTest {
             users.any { it !in friendIds }
         }
         val viewModel = viewModel(match)
-        val target = collect(viewModel).let { it.myTeam + it.enemyTeam }.first { it.relation == PlayerRelation.APP_USER }
+        val target = collect(viewModel).rows.first { it.relation == PlayerRelation.APP_USER }
 
         viewModel.sendRequest(target.line.player)
 
-        val after = assertIs<MatchDetailUiState.Success>(viewModel.uiState.value).let { it.myTeam + it.enemyTeam }
+        val after = assertIs<MatchDetailUiState.Success>(viewModel.uiState.value).rows
         assertEquals(PlayerRelation.REQUEST_SENT, after.first { it.line.player == target.line.player }.relation)
     }
 
@@ -116,7 +141,7 @@ class MatchDetailViewModelTest {
 
         val state = collect(viewModel)
 
-        val relations = (state.myTeam + state.enemyTeam).map { it.relation }
+        val relations = state.rows.map { it.relation }
         assertTrue(PlayerRelation.UNKNOWN in relations)
         assertTrue(relations.none { it == PlayerRelation.APP_USER || it == PlayerRelation.NOT_APP_USER })
     }

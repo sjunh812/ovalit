@@ -105,8 +105,9 @@ class MatchesViewModel(
             days = shown
                 .groupBy { it.startedAt.toLocalDateTime(timeZone).date }
                 .map { (date, dayMatches) -> MatchDay(date, dayMatches) },
-            agents = inQueue.mostPlayed { it.myAgent },
-            maps = inQueue.mostPlayed { it.map },
+            // 카탈로그에 이름이 없는 요원과 맵(건틀릿의 로봇 등)은 같은 "알 수 없는 요원" 칩이 여럿 생겨 고를 수 없어 뺀다
+            agents = inQueue.mostPlayed { it.myAgent }.filter { it in catalog.agents },
+            maps = inQueue.mostPlayed { it.map }.filter { it in catalog.maps },
             catalog = catalog,
             now = clock.now(),
             timeZone = timeZone,

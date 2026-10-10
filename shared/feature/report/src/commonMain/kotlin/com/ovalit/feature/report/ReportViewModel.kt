@@ -141,12 +141,12 @@ class ReportViewModel(
     accountRepository: AccountRepository,
     private val preferencesRepository: UserPreferencesRepository,
     private val friendRepository: FriendRepository,
+    private val pingRepository: PingRepository,
     contentRepository: ContentRepository,
     private val clock: Clock,
     val timeZone: TimeZone,
     weekChanges: Flow<Unit> = flowOf(Unit),
     computation: CoroutineContext = Dispatchers.Default,
-    private val pingRepository: PingRepository? = null,
     private val analytics: Analytics = NoAnalytics,
     minuteChanges: Flow<Unit> = flowOf(Unit),
 ) : ViewModel() {
@@ -154,7 +154,7 @@ class ReportViewModel(
     /** 홈 맨 위에 띄울 ㅇㅂㅇ입니다. 리포트 계산과 따로 둬서 답이 바뀔 때 리포트를 다시 세지 않습니다. */
     // 분마다 다시 내보낸다. 자정을 넘기면 "내일 09:00"이 "09:00"이 되어야 한다.
     val homePing: StateFlow<HomePing?> = combine(
-        pingRepository?.pings ?: flowOf(emptyList()),
+        pingRepository.pings,
         accountRepository.account,
         minuteChanges,
     ) { pings, account, _ ->
@@ -280,7 +280,7 @@ class ReportViewModel(
      */
     fun refresh() {
         // ㅇㅂㅇ은 곁다리라 받지 못해도 알리지 않는다. 친구 탭을 당기면 실패를 알린다. 새 경기를 받는 중에 당겨도 ㅇㅂㅇ은 받는다.
-        viewModelScope.launch { runCatching { pingRepository?.refresh() } }
+        viewModelScope.launch { runCatching { pingRepository.refresh() } }
         if (refreshing.value || newMatches.value != null) return
         refreshing.value = true
         viewModelScope.launchNotifying(failures, FailedAction.REFRESH) {

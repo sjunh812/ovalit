@@ -13,8 +13,8 @@ import com.ovalit.core.model.Shots
 import kotlin.random.Random
 import kotlin.time.Instant
 
-// 라운드가 없는 가짜 경기다. 데스매치, 팀 데스매치, 건틀릿: 글리치의 응답 모양은 아직 못 봤다. Riot 문서대로 teams[]에
-// 데스매치는 사람마다 한 줄(numPoints가 킬), 팀 모드는 팀마다 한 줄을 두고 라운드 기록은 비운다.
+// 라운드가 없는 가짜 경기다. 데스매치, 팀 데스매치, 건틀릿: 글리치의 응답 모양은 아직 못 봤다.
+// Riot 문서대로 teams[]에 데스매치는 사람마다 한 줄(numPoints가 킬), 팀 모드는 팀마다 한 줄을 두고 라운드 기록은 비운다.
 
 private const val DEATHMATCH_PLAYERS = 14
 private const val DEATHMATCH_KILLS_TO_WIN = 40
@@ -72,8 +72,9 @@ internal fun Random.fakeTeamDeathmatch(id: MatchId, startedAt: Instant, owner: O
 }
 
 /**
- * 건틀릿: 글리치입니다. 두 명씩 여덟 팀이 2대2 대진을 이어 가며 마지막 한 팀이 남을 때까지 싸웁니다. 요원 대신 로봇을 써서
- * 역할이 없습니다. 응답이 등수를 어떻게 주는지 몰라 등수를 그대로 담습니다.
+ * 건틀릿: 글리치입니다. 두 명씩 여덟 팀이 2대2 대진을 이어 가며 마지막 한 팀이 남을 때까지 싸웁니다.
+ * 요원 대신 로봇을 써서 역할이 없습니다.
+ * 응답이 등수를 어떻게 주는지 몰라 등수를 그대로 담습니다.
  */
 internal fun Random.fakeGauntlet(id: MatchId, startedAt: Instant, owner: Owner): Match {
     val robot = GauntletRobots.random(this)

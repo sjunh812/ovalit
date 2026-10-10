@@ -8,8 +8,9 @@ import com.ovalit.core.model.Role
 import com.ovalit.core.model.WeaponCategory
 import com.ovalit.core.model.WeaponId
 
-// 가짜 경기에 나오는 요원, 맵, 무기, 플레이어다. ID는 콘텐츠 카탈로그의 실제 UUID라서 번들한
-// 이미지가 그대로 붙는다. 이미지를 찾을 때 대문자로 맞추므로 ID의 대소문자는 상관없다.
+// 가짜 경기에 나오는 요원, 맵, 무기, 플레이어다.
+// ID는 콘텐츠 카탈로그의 실제 UUID라서 번들한 이미지가 그대로 붙는다.
+// 이미지를 찾을 때 대문자로 맞춰서 ID의 대소문자는 상관없다.
 
 internal class FakeAgent(val id: AgentId, val name: String, val role: Role)
 
@@ -163,8 +164,8 @@ private fun tiers(ranks: List<String>, radiant: String): Map<Int, String> = buil
 }
 
 /**
- * 일본어 카탈로그(`locale=ja-JP`)가 줄 이름을 대신합니다. 키는 한국어 이름입니다. 실제 저장소는 서버가 기기 언어에 맞는
- * 카탈로그를 내려주니 이 표가 필요 없습니다.
+ * 일본어 카탈로그(`locale=ja-JP`)가 줄 이름을 대신합니다. 키는 한국어 이름입니다.
+ * 실제 저장소는 서버가 기기 언어에 맞는 카탈로그를 내려주니 이 표가 필요 없습니다.
  */
 internal val FakeNamesJa: Map<String, String> = mapOf(
     "제트" to "ジェット", "레이즈" to "レイズ", "레이나" to "レイナ", "피닉스" to "フェニックス", "네온" to "ネオン",

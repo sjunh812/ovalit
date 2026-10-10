@@ -13,9 +13,9 @@ import kotlinx.coroutines.sync.withLock
 /**
  * 앱 화면이 다시 보이면 새로 끝난 경기를 저절로 받고, 받던 중에 화면이 가려지면 남은 경기를 [ImportScheduler]에 넘깁니다.
  *
- * 마지막으로 확인한 지 [RECHECK_AFTER]가 지나지 않았으면 다시 확인하지 않습니다. 다른 앱을 잠깐 오갈 때마다 경기 ID 목록을
- * 받으면 앱 전체의 Riot 몫을 씁니다. 확인한 시각은 저장소가 들어서([MatchRepository.checkedAt]) 첫 수집과 당겨서 받은 것도
- * 확인으로 칩니다.
+ * 마지막으로 확인한 지 [RECHECK_AFTER]가 지나지 않았으면 다시 확인하지 않습니다.
+ * 다른 앱을 잠깐 오갈 때마다 경기 ID 목록을 받으면 앱 전체의 Riot 몫을 씁니다.
+ * 확인한 시각은 저장소가 들어서([MatchRepository.checkedAt]) 첫 수집과 당겨서 받은 것도 확인으로 칩니다.
  *
  * @param scope 앱이 사는 동안 도는 곳입니다. 화면이 사라져도 받기가 이어집니다.
  */

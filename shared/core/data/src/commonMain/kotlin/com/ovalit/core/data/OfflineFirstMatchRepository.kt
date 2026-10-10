@@ -25,16 +25,15 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
- * 내 경기를 서버에서 받아 기기에 저장합니다. CLAUDE.md "경기 받기"에서 저장소가 지킬 규칙은 모두 여기 있습니다. 서버
- * ([MatchRemoteSource])와 기기 저장([MatchStore])은 인터페이스로만 불러서, 가짜 서버와 메모리를 붙이든 실제 서버와 로컬 DB를
- * 붙이든 규칙은 그대로입니다.
+ * 내 경기를 서버에서 받아 기기에 저장합니다. CLAUDE.md "경기 받기"에서 저장소가 지킬 규칙은 모두 여기 있습니다.
+ * 서버([MatchRemoteSource])와 기기 저장([MatchStore])은 인터페이스로만 불러서 가짜 서버와 메모리를 붙이든 실제 서버와 로컬 DB를 붙이든 규칙은 그대로입니다.
  *
- * - 첫 수집은 최근 50경기를 받되 8주를 넘는 경기와 커스텀 게임은 받지 않습니다. 둘이 함께 부르면 뒤에 온 쪽은 앞의 것이 끝날 때까지
- *   기다리고, 이미 끝났으면 다시 받지 않습니다.
- * - 새 경기는 첫 수집을 마친 뒤에만 받습니다. 저장한 경기와 첫 수집이 잘라낸 경기는 다시 받지 않습니다. 두 화면이 같이 당겨도 한
- *   번만 받고, 부른 화면이 사라져도 [scope]에서 끝까지 받습니다. 멈추는 건 [deleteAll]뿐입니다.
- * - 끝난 경기는 바뀌지 않아 한 판씩 받는 대로 저장합니다. 받다 실패하면 받은 경기는 그대로 두고 까닭을 적은 뒤
- *   [OvalitException]으로 던집니다. 남은 것은 다음에 이어 받습니다.
+ * - 첫 수집은 최근 50경기를 받되 8주를 넘는 경기와 커스텀 게임은 받지 않습니다.
+ *   둘이 함께 부르면 뒤에 온 쪽은 앞의 것이 끝날 때까지 기다리고, 이미 끝났으면 다시 받지 않습니다.
+ * - 새 경기는 첫 수집을 마친 뒤에만 받습니다. 저장한 경기와 첫 수집이 잘라낸 경기는 다시 받지 않습니다.
+ *   두 화면이 같이 당겨도 한 번만 받고, 부른 화면이 사라져도 [scope]에서 끝까지 받습니다. 멈추는 건 [deleteAll]뿐입니다.
+ * - 끝난 경기는 바뀌지 않아 한 판씩 받는 대로 저장합니다.
+ *   받다 실패하면 받은 경기는 그대로 두고 까닭을 적은 뒤 [OvalitException]으로 던집니다. 남은 것은 다음에 이어 받습니다.
  *
  * @param scope 새 경기를 받는 곳입니다. 앱이 사는 동안 도는 스코프를 넘깁니다.
  */
@@ -62,8 +61,8 @@ class OfflineFirstMatchRepository(
     // 같은 첫 수집이 둘이 함께 돌지 않게 막는다. 다 받을 때까지 쥐고 있어서 [lock]과 따로 둔다.
     private val importing = Mutex()
 
-    // 지울 때마다 늘린다. 받던 쪽은 저장하기 전에 이 값을 보고, 그사이 지웠으면 멈춘다. 첫 수집은 부른 쪽(WorkManager)에서
-    // 돌아서 지우기가 멈출 수 없다.
+    // 지울 때마다 늘린다. 받던 쪽은 저장하기 전에 이 값을 보고, 그사이 지웠으면 멈춘다.
+    // 첫 수집은 부른 쪽(WorkManager)에서 돌아서 지우기가 멈출 수 없다.
     private var generation = 0
 
     private var inFlight: Deferred<Result<Int>>? = null
@@ -134,8 +133,8 @@ class OfflineFirstMatchRepository(
         return if (joined) 0 else received
     }
 
-    // [lock] 안에서 부른다. 실패는 던지지 않고 결과에 담는다. 기다리는 쪽이 없어도 실패가 [scope]로 번지지 않고, 같이 기다리던
-    // 쪽은 모두 같은 실패를 받는다.
+    // [lock] 안에서 부른다. 실패는 던지지 않고 결과에 담는다.
+    // 기다리는 쪽이 없어도 실패가 [scope]로 번지지 않고, 같이 기다리던 쪽은 모두 같은 실패를 받는다.
     private fun receive(): Deferred<Result<Int>> {
         val started = generation
         return scope.async {
@@ -177,8 +176,8 @@ class OfflineFirstMatchRepository(
         return received
     }
 
-    // 받다 멈췄거나 받던 중에 앱이 꺼져 남은 경기다. 남았으면 목록을 다시 받지 않고 그것부터 받는다. 저장하고 남은 목록에서
-    // 빼기 전에 꺼졌으면 저장한 경기가 남아 있어서 뺀다.
+    // 받다 멈췄거나 받던 중에 앱이 꺼져 남은 경기다. 남았으면 목록을 다시 받지 않고 그것부터 받는다.
+    // 저장한 뒤 남은 목록에서 빼기 전에 꺼졌으면 이미 저장한 경기가 목록에 남아 있어서 뺀다.
     private suspend fun leftovers(started: Int): NewMatchesBatch? = lock.withLock {
         if (generation != started) return null
         val batch = store.newMatches.first() ?: return null
@@ -216,8 +215,8 @@ class OfflineFirstMatchRepository(
         }
     }
 
-    // 진행도도 같이 비운다. 남겨 두면 다시 연동했을 때 S0-4가 새 수집 전에 지난 수집의 "리포트 보기"를 띄운다. 받던 새 경기는
-    // 멈출 때까지 기다린 뒤에 지운다. 기다리지 않으면 막 받은 한 판이 지운 뒤에 들어온다.
+    // 진행도도 같이 비운다. 남겨 두면 다시 연동했을 때 S0-4가 새 수집 전에 지난 수집의 "리포트 보기"를 띄운다.
+    // 받던 새 경기는 멈출 때까지 기다린 뒤에 지운다. 기다리지 않으면 막 받은 한 판이 지운 뒤에 들어온다.
     override suspend fun deleteAll() {
         lock.withLock {
             inFlight?.cancelAndJoin()

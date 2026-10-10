@@ -34,9 +34,9 @@ val ApplicationScope = named("application")
 
 /**
  * @param preferencesPath 설정 파일을 둘 절대 경로입니다. 플랫폼마다 앱 전용 폴더가 달라서 밖에서 받습니다.
- * `.preferences_pb`로 끝나야 합니다.
- * @param language 화면 언어의 ISO 639 코드입니다("ko", "ja"). 요원·맵·무기·티어 이름을 이 언어로 받고, 앱 언어가 바뀌면 새
- * 값을 흘려 다시 받습니다.
+ *   `.preferences_pb`로 끝나야 합니다.
+ * @param language 화면 언어의 ISO 639 코드입니다("ko", "ja").
+ *   요원·맵·무기·티어 이름을 이 언어로 받고, 앱 언어가 바뀌면 새 값을 흘려 다시 받습니다.
  * @param backgroundFailure [ApplicationScope]에서 놓친 실패를 받습니다. 플랫폼이 로그를 남깁니다.
  */
 fun dataModule(

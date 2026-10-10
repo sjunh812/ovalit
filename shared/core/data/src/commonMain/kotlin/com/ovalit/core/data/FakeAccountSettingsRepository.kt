@@ -12,8 +12,9 @@ import kotlinx.coroutines.flow.Flow
 private val ANSWER_DELAY = 300.milliseconds
 
 /**
- * 서버가 붙기 전까지 쓰는 가짜 계정 설정입니다. 서버 대신 메모리에 두고 [latency]만큼 기다렸다가 답합니다. 먼저 바꿔 보여 주고
- * 실패하면 되돌리는 흐름은 실제 저장소와 같은 [AccountSettingsSync]가 맡습니다.
+ * 서버가 붙기 전까지 쓰는 가짜 계정 설정입니다.
+ * 서버 대신 메모리에 두고 [latency]만큼 기다렸다가 답합니다.
+ * 먼저 바꿔 보여 주고 실패하면 되돌리는 흐름은 실제 저장소와 같은 [AccountSettingsSync]가 맡습니다.
  *
  * @param latency 서버에 보내고 답을 받기까지 걸리는 시간입니다. 테스트는 가상 시간으로 넘깁니다.
  */

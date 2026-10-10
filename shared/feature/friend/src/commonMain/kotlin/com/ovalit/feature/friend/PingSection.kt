@@ -6,7 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
@@ -45,8 +47,10 @@ import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitPickerTitle
 import com.ovalit.core.designsystem.component.OvalitPressOutset
 import com.ovalit.core.designsystem.component.OvalitPrimaryButton
+import com.ovalit.core.designsystem.component.OvalitSheetGutter
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitWheelPicker
+import com.ovalit.core.designsystem.component.ovalitSheetFullWidth
 import com.ovalit.core.designsystem.component.pressIndication
 import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
 import com.ovalit.core.designsystem.icon.OvalitIcon
@@ -59,6 +63,7 @@ import com.ovalit.core.model.Ping
 import com.ovalit.core.model.PingAnswer
 import com.ovalit.core.model.PingMember
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.model.byLastPlayedTogether
 import com.ovalit.core.ui.PingSummaryRow
 import com.ovalit.core.ui.joinedForDisplay
 import com.ovalit.core.ui.pingAnswerText
@@ -259,19 +264,8 @@ internal fun PingInviteSheet(friends: List<Friend>, seats: Int, onInvite: (List<
         body = stringResource(Res.string.ping_invite_body, seats),
         onDismiss = onDismiss,
     ) {
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.md),
-            verticalArrangement = Arrangement.spacedBy(OvalitSpacing.md),
-        ) {
-            friends.forEach { friend ->
-                val selected = friend.id.value in picked
-                FriendPick(
-                    friend = friend,
-                    selected = selected,
-                    enabled = selected || picked.size < seats,
-                    onToggle = { on -> picked = if (on) picked + friend.id.value else picked - friend.id.value },
-                )
-            }
+        FriendPickRow(friends, picked, limit = seats) { friend, on ->
+            picked = if (on) picked + friend.id.value else picked - friend.id.value
         }
         Spacer(Modifier.height(OvalitSpacing.xl))
         OvalitPrimaryButton(
@@ -484,20 +478,8 @@ internal fun PingComposeSheet(
         onDismiss = onDismiss,
     ) {
         PickLabel(stringResource(Res.string.ping_compose_who))
-        // 친구가 많으면 다음 줄로 넘긴다. 옆으로 미는 줄은 누른 면이 줄 끝에서 잘린다.
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.md),
-            verticalArrangement = Arrangement.spacedBy(OvalitSpacing.md),
-        ) {
-            friends.forEach { friend ->
-                val selected = friend.id.value in picked
-                FriendPick(
-                    friend = friend,
-                    selected = selected,
-                    enabled = selected || picked.size < MAX_PING_FRIENDS,
-                    onToggle = { on -> picked = if (on) picked + friend.id.value else picked - friend.id.value },
-                )
-            }
+        FriendPickRow(friends, picked, limit = MAX_PING_FRIENDS) { friend, on ->
+            picked = if (on) picked + friend.id.value else picked - friend.id.value
         }
         if (picked.size >= MAX_PING_FRIENDS) {
             Spacer(Modifier.height(OvalitSpacing.xs))
@@ -536,6 +518,35 @@ internal fun PingComposeSheet(
                 onSend(picked.map(::PlayerId), startsAt ?: now)
             },
         )
+    }
+}
+
+/**
+ * 부를 친구를 고르는 한 줄입니다. 친구가 수백 명이어도 시각 휠과 버튼이 화면 안에 남게 한 줄로 두고 옆으로 밉니다. 최근에 같이
+ * 뛴 친구가 앞이라 대개 밀 일이 없습니다.
+ *
+ * 줄을 시트 끝까지 넓히고 같은 폭을 목록 안쪽 여백으로 둡니다. 첫 칸은 본문 선에 맞고, 밀면 칸이 시트 끝까지 이어지며, 누른 면이
+ * 줄 끝에서 잘리지 않습니다.
+ *
+ * @param picked 고른 친구의 ID입니다. [limit]명을 채우면 나머지 칸을 흐리게 막습니다.
+ */
+@Composable
+private fun FriendPickRow(friends: List<Friend>, picked: List<String>, limit: Int, onToggle: (Friend, Boolean) -> Unit) {
+    val ordered = remember(friends) { friends.byLastPlayedTogether() }
+    LazyRow(
+        modifier = Modifier.ovalitSheetFullWidth(),
+        contentPadding = PaddingValues(horizontal = OvalitSheetGutter),
+        horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.md),
+    ) {
+        items(ordered, key = { it.id.value }) { friend ->
+            val selected = friend.id.value in picked
+            FriendPick(
+                friend = friend,
+                selected = selected,
+                enabled = selected || picked.size < limit,
+                onToggle = { on -> onToggle(friend, on) },
+            )
+        }
     }
 }
 

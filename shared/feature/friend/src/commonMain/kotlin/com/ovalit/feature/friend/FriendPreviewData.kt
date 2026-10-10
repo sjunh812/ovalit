@@ -185,6 +185,29 @@ internal object FriendPreviewData {
 
     val noFriends = FriendsUiState.Success(requests = emptyList(), friends = emptyList(), rivalId = null)
 
+    /**
+     * 친구가 [count]명일 때입니다. ViewModel이 세운 순서대로 라이벌(친구1)이 맨 앞이고 그 뒤는 최근에 같이 뛴 친구부터입니다.
+     * 셋에 하나는 전적을 공개하지 않았습니다.
+     */
+    fun manyFriends(count: Int): FriendsUiState.Success = FriendsUiState.Success(
+        requests = emptyList(),
+        friends = (1..count).map { i ->
+            val public = i % 3 != 0
+            FriendRow(
+                Friend(
+                    PlayerId("f$i"),
+                    "친구$i#KR1",
+                    playerCard = null,
+                    statsPublic = public,
+                    matches = emptyList(),
+                    lastPlayedTogether = now - i.hours,
+                ),
+                report = if (public) WeeklyReport.NotEnoughMatches(played = i % 5) else null,
+            )
+        },
+        rivalId = PlayerId("f1"),
+    )
+
     val profile = FriendProfileUiState.Success(
         friend = minseok,
         badge = PlayerBadge(minseok.riotId, tier = 19, tierName = "다이아몬드 2"),

@@ -15,8 +15,6 @@ const STATUS_TTL = 60;
 // 막 끝난 경기가 잠깐 404일 수도 있어서 길게 두지 않는다.
 const MISSING_TTL = 10 * 60;
 const MB = 1024 * 1024;
-// D1은 쿼리당 바인딩을 100개까지 받아서 INSERT 하나에 50쌍까지 넣는다.
-const PLAYERS_PER_INSERT = 50;
 
 // isolate가 살아 있는 동안 요청끼리 나눠 쓴다. isolate 메모리는 128MB라 캐시는 모두 합쳐 40MB 안쪽으로 두고 나머지는
 // 요청을 처리하는 데 남긴다. 경기 원문은 한 판에 800KB 안팎이라 글자당 2바이트로 세도 15판쯤 담긴다.
@@ -164,25 +162,26 @@ export class Riot {
   }
 
   private async recordedPlayers(matchId: string): Promise<Set<string> | undefined> {
-    const { results } = await this.env.DB.prepare("SELECT puuid FROM match_players WHERE match_id = ?")
+    const row = await this.env.DB.prepare("SELECT puuids FROM match_players WHERE match_id = ?")
       .bind(matchId)
-      .all<{ puuid: string }>();
-    return results.length > 0 ? new Set(results.map((row) => row.puuid)) : undefined;
+      .first<{ puuids: string }>();
+    if (!row) return undefined;
+    let puuids: unknown;
+    try {
+      puuids = JSON.parse(row.puuids);
+    } catch {
+      return undefined;
+    }
+    // 못 읽는 줄은 적지 않은 경기로 친다. Riot에서 다시 받아 확인한다.
+    if (!Array.isArray(puuids) || puuids.length === 0) return undefined;
+    return new Set(puuids.filter((puuid) => typeof puuid === "string"));
   }
 
+  // 경기 하나에 한 줄이다. 사람마다 한 줄로 적으면 첫 수집 한 번이 D1 쓰기 500행을 쓴다(migrations/0008).
   private async recordPlayers(matchId: string, data: MatchData): Promise<void> {
-    const players = [...playersIn(data)];
-    const db = this.env.DB;
-    const statements: D1PreparedStatement[] = [];
-    for (let i = 0; i < players.length; i += PLAYERS_PER_INSERT) {
-      const chunk = players.slice(i, i + PLAYERS_PER_INSERT);
-      statements.push(
-        db
-          .prepare(`INSERT OR IGNORE INTO match_players (match_id, puuid) VALUES ${chunk.map(() => "(?, ?)").join(", ")}`)
-          .bind(...chunk.flatMap((puuid) => [matchId, puuid])),
-      );
-    }
-    if (statements.length > 0) await db.batch(statements);
+    await this.env.DB.prepare("INSERT OR IGNORE INTO match_players (match_id, puuids, recorded_at) VALUES (?, ?, ?)")
+      .bind(matchId, JSON.stringify([...playersIn(data)]), Date.now())
+      .run();
   }
 
   private async cached(store: MemoryCache, path: string, ttlSeconds: number): Promise<string> {

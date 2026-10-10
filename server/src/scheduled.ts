@@ -10,8 +10,13 @@ const MINUTE_MS = 60 * 1000;
 const MAX_REMIND_BEFORE_MS = 60 * MINUTE_MS;
 // 크론이 5분마다 도니, 몫이 모자라 이번에 못 보낸 것은 다음 크론에 다시 잡힌다.
 const REMIND_SCAN_LIMIT = 20;
+const DAY_MS = 24 * 60 * MINUTE_MS;
 // 하루 열 번 한도를 pings 줄로 세니 끝나고도 하루는 남겨 둔다
-const KEEP_AFTER_EXPIRY_MS = 24 * 60 * 60 * 1000;
+const KEEP_AFTER_EXPIRY_MS = DAY_MS;
+// 앱은 8주 안의 경기만 본다. 참가자는 경기가 끝난 뒤에 적으니 적은 지 10주가 지난 경기는 앱이 다시 묻지 않는다.
+// 지운 뒤에 누가 물어도 Riot에서 경기를 다시 받아 적을 뿐 틀린 답을 주지는 않는다.
+const MATCH_PLAYERS_KEEP_MS = 10 * 7 * DAY_MS;
+// 크론 한 번이 지우는 줄이다. 하루 288번 돌아 2만 8천 줄까지 지우니 무료 한도 안에서 쌓일 수 있는 속도보다 빠르다.
 const CLEANUP_LIMIT = 100;
 
 /** `createApp`과 같은 `deps`를 받습니다. 테스트는 가짜 `fetch`를 넣어 FCM을 부르지 않습니다. */
@@ -30,11 +35,15 @@ export function createScheduled(deps: Deps = {}): ExportedHandlerScheduledHandle
 }
 
 async function cleanUp(db: D1Database, now: number): Promise<void> {
-  // expires_at은 늘 starts_at보다 한 시간 뒤라 starts_at 색인으로 찾는다. 불려 간 자리는 CASCADE로 같이 지워진다.
-  await db
-    .prepare("DELETE FROM pings WHERE id IN (SELECT id FROM pings WHERE starts_at < ? LIMIT ?)")
-    .bind(now - KEEP_AFTER_EXPIRY_MS - PING_LENGTH_MS, CLEANUP_LIMIT)
-    .run();
+  await db.batch([
+    // expires_at은 늘 starts_at보다 한 시간 뒤라 starts_at 색인으로 찾는다. 불려 간 자리는 CASCADE로 같이 지워진다.
+    db
+      .prepare("DELETE FROM pings WHERE id IN (SELECT id FROM pings WHERE starts_at < ? LIMIT ?)")
+      .bind(now - KEEP_AFTER_EXPIRY_MS - PING_LENGTH_MS, CLEANUP_LIMIT),
+    db
+      .prepare("DELETE FROM match_players WHERE match_id IN (SELECT match_id FROM match_players WHERE recorded_at < ? LIMIT ?)")
+      .bind(now - MATCH_PLAYERS_KEEP_MS, CLEANUP_LIMIT),
+  ]);
 }
 
 /**

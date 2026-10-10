@@ -1,8 +1,9 @@
 package com.ovalit.core.model
 
 /**
- * 등수로 끝나는 경기([MatchFormat.FREE_FOR_ALL], [MatchFormat.TEAM_PLACEMENT])에서 한 팀의 자리입니다. 데스매치는 한 사람이
- * 한 팀입니다. 게임이 그 판 안에서 매긴 등수라 우리가 만든 분포에서의 등수가 아닙니다(CLAUDE.md 지켜야 할 선).
+ * 등수로 끝나는 경기([MatchFormat.FREE_FOR_ALL], [MatchFormat.TEAM_PLACEMENT])에서 한 팀의 자리입니다.
+ * 데스매치는 한 사람이 한 팀입니다.
+ * 게임이 그 판 안에서 매긴 등수라 우리가 만든 분포에서 매긴 등수가 아닙니다(CLAUDE.md 지켜야 할 선).
  *
  * @property rank 1부터 셉니다. 점수가 같으면 같은 등수입니다.
  * @property members 팀 안에서 킬이 많은 순입니다.
@@ -22,8 +23,8 @@ data class Standing(
 /**
  * 등수 순으로 늘어놓은 팀입니다. 두 팀이 겨루는 모드면 빈 목록입니다.
  *
- * 응답이 등수를 주면 그대로 쓰고, 안 주면 팀 점수(`numPoints`)가 높은 순입니다. 데스매치는 점수가 곧 킬이라 `teams[]`가 비어
- * 있으면 스코어보드의 킬로 셉니다.
+ * 응답이 등수를 주면 그대로 쓰고, 안 주면 팀 점수(`numPoints`)가 높은 순입니다.
+ * 데스매치는 점수가 곧 킬이라 `teams[]`가 비어 있으면 스코어보드의 킬로 셉니다.
  */
 fun Match.standings(): List<TeamStanding> {
     if (format != MatchFormat.FREE_FOR_ALL && format != MatchFormat.TEAM_PLACEMENT) return emptyList()

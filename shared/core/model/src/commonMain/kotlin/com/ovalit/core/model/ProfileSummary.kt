@@ -16,8 +16,8 @@ data class ProfileSummary(
 )
 
 /**
- * @property currentTier [latestTier]와 같은 규칙으로 고른 이번 액트 티어입니다. 이번 액트 경쟁전에 티어가 한 판도 없으면
- * `null`입니다.
+ * @property currentTier [latestTier]와 같은 규칙으로 고른 이번 액트 티어입니다.
+ *   이번 액트 경쟁전에 티어가 한 판도 없으면 `null`입니다.
  */
 data class CompetitiveRecord(
     val matches: Int,

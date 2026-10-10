@@ -10,8 +10,9 @@ import kotlin.math.sqrt
  * @property moved 평소 주간 변동폭보다 크게 움직인 고정 지표 중 가장 크게 움직인 것입니다.
  * @property weapon [moved]를 같은 쪽으로 가장 많이 끌어간 무기입니다. 맞는 무기가 없으면 `null`입니다.
  * @property agent [moved]를 같은 쪽으로 가장 많이 끌어간 요원입니다. 맞는 요원이 없으면 `null`입니다.
- * @property mix [moved]의 절반 이상이 구매 유형, 들고 시작한 무기, 요원의 비중이 바뀐 데서 왔으면 그 변화입니다. 이때는
- * [weapon]과 [agent]를 비웁니다. 이코 라운드가 늘어 떨어진 피해량을 무기 하나가 끌어내린 것처럼 적으면 틀린 말이 됩니다.
+ * @property mix [moved]의 절반 이상이 구매 유형, 들고 시작한 무기, 요원의 비중이 바뀐 데서 왔으면 그 변화입니다.
+ *   이때는 [weapon]과 [agent]를 비웁니다.
+ *   이코 라운드가 늘어 떨어진 피해량을 무기 하나가 끌어내린 것처럼 적으면 틀린 말이 됩니다.
  * @property previousBest [moved]가 올라 이번 액트 어느 주보다 높으면 그 앞 주들 중 가장 높았던 값이고, 아니면 `null`입니다.
  */
 data class WeekNote(
@@ -35,8 +36,9 @@ sealed interface MixGroup {
  * 비중이 바뀐 묶음과, 비중과 상관없이 성적이 어땠는지 보여 줄 묶음입니다.
  *
  * @property share 이번 기간 비중입니다. 요원은 판으로, 나머지는 라운드로 셉니다. [usualShare]는 비교 기준 비중입니다.
- * @property steady 두 기간 모두 가장 많이 한 묶음의 성적입니다. 이코 라운드가 늘었을 때 풀바이 라운드만 보면 평소와
- * 같았는지를 보여줍니다. 표본이 모자라면 `null`입니다.
+ * @property steady 두 기간 모두 가장 많이 한 묶음의 성적입니다.
+ *   이코 라운드가 늘었을 때 풀바이 라운드만 보면 평소와 같았는지를 보여줍니다.
+ *   표본이 모자라면 `null`입니다.
  */
 data class MixShift(
     val group: MixGroup,
@@ -58,8 +60,9 @@ internal const val MIN_MIX_EXPLAINED = 0.5
 internal const val MIN_MIX_SHARE_GAP = 5
 
 /**
- * 비중 차이가 우연히 벌어질 만한 폭의 이 배수를 넘어야 짚습니다. 여덟 판 중 레이즈가 한 판 줄면 비중이 12%p 떨어지지만
- * 우연으로 흔히 나오는 차이입니다. 한 경기 라운드들은 같이 움직여서 흔히 쓰는 2배보다 넉넉히 둡니다.
+ * 비중 차이가 우연히 벌어질 만한 폭의 이 배수를 넘어야 짚습니다.
+ * 여덟 판 중 레이즈가 한 판 줄면 비중이 12%p 떨어지지만 우연으로 흔히 나오는 차이입니다.
+ * 한 경기 라운드들은 같이 움직여서 흔히 쓰는 2배보다 넉넉히 둡니다.
  */
 internal const val MIN_MIX_SHARE_Z = 2.5
 
@@ -87,23 +90,26 @@ internal class AgentTrend(
 )
 
 /**
- * 고정 지표 중 평소 주간 변동폭의 [MOVEMENT_THRESHOLD]배를 넘게 움직인 것 하나를 고르고, 그 변화를 가장 많이 끌어간
- * 무기와 요원을 붙입니다. 움직인 게 없으면 `null`이라 칸을 두지 않습니다.
+ * 고정 지표 중 평소 주간 변동폭의 [MOVEMENT_THRESHOLD]배를 넘게 움직인 것 하나를 고르고, 그 변화를 가장 많이 끌어간 무기와 요원을 붙입니다.
+ * 움직인 게 없으면 `null`이라 칸을 두지 않습니다.
  *
- * 무기와 요원은 크게 달라진 것보다 많이 쓴 것을 봅니다. 이번 기간 라운드에서 차지하는 비중에 평소와의 차이를 곱해,
- * 전체 변화에 가장 많이 보탠 것을 고릅니다. 한 판 쓴 무기가 크게 달라졌어도 전체 숫자는 거의 안 움직입니다.
+ * 무기와 요원은 크게 달라진 것보다 많이 쓴 것을 봅니다.
+ * 이번 기간 라운드에서 차지하는 비중에 평소와의 차이를 곱해, 전체 변화에 가장 많이 보탠 것을 고릅니다.
+ * 한 판 쓴 무기가 크게 달라졌어도 전체 숫자는 거의 안 움직입니다.
  *
- * 그 전에 변화가 실력이 아니라 비중에서 왔는지 봅니다. 이번 기간 묶음별 성적을 비교 기준의 비중으로 다시 섞어, 원래 값과의
- * 차이가 변화의 [MIN_MIX_EXPLAINED] 이상이면 무기와 요원 대신 비중 변화를 적습니다(`mixes`).
+ * 그 전에 변화가 실력이 아니라 비중에서 왔는지 봅니다.
+ * 이번 기간 묶음별 성적을 비교 기준의 비중으로 다시 섞어, 원래 값과의 차이가 변화의 [MIN_MIX_EXPLAINED] 이상이면 무기와 요원 대신 비중 변화를 적습니다(`mixes`).
  *
- * 역할이 크게 띄우지 않는 지표(척후대와 전략가의 K/D)는 고르지 않습니다. 동적 칸과 같은 규칙입니다. KDA는 어시스트가
- * 들어가 척후대와 전략가도 봅니다. 기타 모드에서는 부르지 않습니다.
+ * 역할이 크게 띄우지 않는 지표(척후대와 전략가의 K/D)는 동적 칸처럼 고르지 않습니다.
+ * KDA는 어시스트가 들어가 척후대와 전략가도 봅니다.
+ * 기타 모드에서는 부르지 않습니다.
  *
  * @param mixes 라운드 구매, 들고 시작한 무기, 요원으로 나눈 묶음들입니다. 나누는 방법마다 목록 하나입니다.
- * @param actWeeks 이번 액트에서 기간 앞의 주들입니다. 기간이 한 주일 때만 넘깁니다. 두 주를 합친 값을 한 주 값들과 견주면
- * 주간 최고라고 할 수 없습니다. 라운드가 [MIN_TREND_ROUNDS]에 못 미치는 주는 뺍니다.
- * @param history 기간 앞 주들의 주간 지표입니다. S1-a 평소 범위처럼 라운드가 [MIN_TREND_ROUNDS]에 못 미치는 주는 변동폭에서
- * 뺍니다.
+ * @param actWeeks 이번 액트에서 기간 앞의 주들입니다. 기간이 한 주일 때만 넘깁니다.
+ *   두 주를 합친 값을 한 주 값들과 견주면 주간 최고라고 할 수 없습니다.
+ *   라운드가 [MIN_TREND_ROUNDS]에 못 미치는 주는 뺍니다.
+ * @param history 기간 앞 주들의 주간 지표입니다.
+ *   S1-a 평소 범위처럼 라운드가 [MIN_TREND_ROUNDS]에 못 미치는 주는 변동폭에서 뺍니다.
  */
 internal fun chooseWeekNote(
     current: MatchMetrics,
@@ -158,8 +164,8 @@ private fun movedFixedMetric(
         ?.first
 }
 
-// 같은 쪽으로 움직인 무기 중 비중 × 차이가 가장 큰 것이다. S6 위쪽 표가 변화량을 적는 기준과 맞춰, 두 기간 모두 표본을
-// 넘긴 무기만 본다.
+// 같은 쪽으로 움직인 무기 중 비중 × 차이가 가장 큰 것이다.
+// S6 위쪽 표가 변화량을 적는 기준과 맞춰, 두 기간 모두 표본을 넘긴 무기만 본다.
 private fun movedWeapon(moved: MovedMetric, weapons: List<WeaponTrend>, rounds: Int): MovedWeapon? {
     // 전투점수와 KDA는 무기별로 짚을 값이 없다
     val metric = moved.metric.weaponMetric ?: return null
@@ -197,10 +203,11 @@ private fun movedAgent(moved: MovedMetric, agents: List<AgentTrend>, rounds: Int
 }
 
 /**
- * 나누는 방법 가운데 비중 변화로 [moved]를 가장 많이 설명하는 것입니다. 변화의 [MIN_MIX_EXPLAINED] 이상을 설명하지 못하면
- * `null`입니다.
+ * 나누는 방법 가운데 비중 변화로 [moved]를 가장 많이 설명하는 것입니다.
+ * 변화의 [MIN_MIX_EXPLAINED] 이상을 설명하지 못하면 `null`입니다.
  *
- * 이번 기간 묶음별 성적을 그대로 두고 비중만 비교 기준처럼 맞춘 값을 구합니다. 원래 값과 그 값의 차이가 비중이 바뀐 몫입니다.
+ * 이번 기간 묶음별 성적을 그대로 두고 비중만 비교 기준처럼 맞춘 값을 구합니다.
+ * 원래 값과 그 값의 차이가 비중이 바뀐 몫입니다.
  * 전투점수는 경기 합계뿐이라 라운드로 가른 묶음에는 0으로 들어가([roundMetrics]) 비중 몫이 없고, 요원으로만 짚힙니다.
  */
 private fun chooseMix(moved: MovedMetric, mixes: List<List<MixSlice>>, weapons: List<WeaponTrend>): MixShift? {

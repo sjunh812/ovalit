@@ -4,8 +4,8 @@ package com.ovalit.core.model
  * 한 라운드에서 눈에 띄는 장면입니다.
  *
  * @property ace 그 라운드 상대를 모두 내가 잡았으면 `true`입니다. 스킬로 우리 팀을 죽인 건 보지 않습니다.
- * @property clutch 우리 팀에서 나만 남았을 때 상대가 살아 있었으면 채웁니다. 내가 먼저 죽었거나 처음부터 혼자였으면
- * `null`입니다.
+ * @property clutch 우리 팀에서 나만 남았을 때 상대가 살아 있었으면 채웁니다.
+ *   내가 먼저 죽었거나 처음부터 혼자였으면 `null`입니다.
  */
 data class RoundHighlight(
     val ace: Boolean,
@@ -14,8 +14,9 @@ data class RoundHighlight(
 
 /**
  * @property against 나만 남은 순간 살아 있던 상대 수입니다. 화면에는 "1대3"으로 띄웁니다.
- * @property won 그 라운드를 이겼는지입니다. 이기면 클러치 성공으로 칩니다. 스파이크를 설치하고 죽었는데 터져서
- * 이긴 라운드도 성공입니다. 공식 기준이 없어 시작 기준선입니다.
+ * @property won 그 라운드를 이겼는지입니다. 이기면 클러치 성공으로 칩니다.
+ *   스파이크를 설치하고 죽었는데 터져서 이긴 라운드도 성공입니다.
+ *   공식 기준이 없어 시작 기준선입니다.
  */
 data class Clutch(
     val against: Int,
@@ -25,8 +26,8 @@ data class Clutch(
 /**
  * 누가 언제 죽었는지만으로 가립니다. 킬은 목록 순서가 아니라 [KillEvent.atMillis] 순서로 봅니다.
  *
- * 튕겨서 그 라운드를 안 뛴 우리 팀은 킬 기록에 안 나와 끝까지 살아 있는 것처럼 보입니다. 그래서 그런 라운드는
- * 클러치로 잡히지 않습니다. 응답이 라운드마다 누가 뛰었는지 알려 주는지는 실데이터로 확인해야 합니다.
+ * 튕겨서 그 라운드를 안 뛴 우리 팀은 킬 기록에 안 나와 끝까지 살아 있는 것처럼 보여서, 그런 라운드는 클러치로 잡히지 않습니다.
+ * 응답이 라운드마다 누가 뛰었는지 알려 주는지는 실데이터로 확인해야 합니다.
  */
 fun Round.highlight(me: PlayerId, allies: Set<PlayerId>, enemies: Set<PlayerId>): RoundHighlight {
     val ace = enemies.isNotEmpty() && enemies.all { enemy -> kills.any { it.killer == me && it.victim == enemy } }

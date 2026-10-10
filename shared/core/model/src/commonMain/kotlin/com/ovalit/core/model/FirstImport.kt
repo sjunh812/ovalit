@@ -6,8 +6,9 @@ import kotlin.time.Instant
 const val FIRST_IMPORT_MATCHES = 50
 
 /**
- * 이보다 오래된 경기는 첫 수집에서 받지 않습니다. 집계 최대 4주와 비교 4주를 합친 길이입니다. 평소 변동폭은 기간 앞
- * 8주를 보므로, 수집 직후에는 앞선 주가 모자라 동적 칸이 판단 보류로 뜨기 쉽습니다.
+ * 이보다 오래된 경기는 첫 수집에서 받지 않습니다.
+ * 집계 최대 4주와 비교 4주를 합친 길이입니다.
+ * 평소 변동폭은 기간 앞 8주를 봐서, 수집 직후에는 앞선 주가 모자라 동적 칸이 판단 보류로 뜨기 쉽습니다.
  */
 const val FIRST_IMPORT_WEEKS = 8
 
@@ -21,8 +22,9 @@ fun <T> Iterable<T>.forFirstImport(now: Instant, startedAt: (T) -> Instant): Lis
  * 첫 수집이 어디까지 왔는지입니다.
  *
  * @property results 받은 경기의 승패를 받은 순서대로 담습니다. S0-4 아래 막대를 이걸로 칠합니다.
- * @property stoppedBy 받다 멈췄으면 그 까닭이고, 다시 받기 시작하면 `null`로 돌아갑니다. 받은 경기는 그대로 두고 남은 것만
- * 이어 받습니다. 경기 ID 목록부터 받지 못했으면 몇 판을 받을지 몰라 [total]이 0입니다.
+ * @property stoppedBy 받다 멈췄으면 그 까닭이고, 다시 받기 시작하면 `null`로 돌아갑니다.
+ *   받은 경기는 그대로 두고 남은 것만 이어 받습니다.
+ *   경기 ID 목록부터 받지 못했으면 몇 판을 받을지 몰라 [total]이 0입니다.
  */
 data class ImportProgress(
     val total: Int,

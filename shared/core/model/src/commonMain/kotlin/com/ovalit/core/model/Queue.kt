@@ -5,8 +5,9 @@ package com.ovalit.core.model
  *
  * @property halfRounds 전반 라운드 수입니다. 공수가 바뀌는 시점이 모드마다 다릅니다. 라운드제가 아니면 `null`입니다.
  * @property hasEconomy 크레드로 장비를 사는 규칙이 경쟁전과 같은지입니다. 아니면 이코·포스바이를 가르지 않습니다.
- * @property countsInReports 리포트와 평균에 넣는지입니다. `false`인 모드는 다시 살아나거나 혼자 싸우는 등 규칙이 달라 K/D와
- * 헤드샷도 다른 모드와 같은 잣대로 볼 수 없습니다. 경기 탭 목록에만 둡니다.
+ * @property countsInReports 리포트와 평균에 넣는지입니다.
+ *   `false`인 모드는 다시 살아나거나 혼자 싸우는 등 규칙이 달라 K/D와 헤드샷도 다른 모드와 같은 잣대로 볼 수 없습니다.
+ *   경기 탭 목록에만 둡니다.
  */
 enum class Queue(
     val halfRounds: Int?,
@@ -42,8 +43,9 @@ enum class Queue(
     SNOWBALL_FIGHT(halfRounds = null, hasEconomy = false, countsInReports = false),
 
     /**
-     * 큐 ID를 모르는 모드입니다. 13.06의 건틀릿: 글리치처럼 새로 나온 모드가 여기로 옵니다. 규칙을 몰라서 라운드제로 보지 않고
-     * 목록에만 둡니다.
+     * 큐 ID를 모르는 모드입니다.
+     * 13.06의 건틀릿: 글리치처럼 새로 나온 모드가 여기로 옵니다.
+     * 규칙을 몰라서 라운드제로 보지 않고 목록에만 둡니다.
      */
     OTHER(halfRounds = null, hasEconomy = false, countsInReports = false),
     ;
@@ -52,8 +54,8 @@ enum class Queue(
         /**
          * 응답의 `queueId`를 옮깁니다. 경기 ID 목록(`matchlists`)에도 같은 값이 있어서 상세를 받기 전에 거를 수 있습니다.
          *
-         * 커스텀 게임이면 `null`입니다. 커스텀 게임은 받지도 저장하지도 않습니다. 모르는 값은 [OTHER]라서 새 모드가 나와도
-         * 기타 목록에 뜹니다.
+         * 커스텀 게임이면 `null`이고, 커스텀 게임은 받지도 저장하지도 않습니다.
+         * 모르는 값은 [OTHER]라서 새 모드가 나와도 기타 목록에 뜹니다.
          *
          * @param provisioningFlowId 경기 상세의 `matchInfo.provisioningFlowId`입니다. 경기 ID 목록에는 없어서 빼고 불러도 됩니다.
          */

@@ -113,11 +113,12 @@ data class WinRecord(val rounds: Int, val wins: Int) {
 }
 
 /**
- * S3 라운드 탭 맨 위의 요약입니다. 첫 킬을 낸 쪽이 라운드를 얼마나 가져갔는지, 공격과 수비에서 몇 번 이겼는지입니다. 내가
- * 뛴 라운드만 셉니다.
+ * S3 라운드 탭 맨 위의 요약입니다.
+ * 첫 킬을 낸 쪽이 라운드를 얼마나 가져갔는지, 공격과 수비에서 몇 번 이겼는지입니다.
+ * 내가 뛴 라운드만 셉니다.
  *
- * @property ourFirstBlood 우리 팀이 첫 킬을 낸 라운드입니다. [theirFirstBlood]는 상대가 첫 킬을 낸 라운드이고, 둘 다
- * [WinRecord.wins]는 우리 팀이 이긴 수입니다.
+ * @property ourFirstBlood 우리 팀이 첫 킬을 낸 라운드입니다.
+ *   [theirFirstBlood]는 상대가 첫 킬을 낸 라운드이고, 둘 다 [WinRecord.wins]는 우리 팀이 이긴 수입니다.
  * @property upsets 우리 팀 장비가 상대보다 [UPSET_LOADOUT_GAP] 넘게 적었는데 이긴 라운드 수입니다.
  */
 data class RoundsOverview(

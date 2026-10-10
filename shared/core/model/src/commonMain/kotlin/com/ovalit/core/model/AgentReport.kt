@@ -4,8 +4,9 @@ package com.ovalit.core.model
 const val MIN_AGENT_MATCHES = 5
 
 /**
- * 넘긴 경기를 요원과 역할별로 셉니다. 액트 경계를 넘는 평균은 만들지 않으니 한 액트 안의 경기만 넘깁니다. S7과
- * 프로필은 [currentActMatches]로 추린 경기를, 홈은 리포트 기간 경기를 넘깁니다.
+ * 넘긴 경기를 요원과 역할별로 셉니다.
+ * 액트 경계를 넘는 평균은 만들지 않으니 한 액트 안의 경기만 넘깁니다.
+ * S7과 프로필은 [currentActMatches]로 추린 경기를, 홈은 리포트 기간 경기를 넘깁니다.
  *
  * @property mainRole 라운드를 가장 많이 뛴 역할입니다. 홈의 "타격대 78%"와 같은 규칙입니다.
  * @property roles 라운드를 많이 뛴 역할 순서입니다.

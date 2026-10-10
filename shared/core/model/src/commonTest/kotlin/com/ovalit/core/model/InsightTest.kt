@@ -41,8 +41,8 @@ class InsightTest {
         assertEquals(InsightMetric.SURVIVAL_RATE, matches.insight(Role.SENTINEL, minZ = 0.0)?.metric)
     }
 
-    // 합치면 75%와 50%로 첫 테스트와 같지만 수비가 판마다 0%와 100%를 오갔다. 그날 컨디션이 크게 흔들린 것이라 우연과
-    // 가를 수 없다.
+    // 합치면 75%와 50%로 첫 테스트와 같지만 수비가 판마다 0%와 100%를 오갔다.
+    // 그날 컨디션이 크게 흔들린 것이라 우연과 가를 수 없다.
     @Test
     fun `경기마다 크게 흔들리면 같은 격차도 우연으로 본다`() {
         val matches = listOf(40 to 0, 20 to 20, 40 to 0, 20 to 20).zip(listOf(0 to 40, 40 to 0, 0 to 40, 40 to 0)) { attack, defense ->
@@ -52,8 +52,8 @@ class InsightTest {
         assertNull(matches.insight(Role.SENTINEL))
     }
 
-    // 제트는 60판 내내 40%였고 레이즈는 세 판 중 두 판은 다 살고 한 판은 다 죽었다. 두 쪽을 모아 재면 흔들림이 작아 보이지만
-    // 레이즈만 보면 세 판이 들쭉날쭉해서 67%를 믿을 수 없다.
+    // 제트는 60판 내내 40%였고 레이즈는 세 판 중 두 판은 다 살고 한 판은 다 죽었다.
+    // 두 쪽을 모아 재면 흔들림이 작아 보이지만 레이즈만 보면 세 판이 들쭉날쭉해서 67%를 믿을 수 없다.
     @Test
     fun `한쪽 경기가 크게 흔들리면 다른 쪽이 고르더라도 우연으로 본다`() {
         val raze = listOf(40 to 0, 40 to 0, 0 to 40).map { (survived, died) -> match(*outcomes(survived, died, side = null), role = Role.DUELIST, agent = Raze) }
@@ -327,8 +327,9 @@ class InsightTest {
         assertEquals(false, insight.leadIsHigher)
     }
 
-    // 헤이븐은 격차가 20%p지만 800라운드 중 160라운드이고, 공수 격차는 16%p지만 절반씩 뛰었다. 나에게 영향이 큰 공수를
-    // 적는다. 두 격차 모두 우연은 넘는다.
+    // 헤이븐은 격차가 20%p지만 800라운드 중 160라운드이고, 공수 격차는 16%p지만 절반씩 뛰었다.
+    // 나에게 영향이 큰 공수를 적는다.
+    // 두 격차 모두 우연은 넘는다.
     @Test
     fun `격차가 더 커도 적게 뛴 쪽보다 많이 뛴 쪽의 격차를 먼저 적는다`() {
         val matches = mapSides(Ascent, games = 8, attack = 40 to 32, defense = 40 to 24) + mapSides(Haven, games = 5, attack = 16 to 8, defense = 16 to 8)
@@ -403,9 +404,11 @@ class InsightTest {
 }
 
 /**
- * 경기 [games]개에 똑같은 공수 라운드를 담습니다. 판마다 같아서 흔들림은 라운드가 서로 따로 논다고 쳤을 때의 값만 남습니다.
- * [attack]과 [defense]는 (살아남은 라운드, 죽은 라운드)입니다. 공격에서 죽는 라운드 중 앞의 [attackOpenedByMe]라운드는
- * 내가 첫 킬을 낸 뒤 죽고, 나머지는 첫 데스입니다. 피해량은 라운드마다 평균 위아래로 20씩 오갑니다.
+ * 경기 [games]개에 똑같은 공수 라운드를 담습니다.
+ * 판마다 같아서 흔들림은 라운드가 서로 따로 논다고 쳤을 때의 값만 남습니다.
+ * [attack]과 [defense]는 (살아남은 라운드, 죽은 라운드)입니다.
+ * 공격에서 죽는 라운드 중 앞의 [attackOpenedByMe]라운드는 내가 첫 킬을 낸 뒤 죽고, 나머지는 첫 데스입니다.
+ * 피해량은 라운드마다 평균 위아래로 20씩 오갑니다.
  */
 private fun sides(
     attack: Pair<Int, Int>,
@@ -437,14 +440,16 @@ private fun side(side: Side?, survived: Int, died: Int, openedByMe: Int, damage:
 }
 
 /**
- * 공격에서는 첫 킬 20번에 첫 데스 10번, 수비에서는 첫 킬 5번에 첫 데스 25번인 경기들입니다. 첫 교전 승률이 67%와 17%로 벌어지고,
- * 관여율도 75%와 38%로 벌어집니다. 생존율은 두 진영 모두 25%입니다.
+ * 공격에서는 첫 킬 20번에 첫 데스 10번, 수비에서는 첫 킬 5번에 첫 데스 25번인 경기들입니다.
+ * 첫 교전 승률이 67%와 17%로 벌어지고, 관여율도 75%와 38%로 벌어집니다.
+ * 생존율은 두 진영 모두 25%입니다.
  */
 private fun aimGap(games: Int = 4) = sides(attack = 10 to 30, defense = 10 to 30, games = games, attackOpenedByMe = 20, defenseOpenedByMe = 5)
 
 /**
- * 공격 40라운드 중 12라운드, 수비 40라운드 중 2라운드에서 적을 둘 잡는 경기 넷입니다. 멀티킬 라운드 비율이 30%와 5%로
- * 벌어집니다. 한 번도 죽지 않아 생존율과 관여율은 두 진영 모두 100%이고, 첫 교전도 모두 이겨 두 진영이 같습니다.
+ * 공격 40라운드 중 12라운드, 수비 40라운드 중 2라운드에서 적을 둘 잡는 경기 넷입니다.
+ * 멀티킬 라운드 비율이 30%와 5%로 벌어집니다.
+ * 한 번도 죽지 않아 생존율과 관여율은 두 진영 모두 100%이고, 첫 교전도 모두 이겨 두 진영이 같습니다.
  */
 private fun multiKillGap(): List<Match> {
     fun side(side: Side, multi: Int) = List(40) { index ->
@@ -460,8 +465,8 @@ private fun buys(attack: Pair<Int, Int>, defense: Pair<Int, Int>): List<Match> {
 }
 
 /**
- * 하루에 네 판씩, 판 시작이 [gapMinutes]분 간격인 [days]일입니다. 앞 두 판과 뒤 두 판의 (살아남은 라운드, 죽은 라운드)를
- * 받습니다. 진영은 모릅니다.
+ * 하루에 네 판씩, 판 시작이 [gapMinutes]분 간격인 [days]일입니다.
+ * 앞 두 판과 뒤 두 판의 (살아남은 라운드, 죽은 라운드)를 받고, 진영은 모릅니다.
  */
 private fun sessions(early: Pair<Int, Int>, late: Pair<Int, Int>, days: Int = 6, gapMinutes: Int = 40): List<Match> =
     (0 until days).flatMap { day ->

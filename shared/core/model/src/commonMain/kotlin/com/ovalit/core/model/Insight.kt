@@ -12,13 +12,14 @@ enum class Side {
 /**
  * 개선 포인트 문장에서 두 쪽으로 나눠 견주는 지표입니다.
  *
- * 비율 지표는 화면에 보이는 %끼리 [MIN_PERCENT_GAP]%p 이상, 피해량은 두 쪽을 합친 평균의 [MIN_DAMAGE_GAP_RATIO] 이상
- * 벌어져야 문장을 만듭니다. 두 쪽이 각각 최소 표본도 넘겨야 합니다. 기준과 표본 모두 시작 기준선입니다.
+ * 비율 지표는 화면에 보이는 %끼리 [MIN_PERCENT_GAP]%p 이상, 피해량은 두 쪽을 합친 평균의 [MIN_DAMAGE_GAP_RATIO] 이상 벌어져야 문장을 만듭니다.
+ * 두 쪽이 각각 최소 표본도 넘겨야 합니다.
+ * 기준과 표본 모두 시작 기준선입니다.
  *
- * @property dynamic 같은 지표의 동적 칸입니다. 값과 최소 표본을 여기서 가져와 동적 칸과 갈리지 않게 합니다. 피해량, 헤드샷,
- * 승률은 동적 칸 후보가 아니라 `null`입니다.
- * @property focusOnly 관심사로 골랐을 때만 후보에 넣습니다. 이코·포스바이·풀바이 승률은 라운드 운영 다듬기를 고른
- * 사람에게만 봅니다.
+ * @property dynamic 같은 지표의 동적 칸입니다. 값과 최소 표본을 여기서 가져와 동적 칸과 갈리지 않게 합니다.
+ *   피해량, 헤드샷, 승률은 동적 칸 후보가 아니라 `null`입니다.
+ * @property focusOnly 관심사로 골랐을 때만 후보에 넣습니다.
+ *   이코·포스바이·풀바이 승률은 라운드 운영 다듬기를 고른 사람에게만 봅니다.
  */
 enum class InsightMetric(
     internal val dynamic: DynamicMetric?,
@@ -31,8 +32,9 @@ enum class InsightMetric(
     MULTI_KILL_RATE(DynamicMetric.MULTI_KILL_RATE),
 
     /**
-     * 경기 승률입니다. 요원, 역할, 맵끼리 견줄 때 봅니다. 관여율이나 첫 킬과 달리 역할에 따라 뜻이 뒤집히지 않아서 역할이
-     * 다른 것끼리도 견줄 수 있습니다. 두 쪽 모두 승패가 갈린 판이 [MIN_AGENT_MATCHES]판 이상이어야 합니다.
+     * 요원, 역할, 맵끼리 견줄 때 보는 경기 승률입니다.
+     * 관여율이나 첫 킬과 달리 역할에 따라 뜻이 뒤집히지 않아서 역할이 다른 것끼리도 견줄 수 있습니다.
+     * 두 쪽 모두 승패가 갈린 판이 [MIN_AGENT_MATCHES]판 이상이어야 합니다.
      */
     WIN_RATE(dynamic = null),
 
@@ -53,8 +55,10 @@ const val MIN_PERCENT_GAP = 10
 const val MIN_DAMAGE_GAP_RATIO = 0.15
 
 /**
- * 두 쪽 차이가 우연히 벌어질 만한 폭의 이 배수를 넘어야 문장을 만듭니다. 한 액트에 견주는 조합이 수십 개라 흔히 쓰는 2배로는
- * 아무 차이 없는 사람에게도 절반 넘게 문장이 걸립니다. 3.5배면 그 비율이 50판까지 5% 안팎입니다. 시작 기준선입니다.
+ * 두 쪽 차이가 우연히 벌어질 만한 폭의 이 배수를 넘어야 문장을 만듭니다.
+ * 한 액트에 견주는 조합이 수십 개라 흔히 쓰는 2배로는 아무 차이 없는 사람에게도 절반 넘게 문장이 걸립니다.
+ * 3.5배면 그 비율이 50판까지 5% 안팎입니다.
+ * 시작 기준선입니다.
  */
 const val MIN_GAP_Z = 3.5
 
@@ -62,8 +66,8 @@ const val MIN_GAP_Z = 3.5
 const val MIN_INSIGHT_MATCHES = 3
 
 /**
- * 앞 판이 끝나고 이만큼 안에 다음 판을 시작하면 연달아 뛴 것으로 봅니다. 큐 잡는 시간과 잠깐 쉬는 시간을 넉넉히 넣은
- * 시작 기준선입니다.
+ * 앞 판이 끝나고 이만큼 안에 다음 판을 시작하면 연달아 뛴 것으로 봅니다.
+ * 큐 잡는 시간과 잠깐 쉬는 시간을 넉넉히 넣은 시작 기준선입니다.
  */
 const val SESSION_BREAK_MILLIS = 60 * 60 * 1000L
 
@@ -101,8 +105,8 @@ sealed interface InsightSubject {
     data object EarlyInSession : InsightSubject
 }
 
-// 주어로 두지 않는 쪽이다. 묶음을 주어로 두면 "다른 맵에서는 헤이븐보다 높아요"처럼 어색하다. 첫 두 판을 주어로 두면
-// 무엇을 짚는지 흐려져서 늘 세 번째 판부터를 주어로 둔다.
+// 주어로 두지 않는 쪽이다. 묶음을 주어로 두면 "다른 맵에서는 헤이븐보다 높아요"처럼 어색하다.
+// 첫 두 판을 주어로 두면 무엇을 짚는지 흐려져서 늘 세 번째 판부터를 주어로 둔다.
 private val InsightSubject.isGroup: Boolean
     get() = when (this) {
         is InsightSubject.OtherAgents -> agents.size > 1
@@ -128,16 +132,15 @@ data class InsightPart(
 /**
  * 개선 포인트 문장 하나입니다. [lead]를 주어로 [other]와 견줍니다.
  *
- * 두 쪽 모두 이름이 있으면(공격과 수비, 제트와 레이즈) 높은 쪽이 [lead]라 "제트로 뛴 판은 승률이 레이즈보다 높아요"가
- * 됩니다. 한쪽이 여럿을 묶은 쪽이면(다른 맵) 이름 있는 쪽이 [lead]이고, 낮으면 "헤이븐에서는 관여율이 다른 맵보다
- * 낮아요"가 됩니다.
+ * 두 쪽 모두 이름이 있으면(공격과 수비, 제트와 레이즈) 높은 쪽이 [lead]라 "제트로 뛴 판은 승률이 레이즈보다 높아요"가 됩니다.
+ * 한쪽이 여럿을 묶은 쪽이면(다른 맵) 이름 있는 쪽이 [lead]이고, 낮으면 "헤이븐에서는 관여율이 다른 맵보다 낮아요"가 됩니다.
  *
- * @property leadIsHigher [lead]가 [other]보다 높은지입니다.
- * @property isRolePriority 고른 지표가 역할의 우선 지표인지입니다. 화면은 이때 "전략가에게 생존율은 먼저 보는
- * 지표예요"를 붙입니다.
+ * @property isRolePriority 고른 지표가 역할의 우선 지표인지입니다.
+ *   화면은 이때 "전략가에게 생존율은 먼저 보는 지표예요"를 붙입니다.
  * @property focus 관심사 지표라서 골랐으면 그 관심사입니다. 화면은 이때 "에임 올리기를 고르셔서 먼저 봤어요"를 붙입니다.
- * @property recent 홈 리포트 기간(이번 주)만 셌을 때 두 쪽 값입니다. 액트 동안 보인 차이가 이번 주에도 이어졌는지 보여줍니다.
- * 두 쪽 중 하나라도 기간 표본이 모자라거나, 기간이 이번 액트 경기를 모두 담아 위 숫자와 같으면 `null`입니다.
+ * @property recent 홈 리포트 기간(이번 주)만 셌을 때 두 쪽 값입니다.
+ *   액트 동안 보인 차이가 이번 주에도 이어졌는지 보여줍니다.
+ *   두 쪽 중 하나라도 기간 표본이 모자라거나, 기간이 이번 액트 경기를 모두 담아 위 숫자와 같으면 `null`입니다.
  * @property matches 둘로 나눠 견준 경기 수입니다. 홈은 이번 액트 경기 수를 묶음 제목 옆에 적습니다.
  */
 data class Insight(
@@ -159,18 +162,19 @@ data class Insight(
 data class InsightRecent(val lead: Double, val other: Double)
 
 /**
- * 경기를 공격과 수비, 역할끼리, 같은 역할의 요원끼리, 맵끼리, 같은 계열의 무기끼리, 연달아 뛴 판의 앞뒤로 나눠 견주고 문장
- * 하나를 고릅니다. 홈은 이번 액트 경기를 넘깁니다. 한 주 경기를 둘로 나누면 표본이 작아 우연한 차이가 대부분입니다.
+ * 경기를 공격과 수비, 역할끼리, 같은 역할의 요원끼리, 맵끼리, 같은 계열의 무기끼리, 연달아 뛴 판의 앞뒤로 나눠 견주고 문장 하나를 고릅니다.
+ * 한 주 경기를 둘로 나누면 표본이 작아 우연한 차이가 대부분이라 홈은 이번 액트 경기를 넘깁니다.
  *
  * 격차가 기준을 넘어도 우연히 벌어질 만한 폭의 [minZ]배에 못 미치면 후보에서 뺍니다. 흔들림은 경기마다 묶어서 잽니다.
  *
- * 얼마나 벌어졌는지만 보지 않고 두 쪽을 얼마나 뛰었는지도 봅니다. 두 쪽이 라운드에서 차지한 비중끼리 곱하고 격차를
- * 곱해서, 나에게 영향이 가장 컸던 것을 고릅니다. 두 판 뛴 맵의 큰 격차보다 절반씩 뛴 공수의 작은 격차가 먼저일 수
- * 있습니다.
+ * 얼마나 벌어졌는지만 보지 않고 두 쪽을 얼마나 뛰었는지도 봅니다.
+ * 두 쪽이 라운드에서 차지한 비중끼리 곱하고 격차를 곱해서, 나에게 영향이 가장 컸던 것을 고릅니다.
+ * 두 판 뛴 맵의 큰 격차보다 절반씩 뛴 공수의 작은 격차가 먼저일 수 있습니다.
  *
- * 관심사 지표 가운데 기준을 넘는 게 있으면 그중 영향이 가장 큰 것을 먼저 고릅니다. 역할이 크게 띄우지 않는 지표여도
- * 봅니다. 없으면 역할의 우선 지표, 그것도 기준에 못 미치면 나머지 가운데 영향이 가장 큰 것입니다. 관심사로 고른 게
- * 아니면 역할이 크게 띄우지 않는 지표와 [InsightMetric.focusOnly] 지표는 뺍니다. 기준을 넘는 게 없으면 `null`입니다.
+ * 관심사 지표 가운데 기준을 넘는 게 있으면 역할이 크게 띄우지 않는 지표여도 그중 영향이 가장 큰 것을 먼저 고릅니다.
+ * 없으면 역할의 우선 지표, 그것도 기준에 못 미치면 나머지 가운데 영향이 가장 큰 것입니다.
+ * 관심사로 고른 게 아니면 역할이 크게 띄우지 않는 지표와 [InsightMetric.focusOnly] 지표는 뺍니다.
+ * 기준을 넘는 게 없으면 `null`입니다.
  *
  * @param categories 무기 계열입니다. 비어 있으면 무기끼리는 견주지 않습니다.
  * @param minZ 차이가 넘겨야 하는 흔들림의 배수입니다. 테스트는 0으로 우연 거르기를 끄고 나머지 기준만 봅니다.
@@ -232,8 +236,9 @@ private fun InsightSubject.single(): InsightSubject = when (this) {
 }
 
 /**
- * [matches]만 셌을 때 두 쪽 값을 [Insight.recent]에 담습니다. 홈은 리포트 기간 경기를 넘깁니다. 두 쪽 모두 동적 칸과 같은
- * 최소 표본을 넘겨야 합니다. 무기는 S6과 같은 표본입니다.
+ * [matches]만 셌을 때 두 쪽 값을 [Insight.recent]에 담습니다.
+ * 홈은 리포트 기간 경기를 넘깁니다.
+ * 두 쪽 모두 동적 칸과 같은 최소 표본을 넘겨야 하고, 무기는 S6과 같은 표본입니다.
  */
 internal fun Insight.during(matches: List<Match>, categories: Map<WeaponId, WeaponCategory>): Insight {
     val lead = lead.subject.value(metric, matches, categories) ?: return this
@@ -391,8 +396,8 @@ private fun List<Match>.sessionCandidates(scale: Scale): List<Candidate> {
 }
 
 /**
- * 연달아 뛴 판 가운데 [LATE_SESSION_GAME]번째 판부터이거나([late]) 그 앞까지인 경기입니다. 앞 판이 끝나고
- * [SESSION_BREAK_MILLIS] 넘게 쉬면 새로 셉니다.
+ * 연달아 뛴 판 가운데 [LATE_SESSION_GAME]번째 판부터이거나([late]) 그 앞까지인 경기입니다.
+ * 앞 판이 끝나고 [SESSION_BREAK_MILLIS] 넘게 쉬면 새로 셉니다.
  */
 private fun List<Match>.bySessionGame(late: Boolean): List<Match> {
     var game = 0
@@ -484,8 +489,8 @@ private fun compareWeapons(
     )
 }
 
-// 차이가 두 쪽이 우연히 흔들리는 폭을 합친 것의 [minZ]배를 넘는지 본다. 같은 사람이 같은 실력으로 뛰어도 열 판만 보면
-// 공수 생존율이 10%p쯤은 쉽게 벌어진다.
+// 차이가 두 쪽이 우연히 흔들리는 폭을 합친 것의 [minZ]배를 넘는지 본다.
+// 같은 사람이 같은 실력으로 뛰어도 열 판만 보면 공수 생존율이 10%p쯤은 쉽게 벌어진다.
 private fun isClear(metric: InsightMetric, first: Sample, second: Sample, minZ: Double): Boolean {
     val firstWhole = first.shares.sumOf { it.whole }
     val secondWhole = second.shares.sumOf { it.whole }
@@ -515,9 +520,10 @@ private fun Sample.deviations(): List<Pair<Double, Double>> =
     shares.filter { it.whole > 0 }.map { (it.part - value * it.whole) to it.whole.toDouble() }
 
 /**
- * 이쪽 값이 우연히 흔들리는 폭(분산)입니다. 경기마다 묶어서 잽니다. 한 경기 라운드들은 그날 컨디션을 같이 타서, 라운드마다
- * 따로 셈하면 흔들림이 실제보다 작게 잡힙니다. 이쪽 경기만으로 잰 값, 두 쪽 경기를 모아 잰 [scale], 라운드가 서로 따로
- * 논다고 쳤을 때의 값 가운데 가장 큰 것을 씁니다. 우연을 차이로 읽는 쪽보다 차이를 놓치는 쪽이 낫습니다.
+ * 이쪽 값이 우연히 흔들리는 폭(분산)을 경기마다 묶어서 잽니다.
+ * 한 경기 라운드들은 그날 컨디션을 같이 타서, 라운드마다 따로 세면 흔들림이 실제보다 작게 잡힙니다.
+ * 이쪽 경기만으로 잰 값, 두 쪽 경기를 모아 잰 [scale], 라운드가 서로 따로 논다고 쳤을 때의 값 가운데 가장 큰 것을 씁니다.
+ * 우연을 차이로 읽는 쪽보다 차이를 놓치는 쪽이 낫습니다.
  *
  * @param pooled 두 쪽을 합친 비율입니다. 한쪽이 0%나 100%여도 흔들림이 0으로 잡히지 않게 바닥은 이 값으로 잽니다.
  */
@@ -538,8 +544,8 @@ private fun List<Int>.spread(): Double {
     return sumOf { (it - mean) * (it - mean) } / (size - 1)
 }
 
-// 두 쪽의 비중을 곱한다. 절반씩 뛰었을 때 격차 그대로이고, 한쪽이 작을수록 줄어든다. 한쪽만 곱하면 다섯 판과 스무 판을
-// 견줄 때 어느 쪽을 기준으로 보느냐에 따라 영향이 달라진다.
+// 두 쪽의 비중을 곱한다. 절반씩 뛰었을 때 격차 그대로이고, 한쪽이 작을수록 줄어든다.
+// 한쪽만 곱하면 다섯 판과 스무 판을 견줄 때 어느 쪽을 기준으로 보느냐에 따라 영향이 달라진다.
 private fun impact(ratio: Double, first: Int, second: Int, rounds: Int): Double =
     ratio * 4.0 * first / rounds * second / rounds
 

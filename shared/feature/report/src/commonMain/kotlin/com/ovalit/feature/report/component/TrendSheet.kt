@@ -51,8 +51,8 @@ private val RowBarsHeight = 44.dp
 private val RowNameWidth = 88.dp
 
 /**
- * 홈 고정 칸 밑의 "지난 8주 흐름 한눈에 보기" 줄입니다. 누르면 [TrendSheet]가 뜹니다. [metric]의 막대를 작게 그려 무엇이
- * 나오는지 보여 줍니다.
+ * 홈 고정 칸 밑의 "지난 8주 흐름 한눈에 보기" 줄이고, 누르면 [TrendSheet]가 뜹니다.
+ * [metric]의 막대를 작게 그려 무엇이 나오는지 보여 줍니다.
  */
 @Composable
 internal fun TrendEntry(report: WeeklyReport.Ready, metric: FixedMetric, onClick: () -> Unit, modifier: Modifier = Modifier) {
@@ -85,10 +85,12 @@ internal fun TrendEntry(report: WeeklyReport.Ready, metric: FixedMetric, onClick
 }
 
 /**
- * 고정 지표의 8주 막대를 한 시트에 모은 것입니다. 줄마다 지난 4주 평균 높이에 점선을 긋고, 막대를 누르거나 옆으로 끌면 모든
- * 줄이 그 주 값으로 바뀝니다. 처음에는 리포트 기간 값입니다.
+ * 고정 지표의 8주 막대를 모은 시트입니다.
+ * 줄마다 지난 4주 평균 높이에 점선을 긋고, 막대를 누르거나 옆으로 끌면 모든 줄이 그 주 값으로 바뀝니다.
+ * 처음에는 리포트 기간 값입니다.
  *
- * 지표마다 제 범위로 막대를 그립니다. 한 축에 겹치면 K/D 1.2와 피해량 140을 같은 눈금에 올리게 됩니다.
+ * 지표마다 제 범위로 막대를 그립니다.
+ * 한 축에 겹치면 K/D 1.2와 피해량 140을 같은 눈금에 올리게 됩니다.
  */
 @Composable
 internal fun TrendSheet(

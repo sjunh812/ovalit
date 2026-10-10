@@ -175,8 +175,9 @@ class ReportViewModelTest {
         assertEquals(listOf(0L, (Thursday.nextWeekStart(Seoul) - Thursday).inWholeMilliseconds), ticks)
     }
 
-    // 가짜 경기는 최근 두 주에 다른 모드를 여덟 판 섞었다. 기타 리포트는 그중 리포트에 넣는 스파이크 돌격, 신속 플레이, 프리미어
-    // 다섯 판만 센다. 데스매치, 팀 데스매치, 건틀릿은 목록에만 둔다.
+    // 가짜 경기는 최근 두 주에 다른 모드를 여덟 판 섞었다.
+    // 기타 리포트는 그중 리포트에 넣는 스파이크 돌격, 신속 플레이, 프리미어 다섯 판만 센다.
+    // 데스매치, 팀 데스매치, 건틀릿은 목록에만 둔다.
     @Test
     fun `큐를 바꾸면 그 큐 경기로 리포트를 다시 만든다`() = runTest {
         val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, TestUserPreferencesRepository(), TestFriendRepository(), NoPings, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
@@ -313,8 +314,8 @@ class ReportViewModelTest {
         viewModel.refresh()
         advanceUntilIdle()
 
-        // 새 경기로 이번 주가 다섯 판을 채우면 기간이 좁아져 기간 경기 수가 오히려 준다. 그래서 받은 경기 전체로 다시
-        // 만든 리포트와 같은지 본다.
+        // 새 경기로 이번 주가 다섯 판을 채우면 기간이 좁아져 기간 경기 수가 오히려 준다.
+        // 그래서 받은 경기 전체로 다시 만든 리포트와 같은지 본다.
         val all = matches.observeMatches().first()
         val after = assertIs<ReportUiState.Success>(viewModel.uiState.value).report
         assertEquals(countBefore + 1, all.size)

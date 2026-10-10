@@ -21,9 +21,10 @@ import com.ovalit.feature.report.resources.picks_weapons
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * 리포트 기간에 많이 뛴 요원 셋과 킬을 많이 낸 무기 셋입니다. 내 프로필과 같은 칸이고 누르면 S7과 S6으로 갑니다. S6과
- * S7은 이번 액트 전체를 세서 숫자가 다르니 제목에 기간을 붙입니다("이번 주 요원"). 요원은 기간이 짧아 5판을 못
- * 넘기는 일이 많아서 판 수 대신 승패를 적습니다.
+ * 리포트 기간에 많이 뛴 요원 셋과 킬을 많이 낸 무기 셋입니다.
+ * 내 프로필과 같은 칸이고 누르면 S7과 S6으로 갑니다.
+ * S6과 S7은 이번 액트 전체를 세서 숫자가 다르니 제목에 기간을 붙입니다("이번 주 요원").
+ * 요원은 기간이 짧아 5판을 못 넘기는 일이 많아서 판 수 대신 승패를 적습니다.
  */
 @Composable
 internal fun PeriodPicksSection(

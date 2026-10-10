@@ -9,7 +9,8 @@ import com.ovalit.core.ui.format
 internal const val HOME_RANKING_ROWS = 5
 
 /**
- * @property id 친구면 그 친구, 내 줄이면 `null`입니다. 이름은 태그를 떼서 겹칠 수 있어 목록 키로 이걸 씁니다.
+ * @property id 친구면 그 친구, 내 줄이면 `null`입니다.
+ *   이름은 태그를 떼서 겹칠 수 있어 목록 키로 이걸 씁니다.
  * @property rank 보이는 자릿수로 같은 값이면 같은 등수입니다.
  */
 internal data class RankedEntry(val id: PlayerId?, val name: String, val value: Double, val rank: Int) {
@@ -17,9 +18,11 @@ internal data class RankedEntry(val id: PlayerId?, val name: String, val value: 
 }
 
 /**
- * 나와 [friends]를 [metric] 값이 큰 순서로 세웁니다. 서로 수락한 친구끼리만 세우고, 그 기간에 경기가 없는 친구는 뺍니다.
+ * 나와 [friends]를 [metric] 값이 큰 순서로 세웁니다.
+ * 서로 수락한 친구끼리만 세우고, 그 기간에 경기가 없는 친구는 뺍니다.
  *
- * 보이는 자릿수로 같은 값이면 같은 등수이고 그 안에서는 내가 맨 앞입니다. 그래서 내 등수가 n이면 나는 늘 n번째 줄 안에 있습니다.
+ * 보이는 자릿수로 같은 값이면 같은 등수이고 그 안에서는 내가 맨 앞입니다.
+ * 그래서 내 등수가 n이면 나는 늘 n번째 줄 안에 있습니다.
  *
  * @param me 내 줄에 쓸 이름("나")입니다.
  */
@@ -48,11 +51,13 @@ internal fun rankFriends(me: String, mine: MatchMetrics, friends: List<FriendSta
 }
 
 /**
- * 홈 카드에 둘 줄입니다. 위 [HOME_RANKING_ROWS]줄을 두고, 내가 그 밖이면 내 줄을 [mine]에 따로 둡니다.
+ * 홈 카드에 둘 줄입니다.
+ * 위 [HOME_RANKING_ROWS]줄을 두고, 내가 그 밖이면 내 줄을 [mine]에 따로 둡니다.
  *
- * @property total 줄을 세운 사람 수입니다. 나도 들어 있습니다.
- * @property skipsRows 위 줄과 내 줄 사이에 빠진 줄이 있는지입니다. 있으면 그 사이를 띄워 내 줄이 바로 다음 등수처럼 읽히지 않게
- * 합니다. 내가 바로 다음 줄이면 띄우지 않습니다.
+ * @property total 줄을 세운 사람 수이고 나도 들어 있습니다.
+ * @property skipsRows 위 줄과 내 줄 사이에 빠진 줄이 있는지입니다.
+ *   있으면 그 사이를 띄워 내 줄이 바로 다음 등수처럼 읽히지 않게 합니다.
+ *   내가 바로 다음 줄이면 띄우지 않습니다.
  */
 internal class RankingPreview(val top: List<RankedEntry>, val mine: RankedEntry?, val total: Int, val skipsRows: Boolean) {
     val hasMore: Boolean get() = total > top.size + (if (mine != null) 1 else 0)

@@ -58,8 +58,8 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * 달라진 점 칸을 누르면 뜨는 시트입니다. 칸 밑에는 "평소 27%"만 있어서 표본과 최소 표본, 달라졌다고 본 근거를
- * 여기에 적습니다.
+ * 달라진 점 칸을 누르면 뜨는 시트입니다.
+ * 칸 밑에는 "평소 27%"만 있어서 표본과 최소 표본, 달라졌다고 본 근거를 여기에 적습니다.
  */
 @Composable
 internal fun DynamicMetricSheet(metric: DynamicMetric, report: WeeklyReport.Ready, onDismiss: () -> Unit) {

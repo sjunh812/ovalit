@@ -748,8 +748,9 @@ class ReportScreenTest {
         onNodeWithText("이긴 판이 더 많았던", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 그 주에 무엇이 달라졌는지를 숫자보다 먼저 읽히게 짚을 점을 고정 칸 위로 올렸다. 근거 줄은 헤드라인에 붙인다. 떼어 두면
-    // 무엇의 숫자인지 안 읽힌다. 둘 다 제목과 선 없이 고정 칸과 한 카드에 둔다.
+    // 그 주에 무엇이 달라졌는지가 숫자보다 먼저 읽히게 짚을 점을 고정 칸 위에 둔다.
+    // 근거 줄은 떼어 두면 무엇의 숫자인지 안 읽혀서 헤드라인에 붙인다.
+    // 둘 다 제목과 선 없이 고정 칸과 한 카드에 둔다.
     @Test
     fun `짚을 점 헤드라인과 무기·요원 줄은 승패 칸과 고정 칸 사이에 둔다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }

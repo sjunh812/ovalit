@@ -78,23 +78,24 @@ import com.ovalit.feature.report.resources.note_up_kda
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-// 무기 실루엣과 요원 얼굴은 글자 높이에 맞춘 작은 타일에 담는다. 무기는 가로로 길어 타일도 가로로 길게 두고 양옆을 띄워 눕힌다.
+// 무기 실루엣과 요원 얼굴은 글자 높이에 맞춘 작은 타일에 담는다.
+// 무기는 가로로 길어 타일도 가로로 길게 두고 양옆을 띄워 눕힌다.
 private val LeadHeight = 24.dp
 private val WeaponLeadWidth = 36.dp
 private val LeadShape = RoundedCornerShape(7.dp)
 private val WeaponInset = 4.dp
 private val LeadGap = 6.dp
 
-// 이름과 숫자가 붙어 보이지 않을 만큼만 띄운다
 private val ValueGap = 6.dp
 
-// 두 칸을 나란히 둘 때 칸 사이다. 한 칸의 숫자와 다음 칸의 그림이 붙어 보이지 않게 띄운다.
 private val ColumnGap = 16.dp
 
 /**
- * "이번 주 짚을 점"의 헤드라인입니다. 기간과 승패 칸 바로 밑, 고정 칸 위에 둡니다. 크게 움직인 고정 지표 하나를 문장으로 풀고, 오른
- * 값이 이번 액트 어느 주보다 높으면 "이번 액트 최고"를 넣습니다. 근거가 되는 무기와 요원 줄은 바로 밑의 [WeekNoteLines]가
- * 맡습니다. "쓰세요"나 "추천"은 쓰지 않습니다(CLAUDE.md 지켜야 할 선).
+ * "이번 주 짚을 점"의 헤드라인입니다.
+ * 기간과 승패 칸 바로 밑, 고정 칸 위에 둡니다.
+ * 크게 움직인 고정 지표 하나를 문장으로 풀고, 오른 값이 이번 액트 어느 주보다 높으면 "이번 액트 최고"를 넣습니다.
+ * 근거가 되는 무기와 요원 줄은 바로 밑의 [WeekNoteLines]가 맡습니다.
+ * "쓰세요"나 "추천"은 쓰지 않습니다(CLAUDE.md 지켜야 할 선).
  */
 @Composable
 internal fun WeekNoteHeadline(note: WeekNote, modifier: Modifier = Modifier) {
@@ -108,13 +109,15 @@ internal fun WeekNoteHeadline(note: WeekNote, modifier: Modifier = Modifier) {
 }
 
 /**
- * 헤드라인 바로 밑에 붙는 짚을 점의 근거 줄입니다. 헤드라인의 변화를 가장 크게 끌어간 무기와 요원을 숫자로 붙입니다. 둘이면
- * 한 줄에 두 칸으로 나란히 두어 고정 칸이 덜 내려가게 하고, 한 칸이라도 반쪽에 안 들어가면 한 줄에 하나씩 둡니다. 변화의 절반
- * 이상이 이코 라운드나 오퍼레이터처럼 비중이 바뀐 데서 왔으면 무기와 요원 대신 그 비중과, 비중에 휘둘리지 않은 묶음의 성적을
- * 붙입니다. 헤드라인([WeekNoteHeadline])이 없으면 이 줄도 두지 않습니다.
+ * 헤드라인 바로 밑에 붙는 짚을 점의 근거 줄입니다.
+ * 헤드라인의 변화를 가장 크게 끌어간 무기와 요원을 숫자로 붙입니다.
+ * 둘이면 한 줄에 두 칸으로 나란히 두어 고정 칸이 덜 내려가게 하고, 한 칸이라도 반쪽에 안 들어가면 한 줄에 하나씩 둡니다.
+ * 변화의 절반 이상이 이코 라운드나 오퍼레이터처럼 비중이 바뀐 데서 왔으면 무기와 요원 대신 그 비중과, 비중에 휘둘리지 않은 묶음의 성적을 붙입니다.
+ * 헤드라인([WeekNoteHeadline])이 없으면 이 줄도 두지 않습니다.
  *
- * 줄의 숫자에는 색을 입히지 않습니다. 오르내림은 헤드라인이 말하고, 비중 줄은 늘어난 게 좋은지 나쁜지 정해져 있지 않으며,
- * 평소와 같았다는 줄에 빨강이 붙으면 틀린 말이 됩니다.
+ * 줄의 숫자에는 색을 입히지 않습니다.
+ * 오르내림은 헤드라인이 말합니다.
+ * 비중 줄은 늘어난 게 좋은지 나쁜지 정해져 있지 않고, 평소와 같았다는 줄에 빨강이 붙으면 틀린 말이 됩니다.
  */
 @Composable
 internal fun WeekNoteLines(note: WeekNote, catalog: ContentCatalog, modifier: Modifier = Modifier) {
@@ -294,7 +297,6 @@ private fun NoteLeadImage(lead: NoteLead) {
     }
 }
 
-// 이름은 가장 진하게 둔다
 @Composable
 private fun NoteRow.nameText(nameStyle: TextStyle): AnnotatedString = buildAnnotatedString {
     withStyle(SpanStyle(color = OvalitTheme.colors.t1, fontWeight = nameStyle.fontWeight)) { append(name.keepTogether()) }

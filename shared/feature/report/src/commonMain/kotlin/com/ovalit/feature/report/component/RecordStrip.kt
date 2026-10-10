@@ -49,8 +49,9 @@ private val MinCellSlot = 7.dp
 internal const val MAX_RECORD_CELLS = 20
 
 /**
- * 기간 경기의 승패 칸과 "4승 2패 · 67%"입니다. 승패가 난 경기가 없으면 두지 않습니다. 칸은 최근
- * [MAX_RECORD_CELLS]경기까지만 두고 넘치면 칸 앞에 "최근 20경기"를 적지만, 승패 글자는 기간 전체를 셉니다.
+ * 기간 경기의 승패 칸과 "4승 2패 · 67%"입니다.
+ * 승패가 난 경기가 없으면 두지 않습니다.
+ * 칸은 최근 [MAX_RECORD_CELLS]경기까지만 두고 넘치면 칸 앞에 "최근 20경기"를 적지만, 승패 글자는 기간 전체를 셉니다.
  */
 @Composable
 internal fun RecordStrip(report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
@@ -81,8 +82,8 @@ internal fun RecordStrip(report: WeeklyReport.Ready, modifier: Modifier = Modifi
             .padding(horizontal = OvalitSpacing.gutter)
             .semantics(mergeDescendants = true) {},
     ) {
-        // 글자가 먼저 자리를 잡고 칸이 남은 폭을 나눠 갖는다. 칸이 [MinCellSlot]보다 좁아지면 바코드처럼 보여서 승패 글자를
-        // 칸 밑 줄로 내린다.
+        // 글자가 먼저 자리를 잡고 칸이 남은 폭을 나눠 갖는다.
+        // 칸이 [MinCellSlot]보다 좁아지면 바코드처럼 보여서 승패 글자를 칸 밑 줄로 내린다.
         val sideWidth = rememberWidestWidth(listOfNotNull(recent), caption).let { if (recent != null) it + OvalitSpacing.sm else it } +
             OvalitSpacing.md + rememberWidestWidth(listOf(record + SEPARATOR), caption) + rememberWidestWidth(listOf(rate), rateStyle)
         val stacked = currentMaxWidth - sideWidth < MinCellSlot * cells.size

@@ -91,9 +91,9 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * S1 홈입니다. 주간 리포트를 보여줍니다.
+ * S1 홈(주간 리포트)입니다.
  *
- * @param onOpenFriendRanking 친구 비교의 "전체 보기"입니다. 지금 고른 큐와 지표를 넘깁니다.
+ * @param onOpenFriendRanking 친구 비교의 "전체 보기"이고, 지금 고른 큐와 지표를 넘깁니다.
  */
 @Composable
 fun ReportRoute(
@@ -164,8 +164,8 @@ internal fun ReportScreen(
     onReimport: () -> Unit = {},
     onOpenFriendRanking: (QueueFilter, FixedMetric) -> Unit = { _, _ -> },
 ) {
-    // 첫 수집 뒤 홈으로 넘어오면 리포트가 전환 한가운데 도착한다. 그때 다 그리면 밀려 들어오던 화면이 멈춰서, 다 들어올
-    // 때까지 스켈레톤을 두고 그 뒤에도 묶음마다 한 프레임씩 나눠 그린다.
+    // 첫 수집 뒤 홈으로 넘어오면 리포트가 전환 한가운데 도착한다.
+    // 그때 다 그리면 밀려 들어오던 화면이 멈춰서, 다 들어올 때까지 스켈레톤을 두고 그 뒤에도 묶음마다 한 프레임씩 나눠 그린다.
     val shown = rememberContentShown(loaded = uiState is ReportUiState.Success)
     val canvas = OvalitTheme.colors.canvas
     OvalitStaged(
@@ -191,8 +191,8 @@ internal fun ReportScreen(
                 onProfileHintShown()
             }
         }
-        // 머리 줄이 스크롤되면 아바타 자리가 바뀌어 화면과 아바타를 모두 루트 기준으로 재고 그 차이에 안내를 둔다. 아바타는
-        // 잘리지 않은 크기로 잰다. boundsInRoot는 위로 가려지는 동안 폭이 0까지 줄어 화살표 자리가 음수가 된다.
+        // 머리 줄이 스크롤되면 아바타 자리가 바뀌어 화면과 아바타를 모두 루트 기준으로 재고 그 차이에 안내를 둔다.
+        // boundsInRoot는 위로 가려지는 동안 폭이 0까지 줄어 화살표 자리가 음수가 되니 아바타는 잘리지 않은 크기로 잰다.
         var screenOrigin by remember { mutableStateOf(Offset.Zero) }
         var avatarInRoot by remember { mutableStateOf<Rect?>(null) }
         val openProfile = {
@@ -292,9 +292,10 @@ private fun ReportContent(
             Spacer(Modifier.height(OvalitSpacing.md))
             RecordStrip(report)
         }
-        // 짚을 점은 그 주에 무엇이 달라졌는지가 숫자보다 먼저 읽히게 승패 칸 바로 밑, 고정 칸 위에 둔다(docs/screens.md). 근거인
-        // 무기와 요원 줄은 헤드라인에 붙인다. 떼어 두면 "131 → 210"이 무엇의 숫자인지 안 읽힌다. 보이는 차이가 0이면 둘 다 그리지
-        // 않으니 위 간격도 그 안에 준다.
+        // 짚을 점은 그 주에 무엇이 달라졌는지가 숫자보다 먼저 읽히게 승패 칸 바로 밑, 고정 칸 위에 둔다(docs/screens.md).
+        // 근거인 무기와 요원 줄은 헤드라인에 붙인다.
+        // 떼어 두면 "131 → 210"이 무엇의 숫자인지 안 읽힌다.
+        // 보이는 차이가 0이면 둘 다 그리지 않으니 위 간격도 그 안에 준다.
         note?.let {
             OvalitStage {
                 WeekNoteHeadline(note = it, modifier = Modifier.padding(top = 18.dp))

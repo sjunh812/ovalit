@@ -116,8 +116,10 @@ private fun StackedAvatars(riotIds: List<String>) {
 }
 
 /**
- * 전적을 공개한 친구 중에서 라이벌을 고릅니다. 고르면 시트가 닫히고 그 자리에 라이벌 대결이 뜹니다. 친구가 수백 명일 수 있어서
- * 보이는 줄만 그립니다. 줄은 ViewModel이 세운 순서대로 최근에 같이 뛴 친구부터입니다.
+ * 전적을 공개한 친구 중에서 라이벌을 고릅니다.
+ * 고르면 시트가 닫히고 그 자리에 라이벌 대결이 뜹니다.
+ * 친구가 수백 명일 수 있어서 보이는 줄만 그립니다.
+ * 줄은 ViewModel이 세운 순서대로 최근에 같이 뛴 친구부터입니다.
  */
 @Composable
 internal fun RivalPickerSheet(

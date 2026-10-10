@@ -43,13 +43,12 @@ internal fun VerticalLine() {
 }
 
 /**
- * 짚을 점과 개선 포인트의 헤드라인 글꼴입니다. 한 문장이라 본문처럼 줄을 끝까지 채우면 "높아요"만 다음 줄에 남아서, 제목처럼
- * 줄 길이를 고르게 나눕니다(docs/design.md).
+ * 짚을 점과 개선 포인트의 헤드라인 글꼴입니다.
+ * 한 문장이라 본문처럼 줄을 끝까지 채우면 "높아요"만 다음 줄에 남아서, 제목처럼 줄 길이를 고르게 나눕니다(docs/design.md).
  */
 @Composable
 internal fun headlineStyle(): TextStyle = OvalitTheme.typography.bodyStrong.copy(lineBreak = LineBreak.Heading)
 
-/** 묶음 제목과 내용 사이입니다. 홈의 모든 묶음이 같이 씁니다. */
 internal val SectionTitleGap = 12.dp
 
 /** 막대가 있는 줄(라이벌, 친구 비교) 사이입니다. 친구 프로필의 나와 비교와 같습니다. */
@@ -77,8 +76,9 @@ internal fun directionColor(format: MetricFormat, current: Double, baseline: Dou
 }
 
 /**
- * 왼쪽 제목과 오른쪽 설명 한 줄입니다. 글자를 키워 둘이 한 줄에 안 들어가면 설명이 다음 줄로
- * 내려갑니다. 한 줄에 억지로 넣으면 "이번 주"가 "이번 / 주"로 꺾입니다.
+ * 왼쪽 제목과 오른쪽 설명 한 줄입니다.
+ * 글자를 키워 둘이 한 줄에 안 들어가면 설명이 다음 줄로 내려갑니다.
+ * 한 줄에 억지로 넣으면 "이번 주"가 "이번 / 주"로 꺾입니다.
  */
 @Composable
 internal fun TitleWithCaption(
@@ -104,8 +104,9 @@ internal fun TitleWithCaption(
     }
 }
 
-// 고정 칸과 달라진 점 칸이 같이 쓰는 격자다. 한 줄에 세 칸씩 폭을 나누고 넘치면 다음 줄로 넘긴다. 목업처럼 옆으로 밀면
-// 세 번째 칸이 화면 끝에서 잘린다(docs/DECISIONS.md).
+// 고정 칸과 달라진 점 칸이 같이 쓰는 격자다.
+// 한 줄에 세 칸씩 폭을 나누고 넘치면 다음 줄로 넘긴다.
+// 목업처럼 옆으로 밀면 세 번째 칸이 화면 끝에서 잘린다(docs/DECISIONS.md).
 internal const val MetricColumns = 3
 internal val MetricColumnGap = 14.dp
 internal val MetricRowGap = 20.dp
@@ -117,14 +118,16 @@ internal val CellPressOutset = 8.dp
 internal val ChevronSpace = 13.dp
 
 /**
- * 칸 숫자 밑 한 줄의 글꼴입니다. 변화량과 "평소 177"을 나란히 둡니다. 한 칸이라도 안 들어가면 모든 칸의 두 글자를 같은 비율로
- * 조금씩 줄여 보고, 가장 작게 줄여도 안 들어갈 때만 모든 칸에서 두 줄로 내립니다. 한 칸만 내리면 그 칸만 높아져 줄이 어긋납니다.
+ * 칸 숫자 밑에 변화량과 "평소 177"을 나란히 두는 한 줄의 글꼴입니다.
+ * 한 칸이라도 안 들어가면 모든 칸의 두 글자를 같은 비율로 조금씩 줄여 보고, 가장 작게 줄여도 안 들어갈 때만 모든 칸에서 두 줄로 내립니다.
+ * 한 칸만 내리면 그 칸만 높아져 줄이 어긋납니다.
  */
 internal class MetricSubLineStyle(val change: TextStyle, val usual: TextStyle, val stacked: Boolean)
 
 /**
- * @param cells 칸마다 변화량과 평소 값 글자입니다. 홈은 고정 칸과 달라진 점의 칸을 모두 넘겨 두 카드가 같은 크기, 같은 줄 수를
- *   쓰게 합니다. 카드마다 따로 정하면 폭이 좁은 기기에서 글자가 한 자 긴 달라진 점만 두 줄로 내려갑니다.
+ * @param cells 칸마다 변화량과 평소 값 글자입니다.
+ *   홈은 고정 칸과 달라진 점의 칸을 모두 넘겨 두 카드가 같은 크기, 같은 줄 수를 쓰게 합니다.
+ *   카드마다 따로 정하면 폭이 좁은 기기에서 글자가 한 자 긴 달라진 점만 두 줄로 내려갑니다.
  */
 @Composable
 internal fun rememberSubLineStyle(cells: List<Pair<String?, String>>, width: Dp): MetricSubLineStyle {
@@ -163,9 +166,10 @@ private val SubLineScales = listOf(1f, 0.95f, 0.9f, 0.85f)
 private val SubLineGap = 6.dp
 
 /**
- * 고정 칸과 달라진 점 칸의 숫자 밑 한 줄입니다. 변화량이 없으면 평소 값만 둡니다.
+ * 고정 칸과 달라진 점 칸의 숫자 밑 한 줄입니다.
+ * 변화량이 없으면 평소 값만 둡니다.
  *
- * @param strong 달라진 점에서 평소 흔들림보다 크게 움직였다고 본 칸입니다. 변화량을 굵게 그립니다.
+ * @param strong 달라진 점에서 평소 흔들림보다 크게 움직였다고 본 칸이면 변화량을 굵게 그립니다.
  */
 @Composable
 internal fun MetricSubLine(change: String?, changeColor: Color, usual: String, style: MetricSubLineStyle, strong: Boolean = false) {

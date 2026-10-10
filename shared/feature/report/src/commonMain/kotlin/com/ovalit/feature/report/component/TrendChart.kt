@@ -67,14 +67,18 @@ private const val LOWEST_BAR = 0.35f
 private const val DIMMED_BAR = 0.35f
 
 /**
- * S1-a, 8주 흐름 시트, 홈 흐름 입구가 같이 쓰는 주별 막대입니다. 기간에 든 주만 `--accent`로 칠하고, 경기가 없는 주는 바닥
- * 선만 남기며, 액트가 바뀐 곳에 세로선을 긋습니다. 표본이 적은 주도 똑같이 그립니다. 남과 견주는 숫자가 아니라 내 기록이라
- * 표본으로 가르지 않습니다. 화면 읽기 프로그램은 주마다 값을 읽습니다.
+ * S1-a, 8주 흐름 시트, 홈 흐름 입구가 같이 쓰는 주별 막대입니다.
+ * 기간에 든 주만 `--accent`로 칠하고, 경기가 없는 주는 바닥 선만 남기며, 액트가 바뀐 곳에 세로선을 긋습니다.
+ * 남과 견주는 숫자가 아니라 내 기록이라 표본이 적은 주도 똑같이 그립니다.
+ * 화면 읽기 프로그램은 주마다 값을 읽습니다.
  *
- * @param selected 고른 주의 자리입니다. 고르면 그 막대만 밝게 두고 나머지는 흐리게 합니다.
- * @param onSelect 막대를 누르거나 옆으로 끌면 고른 주를 알립니다. 고른 막대를 다시 누르면 `null`입니다. 없으면 누를 수 없습니다.
- * @param baseline 지난 4주 평균입니다. 있으면 그 높이에 점선을 긋습니다.
- * @param restColor 기간 밖 막대 색입니다. 면 위에 그릴 때는 면과 갈리게 진하게 넘깁니다.
+ * @param selected 고른 주의 자리이고, 그 막대만 밝게 두고 나머지는 흐리게 합니다.
+ * @param onSelect 막대를 누르거나 옆으로 끌면 고른 주를 알립니다.
+ *   고른 막대를 다시 누르면 `null`을 넘깁니다.
+ *   이 인자가 `null`이면 누를 수 없습니다.
+ * @param baseline 지난 4주 평균이고, 있으면 그 높이에 점선을 긋습니다.
+ * @param restColor 기간 밖 막대 색입니다.
+ *   면 위에 그릴 때는 면과 갈리게 진하게 넘깁니다.
  */
 @Composable
 internal fun TrendBarRow(
@@ -195,7 +199,9 @@ private fun Bar(fraction: Float?, color: Color, modifier: Modifier = Modifier) {
 }
 
 /**
- * 막대 위 한 줄입니다. 고른 주가 없으면 리포트 기간을, 고르면 그 주를 적습니다. [metric]을 주면 그 지표 값도 붙입니다.
+ * 막대 위 한 줄입니다.
+ * 고른 주가 없으면 리포트 기간을, 고르면 그 주를 적습니다.
+ * [metric]을 주면 그 지표 값도 붙입니다.
  * 좁으면 표본을 다음 줄로 내립니다.
  */
 @Composable
@@ -287,7 +293,8 @@ internal fun TrendAxis(report: WeeklyReport.Ready, modifier: Modifier = Modifier
 }
 
 /**
- * 막대 밑 안내입니다. 액트가 바뀐 곳과 점선이 있을 때만 그 뜻을 적습니다.
+ * 막대 밑 안내입니다.
+ * 액트가 바뀐 곳과 점선이 있을 때만 그 뜻을 적습니다.
  *
  * @param baselineWeeks 점선을 그었으면 그 평균의 주 수입니다.
  */

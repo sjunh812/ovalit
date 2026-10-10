@@ -193,7 +193,8 @@ class ReportViewModelTest {
         assertEquals(listOf(0L, (Thursday.nextWeekStart(Seoul) - Thursday).inWholeMilliseconds), ticks)
     }
 
-    // 가짜 경기는 경쟁과 일반뿐이라 기타로 바꾸면 한 경기도 없다
+    // 가짜 경기는 최근 두 주에 다른 모드를 여덟 판 섞었다. 기타 리포트는 그중 리포트에 넣는 스파이크 돌격, 신속 플레이, 프리미어
+    // 다섯 판만 센다. 데스매치, 팀 데스매치, 건틀릿은 목록에만 둔다.
     @Test
     fun `큐를 바꾸면 그 큐 경기로 리포트를 다시 만든다`() = runTest {
         val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), NoFriends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
@@ -201,10 +202,11 @@ class ReportViewModelTest {
 
         viewModel.selectQueue(QueueFilter.OTHER)
 
-        assertEquals(
-            ReportUiState.Success(QueueFilter.OTHER, WeeklyReport.NotEnoughMatches(played = 0)),
-            viewModel.uiState.value,
-        )
+        val state = assertIs<ReportUiState.Success>(viewModel.uiState.value)
+        val report = assertIs<WeeklyReport.Ready>(state.report)
+        assertEquals(QueueFilter.OTHER, state.queueFilter)
+        assertEquals(5, report.metrics.matches)
+        assertEquals(emptyList(), report.dynamic)
     }
 
     @Test

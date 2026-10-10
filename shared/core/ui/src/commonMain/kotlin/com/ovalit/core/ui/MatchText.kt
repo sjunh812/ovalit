@@ -12,13 +12,19 @@ import com.ovalit.core.ui.resources.day_today
 import com.ovalit.core.ui.resources.day_yesterday
 import com.ovalit.core.ui.resources.list_separator
 import com.ovalit.core.ui.resources.queue_competitive
+import com.ovalit.core.ui.resources.queue_deathmatch
+import com.ovalit.core.ui.resources.queue_escalation
 import com.ovalit.core.ui.resources.queue_filter_competitive
 import com.ovalit.core.ui.resources.queue_filter_competitive_and_unrated
 import com.ovalit.core.ui.resources.queue_filter_other
 import com.ovalit.core.ui.resources.queue_filter_unrated
 import com.ovalit.core.ui.resources.queue_other
+import com.ovalit.core.ui.resources.queue_premier
+import com.ovalit.core.ui.resources.queue_replication
+import com.ovalit.core.ui.resources.queue_snowball_fight
 import com.ovalit.core.ui.resources.queue_spike_rush
 import com.ovalit.core.ui.resources.queue_swiftplay
+import com.ovalit.core.ui.resources.queue_team_deathmatch
 import com.ovalit.core.ui.resources.queue_unrated
 import com.ovalit.core.ui.resources.time_clock
 import com.ovalit.core.ui.resources.time_hours_ago
@@ -58,8 +64,14 @@ val Queue.label: StringResource
     get() = when (this) {
         Queue.COMPETITIVE -> Res.string.queue_competitive
         Queue.UNRATED -> Res.string.queue_unrated
+        Queue.PREMIER -> Res.string.queue_premier
         Queue.SPIKE_RUSH -> Res.string.queue_spike_rush
         Queue.SWIFTPLAY -> Res.string.queue_swiftplay
+        Queue.REPLICATION -> Res.string.queue_replication
+        Queue.ESCALATION -> Res.string.queue_escalation
+        Queue.DEATHMATCH -> Res.string.queue_deathmatch
+        Queue.TEAM_DEATHMATCH -> Res.string.queue_team_deathmatch
+        Queue.SNOWBALL_FIGHT -> Res.string.queue_snowball_fight
         Queue.OTHER -> Res.string.queue_other
     }
 

@@ -46,6 +46,8 @@ import kotlinx.coroutines.sync.withLock
  *
  * 시드가 고정이라 매번 같은 경기가 나오고 날짜만 [clock]을 따라 움직입니다. 홈에 움직인 지표가 뜨도록
  * 최근 7일은 첫 교전, 공격과 수비의 킬, 팬텀 헤드샷, 피해량, 승률을 일부러 바꿔 뒀습니다(`RECENT_`로 시작하는 상수).
+ * 최근 두 주에는 데스매치, 건틀릿, 스파이크 돌격 같은 다른 모드를 몇 판 섞어 기타 칩과 경기 탭에서 모양을 볼 수 있습니다
+ * ([OtherModeDays]).
  *
  * 새 경기는 마지막으로 확인한 뒤 [FAKE_MATCH_EVERY]마다 한 판씩 끝난 것으로 칩니다. 당기면 늘 한 판은 받고, 앱을 10분 넘게
  * 떠났다 오면 스무 판이 넘게 쌓여 진행 줄과 WorkManager로 이어 받기를 볼 수 있습니다.
@@ -199,7 +201,6 @@ private const val DEFENSE_FIRST_DUEL_WIN_RATE = 0.38
 // 앞선다.
 private const val RECENT_FIRST_DUEL_WIN_RATE = 0.55
 private const val HALF_ROUNDS = 12
-private const val ROUNDS_TO_WIN = 13
 private const val EXTRA_KILL_RATE = 0.35
 private const val LATE_DEATH_RATE = 0.5
 private const val TRADE_RATE = 0.4
@@ -216,7 +217,7 @@ private const val MY_TIER = 16
 
 // 친구가 내 편으로 끼는 비율. S5의 "같이 뛴 경기"가 전체 경기 수가 되지 않게 한다.
 private const val FRIEND_IN_MATCH_RATE = 0.2
-private val FakeAct = ActId("fake-act")
+internal val FakeAct = ActId("fake-act")
 
 // 최근 7일은 팬텀 헤드샷을 크게 올려서 무기 화면에 "요즘 잘 맞아요"가 뜨게 했다
 private const val RECENT_PHANTOM_HEADSHOT_RATE = 0.45
@@ -260,7 +261,8 @@ internal fun fakeMatches(
     val party = Random(seed + 1)
     val board = Random(seed + 2)
     val scenes = Random(seed + 3)
-    return (0 until DAYS).flatMap { daysAgo ->
+    val modes = Random(seed + 4)
+    val main = (0 until DAYS).flatMap { daysAgo ->
         List(random.nextInt(0, 3)) { index ->
             val allies = party.allies(withFriends)
             val enemies = party.enemies(exclude = allies)
@@ -273,6 +275,53 @@ internal fun fakeMatches(
                 recent = daysAgo < 7,
             ).withHighlights(scenes).withScoreboard(board, owner, allies, enemies, tier = owner.tier - if (daysAgo > 30) 1 else 0)
         }
+    }
+    val others = OtherModeDays.map { (daysAgo, queue) ->
+        modes.otherModeMatch(
+            id = MatchId("fake-$seed-$daysAgo-${queue.name.lowercase()}"),
+            startedAt = now - daysAgo.days - OTHER_MODE_EARLIER,
+            owner = owner,
+            queue = queue,
+        )
+    }
+    return main + others
+}
+
+/**
+ * 경쟁·일반 밖의 모드를 섞을 날(며칠 전)과 모드입니다. 첫 수집이 최근 50경기라 더 넣으면 홈 리포트에 쓸 경쟁·일반 경기가 그만큼
+ * 빠집니다. 리포트에 넣는 모드(스파이크 돌격, 신속 플레이, 프리미어)가 다섯 판이라 기타 칩 리포트도 만들어집니다. 건틀릿: 글리치는
+ * 큐 ID를 몰라 [Queue.OTHER]로 옵니다.
+ */
+internal val OtherModeDays = listOf(
+    0 to Queue.DEATHMATCH,
+    1 to Queue.OTHER,
+    2 to Queue.SPIKE_RUSH,
+    3 to Queue.TEAM_DEATHMATCH,
+    5 to Queue.SWIFTPLAY,
+    6 to Queue.PREMIER,
+    9 to Queue.SPIKE_RUSH,
+    12 to Queue.SWIFTPLAY,
+)
+
+// 경쟁·일반 경기는 그날 마지막 판부터 50분씩 앞에 둔다. 다른 모드는 그보다 앞, 몸 풀기로 뛴 판이다.
+private val OTHER_MODE_EARLIER = 150.minutes
+
+private fun Random.otherModeMatch(id: MatchId, startedAt: Instant, owner: Owner, queue: Queue): Match = when (queue) {
+    Queue.DEATHMATCH -> fakeDeathmatch(id, startedAt, owner)
+    Queue.TEAM_DEATHMATCH -> fakeTeamDeathmatch(id, startedAt, owner)
+    Queue.OTHER -> fakeGauntlet(id, startedAt, owner)
+    else -> {
+        val allies = allies(withFriends = false)
+        val enemies = enemies(exclude = allies)
+        fakeMatch(
+            id = id,
+            startedAt = startedAt,
+            owner = owner,
+            allies = allies.map { it.id },
+            firstDuelRate = USUAL_FIRST_DUEL_RATE,
+            recent = false,
+            queue = queue,
+        ).withHighlights(this).withScoreboard(this, owner, allies, enemies, tier = owner.tier)
     }
 }
 
@@ -295,18 +344,20 @@ private fun Random.fakeMatch(
     allies: List<PlayerId>,
     firstDuelRate: Double,
     recent: Boolean,
+    queue: Queue? = null,
 ): Match {
     val agent = pick(MyAgents) { it.weight }.agent
-    val queue = if (nextDouble() < 0.8) Queue.COMPETITIVE else Queue.UNRATED
+    val queue = queue ?: if (nextDouble() < 0.8) Queue.COMPETITIVE else Queue.UNRATED
+    val half = queue.halfRounds ?: HALF_ROUNDS
     val map = FakeMaps.random(this)
     val startsOnAttack = nextBoolean()
-    val economy = FakeEconomy(this)
+    val economy = FakeEconomy(this, half)
     val rounds = mutableListOf<Round>()
 
-    while (!isOver(rounds, queue)) {
+    while (!isOver(rounds, queue, half)) {
         val number = rounds.size + 1
-        val side = if (sideIndex(number) == 0 == startsOnAttack) Side.ATTACK else Side.DEFENSE
-        val pool = if (number == 1 || number == HALF_ROUNDS + 1) FakePistols else FakeRifles
+        val side = if (sideIndex(number, half) == 0 == startsOnAttack) Side.ATTACK else Side.DEFENSE
+        val pool = if (number == 1 || number == half + 1) FakePistols else FakeRifles
         rounds += fakeRound(
             number = number,
             me = owner.id,
@@ -346,33 +397,34 @@ private fun Random.fakeMatch(
     )
 }
 
-// 경쟁전 연장은 두 라운드 차이가 날 때까지 간다. 일반전은 12:12에서 한 라운드로 끝낸다.
-private fun isOver(rounds: List<Round>, queue: Queue): Boolean {
+// 경쟁전과 프리미어 연장은 두 라운드 차이가 날 때까지 간다. 일반전은 12:12에서 한 라운드로 끝내고, 스파이크 돌격과 신속
+// 플레이도 마지막 한 라운드로 끝난다.
+private fun isOver(rounds: List<Round>, queue: Queue, half: Int): Boolean {
     val won = rounds.count { it.won }
     val lost = rounds.size - won
     val leader = maxOf(won, lost)
     return when (queue) {
-        Queue.COMPETITIVE -> leader >= ROUNDS_TO_WIN && abs(won - lost) >= 2
-        else -> leader >= ROUNDS_TO_WIN
+        Queue.COMPETITIVE, Queue.PREMIER -> leader > half && abs(won - lost) >= 2
+        else -> leader > half
     }
 }
 
 // 전반은 0, 후반은 1을 돌려준다. 연장은 라운드마다 공수가 바뀌어 0과 1을 오간다.
-private fun sideIndex(number: Int): Int = when {
-    number <= HALF_ROUNDS -> 0
-    number <= HALF_ROUNDS * 2 -> 1
-    else -> (number - HALF_ROUNDS * 2 - 1) % 2
+private fun sideIndex(number: Int, half: Int): Int = when {
+    number <= half -> 0
+    number <= half * 2 -> 1
+    else -> (number - half * 2 - 1) % 2
 }
 
 /** 지난 라운드 결과로 이번 라운드 장비를 정합니다. 이겼거나 지난 라운드에 아꼈으면 대개 풀바이, 지면 이코나 포스바이입니다. */
-private class FakeEconomy(private val random: Random) {
+private class FakeEconomy(private val random: Random, private val half: Int) {
     private var myTeamWonLast: Boolean? = null
     private var myTeamSaved = false
     private var enemySaved = false
 
     fun next(number: Int): RoundEconomy {
-        val pistol = number == 1 || number == HALF_ROUNDS + 1
-        val overtime = number > HALF_ROUNDS * 2
+        val pistol = number == 1 || number == half + 1
+        val overtime = number > half * 2
         val team = when {
             pistol -> random.nextInt(700, 900)
             overtime -> random.nextInt(4_200, 4_900)

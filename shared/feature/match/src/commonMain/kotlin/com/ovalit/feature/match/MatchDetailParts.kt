@@ -56,6 +56,8 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.BuyType
 import com.ovalit.core.model.FixedMetric
+import com.ovalit.core.model.MatchFormat
+import com.ovalit.core.model.acsOf
 import com.ovalit.core.model.RoundEnding
 import com.ovalit.core.model.Side
 import com.ovalit.core.ui.AgentImage
@@ -63,14 +65,15 @@ import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.PlacementLabel
 import com.ovalit.core.ui.TierEmblem
-import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.annotated
 import com.ovalit.core.ui.columnLabel
 import com.ovalit.core.ui.kdaText
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.percentText
+import com.ovalit.core.ui.rankText
 import com.ovalit.core.ui.resultColor
 import com.ovalit.core.ui.shrinkToFit
+import com.ovalit.core.ui.standingColor
 import com.ovalit.feature.match.resources.Res
 import com.ovalit.feature.match.resources.close
 import com.ovalit.feature.match.resources.ending_defused
@@ -82,6 +85,7 @@ import com.ovalit.feature.match.resources.enemy_team
 import com.ovalit.feature.match.resources.friend_badge
 import com.ovalit.feature.match.resources.me
 import com.ovalit.feature.match.resources.my_team
+import com.ovalit.feature.match.resources.my_team_rank
 import com.ovalit.feature.match.resources.player_accept
 import com.ovalit.feature.match.resources.player_app_user
 import com.ovalit.feature.match.resources.player_invite
@@ -96,7 +100,9 @@ import com.ovalit.feature.match.resources.player_stat_multi_kills
 import com.ovalit.feature.match.resources.player_stats_collapse
 import com.ovalit.feature.match.resources.player_stats_expand
 import com.ovalit.feature.match.resources.player_unknown
+import com.ovalit.feature.match.resources.scoreboard_everyone
 import com.ovalit.feature.match.resources.scoreboard_note
+import com.ovalit.feature.match.resources.scoreboard_note_names
 import com.ovalit.feature.match.resources.side_attack
 import com.ovalit.feature.match.resources.side_defense
 import org.jetbrains.compose.resources.stringResource
@@ -122,24 +128,38 @@ private fun columnWidths(): ColumnWidths {
     return ColumnWidths(kda = 96.dp * scale, acs = 52.dp * scale)
 }
 
+/**
+ * S3 스코어보드입니다. 두 팀 모드는 우리 팀과 상대 팀, 데스매치는 모두를 한 순위로, 건틀릿은 팀마다 등수 순으로 묶습니다.
+ * 라운드가 없는 모드는 전투점수 열과 펼친 줄이 없습니다. 둘 다 라운드로 나누거나 라운드 기록으로 세는 값입니다.
+ */
 @Composable
 internal fun Scoreboard(uiState: MatchDetailUiState.Success, onOpenPlayer: (ScoreboardRow) -> Unit) {
     val colors = OvalitTheme.colors
+    val roundBased = uiState.match.format == MatchFormat.ROUNDS
     // 한 번에 한 사람만 펼친다. 여럿을 펼치면 스코어보드가 길어져 팀 머리가 화면 밖으로 밀린다.
     var expanded by rememberSaveable { mutableStateOf<String?>(null) }
     // 티어가 없는 사람이 섞여도 이름이 같은 자리에서 시작하게, 한 사람이라도 티어가 있으면 모든 줄이 그 자리를 비운다
-    val tierSlot = (uiState.myTeam + uiState.enemyTeam).any { it.line.tier != null }
+    val tierSlot = uiState.rows.any { it.line.tier != null }
     val row = @Composable { line: ScoreboardRow ->
         val id = line.line.player.value
-        PlayerRow(line, uiState, onOpenPlayer, tierSlot, expanded = expanded == id, onToggle = { expanded = if (expanded == id) null else id })
+        PlayerRow(
+            row = line,
+            uiState = uiState,
+            onOpenPlayer = onOpenPlayer,
+            tierSlot = tierSlot,
+            roundBased = roundBased,
+            expanded = expanded == id,
+            onToggle = { expanded = if (expanded == id) null else id },
+        )
     }
     Column {
-        TeamHeader(stringResource(Res.string.my_team), resultColor(uiState.match.myTeamWon), showColumns = true)
-        uiState.myTeam.forEach { row(it) }
-        TeamHeader(stringResource(Res.string.enemy_team), colors.t2, showColumns = false)
-        uiState.enemyTeam.forEach { row(it) }
+        uiState.groups.forEachIndexed { index, group ->
+            val (title, color) = groupTitle(group, uiState)
+            TeamHeader(title, color, showColumns = index == 0, roundBased = roundBased)
+            group.rows.forEach { row(it) }
+        }
         OvalitText(
-            text = stringResource(Res.string.scoreboard_note),
+            text = stringResource(if (roundBased) Res.string.scoreboard_note else Res.string.scoreboard_note_names),
             modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = 14.dp),
             style = OvalitTheme.typography.caption,
             color = colors.t4,
@@ -147,8 +167,25 @@ internal fun Scoreboard(uiState: MatchDetailUiState.Success, onOpenPlayer: (Scor
     }
 }
 
+// 우리 팀은 결과 색, 등수로 끝나는 경기는 등수 색이다. 다른 묶음은 흐리게 둔다.
 @Composable
-private fun TeamHeader(title: String, color: Color, showColumns: Boolean) {
+private fun groupTitle(group: ScoreboardGroup, uiState: MatchDetailUiState.Success): Pair<String, Color> {
+    val colors = OvalitTheme.colors
+    val rank = group.rank
+    return when (group.side) {
+        ScoreboardSide.MY_TEAM -> if (rank == null) {
+            stringResource(Res.string.my_team) to resultColor(uiState.match.myTeamWon)
+        } else {
+            stringResource(Res.string.my_team_rank, rankText(rank)) to standingColor(rank)
+        }
+        ScoreboardSide.ENEMY_TEAM -> stringResource(Res.string.enemy_team) to colors.t2
+        ScoreboardSide.EVERYONE -> stringResource(Res.string.scoreboard_everyone) to colors.t2
+        ScoreboardSide.OTHER_TEAM -> rankText(rank ?: 0) to colors.t2
+    }
+}
+
+@Composable
+private fun TeamHeader(title: String, color: Color, showColumns: Boolean, roundBased: Boolean) {
     val colors = OvalitTheme.colors
     Row(
         modifier = Modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.lg, bottom = 6.dp),
@@ -158,8 +195,10 @@ private fun TeamHeader(title: String, color: Color, showColumns: Boolean) {
         if (showColumns) {
             val widths = columnWidths()
             ColumnLabel(stringResource(FixedMetric.KDA.label), widths.kda)
-            ColumnLabel(stringResource(FixedMetric.COMBAT_SCORE.label), widths.acs)
-            Spacer(Modifier.width(ChevronWidth))
+            if (roundBased) {
+                ColumnLabel(stringResource(FixedMetric.COMBAT_SCORE.label), widths.acs)
+                Spacer(Modifier.width(ChevronWidth))
+            }
         }
     }
     OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter), color = colors.lineWeak)
@@ -178,7 +217,7 @@ private fun ColumnLabel(text: String, width: Dp) {
 }
 
 /**
- * 스코어보드 한 줄입니다. 얼굴과 이름을 누르면 [onOpenPlayer]를 부르고, 줄의 나머지를 누르면 그 판 기록을 펼칩니다.
+ * 스코어보드 한 줄입니다. 얼굴과 이름을 누르면 [onOpenPlayer]를 부르고, 라운드제 모드면 줄의 나머지를 누르면 그 판 기록을 펼칩니다.
  */
 @Composable
 private fun PlayerRow(
@@ -186,6 +225,7 @@ private fun PlayerRow(
     uiState: MatchDetailUiState.Success,
     onOpenPlayer: (ScoreboardRow) -> Unit,
     tierSlot: Boolean,
+    roundBased: Boolean,
     expanded: Boolean,
     onToggle: () -> Unit,
 ) {
@@ -202,10 +242,16 @@ private fun PlayerRow(
         modifier = Modifier
             .fillMaxWidth()
             .then(if (isMe) Modifier.background(colors.raised) else Modifier)
-            .clickable(
-                onClickLabel = stringResource(if (expanded) Res.string.player_stats_collapse else Res.string.player_stats_expand),
-                role = Role.Button,
-                onClick = onToggle,
+            .then(
+                if (roundBased) {
+                    Modifier.clickable(
+                        onClickLabel = stringResource(if (expanded) Res.string.player_stats_collapse else Res.string.player_stats_expand),
+                        role = Role.Button,
+                        onClick = onToggle,
+                    )
+                } else {
+                    Modifier
+                },
             ),
     ) {
         Row(
@@ -227,7 +273,7 @@ private fun PlayerRow(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box {
-                        AgentImage(line.agent, uiState.catalog.agentName(line.agent), Modifier.size(32.dp).clip(RoundedCornerShape(9.dp)))
+                        AgentImage(line.agent, uiState.catalog.agents[line.agent], Modifier.size(32.dp).clip(RoundedCornerShape(9.dp)))
                         if (isFriend) FriendMark(Modifier.align(Alignment.BottomEnd).offset(x = 4.dp, y = 4.dp), border = if (isMe) colors.raised else colors.bg)
                     }
                     Spacer(Modifier.width(10.dp))
@@ -272,18 +318,20 @@ private fun PlayerRow(
                 autoSize = shrinkToFit(numberStyle.fontSize),
             )
             // ADR이 아니라 전투점수를 둔다. 줄도 이 숫자 순이고 ADR은 펼친 기록에 있다.
-            OvalitText(
-                text = line.acs?.let { MetricFormat.INTEGER.format(it) } ?: NO_VALUE,
-                modifier = Modifier.width(widths.acs),
-                style = numberStyle,
-                color = numberColor,
-                textAlign = TextAlign.End,
-            )
-            Box(modifier = Modifier.width(ChevronWidth), contentAlignment = Alignment.CenterEnd) {
-                OvalitDisclosureIcon(expanded = expanded, pointsDown = true)
+            if (roundBased) {
+                OvalitText(
+                    text = uiState.match.acsOf(line)?.let { MetricFormat.INTEGER.format(it) } ?: NO_VALUE,
+                    modifier = Modifier.width(widths.acs),
+                    style = numberStyle,
+                    color = numberColor,
+                    textAlign = TextAlign.End,
+                )
+                Box(modifier = Modifier.width(ChevronWidth), contentAlignment = Alignment.CenterEnd) {
+                    OvalitDisclosureIcon(expanded = expanded, pointsDown = true)
+                }
             }
         }
-        OvalitExpandable(visible = expanded) { PlayerStats(row) }
+        if (roundBased) OvalitExpandable(visible = expanded) { PlayerStats(row) }
     }
 }
 

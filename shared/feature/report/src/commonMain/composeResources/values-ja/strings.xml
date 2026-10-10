@@ -66,11 +66,12 @@
     <string name="sample_full_buy_rounds">フルバイ&#160;%1$dラウンド</string>
     <string name="sample_deaths">デス&#160;%1$d回</string>
 
-    <string name="other_queue_hint">その他のモードはK/D、KDA、ヘッドショット率だけを見ます。ラウンド数やクレジットのルールが違うため、ほかの指標はコンペティティブ・アンレートと同じ基準では見られません。</string>
+    <string name="other_queue_hint">その他のモードはK/D、KDA、ヘッドショット率だけを見ます。ラウンド数やクレジットのルールが違うため、ほかの指標はコンペティティブ・アンレートと同じ基準では見られません。デスマッチやチームデスマッチのようにルールが大きく違うモードはレポートに含めず、試合タブでだけ表示します。</string>
 
     <string name="not_enough_title">レポートまであと%1$d試合です</string>
     <string name="not_enough_title_none">直近%1$d週間にプレイした試合がありません</string>
     <string name="not_enough_body">直近4週間で%1$d試合集まると、レポートを作ります。</string>
+    <string name="not_enough_not_counted">デスマッチのようにルールが大きく違うモードの%1$d試合はレポートに含めていません。試合タブで見られます。</string>
     <string name="reimport_title">保存した試合がありません</string>
     <string name="reimport_body">最近の試合を読み込み直すと、レポートを作ります。</string>
     <string name="reimport_button">読み込み直す</string>

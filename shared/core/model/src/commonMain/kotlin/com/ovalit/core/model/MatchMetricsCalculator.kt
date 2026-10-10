@@ -11,9 +11,28 @@ const val TRADE_WINDOW_MILLIS: Long = 5_000
 /**
  * [side]를 주면 그 진영 라운드만 셉니다. 전투점수는 응답에 경기 합계로만 있어서 진영별 값에서는 0이니 [MatchMetrics.acs]를
  * 읽지 않습니다.
+ *
+ * 데스매치처럼 라운드가 없는 모드는 스코어보드의 K/D/A와 맞힌 부위만 담고 라운드는 0입니다. 그래서 전투점수, 피해량, 관여율 같은
+ * 라운드 값은 모두 `null`입니다.
  */
-fun Match.metrics(side: Side? = null): MatchMetrics =
-    if (side == null) metricsOf(rounds, combatScore = myCombatScore) else metricsOf(rounds.filter { it.mySide == side }, combatScore = 0)
+fun Match.metrics(side: Side? = null): MatchMetrics = when {
+    format != MatchFormat.ROUNDS -> if (side == null) scorelineMetrics() else MatchMetrics.Empty.copy(matches = 1)
+    side == null -> metricsOf(rounds, combatScore = myCombatScore)
+    else -> metricsOf(rounds.filter { it.mySide == side }, combatScore = 0)
+}
+
+// 라운드가 없는 모드는 라운드별 킬 기록이 어떻게 오는지 아직 몰라 응답의 K/D/A를 그대로 쓴다. 한 판을 한 라운드로 받아
+// 나누면 경기 전체 점수가 라운드당 전투점수로 뜬다.
+private fun Match.scorelineMetrics(): MatchMetrics {
+    val line = myScoreline
+    return MatchMetrics.Empty.copy(
+        matches = 1,
+        kills = line?.kills ?: 0,
+        deaths = line?.deaths ?: 0,
+        assists = line?.assists ?: 0,
+        shots = line?.shots ?: rounds.fold(Shots.None) { acc, round -> acc + round.myShots },
+    )
+}
 
 /**
  * [keep]에 드는 라운드만 셉니다. 이코 라운드나 밴달을 들고 시작한 라운드처럼 경기 안에서 라운드를 가를 때 씁니다. 전투점수는

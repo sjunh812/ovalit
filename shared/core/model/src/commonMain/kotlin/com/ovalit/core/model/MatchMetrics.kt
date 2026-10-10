@@ -75,8 +75,11 @@ data class MatchMetrics(
 
     val multiKillRate: Double? get() = multiKillRounds over rounds
 
-    /** 내 데스 중 [TRADE_WINDOW_MILLIS] 안에 우리 팀이 내 킬러를 잡은 비율입니다. */
-    val tradedDeathRate: Double? get() = tradedDeaths over deaths
+    /**
+     * 내 데스 중 [TRADE_WINDOW_MILLIS] 안에 우리 팀이 내 킬러를 잡은 비율입니다. 트레이드는 라운드 킬 기록으로 가려서 라운드가 없는
+     * 경기만 모였으면 0%가 아니라 `null`입니다.
+     */
+    val tradedDeathRate: Double? get() = if (rounds == 0) null else tradedDeaths over deaths
 
     operator fun plus(other: MatchMetrics) = MatchMetrics(
         matches = matches + other.matches,

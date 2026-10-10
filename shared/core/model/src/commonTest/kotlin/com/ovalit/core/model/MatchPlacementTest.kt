@@ -51,19 +51,35 @@ class MatchPlacementTest {
         assertEquals(MatchAward.MVP, match.placements()[Enemy]?.award)
     }
 
-    // 데스매치는 팀이 없어서 팀 MVP를 붙이지 않는다
+    // 데스매치 응답이 한 판을 한 라운드로 주면 경기 전체 점수가 라운드당 값이 된다. 게임도 데스매치는 킬로 줄을 세운다.
     @Test
-    fun `라운드제가 아닌 모드에는 팀 MVP가 없다`() {
+    fun `데스매치는 전투점수가 아니라 킬로 등수를 매기고 MVP가 없다`() {
         val match = match(
-            queue = Queue.OTHER,
+            queue = Queue.DEATHMATCH,
+            players = listOf(
+                line(Me, onMyTeam = true, acs = 4_000, rounds = 1, kills = 25),
+                line(Enemy, onMyTeam = false, acs = 300, rounds = 1, kills = 40),
+                line(OtherEnemy, onMyTeam = false, acs = 900, rounds = 1, kills = 31),
+            ),
+        )
+
+        assertEquals(MatchPlacement(rank = 3, players = 3, award = null), match.myPlacement)
+        assertEquals(1, match.placements()[Enemy]?.rank)
+        assertNull(match.acsOf(match.players.first()))
+    }
+
+    @Test
+    fun `라운드가 없는 팀 모드는 자리를 매기지 않는다`() {
+        val match = match(
+            queue = Queue.TEAM_DEATHMATCH,
             players = listOf(
                 line(Me, onMyTeam = true, acs = 300),
                 line(Enemy, onMyTeam = false, acs = 200),
             ),
         )
 
-        assertEquals(MatchAward.MVP, match.placements()[Me]?.award)
-        assertNull(match.placements()[Enemy]?.award)
+        assertEquals(emptyMap(), match.placements())
+        assertNull(match.myPlacement)
     }
 
     @Test

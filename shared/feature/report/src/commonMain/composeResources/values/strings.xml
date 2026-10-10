@@ -66,11 +66,12 @@
     <string name="sample_full_buy_rounds">풀바이&#160;%1$d라운드</string>
     <string name="sample_deaths">데스&#160;%1$d번</string>
 
-    <string name="other_queue_hint">기타 모드는 K/D, KDA, 헤드샷만 봐요. 라운드 수와 크레드 규칙이 달라서 다른 지표는 경쟁·일반과 같은 잣대로 볼 수 없어요.</string>
+    <string name="other_queue_hint">기타 모드는 K/D, KDA, 헤드샷만 봐요. 라운드 수와 크레드 규칙이 달라서 다른 지표는 경쟁·일반과 같은 잣대로 볼 수 없어요. 데스매치와 팀 데스매치처럼 규칙이 크게 다른 모드는 리포트에 넣지 않고 경기 탭에서만 보여드려요.</string>
 
     <string name="not_enough_title">리포트까지 %1$d경기 남았어요</string>
     <string name="not_enough_title_none">최근 %1$d주 동안 뛴 경기가 없어요</string>
     <string name="not_enough_body">최근 4주 안에 %1$d경기가 모이면 리포트를 만들어드려요.</string>
+    <string name="not_enough_not_counted">데스매치처럼 규칙이 크게 다른 모드 %1$d경기는 리포트에 넣지 않았어요. 경기 탭에서 볼 수 있어요.</string>
     <string name="reimport_title">저장된 경기가 없어요</string>
     <string name="reimport_body">최근 경기를 다시 불러오면 리포트를 만들어드려요.</string>
     <string name="reimport_button">다시 불러오기</string>

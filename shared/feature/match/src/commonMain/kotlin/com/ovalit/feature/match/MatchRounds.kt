@@ -52,7 +52,6 @@ import com.ovalit.core.model.roundsOverview
 import com.ovalit.core.ui.AgentImage
 import com.ovalit.core.ui.ResultLabel
 import com.ovalit.core.ui.SEPARATOR
-import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.resultColor
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.weaponName
@@ -329,7 +328,7 @@ private fun KillRow(kill: RoundKill, uiState: MatchDetailUiState.Success) {
     ) {
         OvalitText(text = time, modifier = Modifier.width(timeWidth), style = OvalitTheme.typography.metricS, color = colors.t3, maxLines = 1)
         Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-            lines[kill.killer]?.let { AgentImage(it.agent, uiState.catalog.agentName(it.agent), Modifier.size(22.dp).clip(RoundedCornerShape(6.dp))) }
+            lines[kill.killer]?.let { AgentImage(it.agent, uiState.catalog.agents[it.agent], Modifier.size(22.dp).clip(RoundedCornerShape(6.dp))) }
             Spacer(Modifier.width(6.dp))
             OvalitText(
                 text = name(kill.killer),
@@ -340,7 +339,7 @@ private fun KillRow(kill: RoundKill, uiState: MatchDetailUiState.Success) {
                 overflow = TextOverflow.Ellipsis,
             )
             OvalitText(text = "→", modifier = Modifier.padding(horizontal = 6.dp), style = caption, color = colors.t4)
-            lines[kill.victim]?.let { AgentImage(it.agent, uiState.catalog.agentName(it.agent), Modifier.size(22.dp).clip(RoundedCornerShape(6.dp))) }
+            lines[kill.victim]?.let { AgentImage(it.agent, uiState.catalog.agents[it.agent], Modifier.size(22.dp).clip(RoundedCornerShape(6.dp))) }
             Spacer(Modifier.width(6.dp))
             OvalitText(
                 text = name(kill.victim),

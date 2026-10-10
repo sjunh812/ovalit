@@ -70,7 +70,7 @@ fun Friend.metricsIn(report: WeeklyReport.Ready, queueFilter: QueueFilter, timeZ
     val period = report.period
     val inPeriod = matches.filter { match ->
         val day = match.startedAt.toLocalDateTime(timeZone).date
-        match.act == report.act && match.queue in queueFilter.queues && day >= period.firstDay && day <= period.lastDay
+        match.act == report.act && match.queue in queueFilter.countedQueues && day >= period.firstDay && day <= period.lastDay
     }
     if (inPeriod.isEmpty()) return null
     return inPeriod.map { it.metrics() }.sum()

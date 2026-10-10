@@ -36,6 +36,12 @@
     <string name="queue_unrated">일반</string>
     <string name="queue_spike_rush">스파이크 돌격</string>
     <string name="queue_swiftplay">신속 플레이</string>
+    <string name="queue_premier">프리미어</string>
+    <string name="queue_replication">복제</string>
+    <string name="queue_escalation">에스컬레이션</string>
+    <string name="queue_deathmatch">데스매치</string>
+    <string name="queue_team_deathmatch">팀 데스매치</string>
+    <string name="queue_snowball_fight">눈싸움</string>
     <string name="queue_other">기타</string>
 
     <string name="unknown_agent">알 수 없는 요원</string>
@@ -156,6 +162,7 @@
     <string name="placement_team_mvp">팀 MVP</string>
     <string name="placement_rank">%1$d등</string>
     <string name="placement_rank_of">%2$d명 중 %1$d등</string>
+    <string name="placement_rank_of_teams">%2$d팀 중 %1$d등</string>
     <string name="highlight_ace">에이스</string>
     <string name="highlight_aces">에이스 %1$d번</string>
     <string name="highlight_clutch">클러치</string>

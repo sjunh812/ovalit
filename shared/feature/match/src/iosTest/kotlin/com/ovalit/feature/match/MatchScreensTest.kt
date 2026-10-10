@@ -105,7 +105,7 @@ class MatchScreensTest {
         var friend: PlayerId? = null
         setContent { Themed { Detail(onOpenFriend = { friend = it }) } }
 
-        val first = MatchPreviewData.detail.myTeam.first().line
+        val first = MatchPreviewData.detail.rows.first().line
         val kda = "${first.kills}/${first.deaths}/${first.assists}"
 
         onNodeWithText("첫 킬").assertDoesNotExist()
@@ -135,7 +135,7 @@ class MatchScreensTest {
     @Test
     fun `앱을 쓰는지 모르면 안 쓴다고 하지 않고 초대 링크를 권한다`() = runComposeUiTest {
         var invited = false
-        val row = MatchPreviewData.detail.enemyTeam.first().copy(relation = PlayerRelation.UNKNOWN)
+        val row = MatchPreviewData.detail.groups.last().rows.first().copy(relation = PlayerRelation.UNKNOWN)
         setContent { Themed { PlayerSheet(row, onSendRequest = {}, onAccept = {}, onShareInvite = { invited = true }, onDismiss = {}) } }
 
         onNodeWithText("확인하지 못했어요", substring = true).assertExists()
@@ -193,6 +193,55 @@ class MatchScreensTest {
 
         onNodeWithText("13라운드 9승", substring = true).assertExists()
         onAllNodesWithText("상대 팀").fetchSemanticsNodes().let { assertTrue(it.isNotEmpty()) }
+    }
+
+    // 데스매치와 건틀릿은 승패 대신 등수로 끝난다. 라운드가 없어 전투점수도 없다.
+    @Test
+    fun `등수로 끝나는 경기 줄은 스코어 대신 등수를 적고 아랫줄에 승패를 두지 않는다`() = runComposeUiTest {
+        setContent { Themed { MatchesScreen(MatchPreviewData.otherMatches, {}, {}, {}) } }
+
+        onNode(hasText("14명 중 3등") and hasStateDescription("14명 중 3등")).assertExists()
+        onNodeWithText("데스매치 · 50분 전", useUnmergedTree = true).assertExists()
+        onNodeWithText("8팀 중 2등").assertExists()
+        onNodeWithText("31/26/0").assertExists()
+        // 리포트에 넣는 스파이크 돌격만 전투점수가 있다
+        onAllNodesWithText("ACS", substring = true).assertCountEquals(1)
+    }
+
+    @Test
+    fun `팀 데스매치 줄은 라운드가 아니라 팀 점수를 스코어로 적는다`() = runComposeUiTest {
+        setContent { Themed { MatchesScreen(MatchPreviewData.otherMatches, {}, {}, {}) } }
+
+        onNodeWithText("100 – 87").assertExists()
+        onNodeWithText("승리 · 팀 데스매치", substring = true, useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun `데스매치 상세는 등수를 크게 두고 탭 없이 한 순위로 보여준다`() = runComposeUiTest {
+        setContent { Themed { MatchDetailScreen(MatchPreviewData.deathmatchDetail, {}, {}, {}, {}, {}) } }
+
+        onNodeWithContentDescription("14명 중 3등").assertExists()
+        onNodeWithText("순위").assertExists()
+        onNodeWithText("우리 팀").assertDoesNotExist()
+        onNodeWithText("라운드").assertDoesNotExist()
+        onNodeWithText("내 기록").assertDoesNotExist()
+        onNodeWithText("전투점수").assertDoesNotExist()
+        // 맨 위 등수와 내 줄의 자리 칩
+        assertTrue(onAllNodesWithText("3등").fetchSemanticsNodes().size >= 2)
+    }
+
+    @Test
+    fun `건틀릿 상세는 팀마다 등수를 머리에 두고 둘씩 묶는다`() = runComposeUiTest {
+        setContent { Themed { MatchDetailScreen(MatchPreviewData.gauntletDetail, {}, {}, {}, {}, {}) } }
+
+        onNodeWithContentDescription("8팀 중 2등").assertExists()
+        onNodeWithText("알 수 없는 맵").assertExists()
+        onNodeWithText("우리 팀 · 2등").assertExists()
+        onNodeWithText("1등").assertExists()
+        onNodeWithText("8등").assertExists()
+        onNodeWithText("준호#KR1", substring = true).assertExists()
+        onNodeWithText("승리").assertDoesNotExist()
+        onNodeWithText("패배").assertDoesNotExist()
     }
 
     @Composable

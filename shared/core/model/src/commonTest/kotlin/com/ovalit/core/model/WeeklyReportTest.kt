@@ -145,10 +145,10 @@ class WeeklyReportTest {
     }
 
     @Test
-    fun `기타를 고르면 스파이크 돌격과 신속 플레이를 동적 칸 없이 센다`() {
+    fun `기타를 고르면 스파이크 돌격과 신속 플레이와 프리미어를 동적 칸 없이 센다`() {
         val matches = games(0, 3, queue = Queue.SPIKE_RUSH) +
             games(0, 1, queue = Queue.SWIFTPLAY) +
-            games(0, 1, queue = Queue.OTHER) +
+            games(0, 1, queue = Queue.PREMIER) +
             games(0, 5, queue = Queue.COMPETITIVE)
 
         val report = ready(matches, queueFilter = QueueFilter.OTHER)
@@ -156,6 +156,30 @@ class WeeklyReportTest {
         assertEquals(5, report.metrics.matches)
         assertEquals(emptyList(), report.dynamic)
         assertEquals(listOf(FixedMetric.KD, FixedMetric.KDA, FixedMetric.HEADSHOT_RATE), QueueFilter.OTHER.fixedMetrics)
+    }
+
+    // 다시 살아나거나 혼자 싸우는 모드의 K/D를 섞으면 기타 평균이 그 모드를 몇 판 했느냐에 따라 움직인다
+    @Test
+    fun `기타 리포트는 데스매치처럼 목록에만 두는 모드를 세지 않는다`() {
+        val matches = games(0, 4, queue = Queue.SPIKE_RUSH) +
+            games(0, 1, queue = Queue.DEATHMATCH) +
+            games(0, 1, queue = Queue.TEAM_DEATHMATCH) +
+            games(0, 1, queue = Queue.OTHER) +
+            games(1, 1, queue = Queue.SWIFTPLAY)
+
+        val report = ready(matches, queueFilter = QueueFilter.OTHER)
+
+        assertEquals(2, report.period.weeks)
+        assertEquals(5, report.metrics.matches)
+    }
+
+    // 데스매치만 뛴 사람에게 "최근 4주 동안 뛴 경기가 없어요"는 틀린 말이다
+    @Test
+    fun `목록에만 두는 모드만 뛰었으면 리포트 대신 그 경기 수를 따로 센다`() {
+        val matches = games(0, 2, queue = Queue.DEATHMATCH) + games(3, 1, queue = Queue.OTHER) + games(4, 1, queue = Queue.DEATHMATCH)
+
+        assertEquals(WeeklyReport.NotEnoughMatches(played = 0, notCounted = 3), report(matches, queueFilter = QueueFilter.OTHER))
+        assertEquals(WeeklyReport.NotEnoughMatches(played = 0, notCounted = 0), report(matches))
     }
 
     @Test

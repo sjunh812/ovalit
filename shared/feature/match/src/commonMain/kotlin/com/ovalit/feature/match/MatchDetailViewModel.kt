@@ -11,6 +11,7 @@ import com.ovalit.core.data.NoAnalytics
 import com.ovalit.core.model.BuyRecord
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Match
+import com.ovalit.core.model.MatchFormat
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.MatchPlacement
 import com.ovalit.core.model.MatchPlayerStats
@@ -21,6 +22,7 @@ import com.ovalit.core.model.buyRecords
 import com.ovalit.core.model.placements
 import com.ovalit.core.model.playerStats
 import com.ovalit.core.model.roundSummaries
+import com.ovalit.core.model.standings
 import com.ovalit.core.ui.FailedAction
 import com.ovalit.core.ui.FailureNotice
 import com.ovalit.core.ui.FailureNotices
@@ -48,18 +50,74 @@ sealed interface MatchDetailUiState {
     data object Gone : MatchDetailUiState
 
     /**
-     * @property myTeam 라운드당 전투점수 순입니다.
+     * @property groups 스코어보드 묶음입니다. 우리 팀이 먼저입니다([scoreboardGroups]).
      * @property rounds 내가 못 뛴 라운드도 들어갑니다.
      */
     data class Success(
         val match: Match,
         val catalog: ContentCatalog,
-        val myTeam: List<ScoreboardRow>,
-        val enemyTeam: List<ScoreboardRow>,
+        val groups: List<ScoreboardGroup>,
         val rounds: List<RoundSummary>,
         val buys: List<BuyRecord>,
         val timeZone: TimeZone,
-    ) : MatchDetailUiState
+    ) : MatchDetailUiState {
+        val rows: List<ScoreboardRow> get() = groups.flatMap { it.rows }
+    }
+}
+
+/**
+ * 스코어보드 한 묶음입니다.
+ *
+ * @property rank 건틀릿처럼 작은 팀 여럿이 등수를 다투는 경기에서 이 팀의 등수입니다. 그 밖에는 `null`입니다.
+ */
+data class ScoreboardGroup(
+    val side: ScoreboardSide,
+    val rows: List<ScoreboardRow>,
+    val rank: Int? = null,
+)
+
+enum class ScoreboardSide {
+    /** 우리 팀입니다. 건틀릿이면 나와 짝입니다. */
+    MY_TEAM,
+    ENEMY_TEAM,
+
+    /** 데스매치처럼 모두가 혼자인 경기의 전체 순위입니다. */
+    EVERYONE,
+
+    /** 건틀릿처럼 여러 팀이 등수를 다투는 경기의 다른 팀입니다. */
+    OTHER_TEAM,
+}
+
+/**
+ * 경기 모양에 맞춰 스코어보드를 묶습니다. 두 팀 모드는 우리 팀과 상대 팀이고 라운드제면 라운드당 전투점수, 아니면 킬 순입니다.
+ * 데스매치는 모두를 등수 순으로 한 묶음에, 건틀릿은 팀마다 등수 순으로 묶습니다. 펼친 줄의 첫 킬과 멀티킬은 라운드 기록으로 세서
+ * 라운드제에만 담습니다.
+ */
+internal fun Match.scoreboardGroups(relation: (PlayerId) -> PlayerRelation): List<ScoreboardGroup> {
+    val placements = placements()
+    val stats = if (format == MatchFormat.ROUNDS) playerStats() else emptyMap()
+    fun row(line: Scoreline) = ScoreboardRow(line, relation(line.player), placements[line.player], stats[line.player])
+    // 라운드제는 자리(라운드당 전투점수) 순이다. 합계로 세우면 튕겨서 덜 뛴 사람이 밀린다. 라운드가 없는 팀 모드는 자리가 없어
+    // 킬 순이다.
+    val order = compareBy<Scoreline> { placements[it.player]?.rank ?: Int.MAX_VALUE }
+        .thenByDescending { it.kills }
+        .thenBy { it.deaths }
+    return when (format) {
+        MatchFormat.ROUNDS, MatchFormat.TEAM_POINTS -> listOf(true, false).map { mine ->
+            ScoreboardGroup(
+                side = if (mine) ScoreboardSide.MY_TEAM else ScoreboardSide.ENEMY_TEAM,
+                rows = players.filter { it.onMyTeam == mine }.sortedWith(order).map(::row),
+            )
+        }
+        MatchFormat.FREE_FOR_ALL -> listOf(ScoreboardGroup(ScoreboardSide.EVERYONE, standings().flatMap { it.members }.map(::row)))
+        MatchFormat.TEAM_PLACEMENT -> standings().map { team ->
+            ScoreboardGroup(
+                side = if (team.members.any { it.player == me }) ScoreboardSide.MY_TEAM else ScoreboardSide.OTHER_TEAM,
+                rows = team.members.map(::row),
+                rank = team.rank,
+            )
+        }
+    }
 }
 
 /**
@@ -138,18 +196,10 @@ class MatchDetailViewModel(
 
     val uiState: StateFlow<MatchDetailUiState> = combine(match, relations, contentRepository.catalog) { match, relations, catalog ->
         if (match == null) return@combine MatchDetailUiState.Gone
-        // 라운드당 전투점수 순이다. 합계로 세우면 튕겨서 덜 뛴 사람이 밀린다.
-        val placements = match.placements()
-        val stats = match.playerStats()
-        fun rows(onMyTeam: Boolean) = match.players
-            .filter { it.onMyTeam == onMyTeam }
-            .sortedBy { placements[it.player]?.rank ?: Int.MAX_VALUE }
-            .map { ScoreboardRow(it, relations.of(it.player, me = match.me), placements[it.player], stats[it.player]) }
         MatchDetailUiState.Success(
             match = match,
             catalog = catalog,
-            myTeam = rows(onMyTeam = true),
-            enemyTeam = rows(onMyTeam = false),
+            groups = match.scoreboardGroups { relations.of(it, me = match.me) },
             rounds = match.roundSummaries(),
             buys = match.buyRecords(),
             timeZone = timeZone,

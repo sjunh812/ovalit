@@ -21,14 +21,19 @@
     <string name="half_second">後半 %1$d–%2$d</string>
     <string name="half_overtime">延長 %1$d–%2$d</string>
     <string name="score_description">%1$d対%2$d</string>
+    <string name="standing_of_players">%1$d人中</string>
+    <string name="standing_of_teams">%1$dチーム中</string>
     <string name="tab_scoreboard">スコアボード</string>
     <string name="tab_rounds">ラウンド</string>
     <string name="tab_report">自分の記録</string>
 
     <string name="my_team">味方チーム</string>
     <string name="enemy_team">敵チーム</string>
+    <string name="my_team_rank">味方チーム · %1$s</string>
+    <string name="scoreboard_everyone">順位</string>
     <string name="me">自分</string>
     <string name="friend_badge">フレンド</string>
+    <string name="scoreboard_note_names">名前をタップすると、自分とフレンドはプロフィールが開き、ほかのプレイヤーにはフレンド申請や招待リンクを送れます。</string>
     <string name="scoreboard_note">行をタップすると、その試合の記録をさらに見られます。名前をタップすると、自分とフレンドはプロフィールが開き、ほかのプレイヤーにはフレンド申請や招待リンクを送れます。</string>
     <string name="player_stats_expand">この試合の記録を開く</string>
     <string name="player_stats_collapse">この試合の記録を閉じる</string>

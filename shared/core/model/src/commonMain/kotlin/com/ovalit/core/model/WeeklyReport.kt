@@ -50,8 +50,13 @@ sealed interface WeeklyReport {
         val winRate: Double? get() = wins over (wins + losses)
     }
 
-    /** 최대 기간까지 넓혀도 경기가 모자랍니다. [played]는 그 기간에 이번 액트에서 뛴 경기 수입니다. */
-    data class NotEnoughMatches(val played: Int) : WeeklyReport
+    /**
+     * 최대 기간까지 넓혀도 경기가 모자랍니다. [played]는 그 기간에 이번 액트에서 뛴 경기 수입니다.
+     *
+     * @property notCounted 최근 [MAX_REPORT_WEEKS]주 동안 고른 큐에서 뛰었지만 규칙이 달라 리포트에 넣지 않는 모드(데스매치 등)의 경기
+     * 수입니다. 기타 칩에서 데스매치만 뛴 사람에게 "뛴 경기가 없어요"라고 하지 않으려고 셉니다.
+     */
+    data class NotEnoughMatches(val played: Int, val notCounted: Int = 0) : WeeklyReport
 }
 
 /**

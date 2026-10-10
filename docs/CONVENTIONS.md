@@ -321,6 +321,24 @@ iOS에는 광고, 푸시, 사용 통계가 없고 첫 수집은 앱이 떠 있�
 `composeApp`은 기능 모듈을 직접 걸지 않습니다. 화면과 Koin 모듈은 `shared/app`을 거쳐 들어오고 APK에도 그대로 들어갑니다.
 `composeApp` 코드가 기능 모듈의 타입을 직접 쓸 때만 그 모듈을 겁니다. 지금은 `settings`의 `NotificationBlocks` 하나입니다.
 
+### CI
+
+GitHub Actions(`.github/workflows/ci.yml`)가 `main`에 푸시할 때와 PR마다 돕니다. 공개 저장소라 표준 러너는 무료입니다.
+마크다운만 바뀐 커밋에는 돌지 않습니다. 같은 브랜치에 새 커밋이 올라오면 앞선 실행은 취소됩니다.
+
+| 작업 | 러너 | 돌리는 것 |
+| --- | --- | --- |
+| Android | ubuntu | `./gradlew testAndroidHostTest :composeApp:testDebugUnitTest :composeApp:assembleDebug` |
+| iOS | macOS | `./gradlew iosSimulatorArm64Test` |
+| Server | ubuntu | `server/`에서 `npm ci`, `npm run typecheck`, `npm test` |
+
+CI 체크아웃에는 `local.properties`와 `composeApp/google-services.json`이 없습니다. Firebase 플러그인 없이, 광고 ID 없이
+빌드되고 SDK 위치는 러너의 `ANDROID_HOME`에서 읽습니다. 두 파일이 있어야만 빌드되는 설정을 넣으면 CI가 깨집니다. 서버
+테스트는 `server/test/helpers.ts`의 가짜 비밀값을 써서 `.dev.vars`가 없어도 됩니다.
+
+Gradle 캐시는 `setup-gradle`의 `cache-provider: basic`을 씁니다. 기본값인 enhanced는 Gradle 이용약관에 동의해야 쓰는
+비공개 라이브러리입니다. Kotlin/Native 컴파일러(`~/.konan`)는 코틀린 버전마다 따로 캐시합니다.
+
 ## 프리뷰
 
 화면을 만들면 프리뷰를 같이 답니다. 최소 세 가지를 봅니다.

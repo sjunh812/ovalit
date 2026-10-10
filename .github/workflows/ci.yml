@@ -1,0 +1,80 @@
+# 공개 저장소라 GitHub Actions 표준 러너(ubuntu, macOS)를 무료로 쓴다(CLAUDE.md 비용).
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["**/*.md"]
+  pull_request:
+    paths-ignore: ["**/*.md"]
+
+# 같은 브랜치나 PR에 새 커밋이 올라오면 돌던 실행은 취소한다.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    name: Android
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      # 개발 기기(터미널과 Android Studio)의 Gradle이 JDK 25에서 돈다. 바이트코드 타깃은 카탈로그의 jvmTarget(17)이다.
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 25
+      # 기본값(enhanced)은 Gradle 이용약관에 동의해야 쓰는 비공개 라이브러리라 오픈소스(MIT)인 basic을 쓴다.
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+      # local.properties와 google-services.json이 없는 체크아웃이라 Firebase 플러그인 없이, 광고 ID 없이 빌드된다.
+      # SDK 위치는 러너의 ANDROID_HOME에서 읽는다.
+      - run: ./gradlew testAndroidHostTest :composeApp:testDebugUnitTest :composeApp:assembleDebug
+
+  ios:
+    name: iOS
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+      # Kotlin/Native 컴파일러와 LLVM은 Gradle 홈 밖(~/.konan)에 받아서 setup-gradle이 캐시하지 않는다. 코틀린 버전마다 한 벌이다.
+      - id: kotlin
+        run: echo "version=$(sed -n 's/^kotlin = "\(.*\)"/\1/p' gradle/libs.versions.toml)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ runner.arch }}-${{ steps.kotlin.outputs.version }}
+      # Compose UI 테스트는 iOS 시뮬레이터에서만 돈다(docs/CONVENTIONS.md 테스트). 시뮬레이터는 KGP가 설치된 것 중에서 고른다.
+      - run: ./gradlew iosSimulatorArm64Test
+
+  server:
+    name: Server
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v7
+      # package.json engines와 server/README.md가 적은 최소 버전이다.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      # 테스트는 test/helpers.ts의 가짜 비밀값을 써서 .dev.vars가 없어도 돈다.
+      - run: npm test

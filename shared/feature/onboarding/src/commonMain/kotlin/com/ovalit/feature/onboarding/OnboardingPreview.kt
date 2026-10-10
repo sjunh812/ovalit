@@ -49,7 +49,7 @@ private fun ImportLightDonePreview() {
     OvalitThemePreview(darkTheme = false) { ImportScreen(OnboardingPreviewData.done, {}, {}) }
 }
 
-// 선택지 네 개와 아래 진행 막대가 한 화면에 있어 작은 화면에서 서로 밀린다
+// 선택지 네 개와 아래 진행 막대가 작은 화면에서 서로 밀지 않는지 본다
 @Preview(widthDp = 320, heightDp = 568, fontScale = 1.5f)
 @Composable
 private fun ImportSmallLargeFontPreview() {

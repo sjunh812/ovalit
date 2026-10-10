@@ -65,7 +65,7 @@ class ImportViewModelTest {
         assertEquals(Focus.CONSISTENCY, assertIs<ImportUiState.Success>(viewModel.uiState.value).focus)
     }
 
-    // 설정에서 분석 완료 알림을 껐으면 S0-4가 다 불러오면 알리겠다고 적지 않는다
+    // 설정에서 분석 완료 알림을 껐으면 S0-4에 다 불러오면 알리겠다는 말을 적지 않는다
     @Test
     fun `설정의 분석 완료 알림을 따른다`() = runTest {
         val preferences = TestUserPreferencesRepository()

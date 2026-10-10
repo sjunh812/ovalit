@@ -301,8 +301,8 @@ private fun RoleShares(report: AgentReport, mainRole: Role) {
 
 private class MetricColumnSpec(val title: StringResource, val format: MetricFormat, val value: (MatchMetrics) -> Double?)
 
-// 요원별 표의 오른쪽 두 열이다. 처음에는 주 역할에 맞춘 묶음(defaultFor)을 보여주고 표 위 버튼으로 바꾼다. 두 열씩
-// 묶어 두어서 무엇을 골라도 표 모양이 그대로다.
+// 요원별 표의 오른쪽 두 열이다. 처음에는 주 역할에 맞춘 묶음(defaultFor)을 보여주고 표 위 버튼으로 바꾼다.
+// 두 열씩 묶어 두어서 무엇을 골라도 표 모양이 그대로다.
 private enum class AgentColumns(val label: StringResource, private val specs: () -> List<MetricColumnSpec>) {
     FIRST_DUEL(
         Res.string.agents_columns_first_duel,
@@ -388,8 +388,8 @@ private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: 
     }
     Spacer(Modifier.height(OvalitSpacing.sm))
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-        // 한 줄이라도 "타격대 · 20판 · KDA 1.88"이 이름 밑에 안 들어가면 모든 줄에서 KDA를 한 줄 내린다. 줄마다 따로
-        // 꺾으면 줄 높이가 제각각이다.
+        // 한 줄이라도 "타격대 · 20판 · KDA 1.88"이 이름 밑에 안 들어가면 모든 줄에서 KDA를 한 줄 내린다.
+        // 줄마다 따로 꺾으면 줄 높이가 제각각이다.
         val nameWidth = currentMaxWidth - OvalitSpacing.gutter * 2 - ThumbnailSize - OvalitSpacing.md - WinColumn - MetricColumn * columns.size
         val captions = agents.map { agent ->
             AnnotatedString(listOfNotNull(roleText(agent), stringResource(CoreUiRes.string.agents_matches, agent.matches), rowKda(agent)?.text).joinToString(SEPARATOR))

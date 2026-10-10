@@ -35,7 +35,8 @@ import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 
-// 프리뷰와 UI 테스트가 같이 쓴다. 목업의 전략가 예시에 맞췄다. ID는 번들한 이미지가 붙도록 카탈로그의 UUID다.
+// 프리뷰와 UI 테스트가 같이 쓴다. 목업의 전략가 예시에 맞췄다.
+// ID는 번들한 이미지가 붙도록 카탈로그의 UUID다.
 internal object ProfilePreviewData {
 
     private val omen = AgentId("8e253930-4c05-31dd-1b6c-968525494517")

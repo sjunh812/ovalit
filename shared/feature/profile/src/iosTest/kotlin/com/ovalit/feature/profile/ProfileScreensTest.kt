@@ -71,7 +71,8 @@ class ProfileScreensTest {
         onNodeWithText("188", useUnmergedTree = true).assertExists()
         onNodeWithText("1.12", useUnmergedTree = true).assertExists()
         onNodeWithText("31시간", useUnmergedTree = true).assertExists()
-        // K/D와 KDA는 칸이 따로이고, 판당 K/D/A는 KDA 숫자 밑에 붙인다. KDA는 (860 + 312) ÷ 768이다.
+        // K/D와 KDA는 칸이 따로이고, 판당 K/D/A는 KDA 숫자 밑에 붙인다.
+        // KDA는 (860 + 312) ÷ 768이다.
         onNodeWithText("1.12", useUnmergedTree = true).assertExists()
         val kda = onNodeWithText("1.53", useUnmergedTree = true).getBoundsInRoot()
         val perMatch = onNodeWithText("판당 17.2/15.4/6.2", useUnmergedTree = true).getBoundsInRoot()

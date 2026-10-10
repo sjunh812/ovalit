@@ -56,23 +56,10 @@ internal fun FixedMetricRow(
     fixedMetrics: List<FixedMetric>,
     onOpenMetric: (FixedMetric) -> Unit,
     modifier: Modifier = Modifier,
+    subLines: List<Pair<String?, String>>? = null,
 ) {
     val typography = OvalitTheme.typography
-    val colors = OvalitTheme.colors
-
-    val cells = fixedMetrics.map { metric ->
-        val current = metric.value(metrics)
-        val usual = baseline?.let { metric.value(it.metrics) }
-        FixedCell(
-            metric = metric,
-            label = stringResource(metric.label),
-            value = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
-            valueColor = if (metric == FixedMetric.KDA && current != null) kdaColor(current, below = colors.t1) else colors.t1,
-            change = if (current != null && usual != null) metric.format.changeText(current, usual) else null,
-            changeColor = if (current != null && usual != null) directionColor(metric.format, current, usual) else colors.t3,
-            usual = stringResource(Res.string.dynamic_usual, usual?.let { metric.format.valueText(it) } ?: NO_VALUE),
-        )
-    }
+    val cells = fixedCells(metrics, baseline, fixedMetrics)
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         // 이름, 숫자, 변화량마다 모든 칸에 한 크기를 쓴다. 칸마다 따로 줄이면 "전투점수"만 작아지고 그 칸 숫자만
@@ -83,7 +70,7 @@ internal fun FixedMetricRow(
         val styles = FixedCellStyles(
             label = rememberFittingStyle(cells.map { it.label }, typography.caption, cellWidth - ChevronSpace),
             value = rememberFittingStyle(cells.map { it.value }, typography.metricM, cellWidth, min = 14.sp),
-            subLine = rememberSubLineStyle(cells.map { it.change to it.usual }, cellWidth),
+            subLine = rememberSubLineStyle(subLines ?: cells.map { it.change to it.usual }, cellWidth),
         )
         Column(verticalArrangement = Arrangement.spacedBy(MetricRowGap)) {
             cells.chunked(perRow).forEach { row ->
@@ -118,6 +105,29 @@ internal fun FixedMetricRow(
                 }
             }
         }
+    }
+}
+
+/** 고정 칸마다 숫자 밑 한 줄의 변화량과 평소 값 글자입니다. 달라진 점과 같은 크기를 쓰려고 홈이 모읍니다([rememberSubLineStyle]). */
+@Composable
+internal fun fixedSubLines(metrics: MatchMetrics, baseline: Baseline?, fixedMetrics: List<FixedMetric>): List<Pair<String?, String>> =
+    fixedCells(metrics, baseline, fixedMetrics).map { it.change to it.usual }
+
+@Composable
+private fun fixedCells(metrics: MatchMetrics, baseline: Baseline?, fixedMetrics: List<FixedMetric>): List<FixedCell> {
+    val colors = OvalitTheme.colors
+    return fixedMetrics.map { metric ->
+        val current = metric.value(metrics)
+        val usual = baseline?.let { metric.value(it.metrics) }
+        FixedCell(
+            metric = metric,
+            label = stringResource(metric.label),
+            value = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
+            valueColor = if (metric == FixedMetric.KDA && current != null) kdaColor(current, below = colors.t1) else colors.t1,
+            change = if (current != null && usual != null) metric.format.changeText(current, usual) else null,
+            changeColor = if (current != null && usual != null) directionColor(metric.format, current, usual) else colors.t3,
+            usual = stringResource(Res.string.dynamic_usual, usual?.let { metric.format.valueText(it) } ?: NO_VALUE),
+        )
     }
 }
 

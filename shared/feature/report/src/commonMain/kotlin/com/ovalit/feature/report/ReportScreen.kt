@@ -73,6 +73,8 @@ import com.ovalit.feature.report.component.RivalSection
 import com.ovalit.feature.report.component.TrendEntry
 import com.ovalit.feature.report.component.TrendSheet
 import com.ovalit.feature.report.component.WeekNoteLines
+import com.ovalit.feature.report.component.dynamicSubLines
+import com.ovalit.feature.report.component.fixedSubLines
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.not_enough_body
 import com.ovalit.feature.report.resources.not_enough_title
@@ -262,6 +264,11 @@ private fun ReportContent(
     var openDynamic by rememberSaveable { mutableStateOf<DynamicMetric?>(null) }
     var pickingRival by rememberSaveable { mutableStateOf(false) }
 
+    // 고정 칸과 달라진 점은 숫자 밑 한 줄을 같은 크기, 같은 줄 수로 둔다. 카드마다 따로 정하면 좁은 기기에서 한쪽만 두 줄이 된다.
+    val dynamicShown = queueFilter.hasDynamicMetrics && report.dynamic.isNotEmpty()
+    val subLines = fixedSubLines(report.metrics, report.baseline, queueFilter.fixedMetrics) +
+        if (dynamicShown) dynamicSubLines(report) else emptyList()
+
     // 한 프레임에 한 묶음씩 그린다. 무거운 칸(고정 칸, 달라진 점, 요원·무기)은 따로 묶는다.
     OvalitCard {
         OvalitStage {
@@ -276,6 +283,7 @@ private fun ReportContent(
                 baseline = report.baseline,
                 fixedMetrics = queueFilter.fixedMetrics,
                 onOpenMetric = { openMetric = it },
+                subLines = subLines,
             )
             FixedMetricSummary(baseline = report.baseline)
         }
@@ -298,8 +306,8 @@ private fun ReportContent(
     }
 
     if (queueFilter.hasDynamicMetrics) {
-        if (report.dynamic.isNotEmpty()) {
-            OvalitStage { OvalitCard { DynamicMetricSection(report, onOpenMetric = { openDynamic = it }) } }
+        if (dynamicShown) {
+            OvalitStage { OvalitCard { DynamicMetricSection(report, onOpenMetric = { openDynamic = it }, subLines = subLines) } }
         }
         report.insight?.let { insight ->
             OvalitStage {

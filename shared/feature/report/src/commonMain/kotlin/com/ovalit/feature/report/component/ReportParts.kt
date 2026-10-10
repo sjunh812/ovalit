@@ -116,12 +116,15 @@ internal val CellPressOutset = 8.dp
 internal val ChevronSpace = 13.dp
 
 /**
- * 칸 숫자 밑 한 줄의 글꼴입니다. 변화량과 "평소 177"을 나란히 두고, 한 칸이라도 안 들어가면 모든 칸에서 두 줄로 내립니다.
- * 한 칸만 내리면 그 칸만 높아져 줄이 어긋납니다.
+ * 칸 숫자 밑 한 줄의 글꼴입니다. 변화량과 "평소 177"을 나란히 둡니다. 한 칸이라도 안 들어가면 모든 칸의 두 글자를 같은 비율로
+ * 조금씩 줄여 보고, 가장 작게 줄여도 안 들어갈 때만 모든 칸에서 두 줄로 내립니다. 한 칸만 내리면 그 칸만 높아져 줄이 어긋납니다.
  */
 internal class MetricSubLineStyle(val change: TextStyle, val usual: TextStyle, val stacked: Boolean)
 
-/** @param cells 칸마다 변화량과 평소 값 글자입니다. */
+/**
+ * @param cells 칸마다 변화량과 평소 값 글자입니다. 홈은 고정 칸과 달라진 점의 칸을 모두 넘겨 두 카드가 같은 크기, 같은 줄 수를
+ *   쓰게 합니다. 카드마다 따로 정하면 폭이 좁은 기기에서 글자가 한 자 긴 달라진 점만 두 줄로 내려갑니다.
+ */
 @Composable
 internal fun rememberSubLineStyle(cells: List<Pair<String?, String>>, width: Dp): MetricSubLineStyle {
     val typography = OvalitTheme.typography
@@ -130,18 +133,28 @@ internal fun rememberSubLineStyle(cells: List<Pair<String?, String>>, width: Dp)
     val usual = rememberFittingStyle(cells.map { it.second }, typography.caption, width)
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current
-    val stacked = remember(cells, change, usual, width, density, measurer) {
+    return remember(cells, change, usual, width, density, measurer) {
         val available = with(density) { width.toPx() }
         val gap = with(density) { SubLineGap.toPx() }
-        cells.any { (delta, normal) ->
-            if (delta == null) return@any false
+        fun fits(change: TextStyle, usual: TextStyle) = cells.all { (delta, normal) ->
+            if (delta == null) return@all true
             val deltaWidth = measurer.measure(delta, change, softWrap = false, maxLines = 1).size.width
             val normalWidth = measurer.measure(normal, usual, softWrap = false, maxLines = 1).size.width
-            deltaWidth + gap + normalWidth > available
+            deltaWidth + gap + normalWidth <= available
         }
+        SubLineScales.firstNotNullOfOrNull { scale ->
+            val scaledChange = change.scaled(scale)
+            val scaledUsual = usual.scaled(scale)
+            if (fits(scaledChange, scaledUsual)) MetricSubLineStyle(scaledChange, scaledUsual, stacked = false) else null
+        } ?: MetricSubLineStyle(change, usual, stacked = true)
     }
-    return MetricSubLineStyle(change, usual, stacked)
 }
+
+private fun TextStyle.scaled(scale: Float): TextStyle =
+    if (scale == 1f) this else copy(fontSize = fontSize * scale, lineHeight = lineHeight * scale)
+
+// 줄여 보는 비율이다. 0.85면 변화량이 9sp대까지 내려가 이보다 줄이면 읽기 어렵다.
+private val SubLineScales = listOf(1f, 0.95f, 0.9f, 0.85f)
 
 private val SubLineGap = 6.dp
 

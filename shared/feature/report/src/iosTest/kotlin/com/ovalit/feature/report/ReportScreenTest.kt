@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -38,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import com.ovalit.core.designsystem.component.LocalScreenEntering
 import com.ovalit.core.designsystem.theme.OvalitColors
 import com.ovalit.core.designsystem.theme.OvalitTheme
@@ -290,6 +292,33 @@ class ReportScreenTest {
         val changeBounds = onNodeWithText(change, useUnmergedTree = true).getUnclippedBoundsInRoot()
         val usualBounds = onNodeWithText(usual, useUnmergedTree = true).getUnclippedBoundsInRoot()
         assertTrue(usualBounds.top >= changeBounds.bottom, "좁은데 평소 값이 변화량 옆에 끼었다")
+    }
+
+    // 카드마다 따로 정하면 폭이 좁은 기기에서 글자가 한 자 긴 달라진 점만 두 줄로 내려가 위 고정 칸과 어긋난다
+    @Test
+    fun `고정 칸과 달라진 점은 숫자 밑 한 줄을 같은 크기 같은 줄 수로 둔다`() {
+        listOf(360 to 1f, 320 to 1.15f, 300 to 1.3f, 300 to 2f).forEach { (width, fontScale) ->
+            runComposeUiTest {
+                setContent {
+                    CompositionLocalProvider(LocalDensity provides Density(density = 2f, fontScale = fontScale)) {
+                        Box(Modifier.width(width.dp)) { Report(ReportPreviewData.moved.copy(note = null)) }
+                    }
+                }
+
+                // 화면 밖 칸도 재야 해서 잘리지 않은 자리를 쓴다
+                val texts = onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.Text), useUnmergedTree = true)
+                    .fetchSemanticsNodes()
+                    .map { node -> node.config[SemanticsProperties.Text].joinToString("") to Rect(node.positionInRoot, node.size.toSize()) }
+                val changes = texts.filter { (text, _) -> ChangeText.matches(text) }.map { it.second }
+                val usuals = texts.filter { (text, _) -> text.startsWith("평소 ") }.map { it.second }
+                assertEquals(FixedMetric.entries.size + ReportPreviewData.moved.dynamic.size, usuals.size)
+                val beside = usuals.map { usual ->
+                    changes.any { change -> change.right <= usual.left && change.top < usual.bottom && change.bottom > usual.top }
+                }
+                assertEquals(1, beside.distinct().size, "${width}dp ×$fontScale: 어떤 칸만 두 줄이다")
+                assertEquals(1, usuals.map { it.height }.distinct().size, "${width}dp ×$fontScale: 칸마다 글자 크기가 다르다")
+            }
+        }
     }
 
     @Test
@@ -1380,3 +1409,6 @@ private fun Social(
         )
     }
 }
+
+// "+13", "−0.10", "+3%p"처럼 부호로 시작하는 변화량 글자다
+private val ChangeText = Regex("^[+−-]\\d.*")

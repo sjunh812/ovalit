@@ -63,9 +63,10 @@ internal fun DynamicMetricSection(
     report: WeeklyReport.Ready,
     modifier: Modifier = Modifier,
     onOpenMetric: (DynamicMetric) -> Unit = {},
+    subLines: List<Pair<String?, String>>? = null,
 ) {
     val typography = OvalitTheme.typography
-    val columns = report.dynamic.map { slot -> dynamicColumn(slot, report.metrics, report.baseline) }
+    val columns = dynamicColumns(report)
     if (columns.isEmpty()) return
 
     Column(modifier = modifier) {
@@ -89,7 +90,7 @@ internal fun DynamicMetricSection(
                 label = if (wrapLabels) wordLabel else oneLineLabel,
                 wrapLabels = wrapLabels,
                 value = valueStyle,
-                subLine = rememberSubLineStyle(columns.map { it.change to it.usual }, columnWidth),
+                subLine = rememberSubLineStyle(subLines ?: columns.map { it.change to it.usual }, columnWidth),
             )
             Column(verticalArrangement = Arrangement.spacedBy(MetricRowGap)) {
                 columns.chunked(perRow).forEach { row ->
@@ -178,6 +179,15 @@ private class DynamicColumnStyles(
     val value: TextStyle,
     val subLine: MetricSubLineStyle,
 )
+
+/** 칸마다 숫자 밑 한 줄의 변화량과 평소 값 글자입니다. 고정 칸과 같은 크기를 쓰려고 홈이 모읍니다([rememberSubLineStyle]). */
+@Composable
+internal fun dynamicSubLines(report: WeeklyReport.Ready): List<Pair<String?, String>> =
+    dynamicColumns(report).map { it.change to it.usual }
+
+@Composable
+private fun dynamicColumns(report: WeeklyReport.Ready): List<DynamicColumn> =
+    report.dynamic.map { slot -> dynamicColumn(slot, report.metrics, report.baseline) }
 
 @Composable
 private fun dynamicColumn(slot: DynamicSlot, metrics: MatchMetrics, baseline: Baseline?): DynamicColumn {

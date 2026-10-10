@@ -140,6 +140,52 @@ private fun ReportRivalNudgeSmallLargeFontPreview() {
     ReportPreview(ReportPreviewData.moved, nudge = HomeNudge.PICK_RIVAL)
 }
 
+// 친구가 수백 명이어도 친구 비교 카드는 다섯 줄과 내 줄, 전체 보기로 끝난다
+@Preview(widthDp = 390, heightDp = 2400)
+@Composable
+private fun ReportManyFriendsPreview() {
+    OvalitThemePreview {
+        ReportScreen(
+            uiState = ReportUiState.Success(
+                QueueFilter.COMPETITIVE_AND_UNRATED,
+                ReportPreviewData.moved,
+                friends = ReportPreviewData.manyFriends(150),
+            ),
+            onSelectQueue = {},
+        )
+    }
+}
+
+@Preview(widthDp = 390, heightDp = 844)
+@Composable
+private fun FriendRankingDarkPreview() {
+    FriendRankingPreview(darkTheme = true)
+}
+
+@Preview(widthDp = 390, heightDp = 844)
+@Composable
+private fun FriendRankingLightPreview() {
+    FriendRankingPreview(darkTheme = false)
+}
+
+@Preview(widthDp = 320, heightDp = 568, fontScale = 1.5f)
+@Composable
+private fun FriendRankingSmallLargeFontPreview() {
+    FriendRankingPreview(darkTheme = true)
+}
+
+@Composable
+private fun FriendRankingPreview(darkTheme: Boolean) {
+    val report = ReportPreviewData.moved
+    OvalitThemePreview(darkTheme = darkTheme) {
+        FriendRankingScreen(
+            FriendRankingUiState.Success(report.period, report.metrics, ReportPreviewData.manyFriends(150)),
+            initialMetric = FixedMetric.DAMAGE,
+            onBack = {},
+        )
+    }
+}
+
 @Composable
 private fun ReportPreview(
     report: WeeklyReport,

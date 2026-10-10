@@ -1,5 +1,7 @@
 package com.ovalit.feature.report.di
 
+import com.ovalit.core.model.QueueFilter
+import com.ovalit.feature.report.FriendRankingViewModel
 import com.ovalit.feature.report.ReportViewModel
 import com.ovalit.feature.report.weekStarts
 import kotlin.time.Clock
@@ -22,5 +24,8 @@ val reportModule = module {
             pingRepository = get(),
             analytics = get(),
         )
+    }
+    viewModel { (queue: String) ->
+        FriendRankingViewModel(QueueFilter.valueOf(queue), get(), get(), Clock.System, TimeZone.currentSystemDefault())
     }
 }

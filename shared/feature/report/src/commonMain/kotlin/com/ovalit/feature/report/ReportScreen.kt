@@ -87,7 +87,11 @@ import kotlinx.datetime.TimeZone
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-/** S1 홈입니다. 주간 리포트를 보여줍니다. */
+/**
+ * S1 홈입니다. 주간 리포트를 보여줍니다.
+ *
+ * @param onOpenFriendRanking 친구 비교의 "전체 보기"입니다. 지금 고른 큐와 지표를 넘깁니다.
+ */
 @Composable
 fun ReportRoute(
     onOpenProfile: () -> Unit,
@@ -97,6 +101,7 @@ fun ReportRoute(
     modifier: Modifier = Modifier,
     onOpenPing: (PingId) -> Unit = {},
     onReimport: () -> Unit = {},
+    onOpenFriendRanking: (QueueFilter, FixedMetric) -> Unit = { _, _ -> },
     viewModel: ReportViewModel = koinViewModel(),
 ) {
     FailureNoticesEffect(viewModel.notices)
@@ -128,6 +133,7 @@ fun ReportRoute(
         onProfileHintShown = viewModel::markProfileHintSeen,
         newMatches = newMatches,
         onReimport = onReimport,
+        onOpenFriendRanking = onOpenFriendRanking,
     )
 }
 
@@ -152,6 +158,7 @@ internal fun ReportScreen(
     onProfileHintShown: () -> Unit = {},
     newMatches: NewMatchesProgress? = null,
     onReimport: () -> Unit = {},
+    onOpenFriendRanking: (QueueFilter, FixedMetric) -> Unit = { _, _ -> },
 ) {
     // 첫 수집 뒤 홈으로 넘어오면 리포트가 전환 한가운데 도착한다. 그때 다 그리면 밀려 들어오던 화면이 멈춰서, 다 들어올
     // 때까지 스켈레톤을 두고 그 뒤에도 묶음마다 한 프레임씩 나눠 그린다.
@@ -227,6 +234,7 @@ internal fun ReportScreen(
                                 catalog = catalog,
                                 onOpenAgents = onOpenAgents,
                                 onOpenWeapons = onOpenWeapons,
+                                onOpenFriendRanking = { metric -> onOpenFriendRanking(uiState.queueFilter, metric) },
                             )
                             is WeeklyReport.NotEnoughMatches -> NotEnoughMatches(played = report.played)
                         }
@@ -258,6 +266,7 @@ private fun ReportContent(
     catalog: ContentCatalog,
     onOpenAgents: () -> Unit,
     onOpenWeapons: () -> Unit,
+    onOpenFriendRanking: (FixedMetric) -> Unit,
 ) {
     var openMetric by rememberSaveable { mutableStateOf<FixedMetric?>(null) }
     var openTrend by rememberSaveable { mutableStateOf(false) }
@@ -334,7 +343,9 @@ private fun ReportContent(
             )
         }
         if (friends.any { it.metrics != null }) {
-            OvalitStage { OvalitCard { FriendRankingSection(mine = report.metrics, friends = friends) } }
+            OvalitStage {
+                OvalitCard { FriendRankingSection(mine = report.metrics, friends = friends, onOpenAll = onOpenFriendRanking) }
+            }
         }
     } else {
         OvalitCard {

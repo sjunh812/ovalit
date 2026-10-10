@@ -15,6 +15,7 @@ import com.ovalit.core.data.logRefresh
 import com.ovalit.core.data.settledMatches
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Focus
+import com.ovalit.core.model.Friend
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.NewMatchesProgress
@@ -114,6 +115,10 @@ data class FriendStanding(
     val metrics: MatchMetrics?,
 )
 
+/** 전적을 공개한 친구마다 내 리포트와 같은 기간의 합계를 셉니다. 홈과 친구 비교 전체 순위가 같이 씁니다. */
+internal fun List<Friend>.standingsIn(report: WeeklyReport.Ready, queueFilter: QueueFilter, timeZone: TimeZone): List<FriendStanding> =
+    filter { it.statsPublic }.map { FriendStanding(it.id, it.riotId, it.metricsIn(report, queueFilter, timeZone)) }
+
 /**
  * @param weekChanges 흐를 때마다 리포트를 다시 셉니다. 앱은 [weekStarts]를 넘겨 월요일 0시에 "이번 주"를 바꾸고,
  * 테스트는 시계를 멈춰 두니 한 번만 흐르는 기본값을 씁니다.
@@ -192,13 +197,7 @@ class ReportViewModel(
             focus = preferences.focus,
             weaponCategories = inputs.weaponCategories,
         )
-        val standings = if (report is WeeklyReport.Ready) {
-            friends
-                .filter { it.statsPublic }
-                .map { FriendStanding(it.id, it.riotId, it.metricsIn(report, filter, timeZone)) }
-        } else {
-            emptyList()
-        }
+        val standings = if (report is WeeklyReport.Ready) friends.standingsIn(report, filter, timeZone) else emptyList()
         val rival = standings.firstOrNull { it.id == rivalId }
         // 이번 주를 보고 있었으면 새 경기도 이번 주라 기간은 그대로다. 숫자만 다 받은 뒤 바뀐다.
         val periodMayChange = !(report is WeeklyReport.Ready && report.period.includesThisWeek)

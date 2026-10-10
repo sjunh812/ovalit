@@ -18,6 +18,7 @@ import com.ovalit.core.model.MovedAgent
 import com.ovalit.core.model.MovedMetric
 import com.ovalit.core.model.MovedWeapon
 import com.ovalit.core.model.Movement
+import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.ReportPeriod
 import com.ovalit.core.model.Role
 import com.ovalit.core.model.Shots
@@ -226,4 +227,11 @@ internal object ReportPreviewData {
     val notEnough = WeeklyReport.NotEnoughMatches(played = 3)
 
     val nothingPlayed = WeeklyReport.NotEnoughMatches(played = 0)
+
+    /** 친구가 많을 때입니다. 모두 [moved]의 나(피해량 138)보다 피해량이 높고 친구1이 가장 높습니다. */
+    fun manyFriends(count: Int): List<FriendStanding> = (1..count).map { i ->
+        FriendStanding(PlayerId("f$i"), "친구$i#KR1", thisWeek.copy(damage = (MANY_FRIENDS_LOWEST_ADR + count - i) * thisWeek.rounds))
+    }
+
+    private const val MANY_FRIENDS_LOWEST_ADR = 140
 }

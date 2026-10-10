@@ -228,6 +228,32 @@ class ReportViewModelTest {
     }
 
     @Test
+    fun `전체 순위는 홈과 같은 큐와 기간으로 센다`() = runTest {
+        val matches = FakeMatchRepository(ThursdayClock)
+        val friends = FakeFriendRepository(ThursdayClock)
+        val home = ReportViewModel(matches, NoAccount, StubPreferences(), friends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
+        val ranking = FriendRankingViewModel(QueueFilter.COMPETITIVE, matches, friends, ThursdayClock, Seoul, computation = SameThread)
+        home.selectQueue(QueueFilter.COMPETITIVE)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { home.uiState.collect() }
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { ranking.uiState.collect() }
+
+        val homeState = assertIs<ReportUiState.Success>(home.uiState.value)
+        val rankingState = assertIs<FriendRankingUiState.Success>(ranking.uiState.value)
+        assertEquals(assertIs<WeeklyReport.Ready>(homeState.report).period, rankingState.period)
+        assertEquals(homeState.friends, rankingState.friends)
+    }
+
+    // 기타 모드에는 친구 비교가 없다
+    @Test
+    fun `전체 순위는 기타 모드면 닫는다`() = runTest {
+        val matches = FakeMatchRepository(ThursdayClock)
+        val ranking = FriendRankingViewModel(QueueFilter.OTHER, matches, FakeFriendRepository(ThursdayClock), ThursdayClock, Seoul, computation = SameThread)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { ranking.uiState.collect() }
+
+        assertEquals(FriendRankingUiState.Gone, ranking.uiState.value)
+    }
+
+    @Test
     fun `라이벌을 고르면 그 친구를 라이벌 칸에 올린다`() = runTest {
         val friends = FakeFriendRepository(ThursdayClock)
         val viewModel = ReportViewModel(FakeMatchRepository(ThursdayClock), NoAccount, StubPreferences(), friends, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)

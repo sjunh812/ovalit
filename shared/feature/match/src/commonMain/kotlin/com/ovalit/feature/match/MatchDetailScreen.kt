@@ -108,7 +108,8 @@ internal enum class DetailTab { SCOREBOARD, ROUNDS, REPORT }
  * S3 경기 상세입니다.
  *
  * @param onOpenMe 스코어보드에서 내 줄을 누르면 부릅니다.
- * @param onShareInvite 앱을 안 쓰거나 쓰는지 모르는 플레이어에게 초대 링크를 보낼 때 부릅니다. 공유 시트는 앱 모듈이 띄웁니다.
+ * @param onShareInvite 앱을 안 쓰거나 쓰는지 모르는 플레이어에게 초대 링크를 보낼 때 부릅니다.
+ *   공유 시트는 앱 모듈이 띄웁니다.
  * @param onFriendAdded 스코어보드에서 친구 요청을 수락하면 부릅니다. 앱 모듈이 이때 알림을 켜 달라고 묻습니다.
  */
 @Composable
@@ -229,7 +230,8 @@ internal fun MatchDetailScreen(
 }
 
 /**
- * 내리면 상태 표시줄 자리를 바탕색으로 덮습니다. 배너가 화면 맨 위까지 깔려 있어서 안 덮으면 내린 글자가 시계와 겹칩니다.
+ * 내리면 상태 표시줄 자리를 바탕색으로 덮습니다.
+ * 배너가 화면 맨 위까지 깔려 있어서 안 덮으면 내린 글자가 시계와 겹칩니다.
  * 상태 표시줄 높이만큼 내리는 동안 서서히 덮어서 맨 위에서는 맵 그림이 그대로 보입니다.
  */
 @Composable

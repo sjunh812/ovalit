@@ -47,8 +47,8 @@ import kotlinx.datetime.TimeZone
 /**
  * 친구의 이번 액트 경쟁 + 일반 경기 성적입니다. 내 프로필과 같은 기준으로 셉니다.
  *
- * @property weapons 위쪽 세 무기의 이번 액트 값만 씁니다. 누르면 여는 S6은 RecordsViewModel이 기기에 저장된 같은
- * 경기로 다시 셉니다.
+ * @property weapons 위쪽 세 무기의 이번 액트 값만 씁니다.
+ *   누르면 여는 S6은 RecordsViewModel이 기기에 저장된 같은 경기로 다시 셉니다.
  */
 data class FriendProfile(
     val summary: ProfileSummary,
@@ -63,9 +63,11 @@ sealed interface FriendProfileUiState {
     data object Gone : FriendProfileUiState
 
     /**
-     * @property theirProfile 내 프로필과 같은 칸에 넣는 친구의 이번 액트 성적입니다. 전적 비공개면 `null`입니다.
-     * @property theirMetricsInMyPeriod "나와 비교"에 쓰는 값입니다. 내 리포트와 같은 기간으로 셉니다. 내 리포트가 없거나,
-     * 친구가 전적을 공개하지 않았거나, 그 기간에 친구 경기가 없으면 `null`입니다.
+     * @property theirProfile 내 프로필과 같은 칸에 넣는 친구의 이번 액트 성적입니다.
+     *   전적 비공개면 `null`입니다.
+     * @property theirMetricsInMyPeriod "나와 비교"에 쓰는 값입니다.
+     *   내 리포트와 같은 기간으로 셉니다.
+     *   내 리포트가 없거나, 친구가 전적을 공개하지 않았거나, 그 기간에 친구 경기가 없으면 `null`입니다.
      */
     data class Success(
         val friend: Friend,
@@ -84,7 +86,8 @@ sealed interface FriendProfileUiState {
 /**
  * S5 친구 프로필입니다.
  *
- * @param computation 경기를 세는 디스패처입니다. 메인 스레드에서 세면 화면 전환이 멈춰서 기본은 [Dispatchers.Default]입니다.
+ * @param computation 경기를 세는 디스패처입니다.
+ *   메인 스레드에서 세면 화면 전환이 멈춰서 기본은 [Dispatchers.Default]입니다.
  */
 class FriendProfileViewModel(
     private val friendId: PlayerId,
@@ -158,8 +161,9 @@ class FriendProfileViewModel(
     fun unfriend() {
         viewModelScope.launchNotifying(failures, FailedAction.UNFRIEND) {
             friendRepository.unfriend(friendId)
-            // 서버는 끊을 때 둘 사이의 ㅇㅂㅇ에서 서로를 뺀다. 홈과 친구 탭에 그 친구의 초대가 남지 않게 다시 받는다. 끊기는
-            // 이미 됐으니 다시 받지 못해도 알리지 않고 다음에 받을 때 맞춘다.
+            // 서버는 끊을 때 둘 사이의 ㅇㅂㅇ에서 서로를 뺀다.
+            // 홈과 친구 탭에 그 친구의 초대가 남지 않게 다시 받는다.
+            // 끊기는 이미 됐으니 다시 받지 못해도 알리지 않고 다음에 받을 때 맞춘다.
             runCatching { pingRepository.refresh() }
         }
     }

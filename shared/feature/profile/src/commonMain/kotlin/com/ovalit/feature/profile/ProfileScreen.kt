@@ -58,7 +58,8 @@ fun ProfileRoute(
     ProfileScreen(uiState, onBack, onOpenAgents, onOpenWeapons, onOpenMatch, onOpenMatches, modifier)
 }
 
-// 칸 순서는 docs/screens.md의 내 프로필을 따른다. 최근 경기 말고는 모두 이번 액트의 경쟁 + 일반 경기로 센 숫자다.
+// 칸 순서는 docs/screens.md의 내 프로필을 따른다.
+// 최근 경기 말고는 모두 이번 액트의 경쟁 + 일반 경기로 센 숫자다.
 @Composable
 internal fun ProfileScreen(
     uiState: ProfileUiState,

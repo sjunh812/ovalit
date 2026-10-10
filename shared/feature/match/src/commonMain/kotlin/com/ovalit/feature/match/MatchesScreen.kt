@@ -154,7 +154,8 @@ internal fun MatchesScreen(
                     Spacer(Modifier.height(OvalitSpacing.xs))
                     QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
                     Spacer(Modifier.height(OvalitSpacing.md))
-                    // 오래 쉬었다 와서 여러 판을 받는 동안만 뜬다. 받은 경기는 바로 밑 목록에 위에서부터 붙는다.
+                    // 오래 쉬었다 와서 여러 판을 받는 동안만 뜬다.
+                    // 받은 경기는 바로 밑 목록에 위에서부터 붙는다.
                     NewMatchesLine(newMatches, bottomSpacing = OvalitSpacing.md)
                 }
 
@@ -175,8 +176,8 @@ internal fun MatchesScreen(
                     }
                 }
 
-                // 광고는 날짜 묶음 사이에만 둔다. 다섯 줄을 지난 첫 묶음 뒤에 하나, 그 뒤로는 여덟 줄이 넘을 때마다 하나다. 한 날짜
-                // 안에 끼우면 그날 경기처럼 읽힌다.
+                // 광고는 날짜 묶음 사이에만 둔다. 한 날짜 안에 끼우면 그날 경기처럼 읽힌다.
+                // 다섯 줄을 지난 첫 묶음 뒤에 하나, 그 뒤로는 여덟 줄이 넘을 때마다 하나다.
                 var rowsSinceAd = 0
                 var ads = 0
                 uiState.days.forEach { day ->

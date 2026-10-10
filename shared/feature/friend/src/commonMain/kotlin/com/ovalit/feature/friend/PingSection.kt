@@ -122,11 +122,12 @@ private val BarInset = 3.dp
 private val BarItemHeight = 40.dp
 
 /**
- * 친구 탭 맨 위의 "오발있?" 카드입니다. 초대마다 홈 카드와 같은 [PingSummaryRow] 한 줄을 두고, 누르면 초대 화면으로 들어가
- * 답하거나 시각을 옮깁니다.
+ * 친구 탭 맨 위의 "오발있?" 카드입니다.
+ * 초대마다 홈 카드와 같은 [PingSummaryRow] 한 줄을 두고, 누르면 초대 화면으로 들어가 답하거나 시각을 옮깁니다.
  *
  * @param pings 받은 초대가 먼저이고 내가 보낸 것이 맨 뒤입니다.
- * @param canCompose 보낸 초대가 끝나기 전이면 `false`라 부르기 버튼을 두지 않습니다. 한 번에 하나만 보냅니다.
+ * @param canCompose 보낸 초대가 끝나기 전이면 `false`라 부르기 버튼을 두지 않습니다.
+ *   한 번에 하나만 보냅니다.
  */
 @Composable
 internal fun PingListCard(
@@ -139,7 +140,8 @@ internal fun PingListCard(
     onCompose: () -> Unit,
 ) {
     OvalitCard {
-        // "오발있?"은 앱 이름이라 무슨 기능인지 버튼의 "파티 모집"이 알려 준다. 제목 옆에 같은 말을 또 붙이지 않는다.
+        // "오발있?"은 앱 이름이라 무슨 기능인지 버튼의 "파티 모집"이 알려 준다.
+        // 제목 옆에 같은 말을 또 붙이지 않는다.
         val title = @Composable {
             OvalitText(text = stringResource(Res.string.ping_title), style = OvalitTheme.typography.bodyStrong)
         }
@@ -251,7 +253,8 @@ internal fun InviteMoreRow(onClick: () -> Unit) {
 }
 
 /**
- * 보낸 ㅇㅂㅇ에 친구를 더 부르는 시트입니다. 부르기 시트와 같은 아바타 고르기이고 시각은 이미 정해져 있어 없습니다.
+ * 보낸 ㅇㅂㅇ에 친구를 더 부르는 시트입니다.
+ * 부르기 시트와 같은 아바타 고르기이고 시각은 이미 정해져 있어 없습니다.
  *
  * @param seats 더 부를 수 있는 자리입니다. 못 간다고 한 친구는 세지 않습니다.
  */
@@ -355,8 +358,8 @@ private fun StatusAvatar(member: PingMember, size: Dp, modifier: Modifier = Modi
 }
 
 /**
- * 갈게요, 다른 시간, 못 가요를 한 덩어리로 둔 버튼입니다. 고른 답은 액센트 면입니다. 다른 시간을 골랐으면 그 칸에 낸 시각을
- * 적습니다("15:00 제안").
+ * 갈게요, 다른 시간, 못 가요를 한 덩어리로 둔 버튼입니다. 고른 답은 액센트 면입니다.
+ * 다른 시간을 골랐으면 그 칸에 낸 시각을 적습니다("15:00 제안").
  */
 @Composable
 internal fun AnswerBar(
@@ -515,8 +518,9 @@ internal fun PingComposeSheet(
             enabled = picked.isNotEmpty() && !tooMany,
             onClick = {
                 haptics.confirm()
-                // "지금"은 시각을 비워 보낸다. 보내는 순간 ViewModel이 채운다. 화면에 들고 있는 지금은 목록이 바뀔 때만 다시 정해져
-                // 탭을 열어 둔 만큼 지난 시각이 되고, 서버는 1분 넘게 지난 시각을 받지 않는다.
+                // "지금"은 시각을 비워 보낸다. 보내는 순간 ViewModel이 채운다.
+                // 화면에 들고 있는 지금은 목록이 바뀔 때만 다시 정해져서 탭을 열어 둔 만큼 지난 시각이 된다.
+                // 서버는 1분 넘게 지난 시각을 받지 않는다.
                 onSend(picked.map(::PlayerId), startsAt)
             },
         )
@@ -524,11 +528,12 @@ internal fun PingComposeSheet(
 }
 
 /**
- * 부를 친구를 고르는 한 줄입니다. 친구가 수백 명이어도 시각 휠과 버튼이 화면 안에 남게 한 줄로 두고 옆으로 밉니다. 최근에 같이
- * 뛴 친구가 앞이라 대개 밀 일이 없습니다.
+ * 부를 친구를 고르는 한 줄입니다.
+ * 친구가 수백 명이어도 시각 휠과 버튼이 화면 안에 남게 한 줄로 두고 옆으로 밉니다.
+ * 최근에 같이 뛴 친구가 앞이라 대개 밀 일이 없습니다.
  *
- * 줄을 시트 끝까지 넓히고 같은 폭을 목록 안쪽 여백으로 둡니다. 첫 칸은 본문 선에 맞고, 밀면 칸이 시트 끝까지 이어지며, 누른 면이
- * 줄 끝에서 잘리지 않습니다.
+ * 줄을 시트 끝까지 넓히고 같은 폭을 목록 안쪽 여백으로 둡니다.
+ * 그래서 첫 칸은 본문 선에 맞고 밀면 칸이 시트 끝까지 이어집니다. 누른 면도 줄 끝에서 잘리지 않습니다.
  *
  * @param picked 고른 친구의 ID입니다. [limit]명을 채우면 나머지 칸을 흐리게 막습니다.
  */
@@ -612,8 +617,9 @@ private fun PickLabel(text: String) {
 }
 
 /**
- * 다른 시간으로 답하거나 보낸 초대의 시각을 옮길 때 띄우는 시트입니다. 정해진 시간과 내가 이미 낸 시간도 휠에 흐리게 두고
- * 고르지 못하게 합니다. 빼면 지금 몇 시로 잡혀 있는지 휠에서 안 보입니다. 휠은 정해진 시간 바로 다음 줄에서 시작합니다.
+ * 다른 시간으로 답하거나 보낸 초대의 시각을 옮길 때 띄우는 시트입니다.
+ * 정해진 시간과 내가 이미 낸 시간도 휠에 흐리게 두고 고르지 못하게 합니다. 빼면 지금 몇 시로 잡혀 있는지 휠에서 안 보입니다.
+ * 휠은 정해진 시간 바로 다음 줄에서 시작합니다.
  *
  * @param proposed 내가 다른 시간으로 답해 둔 시각입니다. 같은 시각을 또 낼 일은 없어서 막습니다.
  */
@@ -630,7 +636,8 @@ internal fun PingTimeSheet(
 ) {
     val haptics = rememberOvalitHaptics()
     val blocked = setOfNotNull(current, proposed)
-    // 정해진 시간이 "지금"으로 잡혀 초가 붙어 있으면 같은 분의 칸과 겹쳐 보인다. 같은 분으로 보이는 칸은 한 번만 띄운다.
+    // 정해진 시간이 "지금"으로 잡혀 초가 붙어 있으면 같은 분의 칸과 겹쳐 보인다.
+    // 같은 분으로 보이는 칸은 한 번만 띄운다.
     val choices = remember(slots, current, proposed) {
         (slots.filterNot { slot -> blocked.any { (slot - it).absoluteValue < 1.minutes } } + blocked).sorted()
     }

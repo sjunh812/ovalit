@@ -26,7 +26,8 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
-// 프리뷰와 UI 테스트가 같이 쓴다. 목업 S3의 어센트 13 – 9 경기에 맞췄다. ID는 번들 이미지가 붙도록 카탈로그 UUID를 쓴다.
+// 프리뷰와 UI 테스트가 같이 쓴다. 목업 S3의 어센트 13 – 9 경기에 맞췄다.
+// ID는 번들 이미지가 붙도록 카탈로그 UUID를 쓴다.
 internal object MatchPreviewData {
 
     private val seoul = TimeZone.of("Asia/Seoul")
@@ -122,7 +123,8 @@ internal object MatchPreviewData {
         "pixel#KR1", "새벽#KR2", "Ryu#KR5", "보라#KR1", "kite#7777", "태오#KR4", "Nova#KR2",
     )
 
-    // 라운드가 없는 모드의 줄이다. 응답이 한 판을 한 라운드로 주면 나눈 값이 경기 전체 점수가 되니 그 경우로 둔다.
+    // 라운드가 없는 모드의 줄이다.
+    // 응답이 한 판을 한 라운드로 주면 나눈 값이 경기 전체 점수가 되니 그 경우로 둔다.
     private fun noRoundLine(id: PlayerId, riotId: String, agent: AgentId, onMyTeam: Boolean, kills: Int, deaths: Int, assists: Int = 0) =
         Scoreline(id, riotId, agent, onMyTeam, tier = 16, playerCard = null, kills = kills, deaths = deaths, assists = assists,
             combatScore = kills * 150, damage = kills * 140, roundsPlayed = 1)
@@ -141,8 +143,8 @@ internal object MatchPreviewData {
         )
     }
 
-    // 건틀릿: 글리치 두 명씩 여덟 팀이다. 나와 준호가 2등이다. 로봇 요원과 경기장은 카탈로그에 없어 얼굴 자리가 빈 면이고 맵은
-    // "알 수 없는 맵"이다.
+    // 건틀릿: 글리치 두 명씩 여덟 팀이다. 나와 준호가 2등이다.
+    // 로봇 요원과 경기장은 카탈로그에 없어 얼굴 자리가 빈 면이고 맵은 "알 수 없는 맵"이다.
     val gauntlet: Match = run {
         val robot = { index: Int -> AgentId("gauntlet-robot-${index % 4}") }
         val partners = listOf(me to "오발러#KR1", junho to "준호#KR1") +

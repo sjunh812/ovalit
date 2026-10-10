@@ -72,7 +72,8 @@ private val DamageColumn: Dp
     @Composable get() = BaseDamageColumn * LocalDensity.current.fontScale.coerceIn(1f, 1.6f)
 
 /**
- * S3 내 기록 탭입니다. 맞힌 부위, 상대마다 잡고 잡힌 수와 주고받은 피해, 이 판에서 쓴 무기를 둡니다. 내가 뛴 라운드만 셉니다.
+ * S3 내 기록 탭입니다. 맞힌 부위, 상대마다 잡고 잡힌 수와 주고받은 피해, 이 판에서 쓴 무기를 둡니다.
+ * 내가 뛴 라운드만 셉니다.
  */
 @Composable
 internal fun MatchReport(uiState: MatchDetailUiState.Success) {
@@ -108,7 +109,8 @@ private fun Duels(duels: List<Duel>, uiState: MatchDetailUiState.Success) {
     val countColumn = CountColumn
     val damageColumn = DamageColumn
     BoxWithConstraints(Modifier.fillMaxWidth()) {
-        // 이름 칸이 너무 좁아지면 "…"만 남기지 않고 이름을 빼고 얼굴만 둔다. 상대 팀 안에서는 요원이 겹치지 않아 얼굴로 가릴 수 있다.
+        // 이름 칸이 너무 좁아지면 "…"만 남기지 않고 이름을 빼고 얼굴만 둔다.
+        // 상대 팀 안에서는 요원이 겹치지 않아 얼굴로 가릴 수 있다.
         val nameRoom = currentMaxWidth - OvalitSpacing.gutter * 2 - FaceSize - OvalitSpacing.sm - countColumn * 3 - damageColumn * 2
         val showNames = nameRoom >= MinNameWidth
         Column {
@@ -198,7 +200,8 @@ private fun DamageCell(damage: Int, most: Int, color: Color) {
     }
 }
 
-// 이 판에서 쓴 무기다. 킬은 쓰러뜨린 무기로, 피해량은 그 무기를 들고 시작한 라운드로, 헤드샷은 그 무기로만 킬을 낸 라운드로 센다.
+// 이 판에서 쓴 무기다.
+// 킬은 쓰러뜨린 무기로, 피해량은 그 무기를 들고 시작한 라운드로, 헤드샷은 그 무기로만 킬을 낸 라운드로 센다.
 @Composable
 private fun Weapons(weapons: List<WeaponStats>, uiState: MatchDetailUiState.Success) {
     val colors = OvalitTheme.colors

@@ -33,7 +33,8 @@ import com.ovalit.core.ui.resources.loading
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * S3를 세는 동안 보이는 스켈레톤입니다. 배너와 뒤로 가기, 맵 이름과 스코어, 라운드 막대, 탭, 스코어보드 줄 자리를 잡습니다.
+ * S3를 세는 동안 보이는 스켈레톤입니다.
+ * 배너와 뒤로 가기, 맵 이름과 스코어, 라운드 막대, 탭, 스코어보드 줄 자리를 잡습니다.
  * 배너 자리는 다른 그림 자리처럼 `--fill`로 칠하고 아래를 바탕색으로 흐리게 잇습니다.
  */
 @Composable

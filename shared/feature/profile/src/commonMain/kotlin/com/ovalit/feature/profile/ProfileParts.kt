@@ -50,8 +50,8 @@ internal fun ShareBar(fraction: Float, highlighted: Boolean, modifier: Modifier 
     }
 }
 
-// S6과 S7의 맨 위 줄이다. 친구 기록이면 "민석의 요원"처럼 이름 뒤에 ownerSuffix를 붙이고, 이름이 길면 이름만 줄여
-// "의 요원"을 남긴다.
+// S6과 S7의 맨 위 줄이다. 친구 기록이면 "민석의 요원"처럼 이름 뒤에 ownerSuffix를 붙인다.
+// 이름이 길면 이름만 줄여 "의 요원"을 남긴다.
 @Composable
 internal fun RecordsTopBar(
     title: StringResource,
@@ -131,8 +131,9 @@ internal fun AgentsSkeleton(title: StringResource?, onBack: () -> Unit) {
 }
 
 /**
- * S6을 세는 동안 보이는 스켈레톤입니다. 주력 무기 세 줄 표(무기 그림, 이름, 숫자 세 칸)와 계열별 막대 줄을 실제 표와 같은 자리에
- * 잡습니다. [AgentsSkeleton]을 같이 쓰면 무기 표가 나타날 때 줄 모양이 달라 어긋나 보입니다.
+ * S6을 세는 동안 보이는 스켈레톤입니다.
+ * 주력 무기 세 줄 표(무기 그림, 이름, 숫자 세 칸)와 계열별 막대 줄을 실제 표와 같은 자리에 잡습니다.
+ * [AgentsSkeleton]을 같이 쓰면 무기 표가 나타날 때 줄 모양이 달라 어긋나 보입니다.
  */
 @Composable
 internal fun WeaponsSkeleton(title: StringResource?, onBack: () -> Unit) {

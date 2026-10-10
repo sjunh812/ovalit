@@ -86,7 +86,8 @@ import com.ovalit.feature.match.resources.round_title
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * S3 라운드 탭입니다. 위에 그 판의 흐름을 요약하고, 라운드를 옆으로 넘겨 고르면 그 라운드의 장비와 킬 순서를 보여 줍니다.
+ * S3 라운드 탭입니다.
+ * 위에 그 판의 흐름을 요약하고, 라운드를 옆으로 넘겨 고르면 그 라운드의 장비와 킬 순서를 보여 줍니다.
  * 상대 한 사람 한 사람의 라운드별 피해와 남은 크레드는 응답에 없어 두지 않습니다.
  */
 @Composable
@@ -147,8 +148,9 @@ private val PickerCellWidth = 34.dp
 private val PickerBarHeight = 22.dp
 
 /**
- * 옆으로 넘기며 라운드를 고르는 줄입니다. 칸마다 위에 우리 팀과 상대 팀의 평균 장비를 작은 막대 둘로, 밑에 라운드 번호를 승패
- * 색을 옅게 깐 네모로 둡니다. 전반과 후반 사이에 세로선을 긋습니다.
+ * 옆으로 넘기며 라운드를 고르는 줄입니다.
+ * 칸마다 위에 우리 팀과 상대 팀의 평균 장비를 작은 막대 둘로, 밑에 라운드 번호를 승패 색을 옅게 깐 네모로 둡니다.
+ * 전반과 후반 사이에 세로선을 긋습니다.
  */
 @Composable
 private fun RoundPicker(rounds: List<RoundSummary>, half: Int, picked: Int, onPick: (Int) -> Unit) {
@@ -304,7 +306,8 @@ private fun MyRoundLine(round: RoundSummary) {
     }
 }
 
-// 킬 한 줄이다. "0:23 [얼굴] 나 → [얼굴] kite · 밴달". 우리 팀이 낸 킬은 이름을 밝고 굵게, 상대가 낸 킬은 흐리게 둔다.
+// 킬 한 줄이다. "0:23 [얼굴] 나 → [얼굴] kite · 밴달".
+// 우리 팀이 낸 킬은 이름을 밝고 굵게, 상대가 낸 킬은 흐리게 둔다.
 @Composable
 private fun KillRow(kill: RoundKill, uiState: MatchDetailUiState.Success) {
     val colors = OvalitTheme.colors

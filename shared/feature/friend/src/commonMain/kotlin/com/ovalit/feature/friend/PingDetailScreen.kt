@@ -78,7 +78,8 @@ fun PingDetailRoute(
             reply = viewModel::reply,
             moveTo = viewModel::moveTo,
             invite = viewModel::invite,
-            // 취소가 끝난 뒤에 닫는다. 먼저 닫으면 화면과 함께 ViewModel이 지워져 취소 요청이 중간에 끊기고 실패해도 알리지 못한다.
+            // 취소가 끝난 뒤에 닫는다.
+            // 먼저 닫으면 화면과 함께 ViewModel이 지워져 취소 요청이 중간에 끊기고 실패해도 알리지 못한다.
             cancel = { viewModel.cancel(onCancelled = onBack) },
         ),
     )
@@ -94,8 +95,9 @@ internal class PingDetailActions(
 )
 
 /**
- * 초대 하나의 화면입니다. 맨 위에 시각을 크게, 그 밑에 (보낸 초대면) 다른 시간 제안과 친구마다 답을 두고, 맨 밑에 고정한
- * 버튼으로 답하거나 시각을 옮깁니다. 친구 탭과 홈에서 줄을 누르면 들어옵니다.
+ * 초대 하나의 화면입니다.
+ * 맨 위에 시각을 크게, 그 밑에 (보낸 초대면) 다른 시간 제안과 친구마다 답을 두고, 맨 밑에 고정한 버튼으로 답하거나 시각을 옮깁니다.
+ * 친구 탭과 홈에서 줄을 누르면 들어옵니다.
  */
 @Composable
 internal fun PingDetailScreen(
@@ -186,7 +188,6 @@ private fun ColumnScope.PingDetailContent(
 
     Column(modifier = Modifier.weight(1f).verticalScroll(scroll).padding(horizontal = OvalitSpacing.gutter)) {
         Spacer(Modifier.height(OvalitSpacing.sm))
-        // 시각은 초대장의 주인공이다. 지표 숫자와 같은 글꼴로 크게 적는다.
         Row(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.Bottom) {
             // 오늘이 아니면 "내일", "새벽"도 크게 둔다. 작은 글자에만 두면 큰 시각이 오늘처럼 읽힌다.
             pingHeroDay(ping, now, timeZone)?.let { day ->
@@ -265,8 +266,8 @@ private fun ColumnScope.PingDetailContent(
 }
 
 /**
- * 받은 초대의 내 답입니다. 누르는 즉시 보내고 버튼 줄을 "참석으로 답했어요 · 바꾸기" 한 줄로 접습니다. 버튼을 남겨 두면 누를
- * 때마다 부른 친구에게 알림이 갑니다.
+ * 받은 초대의 내 답입니다. 누르는 즉시 보내고 버튼 줄을 "참석으로 답했어요 · 바꾸기" 한 줄로 접습니다.
+ * 버튼을 남겨 두면 누를 때마다 부른 친구에게 알림이 갑니다.
  */
 @Composable
 private fun MyAnswer(

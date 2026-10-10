@@ -36,7 +36,8 @@ sealed interface ProfileUiState {
     data object Loading : ProfileUiState
 
     /**
-     * @property recentMatches 큐와 액트를 가리지 않은 가장 최근 경기입니다. 내 경기라 누르면 S3가 열립니다.
+     * @property recentMatches 큐와 액트를 가리지 않은 가장 최근 경기입니다.
+     *   내 경기라 누르면 S3가 열립니다.
      */
     data class Success(
         val account: Account?,
@@ -53,10 +54,11 @@ sealed interface ProfileUiState {
 }
 
 /**
- * 내 프로필 상태를 만듭니다. 최근 경기 말고는 모두 이번 액트의 경쟁 + 일반 경기만 셉니다. S6 무기와 S7 요원은
- * [RecordsViewModel]이 맡습니다.
+ * 내 프로필 상태를 만듭니다. 최근 경기 말고는 모두 이번 액트의 경쟁 + 일반 경기만 셉니다.
+ * S6 무기와 S7 요원은 [RecordsViewModel]이 맡습니다.
  *
- * @param computation 경기를 세는 디스패처입니다. 메인 스레드에서 세면 화면 전환이 멈춰서 기본은 [Dispatchers.Default]입니다.
+ * @param computation 경기를 세는 디스패처입니다.
+ *   메인 스레드에서 세면 화면 전환이 멈춰서 기본은 [Dispatchers.Default]입니다.
  */
 class ProfileViewModel(
     accountRepository: AccountRepository,

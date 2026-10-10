@@ -65,8 +65,9 @@ data class FriendRow(
 )
 
 /**
- * @param computation 친구마다 주간 리포트를 세는 곳입니다. 친구가 수백 명이면 메인 스레드에서 세는 동안 탭이 멈춰서 기본이
- * [Dispatchers.Default]입니다. 테스트는 값을 바로 읽으려고 부르는 쪽에서 셉니다.
+ * @param computation 친구마다 주간 리포트를 세는 곳입니다.
+ *   친구가 수백 명이면 메인 스레드에서 세는 동안 탭이 멈춰서 기본이 [Dispatchers.Default]입니다.
+ *   테스트는 값을 바로 읽으려고 부르는 쪽에서 셉니다.
  */
 class FriendsViewModel(
     private val friendRepository: FriendRepository,
@@ -81,7 +82,6 @@ class FriendsViewModel(
 
     private val refreshing = MutableStateFlow(false)
 
-    /** 친구 탭을 당겨 새로 받는 중인지입니다. */
     val isRefreshing: StateFlow<Boolean> = refreshing
 
     // 친구 목록이 바뀔 때만 센다. ㅇㅂㅇ 답이나 라이벌이 바뀔 때마다 친구 수백 명의 리포트를 다시 세지 않는다.
@@ -162,7 +162,8 @@ class FriendsViewModel(
     fun pingSlots(): List<Instant> = pingSlots(clock.now(), timeZone)
 
     /**
-     * 서버가 답하면 막혔든 보냈든 [onResult]를 부릅니다. 보내다 실패하면 부르지 않고 안내만 띄워 시트를 그대로 둡니다.
+     * 서버가 답하면 막혔든 보냈든 [onResult]를 부릅니다.
+     * 보내다 실패하면 부르지 않고 안내만 띄워 시트를 그대로 둡니다.
      *
      * @param startsAt `null`이면 "지금"이라 보내는 순간의 시각을 씁니다.
      */
@@ -170,7 +171,7 @@ class FriendsViewModel(
         viewModelScope.launchNotifying(failures, FailedAction.PING_SEND) {
             val result = pingRepository.send(friends, startsAt ?: clock.now())
             if (result == PingSendResult.SENT) analytics.log(AnalyticsEvents.PING_SEND, mapOf("friend_count" to friends.size.toString()))
-            // 보낸 것이 끝나기 전에는 부르기 버튼이 없으니, 이 결과는 그사이 다른 기기에서 보낸 경우다
+            // 보낸 것이 끝나기 전에는 부르기 버튼이 없으니 이 결과는 그사이 다른 기기에서 보낸 경우다
             if (result == PingSendResult.ALREADY_ACTIVE) failures.send(FailureNotice(FailedAction.PING_ALREADY_ACTIVE))
             onResult(result)
         }

@@ -112,6 +112,7 @@
     <string name="profile_weapons">武器</string>
     <string name="agents_matches">%1$d試合</string>
     <string name="record_wins_losses">%1$d勝%2$d敗</string>
+    <string name="record_wins_losses_draws">%1$d勝%2$d敗%3$d分</string>
     <string name="column_win_rate">勝率</string>
     <string name="profile_weapon_kills">%1$sキル</string>
     <!-- 무기 세 칸의 좁은 줄이라 일본 유저가 흔히 쓰는 약칭 HS率로 줄였다 -->

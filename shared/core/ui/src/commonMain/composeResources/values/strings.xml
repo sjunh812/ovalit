@@ -119,6 +119,7 @@
     <string name="profile_weapons">무기</string>
     <string name="agents_matches">%1$d판</string>
     <string name="record_wins_losses">%1$d승 %2$d패</string>
+    <string name="record_wins_losses_draws">%1$d승 %2$d패 %3$d무</string>
     <string name="column_win_rate">승률</string>
     <string name="profile_weapon_kills">%1$s킬</string>
     <string name="profile_weapon_headshot">헤드샷 %1$s</string>

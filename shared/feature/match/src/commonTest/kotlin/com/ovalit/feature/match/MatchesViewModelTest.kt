@@ -20,6 +20,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -35,6 +36,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -95,6 +97,47 @@ class MatchesViewModelTest {
         val counts = state.days.flatMap { it.matches }.groupingBy { it.myAgent }.eachCount()
 
         assertEquals(state.agents.map { counts.getValue(it) }, state.agents.map { counts.getValue(it) }.sortedDescending())
+    }
+
+    // 데스매치와 건틀릿은 등수로 끝나 승패가 없다. 경기 줄도 그런 판에는 승패를 적지 않는다.
+    @Test
+    fun `날짜 머리 승패는 두 팀이 겨룬 경기만 세고 비긴 판은 따로 센다`() {
+        val won = MatchPreviewData.detailMatch
+        val day = MatchDay(
+            date = LocalDate(2026, 9, 24),
+            matches = listOf(
+                won,
+                won.copy(myTeamWon = false),
+                won.copy(myTeamWon = null),
+                MatchPreviewData.deathmatch,
+                MatchPreviewData.gauntlet,
+            ),
+        )
+
+        assertEquals(DayRecord(wins = 1, losses = 1, draws = 1), day.record)
+    }
+
+    @Test
+    fun `이기거나 진 판이 없는 날은 승패를 적지 않는다`() {
+        val date = LocalDate(2026, 9, 24)
+
+        assertNull(MatchDay(date, listOf(MatchPreviewData.deathmatch, MatchPreviewData.gauntlet)).record)
+        assertNull(MatchDay(date, listOf(MatchPreviewData.detailMatch.copy(myTeamWon = null))).record)
+    }
+
+    @Test
+    fun `날짜 머리 승패는 고른 큐와 필터에 맞는 경기만 센다`() = runTest {
+        val viewModel = viewModel()
+        val all = collect(viewModel)
+        val agent = all.agents.last()
+
+        viewModel.setFilter(MatchFilter(agent = agent))
+
+        val days = assertIs<MatchesUiState.Success>(viewModel.uiState.value).days
+        val decided = days.sumOf { (it.record?.wins ?: 0) + (it.record?.losses ?: 0) }
+        assertTrue(days.isNotEmpty() && days.all { day -> day.matches.all { it.myAgent == agent } })
+        assertEquals(days.sumOf { day -> day.matches.count { it.myTeamWon != null } }, decided)
+        assertTrue(decided < all.days.sumOf { day -> day.matches.count { it.myTeamWon != null } })
     }
 
     @Test

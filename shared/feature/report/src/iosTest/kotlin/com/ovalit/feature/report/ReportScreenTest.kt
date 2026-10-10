@@ -747,10 +747,10 @@ class ReportScreenTest {
         onNodeWithText("이긴 판이 더 많았던", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 그 주에 무엇이 달라졌는지를 숫자보다 먼저 읽히게 헤드라인만 위로 올렸다. 근거 줄은 숫자와 같이 읽히게 고정 칸 밑에 둔다.
-    // 둘 다 제목과 선 없이 고정 칸과 한 카드에 둔다.
+    // 그 주에 무엇이 달라졌는지를 숫자보다 먼저 읽히게 짚을 점을 고정 칸 위로 올렸다. 근거 줄은 헤드라인에 붙인다. 떼어 두면
+    // 무엇의 숫자인지 안 읽힌다. 둘 다 제목과 선 없이 고정 칸과 한 카드에 둔다.
     @Test
-    fun `짚을 점 헤드라인은 승패 칸과 고정 칸 사이에 두고 무기와 요원 줄은 고정 칸 밑에 둔다`() = runComposeUiTest {
+    fun `짚을 점 헤드라인과 무기·요원 줄은 승패 칸과 고정 칸 사이에 둔다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
 
         onNodeWithText("짚을 점", substring = true).assertDoesNotExist()
@@ -762,9 +762,9 @@ class ReportScreenTest {
         val trend = onNodeWithText("지난 8주 흐름", substring = true).getUnclippedBoundsInRoot()
 
         assertTrue(headline.top >= record.bottom, "헤드라인이 승패 칸 위에 있다")
-        assertTrue(firstCell.top >= headline.bottom, "헤드라인이 고정 칸 밑에 있다")
-        assertTrue(weapon.top >= lastCell.bottom, "무기 줄이 고정 칸 위에 있다")
-        assertTrue(trend.top >= weapon.bottom, "흐름 입구가 무기 줄 위에 있다")
+        assertTrue(weapon.top >= headline.bottom, "무기 줄이 헤드라인 위에 있다")
+        assertTrue(firstCell.top >= weapon.bottom, "무기 줄이 고정 칸 밑에 있다")
+        assertTrue(trend.top >= lastCell.bottom, "흐름 입구가 고정 칸 위에 있다")
         assertTrue(onNodeWithText("달라진 점").getUnclippedBoundsInRoot().top >= trend.bottom, "짚을 점이 고정 칸 카드 밖에 있다")
     }
 

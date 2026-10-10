@@ -49,9 +49,11 @@ internal fun ReportSkeleton(modifier: Modifier = Modifier, withChips: Boolean = 
             // 승패 줄이다. 없으면 리포트가 뜰 때 그 아래가 한 줄만큼 내려간다.
             Spacer(Modifier.height(OvalitSpacing.md))
             SkeletonBlock(width = 150.dp, height = 14.dp)
-            // 짚을 점 헤드라인이다. 고정 칸 위에 온다.
+            // 짚을 점 헤드라인과 무기·요원 줄이다. 고정 칸 위에 온다.
             Spacer(Modifier.height(18.dp))
             SkeletonBlock(width = 220.dp, height = 18.dp)
+            Spacer(Modifier.height(10.dp))
+            SkeletonBlock(width = 170.dp, height = 12.dp)
             Spacer(Modifier.height(OvalitSpacing.lg))
             // 고정 칸 다섯 개를 세 칸씩 두 줄로 둔다
             Column(verticalArrangement = Arrangement.spacedBy(OvalitSpacing.lg)) {
@@ -69,9 +71,6 @@ internal fun ReportSkeleton(modifier: Modifier = Modifier, withChips: Boolean = 
                     }
                 }
             }
-            // 짚을 점 무기·요원 줄이다
-            Spacer(Modifier.height(18.dp))
-            SkeletonBlock(width = 170.dp, height = 12.dp)
         }
         Spacer(Modifier.height(OvalitCardGap))
         SkeletonCard(description) {

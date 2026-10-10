@@ -292,9 +292,15 @@ private fun ReportContent(
             Spacer(Modifier.height(OvalitSpacing.md))
             RecordStrip(report)
         }
-        // 짚을 점 헤드라인은 그 주에 무엇이 달라졌는지가 숫자보다 먼저 읽히게 승패 칸 바로 밑, 고정 칸 위에 둔다(docs/screens.md).
-        // 보이는 차이가 0이면 아무것도 그리지 않으니 위 간격도 그 안에 준다.
-        note?.let { OvalitStage { WeekNoteHeadline(note = it, modifier = Modifier.padding(top = 18.dp)) } }
+        // 짚을 점은 그 주에 무엇이 달라졌는지가 숫자보다 먼저 읽히게 승패 칸 바로 밑, 고정 칸 위에 둔다(docs/screens.md). 근거인
+        // 무기와 요원 줄은 헤드라인에 붙인다. 떼어 두면 "131 → 210"이 무엇의 숫자인지 안 읽힌다. 보이는 차이가 0이면 둘 다 그리지
+        // 않으니 위 간격도 그 안에 준다.
+        note?.let {
+            OvalitStage {
+                WeekNoteHeadline(note = it, modifier = Modifier.padding(top = 18.dp))
+                WeekNoteLines(note = it, catalog = catalog, modifier = Modifier.padding(top = 10.dp))
+            }
+        }
         Spacer(Modifier.height(OvalitSpacing.lg))
         OvalitStage {
             FixedMetricRow(
@@ -306,9 +312,7 @@ private fun ReportContent(
             )
             FixedMetricSummary(baseline = report.baseline)
         }
-        // 헤드라인의 근거인 무기와 요원 줄은 바로 위 숫자와 같이 읽히게 고정 칸 밑에 둔다
-        note?.let { OvalitStage { WeekNoteLines(note = it, catalog = catalog, modifier = Modifier.padding(top = 18.dp)) } }
-        // 흐름 입구는 짚을 점 줄 뒤에 둔다. 앞에 두면 숫자와 그 근거 사이가 벌어진다.
+        // 흐름 입구는 고정 칸 밑에 둔다. 고정 칸 첫 지표의 8주 막대라 그 숫자와 같이 읽힌다.
         OvalitStage {
             TrendEntry(
                 report = report,

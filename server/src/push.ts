@@ -1,6 +1,7 @@
 import type { Context } from "hono";
 import { base64url } from "./crypto";
 import type { AppEnv, Env } from "./env";
+import { logFailure } from "./log";
 import { MemoryCache } from "./memory";
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -260,9 +261,4 @@ async function isDeadToken(res: Response): Promise<boolean> {
   if (!codes.includes("INVALID_ARGUMENT")) return false;
   const fields = details.flatMap((detail) => detail.fieldViolations ?? []).map((violation) => violation.field);
   return fields.every((field) => field === "message.token");
-}
-
-// D1 에러 메시지에는 SQL이 섞이고 FCM 에러에는 토큰이 섞일 수 있어 이름만 남긴다.
-function logFailure(label: string, err: unknown): void {
-  console.error(label, err instanceof Error ? err.name : typeof err);
 }

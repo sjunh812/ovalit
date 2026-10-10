@@ -1,7 +1,6 @@
 import { type Context, Hono } from "hono";
 import type { AppEnv } from "../env";
 import { ApiError } from "../errors";
-import { redactMatch } from "../redact";
 import { FRIEND_CAP, friendCount, friendsFull, relationsTo, sendRequest } from "../relations";
 import { rawJson, riotFor } from "../riot";
 import { requireSession } from "../session";
@@ -181,9 +180,11 @@ friends.get("/:puuid/matchlist", async (c) => {
 friends.get("/:puuid/matches/:matchId", async (c) => {
   const friend = validate.puuid(c.req.param("puuid"));
   await assertVisibleFriend(c, friend);
-  const match = await riotFor(c).matchWith(validate.matchId(c.req.param("matchId")), friend);
+  const riot = riotFor(c);
+  const matchId = validate.matchId(c.req.param("matchId"));
+  const match = await riot.matchWith(matchId, friend);
   if (!match) throw new ApiError(403, "friend_not_in_match");
   // 내가 같이 뛴 경기는 /riot/matches에서도 그대로 보이니 가리지 않는다.
   if (match.players.has(c.var.user.puuid)) return rawJson(c, match.raw);
-  return c.json(redactMatch(match.data, new Set([friend, c.var.user.puuid])));
+  return rawJson(c, riot.redactedFor(matchId, match, friend, c.var.user.puuid));
 });

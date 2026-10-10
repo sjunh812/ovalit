@@ -2,10 +2,15 @@ import { Hono } from "hono";
 import { html } from "hono/html";
 import { INVITE_CODE } from "../crypto";
 import type { AppEnv } from "../env";
-import { ANDROID_PACKAGE } from "./auth";
+import { ANDROID_PACKAGE, appIntent, appPage } from "../page";
 
 // keytool이 찍는 모양 그대로다. 콜론으로 이은 16진수 32바이트.
 const CERT_FINGERPRINT = /^([0-9A-F]{2}:){31}[0-9A-F]{2}$/;
+// public/og/의 정적 파일이다. 카카오톡은 미리보기 그림을 주소로 기억하니, 그림을 바꾸면 scripts/build-og-image.mjs의
+// VERSION과 같이 올려 새 주소로 낸다.
+const OG_IMAGE_PATH = "/og/invite-v1.png";
+const INVITE_TITLE = "오발있 친구 초대";
+const INVITE_TEXT = "친구가 오발있에서 같이 기록을 보자고 초대했어요";
 
 /** 전적에도 Riot에도 닿지 않는 것만 둡니다. */
 export const publicRoutes = new Hono<AppEnv>();
@@ -33,41 +38,29 @@ publicRoutes.get("/.well-known/assetlinks.json", (c) => {
 /**
  * 앱이 없는 기기에서 초대 링크를 열면 보이는 페이지입니다. DB를 읽지 않으니 코드가 살아 있는지는 알려주지
  * 않습니다. 밖에서 불러오는 것도 없습니다.
+ *
+ * 단톡방에 올리면 카카오톡이 이 페이지의 Open Graph 태그로 미리보기 카드를 만듭니다. 그림도 우리 서버의 정적 파일이고,
+ * 카드에는 누가 초대했는지 적지 않습니다.
  */
 publicRoutes.get("/i/:code", (c) => {
   const code = c.req.param("code").toUpperCase();
   if (!INVITE_CODE.test(code)) return c.notFound();
-  // 커스텀 스킴(ovalit://)은 다른 앱이 같은 이름을 등록해 가로챌 수 있어 쓰지 않는다(docs/backend.md). /auth/done처럼 이 주소를
-  // com.ovalit에만 넘기는 intent로 연다.
   const url = new URL(c.req.url);
-  const intent = `intent://${url.host}/i/${code}#Intent;scheme=${url.protocol.replace(":", "")};package=${ANDROID_PACKAGE};end`;
-  c.header("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'");
-  c.header("Referrer-Policy", "no-referrer");
-  c.header("X-Robots-Tag", "noindex");
-  return c.html(html`<!doctype html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>오발있 친구 초대</title>
-<style>
-:root { --bg: #101012; --t1: #F2F2F4; --t2: #9E9EA6; --accent: #FF4655; --on-accent: #FFFFFF; }
-@media (prefers-color-scheme: light) { :root { --bg: #FFFFFF; --t1: #191F28; --t2: #5F6873; } }
-body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-  background: var(--bg); color: var(--t1); font-family: system-ui, sans-serif; }
-main { padding: 24px 16px; text-align: center; }
-h1 { margin: 0 0 8px; font-size: 28px; }
-p { margin: 0 0 24px; color: var(--t2); font-size: 15px; line-height: 1.5; }
-a { display: inline-block; padding: 14px 28px; border-radius: 12px; background: var(--accent);
-  color: var(--on-accent); font-weight: 600; text-decoration: none; }
-</style>
-</head>
-<body>
-<main>
-<h1>오발있?</h1>
-<p>친구가 오발있에서 같이 기록을 보자고 초대했어요.</p>
-<a href="${intent}">앱에서 열기</a>
-</main>
-</body>
-</html>`);
+  return appPage(c, {
+    title: INVITE_TITLE,
+    head: html`<meta name="description" content="${INVITE_TEXT}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="오발있">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="${INVITE_TITLE}">
+<meta property="og:description" content="${INVITE_TEXT}">
+<meta property="og:url" content="${url.origin}/i/${code}">
+<meta property="og:image" content="${url.origin}${OG_IMAGE_PATH}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="오발있 로고">
+<meta name="twitter:card" content="summary_large_image">`,
+    main: html`<p>${INVITE_TEXT}.</p>
+<a href="${appIntent(url, `/i/${code}`)}">앱에서 열기</a>`,
+  });
 });

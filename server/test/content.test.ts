@@ -1,11 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { cacheKey } from "../src/riot";
-import { forgetCaches, RIOT, setup } from "./helpers";
+import { forgetCaches, namedError, RIOT, setup } from "./helpers";
 
 const CONTENT_PATH = "/val/content/v1/contents?locale=ko-KR";
 const STATUS_PATH = "/val/status/v1/platform-data";
 const CONTENT_URL = `${RIOT}${CONTENT_PATH}`;
 const STATUS_URL = `${RIOT}${STATUS_PATH}`;
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("콘텐츠", () => {
   it("티어 표는 번호에서 한글 이름으로 가고 쓰지 않는 번호는 없다", async () => {
@@ -60,6 +64,23 @@ describe("콘텐츠", () => {
     await caches.default.delete(cacheKey("http://localhost", CONTENT_PATH));
     await t.call("GET", "/content", me.token);
     expect(t.upstream.callsTo(CONTENT_URL)).toHaveLength(1);
+  });
+
+  it("Cache API가 실패해도 Riot에서 받은 값을 내려보내고 에러 이름만 남긴다", async () => {
+    await forgetCaches(STATUS_PATH);
+    const t = setup();
+    const me = await t.login();
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(caches.default, "match").mockRejectedValue(namedError("CacheDown", "match"));
+    vi.spyOn(caches.default, "put").mockRejectedValue(namedError("CacheDown", "put"));
+    t.upstream.json(STATUS_URL, { id: "KR", maintenances: [], incidents: [] });
+    const res = await t.call("GET", "/status", me.token);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ id: "KR", maintenances: [], incidents: [] });
+    expect(errors.mock.calls).toEqual([
+      ["riot_cache", "CacheDown"],
+      ["riot_cache", "CacheDown"],
+    ]);
   });
 
   it("점검 안내도 담아 둔다", async () => {

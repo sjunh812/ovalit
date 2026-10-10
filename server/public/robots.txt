@@ -1,2 +1,5 @@
+# 초대 링크 페이지와 그 미리보기 그림만 연다. 카카오톡 같은 미리보기 수집기가 막히지 않게 한다.
 User-agent: *
+Allow: /i/
+Allow: /og/
 Disallow: /

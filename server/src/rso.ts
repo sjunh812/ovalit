@@ -20,11 +20,12 @@ export function authorizeUrl(clientId: string, redirectUri: string, state: strin
 /** access token은 계정을 한 번 읽는 데만 쓰고 버립니다. 같이 오는 refresh token도 저장하지 않습니다. */
 export async function readAccount(
   upstream: typeof fetch,
+  db: D1Database,
   client: { id: string; secret: string },
   code: string,
   redirectUri: string,
 ): Promise<{ puuid: string; gameName: string; tagLine: string }> {
-  const tokenRes = await send(upstream, TOKEN_URL, {
+  const tokenRes = await send(upstream, db, TOKEN_URL, {
     method: "POST",
     headers: {
       Authorization: `Basic ${btoa(`${client.id}:${client.secret}`)}`,
@@ -36,7 +37,7 @@ export async function readAccount(
   const accessToken = (token as { access_token?: unknown } | null)?.access_token;
   if (typeof accessToken !== "string" || accessToken.length === 0) throw new ApiError(502, "rso_failed");
 
-  const accountRes = await send(upstream, ACCOUNT_ME_URL, { headers: { Authorization: `Bearer ${accessToken}` } });
+  const accountRes = await send(upstream, db, ACCOUNT_ME_URL, { headers: { Authorization: `Bearer ${accessToken}` } });
   const account = (await accountRes.json().catch(() => null)) as Record<string, unknown> | null;
   const { puuid, gameName, tagLine } = account ?? {};
   if (typeof puuid !== "string" || !PUUID.test(puuid) || typeof gameName !== "string" || typeof tagLine !== "string") {

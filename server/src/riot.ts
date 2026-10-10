@@ -1,7 +1,9 @@
 import type { Context } from "hono";
 import type { AppEnv, Env, User } from "./env";
 import { ApiError } from "./errors";
+import { logFailure } from "./log";
 import { MemoryCache, Quota } from "./memory";
+import { redactMatch } from "./redact";
 import { send, throwIfBlocked } from "./upstream";
 
 const RIOT_HOST = "https://kr.api.riotgames.com";
@@ -14,11 +16,10 @@ const STATUS_TTL = 60;
 // 막 끝난 경기가 잠깐 404일 수도 있어서 길게 두지 않는다.
 const MISSING_TTL = 10 * 60;
 const MB = 1024 * 1024;
-// D1은 쿼리당 바인딩을 100개까지 받아서 INSERT 하나에 50쌍까지 넣는다.
-const PLAYERS_PER_INSERT = 50;
 
 // isolate가 살아 있는 동안 요청끼리 나눠 쓴다. isolate 메모리는 128MB라 캐시는 모두 합쳐 40MB 안쪽으로 두고 나머지는
-// 요청을 처리하는 데 남긴다. 경기 원문은 한 판에 800KB 안팎이라 글자당 2바이트로 세도 15판쯤 담긴다.
+// 요청을 처리하는 데 남긴다. 경기 원문은 한 판에 800KB 안팎이라 글자당 2바이트로 세도 15판쯤 담긴다. 가린 친구 경기도
+// matches에 같이 담아 원문과 함께 오래 안 꺼낸 것부터 버린다.
 const memory = {
   content: new MemoryCache({ maxEntries: 1, maxBytes: 10 * MB }),
   status: new MemoryCache({ maxEntries: 1, maxBytes: 1 * MB }),
@@ -35,6 +36,10 @@ const quotas = {
   // 캐시에 없어 Riot에 가는 경기 상세다. 첫 수집 50경기가 한꺼번에 와도 걸리지 않게 넉넉히 둔다.
   matchDetails: new Quota(120, 60_000),
 };
+
+// 지금 Riot에서 받고 있는 경로다. 첫 수집과 경기 상세가 같은 경기를 거의 같이 부르거나 친구 여럿이 같은 경기를 열면
+// Riot에는 한 번만 간다. 끝나면 바로 빼니 오래 들고 있지 않는다.
+const inflight = new Map<string, Promise<string>>();
 
 /** 테스트가 메모리 캐시를 비우고 D1이나 Cache API만으로 도는지 볼 때 씁니다. */
 export function clearMemoryCaches(): void {
@@ -127,6 +132,24 @@ export class Riot {
     return match.players.has(puuid) ? match : undefined;
   }
 
+  /**
+   * 친구와 `viewer`만 남기고 가린 경기 JSON입니다. `viewer`가 경기 어디에도 없으면 누가 보든 결과가 같아서, 끝난 경기는
+   * 가린 결과를 isolate 메모리에 (경기, 친구)로 담아 둡니다. 친구 여럿이 같은 친구의 경기를 열 때 다시 가리지 않습니다.
+   */
+  redactedFor(matchId: string, match: RiotMatch, friend: string, viewer: string): string {
+    const key = `redacted:${matchId}:${friend}`;
+    const shared = !match.raw.includes(viewer);
+    if (shared) {
+      const hit = memory.matches.get(key);
+      if (hit !== undefined) return hit;
+    }
+    const data = match.data;
+    const completed = data.matchInfo?.isCompleted === true;
+    const body = JSON.stringify(redactMatch(data, new Set([friend, viewer])));
+    if (shared && completed) memory.matches.set(key, body, MATCH_TTL);
+    return body;
+  }
+
   content(): Promise<string> {
     return this.cached(memory.content, "/val/content/v1/contents?locale=ko-KR", CONTENT_TTL);
   }
@@ -149,65 +172,88 @@ export class Riot {
       throw err;
     }
     const data = parse(raw);
+    // 담거나 적는 건 다음 요청을 아끼려는 것이라 실패해도 Riot이 준 경기는 그대로 내려보낸다.
     // 끝났다고 적힌 경기만 담고 적는다. 진행 중이거나 matchInfo가 없으면 참가자와 결과가 아직 바뀔 수 있다. 참가자는 부른 사람이
     // 뛴 경기일 때만 적는다. 남의 경기 ID를 마구 물어 D1 쓰기 한도(하루 10만 행)를 쓰게 할 수 없다.
     if (data.matchInfo?.isCompleted === true) {
       const record = !recorded && playersIn(data).has(this.caller.puuid);
       await Promise.all([
-        this.remember(memory.matches, path, raw, MATCH_TTL).catch(logFailure("match_cache")),
-        record ? this.recordPlayers(matchId, data).catch(logFailure("match_players")) : undefined,
+        this.remember(memory.matches, path, raw, MATCH_TTL).catch((err) => logFailure("match_cache", err)),
+        record ? this.recordPlayers(matchId, data).catch((err) => logFailure("match_players", err)) : undefined,
       ]);
     }
     return new RiotMatch(raw, data, recorded);
   }
 
   private async recordedPlayers(matchId: string): Promise<Set<string> | undefined> {
-    const { results } = await this.env.DB.prepare("SELECT puuid FROM match_players WHERE match_id = ?")
+    const row = await this.env.DB.prepare("SELECT puuids FROM match_players WHERE match_id = ?")
       .bind(matchId)
-      .all<{ puuid: string }>();
-    return results.length > 0 ? new Set(results.map((row) => row.puuid)) : undefined;
+      .first<{ puuids: string }>();
+    if (!row) return undefined;
+    let puuids: unknown;
+    try {
+      puuids = JSON.parse(row.puuids);
+    } catch {
+      return undefined;
+    }
+    // 못 읽는 줄은 적지 않은 경기로 친다. Riot에서 다시 받아 확인한다.
+    if (!Array.isArray(puuids) || puuids.length === 0) return undefined;
+    return new Set(puuids.filter((puuid) => typeof puuid === "string"));
   }
 
+  // 경기 하나에 한 줄이다. 사람마다 한 줄로 적으면 첫 수집 한 번이 D1 쓰기 500행을 쓴다(migrations/0008).
   private async recordPlayers(matchId: string, data: MatchData): Promise<void> {
-    const players = [...playersIn(data)];
-    const db = this.env.DB;
-    const statements: D1PreparedStatement[] = [];
-    for (let i = 0; i < players.length; i += PLAYERS_PER_INSERT) {
-      const chunk = players.slice(i, i + PLAYERS_PER_INSERT);
-      statements.push(
-        db
-          .prepare(`INSERT OR IGNORE INTO match_players (match_id, puuid) VALUES ${chunk.map(() => "(?, ?)").join(", ")}`)
-          .bind(...chunk.flatMap((puuid) => [matchId, puuid])),
-      );
-    }
-    if (statements.length > 0) await db.batch(statements);
+    await this.env.DB.prepare("INSERT OR IGNORE INTO match_players (match_id, puuids, recorded_at) VALUES (?, ?, ?)")
+      .bind(matchId, JSON.stringify([...playersIn(data)]), Date.now())
+      .run();
   }
 
   private async cached(store: MemoryCache, path: string, ttlSeconds: number): Promise<string> {
     const hit = await this.lookup(store, path, ttlSeconds);
     if (hit !== undefined) return hit;
     const raw = await this.fetchText(path);
-    await this.remember(store, path, raw, ttlSeconds);
+    await this.remember(store, path, raw, ttlSeconds).catch((err) => logFailure("riot_cache", err));
     return raw;
   }
 
+  /**
+   * 같은 경로를 이미 받고 있으면 그 결과를 같이 기다립니다. 같이 기다리는 쪽은 사용자 몫을 쓰지 않고, 먼저 부른 쪽이 받은
+   * Riot 실패(429, 404 등)도 같이 받습니다.
+   */
   private async fetchText(path: string, limit?: { quota: Quota; key: string }): Promise<string> {
     const apiKey = this.env.RIOT_API_KEY;
     if (!apiKey) throw new ApiError(503, "riot_key_missing");
     const url = `${RIOT_HOST}${path}`;
+    const joined = inflight.get(url);
+    if (joined) return joined;
     // Riot이 막혀 있어 어차피 부르지 않을 요청으로 사용자 몫을 깎지 않는다.
-    throwIfBlocked(url);
+    await throwIfBlocked(this.env.DB, url);
+    // 기다리는 사이에 누가 먼저 부르기 시작했을 수 있다. 여기서부터 등록까지는 기다리는 곳이 없다.
+    const started = inflight.get(url);
+    if (started) return started;
     if (limit) spend(limit.quota, limit.key);
-    const res = await send(this.upstream, url, { headers: { "X-Riot-Token": apiKey } });
-    return res.text();
+    const request = send(this.upstream, this.env.DB, url, { headers: { "X-Riot-Token": apiKey } }).then((res) => res.text());
+    inflight.set(url, request);
+    try {
+      return await request;
+    } finally {
+      inflight.delete(url);
+    }
   }
 
   private async lookup(store: MemoryCache, path: string, ttlSeconds: number): Promise<string | undefined> {
     const remembered = store.get(path);
     if (remembered !== undefined) return remembered;
-    const hit = await caches.default.match(cacheKey(this.origin, path));
-    if (!hit) return undefined;
-    const body = await hit.text();
+    let body: string;
+    try {
+      const hit = await caches.default.match(cacheKey(this.origin, path));
+      if (!hit) return undefined;
+      body = await hit.text();
+    } catch (err) {
+      // 담아 둔 곳을 못 읽으면 없는 것으로 치고 Riot에서 받는다. 이것 때문에 요청이 실패하지는 않는다.
+      logFailure("riot_cache", err);
+      return undefined;
+    }
     // Cache API에 남은 기한을 몰라 메모리에는 기한을 처음부터 다시 준다. 그래서 점검 안내는 길게는 2분,
     // 콘텐츠는 12시간까지 늦게 바뀔 수 있다.
     store.set(path, body, ttlSeconds);
@@ -224,12 +270,6 @@ export class Riot {
 function spend(quota: Quota, key: string): void {
   const retryAfter = quota.take(key);
   if (retryAfter !== undefined) throw new ApiError(429, "too_many_requests", { "Retry-After": String(retryAfter) });
-}
-
-// 담거나 적는 건 다음 요청을 아끼려는 것이라, 실패해도 Riot이 준 경기는 그대로 내려보낸다.
-// D1 에러 메시지에는 SQL과 PUUID가 섞일 수 있어 이름만 남긴다.
-function logFailure(label: string): (err: unknown) => void {
-  return (err) => console.error(label, err instanceof Error ? err.name : typeof err);
 }
 
 function parse(raw: string): MatchData {

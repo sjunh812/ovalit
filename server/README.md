@@ -28,11 +28,13 @@ npm run dev
 `riot_key_missing`을 돌려줍니다.
 
 RSO는 프로덕션 키가 나와야 붙일 수 있습니다. 그 전에는 `/auth/dev`로 아무 PUUID나 넣어 세션을
-받습니다. `.dev.vars`의 `DEV_LOGIN=true`이고 로컬 주소로 들어올 때만 열립니다. 에뮬레이터에서는
+받습니다. `.dev.vars`의 `DEV_LOGIN=true`이고 `RSO_CLIENT_SECRET`이 비어 있고 로컬 주소로 들어올 때만
+열립니다. 로컬에서 RSO를 돌려 보려고 `RSO_CLIENT_SECRET`을 넣으면 `/auth/dev`는 닫힙니다. 에뮬레이터에서는
 `http://10.0.2.2:8787`로 부르거나 `adb reverse tcp:8787 tcp:8787`을 걸고 `localhost`로 부릅니다.
 
 로컬 주소인지는 요청의 Host 헤더로 가립니다. 이 헤더는 보내는 쪽이 마음대로 적을 수 있어서 실제로 막는 건
-`DEV_LOGIN` 하나입니다. `wrangler dev`는 기본으로 localhost에만 붙습니다. `--ip 0.0.0.0`이나 `dev.ip` 설정으로
+`DEV_LOGIN`과 `RSO_CLIENT_SECRET`입니다. 배포 환경에는 RSO 비밀값이 늘 있어서 `DEV_LOGIN`을 실수로 넣어도
+열리지 않습니다. `wrangler dev`는 기본으로 localhost에만 붙습니다. `--ip 0.0.0.0`이나 `dev.ip` 설정으로
 바깥에 열지 마세요. 같은 네트워크의 누구든 Host 헤더만 바꿔 아무 PUUID로 로그인할 수 있게 됩니다. 기기에서 닿지
 않으면 바깥에 여는 대신 `adb reverse`를 씁니다.
 
@@ -59,16 +61,16 @@ npm run typecheck
 | GET | `/content/tiers` | | 티어 번호 → 한글 이름 |
 | GET | `/content/roles` | | 요원 UUID(소문자) → `duelist` · `initiator` · `controller` · `sentinel` |
 | GET | `/i/:code` | | 초대 링크를 브라우저에서 열었을 때 보이는 쪽 |
-| GET | `/auth/rso/start?challenge=` | | Riot 로그인으로 보냅니다 |
-| GET | `/auth/rso/callback` | | `/auth/done?code=`(App Link)로 돌려보냅니다 |
+| GET | `/auth/rso/start?challenge=` | | Riot 로그인으로 보냅니다. D1에 쓰지 않습니다 |
+| GET | `/auth/rso/callback` | | `/auth/done?code=`(App Link)로 돌려보냅니다. 실패하면 `/auth/done?error=` |
 | GET | `/auth/done` | | 앱이 안 열렸을 때 보이는 쪽. 우리 패키지를 지정한 intent 버튼을 둡니다 |
 | GET | `/.well-known/assetlinks.json` | | App Link 검증 파일. `ANDROID_CERT_SHA256`이 없으면 404 |
 | POST | `/auth/session` | | `{code, verifier}` → `{token, expiresAt}` |
-| POST | `/auth/dev` | | 로컬 전용. `{puuid, gameName, tagLine}` → `{token, expiresAt}` |
+| POST | `/auth/dev` | | 로컬 전용. `{puuid, gameName, tagLine}` → `{token, expiresAt}`. RSO 비밀값이 있으면 404 |
 | POST | `/auth/logout` | 필요 | 이 세션을 끊습니다 |
 | GET | `/me` | 필요 | `{puuid, gameName, tagLine, statsPublic}` |
 | PATCH | `/me` | 필요 | `{statsPublic}` |
-| DELETE | `/me` | 필요 | 연동 해제. 세션, 친구, 요청, 초대, 오발있, 기기 토큰이 같이 지워집니다 |
+| DELETE | `/me` | 필요 | 연동 해제. 세션, 친구, 요청, 초대, 오발있, 기기 토큰이 같이 지워집니다. 띄워 둔 오발있이 살아 있으면 불린 친구에게 `ping_cancel`이 갑니다 |
 | PUT | `/me/push-token` | 필요 | `{token}`. FCM 기기 토큰을 등록합니다. 다른 계정이 쓰던 토큰이면 옮겨 오고, 사람마다 최근 셋만 둡니다 |
 | DELETE | `/me/push-token` | 필요 | `{token}`. 내 토큰일 때만 지우고 없어도 204입니다. 로그아웃하기 전에 부릅니다 |
 | GET | `/content` | 필요 | VAL-CONTENT(ko-KR). 6시간 담아 둡니다 |
@@ -149,7 +151,7 @@ TTL 1시간이고, 주간 리포트는 `NORMAL`입니다. 이름 목록은 쉼�
 | `ping_new` | 불려 간 친구 | `pingId`, `startsAt`, `hostName`, `others`(같이 불린 친구 이름. 없으면 빈 문자열) |
 | `ping_reply` | 호스트 | `pingId`, `startsAt`, `memberName`, `answer`, `proposedAt`(없으면 빈 문자열) |
 | `ping_time` | 불려 간 친구 | `pingId`, `startsAt`(새 시각), `hostName` |
-| `ping_cancel` | 불려 간 친구 | `pingId`, `hostName` |
+| `ping_cancel` | 불려 간 친구. 호스트가 취소하거나 연동을 해제했을 때 | `pingId`, `hostName` |
 | `ping_remind` | 호스트와 `yes`인 친구 | `pingId`, `startsAt`, `names`(호스트, `yes`인 친구 순서) |
 | `weekly_report` | `weekly_report` 주제를 구독한 기기 | 없음 |
 
@@ -159,6 +161,10 @@ TTL 1시간이고, 주간 리포트는 `NORMAL`입니다. 이름 목록은 쉼�
 
 `/cards/{uuid}_small.png`와 `/cards/{uuid}_wide.png`는 Worker를 거치지 않는 정적 파일입니다.
 `public/cards/`는 저장소에 없고 아래 스크립트로 채웁니다.
+
+초대 링크 페이지(`/i/:code`)에는 카카오톡 미리보기 카드용 Open Graph 태그가 있습니다. 그림은 정적 파일
+`/og/invite-v1.png`(1200×630)이고 저장소에 들어 있습니다. `robots.txt`는 미리보기 수집기가 막히지 않게 `/i/`와
+`/og/`만 엽니다.
 
 ### 지키는 선
 
@@ -170,9 +176,10 @@ Riot 프로덕션 키의 승인 조건이라 서버가 직접 막습니다. 자�
 - Riot ID로 사람을 찾는 경로가 없습니다. 친구 요청은 같이 뛴 경기나 초대 링크로만 보냅니다.
   같이 뛰었는지는 서버가 경기를 직접 받아 확인합니다. 한 번 받은 경기는 참가자를 적어 두고 거기서 봅니다.
 - 다른 사람의 경기는 서로 수락한 친구이고 그 친구가 전적을 공개했을 때만 엽니다.
-- 내가 안 뛴 친구 경기에서는 친구와 나 말고 모두의 PUUID를 `anon-N`으로 바꾸고 이름, 태그,
-  카드, 칭호, 계정 레벨을 지웁니다. PUUID가 객체 키로 와도 바꿉니다. 파티 ID도 그 경기 안에서만 통하는
-  이름으로 바꿉니다.
+- 내가 안 뛴 친구 경기에서는 친구와 나 말고 모두의 PUUID를 `anon-N`으로 바꿉니다. PUUID가 객체 키로 와도
+  바꿉니다. 그 사람들의 플레이어 줄은 팀, 파티, 요원, 성적, 티어, 관전 여부만 남기고 이름과 태그는 비웁니다.
+  카드, 칭호, 계정 레벨과 Riot이 새로 더한 필드는 남지 않습니다. 파티 ID는 그 경기 안에서만 통하는 이름으로
+  바꾸고, 커스텀 게임 이름은 비우고, 프리미어 팀 값은 뺍니다.
 - 오발있에 같이 불린 사람 중 나와 서로 수락한 친구가 아닌 사람은 PUUID를 그 오발있 안에서만 통하는 `anon-N`으로
   바꿉니다. 이름, 태그, 대답은 그대로 보여 줍니다(사용자 결정, 2026-10-03).
 - Riot access token은 계정을 한 번 읽고 버립니다. 세션 토큰과 로그인 코드는 해시만 저장합니다. 세션 토큰을
@@ -184,13 +191,34 @@ Riot이 돌려준 실패는 이렇게 바꿔 보냅니다.
 
 | Riot | 우리 응답 |
 | --- | --- |
-| 429 | 503 `riot_rate_limited`. Riot이 준 `Retry-After`를 붙이고, 없으면 10초를 붙입니다 |
+| 429 | 503 `riot_rate_limited`. Riot이 준 `Retry-After`를 붙이고, 없으면 10초(`service`는 5초)를 붙입니다 |
 | 401, 403, 5xx, 연결 실패 | 502 `riot_unavailable` |
 | 404 | 404 `not_found` |
 | 키 없음 | 503 `riot_key_missing` |
 
-429를 받은 뒤에는 `Retry-After`가 지날 때까지 그 호스트로 가는 요청을 Riot에 보내지 않고 바로 같은 503을
-돌려줍니다. 막힌 동안 계속 부르면 앱 전체의 몫이 더 깎이기 때문입니다.
+429를 받은 뒤에는 `Retry-After`가 지날 때까지 막힌 범위로 가는 요청을 Riot에 보내지 않고 바로 같은 503을
+돌려줍니다. 막힌 동안 계속 부르면 앱 전체의 몫이 더 깎이고, 되풀이하면 키가 막힐 수 있습니다. 범위는 Riot이 준
+`X-Rate-Limit-Type`으로 정합니다.
+
+| 종류 | 막는 범위 | 나누는 곳 |
+| --- | --- | --- |
+| `application` | 그 호스트 전체(`kr.api.riotgames.com`) | D1 `riot_blocks` |
+| `method` | 그 호스트의 같은 경로 틀(`/val/match/v1/matches/{id}`) | D1 `riot_blocks` |
+| `service`, 없음 | 그 경로 틀. Riot 쪽 서비스가 바쁜 것이라 우리 몫과 상관없습니다 | 이 isolate만 |
+
+D1에는 429를 받을 때만 한 줄 씁니다. isolate는 Riot을 부르기 전에 5초에 한 번까지만 읽어서, 다른 isolate가 막힌 걸
+알기까지 5초가 걸릴 수 있습니다. 풀린 줄은 5분마다 크론이 지워서 평소에는 빈 표를 읽습니다.
+
+### 로그인
+
+RSO state는 D1에 두지 않고 `STATE_SECRET`으로 서명해 Riot에 실어 보냅니다. 로그인 시작은 세션 없이 열려 있어서
+시작마다 D1에 쓰면 누구나 되풀이해 불러 하루 쓰기 한도를 다 쓰게 할 수 있기 때문입니다. 콜백은 서명과 10분 기한을
+보고, 같은 state를 두 번 받지 않습니다. 이건 isolate 메모리로 막는데, 다른 isolate로 가도 Riot 인가 코드가 한 번만
+쓰여 로그인 코드가 두 번 나오지 않습니다.
+
+로그인 시작과 콜백은 IP마다 1분에 20번까지입니다. 시작은 넘기면 429 `too_many_requests`에 `Retry-After`를 주고,
+콜백은 Custom Tabs 안이라 `/auth/done?error=too_many_requests`로 돌려보냅니다. 콜백이 앱에 넘기는 `error`는
+`access_denied`, `invalid_state`, `riot_rate_limited`, `rso_not_configured`, `too_many_requests`, `rso_failed`입니다.
 
 ### 호출 한도
 
@@ -206,8 +234,11 @@ Riot 레이트 리밋은 앱 전체에 걸려서 한 사람이 몰아 부르면 
 Riot이 404를 준 경기 ID는 10분 동안 기억해 두고 다시 묻지 않습니다. 아무 ID나 넣은 요청이 그때마다 Riot 몫을
 쓰지 않게 하려는 것입니다.
 
-이 한도와 404 기억, 위의 429 차단은 모두 isolate 메모리에 둡니다. isolate끼리 나누지 않으니 요청이 여러
-isolate로 나뉘면 한도를 넘길 수 있습니다. 막는 장치가 아니라 줄이는 장치로 봐 주세요.
+같은 경로를 동시에 부르면 Riot에는 한 번만 가고 결과를 나눠 받습니다. 같이 기다린 쪽은 위 한도를 쓰지 않습니다.
+
+이 한도와 404 기억은 isolate 메모리에 둡니다. isolate끼리 나누지 않으니 요청이 여러 isolate로 나뉘면 한도를
+넘길 수 있습니다. 막는 장치가 아니라 줄이는 장치로 봐 주세요. 위의 429 차단 중 `application`과 `method`만 D1로
+나눕니다.
 
 ## 무료 한도
 
@@ -217,14 +248,14 @@ isolate로 나뉘면 한도를 넘길 수 있습니다. 막는 장치가 아니�
 | 항목 | 한도 | 이 서버에서 |
 | --- | --- | --- |
 | Worker 요청 | 하루 100,000 | 첫 수집 한 번이 약 51건(경기 목록 1 + 경기 50) |
-| 요청당 CPU | 10ms | 가장 무거운 건 친구 경기 가리기. 800KB 경기로 재 보니 이 맥에서 약 3ms |
+| 요청당 CPU | 10ms | 가장 무거운 건 친구 경기 가리기. 800KB 경기로 재 보니 이 맥에서 약 3ms. 가린 결과는 메모리에 담아 다시 가리지 않습니다 |
 | 요청당 하위 요청 | 50 | 많아야 2건(RSO 콜백) |
-| 요청당 D1 쿼리 | 50 | 많아야 7건(스코어보드 친구 요청) |
-| D1 크기 | DB당 500MB | 사용자, 세션, 친구 관계와 경기 참가자. 경기 원문은 두지 않습니다. 참가자는 경기당 약 1.3KB라 38만 경기쯤 들어갑니다 |
-| D1 쓰기 | 하루 10만 행 | 새 경기 하나에 약 10행(참가자 수). 다른 쓰기가 없으면 하루 새 경기 약 1만 개까지 적습니다 |
-| D1 읽기 | 하루 500만 행 | 참가자 확인 한 번에 약 10행 |
+| 요청당 D1 쿼리 | 50 | 많아야 8건(스코어보드 친구 요청에서 Riot까지 갈 때) |
+| D1 크기 | DB당 500MB | 사용자, 세션, 친구 관계와 경기 참가자. 경기 원문은 두지 않습니다. 참가자는 경기당 약 1KB이고 10주 지나면 지웁니다. 10주 동안 50만 경기쯤 들어갑니다 |
+| D1 쓰기 | 하루 10만 행 | 새 경기 하나에 2행(경기 한 줄과 색인), 10주 뒤 지울 때 1행. 첫 수집 한 번이 100행입니다(2026-10-10, 로컬 D1의 `rows_written`) |
+| D1 읽기 | 하루 500만 행 | 참가자 확인 한 번에 1행. Riot을 부르는 isolate마다 5초에 한 번 `riot_blocks`를 읽습니다(평소 빈 표) |
 | D1 행 크기 | 2MB | 가장 큰 행도 수백 바이트입니다 |
-| 정적 에셋 | 파일 20,000개, 파일당 25MiB | 카드 2,032개. 정적 에셋 요청은 무료이고 요청 한도에 세지 않습니다 |
+| 정적 에셋 | 파일 20,000개, 파일당 25MiB | 카드 2,032개와 미리보기 그림 1개. 정적 에셋 요청은 무료이고 요청 한도에 세지 않습니다 |
 
 D1 한도는 00:00 UTC에 초기화됩니다. KV는 하루 쓰기가 1,000번뿐이라 쓰지 않습니다. R2는 카드 등록이
 필요해서 쓰지 않습니다.
@@ -238,7 +269,8 @@ D1 한도는 00:00 UTC에 초기화됩니다. KV는 하루 쓰기가 1,000번뿐
 `wrangler.jsonc`의 `triggers`에 크론 둘을 둡니다.
 
 - `*/5 * * * *`: 10분 안에 시작하는 오발있을 알리고, 끝나고 하루가 지난 오발있을 한 번에 100개까지 지웁니다. 하루
-  288번 돕니다. 하루 열 번 한도를 띄운 줄로 세서 끝나자마자 지우지 않습니다.
+  288번 돕니다. 하루 열 번 한도를 띄운 줄로 세서 끝나자마자 지우지 않습니다. 적은 지 10주가 지난 경기 참가자도 한 번에
+  100경기까지 지우고, 풀린 Riot 429 차단도 지웁니다.
 - `0 0 * * 1`: 월요일 00:00 UTC, 한국 시각 월요일 오전 9시에 지난주 리포트 알림을 보냅니다. 주제 메시지 하나라 사용자
   수와 상관없이 일주일에 FCM 요청 한 번입니다.
 
@@ -268,13 +300,17 @@ Riot 응답은 isolate 메모리, Cache API, Riot 순서로 찾습니다.
 - 그래서 앞에 isolate 메모리 캐시를 둡니다. 콘텐츠 1개(6시간), 점검 안내 1개(60초), 끝난 경기는 합쳐서
   24MB까지 오래 안 꺼낸 것부터 버립니다. 글자당 2바이트로 세서 800KB 경기가 15판쯤 들어갑니다. isolate가
   내려가거나 요청이 다른 데이터센터로 가면 비므로, 없을 수 있다고 보고 씁니다.
-- 끝난 경기를 Riot에서 처음 받으면 참가자 PUUID를 D1 `match_players`에 적습니다. 스코어보드의 앱 사용자와
-  친구 요청은 참가자만 알면 되니 적어 둔 경기면 Riot을 부르지 않습니다. 경기 원문이 필요한 경로도 적어 둔
-  참가자로 먼저 걸러, 남의 경기를 Riot에 묻지 않습니다.
+- 내가 안 뛴 친구 경기를 가린 결과도 같은 24MB에 (경기, 친구)로 담습니다. 보는 사람이 경기에 없으면 누가 보든
+  결과가 같아서, 같은 친구의 경기를 여럿이 열어도 한 번만 가립니다.
+- 끝난 경기를 Riot에서 처음 받으면 참가자 PUUID를 D1 `match_players`에 경기마다 한 줄로 적습니다. 스코어보드의
+  앱 사용자와 친구 요청은 참가자만 알면 되니 적어 둔 경기면 Riot을 부르지 않습니다. 경기 원문이 필요한 경로도
+  적어 둔 참가자로 먼저 걸러, 남의 경기를 Riot에 묻지 않습니다.
 - `match_players`는 사용자 계정이 아니라 Riot 경기 기록이라 연동을 해제해도 지우지 않습니다. PUUID 말고는
-  적지 않습니다.
+  적지 않습니다. 적은 지 10주가 지나면 크론이 지웁니다. 앱은 8주 안의 경기만 봅니다.
 - 경기 원문이 필요한 요청은 캐시가 비면 Riot에 다시 갑니다. 앱이 받은 경기를 기기에 저장하니 크게 새지는
   않습니다.
+- Cache API를 읽거나 담다 실패해도 요청은 실패하지 않습니다. 못 읽으면 없는 것으로 치고 Riot에서 받고, 로그에는
+  `riot_cache`와 에러 이름만 남깁니다.
 
 ## 표와 카드 다시 만들기
 
@@ -289,6 +325,14 @@ npm run build:tables -- <agents.json> <competitivetiers.json>
 
 ```bash
 npm run prepare:assets -- <catalog.zip>
+```
+
+초대 링크 미리보기 그림은 로고 경로로 굽습니다. wrangler가 같이 설치하는 sharp를 씁니다. 그림을 바꾸면 스크립트의
+`VERSION`과 `src/routes/public.ts`의 `OG_IMAGE_PATH`를 같이 올립니다. 카카오톡은 그림을 주소로 기억해서 같은
+이름으로 덮어쓰면 한동안 옛 그림이 뜹니다.
+
+```bash
+node scripts/build-og-image.mjs
 ```
 
 ## 나중에 배포하기
@@ -308,10 +352,14 @@ npx wrangler d1 create ovalit
 npx wrangler secret put RIOT_API_KEY
 npx wrangler secret put RSO_CLIENT_ID
 npx wrangler secret put RSO_CLIENT_SECRET
+openssl rand -base64 32 | npx wrangler secret put STATE_SECRET
 npx wrangler secret put FCM_SERVICE_ACCOUNT
 npx wrangler d1 migrations apply ovalit --remote
 npx wrangler deploy
 ```
+
+`STATE_SECRET`은 RSO state에 서명하는 키라 32자 이상의 아무 값이면 됩니다. 없으면 RSO를 띄우지 않습니다. 바꾸면
+그때 Riot 로그인 화면에 있던 사람만 처음부터 다시 로그인합니다.
 
 `FCM_SERVICE_ACCOUNT`에는 Firebase 콘솔의 프로젝트 설정 > 서비스 계정에서 받은 JSON 파일 내용을 통째로 붙여 넣습니다.
 `project_id`, `client_email`, `private_key`를 씁니다. 개인 키가 들어 있어서 저장소, `wrangler.jsonc`, `.dev.vars.example`

@@ -1,8 +1,12 @@
+import { createExecutionContext, createScheduledController, waitOnExecutionContext } from "cloudflare:test";
+import { env } from "cloudflare:workers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cacheKey, clearMemoryCaches } from "../src/riot";
+import { createScheduled } from "../src/scheduled";
 import {
   forgetCaches,
   makeFriends,
+  makePuuid,
   matchFixture,
   matchPath,
   matchUrl,
@@ -67,6 +71,20 @@ describe("경기 캐시", () => {
     expect(parse.mock.calls.filter(([text]) => typeof text === "string" && text.includes(id))).toEqual([]);
   });
 
+  it("Cache API를 읽지 못해도 Riot에서 받아 경기를 내려보낸다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(caches.default, "match").mockRejectedValue(namedError("CacheDown", "match"));
+    const id = crypto.randomUUID();
+    const fixture = matchFixture(id, [me, ...strangers(9)]);
+    t.upstream.json(matchUrl(id), fixture);
+    const res = await t.call("GET", `/riot/matches/${id}`, me.token);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual(fixture);
+    expect(errors.mock.calls).toEqual([["riot_cache", "CacheDown"]]);
+  });
+
   it("Cache API에 담지 못해도 경기는 내려보내고 에러 이름만 남긴다", async () => {
     const t = setup();
     const me = await t.login();
@@ -84,7 +102,7 @@ describe("경기 캐시", () => {
 });
 
 describe("경기 참가자 기록", () => {
-  it("끝난 경기를 처음 받으면 참가자 PUUID만 적는다", async () => {
+  it("끝난 경기를 처음 받으면 참가자 PUUID만 경기당 한 줄로 적는다", async () => {
     const t = setup();
     const me = await t.login();
     const id = crypto.randomUUID();
@@ -92,6 +110,8 @@ describe("경기 참가자 기록", () => {
     t.upstream.json(matchUrl(id), matchFixture(id, players));
     await t.call("GET", `/riot/matches/${id}`, me.token);
     expect(new Set(await recordedPlayers(id))).toEqual(new Set(players.map((p) => p.puuid)));
+    const rows = await env.DB.prepare("SELECT COUNT(*) AS n FROM match_players WHERE match_id = ?").bind(id).first<{ n: number }>();
+    expect(rows!.n).toBe(1);
   });
 
   it("내가 뛰지 않은 경기는 받아도 참가자를 적지 않는다", async () => {
@@ -108,7 +128,7 @@ describe("경기 참가자 기록", () => {
     const t = setup();
     const me = await t.login();
     const errors = vi.spyOn(console, "error").mockImplementation(() => {});
-    t.env.DB = watchDb(t.env.DB, { failBatch: namedError("D1Down", `INSERT ${me.puuid}`) }).db;
+    t.env.DB = watchDb(t.env.DB, { failSql: { pattern: /^INSERT .*match_players/, error: namedError("D1Down", `INSERT ${me.puuid}`) } }).db;
     const id = crypto.randomUUID();
     const fixture = matchFixture(id, [me, ...strangers(9)]);
     t.upstream.json(matchUrl(id), fixture);
@@ -211,5 +231,51 @@ describe("경기 참가자 기록", () => {
     await t.call("GET", `/riot/matches/${id}`, me.token);
     expect((await t.call("DELETE", "/me", me.token)).status).toBe(204);
     expect(await recordedPlayers(id)).toContain(me.puuid);
+  });
+});
+
+describe("경기 참가자 기록 정리", () => {
+  const DAY = 24 * 60 * 60 * 1000;
+
+  async function runCron(): Promise<void> {
+    const ctx = createExecutionContext();
+    await createScheduled()(createScheduledController({ cron: "*/5 * * * *" }), env, ctx);
+    await waitOnExecutionContext(ctx);
+  }
+
+  it("적은 지 10주가 지난 경기는 크론이 지운다", async () => {
+    const old = crypto.randomUUID();
+    const recent = crypto.randomUUID();
+    await recordPlayers(old, [makePuuid()], Date.now() - 70 * DAY - 1);
+    await recordPlayers(recent, [makePuuid()], Date.now() - 70 * DAY + 60_000);
+    await runCron();
+    expect(await recordedPlayers(old)).toEqual([]);
+    expect(await recordedPlayers(recent)).toHaveLength(1);
+  });
+
+  it("크론 한 번은 100경기까지만 지운다", async () => {
+    const ids = Array.from({ length: 101 }, () => crypto.randomUUID());
+    const longAgo = Date.now() - 80 * DAY;
+    await env.DB.batch(
+      ids.map((id) =>
+        env.DB.prepare("INSERT INTO match_players (match_id, puuids, recorded_at) VALUES (?, '[]', ?)").bind(id, longAgo),
+      ),
+    );
+    await runCron();
+    const left = await env.DB.prepare("SELECT COUNT(*) AS n FROM match_players WHERE recorded_at = ?").bind(longAgo).first<{ n: number }>();
+    expect(left!.n).toBe(1);
+  });
+
+  it("지운 경기를 다시 물으면 Riot에서 받아 다시 적는다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const other = await t.login();
+    const id = crypto.randomUUID();
+    await recordPlayers(id, [me.puuid, other.puuid], Date.now() - 71 * DAY);
+    await runCron();
+    t.upstream.json(matchUrl(id), matchFixture(id, [me, other, ...strangers(8)]));
+    const res = await t.call("GET", `/riot/matches/${id}/app-users`, me.token);
+    expect(await res.json()).toEqual([{ puuid: other.puuid, relation: "app_user" }]);
+    expect(await recordedPlayers(id)).toHaveLength(10);
   });
 });

@@ -4,7 +4,8 @@ import { ApiError } from "./errors";
 // Riot 문서가 PUUID를 78자로 못박아 둔다. 경로에 그대로 붙이므로 `/`나 `?`가 섞이지 않게 먼저 거른다.
 export const PUUID = /^[A-Za-z0-9_-]{78}$/;
 const MATCH_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const TOKEN = /^[A-Za-z0-9_-]{43}$/;
+// 32바이트를 base64url로 바꾼 43자다. 세션 토큰과 로그인 코드(randomToken), PKCE challenge(SHA-256)가 이 모양이다.
+export const TOKEN = /^[A-Za-z0-9_-]{43}$/;
 // RFC 7636의 code_verifier 규칙이다.
 const VERIFIER = /^[A-Za-z0-9._~-]{43,128}$/;
 

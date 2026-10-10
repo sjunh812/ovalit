@@ -202,11 +202,29 @@ describe("초대 링크", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toContain("text/html");
     expect(res.headers.get("Content-Security-Policy")).toContain("default-src 'none'");
+    expect(res.headers.get("Content-Security-Policy")).toContain("frame-ancestors 'none'");
     const page = await res.text();
     expect(page).toContain(`href="intent://localhost/i/${code}#Intent;scheme=http;package=com.ovalit;end"`);
     expect(page).not.toContain("ovalit://");
-    expect(page).not.toMatch(/https?:\/\//);
+    // 미리보기 태그의 주소도 이 서버를 가리킨다.
+    for (const [address] of page.matchAll(/https?:\/\/[^"]+/g)) expect(address).toMatch(/^http:\/\/localhost\//);
     expect(page).not.toMatch(/<script|<img|<link/i);
+  });
+
+  it("단톡방 미리보기 카드에 쓸 Open Graph 태그를 둔다", async () => {
+    const t = setup();
+    const inviter = await t.login("초대한사람");
+    const { code } = await invite(t, inviter);
+    const page = await (await t.call("GET", `/i/${code.toLowerCase()}`)).text();
+    const og = new Map([...page.matchAll(/<meta property="og:([a-z:_]+)" content="([^"]*)">/g)].map((m) => [m[1], m[2]]));
+    expect(og.get("title")).toBe("오발있 친구 초대");
+    expect(og.get("description")).toBe("친구가 오발있에서 같이 기록을 보자고 초대했어요");
+    expect(og.get("url")).toBe(`http://localhost/i/${code}`);
+    expect(og.get("image")).toMatch(/^http:\/\/localhost\/og\/invite-v\d+\.png$/);
+    expect(og.get("image:width")).toBe("1200");
+    expect(og.get("image:height")).toBe("630");
+    // 링크를 누가 만들었는지는 카드에 싣지 않는다.
+    expect(page).not.toContain("초대한사람");
   });
 
   it("모양이 틀린 코드의 링크 페이지는 404다", async () => {

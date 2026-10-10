@@ -5,13 +5,17 @@ import { base64url } from "../src/crypto";
 import type { Env } from "../src/env";
 import { clearAccessTokens } from "../src/push";
 import { cacheKey, clearMemoryCaches, clearQuotas } from "../src/riot";
+import { clearAuthQuotas } from "../src/routes/auth";
+import { clearUsedStates } from "../src/state";
 import { clearRiotBlocks } from "../src/upstream";
 
-// 실제 키는 쓰지 않는다. wrangler가 .dev.vars를 읽어 오더라도 여기 값으로 덮어쓴다.
+// 실제 키는 쓰지 않는다. wrangler가 .dev.vars를 읽어 오더라도 여기 값으로 덮어쓴다. RSO_CLIENT_SECRET이 있으면
+// /auth/dev가 닫혀서 login()을 못 쓰니 비워 두고, RSO를 보는 테스트만 넣는다.
 const TEST_SECRETS = {
   RIOT_API_KEY: "test-riot-key",
   RSO_CLIENT_ID: "test-client",
-  RSO_CLIENT_SECRET: "test-secret",
+  RSO_CLIENT_SECRET: undefined,
+  STATE_SECRET: "test-state-secret-0123456789abcdef",
   DEV_LOGIN: "true",
   FCM_SERVICE_ACCOUNT: undefined,
 } satisfies Partial<Env>;
@@ -60,6 +64,8 @@ export function setup(overrides: Partial<Env> = {}) {
   // isolate 메모리에 남은 레이트 리밋, 사용자 호출 한도, FCM 액세스 토큰이 다음 테스트로 이어지지 않게 비운다.
   clearRiotBlocks();
   clearQuotas();
+  clearAuthQuotas();
+  clearUsedStates();
   clearAccessTokens();
   const upstream = new FakeUpstream();
   const app = createApp({ fetch: upstream.fetch });
@@ -103,15 +109,15 @@ export function matchPath(matchId: string): string {
   return `/val/match/v1/matches/${matchId}`;
 }
 
-export async function recordPlayers(matchId: string, puuids: string[]): Promise<void> {
-  await env.DB.batch(
-    puuids.map((puuid) => env.DB.prepare("INSERT INTO match_players (match_id, puuid) VALUES (?, ?)").bind(matchId, puuid)),
-  );
+export async function recordPlayers(matchId: string, puuids: string[], recordedAt = Date.now()): Promise<void> {
+  await env.DB.prepare("INSERT INTO match_players (match_id, puuids, recorded_at) VALUES (?, ?, ?)")
+    .bind(matchId, JSON.stringify(puuids), recordedAt)
+    .run();
 }
 
 export async function recordedPlayers(matchId: string): Promise<string[]> {
-  const { results } = await env.DB.prepare("SELECT puuid FROM match_players WHERE match_id = ?").bind(matchId).all<{ puuid: string }>();
-  return results.map((row) => row.puuid);
+  const row = await env.DB.prepare("SELECT puuids FROM match_players WHERE match_id = ?").bind(matchId).first<{ puuids: string }>();
+  return row ? (JSON.parse(row.puuids) as string[]) : [];
 }
 
 export interface FixturePlayer {
@@ -222,17 +228,30 @@ export async function addFriends(user: TestUser, n: number): Promise<void> {
 }
 
 /**
- * D1을 감싸 준비한 SQL을 `sql`에 적어 둡니다. `failBatch`를 주면 `batch`가 그 에러로 실패합니다. 로그인처럼
- * `batch`를 쓰는 준비를 마친 뒤 `t.env.DB`에 넣어 씁니다.
+ * D1을 감싸 준비한 SQL을 `sql`에 적어 둡니다. `failBatch`를 주면 `batch`가 그 에러로 실패하고, `failSql`을 주면 그 패턴에
+ * 맞는 SQL을 돌릴 때 실패합니다. 로그인처럼 `batch`를 쓰는 준비를 마친 뒤 `t.env.DB`에 넣어 씁니다.
  */
-export function watchDb(db: D1Database, options: { failBatch?: Error } = {}): { db: D1Database; sql: string[] } {
+export function watchDb(
+  db: D1Database,
+  options: { failBatch?: Error; failSql?: { pattern: RegExp; error: Error } } = {},
+): { db: D1Database; sql: string[] } {
   const sql: string[] = [];
+  const failing = (statement: D1PreparedStatement, error: Error): D1PreparedStatement =>
+    new Proxy(statement, {
+      get(target, prop) {
+        if (prop === "bind") return (...values: unknown[]) => failing(target.bind(...values), error);
+        if (prop === "run" || prop === "all" || prop === "first" || prop === "raw") return () => Promise.reject(error);
+        const value: unknown = Reflect.get(target, prop, target);
+        return typeof value === "function" ? value.bind(target) : value;
+      },
+    });
   const watched = new Proxy(db, {
     get(target, prop) {
       if (prop === "prepare") {
         return (query: string) => {
           sql.push(query);
-          return target.prepare(query);
+          const statement = target.prepare(query);
+          return options.failSql?.pattern.test(query) ? failing(statement, options.failSql.error) : statement;
         };
       }
       if (prop === "batch" && options.failBatch) return () => Promise.reject(options.failBatch);

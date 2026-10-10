@@ -90,6 +90,9 @@ individually"에 걸릴 수 있다. 홈 고정 칸, 라이벌 대결, 친구 비
   앱은 서버가 준 세션 토큰만 든다.
 - RSO는 Custom Tabs로 띄운다. WebView는 쓰지 않는다. 앱이 비밀번호를 만지지 않는다고 신청서에 적었다.
 - 로컬 DB는 아직 안 고른다. `core/data`에는 Repository 인터페이스와 가짜 구현만 두고, 프로덕션 키로 실제 응답을 본 뒤에 정한다.
+- Riot 응답 DTO와 그걸 `Match`로 옮기는 일은 `core/network`에 둔다(`MatchDto.toMatch`, `MatchlistDto.toEntries`, 규칙은 데이터의
+  옮겨 담기). 본문은 문자열로 받아 `decodeMatch`, `decodeMatchlist`로 읽고 Ktor `ContentNegotiation`에 걸지 않는다. 읽다 실패하면
+  kotlinx.serialization이 응답 원문을 예외 문구에 담아서, 그 예외가 비정상 종료 보고로 나가면 PUUID와 이름이 함께 나간다.
 - 지표 표기(보이는 자릿수 반올림, 고정 지표 이름, 기간 이름, 라이벌 대결 줄), 역할과 구매 유형 이름, 게임 이미지, 프로필 머리와
   칸(티어 카드, 통계, 맞힌 부위, 요원, 무기), KDA 줄, 큐 칩은 `core/ui`에 두고 기능 화면이 같이 쓴다. 기능마다 따로 두면 한쪽만 고치다
   어긋난다. 큐 칩이 없는 화면이 세는 큐도 `QueueFilter.PROFILE` 하나다.
@@ -227,8 +230,8 @@ Google 서비스 셋은 무료로 쓰는 독점 라이선스 SDK라 라이선스
 
 | 지표 | 계산 |
 | --- | --- |
-| 피해량 (ADR) | `damage[].damage` 총합 ÷ `roundsPlayed` |
-| 헤드샷 비율 | `headshots ÷ (headshots + bodyshots + legshots)` |
+| 피해량 (ADR) | 상대에게 준 `damage[].damage` 총합 ÷ `roundsPlayed` |
+| 헤드샷 비율 | 상대를 맞힌 `headshots ÷ (headshots + bodyshots + legshots)` |
 | 전투점수 (ACS) | `players[].stats.score ÷ roundsPlayed` |
 | 관여율 (KAST) | 라운드별 킬·어시·생존·트레이드 중 하나 이상 |
 | 첫 킬 승률 | 내가 첫 킬을 낸 라운드 중 이긴 라운드 ÷ 내 첫 킬 수 |
@@ -275,6 +278,30 @@ Google 서비스 셋은 무료로 쓰는 독점 라이선스 SDK라 라이선스
   건틀릿처럼 작은 팀 여럿이다. 등수는 응답이 주면 그대로 쓰고, 안 주면 팀 점수(`numPoints`, 데스매치는 킬)가 높은 순이며 같으면
   같은 등수다(`standings`). 라운드가 없는 두 팀 모드의 스코어는 두 팀의 `numPoints`다.
 
+### 옮겨 담기
+
+Riot 응답을 `Match`로 옮길 때 지키는 것들. `core/network`의 `MatchMapper`에 있고 `core/network`에 테스트가 있다. 응답을 아직
+못 봐서 짐작한 것은 아래 "아직 확인하지 못한 것"에도 적었다.
+
+- 내가 뛴 라운드는 그 라운드 `playerStats`에 내가 있는 라운드다. 스코어(`roundOutcomes`)에는 못 뛴 라운드도 넣는다.
+- 킬은 그 라운드 사람마다의 `kills[]`를 모아 시각순으로 두고 똑같은 킬이 겹치면 하나만 남긴다. 팀킬과 자기 스킬 사망도 그대로
+  담고 킬로 세지 않는 일은 `core/model`이 `allies`로 한다.
+- 스파이크(`damageType` `Bomb`)나 킬러 없이 죽은 건 자기 스킬 사망처럼 데스로만 센다. 스파이크 폭발은 교전이 아니라 누구의
+  킬로도, 첫 킬로도 세지 않는다.
+- 킬의 무기는 `damageType`이 `Weapon`이나 `Melee`일 때만 `damageItem`으로 담는다. 스킬은 `damageItem`이 슬롯 이름이라 비운다.
+- 피해량과 맞힌 부위는 상대에게 준 것만 센다. 스킬로 자기나 우리 팀에 준 피해가 들어가면 피해량이 부풀고 헤드샷 비율이 흔들린다.
+- 팀 장비 가치는 그 라운드 `playerStats`에 있는 사람의 한 사람당 평균이다.
+- 내 진영은 `winningTeamRole`과 `winningTeam`으로 가리고, 없으면 스파이크를 설치하거나 해체한 사람의 편으로 가린다. 둘 다 없으면
+  비운다.
+- 데스매치는 플레이어 줄의 `teamId`와 상관없이 나 말고 모두 상대다. `teams[]`의 사람은 `teamId`로 찾고 없으면 PUUID로 찾는다.
+- 라운드가 없는 모드는 스코어보드의 뛴 라운드를 0으로 둔다. 응답이 1로 줘도 나누지 않는다.
+- 관전자(`isObserver`이거나 `stats`가 없는 줄)와 코치는 스코어보드와 팀에 넣지 않는다.
+- 커스텀 게임, 끝나지 않은 경기(`isCompleted`가 `false`), 내가 없는 경기는 옮기지 않는다. 끝난 경기는 다시 받지 않아서 진행 중
+  결과를 저장하면 그대로 남는다. 경기 ID와 시작 시각이 빠졌으면 저장할 수 없어 던진다.
+- 요원·무기·맵·액트·카드 UUID는 소문자로 옮긴다. Riot은 같은 UUID를 응답마다 대소문자를 달리 주고, 서버의 역할 표는 소문자
+  키다. 콘텐츠 카탈로그도 소문자 키로 만든다. 맵 경로(`/Game/Maps/...`)는 그대로 둔다.
+- 서버가 가린 사람(`anon-N`)은 Riot ID가 빈 문자열이고 플레이어 카드가 없다.
+
 ### 콘텐츠
 
 VAL-CONTENT에서 확인한 것:
@@ -300,17 +327,25 @@ Blitz도 게임 파일에서 뽑은 엠블럼을 자기 서버에 올려 쓴다.
 아직 확인하지 못한 것:
 
 - 라운드마다 내가 공격인지 수비인지. API 문서의 `roundResults[]`에 이긴 팀(`winningTeam`)과 그 팀의 진영(`winningTeamRole`)이
-  있어서 내 `teamId`와 맞춰 보면 가릴 수 있다. 값이 실제로 어떻게 오는지는 응답으로 확인한다.
+  있어서 내 `teamId`와 맞춰 보면 가릴 수 있다. 지금은 `Attacker`, `Defender`로 온다고 보고 가린다. 값이 실제로 어떻게 오는지는
+  응답으로 확인한다.
 - 경기 응답의 맵 ID가 UUID인지 경로 문자열인지
 - 경기 응답에 Performance Score가 오는지, `players[].stats.score`가 계속 오는지
 - `roundResults[].roundNum`이 0부터인지 1부터인지. 앱의 `Round.number`는 1부터라 피스톨 라운드(1, 13)와 S3 라운드 줄이 이 값을
-  믿는다. 0부터 오면 옮겨 담을 때 1을 더한다.
+  믿는다. 커뮤니티 자료는 0부터라고 한다. 지금은 0번 라운드가 있으면 0부터로 보고 1을 더한다(`roundNumberOffset`).
 - 라운드가 없는 모드(데스매치, 팀 데스매치, 에스컬레이션, 눈싸움)의 `roundResults`가 비어 오는지 한 라운드로 오는지,
   `stats.roundsPlayed`, 킬 기록과 맞힌 부위(`damage[]`)가 어디에 오는지. 데스매치의 `teams[]`가 사람마다 한 줄(`numPoints`=킬)인지.
 - 건틀릿: 글리치의 `queueId` 문자열, `teams[]`가 여덟 줄로 오는지, 등수가 오는지, 로봇 요원의 `characterId`가 VAL-CONTENT에
   있는지. 커스텀 게임이 경기 ID 목록에 섞여 오는지와 그때의 `queueId`, `provisioningFlowId`.
 - 항복한 라운드가 `roundResults`와 `stats.roundsPlayed`에 들어가는지. 들어가면 아무도 안 죽은 라운드라 생존율과 관여율이 오르고
-  ACS·ADR의 분모가 늘어서 옮겨 담을 때 뺀다. 2~3라운드로 끝난 리메이크를 경기로 셀지도 응답을 보고 정한다.
+  ACS·ADR의 분모가 늘어서 옮겨 담을 때 뺀다. 지금은 `roundResultCode`나 `roundResult`의 `Surrendered`로 가려 내 라운드에서 빼고,
+  스코어에는 `teams[].roundsWon`이 그 라운드까지 셌을 때만 넣는다. 2~3라운드로 끝난 리메이크를 경기로 셀지도 응답을 보고 정한다.
+- 튕긴 사람이 그 라운드 `playerStats`에서 빠지는지. 0으로 채워 오면 내가 뛴 라운드가 `stats.roundsPlayed`보다 많아지고 팀 장비
+  평균이 내려간다.
+- 스파이크 폭발과 낙사로 죽은 킬의 `killer`, `finishingDamage.damageType` 값(`Weapon`, `Melee`, `Ability`, `Bomb`으로 짐작),
+  같은 킬이 여러 사람의 `kills[]`에 겹쳐 오는지, `damage[]`에 나와 우리 팀이 받는 사람으로 들어오는지
+- `stats.kills`가 팀킬과 자기 스킬 사망을 빼는지. 스코어보드는 `stats`를 그대로 옮겨서 리포트의 킬 수와 다를 수 있다.
+- 비긴 경기에서 `teams[].won`이 둘 다 `false`로 오는지, 관전자 줄이 `isObserver`로 오는지
 
 ## 지표 규칙
 

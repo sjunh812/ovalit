@@ -36,11 +36,12 @@ private val BubbleShape = RoundedCornerShape(10.dp)
 private val BubbleOverhang = 4.dp
 
 /**
- * 홈 오른쪽 위 아바타 밑에 한 번 띄우는 "내 프로필은 여기서 볼 수 있어요" 말풍선입니다. 누르면 닫힙니다.
+ * 홈 오른쪽 위 아바타 밑에 한 번 띄우는 "내 프로필은 여기서 볼 수 있어요" 말풍선이고, 누르면 닫힙니다.
  *
- * 아바타 자리를 받아 그 밑에 두므로 머리 줄과 함께 스크롤됩니다. 화면 전체를 덮지만 말풍선 밖의 터치는 밑으로 그대로 갑니다.
+ * 아바타 자리를 받아 그 밑에 두므로 머리 줄과 함께 스크롤됩니다.
+ * 화면 전체를 덮지만 말풍선 밖의 터치는 밑으로 그대로 갑니다.
  *
- * @param avatar 이 칸 안에서 아바타가 차지한 자리입니다. 아직 모르면 `null`이고 그리지 않습니다.
+ * @param avatar 이 칸 안에서 아바타가 차지한 자리이고, 아직 모르면 `null`이라 그리지 않습니다.
  */
 @Composable
 internal fun ProfileHint(avatar: Rect?, onDismiss: () -> Unit, modifier: Modifier = Modifier) {

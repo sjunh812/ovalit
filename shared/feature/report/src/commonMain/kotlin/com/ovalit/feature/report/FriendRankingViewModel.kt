@@ -37,10 +37,12 @@ sealed interface FriendRankingUiState {
 }
 
 /**
- * 홈 친구 비교의 "전체 보기"로 여는 전체 순위입니다. 홈과 같은 큐, 같은 기간으로 셉니다. 홈에서 고른 큐 칩은 저장하지 않아서
- * 열 때 [queueFilter]로 받습니다.
+ * 홈 친구 비교의 "전체 보기"로 여는 전체 순위입니다.
+ * 홈과 같은 큐, 같은 기간으로 셉니다.
+ * 홈에서 고른 큐 칩은 저장하지 않아서 열 때 [queueFilter]로 받습니다.
  *
- * @param computation 리포트와 친구 합계를 세는 곳입니다. 친구가 수백 명이면 메인 스레드에서 세는 동안 화면이 멈춥니다.
+ * @param computation 리포트와 친구 합계를 세는 곳입니다.
+ *   친구가 수백 명이면 메인 스레드에서 세는 동안 화면이 멈춥니다.
  */
 class FriendRankingViewModel(
     queueFilter: QueueFilter,

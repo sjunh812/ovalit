@@ -51,9 +51,10 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 /**
- * 홈 친구 비교의 "전체 보기"로 여는 전체 순위입니다. 홈 카드와 같은 막대 줄을 줄 세운 사람 수만큼 늘어놓습니다.
+ * 홈 친구 비교의 "전체 보기"로 여는 전체 순위입니다.
+ * 홈 카드와 같은 막대 줄을 줄 세운 사람 수만큼 늘어놓습니다.
  *
- * @param metric 홈 카드에서 고른 지표입니다. 여기서 바꿔도 홈 카드는 그대로입니다.
+ * @param metric 홈 카드에서 고른 지표이고, 여기서 바꿔도 홈 카드는 그대로입니다.
  */
 @Composable
 fun FriendRankingRoute(

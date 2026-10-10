@@ -136,8 +136,8 @@ private fun periodCaption(report: WeeklyReport.Ready): AnnotatedString {
     val roleText = report.mainRole?.let { mainRoleText(it, report.mainRoleShare) }
     val emphasis = SpanStyle(color = OvalitTheme.colors.t2, fontWeight = FontWeight.SemiBold)
 
-    // 역할 이름만 한 단계 밝고 굵게 둔다. 기간 줄의 강조는 이 한 곳뿐이다(docs/screens.md). 좁으면 항목 사이에서만
-    // 줄이 바뀐다.
+    // 기간 줄의 강조는 이 한 곳뿐이라(docs/screens.md) 역할 이름만 한 단계 밝고 굵게 둔다.
+    // 좁으면 항목 사이에서만 줄이 바뀐다.
     return buildAnnotatedString {
         if (role != null && roleText != null) {
             val kept = roleText.keepTogether()

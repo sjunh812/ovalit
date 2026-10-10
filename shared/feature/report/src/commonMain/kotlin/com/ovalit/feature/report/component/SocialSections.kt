@@ -110,11 +110,12 @@ internal fun RivalSection(
 private val RankableMetrics = FixedMetric.entries
 
 /**
- * 서로 수락한 친구끼리만 줄을 세웁니다. 앱 전체나 모르는 사람과는 순위를 만들지 않습니다. 그 기간에 경기가 없는 친구는
- * 빠집니다.
+ * 서로 수락한 친구끼리만 줄을 세웁니다.
+ * 앱 전체나 모르는 사람과는 순위를 만들지 않습니다.
+ * 그 기간에 경기가 없는 친구는 빠집니다.
  *
- * 친구가 수백 명이어도 위 다섯 줄만 둡니다. 내가 그 밖이면 내 줄을 진짜 등수로 한 칸 띄워 붙이고, 남은 사람이 있으면 전체 순위
- * 화면으로 가는 입구를 둡니다(사용자 결정).
+ * 친구가 수백 명이어도 위 다섯 줄만 둡니다.
+ * 내가 그 밖이면 내 줄을 진짜 등수로 한 칸 띄워 붙이고, 남은 사람이 있으면 전체 순위 화면으로 가는 입구를 둡니다(사용자 결정).
  *
  * @param onOpenAll 지금 고른 지표를 받아 전체 순위 화면을 엽니다.
  */
@@ -223,8 +224,9 @@ private fun RankingAllEntry(total: Int, onClick: () -> Unit) {
 }
 
 /**
- * 순위와 값 칸은 가장 긴 글자에 맞추고 이름은 넘치면 말줄임표로 자릅니다. 폭을 고정하면 글씨를 키웠을 때 순위 "10"이 꺾이고 값이
- * 잘립니다. 숫자는 폭이 고정된 글꼴(tnum)이라 자릿수가 가장 많은 것만 잽니다. 친구가 수백 명이어도 줄마다 재지 않습니다.
+ * 순위와 값 칸은 가장 긴 글자에 맞추고 이름은 넘치면 말줄임표로 자릅니다.
+ * 폭을 고정하면 글씨를 키웠을 때 순위 "10"이 꺾이고 값이 잘립니다.
+ * 숫자는 폭이 고정된 글꼴(tnum)이라 자릿수가 가장 많은 것만 재서, 친구가 수백 명이어도 줄마다 재지 않습니다.
  */
 @Composable
 internal fun rememberRankWidths(entries: List<RankedEntry>, metric: FixedMetric): RankWidths {
@@ -243,8 +245,8 @@ internal fun rememberRankWidths(entries: List<RankedEntry>, metric: FixedMetric)
     )
 }
 
-// 짧은 이름만 있으면 이름 칸을 줄여 막대가 이름 가까이에서 시작한다. 길면 [NameWidth]에서 자른다. 친구가 수백 명이면 글자가 많은
-// 이름부터 재다가 상한에 닿으면 멈춘다.
+// 짧은 이름만 있으면 이름 칸을 줄여 막대가 이름 가까이에서 시작하고, 길면 [NameWidth]에서 자른다.
+// 친구가 수백 명이면 글자가 많은 이름부터 재다가 상한에 닿으면 멈춘다.
 @Composable
 private fun rememberNameWidth(names: List<String>, style: TextStyle): Dp {
     val measurer = rememberTextMeasurer()

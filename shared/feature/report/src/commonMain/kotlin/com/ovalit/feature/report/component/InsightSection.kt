@@ -73,9 +73,10 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * 개선 포인트 묶음입니다. 이번 액트 경기를 둘로 나눈 [insight]의 두 쪽 차이를 사실로만 적습니다. 두 쪽 모두 이름이 있으면
- * 높은 쪽이 주어("제트로 뛴 판은 승률이 레이즈보다 높아요")이고, 한쪽이 "다른 맵"처럼 묶음이면 이름 있는 쪽이 주어라
- * "낮아요"도 됩니다. 무엇을 견줄지는 모델이 고릅니다.
+ * 개선 포인트 묶음입니다.
+ * 이번 액트 경기를 둘로 나눈 [insight]의 두 쪽 차이를 사실로만 적습니다.
+ * 두 쪽 모두 이름이 있으면 높은 쪽이 주어("제트로 뛴 판은 승률이 레이즈보다 높아요")이고, 한쪽이 "다른 맵"처럼 묶음이면 이름 있는 쪽이 주어라 "낮아요"도 됩니다.
+ * 무엇을 견줄지는 모델이 고릅니다.
  *
  * "제트를 쓰세요"처럼 게임 결정을 대신하는 말은 쓰지 않습니다(CLAUDE.md 지켜야 할 선).
  */
@@ -115,8 +116,8 @@ internal fun InsightSection(
         gapText,
         stringResource(if (insight.leadIsHigher) Res.string.insight_higher else Res.string.insight_lower),
     )
-    // 몇 판, 몇 라운드로 센 숫자인지 같이 적는다. 적게 뛴 쪽의 숫자는 크게 흔들린다. 기간은 묶음 제목("이번 액트")에 있어
-    // 다시 적지 않는다.
+    // 적게 뛴 쪽의 숫자는 크게 흔들려서 몇 판, 몇 라운드로 센 숫자인지 같이 적는다.
+    // 기간은 묶음 제목("이번 액트")에 있어 다시 적지 않는다.
     val act = comparisonLine(
         period = null,
         parts = listOf(
@@ -124,8 +125,8 @@ internal fun InsightSection(
             LinePart(otherName, format.valueText(other.value), other.sampleText()),
         ),
     )
-    // 액트 동안의 차이가 이번 주에도 이어졌는지 숫자만 붙인다. 한 주 표본이라 판단은 하지 않는다. 액트 줄과 같은 꼴로 두어
-    // 위아래로 견줘 읽게 한다.
+    // 한 주 표본이라 판단은 하지 않고, 액트 동안의 차이가 이번 주에도 이어졌는지 숫자만 붙인다.
+    // 액트 줄과 같은 꼴로 두어 위아래로 견줘 읽게 한다.
     val recent = insight.recent?.let {
         comparisonLine(
             period = periodLabel(period),
@@ -194,8 +195,9 @@ private fun InsightPart.sampleText(): String = when (subject) {
 /** 견주는 한쪽입니다. "공격 58% 388라운드"처럼 이름, 값, 표본 순서입니다. */
 private class LinePart(val name: String, val value: String, val sample: String? = null)
 
-// 값을 가장 진하고 굵게, 이름을 그다음, 기간과 표본을 가장 옅게 칠한다. 이름을 가장 진하게 두었더니 "공격", "수비"만 눈에
-// 들어오고 정작 견줄 숫자가 묻혔다. 값을 이름 바로 뒤에 두어 "공격 58%"로 읽히게 하고, 줄은 두 쪽 사이에서만 바뀐다.
+// 값을 가장 진하고 굵게, 이름을 그다음, 기간과 표본을 가장 옅게 칠한다.
+// 이름이 가장 진하면 "공격", "수비"만 눈에 들어오고 정작 견줄 숫자가 묻힌다.
+// 값을 이름 바로 뒤에 두어 "공격 58%"로 읽히게 하고, 줄은 두 쪽 사이에서만 바뀐다.
 @Composable
 private fun comparisonLine(period: String?, parts: List<LinePart>): AnnotatedString {
     val colors = OvalitTheme.colors

@@ -46,8 +46,9 @@ import com.ovalit.feature.report.resources.sheet_open
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * 홈 위쪽 고정 칸입니다. 한 줄에 세 칸씩 두고 칸마다 이름, 숫자, 그 밑에 "+75 · 평소 177"을 둡니다. 달라진 점과 같은
- * 격자라 두 카드의 칸 경계가 위아래로 맞습니다.
+ * 홈 위쪽 고정 칸입니다.
+ * 한 줄에 세 칸씩 두고 칸마다 이름, 숫자, 그 밑에 "+75 · 평소 177"을 둡니다.
+ * 달라진 점과 같은 격자라 두 카드의 칸 경계가 위아래로 맞습니다.
  */
 @Composable
 internal fun FixedMetricRow(
@@ -62,8 +63,8 @@ internal fun FixedMetricRow(
     val cells = fixedCells(metrics, baseline, fixedMetrics)
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-        // 이름, 숫자, 변화량마다 모든 칸에 한 크기를 쓴다. 칸마다 따로 줄이면 "전투점수"만 작아지고 그 칸 숫자만
-        // 위로 올라가 줄이 어긋난다.
+        // 이름, 숫자, 변화량마다 모든 칸에 한 크기를 쓴다.
+        // 칸마다 따로 줄이면 "전투점수"만 작아지고 그 칸 숫자만 위로 올라가 줄이 어긋난다.
         val perRow = cells.size.coerceAtMost(MetricColumns)
         val gaps = (MetricColumnGap * 2 + 1.dp) * (perRow - 1)
         val cellWidth = (currentMaxWidth - OvalitSpacing.gutter * 2 - gaps) / perRow
@@ -108,7 +109,10 @@ internal fun FixedMetricRow(
     }
 }
 
-/** 고정 칸마다 숫자 밑 한 줄의 변화량과 평소 값 글자입니다. 달라진 점과 같은 크기를 쓰려고 홈이 모읍니다([rememberSubLineStyle]). */
+/**
+ * 고정 칸마다 숫자 밑 한 줄의 변화량과 평소 값 글자입니다.
+ * 달라진 점과 같은 크기를 쓰려고 홈이 모읍니다([rememberSubLineStyle]).
+ */
 @Composable
 internal fun fixedSubLines(metrics: MatchMetrics, baseline: Baseline?, fixedMetrics: List<FixedMetric>): List<Pair<String?, String>> =
     fixedCells(metrics, baseline, fixedMetrics).map { it.change to it.usual }

@@ -73,14 +73,14 @@ internal fun DynamicMetricSection(
         DynamicSectionTitle(report)
         Spacer(Modifier.height(SectionTitleGap))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            // 이름, 숫자, 설명마다 모든 칸에 한 크기를 쓴다. 칸마다 따로 줄이면 긴 이름만 작아지고 그 칸의 숫자와
-            // 설명만 다른 높이에 놓인다.
+            // 이름, 숫자, 설명마다 모든 칸에 한 크기를 쓴다.
+            // 칸마다 따로 줄이면 긴 이름만 작아지고 그 칸의 숫자와 설명만 다른 높이에 놓인다.
             val perRow = columns.size.coerceAtMost(MetricColumns)
             val gaps = (MetricColumnGap * 2 + 1.dp) * (perRow - 1)
             val columnWidth = (currentMaxWidth - OvalitSpacing.gutter * 2 - gaps) / perRow
             val valueStyle = rememberFittingStyle(columns.map { it.value }, typography.metricM, columnWidth, min = 14.sp)
-            // 가장 작은 글자로도 한 줄에 안 들어가는 이름이 있으면 모든 칸 이름을 두 줄로 꺾는다. 그때는 가장 긴 어절이
-            // 들어가는 크기를 쓴다.
+            // 가장 작은 글자로도 한 줄에 안 들어가는 이름이 있으면 모든 칸 이름을 두 줄로 꺾는다.
+            // 그때는 가장 긴 어절이 들어가는 크기를 쓴다.
             val labels = columns.map { it.label }
             val labelWidth = columnWidth - ChevronSpace
             val oneLineLabel = rememberFittingStyle(labels, typography.caption, labelWidth)
@@ -111,8 +111,8 @@ internal fun DynamicMetricSection(
                             if (column == null) {
                                 Spacer(Modifier.weight(1f))
                             } else {
-                                // 큐를 바꾸면 자리마다 지표가 바뀌기도 한다. 자리로 묶으면 같은 지표가 변한 것처럼 숫자가
-                                // 굴러가서 지표로 묶는다.
+                                // 큐를 바꾸면 자리마다 지표가 바뀌기도 한다.
+                                // 자리로 묶으면 같은 지표가 변한 것처럼 숫자가 굴러가서 지표로 묶는다.
                                 key(column.slot.metric) {
                                     DynamicMetricColumn(
                                         column = column,
@@ -180,7 +180,10 @@ private class DynamicColumnStyles(
     val subLine: MetricSubLineStyle,
 )
 
-/** 칸마다 숫자 밑 한 줄의 변화량과 평소 값 글자입니다. 고정 칸과 같은 크기를 쓰려고 홈이 모읍니다([rememberSubLineStyle]). */
+/**
+ * 칸마다 숫자 밑 한 줄의 변화량과 평소 값 글자입니다.
+ * 고정 칸과 같은 크기를 쓰려고 홈이 모읍니다([rememberSubLineStyle]).
+ */
 @Composable
 internal fun dynamicSubLines(report: WeeklyReport.Ready): List<Pair<String?, String>> =
     dynamicColumns(report).map { it.change to it.usual }
@@ -203,8 +206,9 @@ private fun dynamicColumn(slot: DynamicSlot, metrics: MatchMetrics, baseline: Ba
         valueColor = if (judged) colors.t1 else colors.t2,
         change = if (judged) metric.format.changeText(current, usual) else null,
         changeColor = if (judged) changeColor(slot, current, usual) else colors.t3,
-        // 표본은 시트에 있어 칸에는 평소 값만 둔다. 판단을 보류한 칸도 평균이 있으면 적고 없으면 대시다. "비교할 기록이
-        // 모자라요"를 칸마다 쓰면 좁은 칸에서 잘리고 같은 말이 여러 번 뜬다.
+        // 표본은 시트에 있어 칸에는 평소 값만 둔다.
+        // 판단을 보류한 칸도 평균이 있으면 적고 없으면 대시다.
+        // "비교할 기록이 모자라요"를 칸마다 쓰면 좁은 칸에서 잘리고 같은 말이 여러 번 뜬다.
         usual = stringResource(Res.string.dynamic_usual, usual?.let { metric.format.valueText(it) } ?: NO_VALUE),
     )
 }
@@ -226,8 +230,9 @@ private fun DynamicMetricColumn(
             onClick = onClick,
         ),
     ) {
-        // 이름과 설명은 칸마다 따로 꺾지 않는다. 한 칸만 두 줄이 되면 그 칸 숫자만 한 줄 아래로 내려간다. 이름이 꺾일 때는
-        // 모든 칸이 두 줄을 차지한다.
+        // 이름과 설명은 칸마다 따로 꺾지 않는다.
+        // 한 칸만 두 줄이 되면 그 칸 숫자만 한 줄 아래로 내려간다.
+        // 이름이 꺾일 때는 모든 칸이 두 줄을 차지한다.
         Row(verticalAlignment = Alignment.CenterVertically) {
             OvalitText(
                 text = column.label,
@@ -253,7 +258,8 @@ private fun DynamicMetricColumn(
     }
 }
 
-// 오르내림은 움직였는지와 상관없이 고정 칸처럼 칠한다(CLAUDE.md 지표 규칙). 움직였다고 판단한 칸은 변화량을 굵게 해서 가른다.
+// 오르내림은 움직였는지와 상관없이 고정 칸처럼 칠한다(CLAUDE.md 지표 규칙).
+// 움직였다고 판단한 칸은 변화량을 굵게 해서 가른다.
 // 달라진 점 시트도 이 색을 쓴다.
 @Composable
 internal fun changeColor(slot: DynamicSlot, current: Double, usual: Double): Color =

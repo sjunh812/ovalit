@@ -18,7 +18,8 @@ sealed interface ImportUiState {
 
     /**
      * @property progress 수집을 아직 시작하지 않았으면 `null`입니다.
-     * @property notifyWhenDone 설정에서 분석 완료 알림을 켜 두었는지입니다. 껐으면 다 불러와도 알림을 보내지 않습니다.
+     * @property notifyWhenDone 설정에서 분석 완료 알림을 켜 두었는지입니다.
+     *   껐으면 다 불러와도 알림을 보내지 않습니다.
      */
     data class Success(val progress: ImportProgress?, val focus: Focus, val notifyWhenDone: Boolean = true) : ImportUiState
 }

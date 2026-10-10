@@ -123,8 +123,9 @@ internal object ReportPreviewData {
         fullBuyRoundsWon = 55,
     )
 
-    // 타격대가 수비에서 첫 교전을 자주 졌다. 둘 다 이름이 있어 높은 공격이 주어다. 이번 액트 서른세 판(이번 주 146라운드와
-    // 앞선 네 주 630라운드)으로 견주면 공격 58%, 수비 44%이고, 이번 주만 보면 공격 31번 중 22번, 수비 33번 중 15번을 이겼다.
+    // 타격대가 수비에서 첫 교전을 자주 졌다.
+    // 둘 다 이름이 있어 높은 공격이 주어다.
+    // 이번 액트 서른세 판(이번 주 146라운드와 앞선 네 주 630라운드)으로 견주면 공격 58%, 수비 44%이고, 이번 주만 보면 공격 31번 중 22번, 수비 33번 중 15번을 이겼다.
     private val firstDuelBySide = Insight(
         metric = InsightMetric.FIRST_DUEL_WIN_RATE,
         lead = InsightPart(InsightSubject.OnSide(Side.ATTACK), value = 128 / 221.0, matches = 33, rounds = 388),

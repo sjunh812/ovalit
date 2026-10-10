@@ -74,9 +74,11 @@ import org.koin.compose.viewmodel.koinViewModel
 private val FocusOrder = listOf(Focus.AIM, Focus.ROUND_PLAY, Focus.CONSISTENCY, Focus.NONE)
 
 /**
- * S0-4 불러오는 중입니다. 수집이 끝나야 리포트로 넘어갈 수 있습니다.
+ * S0-4 불러오는 중입니다.
+ * 수집이 끝나야 리포트로 넘어갈 수 있습니다.
  *
- * @param notifications 다 불러오면 보낼 알림의 권한입니다. 들어올 때 묻지 않고, 권한이 없으면 사용자가 직접 켜는 버튼을 둡니다.
+ * @param notifications 다 불러오면 보낼 알림의 권한입니다.
+ *   들어올 때 묻지 않고, 권한이 없으면 사용자가 직접 켜는 버튼을 둡니다.
  */
 @Composable
 fun ImportRoute(
@@ -253,8 +255,8 @@ private fun Progress(progress: ImportProgress?, onOpenReport: () -> Unit, onRetr
     }
 }
 
-// 알림을 보낼 수 없으면 보내겠다고 적지 않는다. 권한이 없으면 그 밑에서 직접 켜게 한다. 들어오자마자 시스템 창으로 물으면
-// 무엇을 알려 주는지 모른 채 거절하기 쉽고, 한 번 거절하면 다시 묻기 어렵다.
+// 알림을 보낼 수 없으면 보내겠다고 적지 않고, 권한이 없으면 그 밑에서 직접 켜게 한다.
+// 들어오자마자 시스템 창으로 물으면 무엇을 알려 주는지 모른 채 거절하기 쉽고, 한 번 거절하면 다시 묻기 어렵다.
 @Composable
 private fun BackgroundNote(notifyWhenDone: Boolean, notifications: NotificationPermission) {
     val colors = OvalitTheme.colors

@@ -35,6 +35,19 @@ class FriendTest {
         assertEquals(SharedRecord(matches = 3, wins = 1, losses = 1), matches.sharedWith(Junho))
     }
 
+    // 큐 칩이 없는 화면은 경쟁 + 일반만 센다(CLAUDE.md 아키텍처)
+    @Test
+    fun `같이 뛴 경기는 경쟁과 일반만 센다`() {
+        val matches = listOf(
+            game(allies = setOf(Junho), won = true),
+            game(allies = setOf(Junho), won = true).copy(queue = Queue.UNRATED),
+            game(allies = setOf(Junho), won = false).copy(queue = Queue.SPIKE_RUSH),
+            game(allies = setOf(Junho), won = null).copy(queue = Queue.DEATHMATCH),
+        )
+
+        assertEquals(SharedRecord(matches = 2, wins = 2, losses = 0), matches.sharedWith(Junho))
+    }
+
     @Test
     fun `마지막으로 같이 뛴 시각은 그 친구가 우리 팀이었던 가장 최근 경기다`() {
         val older = game(allies = setOf(Junho), won = true).copy(startedAt = Now - 3.days)

@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -43,6 +45,7 @@ import com.ovalit.core.data.AnalyticsEvents
 import com.ovalit.core.data.FakeAccountRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.ImportScheduler
+import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.designsystem.component.LocalOvalitToast
 import com.ovalit.core.designsystem.component.LocalScreenEntering
 import com.ovalit.core.designsystem.component.LocalTabReselects
@@ -58,6 +61,8 @@ import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
+import com.ovalit.core.ui.NotificationPrimerHost
+import com.ovalit.core.ui.rememberNotificationPrimer
 import com.ovalit.feature.friend.FriendMatchesRoute
 import com.ovalit.feature.friend.FriendProfileRoute
 import com.ovalit.feature.friend.FriendsRoute
@@ -77,6 +82,7 @@ import com.ovalit.feature.settings.SettingsRoute
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -183,6 +189,19 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
 
     val toast = rememberOvalitToastState()
     val analytics = koinInject<Analytics>()
+
+    // 알림 권한은 앱을 열 때 묻지 않고 쓸모를 알 때 묻는다. S0-4는 사용자가 직접 켜는 버튼을 두고, 친구를 맺거나 파티를
+    // 모집하면 한 번만 시트로 묻는다(docs/screens.md).
+    val notifications = platform.rememberNotificationPermission()
+    val preferences = koinInject<UserPreferencesRepository>()
+    // 기기에서 읽기 전에는 물은 적이 있는 것으로 둔다
+    val primerSeen by remember(preferences) { preferences.preferences.map { it.seenNotificationPrimer } }.collectAsState(initial = true)
+    val primer = rememberNotificationPrimer(
+        permission = notifications,
+        seen = primerSeen,
+        // 적지 못하면 다음에 한 번 더 물을 뿐이라 안내하지 않는다
+        onSeen = { scope.launch { runCatching { preferences.setSeenNotificationPrimer() } } },
+    )
     val top = backStack.lastOrNull()
     LaunchedEffect(top) { (top as? Screen)?.let { analytics.screen(screenName(it)) } }
 
@@ -214,8 +233,7 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
                         )
                     }
                     entry<Import> {
-                        platform.ImportEntered()
-                        ImportRoute(onOpenReport = { backStack.replaceAllWith(Report) })
+                        ImportRoute(onOpenReport = { backStack.replaceAllWith(Report) }, notifications = notifications)
                     }
                     entry<Report> {
                         if (backStack.size == 1) platform.HomeBackHandler(toast)
@@ -256,6 +274,7 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
                             onOpenFriend = { backStack.push(FriendProfile(it.value)) },
                             onOpenMe = { backStack.openProfile() },
                             onShareInvite = { platform.shareInvite(friends.inviteLink(), analytics) },
+                            onFriendAdded = primer::offer,
                         )
                     }
                     entry<Friends>(clazzContentKey = ::tabContentKey, metadata = TabTransitions) {
@@ -264,6 +283,8 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
                                 onOpenFriend = { backStack.push(FriendProfile(it.value)) },
                                 onOpenPing = { backStack.push(PingDetail(it.value)) },
                                 onShareInvite = { link -> platform.shareInvite(link, analytics) },
+                                onFriendAdded = primer::offer,
+                                onPingSent = primer::offer,
                             )
                         }
                     }
@@ -320,6 +341,7 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
                     }
                 },
             )
+            NotificationPrimerHost(primer)
         }
         // 탭 화면에서는 탭바를 가리지 않게 토스트를 그 위에 띄운다
         val onTab = backStack.lastOrNull() in TopLevel

@@ -117,6 +117,19 @@ class MatchDetailViewModelTest {
         assertEquals(PlayerRelation.REQUEST_SENT, after.first { it.line.player == target.line.player }.relation)
     }
 
+    // 앱 모듈이 이때 알림을 켜 달라고 묻는다
+    @Test
+    fun `스코어보드에서 친구 요청을 수락하면 다 끝난 뒤에 알린다`() = runTest {
+        val viewModel = viewModel(anyMatch())
+        val request = friends.requests.first().first()
+        var accepted = 0
+
+        viewModel.accept(request.id, onAccepted = { accepted++ })
+
+        assertEquals(1, accepted)
+        assertTrue(friends.friends.first().any { it.id == request.id })
+    }
+
     @Test
     fun `저장한 경기를 지우면 화면을 닫는다`() = runTest {
         val viewModel = viewModel(anyMatch())

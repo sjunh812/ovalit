@@ -16,8 +16,11 @@ import kotlinx.coroutines.launch
 sealed interface ImportUiState {
     data object Loading : ImportUiState
 
-    /** @property progress 수집을 아직 시작하지 않았으면 `null`입니다. */
-    data class Success(val progress: ImportProgress?, val focus: Focus) : ImportUiState
+    /**
+     * @property progress 수집을 아직 시작하지 않았으면 `null`입니다.
+     * @property notifyWhenDone 설정에서 분석 완료 알림을 켜 두었는지입니다. 껐으면 다 불러와도 알림을 보내지 않습니다.
+     */
+    data class Success(val progress: ImportProgress?, val focus: Focus, val notifyWhenDone: Boolean = true) : ImportUiState
 }
 
 /** S0-4입니다. 첫 수집이 도는 동안 관심사를 고르게 합니다. 수집 자체는 앱 모듈이 시작합니다. */
@@ -31,7 +34,7 @@ class ImportViewModel(
         matchRepository.importProgress,
         preferencesRepository.preferences,
     ) { progress, preferences ->
-        ImportUiState.Success(progress, preferences.focus)
+        ImportUiState.Success(progress, preferences.focus, notifyWhenDone = preferences.notifyAnalysisDone)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),

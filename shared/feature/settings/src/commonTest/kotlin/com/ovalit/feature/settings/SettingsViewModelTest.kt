@@ -182,5 +182,9 @@ private class InMemoryPreferences : UserPreferencesRepository {
 
     override suspend fun setSeenProfileHint() = preferences.update { it.copy(seenProfileHint = true) }
 
+    override suspend fun setSeenNotificationPrimer() = preferences.update { it.copy(seenNotificationPrimer = true) }
+
+    override suspend fun setAskedNotificationPermission() = preferences.update { it.copy(askedNotificationPermission = true) }
+
     override suspend fun setAdFreeUntil(until: Instant) = preferences.update { it.copy(adFreeUntil = until) }
 }

@@ -109,6 +109,7 @@ internal enum class DetailTab { SCOREBOARD, ROUNDS, REPORT }
  *
  * @param onOpenMe 스코어보드에서 내 줄을 누르면 부릅니다.
  * @param onShareInvite 앱을 안 쓰거나 쓰는지 모르는 플레이어에게 초대 링크를 보낼 때 부릅니다. 공유 시트는 앱 모듈이 띄웁니다.
+ * @param onFriendAdded 스코어보드에서 친구 요청을 수락하면 부릅니다. 앱 모듈이 이때 알림을 켜 달라고 묻습니다.
  */
 @Composable
 fun MatchDetailRoute(
@@ -118,6 +119,7 @@ fun MatchDetailRoute(
     onOpenMe: () -> Unit,
     onShareInvite: () -> Unit,
     modifier: Modifier = Modifier,
+    onFriendAdded: () -> Unit = {},
     viewModel: MatchDetailViewModel = koinViewModel(key = matchId.value) { parametersOf(matchId.value) },
 ) {
     FailureNoticesEffect(viewModel.notices)
@@ -131,7 +133,7 @@ fun MatchDetailRoute(
         onOpenFriend = onOpenFriend,
         onOpenMe = onOpenMe,
         onSendRequest = viewModel::sendRequest,
-        onAccept = viewModel::accept,
+        onAccept = { viewModel.accept(it, onAccepted = onFriendAdded) },
         onShareInvite = onShareInvite,
         modifier = modifier,
     )

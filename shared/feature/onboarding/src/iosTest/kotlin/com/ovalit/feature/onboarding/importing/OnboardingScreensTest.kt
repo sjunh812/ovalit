@@ -8,6 +8,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Focus
+import com.ovalit.core.ui.NotificationPermission
 import com.ovalit.feature.onboarding.OnboardingPreviewData
 import com.ovalit.feature.onboarding.consent.ConsentScreen
 import kotlin.test.Test
@@ -38,6 +39,38 @@ class OnboardingScreensTest {
         onNodeWithText("37 / 50").assertExists()
         onNodeWithContentDescription("50경기 중 37경기를 불러왔어요").assertExists()
         onNodeWithText("리포트 보기").assertDoesNotExist()
+    }
+
+    // 들어오자마자 시스템 창으로 묻지 않는다. 알림을 보낼 수 없으면 보내겠다고 적지 않고 직접 켜는 버튼을 둔다.
+    @Test
+    fun `알림 권한이 없으면 알리겠다고 적지 않고 알림 받기 버튼을 둔다`() = runComposeUiTest {
+        var requested = 0
+        val permission = NotificationPermission(missing = true) { requested++ }
+        setContent { OvalitTheme { ImportScreen(OnboardingPreviewData.loading, {}, {}, notifications = permission) } }
+
+        onNodeWithText("알림을 보내드릴게요", substring = true).assertDoesNotExist()
+        onNodeWithText("앱을 닫아도 계속 불러와요.").assertExists()
+        onNodeWithText("다 불러오면 알림 받기").performClick()
+
+        assertEquals(1, requested)
+    }
+
+    @Test
+    fun `알림을 보낼 수 있으면 다 불러오면 알린다고 적는다`() = runComposeUiTest {
+        setContent { OvalitTheme { ImportScreen(OnboardingPreviewData.loading, {}, {}, notifications = NotificationPermission.NotNeeded) } }
+
+        onNodeWithText("앱을 닫아도 계속 불러와요. 다 불러오면 알림을 보내드릴게요.").assertExists()
+        onNodeWithText("다 불러오면 알림 받기").assertDoesNotExist()
+    }
+
+    // 설정에서 분석 완료 알림을 끈 건 사용자가 고른 것이라 켜자고 하지 않는다
+    @Test
+    fun `분석 완료 알림을 껐으면 알리겠다고 적지 않고 켜자고 하지도 않는다`() = runComposeUiTest {
+        val state = OnboardingPreviewData.loading.copy(notifyWhenDone = false)
+        setContent { OvalitTheme { ImportScreen(state, {}, {}, notifications = NotificationPermission(missing = true) {}) } }
+
+        onNodeWithText("앱을 닫아도 계속 불러와요.").assertExists()
+        onNodeWithText("다 불러오면 알림 받기").assertDoesNotExist()
     }
 
     @Test

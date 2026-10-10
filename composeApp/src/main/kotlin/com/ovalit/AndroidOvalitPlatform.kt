@@ -1,6 +1,7 @@
 package com.ovalit
 
 import android.Manifest
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -13,26 +14,29 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.ovalit.app.OvalitPlatform
+import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.designsystem.component.OvalitToastState
+import com.ovalit.core.ui.NotificationPermission
 import com.ovalit.feature.settings.NotificationBlocks
 import com.ovalit.importing.ANALYSIS_CHANNEL
 import com.ovalit.push.PING_CHANNEL
 import com.ovalit.push.PingNotifications
 import com.ovalit.push.WEEKLY_CHANNEL
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 /** 안드로이드에서 [com.ovalit.app.OvalitApp]이 맡기는 일입니다. [context]는 화면을 띄운 액티비티입니다. */
 internal class AndroidOvalitPlatform(private val context: Context) : OvalitPlatform {
@@ -65,8 +69,32 @@ internal class AndroidOvalitPlatform(private val context: Context) : OvalitPlatf
     @Composable
     override fun HomeBackHandler(toast: OvalitToastState) = ExitOnSecondBack(toast)
 
+    // 휴대폰 설정에서 켜고 돌아오면 바로 맞게 화면으로 돌아올 때마다 다시 본다
     @Composable
-    override fun ImportEntered() = RequestNotificationPermission()
+    override fun rememberNotificationPermission(): NotificationPermission {
+        var enabled by remember { mutableStateOf(NotificationManagerCompat.from(context).areNotificationsEnabled()) }
+        LifecycleResumeEffect(Unit) {
+            enabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
+            onPauseOrDispose {}
+        }
+        val activity = LocalActivity.current
+        val preferences = koinInject<UserPreferencesRepository>()
+        val asked by remember(preferences) { preferences.preferences.map { it.askedNotificationPermission } }.collectAsState(initial = false)
+        val scope = rememberCoroutineScope()
+        val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+            enabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
+        }
+        return remember(enabled, asked, activity, launcher) {
+            NotificationPermission(missing = !enabled) {
+                if (context.canAskPermission(activity, asked)) {
+                    scope.launch { runCatching { preferences.setAskedNotificationPermission() } }
+                    launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                } else {
+                    openNotificationSettings()
+                }
+            }
+        }
+    }
 
     override fun clearPingNotification(pingId: String) = PingNotifications.clear(context, pingId)
 
@@ -134,14 +162,11 @@ private fun ExitOnSecondBack(toast: OvalitToastState) {
 
 private val ExitWindow = 2.seconds
 
-// S0-4 아래에 "다 모으면 알림으로 알려드릴게요"라고 적혀 있어서 이 화면에 들어올 때 한 번 묻는다
-@Composable
-private fun RequestNotificationPermission() {
-    if (Build.VERSION.SDK_INT < 33) return
-    val context = LocalContext.current
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
-    LaunchedEffect(Unit) {
-        val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-        if (!granted) launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
-    }
+// 시스템 권한 창을 띄울 수 있는지다. 안드로이드 12까지는 권한 창이 없고, 권한이 있는데 알림이 꺼졌으면 사용자가 설정에서 끈
+// 것이라 둘 다 설정 화면에서만 켤 수 있다. 두 번 거절하면 시스템이 창을 더는 띄우지 않고 바로 거절로 돌려준다. 그때 다시 띄우면
+// 아무 일도 일어나지 않아서, 띄운 적이 있는데 다시 물어도 된다는 신호(rationale)가 없으면 설정 화면을 연다.
+private fun Context.canAskPermission(activity: Activity?, askedBefore: Boolean): Boolean {
+    if (Build.VERSION.SDK_INT < 33) return false
+    if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) return false
+    return !askedBefore || activity?.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) == true
 }

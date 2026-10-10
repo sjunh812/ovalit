@@ -165,6 +165,10 @@
     <string name="new_matches_count">%1$d / %2$d</string>
     <string name="new_matches_description">新しい%2$d試合のうち%1$d試合を読み込みました</string>
     <string name="new_matches_in_background">アプリを閉じても読み込みを続けます</string>
+    <string name="notification_primer_title">フレンドに誘われたら通知でお知らせしますか？</string>
+    <string name="notification_primer_body">フレンドからパーティー募集で誘われたときや、自分の募集に返事があったときにすぐお知らせします。設定からいつでもオフにできます。</string>
+    <string name="notification_primer_allow">通知を受け取る</string>
+    <string name="notification_primer_later">あとで</string>
     <string name="refresh_received">新しく%1$d試合を読み込みました</string>
     <string name="refresh_none">新しく終わった試合はありません</string>
     <string name="error_offline">インターネットに接続されていません</string>

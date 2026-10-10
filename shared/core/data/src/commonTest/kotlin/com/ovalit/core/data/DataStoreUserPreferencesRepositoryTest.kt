@@ -54,6 +54,8 @@ class DataStoreUserPreferencesRepositoryTest {
         repository.setNotifyWeeklyReport(false)
         repository.setFocus(Focus.ROUND_PLAY)
         repository.setSeenProfileHint()
+        repository.setSeenNotificationPrimer()
+        repository.setAskedNotificationPermission()
         repository.setAdFreeUntil(Instant.parse("2026-10-05T08:20:00Z"))
 
         assertEquals(
@@ -65,6 +67,8 @@ class DataStoreUserPreferencesRepositoryTest {
                 notifyWeeklyReport = false,
                 focus = Focus.ROUND_PLAY,
                 seenProfileHint = true,
+                seenNotificationPrimer = true,
+                askedNotificationPermission = true,
                 adFreeUntil = Instant.parse("2026-10-05T08:20:00Z"),
             ),
             repository.preferences.first(),

@@ -125,10 +125,12 @@ class FriendsViewModel(
     /** 사용자가 한 일이 실패했을 때 화면 아래에 띄울 안내입니다. */
     val notices: Flow<FailureNotice> = failures.flow
 
-    fun accept(id: PlayerId) {
+    /** 수락을 마치면 [onAccepted]를 부릅니다. 실패하면 부르지 않고 안내만 띄웁니다. */
+    fun accept(id: PlayerId, onAccepted: () -> Unit = {}) {
         viewModelScope.launchNotifying(failures, FailedAction.ACCEPT_FRIEND) {
             friendRepository.accept(id)
             analytics.log(AnalyticsEvents.FRIEND_REQUEST, mapOf("action" to "accept", "source" to "friends_tab"))
+            onAccepted()
         }
     }
 

@@ -32,6 +32,12 @@ interface UserPreferencesRepository {
     /** 홈의 내 프로필 안내를 띄웠다고 적습니다. 다시 띄우지 않습니다. */
     suspend fun setSeenProfileHint()
 
+    /** 알림을 켜 달라는 시트를 띄웠다고 적습니다. 다시 띄우지 않습니다. */
+    suspend fun setSeenNotificationPrimer()
+
+    /** 시스템 알림 권한 창을 띄웠다고 적습니다. */
+    suspend fun setAskedNotificationPermission()
+
     /** 보상형 광고를 끝까지 봐서 [until]까지 광고를 숨깁니다. */
     suspend fun setAdFreeUntil(until: Instant)
 }

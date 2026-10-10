@@ -14,6 +14,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -70,6 +71,19 @@ class ImportViewModelTest {
         assertEquals(Focus.CONSISTENCY, preferences.preferences.value.focus)
         assertEquals(Focus.CONSISTENCY, assertIs<ImportUiState.Success>(viewModel.uiState.value).focus)
     }
+
+    // 설정에서 분석 완료 알림을 껐으면 S0-4가 다 불러오면 알리겠다고 적지 않는다
+    @Test
+    fun `설정의 분석 완료 알림을 따른다`() = runTest {
+        val preferences = InMemoryPreferences()
+        val viewModel = ImportViewModel(FakeMatchRepository(), preferences, NoScheduler)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+        assertTrue(assertIs<ImportUiState.Success>(viewModel.uiState.value).notifyWhenDone)
+
+        preferences.setNotifyAnalysisDone(false)
+
+        assertFalse(assertIs<ImportUiState.Success>(viewModel.uiState.value).notifyWhenDone)
+    }
 }
 
 private class InMemoryPreferences : UserPreferencesRepository {
@@ -81,7 +95,7 @@ private class InMemoryPreferences : UserPreferencesRepository {
 
     override suspend fun setStatsPublic(public: Boolean) = Unit
 
-    override suspend fun setNotifyAnalysisDone(enabled: Boolean) = Unit
+    override suspend fun setNotifyAnalysisDone(enabled: Boolean) = preferences.update { it.copy(notifyAnalysisDone = enabled) }
 
     override suspend fun setNotifyWeeklyReport(enabled: Boolean) = Unit
 
@@ -93,6 +107,10 @@ private class InMemoryPreferences : UserPreferencesRepository {
     override suspend fun setFocus(focus: Focus) = preferences.update { it.copy(focus = focus) }
 
     override suspend fun setSeenProfileHint() = Unit
+
+    override suspend fun setSeenNotificationPrimer() = Unit
+
+    override suspend fun setAskedNotificationPermission() = Unit
 
     override suspend fun setAdFreeUntil(until: Instant) = Unit
 }

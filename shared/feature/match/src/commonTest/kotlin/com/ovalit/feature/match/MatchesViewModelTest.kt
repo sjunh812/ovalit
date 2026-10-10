@@ -262,5 +262,9 @@ internal class StubPreferences(initial: UserPreferences = UserPreferences.Defaul
 
     override suspend fun setSeenProfileHint() = Unit
 
+    override suspend fun setSeenNotificationPrimer() = Unit
+
+    override suspend fun setAskedNotificationPermission() = Unit
+
     override suspend fun setAdFreeUntil(until: Instant) = Unit
 }

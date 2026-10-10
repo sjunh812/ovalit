@@ -7,6 +7,8 @@ import com.ovalit.core.data.FakePingRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.PingRepository
 import com.ovalit.core.model.Friend
+import com.ovalit.core.model.OvalitError
+import com.ovalit.core.model.OvalitException
 import com.ovalit.core.model.PlayerId
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.AfterTest
@@ -25,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -97,6 +100,33 @@ class FriendsViewModelTest {
 
         val state = assertIs<FriendsUiState.Success>(viewModel.uiState.value)
         assertEquals(listOf("rival", "recent", "old", "never"), state.friends.map { it.friend.id.value })
+    }
+
+    // 앱 모듈이 이때 알림을 켜 달라고 묻는다. 수락하지 못했으면 친구가 부를 일도 없다.
+    @Test
+    fun `친구 요청을 수락하면 다 끝난 뒤에 알린다`() = runTest {
+        val friends = FakeFriendRepository()
+        val viewModel = viewModel(friends, CountingPings(fakePings()))
+        val request = friends.requests.first().first()
+        var accepted = 0
+
+        viewModel.accept(request.id, onAccepted = { accepted++ })
+
+        assertEquals(1, accepted)
+        assertTrue(friends.friends.first().any { it.id == request.id })
+    }
+
+    @Test
+    fun `친구 요청을 수락하지 못하면 알리지 않는다`() = runTest {
+        val failing = object : FriendRepository by FakeFriendRepository() {
+            override suspend fun accept(id: PlayerId) = throw OvalitException(OvalitError.Offline)
+        }
+        val viewModel = viewModel(failing, CountingPings(fakePings()))
+        var accepted = 0
+
+        viewModel.accept(PlayerId("someone"), onAccepted = { accepted++ })
+
+        assertEquals(0, accepted)
     }
 
     private fun TestScope.fakePings() = FakePingRepository(FakeFriendRepository(), scope = backgroundScope)

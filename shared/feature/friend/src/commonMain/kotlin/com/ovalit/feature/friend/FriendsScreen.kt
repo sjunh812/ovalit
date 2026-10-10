@@ -90,6 +90,8 @@ private val RequestTextMinWidth = 150.dp
 
 /**
  * @param onShareInvite 초대 링크를 받습니다. 공유 시트는 플랫폼마다 달라서 앱 모듈이 띄웁니다.
+ * @param onFriendAdded 친구 요청을 수락하면 부릅니다. 앱 모듈이 이때 알림을 켜 달라고 묻습니다.
+ * @param onPingSent 파티 모집을 보내면 부릅니다. 앱 모듈이 이때 알림을 켜 달라고 묻습니다.
  */
 @Composable
 fun FriendsRoute(
@@ -97,6 +99,8 @@ fun FriendsRoute(
     onOpenPing: (PingId) -> Unit,
     onShareInvite: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onFriendAdded: () -> Unit = {},
+    onPingSent: () -> Unit = {},
     viewModel: FriendsViewModel = koinViewModel(),
 ) {
     FailureNoticesEffect(viewModel.notices)
@@ -108,11 +112,21 @@ fun FriendsRoute(
         onRefresh = viewModel::refresh,
         onOpenFriend = onOpenFriend,
         onInvite = { onShareInvite(viewModel.inviteLink()) },
-        onAccept = viewModel::accept,
+        onAccept = { viewModel.accept(it, onAccepted = onFriendAdded) },
         onDecline = viewModel::decline,
         modifier = modifier,
         timeZone = viewModel.timeZone,
-        ping = PingActions(slots = viewModel::pingSlots, send = viewModel::sendPing, open = onOpenPing),
+        ping = PingActions(
+            slots = viewModel::pingSlots,
+            // 부르기 시트가 닫힌 뒤에 알림을 켜 달라고 묻는다. 시트 위에 시트를 겹치지 않는다.
+            send = { friends, startsAt, onResult ->
+                viewModel.sendPing(friends, startsAt) { result ->
+                    onResult(result)
+                    if (result == PingSendResult.SENT) onPingSent()
+                }
+            },
+            open = onOpenPing,
+        ),
     )
 }
 

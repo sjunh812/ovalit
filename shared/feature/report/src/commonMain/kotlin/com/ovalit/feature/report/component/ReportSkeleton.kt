@@ -51,11 +51,11 @@ internal fun ReportSkeleton(modifier: Modifier = Modifier, withChips: Boolean = 
             Spacer(Modifier.height(OvalitSpacing.md))
             SkeletonBlock(width = 150.dp, height = 14.dp)
             // 짚을 점 헤드라인과 무기·요원 줄이다. 고정 칸 위에 온다.
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(OvalitSpacing.xl))
             SkeletonBlock(width = 220.dp, height = 18.dp)
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(OvalitSpacing.sm))
             SkeletonBlock(width = 170.dp, height = 12.dp)
-            Spacer(Modifier.height(OvalitSpacing.lg))
+            Spacer(Modifier.height(OvalitSpacing.xl))
             // 고정 칸 다섯 개를 세 칸씩 두 줄로 둔다
             Column(verticalArrangement = Arrangement.spacedBy(OvalitSpacing.lg)) {
                 listOf(3, 2).forEach { cells ->

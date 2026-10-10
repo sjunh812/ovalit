@@ -295,14 +295,15 @@ private fun ReportContent(
         // 짚을 점은 그 주에 무엇이 달라졌는지가 숫자보다 먼저 읽히게 승패 칸 바로 밑, 고정 칸 위에 둔다(docs/screens.md).
         // 근거인 무기와 요원 줄은 헤드라인에 붙인다.
         // 떼어 두면 "131 → 210"이 무엇의 숫자인지 안 읽힌다.
+        // 위아래는 고정 칸 줄 사이보다 넓게 띄워 승패 줄, 짚을 점, 고정 칸이 세 묶음으로 읽히게 한다.
         // 보이는 차이가 0이면 둘 다 그리지 않으니 위 간격도 그 안에 준다.
         note?.let {
             OvalitStage {
-                WeekNoteHeadline(note = it, modifier = Modifier.padding(top = 18.dp))
-                WeekNoteLines(note = it, catalog = catalog, modifier = Modifier.padding(top = 10.dp))
+                WeekNoteHeadline(note = it, modifier = Modifier.padding(top = OvalitSpacing.xl))
+                WeekNoteLines(note = it, catalog = catalog, modifier = Modifier.padding(top = OvalitSpacing.sm))
             }
         }
-        Spacer(Modifier.height(OvalitSpacing.lg))
+        Spacer(Modifier.height(OvalitSpacing.xl))
         OvalitStage {
             FixedMetricRow(
                 metrics = report.metrics,

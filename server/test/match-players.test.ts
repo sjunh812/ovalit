@@ -71,6 +71,20 @@ describe("경기 캐시", () => {
     expect(parse.mock.calls.filter(([text]) => typeof text === "string" && text.includes(id))).toEqual([]);
   });
 
+  it("Cache API를 읽지 못해도 Riot에서 받아 경기를 내려보낸다", async () => {
+    const t = setup();
+    const me = await t.login();
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(caches.default, "match").mockRejectedValue(namedError("CacheDown", "match"));
+    const id = crypto.randomUUID();
+    const fixture = matchFixture(id, [me, ...strangers(9)]);
+    t.upstream.json(matchUrl(id), fixture);
+    const res = await t.call("GET", `/riot/matches/${id}`, me.token);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual(fixture);
+    expect(errors.mock.calls).toEqual([["riot_cache", "CacheDown"]]);
+  });
+
   it("Cache API에 담지 못해도 경기는 내려보내고 에러 이름만 남긴다", async () => {
     const t = setup();
     const me = await t.login();

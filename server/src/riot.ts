@@ -188,7 +188,7 @@ export class Riot {
     const hit = await this.lookup(store, path, ttlSeconds);
     if (hit !== undefined) return hit;
     const raw = await this.fetchText(path);
-    await this.remember(store, path, raw, ttlSeconds);
+    await this.remember(store, path, raw, ttlSeconds).catch((err) => logFailure("riot_cache", err));
     return raw;
   }
 
@@ -206,9 +206,16 @@ export class Riot {
   private async lookup(store: MemoryCache, path: string, ttlSeconds: number): Promise<string | undefined> {
     const remembered = store.get(path);
     if (remembered !== undefined) return remembered;
-    const hit = await caches.default.match(cacheKey(this.origin, path));
-    if (!hit) return undefined;
-    const body = await hit.text();
+    let body: string;
+    try {
+      const hit = await caches.default.match(cacheKey(this.origin, path));
+      if (!hit) return undefined;
+      body = await hit.text();
+    } catch (err) {
+      // 담아 둔 곳을 못 읽으면 없는 것으로 치고 Riot에서 받는다. 이것 때문에 요청이 실패하지는 않는다.
+      logFailure("riot_cache", err);
+      return undefined;
+    }
     // Cache API에 남은 기한을 몰라 메모리에는 기한을 처음부터 다시 준다. 그래서 점검 안내는 길게는 2분,
     // 콘텐츠는 12시간까지 늦게 바뀔 수 있다.
     store.set(path, body, ttlSeconds);

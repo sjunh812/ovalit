@@ -132,7 +132,10 @@ internal object ReportPreviewData {
         other = InsightPart(InsightSubject.OnSide(Side.DEFENSE), value = 96 / 218.0, matches = 33, rounds = 388),
         leadIsHigher = true,
         isRolePriority = true,
-        recent = InsightRecent(lead = 22 / 31.0, other = 15 / 33.0),
+        recent = InsightRecent(
+            lead = InsightPart(InsightSubject.OnSide(Side.ATTACK), value = 22 / 31.0, matches = 6, rounds = 70),
+            other = InsightPart(InsightSubject.OnSide(Side.DEFENSE), value = 15 / 33.0, matches = 6, rounds = 68),
+        ),
         matches = 33,
     )
 

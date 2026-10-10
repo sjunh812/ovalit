@@ -6,13 +6,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitText
@@ -29,12 +33,12 @@ import com.ovalit.core.model.Side
 import com.ovalit.core.ui.Josa
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.agentName
-import com.ovalit.core.ui.keepTogether
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.mapName
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.column_win_rate
+import com.ovalit.core.ui.resources.list_separator
 import com.ovalit.core.ui.resources.metric_damage
 import com.ovalit.core.ui.resources.metric_headshot
 import com.ovalit.core.ui.valueText
@@ -42,6 +46,7 @@ import com.ovalit.core.ui.weaponName
 import com.ovalit.core.ui.withLocalJosa
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.gap_percent
+import com.ovalit.feature.report.resources.insight_act
 import com.ovalit.feature.report.resources.insight_higher
 import com.ovalit.feature.report.resources.insight_lower
 import com.ovalit.feature.report.resources.insight_map
@@ -119,10 +124,9 @@ internal fun InsightSection(
     )
     // 적게 뛴 쪽의 숫자는 크게 흔들려서 몇 판, 몇 라운드로 센 숫자인지 같이 적는다.
     // 한 주 표본이라 판단은 하지 않고, 액트 동안의 차이가 이번 주에도 이어졌는지 숫자만 붙인다.
-    val recentPeriod = insight.recent?.let { periodLabel(period) }
-    val cells = listOf(
-        InsightCell(leadName, format.valueText(lead.value), lead.sampleText(), insight.recent?.let { format.valueText(it.lead) }),
-        InsightCell(otherName, format.valueText(other.value), other.sampleText(), insight.recent?.let { format.valueText(it.other) }),
+    val rows = listOfNotNull(
+        InsightRow(stringResource(Res.string.insight_act), lead, other),
+        insight.recent?.let { InsightRow(periodLabel(period), it.lead, it.other) },
     )
     val focus = insight.focus
     val reason = when {
@@ -147,13 +151,7 @@ internal fun InsightSection(
         )
         Spacer(Modifier.height(6.dp))
         OvalitText(text = headline, style = headlineStyle())
-        // 두 쪽을 칸으로 나란히 두어 옆으로 견주고, 칸 안에서는 액트 값과 이번 주 값을 위아래로 견준다
-        Row(
-            modifier = Modifier.padding(top = OvalitSpacing.xs),
-            horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.lg),
-        ) {
-            cells.forEach { InsightCellColumn(it, recentPeriod, Modifier.weight(1f)) }
-        }
+        InsightTable(leadName, otherName, rows, format, Modifier.padding(top = OvalitSpacing.xs))
         // 왜 이 지표를 먼저 봤는지는 숫자 칸과 다른 이야기라 붙이지 않고 띄운다
         reason?.let {
             OvalitText(
@@ -166,41 +164,60 @@ internal fun InsightSection(
     }
 }
 
-/** 견주는 한쪽입니다. 이름, 이번 액트 값, 표본, 리포트 기간 값입니다. */
-private class InsightCell(val name: String, val value: String, val sample: String, val recent: String?)
+/** 표의 한 줄입니다. 기간 이름과 그 기간의 두 쪽입니다. */
+private class InsightRow(val period: String, val lead: InsightPart, val other: InsightPart)
 
-// 값을 가장 진하고 굵게, 이름을 그다음, 기간과 표본을 가장 옅게 칠한다.
+// 열은 두 쪽, 줄은 이번 액트와 리포트 기간이다. 옆으로 두 쪽을, 위아래로 액트와 이번 주를 견준다.
+// 값을 가장 진하고 굵게, 쪽 이름을 그다음, 기간과 표본을 가장 옅게 칠한다.
 // 이름이 가장 진하면 "공격", "수비"만 눈에 들어오고 정작 견줄 숫자가 묻힌다.
-// 값은 이름 바로 뒤에 붙여 "공격 58%"로 읽히게 한다.
 @Composable
-private fun InsightCellColumn(cell: InsightCell, recentPeriod: String?, modifier: Modifier) {
+private fun InsightTable(leadName: String, otherName: String, rows: List<InsightRow>, format: MetricFormat, modifier: Modifier) {
     val colors = OvalitTheme.colors
-    val strong = SpanStyle(color = colors.t1, fontWeight = FontWeight.SemiBold)
     val caption = OvalitTheme.typography.caption
-    Column(modifier = modifier.semantics(mergeDescendants = true) {}) {
-        OvalitText(
-            text = buildAnnotatedString {
-                append(cell.name + NBSP)
-                withStyle(strong) { append(cell.value) }
-            },
-            style = OvalitTheme.typography.body,
-            color = colors.t2,
-        )
-        OvalitText(text = cell.sample, style = caption, color = colors.t3)
-        val recent = cell.recent
-        if (recentPeriod != null && recent != null) {
-            OvalitText(
-                text = buildAnnotatedString {
-                    append(recentPeriod.keepTogether() + NBSP)
-                    withStyle(strong) { append(recent) }
-                },
-                modifier = Modifier.padding(top = 2.dp),
-                style = caption,
-                color = colors.t3,
-            )
+    val measurer = rememberTextMeasurer()
+    // 기간 열을 가장 긴 기간 이름에 맞춰 두 쪽 열이 줄마다 같은 자리에서 시작한다
+    val periodWidth = with(LocalDensity.current) { rows.maxOf { measurer.measure(it.period, caption).size.width }.toDp() }
+    val separator = stringResource(CoreUiRes.string.list_separator)
+    val values = rows.map { listOf(format.valueText(it.lead.value), format.valueText(it.other.value)) }
+    val samples = rows.map { listOf(it.lead.sampleText(), it.other.sampleText()) }
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(OvalitSpacing.xs)) {
+        // 쪽 이름은 줄마다 화면 읽기 프로그램에 같이 읽히게 해서 머리 줄은 읽지 않는다
+        Row(modifier = Modifier.clearAndSetSemantics {}) {
+            Spacer(Modifier.width(periodWidth + TableGap))
+            OvalitText(text = leadName, modifier = Modifier.weight(1f), style = caption, color = colors.t2)
+            Spacer(Modifier.width(TableGap))
+            OvalitText(text = otherName, modifier = Modifier.weight(1f), style = caption, color = colors.t2)
+        }
+        rows.forEachIndexed { index, row ->
+            val names = listOf(leadName, otherName)
+            val description = row.period + " " + names.indices.joinToString(separator) { side ->
+                "${names[side]} ${values[index][side]} ${samples[index][side]}"
+            }
+            Row(modifier = Modifier.clearAndSetSemantics { contentDescription = description }) {
+                OvalitText(
+                    text = row.period,
+                    modifier = Modifier.width(periodWidth).alignByBaseline(),
+                    style = caption,
+                    color = colors.t3,
+                )
+                names.indices.forEach { side ->
+                    Spacer(Modifier.width(TableGap))
+                    // 좁으면 표본만 다음 줄로 내린다
+                    OvalitText(
+                        text = buildAnnotatedString {
+                            withStyle(SpanStyle(color = colors.t1, fontWeight = FontWeight.SemiBold)) { append(values[index][side]) }
+                            withStyle(SpanStyle(color = colors.t3, fontSize = caption.fontSize)) { append(" " + samples[index][side]) }
+                        },
+                        modifier = Modifier.weight(1f).alignByBaseline(),
+                        style = OvalitTheme.typography.body,
+                    )
+                }
+            }
         }
     }
 }
+
+private val TableGap = 12.dp
 
 @Composable
 private fun InsightSubject.name(catalog: ContentCatalog): String = when (this) {
@@ -229,7 +246,6 @@ private fun InsightPart.sampleText(): String = when (subject) {
     else -> stringResource(Res.string.insight_matches, matches)
 }
 
-private const val NBSP = "\u00a0"
 
 private val InsightMetric.label: StringResource
     get() = when (this) {

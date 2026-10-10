@@ -147,7 +147,9 @@ class InsightTest {
         assertEquals(24 * 15, insight.lead.rounds)
         assertEquals(15, insight.matches)
         // 액트 동안의 차이가 이번 주에도 이어졌는지 이번 주 값을 붙인다
-        assertEquals(InsightRecent(lead = 100 / 120.0, other = 95 / 120.0), insight.recent)
+        assertEquals(100 / 120.0 to 95 / 120.0, insight.recent.values())
+        // 이번 주 표본도 액트 쪽과 같은 기준(그 진영 라운드)으로 센다
+        assertEquals(120, insight.recent?.lead?.rounds)
     }
 
     // 이번 액트 경기가 모두 이번 주 것이면 이번 주 값이 위 숫자와 같다
@@ -166,7 +168,7 @@ class InsightTest {
         val shortRaze = agentMatches(Raze, Role.DUELIST, survived = 15, died = 15, games = 1)
 
         assertNull(insight.during(act.take(1) + shortRaze, categories = emptyMap()).recent)
-        assertEquals(InsightRecent(lead = 0.75, other = 0.5), insight.during(act.take(1) + act.last(), categories = emptyMap()).recent)
+        assertEquals(0.75 to 0.5, insight.during(act.take(1) + act.last(), categories = emptyMap()).recent.values())
     }
 
     @Test
@@ -174,10 +176,8 @@ class InsightTest {
         val insight = assertNotNull(sides(attack = 30 to 10, defense = 20 to 20).insight(Role.SENTINEL))
 
         assertNull(insight.during(sides(attack = 15 to 5, defense = 10 to 10, games = 1), categories = emptyMap()).recent)
-        assertEquals(
-            InsightRecent(lead = 0.75, other = 0.5),
-            insight.during(sides(attack = 15 to 5, defense = 10 to 10, games = 2), categories = emptyMap()).recent,
-        )
+        val recent = insight.during(sides(attack = 15 to 5, defense = 10 to 10, games = 2), categories = emptyMap()).recent
+        assertEquals(0.75 to 0.5, recent.values())
     }
 
     @Test
@@ -188,7 +188,7 @@ class InsightTest {
 
         // 한 경기 10라운드씩이라 두 경기면 S6 기준 20라운드를 채운다
         assertNull(insight.during(matches.take(1) + matches.takeLast(1), rifles).recent)
-        assertEquals(InsightRecent(lead = 0.3, other = 0.1), insight.during(matches.take(2) + matches.takeLast(2), rifles).recent)
+        assertEquals(0.3 to 0.1, insight.during(matches.take(2) + matches.takeLast(2), rifles).recent.values())
     }
 
     // 감시자는 첫 킬 쪽을 크게 띄우지 않지만, 에임 올리기를 골랐으면 첫 교전 승률부터 본다
@@ -392,7 +392,7 @@ class InsightTest {
     fun `연달아 뛴 판도 이번 주 값을 붙인다`() {
         val insight = assertNotNull(sessions(early = 30 to 10, late = 20 to 20).insight(role = null))
 
-        assertEquals(InsightRecent(lead = 0.5, other = 0.75), insight.during(sessions(early = 30 to 10, late = 20 to 20, days = 1), emptyMap()).recent)
+        assertEquals(0.5 to 0.75, insight.during(sessions(early = 30 to 10, late = 20 to 20, days = 1), emptyMap()).recent.values())
     }
 
     @Test
@@ -506,3 +506,5 @@ private fun outcomes(survived: Int, died: Int, side: Side?): Array<Round> =
 private fun weaponMatches(weapon: WeaponId, head: Int): List<Match> = List(3) {
     match(*Array(10) { round(kill(10.0, Me, Enemy, weapon = weapon), shots = Shots(head = head, body = 10 - head, leg = 0), carried = weapon) })
 }
+
+private fun InsightRecent?.values() = this?.let { it.lead.value to it.other.value }

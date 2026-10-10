@@ -155,11 +155,11 @@ data class Insight(
 )
 
 /**
- * 리포트 기간의 두 쪽 값입니다. 한 주 표본은 작아서 우연을 거르지 않고, 달라졌다고 판단하지도 않습니다. 숫자만 적습니다.
+ * 리포트 기간의 두 쪽 값과 표본입니다. 한 주 표본은 작아서 우연을 거르지 않고, 달라졌다고 판단하지도 않습니다. 숫자만 적습니다.
  *
- * @property lead [Insight.lead]와 같은 쪽의 값, [other]는 [Insight.other]와 같은 쪽의 값입니다.
+ * @property lead [Insight.lead]와 같은 쪽, [other]는 [Insight.other]와 같은 쪽입니다. 판과 라운드는 리포트 기간 안에서 셉니다.
  */
-data class InsightRecent(val lead: Double, val other: Double)
+data class InsightRecent(val lead: InsightPart, val other: InsightPart)
 
 /**
  * 경기를 공격과 수비, 역할끼리, 같은 역할의 요원끼리, 맵끼리, 같은 계열의 무기끼리, 연달아 뛴 판의 앞뒤로 나눠 견주고 문장 하나를 고릅니다.
@@ -241,32 +241,37 @@ private fun InsightSubject.single(): InsightSubject = when (this) {
  * 두 쪽 모두 동적 칸과 같은 최소 표본을 넘겨야 하고, 무기는 S6과 같은 표본입니다.
  */
 internal fun Insight.during(matches: List<Match>, categories: Map<WeaponId, WeaponCategory>): Insight {
-    val lead = lead.subject.value(metric, matches, categories) ?: return this
-    val other = other.subject.value(metric, matches, categories) ?: return this
+    val lead = lead.subject.partIn(metric, matches, categories) ?: return this
+    val other = other.subject.partIn(metric, matches, categories) ?: return this
     return copy(recent = InsightRecent(lead, other))
 }
 
-private fun InsightSubject.value(metric: InsightMetric, matches: List<Match>, categories: Map<WeaponId, WeaponCategory>): Double? {
+// 판과 라운드는 액트 쪽(InsightPart)과 같은 기준으로 센다
+private fun InsightSubject.partIn(metric: InsightMetric, matches: List<Match>, categories: Map<WeaponId, WeaponCategory>): InsightPart? {
     val group = when (this) {
-        is InsightSubject.OnSide -> return matches.sideGroup(side).takeIf { it.hasSample(metric) }?.value(metric)
-        is InsightSubject.OnAgent -> matches.filter { it.myAgent == agent }
-        is InsightSubject.OtherAgents -> matches.filter { it.myAgent in agents }
-        is InsightSubject.OnRole -> matches.filter { it.myRole == role }
-        is InsightSubject.OtherRoles -> matches.filter { it.myRole in roles }
-        is InsightSubject.OnMap -> matches.filter { it.map == map }
-        is InsightSubject.OtherMaps -> matches.filter { it.map in maps }
-        is InsightSubject.WithWeapon -> return matches.weaponValue(setOf(weapon), metric)
-        is InsightSubject.OtherWeapons -> return matches.weaponValue(weapons.toSet(), metric)
+        is InsightSubject.OnSide -> matches.sideGroup(side)
+        is InsightSubject.OnAgent -> matches.filter { it.myAgent == agent }.group(this)
+        is InsightSubject.OtherAgents -> matches.filter { it.myAgent in agents }.group(this)
+        is InsightSubject.OnRole -> matches.filter { it.myRole == role }.group(this)
+        is InsightSubject.OtherRoles -> matches.filter { it.myRole in roles }.group(this)
+        is InsightSubject.OnMap -> matches.filter { it.map == map }.group(this)
+        is InsightSubject.OtherMaps -> matches.filter { it.map in maps }.group(this)
+        is InsightSubject.WithWeapon -> return matches.weaponPart(this, setOf(weapon), metric)
+        is InsightSubject.OtherWeapons -> return matches.weaponPart(this, weapons.toSet(), metric)
         // 기간 경기만으로 몇 번째 판인지 센다. 일요일 밤에 시작해 월요일로 넘어간 판은 기간 첫 판으로 세지만 드물다.
-        InsightSubject.LateInSession -> matches.bySessionGame(late = true)
-        InsightSubject.EarlyInSession -> matches.bySessionGame(late = false)
+        InsightSubject.LateInSession -> matches.bySessionGame(late = true).group(this)
+        InsightSubject.EarlyInSession -> matches.bySessionGame(late = false).group(this)
     }
-    return group.group(this).takeIf { it.hasSample(metric) }?.value(metric)
+    if (!group.hasSample(metric)) return null
+    val value = group.value(metric) ?: return null
+    return InsightPart(this, value, group.matches.size, group.metrics.rounds)
 }
 
-private fun List<Match>.weaponValue(weapons: Set<WeaponId>, metric: InsightMetric): Double? {
+private fun List<Match>.weaponPart(subject: InsightSubject, weapons: Set<WeaponId>, metric: InsightMetric): InsightPart? {
     val stats = weaponStats().filter { it.weapon in weapons }.reduceOrNull(WeaponStats::plus) ?: return null
-    return stats.value(if (metric == InsightMetric.HEADSHOT_RATE) WeaponMetric.HEADSHOT_RATE else WeaponMetric.DAMAGE_PER_ROUND)
+    val isHeadshot = metric == InsightMetric.HEADSHOT_RATE
+    val value = stats.value(if (isHeadshot) WeaponMetric.HEADSHOT_RATE else WeaponMetric.DAMAGE_PER_ROUND) ?: return null
+    return InsightPart(subject, value, matches = 0, rounds = if (isHeadshot) stats.singleWeaponRounds else stats.carriedRounds)
 }
 
 // 경기 지표로 셀 수 있는 것들이다. 헤드샷은 무기끼리만 본다.

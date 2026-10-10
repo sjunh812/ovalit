@@ -475,8 +475,13 @@
     import: {
       h: 1600, group: '시작하기', name: 'S0-4 불러오는 중',
       desc: '최근 50경기를 불러오는 동안 먼저 볼 관심사를 골라요. 받은 경기는 이긴 판과 진 판 색으로 한 칸씩 채우고, 집계 숫자는 다 불러온 뒤에 한 번만 보여줘요.',
-      note: '이 캡처는 아직 불러오는 중이라 "리포트 보기"가 없어요. 화면 아무 곳이나 누르면 홈으로 넘어가요.',
-      hot: [{ r: [0, 48, 720, 1552], finish: 'home', label: '화면 아무 곳' }],
+      note: '아직 불러오는 중인 캡처예요. 화면 아무 곳이나 누르면 다 불러온 화면으로 넘어가요.',
+      hot: [{ r: [0, 48, 720, 1552], swap: 'import-done', label: '화면 아무 곳' }],
+    },
+    'import-done': {
+      h: 1600, group: '시작하기', name: 'S0-4 다 불러온 뒤',
+      desc: '50경기를 다 불러오면 칸이 모두 차고 "리포트 보기"가 떠요. 여기서 고른 관심사의 지표는 리포트 맨 앞 칸에 늘 먼저 보여요.',
+      hot: [{ r: [42, 1425, 636, 90], finish: 'home', label: '리포트 보기' }],
     },
     home: {
       h: 3024, tab: 'home', dark: 'home-dark', group: '홈', name: 'S1 홈 · 주간 리포트',
@@ -487,8 +492,10 @@
         { r: [22, 262, 676, 130], go: 'ping-detail', label: '민석의 초대' },
         { r: [40, 703, 206, 126], go: 'metric-sheet', sheet: true, label: '피해량 칸' },
         { r: [57, 994, 606, 75], go: 'trend-sheet', sheet: true, label: '지난 8주 흐름 한눈에 보기' },
+        { r: [40, 1206, 206, 126], go: 'dynamic-sheet', sheet: true, label: '달라진 점의 첫 교전 관여율 칸' },
         { r: [22, 1714, 676, 296], go: 'agents', label: '이번 주 요원 카드' },
         { r: [22, 2036, 676, 294], go: 'weapons', label: '이번 주 무기 카드' },
+        { r: [22, 2354, 676, 160], go: 'rival-pick', sheet: true, label: '라이벌을 골라 보세요' },
       ],
     },
     'metric-sheet': {
@@ -502,11 +509,47 @@
       desc: '고정 지표 다섯의 8주 막대를 한 화면에 모았어요. 점선은 지난 4주 평균이고, 막대를 누르면 모든 줄이 그 주 값으로 바뀌어요.',
       hot: [{ r: [0, 0, 720, 615], back: true, label: '바깥 어두운 곳' }],
     },
+    'dynamic-sheet': {
+      h: 1600, sheet: true, group: '홈', name: '달라진 점 시트',
+      desc: '달라진 점 칸을 누르면 떠요. 이번 기간 값과 지난 4주 평균, 몇 번으로 센 숫자인지, 평소 주간 흔들림의 1.5배를 넘었는지를 차례로 적어요.',
+      note: '표본이 모자란 칸은 변화가 없는 게 아니라 아직 모르는 거라 판단을 미뤄요.',
+      hot: [{ r: [0, 0, 720, 839], back: true, label: '바깥 어두운 곳' }],
+    },
+    'rival-pick': {
+      h: 1600, sheet: true, group: '홈', name: '라이벌 고르기 시트',
+      desc: '전적을 공개한 친구 중에서 라이벌을 한 명 골라요. 고르면 홈에 고정 지표 다섯을 견주는 대결 칸이 생겨요.',
+      hot: [
+        { r: [0, 0, 720, 1008], back: true, label: '바깥 어두운 곳' },
+        { r: [42, 1210, 636, 105], close: 'home-rival', scrollImg: 1590, label: '재현#KR2' },
+      ],
+    },
+    'home-rival': {
+      h: 3190, tab: 'home', group: '홈', name: 'S1 홈 · 라이벌 대결',
+      desc: '라이벌을 고르면 유도 칸 자리에 대결 칸이 생겨요. 고정 지표 다섯을 같은 순서로 놓고 앞선 쪽 숫자를 밝고 굵게 둬요. 몇 개에서 앞섰는지만 세고 합친 점수는 만들지 않아요.',
+      note: '라이벌은 서로 수락한 친구 중에서만 고르고, 친구 프로필에서 바꾸거나 풀어요.',
+      hot: [
+        { r: [484, 70, 222, 70], go: 'my-profile', label: '오른쪽 위 티어와 아바타' },
+        { r: [22, 262, 676, 130], go: 'ping-detail', label: '민석의 초대' },
+        { r: [40, 703, 206, 126], go: 'metric-sheet', sheet: true, label: '피해량 칸' },
+        { r: [57, 994, 606, 75], go: 'trend-sheet', sheet: true, label: '지난 8주 흐름 한눈에 보기' },
+        { r: [40, 1206, 206, 126], go: 'dynamic-sheet', sheet: true, label: '달라진 점의 첫 교전 관여율 칸' },
+        { r: [22, 1714, 676, 296], go: 'agents', label: '이번 주 요원 카드' },
+        { r: [22, 2036, 676, 294], go: 'weapons', label: '이번 주 무기 카드' },
+      ],
+    },
     matches: {
       h: 3200, tab: 'matches', group: '경기', name: 'S2 경기 목록',
       desc: '날짜별로 묶고 그날 승패를 머리에 적어요. 줄마다 결과, 스코어, K/D/A와 전투점수(ACS)를 두고, 줄 전체를 칠하지 않아 승패는 글자 색으로 읽어요.',
       note: '경기 상세 캡처는 어제 뛴 코로드 경기라 그 줄을 누르면 열려요.',
-      hot: [{ r: [0, 524, 720, 100], go: 'match-detail', label: '어제 코로드 경기 줄' }],
+      hot: [
+        { r: [627, 68, 80, 76], go: 'matches-filter', sheet: true, label: '오른쪽 위 필터' },
+        { r: [0, 524, 720, 100], go: 'match-detail', label: '어제 코로드 경기 줄' },
+      ],
+    },
+    'matches-filter': {
+      h: 1600, sheet: true, group: '경기', name: '경기 필터 시트',
+      desc: '요원과 맵으로 목록을 좁혀요. 카탈로그에 이름이 있는 요원과 맵만 두고, 날짜 머리의 승패도 지금 보이는 경기만 세요.',
+      hot: [{ r: [0, 0, 720, 966], back: true, label: '바깥 어두운 곳' }],
     },
     'match-detail': {
       h: 1640, dark: 'match-detail-dark', banner: matchBanner, group: '경기', name: 'S3 경기 상세 · 스코어보드',
@@ -515,7 +558,10 @@
       hot: [
         BACK, roundsTab, mineTab,
         { r: [28, 587, 222, 76], go: 'my-profile', reuse: true, label: '내 줄(나)' },
+        { r: [28, 667, 222, 77], go: 'player-invite', sheet: true, label: 'pixel#KR1 이름' },
         { r: [28, 748, 282, 77], go: 'friend-profile', label: '친구 민석' },
+        { r: [372, 748, 320, 77], swap: 'match-row-open', label: '민석 줄 펼치기' },
+        { r: [28, 1219, 222, 77], go: 'player-request', sheet: true, label: 'Ash#KR1 이름' },
       ],
     },
     'match-rounds': {
@@ -527,6 +573,27 @@
       h: 1840, banner: matchBanner, group: '경기', name: 'S3 경기 상세 · 내 기록',
       desc: '그 판의 내 기록이에요. 맞힌 부위, 상대마다 잡고 잡힌 수와 주고받은 피해, 킬을 낸 무기를 내가 뛴 라운드로만 세요.',
       hot: [BACK, scoreTab, roundsTab],
+    },
+    'match-row-open': {
+      h: 1724, banner: matchBanner, group: '경기', name: 'S3 스코어보드 · 줄을 펼친 모습',
+      desc: '스코어보드 줄을 누르면 그 사람의 피해량, 헤드샷, 첫 킬, 첫 데스, 멀티킬을 줄 밑에 펼쳐요. 다시 누르면 접혀요.',
+      hot: [
+        BACK, roundsTab, mineTab,
+        { r: [28, 587, 222, 76], go: 'my-profile', reuse: true, label: '내 줄(나)' },
+        { r: [28, 748, 282, 77], go: 'friend-profile', label: '친구 민석' },
+        { r: [372, 748, 320, 77], swap: 'match-detail', label: '민석 줄 접기' },
+      ],
+    },
+    'player-request': {
+      h: 1600, sheet: true, group: '경기', name: '친구 요청 시트',
+      desc: '같이 뛴 사람 중 앱을 쓰는 사람의 이름을 누르면 친구 요청을 보낼 수 있어요. 닉네임 검색이 없어서 같이 뛴 경기와 초대 링크로만 친구를 맺어요.',
+      note: '상대가 앱을 쓰는지는 같이 뛴 사람에게만 알려줘요.',
+      hot: [{ r: [0, 0, 720, 1179], back: true, label: '바깥 어두운 곳' }],
+    },
+    'player-invite': {
+      h: 1600, sheet: true, group: '경기', name: '초대 링크 시트',
+      desc: '앱을 쓰지 않는 사람에게는 친구 요청 대신 초대 링크를 보내요. 그 사람의 기록은 내가 뛴 경기 안에서만 보여요.',
+      hot: [{ r: [0, 0, 720, 1138], back: true, label: '바깥 어두운 곳' }],
     },
     friends: {
       h: 1666, tab: 'friends', group: '친구', name: '친구 탭',
@@ -541,12 +608,25 @@
     'ping-compose': {
       h: 1600, sheet: true, group: '친구', name: '파티 모집 시트',
       desc: '서로 수락한 친구를 4명까지 고르고 시각을 정해 한 번에 불러요. 정해 둔 답만 오가고 글을 적는 칸은 없어요.',
-      hot: [{ r: [0, 0, 720, 615], back: true, label: '바깥 어두운 곳' }],
+      hot: [
+        { r: [0, 0, 720, 615], back: true, label: '바깥 어두운 곳' },
+        { r: [43, 1440, 634, 86], then: 'my-ping', label: '2명 부르기' },
+      ],
+    },
+    'my-ping': {
+      h: 1600, group: '친구', name: '내가 보낸 초대',
+      desc: '내가 부른 초대예요. 친구가 다른 시간을 제안하면 맨 위에서 바로 받아들이고, 친구를 더 부르거나 시간을 바꾸거나 초대를 취소해요.',
+      hot: [BACK],
     },
     'ping-detail': {
       h: 1600, group: '친구', name: '파티 모집 초대',
       desc: '맨 위에 시각을 크게 두고 친구마다 답을 적어요. 받은 초대에는 맨 밑의 갈게요, 다른 시간, 못 가요 버튼으로 답해요.',
-      hot: [BACK],
+      hot: [BACK, { r: [252, 1454, 216, 77], go: 'ping-time', sheet: true, label: '다른 시간' }],
+    },
+    'ping-time': {
+      h: 1600, sheet: true, group: '친구', name: '다른 시간 시트',
+      desc: '받은 초대에 다른 시간으로 답할 때 떠요. 정해진 시각부터 30분씩 골라 답하고, 글은 적지 않아요.',
+      hot: [{ r: [0, 0, 720, 895], back: true, label: '바깥 어두운 곳' }],
     },
     'friend-profile': {
       h: 2888, banner: profileBanner, group: '친구', name: 'S5 친구 프로필',
@@ -555,7 +635,14 @@
         BACK,
         { r: [22, 1745, 676, 293], go: 'friend-agents', label: '요원 카드' },
         { r: [22, 2067, 676, 291], go: 'friend-weapons', label: '무기 카드' },
+        { r: [556, 2402, 132, 60], go: 'friend-matches', label: '최근 경기 전체 보기' },
       ],
+    },
+    'friend-matches': {
+      h: 2400, group: '친구', name: '친구 경기 목록',
+      desc: '친구가 전적을 공개했을 때만 열려요. 내가 뛰지 않은 친구 경기는 친구와 나 말고 모두 가린 채로 받아요.',
+      note: '"알 수 없는 맵"은 건틀릿처럼 카탈로그에 이름이 없는 맵이에요.',
+      hot: [BACK],
     },
     'friend-weapons': {
       h: 1714, group: '친구', name: 'S6 무기 · 친구 기록',
@@ -591,7 +678,21 @@
     settings: {
       h: 2738, tab: 'settings', group: '설정', name: 'S4 설정',
       desc: '계정부터 문의까지 일곱 묶음을 카드로 나눠요. 파티 모집 알림은 "오발있?" 카드에 있어요. 연동 해제는 카드 밖 맨 아래에 따로 두고, 그 밑에 비공식 고지를 둬요.',
-      hot: [{ r: [22, 166, 676, 140], go: 'my-profile', label: '계정 줄' }],
+      hot: [
+        { r: [22, 166, 676, 140], go: 'my-profile', label: '계정 줄' },
+        { r: [22, 1805, 676, 98], go: 'delete-sheet', sheet: true, label: '저장된 데이터 삭제' },
+        { r: [35, 2165, 650, 92], go: 'unlink-sheet', sheet: true, label: 'Riot 계정 연동 해제' },
+      ],
+    },
+    'delete-sheet': {
+      h: 1600, sheet: true, group: '설정', name: '데이터 삭제 확인',
+      desc: '저장된 경기와 리포트만 지우고 Riot 연동은 그대로 둬요. 지운 뒤에는 홈에서 다시 불러와요.',
+      hot: [{ r: [0, 0, 720, 1179], back: true, label: '바깥 어두운 곳' }],
+    },
+    'unlink-sheet': {
+      h: 1600, sheet: true, group: '설정', name: '연동 해제 확인',
+      desc: '연동을 해제하면 저장된 경기, 리포트, 친구 목록을 모두 지우고 처음 화면으로 돌아가요. 쌓인 사용 기록과 보내지 않은 오류 보고도 함께 지워요.',
+      hot: [{ r: [0, 0, 720, 1138], back: true, label: '바깥 어두운 곳' }],
     },
   };
 
@@ -606,12 +707,12 @@
   ];
 
   const GROUPS = [
-    ['시작하기', ['intro', 'consent', 'import']],
-    ['홈', ['home', 'metric-sheet', 'trend-sheet']],
-    ['경기', ['matches', 'match-detail', 'match-rounds', 'match-mine']],
-    ['친구', ['friends', 'ping-compose', 'ping-detail', 'friend-profile', 'friend-weapons', 'friend-agents']],
+    ['시작하기', ['intro', 'consent', 'import', 'import-done']],
+    ['홈', ['home', 'metric-sheet', 'trend-sheet', 'dynamic-sheet', 'rival-pick', 'home-rival']],
+    ['경기', ['matches', 'matches-filter', 'match-detail', 'match-row-open', 'match-rounds', 'match-mine', 'player-request', 'player-invite']],
+    ['친구', ['friends', 'ping-compose', 'my-ping', 'ping-detail', 'ping-time', 'friend-profile', 'friend-matches', 'friend-weapons', 'friend-agents']],
     ['내 기록', ['my-profile', 'weapons', 'agents']],
-    ['설정', ['settings']],
+    ['설정', ['settings', 'delete-sheet', 'unlink-sheet']],
   ];
 
   // 목록에서 바로 열 때 쌓아 둘 화면들. 앱처럼 홈이 늘 맨 아래다.
@@ -619,23 +720,36 @@
     intro: ['intro'],
     consent: ['intro', 'consent'],
     import: ['intro', 'consent', 'import'],
+    'import-done': ['intro', 'consent', 'import-done'],
     home: ['home'],
     'metric-sheet': ['home', 'metric-sheet'],
     'trend-sheet': ['home', 'trend-sheet'],
+    'dynamic-sheet': ['home', 'dynamic-sheet'],
+    'rival-pick': ['home', 'rival-pick'],
+    'home-rival': ['home-rival'],
     matches: ['home', 'matches'],
+    'matches-filter': ['home', 'matches', 'matches-filter'],
     'match-detail': ['home', 'matches', 'match-detail'],
+    'match-row-open': ['home', 'matches', 'match-row-open'],
     'match-rounds': ['home', 'matches', 'match-rounds'],
     'match-mine': ['home', 'matches', 'match-mine'],
+    'player-request': ['home', 'matches', 'match-detail', 'player-request'],
+    'player-invite': ['home', 'matches', 'match-detail', 'player-invite'],
     friends: ['home', 'friends'],
     'ping-compose': ['home', 'friends', 'ping-compose'],
+    'my-ping': ['home', 'friends', 'my-ping'],
     'ping-detail': ['home', 'friends', 'ping-detail'],
+    'ping-time': ['home', 'friends', 'ping-detail', 'ping-time'],
     'friend-profile': ['home', 'friends', 'friend-profile'],
+    'friend-matches': ['home', 'friends', 'friend-profile', 'friend-matches'],
     'friend-weapons': ['home', 'friends', 'friend-profile', 'friend-weapons'],
     'friend-agents': ['home', 'friends', 'friend-profile', 'friend-agents'],
     'my-profile': ['home', 'my-profile'],
     weapons: ['home', 'my-profile', 'weapons'],
     agents: ['home', 'my-profile', 'agents'],
     settings: ['home', 'settings'],
+    'delete-sheet': ['home', 'settings', 'delete-sheet'],
+    'unlink-sheet': ['home', 'settings', 'unlink-sheet'],
   };
 
   const $ = (id) => document.getElementById(id);
@@ -644,6 +758,8 @@
   const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
   let stack = [];
+  // 라이벌을 고른 뒤에는 홈 탭이 라이벌 대결이 있는 홈을 연다
+  let homeId = 'home';
   const tabScroll = {};
   let dark = false;
   let running = [];
@@ -665,6 +781,8 @@
   function targetName(h) {
     if (h.back) return SCREENS[top().id].sheet ? '시트 닫기' : '이전 화면';
     if (h.finish) return SCREENS[h.finish].name;
+    if (h.close) return SCREENS[h.close].name;
+    if (h.then) return SCREENS[h.then].name;
     if (h.tab) return SCREENS[h.tab].name;
     if (h.swap) return SCREENS[h.swap].name;
     return SCREENS[h.go].name;
@@ -757,6 +875,7 @@
 
     scroller.addEventListener('scroll', () => {
       e.scroll = scroller.scrollTop;
+      e.scrollImg = 0;
       if (s.tab) tabScroll[e.id] = scroller.scrollTop;
       if (sbBlend) {
         const k = scroller.clientWidth / W;
@@ -768,7 +887,9 @@
 
     layer._scroller = scroller;
     layer._restore = () => {
-      if (e.scroll) scroller.scrollTop = e.scroll;
+      // 처음 열 때 캡처의 어느 높이부터 보일지 정한 화면은 프레임 크기에 맞춰 옮긴다
+      if (e.scrollImg) scroller.scrollTop = e.scrollImg * scroller.clientWidth / W;
+      else if (e.scroll) scroller.scrollTop = e.scroll;
     };
     return layer;
   }
@@ -803,6 +924,13 @@
     // 앱처럼 내 프로필에서 들어온 경기 상세면 프로필을 또 쌓지 않고 그 프로필로 돌아간다
     if (h.reuse && stack.length > 1 && stack[stack.length - 2].id === h.go) return back();
     if (h.finish) return go([entry(h.finish)], 'push');
+    // 시트에서 고르면 시트와 그 밑 화면을 함께 바꾼다
+    if (h.close) {
+      if (SCREENS[h.close].tab === 'home') homeId = h.close;
+      return go(stack.slice(0, -2).concat({ id: h.close, scroll: 0, scrollImg: h.scrollImg || 0 }), 'sheet-out');
+    }
+    // 시트에서 보낸 뒤 다음 화면으로 넘어간다
+    if (h.then) return go(stack.slice(0, -1).concat(entry(h.then)), 'push');
     if (h.tab) return tab(h.tab);
     if (h.swap) {
       const next = stack.slice(0, -1).concat(entry(h.swap));
@@ -813,12 +941,12 @@
 
   function tab(id) {
     const cur = top();
-    if (cur.id === id) {
+    if (cur.id === id || (id === 'home' && cur.id === homeId)) {
       const layer = screenEl.querySelector('.layer:last-child');
       if (layer) layer._scroller.scrollTo({ top: 0, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
       return;
     }
-    const home = { id: 'home', scroll: tabScroll.home || 0 };
+    const home = { id: homeId, scroll: tabScroll[homeId] || 0 };
     const next = id === 'home' ? [home] : [home, { id, scroll: tabScroll[id] || 0 }];
     go(next, 'none');
   }
@@ -998,7 +1126,7 @@
     const s = SCREENS[top().id];
     const ids = [];
     for (const h of s.hot) {
-      const t = h.go || h.swap || h.tab || h.finish;
+      const t = h.go || h.swap || h.tab || h.finish || h.close || h.then;
       if (t) ids.push(t);
     }
     if (s.tab) TABS.forEach((t) => ids.push(t.id));

@@ -1,5 +1,7 @@
 package com.ovalit.core.data
 
+import com.ovalit.core.model.AccountSettings
+import com.ovalit.core.model.PingReminder
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -48,6 +50,19 @@ class FakeAccountRepositoryTest {
         account.link()
 
         assertEquals(emptyList(), matches.observeMatches().first())
+    }
+
+    // 서버는 연동을 해제하면 계정 줄을 지운다. 다시 연동하면 새 계정의 기본값부터 시작한다.
+    @Test
+    fun `연동을 해제하면 계정 설정도 처음 값으로 돌아간다`() = runTest {
+        val settings = FakeAccountSettingsRepository(latency = Duration.ZERO)
+        val account = FakeAccountRepository(FakeMatchRepository(), accountSettingsRepository = settings)
+        settings.setStatsPublic(false)
+        settings.setPingReminder(PingReminder.OFF)
+
+        account.unlink()
+
+        assertEquals(AccountSettings.Default, settings.settings.first())
     }
 
     @Test

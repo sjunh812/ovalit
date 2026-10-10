@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.ovalit.core.designsystem.preview.OvalitThemePreview
 import com.ovalit.core.model.Account
+import com.ovalit.core.model.AccountSettings
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.UserPreferences
 import kotlinx.datetime.LocalDate
@@ -12,15 +13,16 @@ internal object SettingsPreviewData {
     val linked = SettingsUiState.Success(
         account = Account(id = PlayerId("me"), riotId = "오발러#KR1", linkedOn = LocalDate(2026, 9, 19)),
         preferences = UserPreferences.Default,
+        accountSettings = AccountSettings.Default,
         storedMatches = 127,
     )
 
     val allOff = linked.copy(
         preferences = UserPreferences.Default.copy(
-            statsPublic = false,
             notifyAnalysisDone = false,
             notifyWeeklyReport = false,
         ),
+        accountSettings = AccountSettings.Default.copy(statsPublic = false),
     )
 }
 

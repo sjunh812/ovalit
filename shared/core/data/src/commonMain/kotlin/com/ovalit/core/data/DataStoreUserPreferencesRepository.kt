@@ -10,7 +10,6 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.ovalit.core.model.Focus
-import com.ovalit.core.model.PingReminder
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.model.UserPreferences
@@ -44,11 +43,9 @@ class DataStoreUserPreferencesRepository(
             UserPreferences(
                 theme = stored[Keys.theme].toEnumOr(default.theme),
                 defaultQueue = stored[Keys.defaultQueue].toEnumOr(default.defaultQueue),
-                statsPublic = stored[Keys.statsPublic] ?: default.statsPublic,
                 notifyAnalysisDone = stored[Keys.notifyAnalysisDone] ?: default.notifyAnalysisDone,
                 notifyWeeklyReport = stored[Keys.notifyWeeklyReport] ?: default.notifyWeeklyReport,
                 notifyPing = stored[Keys.notifyPing] ?: default.notifyPing,
-                pingReminder = stored[Keys.pingReminder].toEnumOr(default.pingReminder),
                 focus = stored[Keys.focus].toEnumOr(default.focus),
                 seenProfileHint = stored[Keys.seenProfileHint] ?: default.seenProfileHint,
                 adFreeUntil = stored[Keys.adFreeUntil]?.let(Instant::fromEpochMilliseconds),
@@ -59,16 +56,11 @@ class DataStoreUserPreferencesRepository(
 
     override suspend fun setDefaultQueue(queue: QueueFilter) = set(Keys.defaultQueue, queue.name)
 
-    override suspend fun setStatsPublic(public: Boolean) = set(Keys.statsPublic, public)
-
     override suspend fun setNotifyAnalysisDone(enabled: Boolean) = set(Keys.notifyAnalysisDone, enabled)
 
     override suspend fun setNotifyWeeklyReport(enabled: Boolean) = set(Keys.notifyWeeklyReport, enabled)
 
     override suspend fun setNotifyPing(enabled: Boolean) = set(Keys.notifyPing, enabled)
-
-    override suspend fun setPingReminder(reminder: PingReminder) = set(Keys.pingReminder, reminder.name)
-
 
     override suspend fun setFocus(focus: Focus) = set(Keys.focus, focus.name)
 
@@ -81,14 +73,14 @@ class DataStoreUserPreferencesRepository(
     }
 
     // enum을 이름으로 저장한다. 이름을 바꾸면 전에 저장한 값을 못 읽고 기본값으로 돌아간다.
+    // stats_public과 ping_reminder는 서버로 옮겨 더 읽지 않는다. 전에 저장한 값이 파일에 남아 있으니 그 이름을 다른 뜻으로 다시
+    // 쓰지 않는다.
     private object Keys {
         val theme = stringPreferencesKey("theme")
         val defaultQueue = stringPreferencesKey("default_queue")
-        val statsPublic = booleanPreferencesKey("stats_public")
         val notifyAnalysisDone = booleanPreferencesKey("notify_analysis_done")
         val notifyWeeklyReport = booleanPreferencesKey("notify_weekly_report")
         val notifyPing = booleanPreferencesKey("notify_ping")
-        val pingReminder = stringPreferencesKey("ping_reminder")
         val focus = stringPreferencesKey("focus")
         val seenProfileHint = booleanPreferencesKey("seen_profile_hint")
         val adFreeUntil = longPreferencesKey("ad_free_until")

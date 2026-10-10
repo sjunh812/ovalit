@@ -100,7 +100,7 @@ internal fun SettingsSheetContent(
             title = stringResource(Res.string.ping_reminder),
             body = stringResource(Res.string.ping_reminder_description),
             options = PingReminder.entries,
-            selected = uiState.preferences.pingReminder,
+            selected = uiState.accountSettings.pingReminder,
             label = { it.label },
             onSelect = actions.onPingReminderChange,
             onDismiss = onDismiss,

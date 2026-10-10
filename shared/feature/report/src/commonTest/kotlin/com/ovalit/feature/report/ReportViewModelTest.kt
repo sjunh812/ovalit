@@ -16,7 +16,6 @@ import com.ovalit.core.model.FriendRequest
 import com.ovalit.core.model.ImportProgress
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.NewMatchesProgress
-import com.ovalit.core.model.PingReminder
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
@@ -526,16 +525,11 @@ private class StubPreferences(initial: UserPreferences = UserPreferences.Default
 
     override suspend fun setDefaultQueue(queue: QueueFilter) = Unit
 
-    override suspend fun setStatsPublic(public: Boolean) = Unit
-
     override suspend fun setNotifyAnalysisDone(enabled: Boolean) = Unit
 
     override suspend fun setNotifyWeeklyReport(enabled: Boolean) = Unit
 
     override suspend fun setNotifyPing(enabled: Boolean) = Unit
-
-    override suspend fun setPingReminder(reminder: PingReminder) = Unit
-
 
     override suspend fun setFocus(focus: Focus) = Unit
 

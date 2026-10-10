@@ -4,7 +4,6 @@ import com.ovalit.core.data.FakeMatchRepository
 import com.ovalit.core.data.ImportScheduler
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.Focus
-import com.ovalit.core.model.PingReminder
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.model.UserPreferences
@@ -79,16 +78,11 @@ private class InMemoryPreferences : UserPreferencesRepository {
 
     override suspend fun setDefaultQueue(queue: QueueFilter) = Unit
 
-    override suspend fun setStatsPublic(public: Boolean) = Unit
-
     override suspend fun setNotifyAnalysisDone(enabled: Boolean) = Unit
 
     override suspend fun setNotifyWeeklyReport(enabled: Boolean) = Unit
 
     override suspend fun setNotifyPing(enabled: Boolean) = Unit
-
-    override suspend fun setPingReminder(reminder: PingReminder) = Unit
-
 
     override suspend fun setFocus(focus: Focus) = preferences.update { it.copy(focus = focus) }
 

@@ -68,8 +68,8 @@ npm run typecheck
 | POST | `/auth/session` | | `{code, verifier}` → `{token, expiresAt}` |
 | POST | `/auth/dev` | | 로컬 전용. `{puuid, gameName, tagLine}` → `{token, expiresAt}`. RSO 비밀값이 있으면 404 |
 | POST | `/auth/logout` | 필요 | 이 세션을 끊습니다 |
-| GET | `/me` | 필요 | `{puuid, gameName, tagLine, statsPublic}` |
-| PATCH | `/me` | 필요 | `{statsPublic}` |
+| GET | `/me` | 필요 | `{puuid, gameName, tagLine, statsPublic, remindBefore}` |
+| PATCH | `/me` | 필요 | `{statsPublic?, remindBefore?}` → `GET /me`와 같은 모양. 보낸 값만 바꾸고 하나도 없으면 400입니다. `remindBefore`는 시작 몇 분 전에 알릴지이고 0, 10, 30, 60만 받습니다(0은 받지 않기) |
 | DELETE | `/me` | 필요 | 연동 해제. 세션, 친구, 요청, 초대, 오발있, 기기 토큰이 같이 지워집니다. 띄워 둔 오발있이 살아 있으면 불린 친구에게 `ping_cancel`이 갑니다 |
 | PUT | `/me/push-token` | 필요 | `{token}`. FCM 기기 토큰을 등록합니다. 다른 계정이 쓰던 토큰이면 옮겨 오고, 사람마다 최근 셋만 둡니다 |
 | DELETE | `/me/push-token` | 필요 | `{token}`. 내 토큰일 때만 지우고 없어도 204입니다. 로그아웃하기 전에 부릅니다 |

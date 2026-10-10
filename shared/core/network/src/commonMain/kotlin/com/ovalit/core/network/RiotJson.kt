@@ -10,9 +10,10 @@ import kotlinx.serialization.json.Json
  *
  * Riot은 패치마다 필드를 더하고 모드에 따라 필드를 빼서, 모르는 필드는 건너뛰고 null이 온 목록은 빈 목록으로 읽습니다.
  *
- * Ktor `ContentNegotiation`에 그대로 걸지 않습니다. 읽다 실패하면 kotlinx.serialization이 응답 원문 일부를 예외 문구에 담는데,
+ * Ktor `ContentNegotiation`에 그대로 걸지 않습니다.
+ * 읽다 실패하면 kotlinx.serialization이 응답 원문 일부를 예외 문구에 담습니다.
  * 그 예외가 비정상 종료 보고로 나가면 PUUID와 이름이 Riot 약관이 허락하지 않은 곳으로 갑니다(CLAUDE.md 지켜야 할 선).
- * 본문을 문자열로 받아 [decodeMatch], [decodeMatchlist]로 읽습니다.
+ * 그래서 본문을 문자열로 받아 [decodeMatch], [decodeMatchlist]로 읽습니다.
  */
 val RiotJson: Json = Json {
     ignoreUnknownKeys = true
@@ -27,8 +28,9 @@ fun decodeMatch(text: String): MatchDto = decodeRiot(MatchDto.serializer(), text
 fun decodeMatchlist(text: String): MatchlistDto = decodeRiot(MatchlistDto.serializer(), text)
 
 /**
- * Riot 응답을 읽지 못했습니다. 문구에는 어느 필드에서 걸렸는지(`$.players[0].stats`)만 담고 응답 원문은 담지 않습니다. 원래
- * 예외도 원문을 담고 있어서 [cause]로 잇지 않습니다.
+ * Riot 응답을 읽지 못했습니다.
+ * 문구에는 어느 필드에서 걸렸는지(`$.players[0].stats`)만 담고 응답 원문은 담지 않습니다.
+ * 원래 예외도 원문을 담고 있어서 [cause]로 잇지 않습니다.
  */
 class RiotResponseFormatException(val path: String?) :
     IllegalStateException("Riot 응답을 읽지 못했습니다" + (path?.let { " ($it)" } ?: ""))

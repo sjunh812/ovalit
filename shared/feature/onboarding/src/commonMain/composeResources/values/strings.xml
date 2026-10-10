@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="intro_hook">오발있? (오늘 발로란트 할 사람 있어?)</string>
+    <!-- 앱 이름 뒤에 그 풀이를 작고 흐리게 붙인다(nameWithMeaning) -->
+    <string name="intro_name">오발있?</string>
+    <string name="intro_name_meaning">오늘 발로란트 할 사람 있어?</string>
     <string name="intro_headline">그전에 이번 주 뭐가 달라졌는지 볼까</string>
     <string name="intro_subtitle">피해량부터 첫 교전, 무기까지 평소의 나와 견줘 짚어드려요</string>
     <string name="intro_start">Riot 계정으로 시작하기</string>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 일본어. 한국어 values/strings.xml과 키가 같다. 용어는 docs/i18n-ja.md -->
 <resources>
-    <!-- 괄호 안을 흐리게 그리는 코드(dimParentheses)가 반각 괄호만 찾아서 반각으로 둔다 -->
-    <string name="intro_hook">Ovalit (今日ヴァロやる人いる？)</string>
+    <string name="intro_name">Ovalit</string>
+    <string name="intro_name_meaning">今日ヴァロやる人いる？</string>
     <!-- 이름 풀이에 이어지는 혼잣말이라 한국어처럼 반말이다 -->
     <string name="intro_headline">その前に、今週なにが変わったか見てみようか</string>
     <string name="intro_subtitle">ダメージから初動、武器までいつもの自分と比べてお伝えします</string>

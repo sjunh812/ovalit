@@ -23,7 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import com.ovalit.core.designsystem.component.OvalitDisclaimer
 import com.ovalit.core.designsystem.component.OvalitLogo
 import com.ovalit.core.designsystem.component.OvalitPrimaryButton
@@ -33,42 +32,32 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.feature.onboarding.resources.Res
 import com.ovalit.feature.onboarding.resources.intro_headline
-import com.ovalit.feature.onboarding.resources.intro_hook
+import com.ovalit.feature.onboarding.resources.intro_name
+import com.ovalit.feature.onboarding.resources.intro_name_meaning
 import com.ovalit.feature.onboarding.resources.intro_start
 import com.ovalit.feature.onboarding.resources.intro_subtitle
 import org.jetbrains.compose.resources.stringResource
 
 private val LogoWidth = 88.dp
 
-// 괄호 안 글자 크기. em이라 바깥 글자 크기를 따라간다.
-private val ParenthesisScale = 0.7.em
+// 이름 풀이 글자 크기다. 헤드라인 크기에 곱한다. em으로 두면 iOS에서 바깥 글자가 아닌 다른 크기를 따라가 더 작게 그려진다.
+private const val MEANING_SCALE = 0.7f
 
 /**
- * 괄호와 그 안의 글자를 한 단계 흐리고 작고 가늘게 그립니다. "오발있? (오늘 발로란트 할 사람 있어?)"에서 어디까지가 앱
- * 이름인지 먼저 읽히게 합니다. 바깥 글자의 SemiBold를 그대로 두면 작아져도 굵어서 탁해 보여 보통 굵기로 내립니다. 문구는
- * 리소스에 그대로 두니 번역할 때도 괄호만 지키면 됩니다.
+ * 앱 이름 뒤에 그 풀이를 한 단계 흐리고 작고 가늘게 붙입니다. "오발있? 오늘 발로란트 할 사람 있어?"에서 어디까지가 앱 이름인지
+ * 먼저 읽히게 합니다. 바깥 글자의 SemiBold를 그대로 두면 작아져도 굵어서 탁해 보여 보통 굵기로 내립니다.
  */
 @Composable
-private fun dimParentheses(text: String): AnnotatedString {
+private fun nameWithMeaning(name: String, meaning: String): AnnotatedString {
     val dimmed = SpanStyle(
         color = OvalitTheme.colors.t3,
-        fontSize = ParenthesisScale,
+        fontSize = OvalitTheme.typography.display.fontSize * MEANING_SCALE,
         fontWeight = FontWeight.Normal,
     )
-
     return buildAnnotatedString {
-        var cursor = 0
-        while (cursor < text.length) {
-            val open = text.indexOf('(', cursor)
-            val close = if (open == -1) -1 else text.indexOf(')', open)
-            if (close == -1) {
-                append(text.substring(cursor))
-                return@buildAnnotatedString
-            }
-            append(text.substring(cursor, open))
-            withStyle(dimmed) { append(text.substring(open, close + 1)) }
-            cursor = close + 1
-        }
+        append(name)
+        append(' ')
+        withStyle(dimmed) { append(meaning) }
     }
 }
 
@@ -110,7 +99,7 @@ fun IntroScreen(
                 // 로고 ㅇㅂㅇ을 소리 내어 읽어 주는 줄이라 로고 바로 밑에 둔다(CLAUDE.md 용어). 헤드라인과 같은 크기로
                 // 둬서 헤드라인과 한 덩어리로 읽히게 한다.
                 OvalitText(
-                    text = dimParentheses(stringResource(Res.string.intro_hook)),
+                    text = nameWithMeaning(stringResource(Res.string.intro_name), stringResource(Res.string.intro_name_meaning)),
                     style = OvalitTheme.typography.display,
                 )
 

@@ -23,6 +23,7 @@ import com.ovalit.core.model.PingId
 import com.ovalit.core.model.PingMember
 import com.ovalit.core.model.PingPerson
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.testing.Seoul
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -30,10 +31,8 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 
-private val Seoul = TimeZone.of("Asia/Seoul")
 private val Now = LocalDateTime(2026, 10, 3, 20, 25).toInstant(Seoul)
 private val Nine = LocalDateTime(2026, 10, 3, 21, 0).toInstant(Seoul)
 private val NineThirty = LocalDateTime(2026, 10, 3, 21, 30).toInstant(Seoul)

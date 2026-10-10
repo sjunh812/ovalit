@@ -8,7 +8,7 @@ import com.ovalit.core.model.Match
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.Queue
-import kotlin.coroutines.EmptyCoroutineContext
+import com.ovalit.core.testing.SameThread
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -27,9 +27,6 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.datetime.TimeZone
-
-// 앱은 Dispatchers.Default에서 세지만 테스트는 값을 바로 읽으려고 부르는 쪽에서 센다
-private val SameThread = EmptyCoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MatchDetailViewModelTest {

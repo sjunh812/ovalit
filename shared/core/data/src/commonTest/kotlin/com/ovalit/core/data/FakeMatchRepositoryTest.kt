@@ -16,6 +16,10 @@ import com.ovalit.core.model.metrics
 import com.ovalit.core.model.myStanding
 import com.ovalit.core.model.standings
 import com.ovalit.core.model.weeklyReport
+import com.ovalit.core.testing.Seoul
+import com.ovalit.core.testing.StepClock
+import com.ovalit.core.testing.Thursday
+import com.ovalit.core.testing.ThursdayClock
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,23 +27,11 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Instant
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-
-private val Seoul = TimeZone.of("Asia/Seoul")
-private val Thursday = LocalDateTime(2026, 9, 24, 22, 0).toInstant(Seoul)
-private val ThursdayClock = object : Clock {
-    override fun now(): Instant = Thursday
-}
-
 
 class FakeMatchRepositoryTest {
 

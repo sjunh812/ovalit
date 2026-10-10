@@ -1,9 +1,12 @@
 package com.ovalit.core.data
 
 import com.ovalit.core.model.Account
+import com.ovalit.core.testing.NoAccount
+import com.ovalit.core.testing.StepClock
+import com.ovalit.core.testing.TestFriendRepository
+import com.ovalit.core.testing.TestPingRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
@@ -21,8 +24,8 @@ class SocialWatcherTest {
     // 푸시가 늦거나 오지 않으면 다시 열어도 옛 초대와 친구 목록이 남는다
     @Test
     fun `앱이 다시 보이면 ㅇㅂㅇ과 친구를 받고 1분 안에는 다시 받지 않는다`() = runTest {
-        val clock = MovingClock(Start)
-        val (pings, friends) = CountingPings() to CountingFriends()
+        val clock = StepClock(Start)
+        val (pings, friends) = TestPingRepository() to TestFriendRepository()
         val watcher = SocialWatcher(pings, friends, Linked, backgroundScope, clock)
 
         watcher.onAppVisible()
@@ -43,8 +46,8 @@ class SocialWatcherTest {
     // RSO 세션 없이 서버를 부르지 않는다
     @Test
     fun `연동하지 않았으면 받지 않는다`() = runTest {
-        val (pings, friends) = CountingPings() to CountingFriends()
-        val watcher = SocialWatcher(pings, friends, NotLinked, backgroundScope, MovingClock(Start))
+        val (pings, friends) = TestPingRepository() to TestFriendRepository()
+        val watcher = SocialWatcher(pings, friends, NoAccount, backgroundScope, StepClock(Start))
 
         watcher.onAppVisible()
         settle()
@@ -55,36 +58,8 @@ class SocialWatcherTest {
     private fun TestScope.settle() = runCurrent()
 }
 
-private class MovingClock(var now: Instant) : Clock {
-    override fun now(): Instant = now
-}
-
 private object Linked : AccountRepository {
     override val account: Flow<Account?> = flowOf(Account(id = Me, riotId = MY_RIOT_ID, linkedOn = LocalDate(2026, 10, 1)))
 
     override suspend fun unlink() = Unit
-}
-
-private object NotLinked : AccountRepository {
-    override val account: Flow<Account?> = flowOf(null)
-
-    override suspend fun unlink() = Unit
-}
-
-private class CountingPings(delegate: PingRepository = FakePingRepository(FakeFriendRepository())) : PingRepository by delegate {
-    var refreshed = 0
-        private set
-
-    override suspend fun refresh() {
-        refreshed++
-    }
-}
-
-private class CountingFriends(delegate: FriendRepository = FakeFriendRepository()) : FriendRepository by delegate {
-    var refreshed = 0
-        private set
-
-    override suspend fun refresh() {
-        refreshed++
-    }
 }

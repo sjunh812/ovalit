@@ -19,10 +19,10 @@ import com.ovalit.core.data.FakeContentRepository
 import com.ovalit.core.data.FakeFriendRepository
 import com.ovalit.core.data.FakeMatchRepository
 import com.ovalit.core.data.FakePingRepository
-import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.model.Friend
 import com.ovalit.core.model.PlayerId
-import kotlin.coroutines.EmptyCoroutineContext
+import com.ovalit.core.testing.SameThread
+import com.ovalit.core.testing.TestFriendRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -30,12 +30,7 @@ import kotlin.test.assertTrue
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.datetime.TimeZone
-
-// 앱은 Dispatchers.Default에서 세지만 테스트는 값을 바로 읽으려고 부르는 쪽에서 센다
-private val SameThread = EmptyCoroutineContext
 
 @OptIn(ExperimentalTestApi::class)
 class FriendScreensTest {
@@ -85,7 +80,7 @@ class FriendScreensTest {
             Friend(PlayerId("f$i"), "친구$i#KR1", playerCard = null, statsPublic = i % 2 == 0, matches = emptyList(), lastPlayedTogether = now - i.hours)
         }
         val viewModel = FriendsViewModel(
-            ShuffledFriends(friends, rival = PlayerId("f100")),
+            TestFriendRepository(friends, rival = PlayerId("f100")),
             FakePingRepository(FakeFriendRepository()),
             FakeAccountRepository(FakeMatchRepository()),
             Clock.System,
@@ -272,9 +267,4 @@ class FriendScreensTest {
 @Composable
 private fun Themed(content: @Composable () -> Unit) {
     OvalitTheme(content = content)
-}
-
-private class ShuffledFriends(list: List<Friend>, rival: PlayerId?) : FriendRepository by FakeFriendRepository() {
-    override val friends: Flow<List<Friend>> = flowOf(list)
-    override val rival: Flow<PlayerId?> = flowOf(rival)
 }

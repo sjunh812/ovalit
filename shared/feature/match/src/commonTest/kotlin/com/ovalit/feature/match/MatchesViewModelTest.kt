@@ -3,15 +3,15 @@ package com.ovalit.feature.match
 import com.ovalit.core.data.FakeContentRepository
 import com.ovalit.core.data.FakeMatchRepository
 import com.ovalit.core.data.MatchRepository
-import com.ovalit.core.data.UserPreferencesRepository
-import com.ovalit.core.model.Focus
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.OvalitError
 import com.ovalit.core.model.OvalitException
 import com.ovalit.core.model.Queue
 import com.ovalit.core.model.QueueFilter
-import com.ovalit.core.model.ThemePreference
 import com.ovalit.core.model.UserPreferences
+import com.ovalit.core.testing.Seoul
+import com.ovalit.core.testing.TestUserPreferencesRepository
+import com.ovalit.core.testing.ThursdayClock
 import com.ovalit.core.ui.FailedAction
 import com.ovalit.core.ui.FailureNotice
 import kotlin.test.AfterTest
@@ -22,8 +22,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlin.time.Clock
-import kotlin.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,14 +36,6 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-
-private val Seoul = TimeZone.of("Asia/Seoul")
-private val ThursdayClock = object : Clock {
-    override fun now(): Instant = LocalDateTime(2026, 9, 24, 22, 0).toInstant(Seoul)
-}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MatchesViewModelTest {
@@ -181,7 +171,7 @@ class MatchesViewModelTest {
                 return 0
             }
         }
-        val viewModel = MatchesViewModel(joined, StubPreferences(UserPreferences.Default), FakeContentRepository(), ThursdayClock, Seoul)
+        val viewModel = MatchesViewModel(joined, TestUserPreferencesRepository(UserPreferences.Default), FakeContentRepository(), ThursdayClock, Seoul)
         val refreshed = mutableListOf<Int>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.refreshed.collect { refreshed += it } }
 
@@ -210,7 +200,7 @@ class MatchesViewModelTest {
         val failing = object : MatchRepository by FakeMatchRepository(ThursdayClock, scope = this) {
             override suspend fun refresh(): Int = throw OvalitException(OvalitError.Offline)
         }
-        val viewModel = MatchesViewModel(failing, StubPreferences(UserPreferences.Default), FakeContentRepository(), ThursdayClock, Seoul)
+        val viewModel = MatchesViewModel(failing, TestUserPreferencesRepository(UserPreferences.Default), FakeContentRepository(), ThursdayClock, Seoul)
         val notices = mutableListOf<FailureNotice>()
         val refreshed = mutableListOf<Int>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.notices.toList(notices) }
@@ -227,7 +217,7 @@ class MatchesViewModelTest {
 
     private fun TestScope.viewModel(preferences: UserPreferences = UserPreferences.Default) = MatchesViewModel(
         FakeMatchRepository(ThursdayClock, scope = this),
-        StubPreferences(preferences),
+        TestUserPreferencesRepository(preferences),
         FakeContentRepository(),
         ThursdayClock,
         Seoul,
@@ -237,28 +227,4 @@ class MatchesViewModelTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
         return assertIs(viewModel.uiState.value)
     }
-}
-
-internal class StubPreferences(initial: UserPreferences = UserPreferences.Default) : UserPreferencesRepository {
-    override val preferences = MutableStateFlow(initial)
-
-    override suspend fun setTheme(theme: ThemePreference) = Unit
-
-    override suspend fun setDefaultQueue(queue: QueueFilter) = Unit
-
-    override suspend fun setNotifyAnalysisDone(enabled: Boolean) = Unit
-
-    override suspend fun setNotifyWeeklyReport(enabled: Boolean) = Unit
-
-    override suspend fun setNotifyPing(enabled: Boolean) = Unit
-
-    override suspend fun setFocus(focus: Focus) = Unit
-
-    override suspend fun setSeenProfileHint() = Unit
-
-    override suspend fun setSeenNotificationPrimer() = Unit
-
-    override suspend fun setAskedNotificationPermission() = Unit
-
-    override suspend fun setAdFreeUntil(until: Instant) = Unit
 }

@@ -12,6 +12,8 @@ import com.ovalit.core.model.OvalitError
 import com.ovalit.core.model.OvalitException
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.Queue
+import com.ovalit.core.testing.StepClock
+import com.ovalit.core.testing.Thursday
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -42,11 +44,6 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-
-private val Thursday = LocalDateTime(2026, 9, 24, 22, 0).toInstant(TimeZone.of("Asia/Seoul"))
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class OfflineFirstMatchRepositoryTest {
@@ -504,7 +501,6 @@ private class TestMatchRemote(
         return matches.firstOrNull { it.id == id }
     }
 }
-
 
 /** 최신 경기부터 [every]씩 앞서 시작한 경기들입니다. */
 private fun history(count: Int, newest: Instant = Thursday - 1.hours, prefix: String = "played", every: Duration = 3.hours) =

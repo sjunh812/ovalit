@@ -110,7 +110,8 @@ import org.jetbrains.compose.resources.stringResource
 private val ChevronWidth = 16.dp
 private val TierSize = 16.dp
 
-// "닉네임#KR1"의 태그는 이름보다 덜 중요해서 한 단계 작고 옅게 둔다. 글자 크기를 키우면 같이 커지게 em으로 준다.
+// "닉네임#KR1"의 태그는 이름보다 덜 중요해서 한 단계 작고 옅게 둔다.
+// 글자 크기를 키우면 같이 커지게 em으로 준다.
 private fun riotIdText(riotId: String, tagColor: Color): AnnotatedString = buildAnnotatedString {
     append(riotId.substringBefore('#'))
     val tag = riotId.substringAfter('#', missingDelimiterValue = "")
@@ -119,7 +120,8 @@ private fun riotIdText(riotId: String, tagColor: Color): AnnotatedString = build
     }
 }
 
-// 숫자 열은 글자 크기만큼 넓힌다. 고정 폭이면 큰 글씨에서 "14/16/4"가 "14/1"로 잘린다. 줄어든 폭은 이름 칸이 내준다.
+// 숫자 열은 글자 크기만큼 넓힌다. 고정 폭이면 큰 글씨에서 "14/16/4"가 "14/1"로 잘린다.
+// 줄어든 폭은 이름 칸이 내준다.
 private class ColumnWidths(val kda: Dp, val acs: Dp)
 
 @Composable
@@ -129,7 +131,8 @@ private fun columnWidths(): ColumnWidths {
 }
 
 /**
- * S3 스코어보드입니다. 두 팀 모드는 우리 팀과 상대 팀, 데스매치는 모두를 한 순위로, 건틀릿은 팀마다 등수 순으로 묶습니다.
+ * S3 스코어보드입니다.
+ * 두 팀 모드는 우리 팀과 상대 팀, 데스매치는 모두를 한 순위로, 건틀릿은 팀마다 등수 순으로 묶습니다.
  * 라운드가 없는 모드는 전투점수 열과 펼친 줄이 없습니다. 둘 다 라운드로 나누거나 라운드 기록으로 세는 값입니다.
  */
 @Composable
@@ -216,9 +219,7 @@ private fun ColumnLabel(text: String, width: Dp) {
     )
 }
 
-/**
- * 스코어보드 한 줄입니다. 얼굴과 이름을 누르면 [onOpenPlayer]를 부르고, 라운드제 모드면 줄의 나머지를 누르면 그 판 기록을 펼칩니다.
- */
+/** 얼굴과 이름을 누르면 [onOpenPlayer]를 부르고, 라운드제 모드면 줄의 나머지를 누르면 그 판 기록을 펼칩니다. */
 @Composable
 private fun PlayerRow(
     row: ScoreboardRow,
@@ -335,7 +336,8 @@ private fun PlayerRow(
     }
 }
 
-// 펼친 줄의 그 판 기록이다. 줄에 없는 다섯 가지를 한 줄에 놓는다. 이름 밑으로 들여 쓰면 칸이 좁아져서 줄 왼쪽 끝부터 쓴다.
+// 펼친 줄의 그 판 기록이다. 줄에 없는 다섯 가지를 한 줄에 놓는다.
+// 이름 밑으로 들여 쓰면 칸이 좁아져서 줄 왼쪽 끝부터 쓴다.
 @Composable
 private fun PlayerStats(row: ScoreboardRow) {
     val colors = OvalitTheme.colors

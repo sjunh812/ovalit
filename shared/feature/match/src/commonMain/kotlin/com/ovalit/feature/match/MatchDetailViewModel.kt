@@ -53,7 +53,7 @@ sealed interface MatchDetailUiState {
     data object Gone : MatchDetailUiState
 
     /**
-     * @property groups 스코어보드 묶음입니다. 우리 팀이 먼저입니다([scoreboardGroups]).
+     * @property groups 우리 팀이 먼저입니다([scoreboardGroups]).
      * @property rounds 내가 못 뛴 라운드도 들어갑니다.
      */
     data class Success(
@@ -69,8 +69,6 @@ sealed interface MatchDetailUiState {
 }
 
 /**
- * 스코어보드 한 묶음입니다.
- *
  * @property rank 건틀릿처럼 작은 팀 여럿이 등수를 다투는 경기에서 이 팀의 등수입니다. 그 밖에는 `null`입니다.
  */
 data class ScoreboardGroup(
@@ -80,7 +78,7 @@ data class ScoreboardGroup(
 )
 
 enum class ScoreboardSide {
-    /** 우리 팀입니다. 건틀릿이면 나와 짝입니다. */
+    /** 건틀릿이면 나와 짝입니다. */
     MY_TEAM,
     ENEMY_TEAM,
 
@@ -92,16 +90,17 @@ enum class ScoreboardSide {
 }
 
 /**
- * 경기 모양에 맞춰 스코어보드를 묶습니다. 두 팀 모드는 우리 팀과 상대 팀이고 라운드제면 라운드당 전투점수, 아니면 킬 순입니다.
- * 데스매치는 모두를 등수 순으로 한 묶음에, 건틀릿은 팀마다 등수 순으로 묶습니다. 펼친 줄의 첫 킬과 멀티킬은 라운드 기록으로 세서
- * 라운드제에만 담습니다.
+ * 경기 모양에 맞춰 스코어보드를 묶습니다.
+ * 두 팀 모드는 우리 팀과 상대 팀으로 나누고, 라운드제면 라운드당 전투점수 순, 아니면 킬 순입니다.
+ * 데스매치는 모두를 등수 순으로 한 묶음에, 건틀릿은 팀마다 등수 순으로 묶습니다.
+ * 펼친 줄의 첫 킬과 멀티킬은 라운드 기록으로 세서 라운드제에만 담습니다.
  */
 internal fun Match.scoreboardGroups(relation: (PlayerId) -> PlayerRelation): List<ScoreboardGroup> {
     val placements = placements()
     val stats = if (format == MatchFormat.ROUNDS) playerStats() else emptyMap()
     fun row(line: Scoreline) = ScoreboardRow(line, relation(line.player), placements[line.player], stats[line.player])
-    // 라운드제는 자리(라운드당 전투점수) 순이다. 합계로 세우면 튕겨서 덜 뛴 사람이 밀린다. 라운드가 없는 팀 모드는 자리가 없어
-    // 킬 순이다.
+    // 라운드제는 자리(라운드당 전투점수) 순이다. 합계로 세우면 튕겨서 덜 뛴 사람이 밀린다.
+    // 라운드가 없는 팀 모드는 자리가 없어 킬 순이다.
     val order = compareBy<Scoreline> { placements[it.player]?.rank ?: Int.MAX_VALUE }
         .thenByDescending { it.kills }
         .thenBy { it.deaths }
@@ -124,7 +123,7 @@ internal fun Match.scoreboardGroups(relation: (PlayerId) -> PlayerRelation): Lis
 }
 
 /**
- * @property placement 그 판에서의 자리(MVP, 팀 MVP, 등수)입니다.
+ * @property placement 그 판의 자리(MVP, 팀 MVP, 등수)입니다.
  * @property stats 줄을 펼치면 보이는 첫 킬, 첫 데스, 멀티킬입니다.
  */
 data class ScoreboardRow(
@@ -135,17 +134,13 @@ data class ScoreboardRow(
 )
 
 /**
- * 스코어보드에서 그 사람과 나의 관계입니다. 프로필은 서로 수락한 친구만 열 수 있고, 친구가 아닌 사람을
- * 누르면 친구 요청이나 초대 링크를 권하는 시트가 뜹니다.
+ * 스코어보드에서 그 사람과 나의 관계입니다.
+ * 프로필은 서로 수락한 친구만 열 수 있고, 친구가 아닌 사람을 누르면 친구 요청이나 초대 링크를 권하는 시트가 뜹니다.
  */
 enum class PlayerRelation {
     ME,
     FRIEND,
-
-    /** 그 사람이 먼저 나에게 요청을 보냈습니다. */
     REQUESTED_ME,
-
-    /** 내가 요청을 보내 놓았습니다. */
     REQUEST_SENT,
 
     /** 앱을 쓰지만 아직 아무 요청도 없습니다. */
@@ -154,15 +149,18 @@ enum class PlayerRelation {
     /** 앱을 쓰지 않아서 요청을 받을 수 없습니다. */
     NOT_APP_USER,
 
-    /** 앱을 쓰는지 서버에 묻는 중이거나 묻지 못했습니다. 모르는 사람을 [NOT_APP_USER]로 보이지 않으려고 따로 둡니다. */
+    /**
+     * 앱을 쓰는지 서버에 묻는 중이거나 묻지 못했습니다.
+     * 모르는 사람을 [NOT_APP_USER]로 보이지 않으려고 따로 둡니다.
+     */
     UNKNOWN,
 }
 
 /**
  * S3 경기 상세입니다.
  *
- * @param computation 스코어보드 순위, 줄마다의 첫 킬·멀티킬, 라운드 요약을 세는 디스패처입니다. 메인 스레드에서 세면 화면이
- * 밀려 들어오는 동안 멈춰서 기본은 [Dispatchers.Default]입니다.
+ * @param computation 스코어보드 순위, 줄마다의 첫 킬·멀티킬, 라운드 요약을 세는 디스패처입니다.
+ *   메인 스레드에서 세면 화면이 밀려 들어오는 동안 멈춰서 기본은 [Dispatchers.Default]입니다.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class MatchDetailViewModel(
@@ -179,7 +177,8 @@ class MatchDetailViewModel(
         .map { matches -> matches.firstOrNull { it.id == matchId } }
         .distinctUntilChanged()
 
-    // 앱을 쓰는지는 경기를 불러올 때 서버에 한 번 묻는다. 답을 기다리는 동안과 실패했을 때는 `null`로 두고 스코어보드부터 그린다.
+    // 앱을 쓰는지는 경기를 불러올 때 서버에 한 번 묻는다.
+    // 답을 기다리는 동안과 실패했을 때는 `null`로 두고 스코어보드부터 그린다.
     private val appUsers: Flow<Set<PlayerId>?> = match.flatMapLatest { match ->
         if (match == null) {
             flowOf(emptySet())

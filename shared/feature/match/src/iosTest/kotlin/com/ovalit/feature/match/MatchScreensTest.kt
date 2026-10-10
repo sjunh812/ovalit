@@ -227,7 +227,6 @@ class MatchScreensTest {
         onNodeWithText("1대4 클러치", useUnmergedTree = true).assertExists()
     }
 
-    // 이코노미 탭은 내 기록 탭으로 바뀌었다
     @Test
     fun `내 기록 탭은 맞힌 부위와 상대별 맞대결을 보여준다`() = runComposeUiTest {
         setContent { Themed { Detail() } }

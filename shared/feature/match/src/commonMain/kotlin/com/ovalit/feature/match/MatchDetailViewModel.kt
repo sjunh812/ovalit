@@ -27,6 +27,8 @@ import com.ovalit.core.ui.FailedAction
 import com.ovalit.core.ui.FailureNotice
 import com.ovalit.core.ui.FailureNotices
 import com.ovalit.core.ui.launchNotifying
+import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -37,6 +39,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -155,6 +158,12 @@ enum class PlayerRelation {
     UNKNOWN,
 }
 
+/**
+ * S3 경기 상세입니다.
+ *
+ * @param computation 스코어보드 순위, 줄마다의 첫 킬·멀티킬, 라운드 요약을 세는 디스패처입니다. 메인 스레드에서 세면 화면이
+ * 밀려 들어오는 동안 멈춰서 기본은 [Dispatchers.Default]입니다.
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 class MatchDetailViewModel(
     private val matchId: MatchId,
@@ -163,6 +172,7 @@ class MatchDetailViewModel(
     contentRepository: ContentRepository,
     private val timeZone: TimeZone,
     private val analytics: Analytics = NoAnalytics,
+    computation: CoroutineContext = Dispatchers.Default,
 ) : ViewModel() {
 
     private val match = matchRepository.observeMatches()
@@ -204,7 +214,7 @@ class MatchDetailViewModel(
             buys = match.buyRecords(),
             timeZone = timeZone,
         )
-    }.stateIn(
+    }.flowOn(computation).stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = MatchDetailUiState.Loading,

@@ -8,6 +8,7 @@ import com.ovalit.core.model.Match
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.Queue
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -26,6 +27,9 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.datetime.TimeZone
+
+// 앱은 Dispatchers.Default에서 세지만 테스트는 값을 바로 읽으려고 부르는 쪽에서 센다
+private val SameThread = EmptyCoroutineContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MatchDetailViewModelTest {
@@ -138,7 +142,7 @@ class MatchDetailViewModelTest {
         val broken = object : FriendRepository by friends {
             override suspend fun appUsersAmong(players: Collection<PlayerId>): Set<PlayerId> = error("서버에 닿지 않음")
         }
-        val viewModel = MatchDetailViewModel(MatchId(anyMatch().id.value), broken, matches, FakeContentRepository(), TimeZone.of("Asia/Seoul"))
+        val viewModel = MatchDetailViewModel(MatchId(anyMatch().id.value), broken, matches, FakeContentRepository(), TimeZone.of("Asia/Seoul"), computation = SameThread)
 
         val state = collect(viewModel)
 
@@ -151,7 +155,7 @@ class MatchDetailViewModelTest {
     private suspend fun anyMatch(): Match = matches.observeMatches().first().first { it.queue == Queue.COMPETITIVE }
 
     private fun viewModel(match: Match) =
-        MatchDetailViewModel(MatchId(match.id.value), friends, matches, FakeContentRepository(), TimeZone.of("Asia/Seoul"))
+        MatchDetailViewModel(MatchId(match.id.value), friends, matches, FakeContentRepository(), TimeZone.of("Asia/Seoul"), computation = SameThread)
 
     private suspend fun TestScope.collect(viewModel: MatchDetailViewModel): MatchDetailUiState.Success {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }

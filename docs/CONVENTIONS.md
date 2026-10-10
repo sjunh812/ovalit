@@ -360,6 +360,19 @@ CI 체크아웃에는 `local.properties`와 `composeApp/google-services.json`이
 Gradle 캐시는 `setup-gradle`의 `cache-provider: basic`을 씁니다. 기본값인 enhanced는 Gradle 이용약관에 동의해야 쓰는
 비공개 라이브러리입니다. Kotlin/Native 컴파일러(`~/.konan`)는 코틀린 버전마다 따로 캐시합니다.
 
+### 새 게임 콘텐츠 확인
+
+`.github/workflows/content-watch.yml`이 매일 한국 시각 오전 9시에 `tools/check_content.py`를 돌립니다. valorant-api.com의
+요원, 무기, 맵, 큐 ID, 티어를 앱에 넣은 그림(`GameAssetIndex.kt`), 서버 표(`server/src/data/`), `Queue.fromRiot`과 견주고,
+저장소가 모르는 것이 있으면 `content-watch` 이슈를 열거나 본문을 고칩니다. 둘 다 무료입니다. Riot 키는 개발용이 하루마다
+바뀌어서 쓰지 않습니다.
+
+- 이슈 본문에 종류마다 할 일이 있습니다. 그림은 카탈로그를 새로 받아 `tools/bundle_assets.py`, 역할과 티어는
+  `npm run build:tables`, 모드는 실제 경기 응답으로 규칙을 확인한 뒤 `Queue.fromRiot`과 `CLAUDE.md` 큐 표입니다.
+- 경기 기록에 나오지 않거나 지켜보기로 한 것은 `tools/content-known.json`에 까닭과 함께 적어 다음부터 넘깁니다.
+- 손으로 돌리려면 Actions 탭에서 Content watch를 고르거나 로컬에서 `python3 tools/check_content.py`입니다.
+- 저장소에 60일 동안 활동이 없으면 GitHub이 예약 실행을 멈춥니다. Actions 탭에서 다시 켭니다.
+
 ## 프리뷰
 
 화면을 만들면 프리뷰를 같이 답니다. 최소 세 가지를 봅니다.

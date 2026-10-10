@@ -1,0 +1,37 @@
+# 새 요원, 맵, 무기, 모드, 티어가 나왔는지 매일 본다(tools/check_content.py).
+# 공개 저장소라 표준 러너가 무료이고, valorant-api.com도 무료다(CLAUDE.md 비용).
+# 저장소가 모르는 것이 있으면 content-watch 이슈를 열고, 이미 열려 있으면 본문을 새로 고친다.
+# 저장소에 60일 동안 활동이 없으면 GitHub이 예약 실행을 멈춘다. Actions 탭에서 다시 켠다.
+name: Content watch
+
+on:
+  schedule:
+    # 매일 한국 시각 오전 9시다. 패치는 보통 화요일이나 수요일에 나온다.
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - id: check
+        run: python3 tools/check_content.py --out report.md
+
+      - if: steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create content-watch --color FF4655 --description "새 게임 콘텐츠 확인" 2>/dev/null || true
+          number=$(gh issue list --label content-watch --state open --json number --jq '.[0].number')
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --body-file report.md
+          else
+            gh issue create --title "새 게임 콘텐츠 확인 필요" --label content-watch --body-file report.md
+          fi

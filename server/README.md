@@ -316,6 +316,7 @@ Riot 응답은 isolate 메모리, Cache API, Riot 순서로 찾습니다.
 
 티어 이름과 요원 역할은 Riot 공식 자료에 없어서 valorant-api.com의 ko-KR 덤프로 만듭니다. 새 요원이
 나오거나 티어가 바뀌면 다시 돌리고 결과를 커밋합니다.
+새 요원이나 티어가 나오면 매일 도는 Content watch가 `content-watch` 이슈로 알려 줍니다(`docs/CONVENTIONS.md`).
 
 ```bash
 npm run build:tables -- <agents.json> <competitivetiers.json>

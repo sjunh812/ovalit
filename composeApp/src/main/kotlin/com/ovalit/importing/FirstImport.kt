@@ -35,7 +35,8 @@ import org.koin.core.component.inject
 
 private const val WORK_NAME = "first-import"
 private const val NEW_MATCHES_WORK_NAME = "new-matches"
-private const val CHANNEL_ID = "analysis_done"
+/** 분석 완료와 쌓인 새 경기 알림의 채널입니다. 설정이 이 채널이 막혔는지 봅니다. */
+internal const val ANALYSIS_CHANNEL = "analysis_done"
 private const val KEY_TOTAL = "total"
 // 알림은 태그로 가른다. ㅇㅂㅇ 알림 ID는 초대 ID에서 만들어 어느 숫자와도 겹칠 수 있다.
 private const val FIRST_IMPORT_TAG = "first_import"
@@ -164,7 +165,7 @@ private fun notify(context: Context, tag: String, title: String, body: String) {
     }
     val manager = context.getSystemService(NotificationManager::class.java)
     manager.createNotificationChannel(
-        NotificationChannel(CHANNEL_ID, context.getString(R.string.notification_channel_analysis), NotificationManager.IMPORTANCE_DEFAULT),
+        NotificationChannel(ANALYSIS_CHANNEL, context.getString(R.string.notification_channel_analysis), NotificationManager.IMPORTANCE_DEFAULT),
     )
     val open = PendingIntent.getActivity(
         context,
@@ -172,7 +173,7 @@ private fun notify(context: Context, tag: String, title: String, body: String) {
         Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
         PendingIntent.FLAG_IMMUTABLE,
     )
-    val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+    val notification = NotificationCompat.Builder(context, ANALYSIS_CHANNEL)
         .setSmallIcon(R.drawable.ic_notification)
         .setContentTitle(title)
         .setContentText(body)

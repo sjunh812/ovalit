@@ -7,6 +7,8 @@ import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -64,6 +66,34 @@ class SettingsScreenTest {
 
         onNodeWithText("광고 없이 보기").performScrollTo().performClick()
         assertEquals(1, ads.offered)
+    }
+
+    // 스위치가 켜져 있어도 휴대폰 설정에서 막혀 있으면 알림이 오지 않는다
+    @Test
+    fun `휴대폰 설정에서 오발있 알림을 막았으면 켜러 가는 줄을 두고 스위치를 잠근다`() = runComposeUiTest {
+        var opened = 0
+        var changed = 0
+        setContent {
+            Settings(
+                actions = SettingsActions(onOpenNotificationSettings = { opened++ }, onNotifyPingChange = { changed++ }),
+                notificationBlocks = NotificationBlocks(ping = true),
+            )
+        }
+
+        // 막힌 건 오발있? 알림뿐이라 알림 카드에는 줄이 없다
+        onAllNodesWithText("휴대폰 설정에서 알림이 꺼져 있어요").assertCountEquals(1)
+        onNodeWithText("휴대폰 설정에서 알림이 꺼져 있어요").performScrollTo().performClick()
+        onNodeWithText("파티 모집 알림").performScrollTo().performClick()
+
+        assertEquals(1, opened)
+        assertEquals(0, changed)
+    }
+
+    @Test
+    fun `알림이 막히지 않았으면 켜러 가는 줄이 없다`() = runComposeUiTest {
+        setContent { Settings() }
+
+        onNodeWithText("휴대폰 설정에서 알림이 꺼져 있어요").assertDoesNotExist()
     }
 
     @Test
@@ -222,10 +252,18 @@ private fun Settings(
     actions: SettingsActions = SettingsActions(),
     ads: AdRenderer? = null,
     now: Instant = Instant.parse("2026-10-04T08:00:00Z"),
+    notificationBlocks: NotificationBlocks = NotificationBlocks.None,
 ) {
     OvalitTheme {
         CompositionLocalProvider(LocalAdRenderer provides ads) {
-            SettingsScreen(uiState = uiState, appVersion = "1.0.0", actions = actions, now = now, timeZone = TimeZone.of("Asia/Seoul"))
+            SettingsScreen(
+                uiState = uiState,
+                appVersion = "1.0.0",
+                actions = actions,
+                notificationBlocks = notificationBlocks,
+                now = now,
+                timeZone = TimeZone.of("Asia/Seoul"),
+            )
         }
     }
 }

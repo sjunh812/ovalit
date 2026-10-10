@@ -64,6 +64,8 @@ import com.ovalit.feature.settings.resources.ad_free_until_tomorrow
 import com.ovalit.feature.settings.resources.default_queue
 import com.ovalit.feature.settings.resources.delete_data
 import com.ovalit.feature.settings.resources.focus
+import com.ovalit.feature.settings.resources.notifications_blocked
+import com.ovalit.feature.settings.resources.notifications_blocked_open
 import com.ovalit.feature.settings.resources.notify_analysis_done
 import com.ovalit.feature.settings.resources.notify_ping
 import com.ovalit.feature.settings.resources.notify_ping_description
@@ -116,6 +118,8 @@ fun SettingsRoute(
     onOpenProfile: () -> Unit,
     modifier: Modifier = Modifier,
     onSendFeedback: (() -> Unit)? = null,
+    notificationBlocks: NotificationBlocks = NotificationBlocks.None,
+    onOpenNotificationSettings: () -> Unit = {},
     viewModel: SettingsViewModel = koinViewModel(),
 ) {
     FailureNoticesEffect(viewModel.notices)
@@ -137,8 +141,10 @@ fun SettingsRoute(
             onUnlink = { viewModel.unlink(onUnlinked) },
             onOpenProfile = onOpenProfile,
             onSendFeedback = onSendFeedback,
+            onOpenNotificationSettings = onOpenNotificationSettings,
         ),
         modifier = modifier,
+        notificationBlocks = notificationBlocks,
     )
 }
 
@@ -155,6 +161,7 @@ internal class SettingsActions(
     val onUnlink: () -> Unit = {},
     val onOpenProfile: () -> Unit = {},
     val onSendFeedback: (() -> Unit)? = null,
+    val onOpenNotificationSettings: () -> Unit = {},
 )
 
 @Composable
@@ -163,6 +170,7 @@ internal fun SettingsScreen(
     appVersion: String,
     actions: SettingsActions,
     modifier: Modifier = Modifier,
+    notificationBlocks: NotificationBlocks = NotificationBlocks.None,
     now: Instant = Clock.System.now(),
     timeZone: TimeZone = TimeZone.currentSystemDefault(),
 ) {
@@ -203,11 +211,17 @@ internal fun SettingsScreen(
                     )
                 }
 
+                // 휴대폰 설정에서 막혀 있으면 스위치가 켜져 있어도 알림이 오지 않는다. 켜러 가는 줄을 맨 위에 두고 막힌 스위치는
+                // 흐리게 둔다. 앱으로 돌아오면 다시 확인한다.
                 SettingsCard(stringResource(Res.string.section_notifications)) {
+                    if (notificationBlocks.analysisDone || notificationBlocks.weeklyReport) {
+                        NotificationsBlockedRow(onClick = actions.onOpenNotificationSettings)
+                    }
                     ToggleRow(
                         title = stringResource(Res.string.notify_analysis_done),
                         checked = preferences.notifyAnalysisDone,
                         onCheckedChange = actions.onNotifyAnalysisDoneChange,
+                        enabled = !notificationBlocks.analysisDone,
                     )
                     // 서버가 월요일 9시에 FCM 토픽으로 한 번 보낸다. 끄면 기기가 토픽 구독을 푼다.
                     ToggleRow(
@@ -215,23 +229,26 @@ internal fun SettingsScreen(
                         trailingLabel = stringResource(Res.string.notify_weekly_report_time),
                         checked = preferences.notifyWeeklyReport,
                         onCheckedChange = actions.onNotifyWeeklyReportChange,
+                        enabled = !notificationBlocks.weeklyReport,
                     )
                 }
 
                 // 오발있? 알림과 거기 딸린 시작 전 알림을 한 카드에 둔다. 스위치를 끄면 시작 전 알림도 오지 않아 그 줄을 흐리게 남긴다.
                 // 숨기면 화면이 튀고 그런 설정이 있다는 것도 안 보인다.
                 SettingsCard(stringResource(Res.string.notify_ping)) {
+                    if (notificationBlocks.ping) NotificationsBlockedRow(onClick = actions.onOpenNotificationSettings)
                     ToggleRow(
                         title = stringResource(Res.string.notify_ping_invites),
                         description = stringResource(Res.string.notify_ping_description),
                         checked = preferences.notifyPing,
                         onCheckedChange = actions.onNotifyPingChange,
+                        enabled = !notificationBlocks.ping,
                     )
                     ValueRow(
                         title = stringResource(Res.string.ping_reminder),
                         description = stringResource(Res.string.ping_reminder_description),
                         value = stringResource(preferences.pingReminder.label),
-                        enabled = preferences.notifyPing,
+                        enabled = preferences.notifyPing && !notificationBlocks.ping,
                         onClick = { openSheet = SettingsSheet.PING_REMINDER },
                     )
                 }
@@ -376,7 +393,9 @@ private fun ToggleRow(
     onCheckedChange: (Boolean) -> Unit,
     description: String? = null,
     trailingLabel: String? = null,
+    enabled: Boolean = true,
 ) {
+    val colors = OvalitTheme.colors
     val haptics = rememberOvalitHaptics()
     Row(
         modifier = Modifier
@@ -384,6 +403,7 @@ private fun ToggleRow(
             .heightIn(min = RowMinHeight)
             .toggleable(
                 value = checked,
+                enabled = enabled,
                 role = Role.Switch,
                 onValueChange = { on ->
                     haptics.toggle(on)
@@ -397,19 +417,28 @@ private fun ToggleRow(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(OvalitSpacing.xs),
         ) {
-            OvalitText(text = title, style = OvalitTheme.typography.body)
+            OvalitText(text = title, style = OvalitTheme.typography.body, color = if (enabled) colors.t1 else colors.t4)
             if (description != null) {
-                OvalitText(text = description, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t3)
+                OvalitText(text = description, style = OvalitTheme.typography.caption, color = if (enabled) colors.t3 else colors.t4)
             }
         }
         if (trailingLabel != null) {
-            OvalitText(text = trailingLabel, style = OvalitTheme.typography.label, color = OvalitTheme.colors.t3)
+            OvalitText(text = trailingLabel, style = OvalitTheme.typography.label, color = if (enabled) colors.t3 else colors.t4)
             Spacer(Modifier.width(OvalitSpacing.sm))
         } else {
             Spacer(Modifier.width(OvalitSpacing.lg))
         }
-        OvalitSwitch(checked = checked)
+        OvalitSwitch(checked = checked, enabled = enabled)
     }
+}
+
+@Composable
+private fun NotificationsBlockedRow(onClick: () -> Unit) {
+    ValueRow(
+        title = stringResource(Res.string.notifications_blocked),
+        value = stringResource(Res.string.notifications_blocked_open),
+        onClick = onClick,
+    )
 }
 
 // 누를 곳이 없는 화살표는 두지 않는다. [onClick]이 있을 때만 그린다.
@@ -450,7 +479,6 @@ private fun ValueRow(
     }
 }
 
-// 끝나는 시각이 오늘이면 "오늘 23:00까지", 내일이면 "내일 16:20까지"다
 /**
  * [until]이 [now]보다 뒤면 그대로, 지났으면 `null`입니다. 지나는 순간 `null`로 바꿔 다시 그립니다. 그릴 때만 견주면 광고 없이
  * 보기가 끝난 뒤에도 "오늘 16:20까지"에 멈춰 다시 누를 수 없습니다.
@@ -468,6 +496,7 @@ private fun rememberStillAhead(until: Instant?, now: Instant): Instant? {
     return ahead
 }
 
+// 끝나는 시각이 오늘이면 "오늘 23:00까지", 내일이면 "내일 16:20까지"다
 @Composable
 private fun adFreeUntilText(until: Instant, now: Instant, timeZone: TimeZone): String {
     val end = until.toLocalDateTime(timeZone)

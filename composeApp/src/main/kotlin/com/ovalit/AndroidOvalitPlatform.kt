@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -20,10 +21,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.ovalit.app.OvalitPlatform
 import com.ovalit.core.designsystem.component.OvalitToastState
+import com.ovalit.feature.settings.NotificationBlocks
+import com.ovalit.importing.ANALYSIS_CHANNEL
+import com.ovalit.push.PING_CHANNEL
 import com.ovalit.push.PingNotifications
+import com.ovalit.push.WEEKLY_CHANNEL
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.launch
 
@@ -62,6 +69,39 @@ internal class AndroidOvalitPlatform(private val context: Context) : OvalitPlatf
     override fun ImportEntered() = RequestNotificationPermission()
 
     override fun clearPingNotification(pingId: String) = PingNotifications.clear(context, pingId)
+
+    // 휴대폰 설정에서 바꾸고 돌아오면 바로 맞게 화면으로 돌아올 때마다 다시 본다
+    @Composable
+    override fun rememberNotificationBlocks(): NotificationBlocks {
+        var blocks by remember { mutableStateOf(notificationBlocks(context)) }
+        LifecycleResumeEffect(Unit) {
+            blocks = notificationBlocks(context)
+            onPauseOrDispose {}
+        }
+        return blocks
+    }
+
+    override fun openNotificationSettings() {
+        val notifications = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        try {
+            context.startActivity(notifications)
+        } catch (_: ActivityNotFoundException) {
+            // 알림 설정 화면을 못 여는 기기도 있어서 앱 정보 화면으로 보낸다
+            context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)))
+        }
+    }
+}
+
+// 앱 알림을 통째로 껐으면 셋 다 막힌 것이다. 아직 만들지 않은 채널은 막을 수도 없어 열린 것으로 본다.
+private fun notificationBlocks(context: Context): NotificationBlocks {
+    val manager = NotificationManagerCompat.from(context)
+    if (!manager.areNotificationsEnabled()) return NotificationBlocks(analysisDone = true, weeklyReport = true, ping = true)
+    fun blocked(channel: String) = manager.getNotificationChannelCompat(channel)?.importance == NotificationManagerCompat.IMPORTANCE_NONE
+    return NotificationBlocks(
+        analysisDone = blocked(ANALYSIS_CHANNEL),
+        weeklyReport = blocked(WEEKLY_CHANNEL),
+        ping = blocked(PING_CHANNEL),
+    )
 }
 
 /**

@@ -21,11 +21,15 @@ private val KnobInset = 3.dp
 /**
  * 모양만 그립니다. 누름은 줄 전체에 `toggleable`을 걸어 받습니다. 스위치에만 걸면 누를 곳이 작고 화면 읽기 프로그램이 스위치와
  * 설명을 따로 읽습니다.
+ *
+ * @param enabled 휴대폰 설정에서 알림을 막아 바꿔도 소용없을 때처럼 못 바꾸면 `false`입니다. 켜져 있어도 액센트를 칠하지 않고
+ *   손잡이 자리로만 보여 줍니다.
  */
 @Composable
 fun OvalitSwitch(
     checked: Boolean,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     val colors = OvalitTheme.colors
     val knobOffset by animateDpAsState(if (checked) TrackWidth - KnobSize - KnobInset * 2 else 0.dp)
@@ -33,14 +37,21 @@ fun OvalitSwitch(
     Box(
         modifier = modifier
             .size(TrackWidth, TrackHeight)
-            .background(if (checked) colors.accent else colors.fill, CircleShape)
+            .background(if (checked && enabled) colors.accent else colors.fill, CircleShape)
             .padding(KnobInset),
     ) {
         Box(
             Modifier
                 .offset(x = knobOffset)
                 .size(KnobSize)
-                .background(if (checked) colors.onAccent else colors.t4, CircleShape),
+                .background(
+                    when {
+                        !enabled -> colors.t5
+                        checked -> colors.onAccent
+                        else -> colors.t4
+                    },
+                    CircleShape,
+                ),
         )
     }
 }

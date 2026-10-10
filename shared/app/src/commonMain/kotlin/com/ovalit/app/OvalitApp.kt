@@ -304,6 +304,8 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
                                 appVersion = appVersion,
                                 onUnlinked = { backStack.replaceAllWith(Intro) },
                                 onOpenProfile = { backStack.openProfile() },
+                                notificationBlocks = platform.rememberNotificationBlocks(),
+                                onOpenNotificationSettings = platform::openNotificationSettings,
                                 onSendFeedback = platform.feedbackAddress?.let { address ->
                                     {
                                         // 메일 앱이 없는 기기도 있어서 그때는 주소를 알려 준다

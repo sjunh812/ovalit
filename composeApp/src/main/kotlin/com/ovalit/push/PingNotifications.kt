@@ -20,8 +20,9 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
-private const val PING_CHANNEL = "ping"
-private const val WEEKLY_CHANNEL = "weekly_report"
+// 설정이 이 채널들이 막혔는지 본다
+internal const val PING_CHANNEL = "ping"
+internal const val WEEKLY_CHANNEL = "weekly_report"
 private const val WEEKLY_TAG = "weekly_report"
 
 // 시작까지 이보다 덜 남았으면 "지금"으로 적는다. 앱의 Ping.isNow와 같아야 한다.

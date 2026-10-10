@@ -92,14 +92,15 @@ class FriendProfileViewModel(
     private val pingRepository: PingRepository,
     matchRepository: MatchRepository,
     contentRepository: ContentRepository,
-    clock: Clock,
+    private val clock: Clock,
     timeZone: TimeZone,
     computation: CoroutineContext = Dispatchers.Default,
     weekChanges: Flow<Unit> = flowOf(Unit),
+    minuteChanges: Flow<Unit> = flowOf(Unit),
 ) : ViewModel() {
 
     // 화면을 켜 둔 채 월요일 0시를 넘기면 "이번 주"를 다시 잡는다(홈과 같다)
-    val uiState: StateFlow<FriendProfileUiState> = combine(
+    private val counted: Flow<FriendProfileUiState> = combine(
         friendRepository.friends,
         friendRepository.rival,
         matchRepository.observeMatches(),
@@ -130,7 +131,12 @@ class FriendProfileViewModel(
             now = clock.now(),
             timeZone = timeZone,
         )
-    }.flowOn(computation).stateIn(
+    }.flowOn(computation)
+
+    // 최근 경기의 "N분 전"은 분마다 흐르게 지금만 다시 넣는다. 경기를 다시 세지는 않는다.
+    val uiState: StateFlow<FriendProfileUiState> = combine(counted, minuteChanges) { state, _ ->
+        if (state is FriendProfileUiState.Success) state.copy(now = clock.now()) else state
+    }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = FriendProfileUiState.Loading,

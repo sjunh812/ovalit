@@ -39,6 +39,7 @@ val friendModule = module {
             Clock.System,
             timeZone,
             weekChanges = weekStarts(Clock.System, timeZone),
+            minuteChanges = minuteStarts(Clock.System),
         )
     }
 }

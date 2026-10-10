@@ -13,9 +13,11 @@ import com.ovalit.core.model.weeklyReport
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Clock
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.TimeZone
@@ -47,12 +49,15 @@ class FriendRankingViewModel(
     clock: Clock,
     timeZone: TimeZone,
     computation: CoroutineContext = Dispatchers.Default,
+    weekChanges: Flow<Unit> = flowOf(Unit),
 ) : ViewModel() {
 
+    // 화면을 켜 둔 채 월요일 0시를 넘기면 홈처럼 기간을 다시 잡는다
     val uiState: StateFlow<FriendRankingUiState> = combine(
         matchRepository.settledMatches(),
         friendRepository.friends,
-    ) { matches, friends ->
+        weekChanges,
+    ) { matches, friends, _ ->
         val report = matches.weeklyReport(now = clock.now(), timeZone = timeZone, queueFilter = queueFilter)
         if (report !is WeeklyReport.Ready || !queueFilter.hasDynamicMetrics) {
             FriendRankingUiState.Gone

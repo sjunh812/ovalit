@@ -1,5 +1,7 @@
 package com.ovalit.feature.profile.di
 
+import com.ovalit.core.data.minuteStarts
+import com.ovalit.core.data.weekStarts
 import com.ovalit.feature.profile.ProfileViewModel
 import com.ovalit.feature.profile.RecordsOwner
 import com.ovalit.feature.profile.RecordsViewModel
@@ -9,8 +11,20 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val profileModule = module {
-    viewModel { ProfileViewModel(get(), get(), get(), Clock.System, TimeZone.currentSystemDefault()) }
+    viewModel {
+        val timeZone = TimeZone.currentSystemDefault()
+        ProfileViewModel(
+            get(),
+            get(),
+            get(),
+            Clock.System,
+            timeZone,
+            weekChanges = weekStarts(Clock.System, timeZone),
+            minuteChanges = minuteStarts(Clock.System),
+        )
+    }
     viewModel { (owner: RecordsOwner) ->
-        RecordsViewModel(owner, get(), get(), get(), Clock.System, TimeZone.currentSystemDefault())
+        val timeZone = TimeZone.currentSystemDefault()
+        RecordsViewModel(owner, get(), get(), get(), Clock.System, timeZone, weekChanges = weekStarts(Clock.System, timeZone))
     }
 }

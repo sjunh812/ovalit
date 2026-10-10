@@ -9,9 +9,11 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -22,6 +24,8 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 
 // 앱은 Dispatchers.Default에서 세지만 테스트는 값을 바로 읽으려고 부르는 쪽에서 센다
@@ -58,6 +62,36 @@ class ProfileViewModelTest {
         assertEquals(state.agents.matches, state.weapons.matches)
         assertTrue(state.weapons.weapons.all { it.weapon in state.catalog.weapons })
         assertTrue(state.agents.agents.all { it.agent in state.catalog.agents })
+    }
+
+    // 최근 경기의 "3분 전"이 화면을 켜 둔 동안 멈추면 안 된다
+    @Test
+    fun `분이 바뀌면 경기를 다시 세지 않고 지금만 새로 넣는다`() = runTest {
+        val start = Clock.System.now()
+        var now = start
+        val clock = object : Clock {
+            override fun now(): Instant = now
+        }
+        val minuteChanges = MutableSharedFlow<Unit>(replay = 1).apply { tryEmit(Unit) }
+        val matches = FakeMatchRepository()
+        val viewModel = ProfileViewModel(
+            FakeAccountRepository(matches),
+            matches,
+            FakeContentRepository(),
+            clock,
+            TimeZone.of("Asia/Seoul"),
+            computation = SameThread,
+            minuteChanges = minuteChanges,
+        )
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+        val before = assertIs<ProfileUiState.Success>(viewModel.uiState.value)
+
+        now = start + 5.minutes
+        minuteChanges.emit(Unit)
+
+        val after = assertIs<ProfileUiState.Success>(viewModel.uiState.value)
+        assertEquals(start + 5.minutes, after.now)
+        assertSame(before.summary, after.summary)
     }
 
     // 메인 스레드에서 세면 홈에서 넘어오는 전환이 멈춘다

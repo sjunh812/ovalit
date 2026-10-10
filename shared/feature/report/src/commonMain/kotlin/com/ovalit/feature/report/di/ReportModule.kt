@@ -28,6 +28,14 @@ val reportModule = module {
         )
     }
     viewModel { (queue: String) ->
-        FriendRankingViewModel(QueueFilter.valueOf(queue), get(), get(), Clock.System, TimeZone.currentSystemDefault())
+        val timeZone = TimeZone.currentSystemDefault()
+        FriendRankingViewModel(
+            QueueFilter.valueOf(queue),
+            get(),
+            get(),
+            Clock.System,
+            timeZone,
+            weekChanges = weekStarts(Clock.System, timeZone),
+        )
     }
 }

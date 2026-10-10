@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -63,6 +64,7 @@ class RecordsViewModel(
     clock: Clock,
     timeZone: TimeZone,
     computation: CoroutineContext = Dispatchers.Default,
+    weekChanges: Flow<Unit> = flowOf(Unit),
 ) : ViewModel() {
 
     // 제목에 붙일 이름과 셀 경기다. 내 기록이면 이름이 null이고, 친구를 끊었거나 친구가 전적을 비공개로 바꿨으면 통째로
@@ -76,7 +78,8 @@ class RecordsViewModel(
         }
     }
 
-    val uiState: StateFlow<RecordsUiState> = combine(source, contentRepository.catalog) { source, catalog ->
+    // 화면을 켜 둔 채 월요일 0시를 넘기면 위쪽 세 무기의 "이번 주"를 다시 잡는다(홈과 같다)
+    val uiState: StateFlow<RecordsUiState> = combine(source, contentRepository.catalog, weekChanges) { source, catalog, _ ->
         val (ownerName, matches) = source ?: return@combine RecordsUiState.Hidden
         RecordsUiState.Success(
             ownerName = ownerName,

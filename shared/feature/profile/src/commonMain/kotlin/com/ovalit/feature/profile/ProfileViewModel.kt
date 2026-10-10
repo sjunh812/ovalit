@@ -23,9 +23,11 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.TimeZone
@@ -60,16 +62,20 @@ class ProfileViewModel(
     accountRepository: AccountRepository,
     matchRepository: MatchRepository,
     contentRepository: ContentRepository,
-    clock: Clock,
+    private val clock: Clock,
     timeZone: TimeZone,
     computation: CoroutineContext = Dispatchers.Default,
+    weekChanges: Flow<Unit> = flowOf(Unit),
+    minuteChanges: Flow<Unit> = flowOf(Unit),
 ) : ViewModel() {
 
-    val uiState: StateFlow<ProfileUiState> = combine(
+    // 화면을 켜 둔 채 월요일 0시를 넘기면 무기 칸의 "이번 주"를 다시 잡는다(홈과 같다)
+    private val counted: Flow<ProfileUiState> = combine(
         accountRepository.account,
         matchRepository.settledMatches(),
         contentRepository.catalog,
-    ) { account, matches, catalog ->
+        weekChanges,
+    ) { account, matches, catalog, _ ->
         val actMatches = matches.currentActMatches(QueueFilter.PROFILE)
         val latest = matches.sortedByDescending { it.startedAt }
         ProfileUiState.Success(
@@ -84,7 +90,12 @@ class ProfileViewModel(
             now = clock.now(),
             timeZone = timeZone,
         )
-    }.flowOn(computation).stateIn(
+    }.flowOn(computation)
+
+    // 최근 경기의 "N분 전"은 분마다 흐르게 지금만 다시 넣는다. 경기를 다시 세지는 않는다.
+    val uiState: StateFlow<ProfileUiState> = combine(counted, minuteChanges) { state, _ ->
+        if (state is ProfileUiState.Success) state.copy(now = clock.now()) else state
+    }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = ProfileUiState.Loading,

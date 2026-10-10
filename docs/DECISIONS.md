@@ -783,3 +783,11 @@
   - 내가 안 뛴 친구 경기에서 가린 사람의 줄을 빼는 목록에서 남기는 목록으로 바꿨다. Riot이 필드를 더해도 새지 않는다.
   - `RSO_CLIENT_SECRET`이 있으면 `/auth/dev`를 닫는다. 호스트가 연동을 해제하면 띄운 ㅇㅂㅇ의 친구에게 취소 알림을 보낸다.
     초대 링크에 카카오톡 미리보기 카드(Open Graph, 1200×630 PNG)를 붙이고 `robots.txt`에서 `/i/`와 `/og/`만 열었다.
+- 2026-10-10 · 기능 모듈 여섯 개의 빌드 설정을 convention plugin `ovalit.kmp.feature`로 모았다. Res 패키지 한 줄 말고 같은
+  파일이 여섯 벌이라 한 곳만 고치다 어긋나기 쉬웠다. 같은 김에 `composeApp`이 직접 걸던 기능 모듈 다섯 개를 뺐다. 화면과
+  Koin 모듈은 `shared/app`이 들여오고 `composeApp` 코드는 `settings`의 `NotificationBlocks`만 쓴다. 디버그 APK의 클래스와
+  파일 목록은 그대로다.
+- 2026-10-10 · GitHub Actions CI를 붙였다. `main` 푸시와 PR마다 Android(ubuntu, 호스트 테스트와 디버그 APK), iOS(macOS,
+  시뮬레이터 테스트), 서버(ubuntu, 타입 검사와 vitest) 세 작업이 돈다. 공개 저장소라 표준 러너가 무료다. Gradle 캐시는
+  `setup-gradle`의 `cache-provider: basic`으로 둔다. v6부터 기본값(enhanced)이 Gradle 이용약관에 동의해야 쓰는 비공개
+  라이브러리로 바뀌었고, basic은 `actions/cache`를 감싼 MIT 코드다. 마크다운만 바뀐 커밋에는 돌지 않는다.

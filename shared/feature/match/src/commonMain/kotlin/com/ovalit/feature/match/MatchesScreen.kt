@@ -56,6 +56,8 @@ import com.ovalit.core.ui.MatchRowStyle
 import com.ovalit.core.ui.MatchRowsSkeleton
 import com.ovalit.core.ui.NewMatchesLine
 import com.ovalit.core.ui.RefreshResultsEffect
+import com.ovalit.core.ui.SeparatedRow
+import com.ovalit.core.ui.SeparatorDot
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.dayLabel
 import com.ovalit.core.ui.label
@@ -241,28 +243,25 @@ private fun FilterButton(active: Boolean, onClick: () -> Unit) {
     }
 }
 
-// 그날 승패는 날짜와 같은 글자로 오른쪽 끝에 둔다. 둘이 한 줄에 안 들어가면 승패를 다음 줄로 내린다.
+// 그날 승패는 날짜 바로 뒤에 붙인다. 오른쪽 끝에 두면 날짜를 읽고 바로 경기 줄로 내려가서 눈에 안 들어왔다.
+// 한 줄에 안 들어가면 날짜를 꺾지 않고 승패를 다음 줄로 내린다.
 @Composable
 private fun DayHeader(day: MatchDay, today: LocalDate) {
     val style = OvalitTheme.typography.label
-    val color = OvalitTheme.colors.t3
-    FlowRow(
+    val colors = OvalitTheme.colors
+    val record = day.record?.let { recordText(it) }
+    SeparatedRow(
+        items = listOfNotNull<@Composable () -> Unit>(
+            { OvalitText(text = dayLabel(day.date, today), style = style, color = colors.t3) },
+            record?.let { { OvalitText(text = it, style = style, color = colors.t2, maxLines = 1) } },
+        ),
+        separator = { SeparatorDot(style, colors.t4) },
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.lg, bottom = OvalitSpacing.xs)
             .semantics(mergeDescendants = true) { heading() },
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        OvalitText(
-            text = dayLabel(day.date, today),
-            modifier = Modifier.padding(end = OvalitSpacing.md).alignByBaseline(),
-            style = style,
-            color = color,
-        )
-        day.record?.let { record ->
-            OvalitText(text = recordText(record), modifier = Modifier.alignByBaseline(), style = style, color = color, maxLines = 1)
-        }
-    }
+        alignBaseline = true,
+    )
 }
 
 @Composable

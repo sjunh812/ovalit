@@ -44,15 +44,16 @@ class MatchScreensTest {
         assertEquals(MatchId("ascent"), opened)
     }
 
-    // 날짜 머리와 같은 글자로 오른쪽 끝에 둔다
+    // 오른쪽 끝에 두면 날짜를 읽고 바로 경기 줄로 내려가서 눈에 안 들어온다
     @Test
-    fun `날짜 머리 오른쪽에 그날 승패를 적는다`() = runComposeUiTest {
+    fun `날짜 바로 뒤에 그날 승패를 적는다`() = runComposeUiTest {
         setContent { Themed { MatchesScreen(MatchPreviewData.matches, {}, {}, {}) } }
 
         val today = onNodeWithText("오늘", useUnmergedTree = true).getUnclippedBoundsInRoot()
         val record = onNodeWithText("1승 1패", useUnmergedTree = true).getUnclippedBoundsInRoot()
         assertEquals(today.top, record.top)
         assertTrue(record.left > today.right)
+        assertTrue(record.left - today.right < 24.dp, "승패가 날짜에서 떨어져 있다")
         onNodeWithText("2승 0패", useUnmergedTree = true).assertExists()
         // 화면 읽기 프로그램이 날짜와 승패를 한 머리로 읽는다
         onNode(hasText("오늘") and hasText("1승 1패")).assertExists()

@@ -29,6 +29,9 @@ class OvalitKmpFeatureConventionPlugin : Plugin<Project> {
             sourceSets.getByName("androidMain").dependencies {
                 implementation(libs.findLibrary("compose-ui-tooling").get())
             }
+            sourceSets.getByName("commonTest").dependencies {
+                implementation(project(":shared:core:testing"))
+            }
         }
 
         // 앱은 모든 모듈의 Compose 리소스를 이 패키지 이름의 폴더로 모은다. 모듈마다 달라야 해서 네임스페이스에서 만든다

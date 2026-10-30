@@ -37,6 +37,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -415,14 +416,13 @@ private fun BuyTable(uiState: MatchDetailUiState.Success) {
         }
         if (overview.upsets > 0) {
             // 문장은 보통 굵기이고 이긴 횟수만 굵게 한다(docs/design.md 글자)
-            val upsets = overview.upsets.toString()
-            val sentence = stringResource(Res.string.economy_upsets, overview.upsets)
-            val at = sentence.indexOf(upsets)
             OvalitText(
-                text = buildAnnotatedString {
-                    append(sentence)
-                    if (at >= 0) addStyle(SpanStyle(fontWeight = FontWeight.SemiBold), at, at + upsets.length)
-                },
+                text = emphasizeArgument(
+                    template = stringResource(Res.string.economy_upsets),
+                    sentence = stringResource(Res.string.economy_upsets, overview.upsets),
+                    value = overview.upsets.toString(),
+                    emphasis = SpanStyle(fontWeight = FontWeight.SemiBold),
+                ),
                 modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.sm),
                 style = OvalitTheme.typography.body,
             )
@@ -435,3 +435,12 @@ private fun BuyTable(uiState: MatchDetailUiState.Success) {
         )
     }
 }
+
+// 문장 앞의 "1,000"에도 숫자가 있어서 값을 문장에서 찾으면 엉뚱한 숫자를 칠한다.
+// 문장 틀에서 자리 표시(%1$d)가 있던 곳이 값이 들어간 곳이다.
+internal fun emphasizeArgument(template: String, sentence: String, value: String, emphasis: SpanStyle): AnnotatedString =
+    buildAnnotatedString {
+        append(sentence)
+        val at = template.indexOf("%1\$d")
+        if (at >= 0 && sentence.startsWith(value, at)) addStyle(emphasis, at, at + value.length)
+    }

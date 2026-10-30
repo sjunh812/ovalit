@@ -122,9 +122,10 @@ class CompetitiveMatchTest {
         val metrics = match.metrics()
 
         assertEquals(15, metrics.rounds)
-        // 팀킬과 내 궁극기 자살은 킬이 아니다. 스코어보드의 11킬과 다르다.
+        // 팀킬과 내 궁극기 자살은 킬이 아니다.
+        // 스코어보드의 11킬과 다르다.
         assertEquals(10, metrics.kills)
-        // 세이지 부활로 2라운드에 두 번 죽었고, 3라운드 자살도 데스다
+        // 세이지 부활로 2라운드에 두 번 죽었고 3라운드 자살도 데스다
         assertEquals(4, metrics.deaths)
         assertEquals(1, metrics.assists)
         // 나와 우리 팀에 준 피해 300은 뺐다
@@ -132,7 +133,7 @@ class CompetitiveMatchTest {
         assertEquals(Shots(head = 9, body = 18, leg = 2), metrics.shots)
         assertEquals(14, metrics.kastRounds)
         assertEquals(12, metrics.survivedRounds)
-        // 3라운드 자살은 첫 데스가 아니고, 4라운드 팀킬은 첫 킬이 아니다
+        // 3라운드 자살은 첫 데스가 아니고 4라운드 팀킬은 첫 킬이 아니다
         assertEquals(3, metrics.firstKills)
         assertEquals(2, metrics.firstDeaths)
         assertEquals(3, metrics.firstKillRoundsWon)

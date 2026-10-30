@@ -46,9 +46,11 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 
 /**
- * 네이티브 광고 한 줄입니다. 제목 밑 줄 맨 앞에 "광고"를 적어 경기 기록과 헷갈리지 않게 합니다.
+ * 네이티브 광고 한 줄입니다.
+ * 제목 밑 줄 맨 앞에 "광고"를 적어 경기 기록과 헷갈리지 않게 합니다.
  *
- * AdMob은 광고 요소마다 안드로이드 뷰를 등록해야 눌림을 셉니다. 바탕까지 눌리게 하면 정책 위반이라 요소마다 따로 등록합니다.
+ * AdMob은 광고 요소마다 안드로이드 뷰를 등록해야 눌림을 셉니다.
+ * 바탕까지 눌리게 하면 정책 위반이라 요소마다 따로 등록합니다.
  */
 @Composable
 internal fun NativeAdRow(ad: NativeAd, verticalPadding: Dp, onClose: () -> Unit) {
@@ -57,7 +59,7 @@ internal fun NativeAdRow(ad: NativeAd, verticalPadding: Dp, onClose: () -> Unit)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                // ×의 눌리는 영역(36dp) 안쪽 여백만큼 오른쪽을 덜 띄워, × 그림의 오른쪽 끝이 다른 줄의 스코어 끝선에 맞는다
+                // ×의 눌리는 영역(36dp) 안쪽 여백만큼 오른쪽을 덜 띄워 × 그림의 오른쪽 끝이 다른 줄의 스코어 끝선에 맞는다
                 .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter - CloseInset, top = verticalPadding, bottom = verticalPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -158,7 +160,7 @@ private fun AdLabel() {
 
 /**
  * [NativeAdView] 안에 Compose로 그린 광고를 담습니다.
- * 요소가 모두 등록된 뒤에 광고를 붙여야 눌림이 이어져서, 안쪽이 두 프레임 그려진 뒤에 붙입니다.
+ * 요소가 모두 등록된 뒤에 광고를 붙여야 눌림이 이어져서 안쪽이 두 프레임 그려진 뒤에 붙입니다.
  */
 @Composable
 private fun NativeAdFrame(ad: NativeAd, content: @Composable (NativeAdView) -> Unit) {

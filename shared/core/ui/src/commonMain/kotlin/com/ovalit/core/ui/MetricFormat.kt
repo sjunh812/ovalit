@@ -28,7 +28,7 @@ enum class MetricFormat(private val scale: Int) {
         return sign + digits(abs(change))
     }
 
-    /** 보이는 자릿수로 반올림한 두 값의 차이를 부호 없이 적습니다. 74%와 69%면 "5"이고, 1.42와 1.29면 "0.13"입니다. */
+    /** 보이는 자릿수로 반올림한 두 값의 차이를 부호 없이 적습니다. 74%와 69%면 "5"이고 1.42와 1.29면 "0.13"입니다. */
     fun formatGap(a: Double, b: Double): String = digits(abs(steps(a) - steps(b)))
 
     fun direction(current: Double, baseline: Double): Int = (steps(current) - steps(baseline)).coerceIn(-1, 1)

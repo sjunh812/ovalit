@@ -57,7 +57,8 @@ describe("RSO 로그인", () => {
     expect(authorize.searchParams.get("redirect_uri")).toBe("http://localhost/auth/rso/callback");
 
     expect(callback.status).toBe(302);
-    // 커스텀 스킴은 다른 앱이 가로챌 수 있다. 서버 자기 주소의 App Link로만 돌려보낸다.
+    // 커스텀 스킴은 다른 앱이 가로챌 수 있다.
+    // 서버 자기 주소의 App Link로만 돌려보낸다.
     expect(deepLink.origin + deepLink.pathname).toBe("http://localhost/auth/done");
     expect(deepLink.searchParams.get("code")).toMatch(/^[A-Za-z0-9_-]{43}$/);
 

@@ -35,7 +35,8 @@ import kotlinx.datetime.TimeZone
 @OptIn(ExperimentalTestApi::class)
 class FriendScreensTest {
 
-    // CLAUDE.md: 닉네임 검색이 없다. 친구는 스코어보드나 초대 링크로만 추가한다.
+    // CLAUDE.md: 닉네임 검색이 없다.
+    // 친구는 스코어보드나 초대 링크로만 추가한다.
     @Test
     fun `친구 탭에는 닉네임 검색 없이 초대 링크만 있다`() = runComposeUiTest {
         var invited = false
@@ -71,7 +72,8 @@ class FriendScreensTest {
         onNodeWithText("이번 주 9경기").assertExists()
     }
 
-    // 친구가 수백 명이면 다시 같이 할 사람을 찾기 어렵다. 라이벌은 가장 자주 보는 친구라 맨 앞이다.
+    // 친구가 수백 명이면 다시 같이 할 사람을 찾기 어렵다.
+    // 라이벌은 가장 자주 보는 친구라 맨 앞이다.
     @Test
     fun `친구가 150명이어도 라이벌을 맨 앞에 두고 최근에 같이 뛴 친구부터 세운다`() = runComposeUiTest {
         val now = Clock.System.now()
@@ -109,7 +111,8 @@ class FriendScreensTest {
         onNodeWithText("아직 친구가 없어요").assertExists()
     }
 
-    // docs/screens.md: S5는 나와의 관계에서 시작하는 친구 프로필이다. 머리 바로 밑에 같이 뛴 경기를 둔다.
+    // docs/screens.md: S5는 나와의 관계에서 시작하는 친구 프로필이다.
+    // 머리 바로 밑에 같이 뛴 경기를 둔다.
     @Test
     fun `친구 프로필은 같이 뛴 경기와 나와 비교를 보여준다`() = runComposeUiTest {
         setContent { Themed { FriendProfileScreen(FriendPreviewData.profile, {}, {}, {}) } }
@@ -150,7 +153,8 @@ class FriendScreensTest {
     fun `친구의 요원과 무기 칸에는 KDA와 킬 수와 헤드샷을 적는다`() = runComposeUiTest {
         setContent { Themed { FriendProfileScreen(FriendPreviewData.profile, {}, {}, {}) } }
 
-        // 제트는 (330 + 72) ÷ 260이다. 요원 칸에는 합계 없이 KDA만 둔다.
+        // 제트는 (330 + 72) ÷ 260이다.
+        // 요원 칸에는 합계 없이 KDA만 둔다.
         onNodeWithText("KDA 1.55", useUnmergedTree = true).assertExists()
         onNodeWithText("330/260/72", substring = true, useUnmergedTree = true).assertDoesNotExist()
         onNodeWithText("260킬", useUnmergedTree = true).assertExists()

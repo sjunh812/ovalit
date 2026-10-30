@@ -45,7 +45,8 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 
 /**
- * 친구의 이번 액트 경쟁 + 일반 경기 성적입니다. 내 프로필과 같은 기준으로 셉니다.
+ * 친구의 이번 액트 경쟁 + 일반 경기 성적입니다.
+ * 내 프로필과 같은 기준으로 셉니다.
  *
  * @property weapons 위쪽 세 무기의 이번 액트 값만 씁니다.
  *   누르면 여는 S6은 RecordsViewModel이 기기에 저장된 같은 경기로 다시 셉니다.
@@ -67,7 +68,7 @@ sealed interface FriendProfileUiState {
      *   전적 비공개면 `null`입니다.
      * @property theirMetricsInMyPeriod "나와 비교"에 쓰는 값입니다.
      *   내 리포트와 같은 기간으로 셉니다.
-     *   내 리포트가 없거나, 친구가 전적을 공개하지 않았거나, 그 기간에 친구 경기가 없으면 `null`입니다.
+     *   내 리포트가 없거나 친구가 전적을 공개하지 않았거나 그 기간에 친구 경기가 없으면 `null`입니다.
      */
     data class Success(
         val friend: Friend,
@@ -136,7 +137,8 @@ class FriendProfileViewModel(
         )
     }.flowOn(computation)
 
-    // 최근 경기의 "N분 전"은 분마다 흐르게 지금만 다시 넣는다. 경기를 다시 세지는 않는다.
+    // 최근 경기의 "N분 전"은 분마다 흐르게 지금만 다시 넣는다.
+    // 경기를 다시 세지는 않는다.
     val uiState: StateFlow<FriendProfileUiState> = combine(counted, minuteChanges) { state, _ ->
         if (state is FriendProfileUiState.Success) state.copy(now = clock.now()) else state
     }.stateIn(
@@ -157,7 +159,7 @@ class FriendProfileViewModel(
         }
     }
 
-    /** 끊고 나면 상태가 [FriendProfileUiState.Gone]이 되고, 화면은 그걸 보고 닫힙니다. */
+    /** 끊고 나면 상태가 [FriendProfileUiState.Gone]이 되고 화면은 그걸 보고 닫힙니다. */
     fun unfriend() {
         viewModelScope.launchNotifying(failures, FailedAction.UNFRIEND) {
             friendRepository.unfriend(friendId)

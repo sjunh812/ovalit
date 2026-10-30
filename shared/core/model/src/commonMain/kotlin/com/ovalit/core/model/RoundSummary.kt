@@ -1,13 +1,19 @@
 package com.ovalit.core.model
 
 /**
- * S3 라운드 탭의 라운드 하나입니다. 내가 튕겨서 못 뛴 라운드는 [played]가 `false`이고 승패만 있습니다.
+ * S3 라운드 탭의 라운드 하나입니다.
+ * 내가 튕겨서 못 뛴 라운드는 [played]가 `false`이고 승패만 있습니다.
  *
- * @property myKills 스킬로 자기나 우리 팀을 죽인 건 빼고 셉니다. 리포트 K/D와 같은 기준입니다.
- * @property highlight 에이스와 클러치입니다. 못 뛴 라운드거나 라운드제가 아닌 모드면 `null`입니다.
- * @property enemyBuyType 상대 팀의 구매 유형입니다. 우리 팀과 같은 기준입니다.
- * @property myDamage 그 라운드에 내가 입힌 피해입니다. 못 뛴 라운드면 `null`입니다.
- * @property kills 그 라운드의 킬을 시각 순으로 담습니다. 스킬로 자기를 죽인 것과 팀킬은 뺍니다.
+ * @property myKills 스킬로 자기나 우리 팀을 죽인 건 빼고 셉니다.
+ *   리포트 K/D와 같은 기준입니다.
+ * @property highlight 에이스와 클러치입니다.
+ *   못 뛴 라운드거나 라운드제가 아닌 모드면 `null`입니다.
+ * @property enemyBuyType 상대 팀의 구매 유형입니다.
+ *   우리 팀과 같은 기준입니다.
+ * @property myDamage 그 라운드에 내가 입힌 피해입니다.
+ *   못 뛴 라운드면 `null`입니다.
+ * @property kills 그 라운드의 킬을 시각 순으로 담습니다.
+ *   스킬로 자기를 죽인 것과 팀킬은 뺍니다.
  */
 data class RoundSummary(
     val number: Int,
@@ -86,9 +92,11 @@ fun Match.roundSummaries(): List<RoundSummary> {
 }
 
 /**
- * S3 라운드 탭 맨 밑 구매 유형 표의 한 줄입니다. 유형마다 그 유형으로 산 라운드와 이긴 라운드입니다.
+ * S3 라운드 탭 맨 밑 구매 유형 표의 한 줄입니다.
+ * 유형마다 그 유형으로 산 라운드와 이긴 라운드입니다.
  *
- * @property enemyRounds 상대 팀이 그 유형으로 산 라운드입니다. [enemyWins]는 그중 상대가 이긴 라운드입니다.
+ * @property enemyRounds 상대 팀이 그 유형으로 산 라운드입니다.
+ *   [enemyWins]는 그중 상대가 이긴 라운드입니다.
  */
 data class BuyRecord(val type: BuyType, val rounds: Int, val wins: Int, val enemyRounds: Int = 0, val enemyWins: Int = 0)
 
@@ -118,7 +126,7 @@ data class WinRecord(val rounds: Int, val wins: Int) {
  * 내가 뛴 라운드만 셉니다.
  *
  * @property ourFirstBlood 우리 팀이 첫 킬을 낸 라운드입니다.
- *   [theirFirstBlood]는 상대가 첫 킬을 낸 라운드이고, 둘 다 [WinRecord.wins]는 우리 팀이 이긴 수입니다.
+ *   [theirFirstBlood]는 상대가 첫 킬을 낸 라운드이고 둘 다 [WinRecord.wins]는 우리 팀이 이긴 수입니다.
  * @property upsets 우리 팀 장비가 상대보다 [UPSET_LOADOUT_GAP] 넘게 적었는데 이긴 라운드 수입니다.
  */
 data class RoundsOverview(

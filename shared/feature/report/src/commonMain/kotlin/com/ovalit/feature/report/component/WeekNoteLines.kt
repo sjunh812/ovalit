@@ -195,7 +195,8 @@ private fun NoteRows(rows: List<NoteRow>) {
     val valueStyle = typography.label.copy(fontWeight = FontWeight.Normal, fontFeatureSettings = "tnum")
     val names = rows.map { it.nameText(nameStyle) }
     val values = rows.map { changeText(it.usual, it.current) }
-    // 이코 라운드처럼 그림이 없는 묶음은 글자를 왼쪽 끝에 붙인다. 한 번에 뜨는 칸은 모두 같은 종류라 섞이지 않는다.
+    // 이코 라운드처럼 그림이 없는 묶음은 글자를 왼쪽 끝에 붙인다.
+    // 한 번에 뜨는 칸은 모두 같은 종류라 섞이지 않는다.
     val hasLead = rows.any { it.lead != null }
     // 한 줄에 하나씩 둘 때는 무기와 요원의 이름이 같은 자리에서 시작하게 그림 자리를 가장 넓은 그림에 맞춘다
     val leadSlot = rows.mapNotNull { it.lead?.width }.maxOrNull() ?: 0.dp
@@ -213,7 +214,8 @@ private fun NoteRows(rows: List<NoteRow>) {
                 rows.size == 2 && rows.indices.all { index ->
                     (rows[index].lead?.let { (it.width + LeadGap).roundToPx() } ?: 0) + textWidth(index) <= half
                 } -> NoteLayout.SIDE_BY_SIDE
-                // 한 칸이라도 이름 옆에 숫자가 안 들어가면 모든 칸의 숫자를 이름 밑으로 내린다. 한 칸만 내리면 숫자 열이 어긋난다.
+                // 한 칸이라도 이름 옆에 숫자가 안 들어가면 모든 칸의 숫자를 이름 밑으로 내린다.
+                // 한 칸만 내리면 숫자 열이 어긋난다.
                 rows.indices.all { lineLead + textWidth(it) <= constraints.maxWidth } -> NoteLayout.ONE_PER_LINE
                 else -> NoteLayout.STACKED
             }
@@ -243,7 +245,10 @@ private fun NoteRows(rows: List<NoteRow>) {
     }
 }
 
-/** @param leadSlot 그림 자리의 폭입니다. 그림이 없는 묶음이면 `null`이고 자리를 두지 않습니다. */
+/**
+ * @param leadSlot 그림 자리의 폭입니다.
+ *   그림이 없는 묶음이면 `null`이고 자리를 두지 않습니다.
+ */
 @Composable
 private fun NoteCell(
     row: NoteRow,
@@ -279,7 +284,8 @@ private fun NoteCell(
     }
 }
 
-// 그림은 이름 옆에 붙는 장식이라 화면 읽기 프로그램이 읽지 않는다. 이름은 바로 옆에 있다.
+// 그림은 이름 옆에 붙는 장식이라 화면 읽기 프로그램이 읽지 않는다.
+// 이름은 바로 옆에 있다.
 @Composable
 private fun NoteLeadImage(lead: NoteLead) {
     val tile = Modifier.size(width = lead.width, height = LeadHeight).clip(LeadShape)
@@ -292,7 +298,8 @@ private fun NoteLeadImage(lead: NoteLead) {
                 tint = OvalitTheme.colors.t2,
             )
         }
-        // 요원 얼굴은 타일을 꽉 채운다. 그림을 받기 전에는 같은 --fill 면이 보인다.
+        // 요원 얼굴은 타일을 꽉 채운다.
+        // 그림을 받기 전에는 같은 --fill 면이 보인다.
         is NoteLead.Agent -> AgentImage(lead.agent, lead.name, tile)
     }
 }
@@ -302,7 +309,9 @@ private fun NoteRow.nameText(nameStyle: TextStyle): AnnotatedString = buildAnnot
     withStyle(SpanStyle(color = OvalitTheme.colors.t1, fontWeight = nameStyle.fontWeight)) { append(name.keepTogether()) }
 }
 
-// "131 → 217". 평소 값과 화살표는 옅게, 이번 값은 밝고 굵게 둔다. 꼴은 문자열 리소스를 따른다.
+// "131 → 217".
+// 평소 값과 화살표는 옅게, 이번 값은 밝고 굵게 둔다.
+// 꼴은 문자열 리소스를 따른다.
 @Composable
 private fun changeText(usual: String, current: String): AnnotatedString {
     val colors = OvalitTheme.colors
@@ -335,7 +344,9 @@ private fun mixRow(mix: MixShift, catalog: ContentCatalog): NoteRow {
     )
 }
 
-// "풀바이 라운드만 보면 158 → 156". 차이가 없어도 적는다. 평소와 같았다는 게 이 줄이 하는 말이다.
+// "풀바이 라운드만 보면 158 → 156".
+// 차이가 없어도 적는다.
+// 평소와 같았다는 게 이 줄이 하는 말이다.
 @Composable
 private fun steadyRow(moved: MovedMetric, steady: SteadyPart, catalog: ContentCatalog): NoteRow {
     val name = steady.group.name(catalog)

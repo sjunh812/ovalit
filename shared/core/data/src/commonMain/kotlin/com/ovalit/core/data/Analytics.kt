@@ -3,7 +3,8 @@ package com.ovalit.core.data
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
- * 어떤 화면과 기능을 쓰는지 세는 곳입니다. 안드로이드는 Firebase Analytics로 보내고, 끄는 스위치 없이 늘 보냅니다(CLAUDE.md 비용).
+ * 어떤 화면과 기능을 쓰는지 세는 곳입니다.
+ * 안드로이드는 Firebase Analytics로 보내고 끄는 스위치 없이 늘 보냅니다(CLAUDE.md 비용).
  * iOS와 Firebase 설정 파일이 없는 빌드는 보내지 않습니다([NoAnalytics]).
  *
  * 값에는 Riot이 준 것(PUUID, Riot ID, 친구 이름, 경기·ㅇㅂㅇ ID, 티어, 요원·맵·무기, 지표 값)을 넣지 않습니다.
@@ -39,7 +40,8 @@ object AnalyticsEvents {
     const val REFRESH = "refresh"
 
     /**
-     * 연동 뒤 첫 수집을 마쳤습니다. 온보딩을 끝까지 간 사람 수입니다.
+     * 연동 뒤 첫 수집을 마쳤습니다.
+     * 온보딩을 끝까지 간 사람 수입니다.
      * `match_bucket`은 받은 경기 수의 구간("0", "1-9", "10-29", "30-50")입니다.
      * `finished_in_background`는 앱을 닫은 채로 마쳤는지("true", "false")입니다.
      * Firebase가 미리 정한 이름이라 온보딩 깔때기 보고서에 바로 잡힙니다.
@@ -63,8 +65,10 @@ object AnalyticsEvents {
     const val PING_REPLY = "ping_reply"
 
     /**
-     * 초대 링크를 공유 창으로 보냈습니다. 받은 쪽이 실제로 보냈는지는 모릅니다.
-     * `method`는 "invite_link", `content_type`은 "invite"입니다. Firebase가 미리 정한 이름입니다.
+     * 초대 링크를 공유 창으로 보냈습니다.
+     * 받은 쪽이 실제로 보냈는지는 모릅니다.
+     * `method`는 "invite_link", `content_type`은 "invite"입니다.
+     * Firebase가 미리 정한 이름입니다.
      */
     const val SHARE = "share"
 

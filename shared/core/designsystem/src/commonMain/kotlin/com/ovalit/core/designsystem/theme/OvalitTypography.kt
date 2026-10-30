@@ -16,12 +16,12 @@ private const val TABULAR_FIGURES = "tnum"
 // 제목과 숫자는 Heading이다.
 // 어절 경계에서 끊고 줄 길이를 고르게 나눠 마지막 한 단어만 남는 걸 막는다.
 // 본문과 설명은 BodyLineBreak다.
-// 두세 줄 설명까지 고르게 나누면 "볼 / 수 없어요"처럼 첫 줄이 짧게 갈려서, 줄을 끝까지 채우고 어절만 지킨다.
+// 두세 줄 설명까지 고르게 나누면 "볼 / 수 없어요"처럼 첫 줄이 짧게 갈려서 줄을 끝까지 채우고 어절만 지킨다.
 // 이 조합을 고르는 생성자가 안드로이드에만 있어 플랫폼마다 따로 둔다.
 private val KoreanLineBreak = LineBreak.Heading
 
 // 위 줄바꿈은 글자의 언어를 알려줘야 동작한다.
-// 기기 언어를 따르면 폰을 영어로 쓰는 한국 유저에게서 다시 깨져서, 실제로 보이는 문구의 언어(text_locale 리소스)를 받는다.
+// 기기 언어를 따르면 폰을 영어로 쓰는 한국 유저에게서 다시 깨져서 실제로 보이는 문구의 언어(text_locale 리소스)를 받는다.
 // 일본어면 한자를 일본 자형으로 그리고 문절 단위로 끊는다.
 private val KoreanLocale = LocaleList("ko-KR")
 
@@ -68,7 +68,7 @@ fun ovalitTypography(fontFamily: FontFamily = FontFamily.Default, locale: Locale
         metricXl = metric(size = 44, lineHeight = 48, tracking = -1.4),
         metricL = metric(size = 30, lineHeight = 34, tracking = -0.8),
         // 홈 고정 칸과 달라진 점 숫자다.
-        // 한 화면에 여덟 개가 모여서 더 키우면 무겁고, 홈 기간 제목(titleM)보다는 커야 한다.
+        // 한 화면에 여덟 개가 모여서 더 키우면 무겁고 홈 기간 제목(titleM)보다는 커야 한다.
         metricM = metric(size = 20, lineHeight = 24, tracking = -0.5),
         metricS = metric(size = 12, lineHeight = 16, tracking = 0.0),
         delta = metric(size = 11, lineHeight = 16, tracking = 0.0).copy(fontWeight = FontWeight.Normal),

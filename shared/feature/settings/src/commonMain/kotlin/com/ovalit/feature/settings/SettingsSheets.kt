@@ -93,7 +93,8 @@ internal fun SettingsSheetContent(
             label = { it.label },
             onSelect = actions.onFocusChange,
             onDismiss = onDismiss,
-            // S0-4처럼 무엇을 먼저 보는지 밑에 적는다. 이름만으로는 어떤 지표가 올라오는지 모른다.
+            // S0-4처럼 무엇을 먼저 보는지 밑에 적는다.
+            // 이름만으로는 어떤 지표가 올라오는지 모른다.
             caption = { it.description },
         )
         SettingsSheet.PING_REMINDER -> OptionSheet(

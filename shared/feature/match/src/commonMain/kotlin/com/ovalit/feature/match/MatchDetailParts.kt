@@ -120,7 +120,8 @@ private fun riotIdText(riotId: String, tagColor: Color): AnnotatedString = build
     }
 }
 
-// 숫자 열은 글자 크기만큼 넓힌다. 고정 폭이면 큰 글씨에서 "14/16/4"가 "14/1"로 잘린다.
+// 숫자 열은 글자 크기만큼 넓힌다.
+// 고정 폭이면 큰 글씨에서 "14/16/4"가 "14/1"로 잘린다.
 // 줄어든 폭은 이름 칸이 내준다.
 private class ColumnWidths(val kda: Dp, val acs: Dp)
 
@@ -133,13 +134,15 @@ private fun columnWidths(): ColumnWidths {
 /**
  * S3 스코어보드입니다.
  * 두 팀 모드는 우리 팀과 상대 팀, 데스매치는 모두를 한 순위로, 건틀릿은 팀마다 등수 순으로 묶습니다.
- * 라운드가 없는 모드는 전투점수 열과 펼친 줄이 없습니다. 둘 다 라운드로 나누거나 라운드 기록으로 세는 값입니다.
+ * 라운드가 없는 모드는 전투점수 열과 펼친 줄이 없습니다.
+ * 둘 다 라운드로 나누거나 라운드 기록으로 세는 값입니다.
  */
 @Composable
 internal fun Scoreboard(uiState: MatchDetailUiState.Success, onOpenPlayer: (ScoreboardRow) -> Unit) {
     val colors = OvalitTheme.colors
     val roundBased = uiState.match.format == MatchFormat.ROUNDS
-    // 한 번에 한 사람만 펼친다. 여럿을 펼치면 스코어보드가 길어져 팀 머리가 화면 밖으로 밀린다.
+    // 한 번에 한 사람만 펼친다.
+    // 여럿을 펼치면 스코어보드가 길어져 팀 머리가 화면 밖으로 밀린다.
     var expanded by rememberSaveable { mutableStateOf<String?>(null) }
     // 티어가 없는 사람이 섞여도 이름이 같은 자리에서 시작하게, 한 사람이라도 티어가 있으면 모든 줄이 그 자리를 비운다
     val tierSlot = uiState.rows.any { it.line.tier != null }
@@ -170,7 +173,8 @@ internal fun Scoreboard(uiState: MatchDetailUiState.Success, onOpenPlayer: (Scor
     }
 }
 
-// 우리 팀은 결과 색, 등수로 끝나는 경기는 등수 색이다. 다른 묶음은 흐리게 둔다.
+// 우리 팀은 결과 색, 등수로 끝나는 경기는 등수 색이다.
+// 다른 묶음은 흐리게 둔다.
 @Composable
 private fun groupTitle(group: ScoreboardGroup, uiState: MatchDetailUiState.Success): Pair<String, Color> {
     val colors = OvalitTheme.colors
@@ -263,7 +267,8 @@ private fun PlayerRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                // 얼굴과 이름만 따로 눌린다. 빈 자리까지 넓히면 펼치려고 누른 줄이 프로필로 넘어간다.
+                // 얼굴과 이름만 따로 눌린다.
+                // 빈 자리까지 넓히면 펼치려고 누른 줄이 프로필로 넘어간다.
                 Row(
                     modifier = Modifier
                         .weight(1f, fill = false)
@@ -278,7 +283,8 @@ private fun PlayerRow(
                         if (isFriend) FriendMark(Modifier.align(Alignment.BottomEnd).offset(x = 4.dp, y = 4.dp), border = if (isMe) colors.raised else colors.bg)
                     }
                     Spacer(Modifier.width(10.dp))
-                    // 티어는 이름 앞에 둔다. 줄마다 같은 자리라 위아래로 훑으면 한 줄로 읽힌다.
+                    // 티어는 이름 앞에 둔다.
+                    // 줄마다 같은 자리라 위아래로 훑으면 한 줄로 읽힌다.
                     if (tierSlot) {
                         Box(modifier = Modifier.size(TierSize)) { line.tier?.let { TierEmblem(it, Modifier.fillMaxSize()) } }
                         Spacer(Modifier.width(6.dp))
@@ -318,7 +324,8 @@ private fun PlayerRow(
                 maxLines = 1,
                 autoSize = shrinkToFit(numberStyle.fontSize),
             )
-            // ADR이 아니라 전투점수를 둔다. 줄도 이 숫자 순이고 ADR은 펼친 기록에 있다.
+            // ADR이 아니라 전투점수를 둔다.
+            // 줄도 이 숫자 순이고 ADR은 펼친 기록에 있다.
             if (roundBased) {
                 OvalitText(
                     text = uiState.match.acsOf(line)?.let { MetricFormat.INTEGER.format(it) } ?: NO_VALUE,
@@ -336,7 +343,8 @@ private fun PlayerRow(
     }
 }
 
-// 펼친 줄의 그 판 기록이다. 줄에 없는 다섯 가지를 한 줄에 놓는다.
+// 펼친 줄의 그 판 기록이다.
+// 줄에 없는 다섯 가지를 한 줄에 놓는다.
 // 이름 밑으로 들여 쓰면 칸이 좁아져서 줄 왼쪽 끝부터 쓴다.
 @Composable
 private fun PlayerStats(row: ScoreboardRow) {
@@ -448,7 +456,8 @@ internal fun PlayerSheet(
     }
 }
 
-// 얼굴에 붙이는 친구 표시다. 줄 바탕색 테두리로 얼굴과 떼어 놓는다.
+// 얼굴에 붙이는 친구 표시다.
+// 줄 바탕색 테두리로 얼굴과 떼어 놓는다.
 @Composable
 private fun FriendMark(modifier: Modifier, border: Color) {
     val label = stringResource(Res.string.friend_badge)

@@ -8,10 +8,12 @@ import kotlinx.datetime.toLocalDateTime
  * 서로 수락한 친구입니다.
  * Riot 정책상 데이터 공유에 동의한 사람만 다른 사람에게 보여줄 수 있어서 친구는 우리 앱에 연동한 사람끼리만 맺어집니다.
  *
- * @property matches 친구 본인의 경기입니다. 전적을 비공개로 바꾸기 전에 받아 둔 경기가 남아 있을 수 있습니다.
- *   [statsPublic]이 `false`면 여기 든 경기를 보여주지 않습니다. 같이 뛴 경기는 내 경기에서 셉니다.
+ * @property matches 친구 본인의 경기입니다.
+ *   전적을 비공개로 바꾸기 전에 받아 둔 경기가 남아 있을 수 있습니다.
+ *   [statsPublic]이 `false`면 여기 든 경기를 보여주지 않습니다.
+ *   같이 뛴 경기는 내 경기에서 셉니다.
  * @property lastPlayedTogether 이 친구가 우리 팀이었던 내 경기 중 가장 최근 경기가 시작한 시각입니다.
- *   [sharedWith]처럼 기기에 저장된 내 경기에서 찾고, 그 안에 같이 뛴 경기가 없으면 `null`입니다.
+ *   [sharedWith]처럼 기기에 저장된 내 경기에서 찾고 그 안에 같이 뛴 경기가 없으면 `null`입니다.
  *   친구 전적을 공개했는지와 상관없습니다.
  */
 data class Friend(
@@ -25,7 +27,7 @@ data class Friend(
 
 /**
  * 최근에 같이 뛴 친구부터 세웁니다.
- * 같이 뛴 기록이 없는 친구는 뒤로 가고, 그 친구들끼리는 받은 순서를 지킵니다.
+ * 같이 뛴 기록이 없는 친구는 뒤로 가고 그 친구들끼리는 받은 순서를 지킵니다.
  * 친구가 수백 명이어도 다시 같이 할 사람이 앞에 오게 친구 탭과 친구를 고르는 시트가 이 순서를 씁니다.
  */
 fun List<Friend>.byLastPlayedTogether(): List<Friend> = sortedByDescending { it.lastPlayedTogether }
@@ -49,7 +51,7 @@ enum class FriendRequestSource {
 
 /**
  * S5 머리 바로 밑의 "같이 뛴 경기 12경기 8승 4패"입니다.
- * 큐 칩이 없는 화면이라 [QueueFilter.PROFILE]을 따라, 그 친구가 우리 팀이었던 내 경쟁 + 일반 경기만 셉니다.
+ * 큐 칩이 없는 화면이라 [QueueFilter.PROFILE]을 따라 그 친구가 우리 팀이었던 내 경쟁 + 일반 경기만 셉니다.
  * 데스매치처럼 팀 승패가 없는 판까지 세면 경기 수와 승패 합이 어긋납니다.
  */
 data class SharedRecord(

@@ -35,7 +35,8 @@ import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 
-// 프리뷰와 UI 테스트가 같이 쓴다. 목업의 전략가 예시에 맞췄다.
+// 프리뷰와 UI 테스트가 같이 쓴다.
+// 목업의 전략가 예시에 맞췄다.
 // ID는 번들한 이미지가 붙도록 카탈로그의 UUID다.
 internal object ProfilePreviewData {
 
@@ -62,7 +63,8 @@ internal object ProfilePreviewData {
         tiers = mapOf(16 to "플래티넘 2"),
     )
 
-    // 킬, 데스, 어시는 라운드당 0.85, 0.65, 0.3으로 둔다. 요원 칸의 KDA가 비지 않게 한다.
+    // 킬, 데스, 어시는 라운드당 0.85, 0.65, 0.3으로 둔다.
+    // 요원 칸의 KDA가 비지 않게 한다.
     private fun metrics(rounds: Int, kast: Int, survived: Int, firstKills: Int = 10, firstDeaths: Int = 10) =
         MatchMetrics(
             matches = 1,
@@ -232,7 +234,8 @@ internal object ProfilePreviewData {
     // S6과 S7은 내 프로필과 같은 경기를 본다
     val records = RecordsUiState.Success(ownerName = null, agents = agents, weapons = weapons, catalog = catalog)
 
-    // S5에서 연 친구 기록이다. 제목에 친구 이름을 붙인다.
+    // S5에서 연 친구 기록이다.
+    // 제목에 친구 이름을 붙인다.
     val friendRecords = records.copy(ownerName = "민석")
 
     // 이번 액트에 경쟁전을 안 뛰었으면 티어 칸이 없고 티어는 이름 줄에 남는다

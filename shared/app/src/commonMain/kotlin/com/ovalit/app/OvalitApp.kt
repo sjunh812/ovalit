@@ -150,7 +150,8 @@ private data class FriendRanking(val queue: String, val metric: String) : Screen
 
 private val TopLevel: List<NavKey> = listOf(Report, Matches, Friends, Settings)
 
-// 스택을 저장할 때 키마다 쓸 직렬화기다. iOS에는 리플렉션이 없어 알려 줘야 하고, 빠진 키가 있으면 스택을 저장할 때 앱이 죽는다.
+// 스택을 저장할 때 키마다 쓸 직렬화기다.
+// iOS에는 리플렉션이 없어 알려 줘야 하고, 빠진 키가 있으면 스택을 저장할 때 앱이 죽는다.
 // [Screen]을 구현한 키는 모두 들어간다.
 @OptIn(ExperimentalSerializationApi::class)
 private val BackStackConfiguration = SavedStateConfiguration {
@@ -160,15 +161,19 @@ private val BackStackConfiguration = SavedStateConfiguration {
 }
 
 /**
- * 안드로이드와 iOS가 같이 쓰는 앱 뼈대입니다. 화면 전환, 탭, 토스트를 두고, 플랫폼마다 다른 일은 [platform]에 맡깁니다.
+ * 안드로이드와 iOS가 같이 쓰는 앱 뼈대입니다.
+ * 화면 전환, 탭, 토스트를 두고, 플랫폼마다 다른 일은 [platform]에 맡깁니다.
  *
- * @param openPing ㅇㅂㅇ 알림을 눌러 열 초대 ID입니다. 알림이 없는 iOS는 비워 둡니다.
+ * @param openPing ㅇㅂㅇ 알림을 눌러 열 초대 ID입니다.
+ *   알림이 없는 iOS는 비워 둡니다.
  */
 @Composable
 fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<String> = emptyFlow()) {
     val backStack = rememberNavBackStack(BackStackConfiguration, Intro)
-    // ㅇㅂㅇ 알림을 누르면 친구 탭 위에 그 초대 화면을 연다. 연동 전이면 무시한다.
-    // 다시 불러오는 중(S0-4)이면 탭을 바꾸지 않고 그 위에 연다. 탭을 바꾸면 불러오는 화면이 닫혀 돌아갈 곳이 없다.
+    // ㅇㅂㅇ 알림을 누르면 친구 탭 위에 그 초대 화면을 연다.
+    // 연동 전이면 무시한다.
+    // 다시 불러오는 중(S0-4)이면 탭을 바꾸지 않고 그 위에 연다.
+    // 탭을 바꾸면 불러오는 화면이 닫혀 돌아갈 곳이 없다.
     LaunchedEffect(openPing) {
         openPing.collect { id ->
             if (Report !in backStack || backStack.last() == PingDetail(id)) return@collect
@@ -176,13 +181,15 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
             backStack.push(PingDetail(id))
         }
     }
-    // RSO가 붙기 전까지는 가짜 계정이다. S0-2의 계속하기가 연동을 대신한다.
+    // RSO가 붙기 전까지는 가짜 계정이다.
+    // S0-2의 계속하기가 연동을 대신한다.
     val account = koinInject<FakeAccountRepository>()
     val friends = koinInject<FriendRepository>()
     val importScheduler = koinInject<ImportScheduler>()
     val scope = rememberCoroutineScope()
     val dimmedAlpha = dimmedAlpha(OvalitTheme.colors.isDark)
-    // 탭을 바꿀 때는 홈이 스택에 남는다. 연동을 해제하면 홈까지 빠지니 그때 남겨 둔 탭 화면도 지운다.
+    // 탭을 바꿀 때는 홈이 스택에 남는다.
+    // 연동을 해제하면 홈까지 빠지니 그때 남겨 둔 탭 화면도 지운다.
     val linked = Report in backStack
     val tabState = rememberTabStateDecorator(keepTabs = { Report in backStack })
     LaunchedEffect(linked) { if (!linked) tabState.clearKept() }
@@ -205,7 +212,8 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
     val top = backStack.lastOrNull()
     LaunchedEffect(top) { (top as? Screen)?.let { analytics.screen(screenName(it)) } }
 
-    // 전환 중에 아래 화면이 어두워 보이게 하는 검은 바탕이다(OvalitTransitions). 화면이 모두 불투명해서 평소에는 안 보인다.
+    // 전환 중에 아래 화면이 어두워 보이게 하는 검은 바탕이다(OvalitTransitions).
+    // 화면이 모두 불투명해서 평소에는 안 보인다.
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
         CompositionLocalProvider(LocalOvalitToast provides toast) {
             NavDisplay(
@@ -223,7 +231,8 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
                         ConsentScreen(
                             onBack = { backStack.removeLastOrNull() },
                             onContinue = {
-                                // S0-3 Riot 로그인은 RSO가 붙으면 여기서 Custom Tabs로 연다. 지금은 가짜 계정으로 연동한다.
+                                // S0-3 Riot 로그인은 RSO가 붙으면 여기서 Custom Tabs로 연다.
+                                // 지금은 가짜 계정으로 연동한다.
                                 scope.launch {
                                     account.link()
                                     importScheduler.start()
@@ -298,7 +307,8 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
                         )
                     }
                     entry<PingDetail> { key ->
-                        // 앱에서 초대를 열면 그 초대의 알림을 거둔다. 남은 알림 버튼을 나중에 누르면 앱에서 한 답을 덮어쓴다.
+                        // 앱에서 초대를 열면 그 초대의 알림을 거둔다.
+                        // 남은 알림 버튼을 나중에 누르면 앱에서 한 답을 덮어쓴다.
                         LaunchedEffect(key.id) { platform.clearPingNotification(key.id) }
                         PingDetailRoute(pingId = key.id, onBack = { backStack.removeLastOrNull() })
                     }
@@ -383,7 +393,8 @@ private fun TabScaffold(selected: NavKey, onSelect: (NavKey) -> Unit, content: @
     }
 }
 
-// 화면마다 바탕을 깐다. 바탕이 빈 화면이 있으면 전환 중에 뒤의 검은 바탕이 비친다.
+// 화면마다 바탕을 깐다.
+// 바탕이 빈 화면이 있으면 전환 중에 뒤의 검은 바탕이 비친다.
 // 양옆 바깥의 선은 평소에는 화면 밖이라 안 보이고 전환 중에만 두 화면 사이에 보인다.
 @Composable
 private fun rememberOpaqueEntryDecorator(): NavEntryDecorator<NavKey> {
@@ -412,7 +423,8 @@ private fun rememberOpaqueEntryDecorator(): NavEntryDecorator<NavKey> {
 
 private val EdgeWidth = 1.dp
 
-// 사용 통계에 쓰는 화면 이름이다. 키를 그대로 쓰면 친구·경기 ID가 섞이고 릴리스에서는 난독화된 이름이 된다.
+// 사용 통계에 쓰는 화면 이름이다.
+// 키를 그대로 쓰면 친구·경기 ID가 섞이고 릴리스에서는 난독화된 이름이 된다.
 // Screen을 받아 else 없이 갈라서 새 화면을 표에 빠뜨리면 컴파일이 멈춘다.
 private fun screenName(key: Screen): String = when (key) {
     Intro -> "intro"
@@ -434,7 +446,8 @@ private fun screenName(key: Screen): String = when (key) {
     Settings -> "settings"
 }
 
-// 전환 중에 같은 줄을 두 번 누르면 같은 화면이 두 번 쌓인다. 같은 키가 둘이면 저장 상태 키가 겹쳐 앱이 죽는다.
+// 전환 중에 같은 줄을 두 번 누르면 같은 화면이 두 번 쌓인다.
+// 같은 키가 둘이면 저장 상태 키가 겹쳐 앱이 죽는다.
 private fun NavBackStack<NavKey>.push(key: NavKey) {
     if (lastOrNull() != key) add(key)
 }
@@ -453,7 +466,8 @@ private fun NavBackStack<NavKey>.openProfile() {
     if (index < 0) add(Profile) else while (lastIndex > index) removeAt(lastIndex)
 }
 
-// NavDisplay에 빈 스택을 넘기면 예외가 난다. 그래서 새 화면을 먼저 넣고 나머지를 뺀다.
+// NavDisplay에 빈 스택을 넘기면 예외가 난다.
+// 그래서 새 화면을 먼저 넣고 나머지를 뺀다.
 private fun NavBackStack<NavKey>.replaceAllWith(vararg keys: NavKey) {
     addAll(keys)
     repeat(size - keys.size) { removeAt(0) }

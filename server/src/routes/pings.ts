@@ -15,7 +15,8 @@ const MAX_FRIENDS = 4;
 // "지금"을 골라 보내는 사이에 시각이 조금 지나도 받는다.
 const PAST_GRACE_MS = MINUTE_MS;
 const MAX_LEAD_MS = DAY_MS;
-// 부를 때마다 친구들에게 알림이 가서 하루 열 번까지만 띄운다. isolate 메모리는 비워질 수 있어 D1의 줄로 센다.
+// 부를 때마다 친구들에게 알림이 가서 하루 열 번까지만 띄운다.
+// isolate 메모리는 비워질 수 있어 D1의 줄로 센다.
 const DAILY_LIMIT = 10;
 // randomToken(16)이 만드는 base64url 22자다.
 const PING_ID = /^[A-Za-z0-9_-]{22}$/;
@@ -60,7 +61,8 @@ interface PingRow {
   updated_at: number | null;
 }
 
-// ?1은 보는 사람이다. 부른 사람마다 나와 친구인지를 friendships 기본 키로 한 번씩 찾는다.
+// ?1은 보는 사람이다.
+// 부른 사람마다 나와 친구인지를 friendships 기본 키로 한 번씩 찾는다.
 // 친구가 모두 연동을 해제해도 호스트에게는 ㅇㅂㅇ이 보여야 해서 부른 사람 쪽은 LEFT JOIN이다.
 const SELECT_PINGS = `
   SELECT p.id, p.starts_at, p.created_at, p.expires_at,
@@ -79,7 +81,8 @@ pings.use(requireSession);
 /** 내가 띄웠거나 불려 간 ㅇㅂㅇ 중 취소하지 않았고 끝나지 않은 것입니다. 최근에 띄운 것부터 옵니다. */
 pings.get("/", async (c) => {
   const now = Date.now();
-  // host와 user_id 색인을 하나씩 타게 나눠 찾는다. OR로 묶으면 표를 끝까지 읽는다.
+  // host와 user_id 색인을 하나씩 타게 나눠 찾는다.
+  // OR로 묶으면 표를 끝까지 읽는다.
   const { results } = await c.env.DB.prepare(
     `${SELECT_PINGS}
      WHERE p.id IN (
@@ -114,8 +117,10 @@ pings.post("/", async (c) => {
   const invited = puuids.map((puuid) => friends.find((friend) => friend.puuid === puuid)!);
 
   const id = randomToken(16);
-  // 살아 있는 ㅇㅂㅇ과 하루 한도를 INSERT 조건으로 건다. 보내기를 두 번 눌러 요청이 겹쳐도 하나만 들어간다.
-  // 부른 사람은 ㅇㅂㅇ이 들어갔을 때만 넣는다. json_each의 key가 배열 순번이라 고른 순서가 position이 된다.
+  // 살아 있는 ㅇㅂㅇ과 하루 한도를 INSERT 조건으로 건다.
+  // 보내기를 두 번 눌러 요청이 겹쳐도 하나만 들어간다.
+  // 부른 사람은 ㅇㅂㅇ이 들어갔을 때만 넣는다.
+  // json_each의 key가 배열 순번이라 고른 순서가 position이 된다.
   const [created] = await db.batch([
     db
       .prepare(
@@ -176,7 +181,7 @@ pings.post("/:id/reply", async (c) => {
 
   // 같은 대답을 다시 누른 것이면 호스트에게 알림을 또 보내지 않는다.
   if (current.answer !== answer || current.proposed_at !== proposedAt) {
-    // 못 간다고 한 사람은 자리를 비운 것이라, 다시 오겠다고 하면 그 사이 다른 친구로 넷이 찼는지 본다
+    // 못 간다고 한 사람은 자리를 비운 것이라 다시 오겠다고 하면 그 사이 다른 친구로 넷이 찼는지 본다
     const updated = await db
       .prepare(
         `UPDATE ping_members SET answer = ?3, proposed_at = ?4, updated_at = ?5
@@ -223,10 +228,12 @@ pings.post("/:id/time", async (c) => {
     .first<{ starts_at: number }>();
   if (!current) throw new ApiError(404, "not_found");
 
-  // 같은 시각으로 다시 오면 그대로 둔다. 버튼을 두 번 눌렀을 때 방금 가기로 바뀐 친구가 다시 대기로 돌아가지 않게 한다.
+  // 같은 시각으로 다시 오면 그대로 둔다.
+  // 버튼을 두 번 눌렀을 때 방금 가기로 바뀐 친구가 다시 대기로 돌아가지 않게 한다.
   if (current.starts_at !== startsAt) {
     const active = "SELECT 1 FROM pings WHERE id = ?1 AND host = ?2 AND canceled = 0 AND expires_at > ?3";
-    // 못 간다고 한 친구에게도 다시 묻는다. 다만 그 뒤로 친구를 더 불러 다섯 명 이상이 됐으면 다시 물을 때 넷을 넘으니 그대로 둔다.
+    // 못 간다고 한 친구에게도 다시 묻는다.
+    // 다만 그 뒤로 친구를 더 불러 다섯 명 이상이 됐으면 다시 물을 때 넷을 넘으니 그대로 둔다.
     await db.batch([
       db
         .prepare(
@@ -253,8 +260,9 @@ pings.post("/:id/time", async (c) => {
 });
 
 /**
- * 호스트가 친구를 더 부릅니다. 누가 못 간다고 했거나 깜빡 빠뜨린 친구를 나중에 더할 때 씁니다.
- * 못 간다고 한 사람은 자리를 비운 것으로 쳐서, 그 사람을 뺀 인원이 넷을 넘지 않을 때까지 받습니다.
+ * 호스트가 친구를 더 부릅니다.
+ * 누가 못 간다고 했거나 깜빡 빠뜨린 친구를 나중에 더할 때 씁니다.
+ * 못 간다고 한 사람은 자리를 비운 것으로 쳐서 그 사람을 뺀 인원이 넷을 넘지 않을 때까지 받습니다.
  * 더한 친구만 새로 불렸다는 알림을 받습니다.
  */
 pings.post("/:id/members", async (c) => {
@@ -291,8 +299,10 @@ pings.post("/:id/members", async (c) => {
   if (friends.some((friend) => friend.invited)) throw new ApiError(409, "already_invited");
   const added = puuids.map((puuid) => friends.find((friend) => friend.puuid === puuid)!);
 
-  // 자리와 살아 있는지를 INSERT 조건으로 다시 건다. 두 번 눌러 요청이 겹쳐도 넷을 넘지 않는다.
-  // 자리는 앞사람 뒤로 이어 붙인다. 이미 쓴 자리 번호는 anon-N이라 다시 쓰지 않는다.
+  // 자리와 살아 있는지를 INSERT 조건으로 다시 건다.
+  // 두 번 눌러 요청이 겹쳐도 넷을 넘지 않는다.
+  // 자리는 앞사람 뒤로 이어 붙인다.
+  // 이미 쓴 자리 번호는 anon-N이라 다시 쓰지 않는다.
   const inserted = await db
     .prepare(
       `INSERT INTO ping_members (ping_id, user_id, position, updated_at)
@@ -363,7 +373,8 @@ function startTime(value: unknown, now: number): number {
   return value;
 }
 
-// INSERT 조건에 걸린 이유를 다시 읽어 코드로 바꾼다. 하루 한도면 열 번째로 최근에 띄운 것이 하루를 넘길 때 풀린다.
+// INSERT 조건에 걸린 이유를 다시 읽어 코드로 바꾼다.
+// 하루 한도면 열 번째로 최근에 띄운 것이 하루를 넘길 때 풀린다.
 async function refusal(db: D1Database, hostId: number, now: number): Promise<ApiError> {
   const row = await db
     .prepare(
@@ -400,7 +411,8 @@ async function pingById(db: D1Database, id: string, viewerId: number): Promise<P
 /**
  * 같이 불린 사람 중 보는 사람과 서로 수락한 친구가 아닌 사람은 PUUID를 `anon-N`으로 바꾸고 태그를 비웁니다.
  * N은 그 사람이 불린 순서라 같은 ㅇㅂㅇ 안에서는 늘 같고, 다른 ㅇㅂㅇ의 같은 이름과는 이어지지 않습니다.
- * 이름과 대답은 그대로 둡니다. 호스트와 나 자신은 가리지 않습니다.
+ * 이름과 대답은 그대로 둡니다.
+ * 호스트와 나 자신은 가리지 않습니다.
  */
 function toPings(rows: PingRow[], viewerId: number): Ping[] {
   const byId = new Map<string, Ping>();
@@ -419,7 +431,8 @@ function toPings(rows: PingRow[], viewerId: number): Ping[] {
     }
     if (row.puuid === null) continue;
     const known = row.user_id === viewerId || row.friend === 1;
-    // 친구가 아닌 사람은 이름만 준다(docs/backend.md). 태그까지 주면 이름#태그로 그 사람을 찾을 수 있다.
+    // 친구가 아닌 사람은 이름만 준다(docs/backend.md).
+    // 태그까지 주면 이름#태그로 그 사람을 찾을 수 있다.
     ping.members.push({
       puuid: known ? row.puuid : `anon-${row.position}`,
       gameName: row.game_name!,

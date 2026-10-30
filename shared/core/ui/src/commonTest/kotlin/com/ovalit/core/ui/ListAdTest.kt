@@ -17,7 +17,8 @@ class ListAdTest {
         assertEquals(setOf(1, 3), listAdBefore(listOf(3, 4, 4, 1)))
     }
 
-    // 마지막 묶음 뒤에는 두지 않는다. 광고로 끝나는 목록은 경기가 더 있는 것처럼 보인다.
+    // 마지막 묶음 뒤에는 두지 않는다.
+    // 광고로 끝나는 목록은 경기가 더 있는 것처럼 보인다.
     @Test
     fun `줄이 모자라거나 묶음이 하나면 두지 않는다`() {
         assertEquals(emptySet(), listAdBefore(listOf(1, 1)))

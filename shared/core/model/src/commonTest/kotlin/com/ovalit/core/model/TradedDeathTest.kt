@@ -19,7 +19,8 @@ class TradedDeathTest {
         assertRate(0.5, metrics.tradedDeathRate)
     }
 
-    // 관여율과 같은 규칙이다. 한쪽만 바뀌면 트레이드를 받았는데 관여하지 못한 라운드가 생긴다.
+    // 관여율과 같은 규칙이다.
+    // 한쪽만 바뀌면 트레이드를 받았는데 관여하지 못한 라운드가 생긴다.
     @Test
     fun `5초가 지났거나 내 킬러가 아닌 적을 잡은 건 트레이드 받은 데스가 아니다`() {
         val metrics = match(

@@ -120,7 +120,8 @@ internal class AndroidOvalitPlatform(private val context: Context) : OvalitPlatf
     }
 }
 
-// 앱 알림을 통째로 껐으면 셋 다 막힌 것이다. 아직 만들지 않은 채널은 막을 수도 없어 열린 것으로 본다.
+// 앱 알림을 통째로 껐으면 셋 다 막힌 것이다.
+// 아직 만들지 않은 채널은 막을 수도 없어 열린 것으로 본다.
 private fun notificationBlocks(context: Context): NotificationBlocks {
     val manager = NotificationManagerCompat.from(context)
     if (!manager.areNotificationsEnabled()) return NotificationBlocks(analysisDone = true, weeklyReport = true, ping = true)
@@ -144,7 +145,7 @@ private fun ExitOnSecondBack(toast: OvalitToastState) {
     val scope = rememberCoroutineScope()
     BackHandler {
         // 두 번째는 시스템에 넘기지 않고 직접 닫는다.
-        // 안드로이드 12부터 시스템 뒤로 가기는 첫 화면을 닫지 않고 앱을 뒤로 보내기만 해서, 다시 열면 홈이 그대로 떠 있다.
+        // 안드로이드 12부터 시스템 뒤로 가기는 첫 화면을 닫지 않고 앱을 뒤로 보내기만 해서 다시 열면 홈이 그대로 떠 있다.
         if (armed) {
             activity?.finish()
             return@BackHandler
@@ -165,7 +166,8 @@ private val ExitWindow = 2.seconds
 // 시스템 권한 창을 띄울 수 있는지다.
 // 안드로이드 12까지는 권한 창이 없고, 권한이 있는데 알림이 꺼졌으면 사용자가 설정에서 끈 것이라 둘 다 설정 화면에서만 켤 수 있다.
 // 두 번 거절하면 시스템이 창을 더는 띄우지 않고 바로 거절로 돌려준다.
-// 그때 다시 띄우면 아무 일도 일어나지 않아서, 띄운 적이 있는데 다시 물어도 된다는 신호(rationale)가 없으면 설정 화면을 연다.
+// 그때 다시 띄우면 아무 일도 일어나지 않는다.
+// 그래서 띄운 적이 있는데 다시 물어도 된다는 신호(rationale)가 없으면 설정 화면을 연다.
 private fun Context.canAskPermission(activity: Activity?, askedBefore: Boolean): Boolean {
     if (Build.VERSION.SDK_INT < 33) return false
     if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) return false

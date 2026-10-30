@@ -7,7 +7,8 @@ type Html = HtmlEscapedString | Promise<HtmlEscapedString>;
 export const ANDROID_PACKAGE = "com.ovalit";
 
 /**
- * 같은 주소를 우리 패키지에만 넘기는 intent 주소입니다. 앱이 없으면 아무 데도 열리지 않습니다.
+ * 같은 주소를 우리 패키지에만 넘기는 intent 주소입니다.
+ * 앱이 없으면 아무 데도 열리지 않습니다.
  * 커스텀 스킴(`ovalit://`)은 다른 앱이 같은 이름을 등록해 가로챌 수 있어 쓰지 않습니다(docs/backend.md).
  *
  * `pathAndQuery`는 `/`로 시작하고 이미 모양을 확인한 값만 넘깁니다.

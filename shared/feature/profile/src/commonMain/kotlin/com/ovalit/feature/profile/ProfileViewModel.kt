@@ -54,7 +54,8 @@ sealed interface ProfileUiState {
 }
 
 /**
- * 내 프로필 상태를 만듭니다. 최근 경기 말고는 모두 이번 액트의 경쟁 + 일반 경기만 셉니다.
+ * 내 프로필 상태를 만듭니다.
+ * 최근 경기 말고는 모두 이번 액트의 경쟁 + 일반 경기만 셉니다.
  * S6 무기와 S7 요원은 [RecordsViewModel]이 맡습니다.
  *
  * @param computation 경기를 세는 디스패처입니다.
@@ -94,7 +95,8 @@ class ProfileViewModel(
         )
     }.flowOn(computation)
 
-    // 최근 경기의 "N분 전"은 분마다 흐르게 지금만 다시 넣는다. 경기를 다시 세지는 않는다.
+    // 최근 경기의 "N분 전"은 분마다 흐르게 지금만 다시 넣는다.
+    // 경기를 다시 세지는 않는다.
     val uiState: StateFlow<ProfileUiState> = combine(counted, minuteChanges) { state, _ ->
         if (state is ProfileUiState.Success) state.copy(now = clock.now()) else state
     }.stateIn(

@@ -154,7 +154,8 @@ private fun PingDetailSkeleton() {
     }
 }
 
-// 다른 시간으로 답할 때와 시각을 옮길 때 같은 시간 시트를 쓴다. 친구 더 부르기도 시트다.
+// 다른 시간으로 답할 때와 시각을 옮길 때 같은 시간 시트를 쓴다.
+// 친구 더 부르기도 시트다.
 private enum class DetailSheet { REPLY, MOVE, INVITE }
 
 @Composable
@@ -169,11 +170,13 @@ private fun ColumnScope.PingDetailContent(
     val colors = OvalitTheme.colors
     val hosting = ping.isHostedBy(me)
     var sheet by remember { mutableStateOf<DetailSheet?>(null) }
-    // 부른 사람을 참석으로 맨 앞에, 그다음에 나를 둔다. 나를 빼면 몇 명이 모이는지 세기 어렵다.
+    // 부른 사람을 참석으로 맨 앞에, 그다음에 나를 둔다.
+    // 나를 빼면 몇 명이 모이는지 세기 어렵다.
     val crowd = listOf(PingMember(ping.host, PingAnswer.YES)) +
         listOfNotNull(ping.memberOf(me)) +
         ping.members.filterNot { it.person.id == me }
-    // 같은 시각을 낸 친구는 한 줄에 모은 뒤 많이 낸 시각부터 둔다. 제안이 여럿 와도 줄이 사람 수만큼 쌓이지 않는다.
+    // 같은 시각을 낸 친구는 한 줄에 모은 뒤 많이 낸 시각부터 둔다.
+    // 제안이 여럿 와도 줄이 사람 수만큼 쌓이지 않는다.
     val proposals = if (!hosting) {
         emptyList()
     } else {
@@ -189,7 +192,8 @@ private fun ColumnScope.PingDetailContent(
     Column(modifier = Modifier.weight(1f).verticalScroll(scroll).padding(horizontal = OvalitSpacing.gutter)) {
         Spacer(Modifier.height(OvalitSpacing.sm))
         Row(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.Bottom) {
-            // 오늘이 아니면 "내일", "새벽"도 크게 둔다. 작은 글자에만 두면 큰 시각이 오늘처럼 읽힌다.
+            // 오늘이 아니면 "내일", "새벽"도 크게 둔다.
+            // 작은 글자에만 두면 큰 시각이 오늘처럼 읽힌다.
             pingHeroDay(ping, now, timeZone)?.let { day ->
                 OvalitText(text = day, modifier = Modifier.alignByBaseline(), style = OvalitTheme.typography.display)
                 Spacer(Modifier.width(OvalitSpacing.sm))
@@ -266,7 +270,8 @@ private fun ColumnScope.PingDetailContent(
 }
 
 /**
- * 받은 초대의 내 답입니다. 누르는 즉시 보내고 버튼 줄을 "참석으로 답했어요 · 바꾸기" 한 줄로 접습니다.
+ * 받은 초대의 내 답입니다.
+ * 누르는 즉시 보내고 버튼 줄을 "참석으로 답했어요 · 바꾸기" 한 줄로 접습니다.
  * 버튼을 남겨 두면 누를 때마다 부른 친구에게 알림이 갑니다.
  */
 @Composable
@@ -310,7 +315,9 @@ private fun MyAnswer(
     }
 }
 
-// 묶음 제목이다. 내용과는 12dp를 둔다(docs/design.md). 줄마다 위아래 여백이 있어 그만큼 줄인다.
+// 묶음 제목이다.
+// 내용과는 12dp를 둔다(docs/design.md).
+// 줄마다 위아래 여백이 있어 그만큼 줄인다.
 @Composable
 private fun SectionTitle(text: String) {
     OvalitText(

@@ -29,7 +29,8 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 private enum class AdFreeStep { ASK, LOADING, FAILED }
 
 /**
- * 광고를 없애는 시트입니다. 광고 줄의 ×나 설정 줄을 눌렀을 때만 띄우고 저절로 띄우지 않습니다.
+ * 광고를 없애는 시트입니다.
+ * 광고 줄의 ×나 설정 줄을 눌렀을 때만 띄우고 저절로 띄우지 않습니다.
  *
  * [onCloseOne]이 있으면 광고 줄의 ×에서 연 것이라 그 광고만 바로 닫는 길도 둡니다.
  * ×를 눌렀는데 광고를 봐야만 닫히면 닫기 버튼으로 속이는 셈입니다.
@@ -83,7 +84,8 @@ internal fun AdFreeSheet(
                         AdRequest.Builder().build(),
                         object : RewardedAdLoadCallback() {
                             override fun onAdLoaded(ad: RewardedAd) {
-                                // 광고를 닫으면 보상과 상관없이 시트도 닫는다. 보상은 끝까지 봤을 때만 난다.
+                                // 광고를 닫으면 보상과 상관없이 시트도 닫는다.
+                                // 보상은 끝까지 봤을 때만 난다.
                                 ad.fullScreenContentCallback = object : FullScreenContentCallback() {
                                     override fun onAdDismissedFullScreenContent() = onDismiss()
 

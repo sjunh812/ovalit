@@ -70,7 +70,8 @@ import com.ovalit.feature.report.resources.rival_no_matches
 import com.ovalit.feature.report.resources.rival_title
 import org.jetbrains.compose.resources.stringResource
 
-// 홈 고정 칸을 모두 같은 순서로 겨룬다. 고정 칸에 지표가 늘면 여기에도 같이 붙는다.
+// 홈 고정 칸을 모두 같은 순서로 겨룬다.
+// 고정 칸에 지표가 늘면 여기에도 같이 붙는다.
 private val RivalMetrics = FixedMetric.entries
 private val NameWidth = 72.dp
 
@@ -84,7 +85,8 @@ internal fun RivalSection(
     modifier: Modifier = Modifier,
 ) {
     val theirs = rival.metrics
-    // 화면에 보이는 자릿수로 반올림한 값끼리 겨룬다. 1.42와 1.42를 띄워 놓고 한쪽이 앞섰다고 하면 틀려 보인다.
+    // 화면에 보이는 자릿수로 반올림한 값끼리 겨룬다.
+    // 1.42와 1.42를 띄워 놓고 한쪽이 앞섰다고 하면 틀려 보인다.
     val leads = if (theirs == null) 0 else RivalMetrics.count { metric -> leadDirection(metric, mine, theirs) > 0 }
 
     Column(modifier = modifier.padding(horizontal = OvalitSpacing.gutter)) {
@@ -199,7 +201,8 @@ internal fun RankMetricSheet(selected: FixedMetric, onPick: (FixedMetric) -> Uni
     }
 }
 
-// 홈 첫 카드의 8주 흐름 입구와 같은 면이다. 카드 안에서 다른 화면으로 넘어가는 칸은 이 모양으로 둔다.
+// 홈 첫 카드의 8주 흐름 입구와 같은 면이다.
+// 카드 안에서 다른 화면으로 넘어가는 칸은 이 모양으로 둔다.
 @Composable
 private fun RankingAllEntry(total: Int, onClick: () -> Unit) {
     val colors = OvalitTheme.colors
@@ -226,7 +229,7 @@ private fun RankingAllEntry(total: Int, onClick: () -> Unit) {
 /**
  * 순위와 값 칸은 가장 긴 글자에 맞추고 이름은 넘치면 말줄임표로 자릅니다.
  * 폭을 고정하면 글씨를 키웠을 때 순위 "10"이 꺾이고 값이 잘립니다.
- * 숫자는 폭이 고정된 글꼴(tnum)이라 자릿수가 가장 많은 것만 재서, 친구가 수백 명이어도 줄마다 재지 않습니다.
+ * 숫자는 폭이 고정된 글꼴(tnum)이라 자릿수가 가장 많은 것만 재서 친구가 수백 명이어도 줄마다 재지 않습니다.
  */
 @Composable
 internal fun rememberRankWidths(entries: List<RankedEntry>, metric: FixedMetric): RankWidths {
@@ -262,7 +265,9 @@ private fun rememberNameWidth(names: List<String>, style: TextStyle): Dp {
     }
 }
 
-// 위 다섯 줄 밖에 있는 내 줄을 띄운다. 바로 붙이면 내 줄이 6등처럼 읽힌다. 순위 칸 가운데에 점 셋을 세로로 둔다.
+// 위 다섯 줄 밖에 있는 내 줄을 띄운다.
+// 바로 붙이면 내 줄이 6등처럼 읽힌다.
+// 순위 칸 가운데에 점 셋을 세로로 둔다.
 @Composable
 internal fun RankGap(widths: RankWidths) {
     val dot = OvalitTheme.colors.t4

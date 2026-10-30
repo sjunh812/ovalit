@@ -60,7 +60,8 @@ class FakePingRepositoryTest {
         assertEquals(listOf(1, 0), sizes)
     }
 
-    // 서버는 끊을 때 둘 사이의 ㅇㅂㅇ에서 서로를 뺀다. 가짜도 같아야 끊은 친구의 초대가 홈에 남는 걸 앱에서 볼 수 있다.
+    // 서버는 끊을 때 둘 사이의 ㅇㅂㅇ에서 서로를 뺀다.
+    // 가짜도 같아야 끊은 친구의 초대가 홈에 남는 걸 앱에서 볼 수 있다.
     @Test
     fun `친구를 끊으면 그 친구가 보낸 초대가 빠진다`() = runTest {
         val friends = FakeFriendRepository(StepClock(Evening))

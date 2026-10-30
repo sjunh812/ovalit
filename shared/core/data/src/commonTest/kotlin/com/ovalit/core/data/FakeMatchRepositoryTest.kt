@@ -59,7 +59,8 @@ class FakeMatchRepositoryTest {
 
     // 가짜 경기는 늘 공격에서 첫 교전을 더 잘 이긴다.
     // 개선 포인트는 이번 액트 경기로 견주니 한 주만 바꾼 멀티킬보다 이 차이가 먼저다.
-    // 에임 올리기를 고르면 관심사라서 봤다는 말이 붙는다. 앱이 첫 수집으로 받는 50경기로 본다.
+    // 에임 올리기를 고르면 관심사라서 봤다는 말이 붙는다.
+    // 앱이 첫 수집으로 받는 50경기로 본다.
     @Test
     fun `가짜 경기의 개선 포인트는 이번 액트 공수 첫 교전 승률 차이다`() {
         val imported = fakeMatches(Thursday).forFirstImport(Thursday) { it.startedAt }
@@ -96,7 +97,8 @@ class FakeMatchRepositoryTest {
         assertEquals(1, repository.refresh())
     }
 
-    // 홈에 맞춰 둔 가짜 지표(움직인 칸, 짚을 점, 개선 포인트)는 첫 수집 50경기 기준이다. 앞서 받은 새 경기가 섞이면 틀어진다.
+    // 홈에 맞춰 둔 가짜 지표(움직인 칸, 짚을 점, 개선 포인트)는 첫 수집 50경기 기준이다.
+    // 앞서 받은 새 경기가 섞이면 틀어진다.
     @Test
     fun `가짜 저장소는 지운 뒤 다시 받는 첫 수집에서 늘 같은 경기를 받는다`() = runTest {
         val repository = FakeMatchRepository(ThursdayClock, importDelay = Duration.ZERO, scope = this)
@@ -113,7 +115,8 @@ class FakeMatchRepositoryTest {
         assertEquals(fakeMatches(Thursday), fakeMatches(Thursday))
     }
 
-    // 스코어가 14:10처럼 나오면 경기 목록이 가짜로 보인다. 스파이크 돌격은 4승, 신속 플레이는 5승을 먼저 하면 끝난다.
+    // 스코어가 14:10처럼 나오면 경기 목록이 가짜로 보인다.
+    // 스파이크 돌격은 4승, 신속 플레이는 5승을 먼저 하면 끝난다.
     @Test
     fun `가짜 라운드제 경기는 정해진 승수를 먼저 한 쪽이 이기고 경쟁전 연장은 두 라운드 차이로 끝난다`() {
         for (match in fakeMatches(Thursday).filter { it.format == MatchFormat.ROUNDS }) {
@@ -169,7 +172,8 @@ class FakeMatchRepositoryTest {
         assertEquals(match.score.myTeam, match.players.filter { it.onMyTeam }.sumOf { it.kills })
     }
 
-    // 건틀릿: 글리치는 큐 ID를 몰라 기타로 온다. 로봇은 카탈로그에 없어 이름도 역할도 없다.
+    // 건틀릿: 글리치는 큐 ID를 몰라 기타로 온다.
+    // 로봇은 카탈로그에 없어 이름도 역할도 없다.
     @Test
     fun `가짜 건틀릿은 두 명씩 여덟 팀이고 로봇 요원은 카탈로그에 없다`() = runTest {
         val match = fakeMatches(Thursday).single { it.queue == Queue.OTHER }
@@ -184,7 +188,8 @@ class FakeMatchRepositoryTest {
         assertTrue(match.map !in catalog.maps)
     }
 
-    // 첫 수집 50경기에 다른 모드가 섞이면 그만큼 경쟁·일반이 빠진다. 그래도 홈 리포트가 움직인 칸과 짚을 점을 보여야 한다.
+    // 첫 수집 50경기에 다른 모드가 섞이면 그만큼 경쟁·일반이 빠진다.
+    // 그래도 홈 리포트가 움직인 칸과 짚을 점을 보여야 한다.
     @Test
     fun `첫 수집한 가짜 경기로도 홈 리포트에 움직인 지표와 짚을 점이 뜨고 기타 리포트도 만들어진다`() {
         val imported = fakeMatches(Thursday).forFirstImport(Thursday) { it.startedAt }

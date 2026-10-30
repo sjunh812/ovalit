@@ -12,9 +12,11 @@ import kotlinx.coroutines.flow.Flow
 import org.koin.core.module.Module
 
 /**
- * 안드로이드와 iOS가 같이 쓰는 Koin 모듈입니다. `ImportScheduler`와 `Analytics`는 플랫폼마다 달라 부르는 쪽이 더합니다.
+ * 안드로이드와 iOS가 같이 쓰는 Koin 모듈입니다.
+ * `ImportScheduler`와 `Analytics`는 플랫폼마다 달라 부르는 쪽이 더합니다.
  *
- * @param language 화면 언어입니다. 요원·맵·무기·티어 이름을 이 언어로 받습니다.
+ * @param language 화면 언어입니다.
+ *   요원·맵·무기·티어 이름을 이 언어로 받습니다.
  * @param backgroundFailure 앱 수명 스코프에서 놓친 실패를 받아 로그를 남깁니다.
  */
 fun ovalitModules(

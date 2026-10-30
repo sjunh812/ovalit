@@ -17,7 +17,8 @@ import kotlinx.coroutines.sync.withLock
  * 다른 앱을 잠깐 오갈 때마다 경기 ID 목록을 받으면 앱 전체의 Riot 몫을 씁니다.
  * 확인한 시각은 저장소가 들어서([MatchRepository.checkedAt]) 첫 수집과 당겨서 받은 것도 확인으로 칩니다.
  *
- * @param scope 앱이 사는 동안 도는 곳입니다. 화면이 사라져도 받기가 이어집니다.
+ * @param scope 앱이 사는 동안 도는 곳입니다.
+ *   화면이 사라져도 받기가 이어집니다.
  */
 class NewMatchesWatcher(
     private val matches: MatchRepository,
@@ -27,14 +28,16 @@ class NewMatchesWatcher(
     private val clock: Clock = Clock.System,
     private val analytics: Analytics = NoAnalytics,
 ) {
-    // 앱이 연달아 보였다 가려졌다 하면 확인이 겹친다. 저장소가 한 번만 받지만 사용 통계에 두 번 남지 않게 막는다.
+    // 앱이 연달아 보였다 가려졌다 하면 확인이 겹친다.
+    // 저장소가 한 번만 받지만 사용 통계에 두 번 남지 않게 막는다.
     private val lock = Mutex()
     private var checking = false
 
     /** 앱 화면이 하나라도 보이기 시작할 때 부릅니다. */
     fun onAppVisible() {
         scope.launch {
-            // RSO 세션 없이 전적을 요청하지 않는다(CLAUDE.md 지켜야 할 선). 첫 수집 전이나 받는 중이면 S0-4가 받는다.
+            // RSO 세션 없이 전적을 요청하지 않는다(CLAUDE.md 지켜야 할 선).
+            // 첫 수집 전이나 받는 중이면 S0-4가 받는다.
             if (account.account.first() == null) return@launch
             if (matches.importProgress.first()?.isDone != true) return@launch
             val last = matches.checkedAt.first()
@@ -45,7 +48,8 @@ class NewMatchesWatcher(
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
-                // 받지 못하면 확인 시각이 그대로라 다음에 앱이 보일 때 다시 확인한다. 저장해 둔 경기는 그대로다.
+                // 받지 못하면 확인 시각이 그대로라 다음에 앱이 보일 때 다시 확인한다.
+                // 저장해 둔 경기는 그대로다.
             } finally {
                 lock.withLock { checking = false }
             }

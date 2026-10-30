@@ -1,10 +1,13 @@
 package com.ovalit.core.model
 
 /**
- * 프로필(내 프로필, S5) 위쪽의 이번 액트 요약입니다. [currentActMatches]로 추린 경쟁 + 일반 경기를 넘깁니다.
+ * 프로필(내 프로필, S5) 위쪽의 이번 액트 요약입니다.
+ * [currentActMatches]로 추린 경쟁 + 일반 경기를 넘깁니다.
  *
- * @property mostKills 한 경기에서 낸 가장 많은 킬입니다. 판당 K/D/A와 같은 규칙으로 셉니다.
- * @property playTimeMillis 경기 길이를 더한 값입니다. 중간에 나갔다 들어온 경기도 경기 전체 길이로 셉니다.
+ * @property mostKills 한 경기에서 낸 가장 많은 킬입니다.
+ *   판당 K/D/A와 같은 규칙으로 셉니다.
+ * @property playTimeMillis 경기 길이를 더한 값입니다.
+ *   중간에 나갔다 들어온 경기도 경기 전체 길이로 셉니다.
  * @property competitive 경쟁전을 한 판도 안 뛰었으면 `null`입니다.
  */
 data class ProfileSummary(

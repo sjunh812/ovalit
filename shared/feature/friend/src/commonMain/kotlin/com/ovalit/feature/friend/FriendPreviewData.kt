@@ -38,7 +38,8 @@ import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 
-// 프리뷰와 UI 테스트가 같이 쓴다. 목업 S5의 민석 예시에 맞췄다.
+// 프리뷰와 UI 테스트가 같이 쓴다.
+// 목업 S5의 민석 예시에 맞췄다.
 internal object FriendPreviewData {
 
     private fun metrics(matches: Int, rounds: Int, kills: Int, deaths: Int, score: Int, damage: Int, head: Int) =
@@ -109,7 +110,8 @@ internal object FriendPreviewData {
         damage = rounds * 150,
     )
 
-    // 민석의 이번 액트. 목업 S5의 "다이아몬드 2 · 타격대"에 맞췄다.
+    // 민석의 이번 액트.
+    // 목업 S5의 "다이아몬드 2 · 타격대"에 맞췄다.
     private val minseokProfile = FriendProfile(
         summary = ProfileSummary(
             metrics = metrics(29, 640, 510, 426, 135_600, 92_800, 26),
@@ -138,7 +140,8 @@ internal object FriendPreviewData {
         ),
     )
 
-    // 목업 S5 "민석의 최근 경기"의 세 판에 한 판을 더 얹었다. 넘치는 판이 있어야 "전체 보기"가 뜬다.
+    // 목업 S5 "민석의 최근 경기"의 세 판에 한 판을 더 얹었다.
+    // 넘치는 판이 있어야 "전체 보기"가 뜬다.
     private fun game(id: String, map: MapId, hoursAgo: Int, mine: Int, theirs: Int, k: Int, d: Int, a: Int, adr: Int): Match {
         val outcomes = List(mine) { true } + List(theirs) { false }
         val rounds = outcomes.size
@@ -167,7 +170,8 @@ internal object FriendPreviewData {
         ),
     )
     private val junho = Friend(PlayerId("junho"), "준호#KR1", playerCard = PlayerCardId("89FDD50E-439B-EBEB-0EF2-AF8271550943"), statsPublic = true, matches = emptyList())
-    // 비공개로 바꾸기 전에 받아 둔 경기가 기기에 남아 있다. 화면은 이 경기를 보여주면 안 된다.
+    // 비공개로 바꾸기 전에 받아 둔 경기가 기기에 남아 있다.
+    // 화면은 이 경기를 보여주면 안 된다.
     private val seoyeon = Friend(PlayerId("seoyeon"), "서연#KR7", playerCard = null, statsPublic = false, matches = minseok.matches)
 
     val friends = FriendsUiState.Success(

@@ -135,7 +135,8 @@ class ReportViewModelTest {
         assertIs<WeeklyReport.Ready>(state.report)
     }
 
-    // 설정에서 저장된 데이터를 지우면 경기도 첫 수집 진행도도 없다. 안 뛴 게 아니라 지운 거라 다시 불러오기를 권한다.
+    // 설정에서 저장된 데이터를 지우면 경기도 첫 수집 진행도도 없다.
+    // 안 뛴 게 아니라 지운 거라 다시 불러오기를 권한다.
     @Test
     fun `저장된 경기를 지웠으면 다시 불러오기를 권한다`() = runTest {
         val viewModel = ReportViewModel(StubRepository(flowOf(emptyList())), NoAccount, TestUserPreferencesRepository(), TestFriendRepository(), NoPings, FakeContentRepository(), ThursdayClock, Seoul, computation = SameThread)
@@ -293,7 +294,8 @@ class ReportViewModelTest {
         assertEquals(null, state.nudge)
     }
 
-    // 비공개 친구도 친구다. 초대를 권하면 이미 친구가 있는데 친구를 부르라는 말이 된다.
+    // 비공개 친구도 친구다.
+    // 초대를 권하면 이미 친구가 있는데 친구를 부르라는 말이 된다.
     @Test
     fun `친구가 모두 전적 비공개면 초대도 라이벌도 권하지 않는다`() = runTest {
         val hidden = Friend(PlayerId("seoyeon"), "서연#KR7", playerCard = null, statsPublic = false, matches = emptyList())
@@ -351,7 +353,8 @@ class ReportViewModelTest {
         assertEquals(listOf(0), refreshed)
     }
 
-    // 저장된 데이터를 지운 뒤에는 첫 수집 전이라 새 경기를 받지 않는다. "새로 끝난 경기가 없어요"는 틀린 말이다.
+    // 저장된 데이터를 지운 뒤에는 첫 수집 전이라 새 경기를 받지 않는다.
+    // "새로 끝난 경기가 없어요"는 틀린 말이다.
     @Test
     fun `첫 수집 전에 당기면 결과를 넘기지 않는다`() = runTest {
         val repository = StubRepository(MutableStateFlow(emptyList()))
@@ -365,7 +368,8 @@ class ReportViewModelTest {
         assertEquals(emptyList(), refreshed)
     }
 
-    // 받는 대로 숫자가 바뀌면 첫 수집처럼 믿을 수 없다. 이번 주를 보고 있었으면 새 경기도 이번 주라 기간은 그대로다.
+    // 받는 대로 숫자가 바뀌면 첫 수집처럼 믿을 수 없다.
+    // 이번 주를 보고 있었으면 새 경기도 이번 주라 기간은 그대로다.
     @Test
     fun `새 경기를 여러 판 받는 동안 숫자는 그대로 두고 다 받은 뒤 한 번만 바꾼다`() = runTest {
         val clock = StepClock(Thursday)
@@ -401,7 +405,8 @@ class ReportViewModelTest {
         assertEquals(listOf(receiving.total), refreshed)
     }
 
-    // 일주일 넘게 쉬면 받기 전 경기로는 "지난주"를 센다. 그 숫자를 띄우면 다 받은 뒤 기간까지 바뀌어 틀린 말이 된다.
+    // 일주일 넘게 쉬면 받기 전 경기로는 "지난주"를 센다.
+    // 그 숫자를 띄우면 다 받은 뒤 기간까지 바뀌어 틀린 말이 된다.
     @Test
     fun `이번 주가 아닌 기간을 보던 중 여러 판을 받으면 리포트 자리를 비워 둔다`() = runTest {
         val clock = StepClock(Thursday)
@@ -425,7 +430,8 @@ class ReportViewModelTest {
         assertTrue(assertIs<WeeklyReport.Ready>(fresh.report).period.includesThisWeek)
     }
 
-    // 리포트를 만들 기록이 모자라면 그 안내가 먼저다. 친구가 없어도 초대를 권하지 않는다.
+    // 리포트를 만들 기록이 모자라면 그 안내가 먼저다.
+    // 친구가 없어도 초대를 권하지 않는다.
     @Test
     fun `리포트를 만들 기록이 없으면 아무것도 권하지 않는다`() {
         val nudge = homeNudge(
@@ -444,7 +450,7 @@ class ReportViewModelTest {
         assertEquals(null, homeNudge(ReportPreviewData.otherQueue, QueueFilter.OTHER, hasFriends = false, rivalCandidates = emptyList(), rival = null))
     }
 
-    // 전적을 공개하지 않은 친구는 라이벌로 고를 수 없어서, 고를 사람이 없는데 고르라고 하지 않는다
+    // 전적을 공개하지 않은 친구는 라이벌로 고를 수 없어서 고를 사람이 없는데 고르라고 하지 않는다
     @Test
     fun `친구가 모두 전적 비공개면 라이벌을 권하지 않는다`() {
         assertEquals(null, homeNudge(ReportPreviewData.moved, QueueFilter.COMPETITIVE_AND_UNRATED, hasFriends = true, rivalCandidates = emptyList(), rival = null))

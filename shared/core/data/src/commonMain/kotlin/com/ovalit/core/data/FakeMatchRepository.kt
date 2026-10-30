@@ -30,14 +30,16 @@ import kotlinx.coroutines.SupervisorJob
 
 /**
  * 프로덕션 키가 나오기 전까지 쓰는 내 경기 저장소입니다.
- * 받기 규칙은 [OfflineFirstMatchRepository]가 지키고, 여기서는 가짜 서버([FakeMatchRemoteSource])와 메모리 저장([InMemoryMatchStore])을 묶기만 합니다.
+ * 받기 규칙은 [OfflineFirstMatchRepository]가 지키고 여기서는 가짜 서버([FakeMatchRemoteSource])와 메모리 저장([InMemoryMatchStore])을 묶기만 합니다.
  *
- * 처음부터 첫 수집을 마친 채로 시작합니다. 실제 저장소도 앱을 다시 켜면 마친 진행도를 기기에서 읽습니다.
+ * 처음부터 첫 수집을 마친 채로 시작합니다.
+ * 실제 저장소도 앱을 다시 켜면 마친 진행도를 기기에서 읽습니다.
  * 비워 두면 첫 수집을 마쳤는지 보는 곳(새 경기 확인, 당겨서 받기)마다 판단이 갈립니다.
  *
  * @param importDelay 첫 수집에서 한 판을 받는 시간입니다.
  * @param downloadDelay 새 경기 한 판을 받는 시간입니다.
- * @param scope 새 경기를 받는 곳입니다. 부른 화면이 사라져도 받기가 끝까지 가도록 앱이 사는 동안 도는 스코프를 넘깁니다.
+ * @param scope 새 경기를 받는 곳입니다.
+ *   부른 화면이 사라져도 받기가 끝까지 가도록 앱이 사는 동안 도는 스코프를 넘깁니다.
  *   테스트는 가상 시간으로 돌리려고 `TestScope`를 넘깁니다.
  */
 class FakeMatchRepository private constructor(
@@ -74,7 +76,8 @@ private const val DAYS = 70
 
 private const val USUAL_FIRST_DUEL_RATE = 0.28
 private const val RECENT_FIRST_DUEL_RATE = 0.42
-// 수비에서 첫 교전을 더 자주 지게 해서 홈에 개선 포인트 문장이 뜨게 했다. 둘의 평균은 0.55다.
+// 수비에서 첫 교전을 더 자주 지게 해서 홈에 개선 포인트 문장이 뜨게 했다.
+// 둘의 평균은 0.55다.
 // 첫 교전은 판마다 몇 번뿐이라 첫 수집 50경기에서도 우연 거르기(흔들림의 3.5배)를 넘도록 넉넉히 벌렸다.
 private const val ATTACK_FIRST_DUEL_WIN_RATE = 0.72
 private const val DEFENSE_FIRST_DUEL_WIN_RATE = 0.38
@@ -136,7 +139,8 @@ internal val Myself = Owner(Me, MY_RIOT_ID, MyCard, MY_TIER)
  * 홈에 움직인 지표가 뜨도록 최근 7일은 첫 교전, 공격과 수비의 킬, 팬텀 헤드샷, 피해량, 승률을 일부러 바꿔 뒀습니다(`RECENT_`로 시작하는 상수).
  * 최근 두 주에는 데스매치, 건틀릿, 스파이크 돌격 같은 다른 모드를 몇 판 섞어 기타 칩과 경기 탭에서 모양을 볼 수 있습니다([OtherModeDays]).
  *
- * @param withFriends 내 경기일 때만 켭니다. 친구 경기에 다른 친구를 끼우면 S5의 같이 뛴 경기 수가 틀어집니다.
+ * @param withFriends 내 경기일 때만 켭니다.
+ *   친구 경기에 다른 친구를 끼우면 S5의 같이 뛴 경기 수가 틀어집니다.
  */
 internal fun fakeMatches(
     now: Instant,
@@ -193,7 +197,8 @@ internal val OtherModeDays = listOf(
     12 to Queue.SWIFTPLAY,
 )
 
-// 경쟁·일반 경기는 그날 마지막 판부터 50분씩 앞에 둔다. 다른 모드는 그보다 앞, 몸 풀기로 뛴 판이다.
+// 경쟁·일반 경기는 그날 마지막 판부터 50분씩 앞에 둔다.
+// 다른 모드는 그보다 앞, 몸 풀기로 뛴 판이다.
 private val OTHER_MODE_EARLIER = 150.minutes
 
 private fun Random.otherModeMatch(id: MatchId, startedAt: Instant, owner: Owner, queue: Queue): Match = when (queue) {
@@ -288,7 +293,7 @@ private fun Random.fakeMatch(
 }
 
 // 경쟁전과 프리미어 연장은 두 라운드 차이가 날 때까지 간다.
-// 일반전은 12:12에서 한 라운드로 끝내고, 스파이크 돌격과 신속 플레이도 마지막 한 라운드로 끝난다.
+// 일반전은 12:12에서 한 라운드로 끝내고 스파이크 돌격과 신속 플레이도 마지막 한 라운드로 끝난다.
 private fun isOver(rounds: List<Round>, queue: Queue, half: Int): Boolean {
     val won = rounds.count { it.won }
     val lost = rounds.size - won
@@ -299,7 +304,8 @@ private fun isOver(rounds: List<Round>, queue: Queue, half: Int): Boolean {
     }
 }
 
-// 전반은 0, 후반은 1을 돌려준다. 연장은 라운드마다 공수가 바뀌어 0과 1을 오간다.
+// 전반은 0, 후반은 1을 돌려준다.
+// 연장은 라운드마다 공수가 바뀌어 0과 1을 오간다.
 private fun sideIndex(number: Int, half: Int): Int = when {
     number <= half -> 0
     number <= half * 2 -> 1
@@ -425,7 +431,8 @@ private fun Random.fakeRound(
 
 /**
  * 가끔 에이스와 클러치가 나오게 킬 기록을 바꿉니다.
- * 승패는 그대로 둬서 스코어가 바뀌지 않습니다. 난수를 따로 써서 나머지 가짜 숫자가 흔들리지 않게 합니다.
+ * 승패는 그대로 둬서 스코어가 바뀌지 않습니다.
+ * 난수를 따로 써서 나머지 가짜 숫자가 흔들리지 않게 합니다.
  *
  * 관여율, 생존율, 첫 킬 쪽 지표가 그대로인 라운드만 고릅니다.
  * 홈 동적 칸이 이 장면 때문에 움직이면 가짜 데이터로 "움직인 칸과 그대로인 칸"을 같이 보여줄 수 없습니다.
@@ -462,7 +469,7 @@ private fun Round.lostQuietly(me: PlayerId, allies: Set<PlayerId>): Boolean {
 private fun Match.aceKills(weapon: WeaponId): List<KillEvent> =
     EnemySlots.mapIndexed { index, enemy -> KillEvent(12_000L + 9_000L * index, me, enemy, emptySet(), weapon) }
 
-// 내가 첫 킬을 낸 뒤 우리 팀 넷이 차례로 쓰러지고, 나 혼자 남은 1~3명을 모두 잡는다
+// 내가 첫 킬을 낸 뒤 우리 팀 넷이 차례로 쓰러지고 나 혼자 남은 1~3명을 모두 잡는다
 private fun Match.wonClutchKills(random: Random, team: List<PlayerId>, weapon: WeaponId): List<KillEvent> {
     val enemies = EnemySlots.shuffled(random)
     val left = random.nextInt(1, 4)
@@ -483,7 +490,8 @@ private fun Match.lostClutchKills(random: Random, team: List<PlayerId>): List<Ki
     return kills.sortedBy { it.atMillis }
 }
 
-// 우리 팀이 차례로 [downed]를 한 명씩 잡고 쓰러진다. 우리 팀을 쓰러뜨리는 건 끝까지 살아남는 상대다.
+// 우리 팀이 차례로 [downed]를 한 명씩 잡고 쓰러진다.
+// 우리 팀을 쓰러뜨리는 건 끝까지 살아남는 상대다.
 private fun teamFalls(random: Random, team: List<PlayerId>, downed: List<PlayerId>, survivors: List<PlayerId>): List<KillEvent> =
     team.flatMapIndexed { index, ally ->
         val at = 10_000L + 6_000L * index
@@ -493,7 +501,8 @@ private fun teamFalls(random: Random, team: List<PlayerId>, downed: List<PlayerI
         )
     }
 
-// 라운드를 만들 때는 적을 이 다섯 자리로만 구분한다. 실제 상대 ID는 스코어보드를 붙이면서 바꿔 넣는다.
+// 라운드를 만들 때는 적을 이 다섯 자리로만 구분한다.
+// 실제 상대 ID는 스코어보드를 붙이면서 바꿔 넣는다.
 private val EnemySlots = List(5) { PlayerId("enemy-$it") }
 
 private fun Random.ending(won: Boolean, attacking: Boolean): RoundEnding {
@@ -509,7 +518,7 @@ private fun Random.ending(won: Boolean, attacking: Boolean): RoundEnding {
 
 /**
  * 스코어보드를 붙입니다.
- * 내 줄(친구 경기면 친구 줄)은 라운드에서 센 숫자를 그대로 쓰고, 나머지 아홉 명은 그럴듯한 범위에서 뽑습니다.
+ * 내 줄(친구 경기면 친구 줄)은 라운드에서 센 숫자를 그대로 쓰고 나머지 아홉 명은 그럴듯한 범위에서 뽑습니다.
  * 킬 기록 속 적 자리(`enemy-0`…)도 실제 상대 ID로 바꿉니다.
  */
 private fun Match.withScoreboard(
@@ -544,7 +553,8 @@ private fun Match.withScoreboard(
             kills = kills,
             deaths = (roundCount * random.nextDouble(0.5, 0.85)).toInt(),
             assists = (roundCount * random.nextDouble(0.1, 0.45)).toInt(),
-            // 내 줄과 같은 식으로 센다. 식이 다르면 늘 내가 MVP가 된다.
+            // 내 줄과 같은 식으로 센다.
+            // 식이 다르면 늘 내가 MVP가 된다.
             combatScore = adr * roundCount + KILL_SCORE * kills,
             damage = adr * roundCount,
             roundsPlayed = roundCount,
@@ -575,7 +585,8 @@ private fun Match.withScoreboard(
     )
 }
 
-// 다른 사람의 맞힌 부위다. 라운드마다 여섯에서 열한 발쯤 맞히고 그중 헤드샷이 12~32%다.
+// 다른 사람의 맞힌 부위다.
+// 라운드마다 여섯에서 열한 발쯤 맞히고 그중 헤드샷이 12~32%다.
 private fun randomShots(random: Random, rounds: Int): Shots {
     val total = rounds * random.nextInt(6, 12)
     val head = (total * random.nextDouble(0.12, 0.32)).toInt()
@@ -584,8 +595,9 @@ private fun randomShots(random: Random, rounds: Int): Shots {
 }
 
 
-// 상대마다 주고받은 피해다. 내가 잡은 상대에게는 한 번에 110~150을, 남은 피해는 아무 상대에게 준다.
-// 내가 죽었으면 잡은 상대에게 100~150을 받고, 가끔 다른 상대에게도 조금 받는다.
+// 상대마다 주고받은 피해다.
+// 내가 잡은 상대에게는 한 번에 110~150을, 남은 피해는 아무 상대에게 준다.
+// 내가 죽었으면 잡은 상대에게 100~150을 받고 가끔 다른 상대에게도 조금 받는다.
 private fun Round.withDamageMaps(random: Random, me: PlayerId, enemies: List<PlayerId>): Round {
     if (enemies.isEmpty()) return this
     val dealt = mutableMapOf<PlayerId, Int>()

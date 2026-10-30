@@ -26,7 +26,8 @@ private val PreviousAct = ActId("previous")
 
 class WeeklyReportTest {
 
-    // 주는 기기 시간대 기준 월요일 0시에 바뀐다(CLAUDE.md 지표 규칙). 월요일 0시 정각이면 그다음 주 월요일이다.
+    // 주는 기기 시간대 기준 월요일 0시에 바뀐다(CLAUDE.md 지표 규칙).
+    // 월요일 0시 정각이면 그다음 주 월요일이다.
     @Test
     fun `다음 주는 기기 시간대의 다음 월요일 0시에 시작한다`() {
         val nextMonday = LocalDateTime(2026, 9, 28, 0, 0).toInstant(Seoul)
@@ -112,7 +113,8 @@ class WeeklyReportTest {
         assertEquals(LocalDate(2026, 9, 20), report.period.lastDay)
     }
 
-    // 이번 주에 한 판이라도 뛰었으면 이번 주가 기간에 들어간다. 지난주로 옮기면 방금 뛴 경기가 빠진다.
+    // 이번 주에 한 판이라도 뛰었으면 이번 주가 기간에 들어간다.
+    // 지난주로 옮기면 방금 뛴 경기가 빠진다.
     @Test
     fun `이번 주에 한 판이라도 뛰었으면 이번 주부터 거슬러 넓힌다`() {
         val report = ready(games(weeksAgo = 0, count = 1) + games(weeksAgo = 1, count = 5))
@@ -297,7 +299,7 @@ class WeeklyReportTest {
         )
     }
 
-    // 8주 동안 관여율이 0.675와 0.725를 오갔고, 9주 전에 한 번 크게 무너졌다.
+    // 8주 동안 관여율이 0.675와 0.725를 오갔고 9주 전에 한 번 크게 무너졌다.
     // 9주 전까지 넣으면 변동폭이 커져서 이번 주 0.10 상승이 묻힌다.
     @Test
     fun `평소 변동폭은 집계 기간 앞 8주로 잰다`() {

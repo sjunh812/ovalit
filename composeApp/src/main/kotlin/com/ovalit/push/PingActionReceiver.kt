@@ -26,7 +26,8 @@ private const val EXTRA_ANSWER = "answer"
 private const val EXTRA_TIME = "time"
 
 /**
- * 알림의 갈게요, 못 가요, 수락 버튼입니다. 앱을 열지 않고 서버에 답한 뒤 같은 자리의 알림을 "참석으로 답했어요"로 바꿉니다.
+ * 알림의 갈게요, 못 가요, 수락 버튼입니다.
+ * 앱을 열지 않고 서버에 답한 뒤 같은 자리의 알림을 "참석으로 답했어요"로 바꿉니다.
  * 답을 보내는 동안 프로세스가 끝나지 않게 [goAsync]로 붙잡아 둡니다.
  */
 class PingActionReceiver : BroadcastReceiver(), KoinComponent {
@@ -64,7 +65,8 @@ class PingActionReceiver : BroadcastReceiver(), KoinComponent {
     }
 
     companion object {
-        // 리시버 객체는 onReceive가 끝나면 버려지니 스코프는 여기 둔다. 프로세스는 goAsync가 붙잡는다.
+        // 리시버 객체는 onReceive가 끝나면 버려지니 스코프는 여기 둔다.
+        // 프로세스는 goAsync가 붙잡는다.
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
         fun reply(context: Context, pingId: String, answer: String): PendingIntent = broadcast(

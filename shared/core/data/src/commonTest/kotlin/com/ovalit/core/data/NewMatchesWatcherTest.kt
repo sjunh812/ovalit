@@ -38,7 +38,8 @@ class NewMatchesWatcherTest {
         settle()
         assertEquals(imported, matches.observeMatches().first().size)
 
-        // 가짜 서버는 30초마다 한 판이 끝난 것으로 친다. 11분이면 스물두 판이다.
+        // 가짜 서버는 30초마다 한 판이 끝난 것으로 친다.
+        // 11분이면 스물두 판이다.
         clock.now += 6.minutes
         watcher.onAppVisible()
         settle()
@@ -59,7 +60,8 @@ class NewMatchesWatcherTest {
         assertEquals(before, matches.observeMatches().first().size)
     }
 
-    // 첫 수집 중에는 S0-4가 받는다. 그때 새 경기까지 받으면 홈 숫자가 수집 중에 바뀐다.
+    // 첫 수집 중에는 S0-4가 받는다.
+    // 그때 새 경기까지 받으면 홈 숫자가 수집 중에 바뀐다.
     @Test
     fun `첫 수집이 끝나기 전에는 앱이 보여도 받지 않는다`() = runTest {
         val clock = StepClock(Thursday)
@@ -90,7 +92,8 @@ class NewMatchesWatcherTest {
         settle()
     }
 
-    // 몇 판 남지 않았으면 앱이 살아 있는 동안 금방 끝난다. 끝났다는 알림이 오히려 귀찮다.
+    // 몇 판 남지 않았으면 앱이 살아 있는 동안 금방 끝난다.
+    // 끝났다는 알림이 오히려 귀찮다.
     @Test
     fun `몇 판만 남았으면 앱이 가려져도 맡기지 않는다`() = runTest {
         val clock = StepClock(Thursday)
@@ -127,13 +130,14 @@ class NewMatchesWatcherTest {
         assertEquals(pulled, matches.observeMatches().first().size)
     }
 
-    // watcher는 backgroundScope에서 돈다. advanceUntilIdle은 거기 띄운 일을 기다리지 않아서 시간을 직접 넘긴다.
+    // watcher는 backgroundScope에서 돈다.
+    // advanceUntilIdle은 거기 띄운 일을 기다리지 않아서 시간을 직접 넘긴다.
     private fun TestScope.settle() {
         advanceTimeBy(1.minutes)
         runCurrent()
     }
 
-    // 계정은 처음부터 연동돼 있고, 경기는 첫 수집이 채운다
+    // 계정은 처음부터 연동돼 있고 경기는 첫 수집이 채운다
     private suspend fun TestScope.watching(
         clock: Clock,
         scheduler: ImportScheduler = TestImportScheduler(),

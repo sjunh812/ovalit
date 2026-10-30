@@ -26,7 +26,7 @@ val MinFittingTextSize = 7.sp
 fun shrinkToFit(size: TextUnit, min: TextUnit = MinFittingTextSize): TextAutoSize = FitFirstAutoSize(min = min, max = size)
 
 // 기본 StepBased는 다 들어가도 범위를 반씩 좁혀 가며 예닐곱 번 다시 잰다.
-// 홈 고정 칸처럼 칸마다 붙이면 첫 화면 한 프레임이 수십 ms 늘어서, 원래 크기로 한 번 재 보고 넘칠 때만 줄여 찾는다.
+// 홈 고정 칸처럼 칸마다 붙이면 첫 화면 한 프레임이 수십 ms 늘어서 원래 크기로 한 번 재 보고 넘칠 때만 줄여 찾는다.
 private data class FitFirstAutoSize(val min: TextUnit, val max: TextUnit) : TextAutoSize {
     private val shrinking = TextAutoSize.StepBased(minFontSize = min, maxFontSize = max)
 
@@ -42,7 +42,7 @@ private fun TextLayoutResult.fits(): Boolean =
 
 /**
  * 나란히 놓인 칸들의 글자를 한 크기로 맞춥니다.
- * 칸마다 따로 줄이면 긴 글자만 작아져서 "전투점수" 옆의 "K/D"가 더 커 보이고, 줄 높이도 달라져 아래 숫자의 높이가 칸마다 어긋납니다.
+ * 칸마다 따로 줄이면 긴 글자만 작아져서 "전투점수" 옆의 "K/D"가 더 커 보이고 줄 높이도 달라져 아래 숫자의 높이가 칸마다 어긋납니다.
  * 가장 긴 글자가 [width]에 한 줄로 들어가는 크기를 모든 칸에 씁니다.
  * 다 들어가면 [style]을 그대로 돌려줍니다.
  *

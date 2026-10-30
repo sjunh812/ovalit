@@ -89,9 +89,12 @@ private val AvatarSize = 40.dp
 private val RequestTextMinWidth = 150.dp
 
 /**
- * @param onShareInvite 초대 링크를 받습니다. 공유 시트는 플랫폼마다 달라서 앱 모듈이 띄웁니다.
- * @param onFriendAdded 친구 요청을 수락하면 부릅니다. 앱 모듈이 이때 알림을 켜 달라고 묻습니다.
- * @param onPingSent 파티 모집을 보내면 부릅니다. 앱 모듈이 이때 알림을 켜 달라고 묻습니다.
+ * @param onShareInvite 초대 링크를 받습니다.
+ *   공유 시트는 플랫폼마다 달라서 앱 모듈이 띄웁니다.
+ * @param onFriendAdded 친구 요청을 수락하면 부릅니다.
+ *   앱 모듈이 이때 알림을 켜 달라고 묻습니다.
+ * @param onPingSent 파티 모집을 보내면 부릅니다.
+ *   앱 모듈이 이때 알림을 켜 달라고 묻습니다.
  */
 @Composable
 fun FriendsRoute(
@@ -118,7 +121,8 @@ fun FriendsRoute(
         timeZone = viewModel.timeZone,
         ping = PingActions(
             slots = viewModel::pingSlots,
-            // 부르기 시트가 닫힌 뒤에 알림을 켜 달라고 묻는다. 시트 위에 시트를 겹치지 않는다.
+            // 부르기 시트가 닫힌 뒤에 알림을 켜 달라고 묻는다.
+            // 시트 위에 시트를 겹치지 않는다.
             send = { friends, startsAt, onResult ->
                 viewModel.sendPing(friends, startsAt) { result ->
                     onResult(result)
@@ -131,9 +135,11 @@ fun FriendsRoute(
 }
 
 /**
- * 친구 탭의 ㅇㅂㅇ 동작입니다. 테스트와 프리뷰는 비워 둡니다.
+ * 친구 탭의 ㅇㅂㅇ 동작입니다.
+ * 테스트와 프리뷰는 비워 둡니다.
  *
- * @property open 초대 줄을 누르면 그 초대 화면을 엽니다. 답하고 시각을 옮기는 건 거기서 합니다.
+ * @property open 초대 줄을 누르면 그 초대 화면을 엽니다.
+ *   답하고 시각을 옮기는 건 거기서 합니다.
  */
 internal class PingActions(
     val slots: () -> List<Instant> = { emptyList() },
@@ -143,8 +149,10 @@ internal class PingActions(
 )
 
 /**
- * 친구 탭입니다. 맨 위에 ㅇㅂㅇ, 그 밑에 받은 요청과 친구 목록을 카드로 둡니다.
- * ㅇㅂㅇ 카드는 초대마다 한 줄이고 누르면 초대 화면으로 들어갑니다. 부르기는 시트에서 합니다.
+ * 친구 탭입니다.
+ * 맨 위에 ㅇㅂㅇ, 그 밑에 받은 요청과 친구 목록을 카드로 둡니다.
+ * ㅇㅂㅇ 카드는 초대마다 한 줄이고 누르면 초대 화면으로 들어갑니다.
+ * 부르기는 시트에서 합니다.
  */
 @Composable
 internal fun FriendsScreen(
@@ -291,8 +299,10 @@ internal fun FriendsScreen(
     }
 }
 
-// 받은 요청 카드와 그 밑 간격이다. 요청을 처리하면 아래 목록이 한 번에 튀어 오르지 않게 높이를 천천히 줄인다.
-// 마지막 요청이면 구역이 접히는 동안 그 줄을 그대로 둔다. 빈 목록을 그리면 "받은 요청 0"이 잠깐 뜬다.
+// 받은 요청 카드와 그 밑 간격이다.
+// 요청을 처리하면 아래 목록이 한 번에 튀어 오르지 않게 높이를 천천히 줄인다.
+// 마지막 요청이면 구역이 접히는 동안 그 줄을 그대로 둔다.
+// 빈 목록을 그리면 "받은 요청 0"이 잠깐 뜬다.
 @Composable
 private fun RequestsCard(requests: List<FriendRequest>, onAccept: (PlayerId) -> Unit, onDecline: (PlayerId) -> Unit) {
     var lastRequests by remember { mutableStateOf(requests) }
@@ -328,7 +338,8 @@ private fun InviteButton(onInvite: () -> Unit) {
     }
 }
 
-// 카드 맨 위 제목이다. 홈 카드의 묶음 제목과 같이 굵은 본문 글자로 둔다.
+// 카드 맨 위 제목이다.
+// 홈 카드의 묶음 제목과 같이 굵은 본문 글자로 둔다.
 @Composable
 private fun CardTitle(text: String) {
     OvalitText(
@@ -357,7 +368,8 @@ private fun RequestRow(request: FriendRequest, onAccept: () -> Unit, onDecline: 
     ) {
         Avatar(riotId = request.riotId, size = AvatarSize)
         Spacer(Modifier.width(OvalitSpacing.md))
-        // 글자를 키워 한 줄에 안 들어가면 버튼이 설명 아래로 내려간다. 설명을 세 줄로 꺾지 않는다.
+        // 글자를 키워 한 줄에 안 들어가면 버튼이 설명 아래로 내려간다.
+        // 설명을 세 줄로 꺾지 않는다.
         FlowRow(
             modifier = Modifier.weight(1f),
             horizontalArrangement = Arrangement.SpaceBetween,

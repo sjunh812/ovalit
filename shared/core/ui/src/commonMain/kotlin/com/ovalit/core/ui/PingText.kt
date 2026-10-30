@@ -55,7 +55,7 @@ enum class PingDay { TODAY, DAWN, TOMORROW }
 
 /**
  * [at]이 오늘인지, 자정을 넘긴 오늘 밤인지, 내일인지 가립니다.
- * 밤 11시에 고른 0시 30분을 "내일"이라 하면 하루 뒤처럼 읽혀서, 다음 날 6시 전이면 [PingDay.DAWN]입니다.
+ * 밤 11시에 고른 0시 30분을 "내일"이라 하면 하루 뒤처럼 읽혀서 다음 날 6시 전이면 [PingDay.DAWN]입니다.
  * 지금이 이미 새벽이면 다음 날 새벽은 하루 뒤라 [PingDay.TOMORROW]입니다.
  */
 fun pingDayOf(at: Instant, now: Instant, timeZone: TimeZone): PingDay {
@@ -93,7 +93,7 @@ fun pingHeroDay(ping: Ping, now: Instant, timeZone: TimeZone): String? {
 /**
  * 큰 시각 옆 "오늘 · 35분 뒤"입니다.
  * 오늘이 아니면 날짜는 큰 글자 앞에 있어서 "19시간 35분 뒤"만 적습니다.
- * 바로 하자고 한 것은 큰 글자가 이미 "지금"이라 "3분 전에 불렀어요"로 언제 불렀는지를 적고, 시각이 지나면 "시작했어요"입니다.
+ * 바로 하자고 한 것은 큰 글자가 이미 "지금"이라 "3분 전에 불렀어요"로 언제 불렀는지를 적고 시각이 지나면 "시작했어요"입니다.
  */
 @Composable
 fun pingWhenText(ping: Ping, now: Instant, timeZone: TimeZone): String {

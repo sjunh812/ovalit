@@ -78,7 +78,8 @@ class SettingsViewModel(
         }
     }
 
-    // 서버에 두는 설정이다. 스위치는 바로 움직이고, 서버에 보내지 못하면 저장소가 되돌린 뒤 토스트로 까닭을 알린다.
+    // 서버에 두는 설정이다.
+    // 스위치는 바로 움직이고, 서버에 보내지 못하면 저장소가 되돌린 뒤 토스트로 까닭을 알린다.
     fun setStatsPublic(public: Boolean) = launch { accountSettingsRepository.setStatsPublic(public) }
 
     fun setPingReminder(reminder: PingReminder) = launch { accountSettingsRepository.setPingReminder(reminder) }
@@ -95,14 +96,15 @@ class SettingsViewModel(
 
     fun setDefaultQueue(queue: QueueFilter) = launch { preferencesRepository.setDefaultQueue(queue) }
 
-    // 기다리던 새 경기 이어 받기도 멈춘다. 지운 뒤에 "새 경기를 다 불러왔어요" 알림이 가면 안 된다.
+    // 기다리던 새 경기 이어 받기도 멈춘다.
+    // 지운 뒤에 "새 경기를 다 불러왔어요" 알림이 가면 안 된다.
     fun deleteData() = launch(FailedAction.DELETE_DATA) {
         importScheduler.cancel()
         matchRepository.deleteAll()
     }
 
     /**
-     * 첫 수집을 멈추고, 연동을 해제해 경기와 친구를 다 지운 뒤 [onUnlinked]를 부릅니다.
+     * 첫 수집을 멈추고 연동을 해제해 경기와 친구를 다 지운 뒤 [onUnlinked]를 부릅니다.
      *
      * 수집을 먼저 멈추지 않으면 해제한 뒤에 경기를 다시 채우고 "분석을 마쳤어요" 알림까지 보냅니다.
      * 다 지우기 전에 화면을 옮기면 설정 화면이 스택에서 빠지면서 이 ViewModel이 정리돼 지우던 작업이 중간에 끊길 수 있습니다.

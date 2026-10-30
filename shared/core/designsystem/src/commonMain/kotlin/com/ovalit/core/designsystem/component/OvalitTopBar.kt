@@ -109,7 +109,7 @@ fun OvalitBackTopBar(
 
 /**
  * 길이를 모르는 이름만 줄이고 뒤를 남겨야 하는 제목에 씁니다("민석의 요원").
- * [title] 안의 글자는 `titleL`로 쓰고, 화면 읽기 프로그램은 한데 묶어 제목 하나로 읽습니다.
+ * [title] 안의 글자는 `titleL`로 쓰고 화면 읽기 프로그램은 한데 묶어 제목 하나로 읽습니다.
  */
 @Composable
 fun OvalitBackTopBar(

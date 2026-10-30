@@ -10,7 +10,8 @@ export const friends = new Hono<AppEnv>();
 
 friends.use(requireSession);
 
-// 친구는 FRIEND_CAP명까지라 한 번에 다 내려준다. 한도를 바꾸기 전에 쌓인 줄이 있어도 응답이 한도를 넘지 않게 LIMIT을 건다.
+// 친구는 FRIEND_CAP명까지라 한 번에 다 내려준다.
+// 한도를 바꾸기 전에 쌓인 줄이 있어도 응답이 한도를 넘지 않게 LIMIT을 건다.
 friends.get("/", async (c) => {
   const { results } = await c.env.DB.prepare(
     `SELECT u.puuid, u.game_name, u.tag_line, u.stats_public, f.created_at
@@ -32,7 +33,8 @@ friends.get("/", async (c) => {
   );
 });
 
-// 받은 요청은 여러 사람이 보내 쌓일 수 있다. 친구 한도보다 많이 받아도 다 수락할 수 없으니 최근 것부터 한도만큼만 준다.
+// 받은 요청은 여러 사람이 보내 쌓일 수 있다.
+// 친구 한도보다 많이 받아도 다 수락할 수 없으니 최근 것부터 한도만큼만 준다.
 friends.get("/requests", async (c) => {
   const db = c.env.DB;
   const [received, sent] = await db.batch<Record<string, unknown>>([
@@ -70,7 +72,8 @@ friends.post("/requests", async (c) => {
   const me = c.var.user;
   if (target === me.puuid) throw new ApiError(400, "cannot_friend_self");
 
-  // 경기부터 확인한다. 상대가 앱을 쓰는지는 같이 뛴 사람에게만 알려준다.
+  // 경기부터 확인한다.
+  // 상대가 앱을 쓰는지는 같이 뛴 사람에게만 알려준다.
   const players = await riotFor(c).participants(matchId);
   if (!players.has(me.puuid) || !players.has(target)) throw new ApiError(403, "not_played_together");
 
@@ -90,8 +93,10 @@ friends.post("/requests/:puuid/accept", async (c) => {
   const db = c.env.DB;
   const otherId = "(SELECT id FROM users WHERE puuid = ?1)";
   const befriended = `EXISTS (SELECT 1 FROM friendships WHERE user_a = MIN(${otherId}, ?2) AND user_b = MAX(${otherId}, ?2))`;
-  // 한 배치는 한 트랜잭션으로 돈다. 요청이 있고 두 사람 모두 자리가 있을 때만 친구가 된다.
-  // 요청은 친구가 됐을 때만 양쪽을 같이 지운다. 동시에 여러 요청을 수락해도 한도 검사와 넣기가 한 문장이라 한도를 넘지 않는다.
+  // 한 배치는 한 트랜잭션으로 돈다.
+  // 요청이 있고 두 사람 모두 자리가 있을 때만 친구가 된다.
+  // 요청은 친구가 됐을 때만 양쪽을 같이 지운다.
+  // 동시에 여러 요청을 수락해도 한도 검사와 넣기가 한 문장이라 한도를 넘지 않는다.
   const [, forward] = await db.batch([
     db
       .prepare(
@@ -109,7 +114,8 @@ friends.post("/requests/:puuid/accept", async (c) => {
   return c.json({ status: "friends" });
 });
 
-// 수락이 들어가지 않은 까닭을 찾는다. 요청이 남아 있으면 한도에 걸린 것이다.
+// 수락이 들어가지 않은 까닭을 찾는다.
+// 요청이 남아 있으면 한도에 걸린 것이다.
 async function acceptRefusal(db: D1Database, me: number, other: string): Promise<ApiError> {
   const otherId = "(SELECT id FROM users WHERE puuid = ?2)";
   const row = await db

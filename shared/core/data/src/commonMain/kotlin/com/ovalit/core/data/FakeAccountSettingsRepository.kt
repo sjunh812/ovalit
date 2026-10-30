@@ -16,7 +16,8 @@ private val ANSWER_DELAY = 300.milliseconds
  * 서버 대신 메모리에 두고 [latency]만큼 기다렸다가 답합니다.
  * 먼저 바꿔 보여 주고 실패하면 되돌리는 흐름은 실제 저장소와 같은 [AccountSettingsSync]가 맡습니다.
  *
- * @param latency 서버에 보내고 답을 받기까지 걸리는 시간입니다. 테스트는 가상 시간으로 넘깁니다.
+ * @param latency 서버에 보내고 답을 받기까지 걸리는 시간입니다.
+ *   테스트는 가상 시간으로 넘깁니다.
  */
 class FakeAccountSettingsRepository(
     private val latency: Duration = ANSWER_DELAY,
@@ -25,7 +26,8 @@ class FakeAccountSettingsRepository(
     // 서버의 users 줄 대신이다
     private var stored = AccountSettings.Default
 
-    // 연동하거나 해제할 때마다 늘린다. 그 전에 보낸 요청은 지운 계정의 것이다.
+    // 연동하거나 해제할 때마다 늘린다.
+    // 그 전에 보낸 요청은 지운 계정의 것이다.
     private var linkedAccount = 0
 
     /** `null`이 아니면 서버를 부르는 일이 모두 이 까닭으로 실패합니다. 실패 안내를 시험할 때 씁니다. */

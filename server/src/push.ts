@@ -7,12 +7,15 @@ import { MemoryCache } from "./memory";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SCOPE = "https://www.googleapis.com/auth/firebase.messaging";
 const JWT_TTL_SECONDS = 3600;
-// 받은 액세스 토큰은 만료 5분 전까지 쓴다. 보내는 도중에 만료되지 않게 여유를 둔다.
+// 받은 액세스 토큰은 만료 5분 전까지 쓴다.
+// 보내는 도중에 만료되지 않게 여유를 둔다.
 const REFRESH_MARGIN_SECONDS = 5 * 60;
-// 무료 플랜은 한 번 불릴 때 하위 요청이 50번까지다. 같은 요청에서 다른 데를 부를 몫을 남긴다.
+// 무료 플랜은 한 번 불릴 때 하위 요청이 50번까지다.
+// 같은 요청에서 다른 데를 부를 몫을 남긴다.
 const SUBREQUEST_BUDGET = 40;
 
-// 서비스 계정마다 하나다. isolate가 바뀌면 비어 있어 한 번 더 받는다.
+// 서비스 계정마다 하나다.
+// isolate가 바뀌면 비어 있어 한 번 더 받는다.
 const accessTokens = new MemoryCache({ maxEntries: 4, maxBytes: 64 * 1024 });
 
 /** 테스트끼리 액세스 토큰이 이어지지 않게 비울 때 씁니다. */
@@ -56,7 +59,8 @@ export function pushFrom(env: Env, upstream: typeof fetch): Push | undefined {
 }
 
 /**
- * 응답을 기다리게 하지 않고 뒤에서 보냅니다. 알림이 실패해도 요청은 그대로 성공합니다.
+ * 응답을 기다리게 하지 않고 뒤에서 보냅니다.
+ * 알림이 실패해도 요청은 그대로 성공합니다.
  * `FCM_SERVICE_ACCOUNT`가 없으면 토큰도 읽지 않습니다.
  */
 export function notify(c: Context<AppEnv>, notices: Notice[]): void {
@@ -156,7 +160,8 @@ export class Push {
         headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
         body: JSON.stringify({ message }),
       });
-      // 액세스 토큰이 기한 전에 끊긴 것이다. 다음 알림은 새로 받아 보낸다.
+      // 액세스 토큰이 기한 전에 끊긴 것이다.
+      // 다음 알림은 새로 받아 보낸다.
       if (res.status === 401) accessTokens.delete(this.account.clientEmail);
       if (!res.ok && res.status !== 404) console.error("push_send", res.status);
       return res;
@@ -241,9 +246,12 @@ function pemToDer(pem: string): Uint8Array {
 }
 
 /**
- * 다시 보내도 안 닿는 토큰인지 봅니다. 앱을 지웠거나 토큰이 바뀌면 404 `UNREGISTERED`가 옵니다.
- * 형식이 틀린 토큰은 400 `INVALID_ARGUMENT`인데, 우리가 보낸 내용이 틀려도 같은 코드가 와서 그때는 BadRequest가 토큰 말고 다른 필드를 짚습니다.
- * 그런 응답에는 토큰을 지우지 않습니다. 잘못 보낸 알림 하나에 모두의 토큰이 지워지면 안 됩니다.
+ * 다시 보내도 안 닿는 토큰인지 봅니다.
+ * 앱을 지웠거나 토큰이 바뀌면 404 `UNREGISTERED`가 옵니다.
+ * 형식이 틀린 토큰은 400 `INVALID_ARGUMENT`입니다.
+ * 우리가 보낸 내용이 틀려도 같은 코드가 오는데 그때는 BadRequest가 토큰 말고 다른 필드를 짚습니다.
+ * 그런 응답에는 토큰을 지우지 않습니다.
+ * 잘못 보낸 알림 하나에 모두의 토큰이 지워지면 안 됩니다.
  */
 async function isDeadToken(res: Response): Promise<boolean> {
   if (res.ok) {

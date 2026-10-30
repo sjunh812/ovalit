@@ -155,7 +155,8 @@ describe("오발있 띄우기", () => {
     const a = await friendOf(t, host, "a");
     const b = await friendOf(t, host, "b");
     const left = await friendOf(t, host, "left");
-    // 같이 불린 둘이 서로 친구라 누구에게나 진짜 PUUID로 보인다. 가리는 건 아래 묶음에서 본다.
+    // 같이 불린 둘이 서로 친구라 누구에게나 진짜 PUUID로 보인다.
+    // 가리는 건 아래 묶음에서 본다.
     await makeFriends(a, b);
     const startsAt = Date.now() + HOUR;
 
@@ -1011,7 +1012,8 @@ describe("크론", () => {
     await reply(t, off, ping, "yes");
     sent.length = 0;
 
-    // 40분 전에는 한 시간 전을 고른 친구만 받는다. 호스트는 기본값 10분이다.
+    // 40분 전에는 한 시간 전을 고른 친구만 받는다.
+    // 호스트는 기본값 10분이다.
     await runCron(t, EVERY_FIVE_MINUTES);
     expect(sent.filter((message) => message.data.type === "ping_remind").map((message) => message.token)).toEqual([earlyToken]);
 

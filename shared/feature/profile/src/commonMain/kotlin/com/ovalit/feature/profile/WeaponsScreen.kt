@@ -194,7 +194,8 @@ private val WeaponMetric.fixed: FixedMetric
 // rise는 움직였다고 판단한 변화의 방향으로, 오르면 1, 내리면 -1, 평소 범위 안이거나 모르면 0이다.
 private class HighlightCell(val value: String, val change: String?, val rise: Int)
 
-// 위쪽 세 무기의 표다. 이번 액트에 킬을 많이 낸 세 무기를 둔다.
+// 위쪽 세 무기의 표다.
+// 이번 액트에 킬을 많이 낸 세 무기를 둔다.
 // 홈 리포트와 같은 기간의 K/D, 라운드당 피해량, 헤드샷을 바로 앞 최대 4주 평균과 견준다.
 // 표본이 적어도 그 기간 숫자를 그대로 띄우고 변화량은 표본을 넘긴 칸에만 적는다.
 // 그 기간에 안 쓴 무기는 안 썼다고 적고, 리포트를 만들 만큼 경기가 없으면 표 전체가 이번 액트 값이다.
@@ -233,7 +234,7 @@ private fun Highlights(report: WeaponReport, catalog: ContentCatalog) {
         Spacer(Modifier.height(OvalitSpacing.md))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             // 칸마다 따로 줄이면 자릿수가 많은 칸만 작아진다.
-            // 표 전체가 같은 크기를 쓰고, 옆 칸과 붙지 않게 폭을 조금 남긴다.
+            // 표 전체가 같은 크기를 쓰고 옆 칸과 붙지 않게 폭을 조금 남긴다.
             // 숫자는 무기 이름과 같은 크기, 변화량은 홈 칸처럼 한 단계 작은 11sp다.
             val cellWidth = HighlightColumn - HighlightCellGap
             val valueStyle = rememberFittingStyle(
@@ -249,7 +250,8 @@ private fun Highlights(report: WeaponReport, catalog: ContentCatalog) {
             val labelStyle = rememberFittingStyle(labels, typography.caption, cellWidth)
 
             // 이름의 가장 긴 어절이나 "요즘 잘 맞아요", 킬 수가 숫자 옆 폭에 안 들어가면 세 줄 모두 숫자를 이름 밑으로 내린다.
-            // 한 줄만 내리면 열이 어긋난다. 문구를 통째로 재서 "요즘 잘 / 맞아요"처럼 가운데서 갈리는 것도 막는다.
+            // 한 줄만 내리면 열이 어긋난다.
+            // 문구를 통째로 재서 "요즘 잘 / 맞아요"처럼 가운데서 갈리는 것도 막는다.
             val nameWords = rows.flatMap { it.name.split(' ') }
             val captions = rows.flatMap { row ->
                 listOfNotNull(
@@ -318,7 +320,8 @@ private class HighlightLine(
     val tag: Int? get() = cells?.get(WeaponMetric.HEADSHOT_RATE.ordinal)?.rise?.takeIf { it != 0 }
 }
 
-// 순서를 정한 이번 액트 킬이다. 기간 킬을 적으면 킬이 적은 무기가 위에 있는 것처럼 보인다.
+// 순서를 정한 이번 액트 킬이다.
+// 기간 킬을 적으면 킬이 적은 무기가 위에 있는 것처럼 보인다.
 // 이번 액트라는 건 제목 줄이 말한다.
 @Composable
 private fun killsText(line: HighlightLine): String = stringResource(Res.string.weapons_sample_kills, line.highlight.act.kills.withThousands())
@@ -340,13 +343,15 @@ private fun highlightCells(highlight: WeaponHighlight, comparesPeriod: Boolean):
                 now != null && usual != null -> format.changeText(now, usual)
                 else -> ""
             },
-            // 동적 칸과 같은 규칙이다. 평소 흔들림 안의 변화는 칠하지도, 문구를 붙이지도 않는다.
+            // 동적 칸과 같은 규칙이다.
+            // 평소 흔들림 안의 변화는 칠하지도, 문구를 붙이지도 않는다.
             rise = if (now != null && usual != null && highlight.movement(metric) == Movement.MOVED) format.direction(now, usual) else 0,
         )
     }
 }
 
-// stacked면 숫자 세 칸을 이름 밑 오른쪽에 둔다. 열 위치는 그대로라 머리의 열 제목과 맞는다.
+// stacked면 숫자 세 칸을 이름 밑 오른쪽에 둔다.
+// 열 위치는 그대로라 머리의 열 제목과 맞는다.
 @Composable
 private fun HighlightRow(line: HighlightLine, styles: HighlightStyles, stacked: Boolean, unusedText: String?) {
     val weapon = line.highlight.act.weapon
@@ -435,7 +440,8 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
     // 펼친 계열이 없다는 뜻도 null이라 따로 키를 두지 않으면 "그 밖의 무기"가 늘 펼쳐진 것으로 읽혀 접히지 않는다.
     fun WeaponCategory?.key(): String = this?.name ?: UNKNOWN_CATEGORY
     var expanded by rememberSaveable { mutableStateOf(byCategory.firstOrNull()?.key?.key()) }
-    // 계열 이름과 킬 수 칸은 가장 긴 글자에 맞춘다. 폭을 박아 두면 "그 밖의 무기"가 기본 글자 크기에서도 잘린다.
+    // 계열 이름과 킬 수 칸은 가장 긴 글자에 맞춘다.
+    // 폭을 박아 두면 "그 밖의 무기"가 기본 글자 크기에서도 잘린다.
     val names = byCategory.map { (category, _) -> category?.let { stringResource(it.label) } ?: stringResource(Res.string.weapons_category_unknown) }
     val killTexts = byCategory.map { (_, weapons) -> stringResource(Res.string.weapons_kills, weapons.sumOf { it.kills }.withThousands()) }
     val nameWidth = rememberWidestWidth(names, OvalitTheme.typography.bodyStrong).coerceAtMost(MaxCategoryNameWidth)
@@ -475,7 +481,8 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
                     // 한 단계 들여 쓰면 무기 그림이 왼쪽에서 떨어져 떠 보인다.
                     .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = 10.dp),
             ) {
-                // 줄마다 KDA 줄을 따로 줄이면 킬이 많은 총만 작아진다. 계열 안의 줄이 같은 크기를 쓴다.
+                // 줄마다 KDA 줄을 따로 줄이면 킬이 많은 총만 작아진다.
+                // 계열 안의 줄이 같은 크기를 쓴다.
                 val caption = OvalitTheme.typography.caption
                 val lines = weapons.map { weapon -> kdaText(weapon.kda, weapon.kills, weapon.deaths, weapon.assists).annotated() }
                 val nameWidth = currentMaxWidth - WeaponThumbWidth - OvalitSpacing.md
@@ -552,7 +559,8 @@ private val WeaponThumbWidth = 44.dp
 
 private const val MIN_KDA_SCALE = 0.8f
 
-// 펼친 계열 맨 위에 두는 열 제목이다. 숫자만 있으면 무엇인지 모른다.
+// 펼친 계열 맨 위에 두는 열 제목이다.
+// 숫자만 있으면 무엇인지 모른다.
 // KDA는 이름 밑 줄의 제목이라 이름 쪽에 두고, K/D는 위쪽 세 무기 표처럼 오른쪽 첫 열에 둔다.
 @Composable
 private fun WeaponColumns() {
@@ -585,7 +593,8 @@ private fun WeaponColumns() {
     }
 }
 
-// stacked면 세 칸을 이름 밑 오른쪽에 둔다. 열 위치는 그대로라 계열 맨 위의 열 제목과 맞는다.
+// stacked면 세 칸을 이름 밑 오른쪽에 둔다.
+// 열 위치는 그대로라 계열 맨 위의 열 제목과 맞는다.
 @Composable
 private fun WeaponRow(weapon: WeaponStats, catalog: ContentCatalog, line: AnnotatedString, lineStyle: TextStyle, stacked: Boolean) {
     val name = catalog.weaponName(weapon.weapon)

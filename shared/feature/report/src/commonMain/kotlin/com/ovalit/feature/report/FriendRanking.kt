@@ -19,7 +19,7 @@ internal data class RankedEntry(val id: PlayerId?, val name: String, val value: 
 
 /**
  * 나와 [friends]를 [metric] 값이 큰 순서로 세웁니다.
- * 서로 수락한 친구끼리만 세우고, 그 기간에 경기가 없는 친구는 뺍니다.
+ * 서로 수락한 친구끼리만 세우고 그 기간에 경기가 없는 친구는 뺍니다.
  *
  * 보이는 자릿수로 같은 값이면 같은 등수이고 그 안에서는 내가 맨 앞입니다.
  * 그래서 내 등수가 n이면 나는 늘 n번째 줄 안에 있습니다.
@@ -37,7 +37,8 @@ internal fun rankFriends(me: String, mine: MatchMetrics, friends: List<FriendSta
     val sorted = candidates.sortedWith(
         compareByDescending<RankedEntry> { format.steps(it.value) }.thenByDescending { it.isMe }.thenByDescending { it.value },
     )
-    // 값이 큰 순서로 늘어서 있어서 보이는 값이 같은 줄은 붙어 있다. 바로 앞 줄과 견주면 한 번에 등수를 매긴다.
+    // 값이 큰 순서로 늘어서 있어서 보이는 값이 같은 줄은 붙어 있다.
+    // 바로 앞 줄과 견주면 한 번에 등수를 매긴다.
     var rank = 0
     var previous: Int? = null
     return sorted.mapIndexed { index, entry ->

@@ -6,9 +6,10 @@ import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.json.Json
 
 /**
- * Riot 응답을 읽는 [Json]입니다. 우리 서버가 Riot 응답을 그대로 넘겨주니 서버 응답도 이걸로 읽습니다.
+ * Riot 응답을 읽는 [Json]입니다.
+ * 우리 서버가 Riot 응답을 그대로 넘겨주니 서버 응답도 이걸로 읽습니다.
  *
- * Riot은 패치마다 필드를 더하고 모드에 따라 필드를 빼서, 모르는 필드는 건너뛰고 null이 온 목록은 빈 목록으로 읽습니다.
+ * Riot은 패치마다 필드를 더하고 모드에 따라 필드를 빼서 모르는 필드는 건너뛰고 null이 온 목록은 빈 목록으로 읽습니다.
  *
  * Ktor `ContentNegotiation`에 그대로 걸지 않습니다.
  * 읽다 실패하면 kotlinx.serialization이 응답 원문 일부를 예외 문구에 담습니다.
@@ -42,7 +43,8 @@ private fun <T> decodeRiot(strategy: DeserializationStrategy<T>, text: String): 
     throw RiotResponseFormatException(e.jsonPath())
 }
 
-// 경로는 DTO 필드 이름과 목록 위치로만 이뤄져 Riot 값이 섞이지 않는다. DTO에 Map을 두면 키가 PUUID일 수 있으니 그때 다시 본다.
+// 경로는 DTO 필드 이름과 목록 위치로만 이뤄져 Riot 값이 섞이지 않는다.
+// DTO에 Map을 두면 키가 PUUID일 수 있으니 그때 다시 본다.
 private val JsonPath = Regex("""at path: (\$[\w.\[\]]*)""")
 
 private fun Throwable.jsonPath(): String? = message?.let { JsonPath.find(it)?.groupValues?.get(1) }

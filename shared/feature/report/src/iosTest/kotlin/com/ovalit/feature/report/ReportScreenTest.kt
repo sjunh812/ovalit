@@ -102,7 +102,8 @@ class ReportScreenTest {
         onNodeWithText("전투점수", substring = true).assertDoesNotExist()
     }
 
-    // 첫 수집 뒤 홈으로 넘어올 때 리포트가 전환 한가운데 도착한다. 그때 홈 전체를 그리면 밀려 들어오던 화면이 멈춘다.
+    // 첫 수집 뒤 홈으로 넘어올 때 리포트가 전환 한가운데 도착한다.
+    // 그때 홈 전체를 그리면 밀려 들어오던 화면이 멈춘다.
     @Test
     fun `밀려 들어오는 중에 리포트가 오면 다 들어온 뒤에 숫자를 띄운다`() = runComposeUiTest {
         var entering by mutableStateOf(true)
@@ -146,7 +147,8 @@ class ReportScreenTest {
         onNodeWithText("71%", useUnmergedTree = true).assertExists()
     }
 
-    // 한 주에 수십 판을 뛰면 칸이 바코드처럼 줄어서 가장 최근 20경기만 칸으로 둔다. 승패 글자는 기간 전체다.
+    // 한 주에 수십 판을 뛰면 칸이 바코드처럼 줄어서 가장 최근 20경기만 칸으로 둔다.
+    // 승패 글자는 기간 전체다.
     @Test
     fun `기간 경기가 20을 넘으면 최근 20경기만 칸으로 두고 승패는 전부 센다`() = runComposeUiTest {
         val many = ReportPreviewData.moved.copy(results = List(30) { it % 3 != 0 })
@@ -214,7 +216,8 @@ class ReportScreenTest {
         onNodeWithText("최근", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 요원은 판 수가 적어 승패로 적고, 5판을 못 넘겨도 그 기간 KDA는 적는다. (70 + 18) ÷ 48
+    // 요원은 판 수가 적어 승패로 적고, 5판을 못 넘겨도 그 기간 KDA는 적는다.
+    // (70 + 18) ÷ 48
     @Test
     fun `기간 요원과 무기 칸을 누르면 요원과 무기 화면을 연다`() = runComposeUiTest {
         var opened = ""
@@ -357,7 +360,8 @@ class ReportScreenTest {
         onNodeWithText("한 번 죽을 때마다 킬과 어시스트를 합쳐 몇 번 했는지예요. K/D와 달리 어시스트도 들어가요.").assertExists()
     }
 
-    // CLAUDE.md: 총량을 더한 뒤 나눈다. 식에도 실제 합계를 적는다.
+    // CLAUDE.md: 총량을 더한 뒤 나눈다.
+    // 식에도 실제 합계를 적는다.
     @Test
     fun `KDA 시트는 킬과 어시를 더해 데스로 나눈 식을 적는다`() = runComposeUiTest {
         val report = ReportPreviewData.moved
@@ -429,7 +433,8 @@ class ReportScreenTest {
         onNode(hasText("피해량") and hasText("133")).assertExists()
     }
 
-    // 기록이 하나라도 있으면 그려야 견줄 수 있다. 내 기록이라 표본으로 가르지 않는다.
+    // 기록이 하나라도 있으면 그려야 견줄 수 있다.
+    // 내 기록이라 표본으로 가르지 않는다.
     @Test
     fun `라운드가 모자란 주도 다른 주처럼 그리고 고를 수 있다`() = runComposeUiTest {
         setContent { TrendSheet(ReportPreviewData.moved) }
@@ -577,7 +582,8 @@ class ReportScreenTest {
         onNodeWithText("아직 비교할 기록이 모자라요").assertExists()
     }
 
-    // 관심사 지표가 늘 앞에 있어서 움직인 지표까지 합치면 셋을 넘는다. 한 줄에 셋씩 놓고 나머지는 다음 줄로 넘긴다.
+    // 관심사 지표가 늘 앞에 있어서 움직인 지표까지 합치면 셋을 넘는다.
+    // 한 줄에 셋씩 놓고 나머지는 다음 줄로 넘긴다.
     @Test
     fun `동적 칸은 다섯 개까지 한 줄에 셋씩 놓는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.focused) }
@@ -643,7 +649,8 @@ class ReportScreenTest {
         onNodeWithText("최근 4주 동안 뛴 경기가 없어요").assertExists()
     }
 
-    // 데스매치만 뛴 사람에게 "뛴 경기가 없어요"는 틀린 말이다. 리포트에 안 넣는 까닭을 같이 적는다.
+    // 데스매치만 뛴 사람에게 "뛴 경기가 없어요"는 틀린 말이다.
+    // 리포트에 안 넣는 까닭을 같이 적는다.
     @Test
     fun `기타 칩에서 목록에만 두는 모드만 뛰었으면 뛴 경기가 없다고 하지 않는다`() = runComposeUiTest {
         setContent { Report(WeeklyReport.NotEnoughMatches(played = 0, notCounted = 3), queueFilter = QueueFilter.OTHER) }
@@ -664,7 +671,8 @@ class ReportScreenTest {
         onNodeWithText("어떻게 계산하나요?").assertExists()
     }
 
-    // 칸마다 평소 값이 무엇과 견줬는지 말하니 칸 밖 안내는 두지 않는다. 비교할 기록이 없을 때만 그 까닭을 칸 밑에 적는다.
+    // 칸마다 평소 값이 무엇과 견줬는지 말하니 칸 밖 안내는 두지 않는다.
+    // 비교할 기록이 없을 때만 그 까닭을 칸 밑에 적는다.
     @Test
     fun `고정 칸 밖에는 견준 기준을 따로 적지 않고 기준이 없을 때만 까닭을 적는다`() = runComposeUiTest {
         var report by mutableStateOf(ReportPreviewData.moved.copy(note = null))
@@ -709,7 +717,8 @@ class ReportScreenTest {
         onNodeWithText("이번 변화가 지난 8주 동안 주마다 흔들린 폭의 1.5배를 넘어서 달라졌다고 봤어요.").assertExists()
     }
 
-    // 판단을 보류한 칸은 달라졌다고도, 그대로라고도 하지 않는다. 첫 킬 승률은 moved의 동적 칸에 없는 지표라 판단 보류로 연다.
+    // 판단을 보류한 칸은 달라졌다고도, 그대로라고도 하지 않는다.
+    // 첫 킬 승률은 moved의 동적 칸에 없는 지표라 판단 보류로 연다.
     @Test
     fun `판단하지 않은 칸의 시트는 기록이 모자라다고 적는다`() = runComposeUiTest {
         setContent { OvalitTheme { DynamicMetricSheetBody(DynamicMetric.FIRST_KILL_WIN_RATE, ReportPreviewData.moved) } }
@@ -718,7 +727,8 @@ class ReportScreenTest {
         onNodeWithText("첫\u00a0킬\u00a010번 이상이어야", substring = true).assertExists()
     }
 
-    // 분모가 데스라 라운드가 아니라 데스 수를 표본으로 적는다. 우리 팀 움직임도 들어가는 숫자라는 걸 밝힌다.
+    // 분모가 데스라 라운드가 아니라 데스 수를 표본으로 적는다.
+    // 우리 팀 움직임도 들어가는 숫자라는 걸 밝힌다.
     @Test
     fun `트레이드 받은 데스 시트는 데스 수를 표본으로 적는다`() = runComposeUiTest {
         val report = ReportPreviewData.moved
@@ -736,7 +746,8 @@ class ReportScreenTest {
         onNodeWithText("트레이드 받은 데스", useUnmergedTree = true).assertExists()
     }
 
-    // 프리뷰 데이터는 피해량이 128 → 138로 올랐다. 그 변화를 밴달과 제트가 가장 많이 끌었다.
+    // 프리뷰 데이터는 피해량이 128 → 138로 올랐다.
+    // 그 변화를 밴달과 제트가 가장 많이 끌었다.
     @Test
     fun `짚을 점은 움직인 지표와 같은 쪽 무기와 요원을 숫자로 적는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
@@ -746,7 +757,7 @@ class ReportScreenTest {
         onNodeWithText("→ 이번 주", substring = true).assertDoesNotExist()
         onNode(noteRow("밴달", "118 → 140")).assertExists()
         onNode(noteRow("제트", "124 → 146")).assertExists()
-        // 줄마다 "끌어올린 무기" 같은 이름표나 지표 이름을 붙이지 않는다
+        // 줄마다 "끌어올린 무기" 같은 라벨이나 지표 이름을 붙이지 않는다
         onNodeWithText("끌어올린", substring = true, useUnmergedTree = true).assertDoesNotExist()
         // 이긴 판이 더 많았던 요원은 바로 밑 이번 주 요원 칸의 승패와 겹쳐 적지 않는다
         onNodeWithText("이긴 판이 더 많았던", substring = true, useUnmergedTree = true).assertDoesNotExist()
@@ -793,7 +804,8 @@ class ReportScreenTest {
         onNodeWithText("이전 최고", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 138과 137.6은 둘 다 138로 보인다. 그보다 높다고 하면 틀려 보인다.
+    // 138과 137.6은 둘 다 138로 보인다.
+    // 그보다 높다고 하면 틀려 보인다.
     @Test
     fun `보이는 자릿수로 이전 최고와 같으면 최고라고 하지 않는다`() = runComposeUiTest {
         val note = assertNotNull(ReportPreviewData.moved.note).copy(previousBest = 137.6)
@@ -816,7 +828,8 @@ class ReportScreenTest {
         onNode(noteRow("풀바이 라운드만 보면", "158 → 156")).assertExists()
     }
 
-    // 무기는 "을/를 든", 요원은 "(으)로 뛴"이다. 이름에 받침이 있는지에 맞춘다.
+    // 무기는 "을/를 든", 요원은 "(으)로 뛴"이다.
+    // 이름에 받침이 있는지에 맞춘다.
     @Test
     fun `비중 줄은 무기와 요원 이름에 맞는 조사를 붙인다`() = runComposeUiTest {
         fun note(group: MixGroup, steady: MixGroup) = WeekNote(
@@ -907,7 +920,8 @@ class ReportScreenTest {
         onNodeWithText("레이즈로 뛴 판은 관여율이 다른 타격대 요원보다 14%p 낮아요").assertExists()
     }
 
-    // 역할끼리는 승률만 견주고, 우연을 넘을 만큼 차이가 클 때만 나온다. "추천"은 쓰지 않는다.
+    // 역할끼리는 승률만 견주고, 우연을 넘을 만큼 차이가 클 때만 나온다.
+    // "추천"은 쓰지 않는다.
     @Test
     fun `역할끼리 견준 개선 포인트는 승률을 사실로만 적는다`() = runComposeUiTest {
         val insight = Insight(
@@ -923,7 +937,8 @@ class ReportScreenTest {
         onNodeWithText("추천", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 연달아 뛸수록 어떤지 숫자로만 적는다. 쉬라고 하지 않는다.
+    // 연달아 뛸수록 어떤지 숫자로만 적는다.
+    // 쉬라고 하지 않는다.
     @Test
     fun `연달아 뛴 판을 견준 개선 포인트는 세 번째 판부터를 주어로 적는다`() = runComposeUiTest {
         val insight = Insight(
@@ -1005,7 +1020,8 @@ class ReportScreenTest {
         assertTrue(weaponChange.left > weaponName.right, "숫자가 이름 옆에 있어야 한다")
     }
 
-    // 오르내림은 헤드라인이 말한다. 줄은 모두 같은 쪽으로 움직인 것이라 색 대신 밝기와 굵기로 이번 값만 띄운다.
+    // 오르내림은 헤드라인이 말한다.
+    // 줄은 모두 같은 쪽으로 움직인 것이라 색 대신 밝기와 굵기로 이번 값만 띄운다.
     @Test
     fun `짚을 점 숫자는 이번 값만 굵게 두고 색을 입히지 않는다`() = runComposeUiTest {
         lateinit var colors: OvalitColors
@@ -1083,7 +1099,8 @@ class ReportScreenTest {
         onNode(noteRow("제트", "124 → 146")).assertExists()
     }
 
-    // 21.4%와 21.2%는 둘 다 21%로 보인다. "0%p 올랐어요"라고 쓰지 않고, 빈 칸 몫의 간격도 남기지 않는다.
+    // 21.4%와 21.2%는 둘 다 21%로 보인다.
+    // "0%p 올랐어요"라고 쓰지 않고, 빈 칸 몫의 간격도 남기지 않는다.
     @Test
     fun `보이는 자릿수로 차이가 없으면 짚을 점을 두지 않는다`() = runComposeUiTest {
         val flat = WeekNote(MovedMetric(FixedMetric.HEADSHOT_RATE, current = 0.214, usual = 0.212))
@@ -1136,7 +1153,7 @@ class ReportScreenTest {
         onNodeWithText("킬 ÷", substring = true).assertDoesNotExist()
     }
 
-    // 위 칸들은 모두 이번 주 숫자라, 이번 액트로 견준 문장은 제목으로 떼고 몇 경기로 견줬는지 적는다
+    // 위 칸들은 모두 이번 주 숫자라 이번 액트로 견준 문장은 제목으로 떼고 몇 경기로 견줬는지 적는다
     @Test
     fun `개선 포인트는 이번 액트 돌아보기 묶음으로 달라진 점과 이번 주 요원 사이에 둔다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
@@ -1149,7 +1166,8 @@ class ReportScreenTest {
         assertTrue(dynamic.bottom <= title.top && title.bottom <= headline.top && headline.bottom <= agents.top)
     }
 
-    // 광고는 이번 주 숫자를 다 본 바로 뒤에 둔다. 기간, 고정 칸, 달라진 점 사이에는 두지 않는다.
+    // 광고는 이번 주 숫자를 다 본 바로 뒤에 둔다.
+    // 기간, 고정 칸, 달라진 점 사이에는 두지 않는다.
     @Test
     fun `홈 광고는 달라진 점과 이번 액트 돌아보기 사이에 둔다`() = runComposeUiTest {
         setContent { CompositionLocalProvider(LocalAdRenderer provides LabelAds) { Report(ReportPreviewData.moved) } }
@@ -1171,7 +1189,8 @@ class ReportScreenTest {
         onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요").assertExists()
     }
 
-    // 제목과 문장이 이번 액트 이야기라 액트 줄이 먼저다. 이번 주는 그 밑에 참고로 붙이고, 까닭 줄은 그 밑이다.
+    // 제목과 문장이 이번 액트 이야기라 액트 줄이 먼저다.
+    // 이번 주는 그 밑에 참고로 붙이고, 까닭 줄은 그 밑이다.
     @Test
     fun `개선 포인트는 액트 줄 밑에 이번 주를 참고로 붙인다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
@@ -1245,7 +1264,9 @@ class ReportScreenTest {
         onNodeWithText("이번 액트 돌아보기", useUnmergedTree = true).assertDoesNotExist()
     }
 
-    // 화면에 보이는 자릿수로 겨룬다. 나는 K/D 1.34, 피해량 138, 헤드샷 21%다. 전투점수는 같아서 앞서지 않는다.
+    // 화면에 보이는 자릿수로 겨룬다.
+    // 나는 K/D 1.34, 피해량 138, 헤드샷 21%다.
+    // 전투점수는 같아서 앞서지 않는다.
     @Test
     fun `라이벌 칸은 홈 고정 칸 다섯 지표 중 앞선 개수를 센다`() = runComposeUiTest {
         val rival = ReportPreviewData.moved.metrics.let { it.copy(kills = 100, damage = 21_000, shots = it.shots.copy(head = 60)) }
@@ -1296,7 +1317,8 @@ class ReportScreenTest {
         assertEquals(11f, (me.top - junho.bottom).value, absoluteTolerance = 0.5f)
     }
 
-    // 제목 줄은 제목 글자 높이로 두고 버튼의 눌리는 영역(44dp)은 위아래로 넘친다. 넘친 쪽 끝을 눌러도 열려야 한다.
+    // 제목 줄은 제목 글자 높이로 두고 버튼의 눌리는 영역(44dp)은 위아래로 넘친다.
+    // 넘친 쪽 끝을 눌러도 열려야 한다.
     @Test
     fun `친구 비교 지표 버튼은 제목 줄 밖으로 넘친 곳을 눌러도 열린다`() = runComposeUiTest {
         val strong = ReportPreviewData.moved.metrics.copy(damage = 30_000)
@@ -1367,7 +1389,8 @@ class ReportScreenTest {
         assertEquals(PlayerId("junho"), picked)
     }
 
-    // 친구가 수백 명이어도 홈 카드는 다섯 줄과 내 줄로 끝난다(docs/screens.md). 나는 피해량 138이라 151등이다.
+    // 친구가 수백 명이어도 홈 카드는 다섯 줄과 내 줄로 끝난다(docs/screens.md).
+    // 나는 피해량 138이라 151등이다.
     @Test
     fun `친구가 많으면 친구 비교는 위 다섯 줄과 내 줄만 두고 전체 보기로 넘어간다`() = runComposeUiTest {
         var opened: Pair<QueueFilter, FixedMetric>? = null
@@ -1435,7 +1458,8 @@ class ReportScreenTest {
         assertEquals(PlayerId("f150"), picked)
     }
 
-    // 수집 중에는 숫자를 띄우지 않고 자리만 잡는다. 화면 읽기 프로그램에는 칸마다가 아니라 한 줄로 알린다.
+    // 수집 중에는 숫자를 띄우지 않고 자리만 잡는다.
+    // 화면 읽기 프로그램에는 칸마다가 아니라 한 줄로 알린다.
     @Test
     fun `리포트를 만들기 전에는 자리만 잡고 숫자를 띄우지 않는다`() = runComposeUiTest {
         setContent { OvalitTheme { ReportScreen(ReportUiState.Loading, onSelectQueue = {}) } }
@@ -1480,8 +1504,9 @@ private val NamedCatalog = ContentCatalog.Empty.copy(
     maps = mapOf(Haven to "헤이븐"),
 )
 
-// 개선 포인트 밑 줄은 기간 이름(액트 줄은 제목에 있어 없음) 뒤에 두 쪽을 (이름, 값, 표본)으로 잇는다. 줄은 두 쪽 사이에서만 바뀐다.
-// 개선 포인트의 액트 줄은 두 쪽 값과 액트 전체 표본을 묶어 화면 읽기 프로그램이 한 번에 읽는다
+// 개선 포인트 밑 줄은 기간 이름(액트 줄은 제목에 있어 없음) 뒤에 두 쪽을 (이름, 값, 표본)으로 잇는다.
+// 줄은 두 쪽 사이에서만 바뀐다.
+// 개선 포인트의 액트 줄은 두 쪽 값과 액트 전체 표본을 묶어 화면 읽기 프로그램이 한 번에 읽는다.
 private fun actLine(lead: Pair<String, String>, other: Pair<String, String>, total: String): SemanticsMatcher =
     hasText(insightValues(lead, other)) and hasText(total)
 
@@ -1492,7 +1517,8 @@ private fun recentLine(period: String, lead: Pair<String, String>, other: Pair<S
 private fun insightValues(lead: Pair<String, String>, other: Pair<String, String>) =
     listOf(lead, other).joinToString(WRAPPING_SEPARATOR) { (name, value) -> name.keepTogether() + "\u00a0" + value }
 
-// 짚을 점 한 줄은 이름과 표본을 한 글자로, "평소 → 이번" 숫자를 또 한 글자로 둔다. 화면 읽기 프로그램이 한 번에 읽게 한 줄로 묶는다.
+// 짚을 점 한 줄은 이름과 표본을 한 글자로, "평소 → 이번" 숫자를 또 한 글자로 둔다.
+// 화면 읽기 프로그램이 한 번에 읽게 한 줄로 묶는다.
 private fun noteRow(name: String, change: String): SemanticsMatcher = hasText(noteLabel(name)) and hasText(noteChange(change))
 
 private fun noteLabel(name: String) = name.keepTogether()
@@ -1526,7 +1552,8 @@ private fun combatSubLine(report: WeeklyReport.Ready): Pair<String, String> {
     return MetricFormat.INTEGER.formatChange(current, usual) to "평소 ${MetricFormat.INTEGER.format(usual)}"
 }
 
-// 화면에 뜨는 자릿수로 적은 값이다. valueText는 컴포저블이라 테스트에서는 format으로 같은 글자를 만든다.
+// 화면에 뜨는 자릿수로 적은 값이다.
+// valueText는 컴포저블이라 테스트에서는 format으로 같은 글자를 만든다.
 private fun MetricFormat.valueTextFor(value: Double): String = if (this == MetricFormat.PERCENT) "${format(value)}%" else format(value)
 
 @Composable
@@ -1568,7 +1595,8 @@ private fun Social(
     }
 }
 
-// 모두 나(피해량 138)보다 피해량이 높은 친구 150명이다. 친구1이 가장 높다.
+// 모두 나(피해량 138)보다 피해량이 높은 친구 150명이다.
+// 친구1이 가장 높다.
 private val ManyFriends = ReportPreviewData.manyFriends(150)
 
 // "+13", "−0.10", "+3%p"처럼 부호로 시작하는 변화량 글자다

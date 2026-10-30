@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.flowOf
 
 /**
  * [refresh]는 부른 횟수만 세고 다시 받지는 않는 [PingRepository]입니다.
- * 나머지는 [delegate]에 맡기고, 넘기지 않으면 ㅇㅂㅇ이 하나도 없습니다([NoPings]).
+ * 나머지는 [delegate]에 맡기고 넘기지 않으면 ㅇㅂㅇ이 하나도 없습니다([NoPings]).
  */
 class TestPingRepository(delegate: PingRepository = NoPings) : PingRepository by delegate {
 

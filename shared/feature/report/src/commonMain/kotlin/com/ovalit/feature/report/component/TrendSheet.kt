@@ -51,7 +51,7 @@ private val RowBarsHeight = 44.dp
 private val RowNameWidth = 88.dp
 
 /**
- * 홈 고정 칸 밑의 "지난 8주 흐름 한눈에 보기" 줄이고, 누르면 [TrendSheet]가 뜹니다.
+ * 홈 고정 칸 밑의 "지난 8주 흐름 한눈에 보기" 줄이고 누르면 [TrendSheet]가 뜹니다.
  * [metric]의 막대를 작게 그려 무엇이 나오는지 보여 줍니다.
  */
 @Composable
@@ -64,7 +64,8 @@ internal fun TrendEntry(report: WeeklyReport.Ready, metric: FixedMetric, onClick
             // 면까지 같이 줄도록 누름 효과를 면보다 앞에 단다(docs/design.md)
             .clickable(role = Role.Button, onClick = onClick)
             .clip(RoundedCornerShape(12.dp))
-            // 카드 위라 한 단계 더 올린 면이다. --raised는 다크에서 카드와 같은 색이다.
+            // 카드 위라 한 단계 더 올린 면이다.
+            // --raised는 다크에서 카드와 같은 색이다.
             .background(colors.fill)
             .padding(horizontal = 12.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -90,7 +91,7 @@ internal fun TrendEntry(report: WeeklyReport.Ready, metric: FixedMetric, onClick
  * 처음에는 리포트 기간 값입니다.
  *
  * 지표마다 제 범위로 막대를 그립니다.
- * 한 축에 겹치면 K/D 1.2와 피해량 140을 같은 눈금에 올리게 됩니다.
+ * 한 축에 겹치면 K/D 1.2와 피해량 140이 같은 눈금에 놓입니다.
  */
 @Composable
 internal fun TrendSheet(
@@ -112,7 +113,8 @@ internal fun TrendSheet(
     }
 }
 
-// 시트는 따로 창을 띄워서 프리뷰에 안 나온다. 프리뷰와 테스트는 이 본문만 그린다.
+// 시트는 따로 창을 띄워서 프리뷰에 안 나온다.
+// 프리뷰와 테스트는 이 본문만 그린다.
 @Composable
 internal fun TrendSheetBody(
     report: WeeklyReport.Ready,
@@ -120,7 +122,8 @@ internal fun TrendSheetBody(
     modifier: Modifier = Modifier,
 ) {
     val colors = OvalitTheme.colors
-    // 고른 주는 모든 줄이 같이 쓴다. 한 주를 골라 그 주 지표를 한꺼번에 견준다.
+    // 고른 주는 모든 줄이 같이 쓴다.
+    // 한 주를 골라 그 주 지표를 한꺼번에 견준다.
     var selected by rememberSaveable { mutableStateOf<Int?>(null) }
     Column(modifier = modifier) {
         TrendReadout(report, selected)

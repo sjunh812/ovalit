@@ -6,17 +6,20 @@ import { PING_LENGTH_MS } from "./routes/pings";
 /** 월요일 00:00 UTC, 한국 시각으로 월요일 오전 9시입니다. `wrangler.jsonc`의 `triggers`와 같은 문자열이어야 합니다. */
 export const WEEKLY_CRON = "0 0 * * 1";
 const MINUTE_MS = 60 * 1000;
-// 미리 알림으로 고를 수 있는 가장 긴 시간이다. 그보다 뒤에 시작하는 ㅇㅂㅇ은 아직 찾지 않는다.
+// 미리 알림으로 고를 수 있는 가장 긴 시간이다.
+// 그보다 뒤에 시작하는 ㅇㅂㅇ은 아직 찾지 않는다.
 const MAX_REMIND_BEFORE_MS = 60 * MINUTE_MS;
-// 크론이 5분마다 도니, 몫이 모자라 이번에 못 보낸 것은 다음 크론에 다시 잡힌다.
+// 크론이 5분마다 도니 몫이 모자라 이번에 못 보낸 것은 다음 크론에 다시 잡힌다.
 const REMIND_SCAN_LIMIT = 20;
 const DAY_MS = 24 * 60 * MINUTE_MS;
 // 하루 열 번 한도를 pings 줄로 세니 끝나고도 하루는 남겨 둔다
 const KEEP_AFTER_EXPIRY_MS = DAY_MS;
-// 앱은 8주 안의 경기만 본다. 참가자는 경기가 끝난 뒤에 적으니 적은 지 10주가 지난 경기는 앱이 다시 묻지 않는다.
+// 앱은 8주 안의 경기만 본다.
+// 참가자는 경기가 끝난 뒤에 적으니 적은 지 10주가 지난 경기는 앱이 다시 묻지 않는다.
 // 지운 뒤에 누가 물어도 Riot에서 경기를 다시 받아 적을 뿐 틀린 답을 주지는 않는다.
 const MATCH_PLAYERS_KEEP_MS = 10 * 7 * DAY_MS;
-// 크론 한 번이 지우는 줄이다. 하루 288번 돌아 2만 8천 줄까지 지우니 무료 한도 안에서 쌓일 수 있는 속도보다 빠르다.
+// 크론 한 번이 지우는 줄이다.
+// 하루 288번 돌아 2만 8천 줄까지 지우니 무료 한도 안에서 쌓일 수 있는 속도보다 빠르다.
 const CLEANUP_LIMIT = 100;
 
 /** `createApp`과 같은 `deps`를 받습니다. 테스트는 가짜 `fetch`를 넣어 FCM을 부르지 않습니다. */
@@ -36,14 +39,16 @@ export function createScheduled(deps: Deps = {}): ExportedHandlerScheduledHandle
 
 async function cleanUp(db: D1Database, now: number): Promise<void> {
   await db.batch([
-    // expires_at은 늘 starts_at보다 한 시간 뒤라 starts_at 색인으로 찾는다. 불려 간 자리는 CASCADE로 같이 지워진다.
+    // expires_at은 늘 starts_at보다 한 시간 뒤라 starts_at 색인으로 찾는다.
+    // 불려 간 자리는 CASCADE로 같이 지워진다.
     db
       .prepare("DELETE FROM pings WHERE id IN (SELECT id FROM pings WHERE starts_at < ? LIMIT ?)")
       .bind(now - KEEP_AFTER_EXPIRY_MS - PING_LENGTH_MS, CLEANUP_LIMIT),
     db
       .prepare("DELETE FROM match_players WHERE match_id IN (SELECT match_id FROM match_players WHERE recorded_at < ? LIMIT ?)")
       .bind(now - MATCH_PLAYERS_KEEP_MS, CLEANUP_LIMIT),
-    // 풀린 차단을 지워 둔다. isolate마다 5초에 한 번 이 표를 읽으니 비어 있어야 읽는 행이 거의 없다.
+    // 풀린 차단을 지워 둔다.
+    // isolate마다 5초에 한 번 이 표를 읽으니 비어 있어야 읽는 행이 거의 없다.
     db.prepare("DELETE FROM riot_blocks WHERE blocked_until <= ?").bind(now),
   ]);
 }
@@ -93,7 +98,8 @@ async function remind(db: D1Database, push: Push, now: number): Promise<void> {
   });
   const messages = await push.messagesFor(notices);
 
-  // 몫에 들어가는 ㅇㅂㅇ까지만 고른다. 기기가 없어 보낼 메시지가 없는 사람도 같이 표시해 다시 찾지 않는다.
+  // 몫에 들어가는 ㅇㅂㅇ까지만 고른다.
+  // 기기가 없어 보낼 메시지가 없는 사람도 같이 표시해 다시 찾지 않는다.
   const chosen = new Set<string>();
   let count = 0;
   for (const ping of due) {
@@ -108,7 +114,8 @@ async function remind(db: D1Database, push: Push, now: number): Promise<void> {
     .map((notice) => [notice.data.pingId!, notice.userId]);
   if (hosts.length === 0 && members.length === 0) return;
 
-  // 보내기 전에 표시한다. 크론 두 번이 겹쳐도 한 번만 가고, 보내다 실패하면 다시 보내지 않는다.
+  // 보내기 전에 표시한다.
+  // 크론 두 번이 겹쳐도 한 번만 가고, 보내다 실패하면 다시 보내지 않는다.
   const [claimedHosts, claimedMembers] = await db.batch<{ id?: string; ping_id?: string; user_id?: number }>([
     db
       .prepare("UPDATE pings SET reminded = 1 WHERE id IN (SELECT value FROM json_each(?)) AND reminded = 0 RETURNING id")

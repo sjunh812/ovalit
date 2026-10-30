@@ -14,7 +14,7 @@ const val MOVEMENT_THRESHOLD = 1.5
 private const val FLAT_VOLATILITY = 1e-9
 
 /**
- * 홈의 동적 칸에 오를 수 있는 지표이고, 고정 지표([FixedMetric])는 넣지 않습니다.
+ * 홈의 동적 칸에 오를 수 있는 지표이고 고정 지표([FixedMetric])는 넣지 않습니다.
  * 선언 순서가 빈칸을 채우는 순서라 새 지표는 맨 뒤에 붙입니다.
  */
 enum class DynamicMetric(
@@ -67,7 +67,8 @@ private val Defaults = listOf(
  * [MIN_DYNAMIC_SLOTS]개가 안 되면 기본 지표부터 채웁니다.
  * 관심사가 아니면 역할이 크게 띄우지 않는 지표는 움직였어도, 빈칸을 채울 때도 넣지 않습니다.
  *
- * @param history 집계 기간 앞 주들의 주간 지표입니다. 평소 변동폭을 여기서 잽니다.
+ * @param history 집계 기간 앞 주들의 주간 지표입니다.
+ *   평소 변동폭을 여기서 잽니다.
  */
 internal fun selectDynamicMetrics(
     current: MatchMetrics,
@@ -131,13 +132,15 @@ internal fun assessMovement(now: Double, usual: Double, weekly: List<Double>): A
     return Assessment(movement, strength = change / volatility)
 }
 
-// 평균의 평균을 막는 규칙과 다른 얘기다. 주마다 얼마나 흔들리는지를 보는 값이라 주마다 같은 무게를 준다.
+// 평균의 평균을 막는 규칙과 다른 얘기다.
+// 주마다 얼마나 흔들리는지를 보는 값이라 주마다 같은 무게를 준다.
 private fun List<Double>.sampleStandardDeviation(): Double {
     val mean = average()
     return sqrt(sumOf { (it - mean) * (it - mean) } / (size - 1))
 }
 
-// CLAUDE.md 역할군 표에서 지금 계산할 수 있는 것만 옮겼다. K/D는 고정 칸이라 빠진다.
+// CLAUDE.md 역할군 표에서 지금 계산할 수 있는 것만 옮겼다.
+// K/D는 고정 칸이라 빠진다.
 // 스킬 활용, 공수별 성적, 클러치, 사이트 수비는 데이터가 생기면 여기 넣는다.
 private val Role.priority: List<DynamicMetric>
     get() = when (this) {

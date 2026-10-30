@@ -110,7 +110,8 @@ internal enum class DetailTab { SCOREBOARD, ROUNDS, REPORT }
  * @param onOpenMe 스코어보드에서 내 줄을 누르면 부릅니다.
  * @param onShareInvite 앱을 안 쓰거나 쓰는지 모르는 플레이어에게 초대 링크를 보낼 때 부릅니다.
  *   공유 시트는 앱 모듈이 띄웁니다.
- * @param onFriendAdded 스코어보드에서 친구 요청을 수락하면 부릅니다. 앱 모듈이 이때 알림을 켜 달라고 묻습니다.
+ * @param onFriendAdded 스코어보드에서 친구 요청을 수락하면 부릅니다.
+ *   앱 모듈이 이때 알림을 켜 달라고 묻습니다.
  */
 @Composable
 fun MatchDetailRoute(
@@ -267,7 +268,8 @@ private fun Banner(uiState: MatchDetailUiState.Success, onBack: () -> Unit) {
 
     Box(modifier = Modifier.fillMaxWidth().height(BannerHeight)) {
         MapImage(match.map, MapImageStyle.BANNER, Modifier.matchParentSize())
-        // 맵 그림 위에 글자를 얹으니 위아래로 흐림막을 깐다. 아래는 목업처럼 바탕색으로 이어진다.
+        // 맵 그림 위에 글자를 얹으니 위아래로 흐림막을 깐다.
+        // 아래는 목업처럼 바탕색으로 이어진다.
         Box(
             Modifier
                 .fillMaxWidth()
@@ -310,7 +312,8 @@ private fun ScoreHeadline(uiState: MatchDetailUiState.Success, modifier: Modifie
     val scoreDescription = stringResource(Res.string.score_description, score.myTeam, score.enemyTeam)
 
     Column(modifier = modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = 14.dp)) {
-        // 맵 이름 옆에는 승패만 적는다. MVP와 순위는 바로 밑 스코어보드에 있다.
+        // 맵 이름 옆에는 승패만 적는다.
+        // MVP와 순위는 바로 밑 스코어보드에 있다.
         Row(verticalAlignment = Alignment.Bottom) {
             OvalitText(
                 text = uiState.catalog.mapName(match.map),

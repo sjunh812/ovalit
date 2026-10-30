@@ -37,7 +37,7 @@ private fun Match.scorelineMetrics(): MatchMetrics {
 /**
  * [keep]에 드는 라운드만 셉니다.
  * 이코 라운드나 밴달을 들고 시작한 라운드처럼 경기 안에서 라운드를 가를 때 씁니다.
- * 전투점수는 경기 합계뿐이라 0으로 두고, 드는 라운드가 없으면 경기 수도 0입니다.
+ * 전투점수는 경기 합계뿐이라 0으로 두고 드는 라운드가 없으면 경기 수도 0입니다.
  */
 internal fun Match.roundMetrics(keep: (Round) -> Boolean): MatchMetrics {
     val kept = rounds.filter(keep)
@@ -70,17 +70,23 @@ private fun Match.metricsOf(rounds: List<Round>, combatScore: Int): MatchMetrics
         forceBuyRoundsWon = won(BuyType.FORCE_BUY),
         fullBuyRounds = played(BuyType.FULL_BUY),
         fullBuyRoundsWon = won(BuyType.FULL_BUY),
-        // 킬은 적을 잡은 것만 센다(analyze). 스킬로 우리 팀을 죽인 건 멀티킬에도 들어가지 않는다.
+        // 킬은 적을 잡은 것만 센다(analyze).
+        // 스킬로 우리 팀을 죽인 건 멀티킬에도 들어가지 않는다.
         multiKillRounds = perRound.count { it.kills >= 2 },
         tradedDeaths = perRound.sumOf { it.tradedDeaths },
     )
 }
 
 /**
- * @property deaths 이 라운드에 죽은 횟수입니다. 세이지 부활로 두 번 죽으면 2입니다. 스코어보드의 데스와 같게 셉니다.
- * @property died 한 번이라도 죽었는지입니다. 생존율과 관여율은 라운드 단위라 이걸 씁니다.
- * @property traded 먼저 죽은 데스를 우리 팀이 갚았는지입니다. 관여율의 T입니다.
- * @property tradedDeaths 우리 팀이 갚은 데스 수입니다. 트레이드 받은 데스 비율의 분자라 [deaths]처럼 데스마다 셉니다.
+ * @property deaths 이 라운드에 죽은 횟수입니다.
+ *   세이지 부활로 두 번 죽으면 2입니다.
+ *   스코어보드의 데스와 같게 셉니다.
+ * @property died 한 번이라도 죽었는지입니다.
+ *   생존율과 관여율은 라운드 단위라 이걸 씁니다.
+ * @property traded 먼저 죽은 데스를 우리 팀이 갚았는지입니다.
+ *   관여율의 T입니다.
+ * @property tradedDeaths 우리 팀이 갚은 데스 수입니다.
+ *   트레이드 받은 데스 비율의 분자라 [deaths]처럼 데스마다 셉니다.
  */
 internal class RoundResult(
     val won: Boolean,
@@ -97,13 +103,14 @@ internal class RoundResult(
 
 internal fun Round.analyze(me: PlayerId, allies: Set<PlayerId>): RoundResult {
     val myTeam = allies + me
-    // 스킬로 자기를 죽이거나 같은 팀을 죽인 건 킬로 세지 않는다. 응답에는 둘 다 킬로 들어온다.
+    // 스킬로 자기를 죽이거나 같은 팀을 죽인 건 킬로 세지 않는다.
+    // 응답에는 둘 다 킬로 들어온다.
     val enemyKills = kills.filter { (it.killer in myTeam) != (it.victim in myTeam) }
 
     val myKills = enemyKills.count { it.killer == me }
     val myAssists = enemyKills.count { me in it.assistants }
     // 세이지 부활로 한 라운드에 두 번 죽을 수 있다.
-    // 데스는 모두 세고, 관여율의 트레이드는 목록 순서가 아니라 시각으로 먼저 죽은 것을 본다.
+    // 데스는 모두 세고 관여율의 트레이드는 목록 순서가 아니라 시각으로 먼저 죽은 것을 본다.
     val myDeaths = kills.filter { it.victim == me }.sortedBy { it.atMillis }
     val myDeath = myDeaths.firstOrNull()
     val firstBlood = enemyKills.minByOrNull { it.atMillis }

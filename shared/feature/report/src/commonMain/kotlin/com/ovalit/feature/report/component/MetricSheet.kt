@@ -95,7 +95,8 @@ internal fun MetricSheet(
     }
 }
 
-// 시트는 따로 창을 띄워서 프리뷰에 안 나온다. 프리뷰와 테스트는 이 본문만 그린다.
+// 시트는 따로 창을 띄워서 프리뷰에 안 나온다.
+// 프리뷰와 테스트는 이 본문만 그린다.
 @Composable
 internal fun MetricSheetBody(metric: FixedMetric, report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
@@ -185,7 +186,8 @@ private fun CurrentValue(metric: FixedMetric, report: WeeklyReport.Ready) {
     val current = metric.value(report.metrics)
     val usual = report.baseline?.let { metric.value(it.metrics) }
 
-    // 좁은 화면에서 오른쪽 표본이 먼저 자리를 잡으면 큰 숫자와 변화량이 꺾인다. 모자라면 표본을 다음 줄로 내린다.
+    // 좁은 화면에서 오른쪽 표본이 먼저 자리를 잡으면 큰 숫자와 변화량이 꺾인다.
+    // 모자라면 표본을 다음 줄로 내린다.
     FlowRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -229,7 +231,8 @@ private fun CurrentValue(metric: FixedMetric, report: WeeklyReport.Ready) {
 
 @Composable
 private fun TrendBars(metric: FixedMetric, report: WeeklyReport.Ready) {
-    // 막대를 누르면 그 주 값을 막대 위에 띄운다. 처음에는 리포트 기간이다.
+    // 막대를 누르면 그 주 값을 막대 위에 띄운다.
+    // 처음에는 리포트 기간이다.
     var selected by rememberSaveable { mutableStateOf<Int?>(null) }
     val baseline = report.baseline?.let { baseline -> metric.value(baseline.metrics)?.let { baseline.weeks to it } }
     Column {

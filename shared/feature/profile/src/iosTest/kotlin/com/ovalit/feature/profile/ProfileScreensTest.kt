@@ -54,7 +54,8 @@ class ProfileScreensTest {
         onNodeWithText("56%", useUnmergedTree = true).assertExists()
     }
 
-    // 티어를 카드에 크게 두니 이름 줄에서는 뺀다. 경쟁전이 없으면 티어 카드가 없어 이름 줄에 남긴다.
+    // 티어를 카드에 크게 두니 이름 줄에서는 뺀다.
+    // 경쟁전이 없으면 티어 카드가 없어 이름 줄에 남긴다.
     @Test
     fun `경쟁전이 없으면 티어를 이름 줄에 둔다`() = runComposeUiTest {
         setContent { Themed { ProfileScreen(ProfilePreviewData.noCompetitive, {}, {}, {}, {}, {}) } }
@@ -125,7 +126,8 @@ class ProfileScreensTest {
         onNodeWithText("생존율").assertDoesNotExist()
     }
 
-    // 역할 표에 없는 새 요원만 뛰었으면 주 역할을 모른다. 경기는 있으니 "경기가 없어요"라고 하면 안 된다.
+    // 역할 표에 없는 새 요원만 뛰었으면 주 역할을 모른다.
+    // 경기는 있으니 "경기가 없어요"라고 하면 안 된다.
     @Test
     fun `주 역할을 몰라도 요원 표는 보여준다`() = runComposeUiTest {
         val unknownRole = ProfilePreviewData.agents.copy(mainRole = null, roles = emptyList())
@@ -136,7 +138,8 @@ class ProfileScreensTest {
         onNodeWithText("요원별").assertExists()
     }
 
-    // 주 역할에 맞춘 열 말고 다른 지표도 볼 수 있어야 한다. 시트에서 고르면 표의 두 열이 바뀐다.
+    // 주 역할에 맞춘 열 말고 다른 지표도 볼 수 있어야 한다.
+    // 시트에서 고르면 표의 두 열이 바뀐다.
     @Test
     fun `요원 표의 지표는 표 위 버튼으로 바꾼다`() = runComposeUiTest {
         setContent { Themed { AgentsScreen(ProfilePreviewData.records, onBack = {}) } }
@@ -240,7 +243,8 @@ class ProfileScreensTest {
         onNodeWithText("이번 주엔 안 썼어요", useUnmergedTree = true).assertExists()
     }
 
-    // 순서는 이번 액트 킬이다. 이번 주를 띄운 줄에 이번 주 킬을 적으면 킬이 적은 무기가 위에 있는 것처럼 보인다.
+    // 순서는 이번 액트 킬이다.
+    // 이번 주를 띄운 줄에 이번 주 킬을 적으면 킬이 적은 무기가 위에 있는 것처럼 보인다.
     @Test
     fun `위쪽 세 무기에는 순서를 정한 이번 액트 킬을 적는다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
@@ -338,7 +342,8 @@ class ProfileScreensTest {
         onNodeWithText("이번 액트 50경기").assertExists()
     }
 
-    // 이름 길이는 모른다. 이름만 줄이고 "의 무기"와 경기 수는 남긴다.
+    // 이름 길이는 모른다.
+    // 이름만 줄이고 "의 무기"와 경기 수는 남긴다.
     @Test
     fun `친구 이름이 길면 이름만 줄인다`() = runComposeUiTest {
         setContent {

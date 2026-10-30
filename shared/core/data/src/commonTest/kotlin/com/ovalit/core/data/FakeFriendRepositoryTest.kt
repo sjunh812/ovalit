@@ -80,7 +80,8 @@ class FakeFriendRepositoryTest {
         assertNull(friends.rival.first())
     }
 
-    // 친구 탭과 부르기 시트가 이 시각으로 줄을 세운다. 가짜 내 경기와 어긋나면 S5의 같이 뛴 경기와 순서가 따로 논다.
+    // 친구 탭과 부르기 시트가 이 시각으로 줄을 세운다.
+    // 가짜 내 경기와 어긋나면 S5의 같이 뛴 경기와 순서가 따로 논다.
     @Test
     fun `가짜 친구와 마지막으로 같이 뛴 시각은 가짜 내 경기에서 찾는다`() = runTest {
         val clock = StepClock(Instant.parse("2026-09-24T12:00:00Z"))

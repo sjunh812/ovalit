@@ -295,7 +295,7 @@ private fun playTimeText(millis: Long): String {
 
 /**
  * 맞힌 탄을 머리, 몸, 다리로 나눈 막대입니다.
- * 홈 헤드샷과 같은 맞힌 탄 기준이고, 탄이 하나도 없으면 그리지 않습니다.
+ * 홈 헤드샷과 같은 맞힌 탄 기준이고 탄이 하나도 없으면 그리지 않습니다.
  */
 @Composable
 fun ProfileShotsSection(shots: Shots) {

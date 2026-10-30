@@ -103,7 +103,8 @@ internal fun DynamicMetricSection(
                         repeat(perRow) { index ->
                             val column = row.getOrNull(index)
                             if (index > 0) {
-                                // 간격은 구분선 양옆에만 준다. 칸 폭 안에 넣으면 칸마다 내용 폭이 달라진다.
+                                // 간격은 구분선 양옆에만 준다.
+                                // 칸 폭 안에 넣으면 칸마다 내용 폭이 달라진다.
                                 Spacer(Modifier.width(MetricColumnGap))
                                 if (column != null) VerticalLine() else Spacer(Modifier.width(1.dp))
                                 Spacer(Modifier.width(MetricColumnGap))
@@ -134,7 +135,8 @@ internal fun DynamicMetricSection(
 private fun DynamicSectionTitle(report: WeeklyReport.Ready) {
     val movements = report.dynamic.map { it.movement }
 
-    // 판단을 보류한 칸만 있을 때 "큰 변화 없음"이라고 하면 안 된다. 변화가 없는 게 아니라 모르는 것이다.
+    // 판단을 보류한 칸만 있을 때 "큰 변화 없음"이라고 하면 안 된다.
+    // 변화가 없는 게 아니라 모르는 것이다.
     val title = when {
         Movement.MOVED in movements -> stringResource(Res.string.dynamic_title_moved)
         Movement.STEADY in movements -> stringResource(Res.string.dynamic_title_steady, periodLabel(report.period))

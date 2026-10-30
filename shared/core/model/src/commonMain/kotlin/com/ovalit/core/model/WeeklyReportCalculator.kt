@@ -18,12 +18,14 @@ const val TREND_WEEKS = 8
 const val MIN_TREND_ROUNDS = 40
 
 /**
- * 주는 [timeZone] 기준 월요일 0시에 바뀝니다. 이번 주는 [now]가 속한, 아직 끝나지 않은 주입니다.
+ * 주는 [timeZone] 기준 월요일 0시에 바뀝니다.
+ * 이번 주는 [now]가 속한, 아직 끝나지 않은 주입니다.
  *
  * 이번 주에 뛴 경기가 없으면 지난주에서 끝나는 기간을 봅니다.
  * 그 기간이 [MIN_MATCHES_PER_REPORT]경기에 못 미치면 한 주씩 넓혀 [MAX_REPORT_WEEKS]주까지 봅니다.
  *
- * @param weaponCategories 개선 포인트가 같은 계열의 무기끼리 견줄 때 씁니다. 비어 있으면 무기끼리는 견주지 않습니다.
+ * @param weaponCategories 개선 포인트가 같은 계열의 무기끼리 견줄 때 씁니다.
+ *   비어 있으면 무기끼리는 견주지 않습니다.
  */
 fun Iterable<Match>.weeklyReport(
     now: Instant,
@@ -75,14 +77,15 @@ fun Iterable<Match>.weeklyReport(
     )
 }
 
-// 데스매치처럼 목록에만 두는 모드는 리포트에 안 들어가도 뛴 경기다. 이번 주를 넣어 최근 4주를 본다.
+// 데스매치처럼 목록에만 두는 모드는 리포트에 안 들어가도 뛴 경기다.
+// 이번 주를 넣어 최근 4주를 본다.
 private fun Iterable<Match>.notCountedRecently(queueFilter: QueueFilter, now: Instant, timeZone: TimeZone): Int {
     val since = now.weekStart(timeZone).minusWeeks(MAX_REPORT_WEEKS - 1)
     return count { it.queue in queueFilter.queues && it.queue !in queueFilter.countedQueues && it.startedAt.weekStart(timeZone) >= since }
 }
 
 // 한 주 경기를 둘로 나누면 표본이 작아 우연한 차이가 대부분이다.
-// 이번 액트 경기로 견주고, 그 차이가 이번 기간에도 이어졌는지 기간 값을 붙인다.
+// 이번 액트 경기로 견주고 그 차이가 이번 기간에도 이어졌는지 기간 값을 붙인다.
 // 기간이 액트 경기를 모두 담으면 위 숫자와 같아서 붙이지 않는다.
 private fun Map<LocalDate, List<Match>>.actInsight(
     periodMatches: List<Match>,
@@ -95,7 +98,8 @@ private fun Map<LocalDate, List<Match>>.actInsight(
     return if (periodMatches.size < actMatches.size) insight.during(periodMatches, categories) else insight
 }
 
-// 무기와 요원은 기간 성적을 바로 앞 비교 기준과 견준다. 무기는 S6 위쪽 표와 같은 창이다.
+// 무기와 요원은 기간 성적을 바로 앞 비교 기준과 견준다.
+// 무기는 S6 위쪽 표와 같은 창이다.
 private fun Map<LocalDate, List<Match>>.weekNote(
     periodMatches: List<Match>,
     period: ReportPeriod,
@@ -125,12 +129,14 @@ private fun Map<LocalDate, List<Match>>.weekNote(
             mixSlices(periodMatches, usualMatches) { _, round -> round.economy?.myWeapon?.let { MixGroup.Weapon(it) } },
             agentSlices(periodMatches, usualMatches),
         ),
-        // 8주 변동폭과 달리 이번 액트 앞 주를 모두 본다. 액트가 길면 8주 앞에 더 높은 주가 있을 수 있다.
+        // 8주 변동폭과 달리 이번 액트 앞 주를 모두 본다.
+        // 액트가 길면 8주 앞에 더 높은 주가 있을 수 있다.
         actWeeks = if (period.weeks == 1) filterKeys { it < period.firstDay }.values.map { it.totalMetrics() } else emptyList(),
     )
 }
 
-// 경기 안에서 라운드를 묶음으로 가른다. 어느 묶음에도 안 드는 라운드(장비 가치를 모르는 라운드)는 빠진다.
+// 경기 안에서 라운드를 묶음으로 가른다.
+// 어느 묶음에도 안 드는 라운드(장비 가치를 모르는 라운드)는 빠진다.
 private fun mixSlices(current: List<Match>, usual: List<Match>, group: (Match, Round) -> MixGroup?): List<MixSlice> {
     fun List<Match>.split(): Map<MixGroup, MatchMetrics> = this
         .flatMap { match -> match.rounds.mapNotNull { group(match, it) }.distinct().map { key -> key to match.roundMetrics { group(match, it) == key } } }
@@ -141,7 +147,8 @@ private fun mixSlices(current: List<Match>, usual: List<Match>, group: (Match, R
     return (now.keys + before.keys).map { key -> MixSlice(key, now[key] ?: MatchMetrics.Empty, before[key] ?: MatchMetrics.Empty) }
 }
 
-// 요원은 판 전체로 가른다. 전투점수도 요원으로는 가를 수 있다.
+// 요원은 판 전체로 가른다.
+// 전투점수도 요원으로는 가를 수 있다.
 private fun agentSlices(current: List<Match>, usual: List<Match>): List<MixSlice> {
     val now = current.groupBy { it.myAgent }.mapValues { (_, matches) -> matches.totalMetrics() }
     val before = usual.groupBy { it.myAgent }.mapValues { (_, matches) -> matches.totalMetrics() }
@@ -150,7 +157,8 @@ private fun agentSlices(current: List<Match>, usual: List<Match>): List<MixSlice
     }
 }
 
-// 첫 수집 범위가 8주라 막대도 8주다. 지난 액트 주도 그리되 경계에 전환 표시를 한다.
+// 첫 수집 범위가 8주라 막대도 8주다.
+// 지난 액트 주도 그리되 경계에 전환 표시를 한다.
 private fun List<Match>.trendWeeks(end: LocalDate, period: ReportPeriod, timeZone: TimeZone): List<TrendWeek> {
     val byWeek = groupBy { it.startedAt.weekStart(timeZone) }
     var previousAct: ActId? = null
@@ -163,7 +171,8 @@ private fun List<Match>.trendWeeks(end: LocalDate, period: ReportPeriod, timeZon
         TrendWeek(
             firstDay = firstDay,
             act = act,
-            // 한 판이라도 뛰었으면 그린다. 라운드가 모자란 주도 막대는 같게 그리고 평소 범위에서만 뺀다(TrendWeek.sparse).
+            // 한 판이라도 뛰었으면 그린다.
+            // 라운드가 모자란 주도 막대는 같게 그리고 평소 범위에서만 뺀다(TrendWeek.sparse).
             metrics = metrics.takeIf { it.matches > 0 },
             startsNewAct = act != null && previousAct != null && act != previousAct,
             inPeriod = firstDay >= period.firstDay,
@@ -211,7 +220,8 @@ private val ReportPeriod.end: LocalDate get() = firstDay.plusWeeks(weeks)
 private fun Map<LocalDate, List<Match>>.baselineStart(periodStart: LocalDate): LocalDate =
     maxOf(periodStart.minusWeeks(BASELINE_WEEKS), keys.min())
 
-// 평소 변동폭을 재는 기간 앞 주들이다. 경기가 없는 주는 빠진다.
+// 평소 변동폭을 재는 기간 앞 주들이다.
+// 경기가 없는 주는 빠진다.
 private fun Map<LocalDate, List<Match>>.weeksBefore(periodStart: LocalDate): List<List<Match>> =
     (1..VOLATILITY_WEEKS).mapNotNull { weeksBefore -> this[periodStart.minusWeeks(weeksBefore)] }
 
@@ -241,7 +251,7 @@ fun Iterable<Match>.currentActMatches(queueFilter: QueueFilter): List<Match> {
 
 /**
  * S6 무기 화면에 쓰는 집계입니다.
- * 목록은 이번 액트 전체를 보고, 위쪽 세 무기는 기간과 비교 기준을 홈 리포트와 똑같이 잡습니다.
+ * 목록은 이번 액트 전체를 보고 위쪽 세 무기는 기간과 비교 기준을 홈 리포트와 똑같이 잡습니다.
  */
 fun Iterable<Match>.weaponReport(
     now: Instant,
@@ -266,7 +276,8 @@ private fun Map<LocalDate, List<Match>>.highlight(act: WeaponStats, period: Repo
     if (period == null) return WeaponHighlight(act, null, null, baselineWeeks = 0, movements = emptyMap())
     fun List<Match>.stats() = weaponStats().firstOrNull { it.weapon == act.weapon }
 
-    // 표본이 적어도 그 기간 숫자를 띄운다. 달라졌는지는 아래에서 표본을 넘긴 값끼리만 본다.
+    // 표본이 적어도 그 기간 숫자를 띄운다.
+    // 달라졌는지는 아래에서 표본을 넘긴 값끼리만 본다.
     val current = between(period.firstDay, period.end).stats()
     val start = baselineStart(period.firstDay)
     val baseline = between(start, period.firstDay).stats()

@@ -34,7 +34,7 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.decodeToImageBitmap
 
 // 게임 이미지는 콘텐츠 카탈로그에서 골라 `files/`에 넣어 둔다(tools/bundle_assets.py).
-// 서버가 이미지를 내려주게 되면 그쪽을 먼저 보고, 못 받으면 여기서 찾는다.
+// 서버가 이미지를 내려주게 되면 그쪽을 먼저 보고 못 받으면 여기서 찾는다.
 // 여기에도 없으면 이름 첫 글자로 자리를 잡는다.
 // ID에서 파일 이름으로 가는 표는 스크립트가 만든 GameAssetIndex에 있다.
 
@@ -54,7 +54,7 @@ fun AgentImage(agent: AgentId?, name: String?, modifier: Modifier = Modifier) {
 
 /**
  * 사람을 나타내는 동그란 아바타입니다.
- * 플레이어 카드 자리인데 카드는 서버에서 받으므로, 그때까지는 Riot ID 첫 글자를 띄웁니다.
+ * 플레이어 카드 자리인데 카드는 서버에서 받으므로 그때까지는 Riot ID 첫 글자를 띄웁니다.
  * 요원 얼굴은 경기 기록에만 씁니다.
  * 그 판에 고른 요원이지 그 사람 얼굴이 아닙니다.
  *
@@ -84,7 +84,7 @@ fun PlayerAvatar(riotId: String, size: Dp, modifier: Modifier = Modifier) {
     }
 }
 
-/** [map]은 UUID여야 합니다. 경기 응답이 경로로 오면 부르기 전에 UUID로 바꿔야 하는데, 그 변환은 아직 없습니다. */
+/** [map]은 UUID여야 합니다. 경기 응답이 경로로 오면 부르기 전에 UUID로 바꿔야 하는데 그 변환은 아직 없습니다. */
 @Composable
 fun MapImage(map: MapId, style: MapImageStyle, modifier: Modifier = Modifier) {
     val suffix = when (style) {
@@ -96,7 +96,7 @@ fun MapImage(map: MapId, style: MapImageStyle, modifier: Modifier = Modifier) {
 
 /**
  * 무기는 기본 스킨 그림을 [tint] 한 가지로 칠한 실루엣입니다.
- * 카탈로그의 무기 그림은 흰 선화라 밝은 바탕에서 안 보이고, 스킨 그림을 그대로 두면 짙은 총이 다크 바탕에 묻힙니다(docs/design.md 에셋).
+ * 카탈로그의 무기 그림은 흰 선화라 밝은 바탕에서 안 보이고 스킨 그림을 그대로 두면 짙은 총이 다크 바탕에 묻힙니다(docs/design.md 에셋).
  */
 @Composable
 fun WeaponImage(

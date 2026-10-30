@@ -27,7 +27,8 @@ class RoundHighlightTest {
         assertFalse(round.highlight().ace)
     }
 
-    // 응답에는 스킬로 우리 팀을 죽인 것도 킬로 들어온다. 그 킬로 상대 수를 채우면 안 된다.
+    // 응답에는 스킬로 우리 팀을 죽인 것도 킬로 들어온다.
+    // 그 킬로 상대 수를 채우면 안 된다.
     @Test
     fun `우리 팀을 죽인 킬은 에이스에 들어가지 않는다`() {
         val round = round(kill(10.0, Me, Enemy), kill(20.0, Me, Ally))
@@ -72,7 +73,8 @@ class RoundHighlightTest {
         assertNull(round.highlight().clutch)
     }
 
-    // 목록 순서가 아니라 시각 순서로 본다. 응답의 킬 목록이 시각 순이라는 보장이 없다.
+    // 목록 순서가 아니라 시각 순서로 본다.
+    // 응답의 킬 목록이 시각 순이라는 보장이 없다.
     @Test
     fun `클러치는 킬이 일어난 시각 순서로 가린다`() {
         val round = round(

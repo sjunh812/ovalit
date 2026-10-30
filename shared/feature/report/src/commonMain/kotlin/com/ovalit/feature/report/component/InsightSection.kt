@@ -186,7 +186,8 @@ internal fun InsightSection(
     }
 }
 
-// "공격 72% · 수비 35%"다. 이름을 가장 진하게 두면 "공격", "수비"만 눈에 들어오고 정작 견줄 숫자가 묻혀서 값에만 [value]를 입힌다.
+// "공격 72% · 수비 35%"다.
+// 이름을 가장 진하게 두면 "공격", "수비"만 눈에 들어오고 정작 견줄 숫자가 묻혀서 값에만 [value]를 입힌다.
 // 값은 이름 바로 뒤에 붙여 "공격 72%"로 읽히게 하고, 줄은 두 쪽 사이에서만 바뀐다.
 @Composable
 private fun valuesText(lead: Pair<String, InsightPart>, other: Pair<String, InsightPart>, format: MetricFormat, value: SpanStyle) =
@@ -200,7 +201,8 @@ private fun valuesText(lead: Pair<String, InsightPart>, other: Pair<String, Insi
 
 private const val NBSP = "\u00a0"
 
-// 기간 전체 표본이다. 두 쪽을 더하면 공수는 그 기간에 뛴 라운드 전부, 요원과 맵은 견준 판 전부다.
+// 기간 전체 표본이다.
+// 두 쪽을 더하면 공수는 그 기간에 뛴 라운드 전부, 요원과 맵은 견준 판 전부다.
 @Composable
 private fun totalSample(lead: InsightPart, other: InsightPart): String = when (lead.subject) {
     is InsightSubject.OnSide, is InsightSubject.WithWeapon, is InsightSubject.OtherWeapons ->

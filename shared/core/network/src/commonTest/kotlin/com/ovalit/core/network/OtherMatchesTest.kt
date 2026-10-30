@@ -50,7 +50,8 @@ class OtherMatchesTest {
         assertTrue(match.rounds.isEmpty())
         assertTrue(match.roundOutcomes.isEmpty())
         assertEquals(listOf(PlayerId(ME)), match.players.filter { it.onMyTeam }.map { it.player })
-        // 응답의 roundsPlayed가 1이어도 나누지 않는다. 한 판 점수가 라운드당 전투점수로 뜬다.
+        // 응답의 roundsPlayed가 1이어도 나누지 않는다.
+        // 한 판 점수가 라운드당 전투점수로 뜬다.
         assertTrue(match.players.all { it.roundsPlayed == 0 })
         assertNull(match.myScoreline?.let(match::acsOf))
         assertEquals(false, match.myTeamWon)
@@ -76,7 +77,8 @@ class OtherMatchesTest {
         assertEquals(Standing(rank = 3, teams = 4), match.myStanding)
     }
 
-    // 데스매치 플레이어 줄의 teamId가 문서처럼 PUUID로 오는지 모른다. 모두 같은 값으로 와도 서로 한편이 되면 안 된다.
+    // 데스매치 플레이어 줄의 teamId가 문서처럼 PUUID로 오는지 모른다.
+    // 모두 같은 값으로 와도 서로 한편이 되면 안 된다.
     @Test
     fun `데스매치 플레이어 줄의 teamId가 모두 같아도 서로 상대로 보고 팀은 PUUID로 찾는다`() {
         val json = matchJson(

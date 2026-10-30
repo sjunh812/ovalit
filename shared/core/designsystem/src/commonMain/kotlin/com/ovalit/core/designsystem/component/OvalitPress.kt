@@ -33,7 +33,7 @@ private const val PRESS_MILLIS = 80
 private const val RELEASE_MILLIS = 180
 private const val HIGHLIGHT_ALPHA = 0.12f
 
-// 작은 버튼은 4%까지 줄이고, 화면 폭만 한 줄은 양옆이 4dp씩만 들어오게 줄인다.
+// 작은 버튼은 4%까지 줄이고 화면 폭만 한 줄은 양옆이 4dp씩만 들어오게 줄인다.
 // 같은 비율로 줄이면 긴 줄이 눈에 띄게 오그라든다.
 private const val MAX_SHRINK_RATIO = 0.04f
 private val MaxShrink = 8.dp
@@ -49,7 +49,7 @@ val OvalitPressShape: Shape = RoundedCornerShape(12.dp)
 val OvalitPressOutset = 10.dp
 
 /**
- * 누르는 즉시 옅은 면을 깔고 누른 것을 살짝 줄였다가, 손을 떼면 되돌립니다.
+ * 누르는 즉시 옅은 면을 깔고 누른 것을 살짝 줄였다가 손을 떼면 되돌립니다.
  *
  * 물결은 쓰지 않습니다.
  * 누른 뒤에 천천히 퍼져서 늦게 반응하는 것처럼 보입니다.

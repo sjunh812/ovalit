@@ -16,10 +16,11 @@ enum class Side {
  * 두 쪽이 각각 최소 표본도 넘겨야 합니다.
  * 기준과 표본 모두 시작 기준선입니다.
  *
- * @property dynamic 같은 지표의 동적 칸입니다. 값과 최소 표본을 여기서 가져와 동적 칸과 갈리지 않게 합니다.
+ * @property dynamic 같은 지표의 동적 칸입니다.
+ *   값과 최소 표본을 여기서 가져와 동적 칸과 갈리지 않게 합니다.
  *   피해량, 헤드샷, 승률은 동적 칸 후보가 아니라 `null`입니다.
  * @property focusOnly 관심사로 골랐을 때만 후보에 넣습니다.
- *   이코·포스바이·풀바이 승률은 라운드 운영 다듬기를 고른 사람에게만 봅니다.
+ *   이코·포스바이·풀바이 승률은 라운드 운영 다듬기를 고른 사람일 때만 봅니다.
  */
 enum class InsightMetric(
     internal val dynamic: DynamicMetric?,
@@ -105,7 +106,8 @@ sealed interface InsightSubject {
     data object EarlyInSession : InsightSubject
 }
 
-// 주어로 두지 않는 쪽이다. 묶음을 주어로 두면 "다른 맵에서는 헤이븐보다 높아요"처럼 어색하다.
+// 주어로 두지 않는 쪽이다.
+// 묶음을 주어로 두면 "다른 맵에서는 헤이븐보다 높아요"처럼 어색하다.
 // 첫 두 판을 주어로 두면 무엇을 짚는지 흐려져서 늘 세 번째 판부터를 주어로 둔다.
 private val InsightSubject.isGroup: Boolean
     get() = when (this) {
@@ -120,7 +122,8 @@ private val InsightSubject.isGroup: Boolean
 /**
  * 견주는 한쪽의 값과 표본입니다.
  *
- * @property rounds 이 값을 낸 라운드입니다. 무기의 헤드샷은 한 무기만 쓴 라운드, 피해량은 들고 시작한 라운드입니다.
+ * @property rounds 이 값을 낸 라운드입니다.
+ *   무기의 헤드샷은 한 무기만 쓴 라운드, 피해량은 들고 시작한 라운드입니다.
  */
 data class InsightPart(
     val subject: InsightSubject,
@@ -130,18 +133,21 @@ data class InsightPart(
 )
 
 /**
- * 개선 포인트 문장 하나입니다. [lead]를 주어로 [other]와 견줍니다.
+ * 개선 포인트 문장 하나입니다.
+ * [lead]를 주어로 [other]와 견줍니다.
  *
  * 두 쪽 모두 이름이 있으면(공격과 수비, 제트와 레이즈) 높은 쪽이 [lead]라 "제트로 뛴 판은 승률이 레이즈보다 높아요"가 됩니다.
- * 한쪽이 여럿을 묶은 쪽이면(다른 맵) 이름 있는 쪽이 [lead]이고, 낮으면 "헤이븐에서는 관여율이 다른 맵보다 낮아요"가 됩니다.
+ * 한쪽이 여럿을 묶은 쪽이면(다른 맵) 이름 있는 쪽이 [lead]이고 낮으면 "헤이븐에서는 관여율이 다른 맵보다 낮아요"가 됩니다.
  *
  * @property isRolePriority 고른 지표가 역할의 우선 지표인지입니다.
  *   화면은 이때 "전략가에게 생존율은 먼저 보는 지표예요"를 붙입니다.
- * @property focus 관심사 지표라서 골랐으면 그 관심사입니다. 화면은 이때 "에임 올리기를 고르셔서 먼저 봤어요"를 붙입니다.
+ * @property focus 관심사 지표라서 골랐으면 그 관심사입니다.
+ *   화면은 이때 "에임 올리기를 고르셔서 먼저 봤어요"를 붙입니다.
  * @property recent 홈 리포트 기간(이번 주)만 셌을 때 두 쪽 값입니다.
  *   액트 동안 보인 차이가 이번 주에도 이어졌는지 보여줍니다.
- *   두 쪽 중 하나라도 기간 표본이 모자라거나, 기간이 이번 액트 경기를 모두 담아 위 숫자와 같으면 `null`입니다.
- * @property matches 둘로 나눠 견준 경기 수입니다. 홈은 이번 액트 경기 수를 묶음 제목 옆에 적습니다.
+ *   두 쪽 중 하나라도 기간 표본이 모자라거나 기간이 이번 액트 경기를 모두 담아 위 숫자와 같으면 `null`입니다.
+ * @property matches 둘로 나눠 견준 경기 수입니다.
+ *   홈은 이번 액트 경기 수를 묶음 제목 옆에 적습니다.
  */
 data class Insight(
     val metric: InsightMetric,
@@ -155,9 +161,12 @@ data class Insight(
 )
 
 /**
- * 리포트 기간의 두 쪽 값과 표본입니다. 한 주 표본은 작아서 우연을 거르지 않고, 달라졌다고 판단하지도 않습니다. 숫자만 적습니다.
+ * 리포트 기간의 두 쪽 값과 표본입니다.
+ * 한 주 표본은 작아서 우연을 거르지 않고 달라졌다고 판단하지도 않습니다.
+ * 숫자만 적습니다.
  *
- * @property lead [Insight.lead]와 같은 쪽, [other]는 [Insight.other]와 같은 쪽입니다. 판과 라운드는 리포트 기간 안에서 셉니다.
+ * @property lead [Insight.lead]와 같은 쪽, [other]는 [Insight.other]와 같은 쪽입니다.
+ *   판과 라운드는 리포트 기간 안에서 셉니다.
  */
 data class InsightRecent(val lead: InsightPart, val other: InsightPart)
 
@@ -165,10 +174,11 @@ data class InsightRecent(val lead: InsightPart, val other: InsightPart)
  * 경기를 공격과 수비, 역할끼리, 같은 역할의 요원끼리, 맵끼리, 같은 계열의 무기끼리, 연달아 뛴 판의 앞뒤로 나눠 견주고 문장 하나를 고릅니다.
  * 한 주 경기를 둘로 나누면 표본이 작아 우연한 차이가 대부분이라 홈은 이번 액트 경기를 넘깁니다.
  *
- * 격차가 기준을 넘어도 우연히 벌어질 만한 폭의 [minZ]배에 못 미치면 후보에서 뺍니다. 흔들림은 경기마다 묶어서 잽니다.
+ * 격차가 기준을 넘어도 우연히 벌어질 만한 폭의 [minZ]배에 못 미치면 후보에서 뺍니다.
+ * 흔들림은 경기마다 묶어서 잽니다.
  *
  * 얼마나 벌어졌는지만 보지 않고 두 쪽을 얼마나 뛰었는지도 봅니다.
- * 두 쪽이 라운드에서 차지한 비중끼리 곱하고 격차를 곱해서, 나에게 영향이 가장 컸던 것을 고릅니다.
+ * 두 쪽이 라운드에서 차지한 비중끼리 곱하고 격차를 곱해서 나에게 영향이 가장 컸던 것을 고릅니다.
  * 두 판 뛴 맵의 큰 격차보다 절반씩 뛴 공수의 작은 격차가 먼저일 수 있습니다.
  *
  * 관심사 지표 가운데 기준을 넘는 게 있으면 역할이 크게 띄우지 않는 지표여도 그중 영향이 가장 큰 것을 먼저 고릅니다.
@@ -176,8 +186,10 @@ data class InsightRecent(val lead: InsightPart, val other: InsightPart)
  * 관심사로 고른 게 아니면 역할이 크게 띄우지 않는 지표와 [InsightMetric.focusOnly] 지표는 뺍니다.
  * 기준을 넘는 게 없으면 `null`입니다.
  *
- * @param categories 무기 계열입니다. 비어 있으면 무기끼리는 견주지 않습니다.
- * @param minZ 차이가 넘겨야 하는 흔들림의 배수입니다. 테스트는 0으로 우연 거르기를 끄고 나머지 기준만 봅니다.
+ * @param categories 무기 계열입니다.
+ *   비어 있으면 무기끼리는 견주지 않습니다.
+ * @param minZ 차이가 넘겨야 하는 흔들림의 배수입니다.
+ *   테스트는 0으로 우연 거르기를 끄고 나머지 기준만 봅니다.
  */
 internal fun List<Match>.insight(
     role: Role?,
@@ -226,7 +238,8 @@ private class Candidate(val metric: InsightMetric, val a: InsightPart, val b: In
     }
 }
 
-// 하나뿐인 "나머지"는 그 하나로 부른다. 화면은 주어의 종류로 문장 틀을 고른다.
+// 하나뿐인 "나머지"는 그 하나로 부른다.
+// 화면은 주어의 종류로 문장 틀을 고른다.
 private fun InsightSubject.single(): InsightSubject = when (this) {
     is InsightSubject.OtherAgents -> agents.singleOrNull()?.let { InsightSubject.OnAgent(it) } ?: this
     is InsightSubject.OtherRoles -> roles.singleOrNull()?.let { InsightSubject.OnRole(it) } ?: this
@@ -238,7 +251,7 @@ private fun InsightSubject.single(): InsightSubject = when (this) {
 /**
  * [matches]만 셌을 때 두 쪽 값을 [Insight.recent]에 담습니다.
  * 홈은 리포트 기간 경기를 넘깁니다.
- * 두 쪽 모두 동적 칸과 같은 최소 표본을 넘겨야 하고, 무기는 S6과 같은 표본입니다.
+ * 두 쪽 모두 동적 칸과 같은 최소 표본을 넘겨야 하고 무기는 S6과 같은 표본입니다.
  */
 internal fun Insight.during(matches: List<Match>, categories: Map<WeaponId, WeaponCategory>): Insight {
     val lead = lead.subject.partIn(metric, matches, categories) ?: return this
@@ -258,7 +271,8 @@ private fun InsightSubject.partIn(metric: InsightMetric, matches: List<Match>, c
         is InsightSubject.OtherMaps -> matches.filter { it.map in maps }.group(this)
         is InsightSubject.WithWeapon -> return matches.weaponPart(this, setOf(weapon), metric)
         is InsightSubject.OtherWeapons -> return matches.weaponPart(this, weapons.toSet(), metric)
-        // 기간 경기만으로 몇 번째 판인지 센다. 일요일 밤에 시작해 월요일로 넘어간 판은 기간 첫 판으로 세지만 드물다.
+        // 기간 경기만으로 몇 번째 판인지 센다.
+        // 일요일 밤에 시작해 월요일로 넘어간 판은 기간 첫 판으로 세지만 드물다.
         InsightSubject.LateInSession -> matches.bySessionGame(late = true).group(this)
         InsightSubject.EarlyInSession -> matches.bySessionGame(late = false).group(this)
     }
@@ -274,7 +288,8 @@ private fun List<Match>.weaponPart(subject: InsightSubject, weapons: Set<WeaponI
     return InsightPart(subject, value, matches = 0, rounds = if (isHeadshot) stats.singleWeaponRounds else stats.carriedRounds)
 }
 
-// 경기 지표로 셀 수 있는 것들이다. 헤드샷은 무기끼리만 본다.
+// 경기 지표로 셀 수 있는 것들이다.
+// 헤드샷은 무기끼리만 본다.
 private val MatchInsightMetrics = InsightMetric.entries - InsightMetric.HEADSHOT_RATE
 
 /** 후보마다 같이 쓰는 값입니다. [rounds]는 기간 전체 라운드, [minZ]는 차이가 넘겨야 하는 흔들림의 배수입니다. */
@@ -286,7 +301,8 @@ private class Share(val part: Int, val whole: Int)
 /**
  * 견주는 한쪽의 값과 그 값을 낸 경기별 몫입니다.
  *
- * @property damages 이쪽 라운드마다 입힌 피해량입니다. 피해량이 우연히 흔들리는 폭의 바닥을 라운드 단위로 잽니다.
+ * @property damages 이쪽 라운드마다 입힌 피해량입니다.
+ *   피해량이 우연히 흔들리는 폭의 바닥을 라운드 단위로 잽니다.
  */
 private class Sample(val value: Double, val shares: List<Share>, val damages: List<Int>) {
     val matches: Int get() = shares.count { it.whole > 0 }
@@ -295,7 +311,8 @@ private class Sample(val value: Double, val shares: List<Share>, val damages: Li
 /**
  * 견주는 한쪽입니다.
  *
- * @property perMatch [matches]와 같은 순서로, 경기마다 이쪽에 든 라운드의 지표입니다. 공수로 나누면 그 진영 라운드만 셉니다.
+ * @property perMatch [matches]와 같은 순서로, 경기마다 이쪽에 든 라운드의 지표입니다.
+ *   공수로 나누면 그 진영 라운드만 셉니다.
  */
 private class Group(
     val subject: InsightSubject,
@@ -315,7 +332,8 @@ private class Group(
 
     fun isMeasurable(metric: InsightMetric): Boolean = matches.size >= MIN_INSIGHT_MATCHES && hasSample(metric)
 
-    // 동적 칸과 같은 최소 표본이다. 이번 주 숫자는 우연을 거르지 않으니 판 수는 보지 않는다.
+    // 동적 칸과 같은 최소 표본이다.
+    // 이번 주 숫자는 우연을 거르지 않으니 판 수는 보지 않는다.
     fun hasSample(metric: InsightMetric): Boolean = when {
         metric == InsightMetric.WIN_RATE -> decided >= MIN_AGENT_MATCHES
         metric.dynamic != null -> metric.dynamic.isMeasurable(metrics)
@@ -336,7 +354,8 @@ private fun List<Match>.sideGroup(side: Side) = Group(
     damages = flatMap { match -> match.rounds.filter { it.mySide == side }.map { it.myDamage } },
 )
 
-// 동적 칸과 같은 분자와 분모다. 승률만 경기 하나를 한 번으로 센다.
+// 동적 칸과 같은 분자와 분모다.
+// 승률만 경기 하나를 한 번으로 센다.
 private fun InsightMetric.share(match: Match, metrics: MatchMetrics): Share = when (this) {
     InsightMetric.SURVIVAL_RATE -> Share(metrics.survivedRounds, metrics.rounds)
     InsightMetric.KAST -> Share(metrics.kastRounds, metrics.rounds)
@@ -357,7 +376,8 @@ private fun List<Match>.sideCandidates(scale: Scale): List<Candidate> {
     return (MatchInsightMetrics - InsightMetric.WIN_RATE).mapNotNull { compare(it, attack, defense, scale) }
 }
 
-// 역할이 다르면 관여율이나 첫 킬 같은 숫자는 뜻이 뒤집힌다. 역할끼리는 승률만 견준다.
+// 역할이 다르면 관여율이나 첫 킬 같은 숫자는 뜻이 뒤집힌다.
+// 역할끼리는 승률만 견준다.
 private fun List<Match>.roleCandidates(scale: Scale): List<Candidate> {
     val byRole = filter { it.myRole != null }.groupBy { it.myRole!! }
     if (byRole.size < 2) return emptyList()
@@ -393,7 +413,8 @@ private fun List<Match>.mapCandidates(scale: Scale): List<Candidate> {
     }
 }
 
-// 연달아 뛴 판이 뒤로 갈수록 어떤지 본다. 숫자만 적고 쉬라고 하지 않는다(CLAUDE.md 지켜야 할 선).
+// 연달아 뛴 판이 뒤로 갈수록 어떤지 본다.
+// 숫자만 적고 쉬라고 하지 않는다(CLAUDE.md 지켜야 할 선).
 private fun List<Match>.sessionCandidates(scale: Scale): List<Candidate> {
     val late = bySessionGame(late = true).group(InsightSubject.LateInSession)
     val early = bySessionGame(late = false).group(InsightSubject.EarlyInSession)
@@ -429,7 +450,7 @@ private fun compare(metric: InsightMetric, a: Group, b: Group, scale: Scale): Ca
     )
 }
 
-/** 무기 여럿을 합친 한쪽입니다. [perMatch]는 경기마다 이 무기들의 성적이고, 안 쓴 경기는 `null`입니다. */
+/** 무기 여럿을 합친 한쪽입니다. [perMatch]는 경기마다 이 무기들의 성적이고 안 쓴 경기는 `null`입니다. */
 private class WeaponGroup(val stats: WeaponStats, val perMatch: List<WeaponStats?>, val damages: List<Int>)
 
 private fun List<Match>.weaponGroup(weapons: Set<WeaponId>, perMatch: List<List<WeaponStats>>): WeaponGroup {
@@ -441,7 +462,8 @@ private fun List<Match>.weaponGroup(weapons: Set<WeaponId>, perMatch: List<List<
     )
 }
 
-// 무기는 같은 계열끼리만 견준다. 권총과 소총을 견주면 이코 라운드와 풀바이 라운드를 견주는 셈이 된다.
+// 무기는 같은 계열끼리만 견준다.
+// 권총과 소총을 견주면 이코 라운드와 풀바이 라운드를 견주는 셈이 된다.
 private fun List<Match>.weaponCandidates(categories: Map<WeaponId, WeaponCategory>, scale: Scale): List<Candidate> {
     if (categories.isEmpty()) return emptyList()
     val perMatch = map { listOf(it).weaponStats() }
@@ -507,8 +529,9 @@ private fun isClear(metric: InsightMetric, first: Sample, second: Sample, minZ: 
 }
 
 /**
- * 경기 하나가 제 쪽 값에서 얼마나 벗어나는지를 두 쪽 경기를 모두 모아 잽니다. 두 표본 t검정의 합친 분산과 같은 생각입니다.
- * 세 판뿐인 맵을 그 세 판만으로 재면 우연히 고른 날만 걸려 흔들림이 작게 잡히곤 해서, 경기 수를 늘려 안정되게 잽니다.
+ * 경기 하나가 제 쪽 값에서 얼마나 벗어나는지를 두 쪽 경기를 모두 모아 잽니다.
+ * 두 표본 t검정의 합친 분산과 같은 생각입니다.
+ * 세 판뿐인 맵을 그 세 판만으로 재면 우연히 고른 날만 걸려 흔들림이 작게 잡히곤 해서 경기 수를 늘려 안정되게 잽니다.
  * 각자 제 값에서 벗어난 만큼만 세서 두 쪽의 실제 차이는 흔들림에 들어가지 않습니다.
  */
 private fun matchScale(first: Sample, second: Sample): Double {
@@ -526,11 +549,12 @@ private fun Sample.deviations(): List<Pair<Double, Double>> =
 
 /**
  * 이쪽 값이 우연히 흔들리는 폭(분산)을 경기마다 묶어서 잽니다.
- * 한 경기 라운드들은 그날 컨디션을 같이 타서, 라운드마다 따로 세면 흔들림이 실제보다 작게 잡힙니다.
+ * 한 경기 라운드들은 그날 컨디션을 같이 타서 라운드마다 따로 세면 흔들림이 실제보다 작게 잡힙니다.
  * 이쪽 경기만으로 잰 값, 두 쪽 경기를 모아 잰 [scale], 라운드가 서로 따로 논다고 쳤을 때의 값 가운데 가장 큰 것을 씁니다.
  * 우연을 차이로 읽는 쪽보다 차이를 놓치는 쪽이 낫습니다.
  *
- * @param pooled 두 쪽을 합친 비율입니다. 한쪽이 0%나 100%여도 흔들림이 0으로 잡히지 않게 바닥은 이 값으로 잽니다.
+ * @param pooled 두 쪽을 합친 비율입니다.
+ *   한쪽이 0%나 100%여도 흔들림이 0으로 잡히지 않게 바닥은 이 값으로 잽니다.
  */
 private fun Sample.variance(metric: InsightMetric, pooled: Double, scale: Double): Double {
     val deviations = deviations()
@@ -549,14 +573,16 @@ private fun List<Int>.spread(): Double {
     return sumOf { (it - mean) * (it - mean) } / (size - 1)
 }
 
-// 두 쪽의 비중을 곱한다. 절반씩 뛰었을 때 격차 그대로이고, 한쪽이 작을수록 줄어든다.
+// 두 쪽의 비중을 곱한다.
+// 절반씩 뛰었을 때 격차 그대로이고 한쪽이 작을수록 줄어든다.
 // 한쪽만 곱하면 다섯 판과 스무 판을 견줄 때 어느 쪽을 기준으로 보느냐에 따라 영향이 달라진다.
 private fun impact(ratio: Double, first: Int, second: Int, rounds: Int): Double =
     ratio * 4.0 * first / rounds * second / rounds
 
 /** 격차를 기준으로 나눈 값입니다. 기준에 못 미치면 `null`입니다. */
 private fun gapRatio(metric: InsightMetric, first: Double, second: Double, damageBase: Double?): Double? {
-    // 화면에 보이는 자릿수로 반올림한 값끼리 뺀다. 48%와 35%를 띄워 놓고 14%p라고 쓰면 틀려 보인다.
+    // 화면에 보이는 자릿수로 반올림한 값끼리 뺀다.
+    // 48%와 35%를 띄워 놓고 14%p라고 쓰면 틀려 보인다.
     val ratio = if (metric.isPercent) {
         abs((first * 100).roundToInt() - (second * 100).roundToInt()).toDouble() / MIN_PERCENT_GAP
     } else {
@@ -577,7 +603,8 @@ private operator fun WeaponStats.plus(other: WeaponStats) = WeaponStats(
     damage = damage + other.damage,
 )
 
-// 관심사 지표 가운데 두 쪽으로 나눠 셀 수 있는 것이다. 관심사 목록에서 바로 뽑아 동적 칸과 갈리지 않게 한다.
+// 관심사 지표 가운데 두 쪽으로 나눠 셀 수 있는 것이다.
+// 관심사 목록에서 바로 뽑아 동적 칸과 갈리지 않게 한다.
 private val Focus.insightMetrics: List<InsightMetric>
     get() = metrics.mapNotNull { metric -> InsightMetric.entries.firstOrNull { it.dynamic == metric } }
 
@@ -589,7 +616,8 @@ private val Role.priorityInsightMetric: InsightMetric
         Role.CONTROLLER, Role.SENTINEL -> InsightMetric.SURVIVAL_RATE
     }
 
-// 동적 칸과 같다. 전략가와 감시자는 첫 킬을, 척후대와 전략가는 멀티킬을 크게 띄우지 않는다.
+// 동적 칸과 같다.
+// 전략가와 감시자는 첫 킬을, 척후대와 전략가는 멀티킬을 크게 띄우지 않는다.
 private val Role.mutedInsightMetrics: Set<InsightMetric>
     get() = when (this) {
         Role.CONTROLLER -> setOf(InsightMetric.FIRST_DUEL_WIN_RATE, InsightMetric.MULTI_KILL_RATE)

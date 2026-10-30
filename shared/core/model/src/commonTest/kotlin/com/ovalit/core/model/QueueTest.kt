@@ -77,7 +77,8 @@ class QueueTest {
         assertEquals(QueueFilter.COMPETITIVE_AND_UNRATED.queues, QueueFilter.COMPETITIVE_AND_UNRATED.countedQueues)
     }
 
-    // 프리미어는 규칙이 경쟁전과 같지만 티어가 걸리지 않는다. 경쟁 + 일반 리포트와 티어에 섞지 않는다.
+    // 프리미어는 규칙이 경쟁전과 같지만 티어가 걸리지 않는다.
+    // 경쟁 + 일반 리포트와 티어에 섞지 않는다.
     @Test
     fun `프리미어는 경쟁 + 일반과 티어에 넣지 않는다`() {
         val premier = match(queue = Queue.PREMIER, players = listOf(myLine(tier = 20)))

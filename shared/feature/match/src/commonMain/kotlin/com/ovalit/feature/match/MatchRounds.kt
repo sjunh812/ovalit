@@ -111,7 +111,8 @@ internal fun RoundList(uiState: MatchDetailUiState.Success) {
     }
 }
 
-// 첫 킬을 낸 쪽이 라운드를 얼마나 가져갔는지와 공수 성적이다. 두 칸씩 두 줄이다.
+// 첫 킬을 낸 쪽이 라운드를 얼마나 가져갔는지와 공수 성적이다.
+// 두 칸씩 두 줄이다.
 @Composable
 private fun Overview(uiState: MatchDetailUiState.Success) {
     val overview = uiState.match.roundsOverview()
@@ -279,7 +280,8 @@ private fun RoundDetail(round: RoundSummary, uiState: MatchDetailUiState.Success
     }
 }
 
-// "준 피해 187 · 2킬 · 첫 킬"이다. 에이스와 이긴 클러치는 앞에 굵게 적는다.
+// "준 피해 187 · 2킬 · 첫 킬"이다.
+// 에이스와 이긴 클러치는 앞에 굵게 적는다.
 @Composable
 private fun MyRoundLine(round: RoundSummary) {
     val colors = OvalitTheme.colors
@@ -306,7 +308,8 @@ private fun MyRoundLine(round: RoundSummary) {
     }
 }
 
-// 킬 한 줄이다. "0:23 [얼굴] 나 → [얼굴] kite · 밴달".
+// 킬 한 줄이다.
+// "0:23 [얼굴] 나 → [얼굴] kite · 밴달".
 // 우리 팀이 낸 킬은 이름을 밝고 굵게, 상대가 낸 킬은 흐리게 둔다.
 @Composable
 private fun KillRow(kill: RoundKill, uiState: MatchDetailUiState.Success) {
@@ -363,7 +366,8 @@ private fun KillRow(kill: RoundKill, uiState: MatchDetailUiState.Success) {
 }
 
 /**
- * 라운드 탭 맨 밑의 구매 유형 표입니다. 구매 유형마다 두 팀이 몇 라운드를 사서 몇 번 이겼는지 둡니다.
+ * 라운드 탭 맨 밑의 구매 유형 표입니다.
+ * 구매 유형마다 두 팀이 몇 라운드를 사서 몇 번 이겼는지 둡니다.
  */
 @Composable
 private fun BuyTable(uiState: MatchDetailUiState.Success) {

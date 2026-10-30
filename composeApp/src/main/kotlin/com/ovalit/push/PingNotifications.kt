@@ -25,7 +25,8 @@ internal const val PING_CHANNEL = "ping"
 internal const val WEEKLY_CHANNEL = "weekly_report"
 private const val WEEKLY_TAG = "weekly_report"
 
-// 시작까지 이보다 덜 남았으면 "지금"으로 적는다. 앱의 Ping.isNow와 같아야 한다.
+// 시작까지 이보다 덜 남았으면 "지금"으로 적는다.
+// 앱의 Ping.isNow와 같아야 한다.
 private const val NOW_WINDOW_MS = 5 * 60 * 1000L
 
 /** 알림을 눌러 열 초대의 ID입니다. MainActivity가 받아 그 초대 화면을 엽니다. */
@@ -34,7 +35,7 @@ private const val DAWN_END_HOUR = 6
 
 /**
  * 서버가 보낸 FCM 데이터 메시지를 알림으로 바꿉니다.
- * 서버는 종류, 이름, 시각만 보내고 문구는 앱이 정해서, 문구를 고쳐도 서버를 다시 배포하지 않습니다.
+ * 서버는 종류, 이름, 시각만 보내고 문구는 앱이 정해서 문구를 고쳐도 서버를 다시 배포하지 않습니다.
  *
  * 받은 ㅇㅂㅇ의 갈게요와 못 가요는 앱을 열지 않고 [PingActionReceiver]가 답하고, 다른 시간은 시각을 골라야 해서 초대 화면을 엽니다.
  *
@@ -45,7 +46,8 @@ internal object PingNotifications {
     fun show(context: Context, data: Map<String, String>) {
         if (!canNotify(context)) return
         val pingId = data["pingId"]
-        // 끝난 ㅇㅂㅇ의 알림은 버튼을 눌러도 답할 수 없어서 끝날 시각에 거둔다. 늦게 와서 이미 끝났으면 띄우지 않는다.
+        // 끝난 ㅇㅂㅇ의 알림은 버튼을 눌러도 답할 수 없어서 끝날 시각에 거둔다.
+        // 늦게 와서 이미 끝났으면 띄우지 않는다.
         val expiresAt = data["startsAt"]?.toLongOrNull()?.plus(PingLength.inWholeMilliseconds)
         if (expiresAt != null && expiresAt <= System.currentTimeMillis()) return
         val notification = when (data["type"]) {
@@ -113,7 +115,8 @@ internal object PingNotifications {
     }
 
     /**
-     * 그 초대의 알림을 거둡니다. 앱에서 초대를 열면 부릅니다.
+     * 그 초대의 알림을 거둡니다.
+     * 앱에서 초대를 열면 부릅니다.
      * 남겨 두면 나중에 알림의 "못 가요"를 눌러 앱에서 한 답을 조용히 덮어쓸 수 있습니다.
      */
     fun clear(context: Context, pingId: String) {
@@ -125,12 +128,15 @@ internal object PingNotifications {
 
     /**
      * 알림 버튼마다 다른 [PendingIntent]가 되게 붙이는 주소입니다.
-     * 안드로이드는 extra를 보지 않고 액션과 주소로 PendingIntent를 가르니, 이게 없으면 다른 초대의 버튼이 앞 초대의 것으로 덮입니다.
+     * 안드로이드는 extra를 보지 않고 액션과 주소로 PendingIntent를 가르니 이게 없으면 다른 초대의 버튼이 앞 초대의 것으로 덮입니다.
      * 명시적 인텐트에만 붙여 다른 앱이 받을 수 없습니다.
      */
     fun actionUri(pingId: String?, action: String): Uri = Uri.Builder().scheme("ovalit-notification").authority(action).appendPath(pingId.orEmpty()).build()
 
-    /** @param expiresAt ㅇㅂㅇ이 끝나는 시각(epoch 밀리초)입니다. 있으면 그때 알림을 거둡니다. */
+    /**
+     * @param expiresAt ㅇㅂㅇ이 끝나는 시각(epoch 밀리초)입니다.
+     *   있으면 그때 알림을 거둡니다.
+     */
     private fun pingNotification(
         context: Context,
         pingId: String?,
@@ -166,7 +172,7 @@ internal object PingNotifications {
         return startsAt - System.currentTimeMillis() < NOW_WINDOW_MS
     }
 
-    // 사람마다 고른 시간(10분, 30분, 1시간 전)에 오고 크론이 5분마다 돌아서, 고른 시간이 아니라 실제로 남은 시간을 적는다
+    // 사람마다 고른 시간(10분, 30분, 1시간 전)에 오고 크론이 5분마다 돌아서 고른 시간이 아니라 실제로 남은 시간을 적는다
     private fun remindTitle(context: Context, data: Map<String, String>): String {
         val startsAt = data["startsAt"]?.toLongOrNull() ?: return context.getString(R.string.ping_remind_title_soon)
         val minutes = ((startsAt - System.currentTimeMillis()) / 60_000.0).roundToInt()
@@ -195,7 +201,8 @@ internal object PingNotifications {
         }
     }
 
-    // pingId가 있으면 그 초대 화면을 연다. 다른 시간은 거기서 고른다.
+    // pingId가 있으면 그 초대 화면을 연다.
+    // 다른 시간은 거기서 고른다.
     private fun openApp(context: Context, pingId: String?, action: String = "open"): PendingIntent {
         val intent = Intent(context, MainActivity::class.java)
             .setData(actionUri(pingId, action))

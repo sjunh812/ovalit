@@ -31,7 +31,8 @@ private fun ReportSteadyPreview() {
     ReportPreview(ReportPreviewData.steady)
 }
 
-// 새 액트 첫 주처럼 비교할 기록이 없는 주. "큰 변화 없음"이 뜨면 안 된다.
+// 새 액트 첫 주처럼 비교할 기록이 없는 주.
+// "큰 변화 없음"이 뜨면 안 된다.
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 private fun ReportUnknownPreview() {
@@ -70,7 +71,8 @@ private fun ReportOtherNotCountedPreview() {
     ReportPreview(WeeklyReport.NotEnoughMatches(played = 2, notCounted = 4), queueFilter = QueueFilter.OTHER)
 }
 
-// 가장 좁은 폭이다. 숫자가 칸을 넘지 않는지 본다.
+// 가장 좁은 폭이다.
+// 숫자가 칸을 넘지 않는지 본다.
 @Preview(widthDp = 320, heightDp = 568)
 @Composable
 private fun ReportSmallPreview() {

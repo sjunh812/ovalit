@@ -64,7 +64,7 @@ class OfflineFirstMatchRepositoryTest {
         assertEquals(Thursday, repository.checkedAt.first())
     }
 
-    // 커스텀 게임은 내 실력 흐름과 상관없고, 받으면 레이트 리밋만 쓴다(CLAUDE.md 큐)
+    // 커스텀 게임은 내 실력 흐름과 상관없고 받으면 레이트 리밋만 쓴다(CLAUDE.md 큐)
     @Test
     fun `첫 수집은 8주를 넘는 경기와 커스텀 게임을 받지 않는다`() = runTest {
         val played = history(3)
@@ -99,7 +99,8 @@ class OfflineFirstMatchRepositoryTest {
         assertFalse(stopped.isDone)
         assertEquals(played.take(8), repository.observeMatches().first())
 
-        // 다시 받기 시작하면 목록을 받기 전에 멈춘 안내부터 거둔다. 받은 칸은 그대로 둔다.
+        // 다시 받기 시작하면 목록을 받기 전에 멈춘 안내부터 거둔다.
+        // 받은 칸은 그대로 둔다.
         remote.recover()
         val resuming = launch { repository.importRecent() }
         runCurrent()
@@ -126,7 +127,8 @@ class OfflineFirstMatchRepositoryTest {
         assertNull(repository.checkedAt.first())
         assertEquals(0, repository.refresh())
 
-        // 멈춘 까닭만 지우면 0판 중 0판이라 끝난 것으로 보인다. 목록을 받을 때까지 시작 전으로 둔다.
+        // 멈춘 까닭만 지우면 0판 중 0판이라 끝난 것으로 보인다.
+        // 목록을 받을 때까지 시작 전으로 둔다.
         remote.recover()
         val resuming = launch { repository.importRecent() }
         runCurrent()
@@ -152,7 +154,8 @@ class OfflineFirstMatchRepositoryTest {
         assertNull(repository.importProgress.first())
     }
 
-    // 화면은 OvalitError로 안내 문구를 고른다. 까닭을 모르는 실패도 그대로 던지면 안내가 갈린다.
+    // 화면은 OvalitError로 안내 문구를 고른다.
+    // 까닭을 모르는 실패도 그대로 던지면 안내가 갈린다.
     @Test
     fun `서버가 까닭 없이 실패해도 OvalitError를 실어 던진다`() = runTest {
         val broken = object : MatchRemoteSource {
@@ -182,7 +185,8 @@ class OfflineFirstMatchRepositoryTest {
         assertEquals(10, assertNotNull(repository.importProgress.first()).results.size)
     }
 
-    // 첫 수집은 WorkManager 쪽에서 돌아 지우기가 멈출 수 없다. 지운 뒤에 받던 경기가 들어오면 연동을 해제해도 전적이 남는다.
+    // 첫 수집은 WorkManager 쪽에서 돌아 지우기가 멈출 수 없다.
+    // 지운 뒤에 받던 경기가 들어오면 연동을 해제해도 전적이 남는다.
     @Test
     fun `첫 수집 중에 지우면 지운 뒤에 경기가 들어오지 않는다`() = runTest {
         val repository = repositoryOf(TestMatchRemote(history(10)))
@@ -209,7 +213,7 @@ class OfflineFirstMatchRepositoryTest {
         assertNull(repository.checkedAt.first())
     }
 
-    // 지운 뒤 홈의 "다시 불러오기"를 당기면 첫 수집 없이 8주치를 다 받고, 첫 수집과 같은 경기를 두 번 받는다
+    // 지운 뒤 홈의 "다시 불러오기"를 당기면 첫 수집 없이 8주치를 다 받고 첫 수집과 같은 경기를 두 번 받는다
     @Test
     fun `첫 수집 전에는 당겨도 새 경기를 받지 않는다`() = runTest {
         val remote = TestMatchRemote(history(3))
@@ -240,7 +244,8 @@ class OfflineFirstMatchRepositoryTest {
         assertEquals(Thursday + 11.hours, repository.checkedAt.first())
     }
 
-    // 첫 수집만 최근 50경기를 받는다. 새 경기를 받으며 잘라낸 경기까지 받으면 8주치를 다 받는다.
+    // 첫 수집만 최근 50경기를 받는다.
+    // 새 경기를 받으며 잘라낸 경기까지 받으면 8주치를 다 받는다.
     @Test
     fun `저장한 경기와 첫 수집이 잘라낸 경기는 새 경기로 받지 않는다`() = runTest {
         val clock = StepClock(Thursday)
@@ -306,7 +311,8 @@ class OfflineFirstMatchRepositoryTest {
         assertEquals(13, repository.observeMatches().first().size)
     }
 
-    // 연동을 해제하면 저장된 경기를 지운다. 받던 경기가 그 뒤에 다시 채워지면 안 된다.
+    // 연동을 해제하면 저장된 경기를 지운다.
+    // 받던 경기가 그 뒤에 다시 채워지면 안 된다.
     @Test
     fun `저장한 경기를 지우면 받던 새 경기도 멈춘다`() = runTest {
         val clock = StepClock(Thursday)
@@ -326,7 +332,8 @@ class OfflineFirstMatchRepositoryTest {
         assertEquals(fetched, remote.fetched.size)
     }
 
-    // 앱에서는 받기가 Dispatchers.Default에서 돌고 지우기는 메인에서 돈다. 받던 한 판이 지운 뒤에 들어오면 연동을 해제해도 전적이 남는다.
+    // 앱에서는 받기가 Dispatchers.Default에서 돌고 지우기는 메인에서 돈다.
+    // 받던 한 판이 지운 뒤에 들어오면 연동을 해제해도 전적이 남는다.
     @Test
     fun `다른 스레드에서 받는 중에 지워도 지운 뒤에 경기가 들어오지 않는다`() = runTest {
         withContext(Dispatchers.Default) {
@@ -360,7 +367,8 @@ class OfflineFirstMatchRepositoryTest {
         val failure = assertFailsWith<OvalitException> { repository.refresh() }
 
         assertEquals(OvalitError.RiotBusy, failure.error)
-        // 멈춘 것은 받는 중이 아니다. 진행 줄이 남으면 홈이 숫자를 내보내지 않고 당겨도 무시한다.
+        // 멈춘 것은 받는 중이 아니다.
+        // 진행 줄이 남으면 홈이 숫자를 내보내지 않고 당겨도 무시한다.
         assertNull(repository.newMatchesProgress.first())
         assertEquals(fresh.take(5), repository.observeMatches().first().drop(3))
         val listings = remote.listings
@@ -394,7 +402,8 @@ class OfflineFirstMatchRepositoryTest {
         assertNull(repository.newMatchesProgress.first())
     }
 
-    // 실제 저장소는 받다 남은 경기를 기기에 둔다. 받던 중에 앱이 꺼졌으면 다시 켰을 때 진행 줄을 띄우고 이어 받는다.
+    // 실제 저장소는 받다 남은 경기를 기기에 둔다.
+    // 받던 중에 앱이 꺼졌으면 다시 켰을 때 진행 줄을 띄우고 이어 받는다.
     // 진행 줄만 띄우고 받지 않으면 홈이 새 경기를 기다리며 당겨도 무시한다.
     @Test
     fun `받던 중에 앱이 꺼졌으면 다시 켤 때 남은 새 경기를 이어 받는다`() = runTest {
@@ -466,7 +475,7 @@ private class TestMatchRemote(
         matches += played
     }
 
-    /** 커스텀 게임을 뜁니다. 목록에도 커스텀 게임으로 오지만, [listedAs]를 주면 그 큐로 와서 상세를 받아야 커스텀 게임인 걸 압니다. */
+    /** 커스텀 게임을 뜁니다. 목록에도 커스텀 게임으로 오지만 [listedAs]를 주면 그 큐로 와서 상세를 받아야 커스텀 게임인 걸 압니다. */
     fun playCustomGame(id: String, startedAt: Instant, listedAs: Queue? = null) {
         customGames += MatchListEntry(MatchId(id), startedAt, listedAs)
     }

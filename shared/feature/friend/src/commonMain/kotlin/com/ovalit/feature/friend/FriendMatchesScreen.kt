@@ -80,7 +80,8 @@ internal fun FriendMatchesScreen(uiState: FriendProfileUiState, onBack: () -> Un
             item {
                 OvalitBackTopBar(onBack = onBack, title = stringResource(Res.string.matches_title, name))
             }
-            // 보는 중에 친구가 전적을 비공개로 바꿀 수 있다. 경기는 ViewModel이 이미 비웠고 까닭만 적는다.
+            // 보는 중에 친구가 전적을 비공개로 바꿀 수 있다.
+            // 경기는 ViewModel이 이미 비웠고 까닭만 적는다.
             if (!uiState.friend.statsPublic) {
                 item {
                     OvalitText(

@@ -38,7 +38,8 @@ sealed interface PingDetailUiState {
 
     /**
      * @property now 시각 글자("21:00", "새벽 01:00")를 정할 때 쓰는 지금입니다.
-     * @property invitable 내가 보낸 것이면 더 부를 수 있는 친구입니다. 이미 부른 친구는 빠집니다.
+     * @property invitable 내가 보낸 것이면 더 부를 수 있는 친구입니다.
+     *   이미 부른 친구는 빠집니다.
      */
     data class Success(
         val ping: Ping,
@@ -60,7 +61,8 @@ class PingDetailViewModel(
     minuteChanges: Flow<Unit> = flowOf(Unit),
 ) : ViewModel() {
 
-    // 분마다 다시 내보낸다. "31분 뒤"가 줄고, 시작 시각이 지나면 "시작했어요"로 바뀌어야 한다.
+    // 분마다 다시 내보낸다.
+    // "31분 뒤"가 줄고, 시작 시각이 지나면 "시작했어요"로 바뀌어야 한다.
     val uiState: StateFlow<PingDetailUiState> = combine(
         pingRepository.pings,
         friendRepository.friends,

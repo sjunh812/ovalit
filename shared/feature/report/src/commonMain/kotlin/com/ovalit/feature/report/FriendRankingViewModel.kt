@@ -25,10 +25,13 @@ import kotlinx.datetime.TimeZone
 sealed interface FriendRankingUiState {
     data object Loading : FriendRankingUiState
 
-    /** 보는 중에 저장된 경기를 지워 리포트가 없어졌거나, 친구 비교가 없는 큐입니다. 화면을 닫습니다. */
+    /** 보는 중에 저장된 경기를 지워 리포트가 없어졌거나 친구 비교가 없는 큐입니다. 화면을 닫습니다. */
     data object Gone : FriendRankingUiState
 
-    /** @property friends 전적을 공개한 친구 전부입니다. 그 기간에 경기가 없는 친구는 줄을 세울 때 빠집니다. */
+    /**
+     * @property friends 전적을 공개한 친구 전부입니다.
+     *   그 기간에 경기가 없는 친구는 줄을 세울 때 빠집니다.
+     */
     data class Success(
         val period: ReportPeriod,
         val mine: MatchMetrics,

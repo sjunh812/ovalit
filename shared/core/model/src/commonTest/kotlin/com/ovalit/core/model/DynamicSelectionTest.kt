@@ -68,7 +68,8 @@ class DynamicSelectionTest {
         )
     }
 
-    // 첫 데스가 늘어 첫 교전 관여율과 첫 교전 승률이 조금 움직였다. 관여율이 훨씬 크게 움직였어도 뒤로 간다.
+    // 첫 데스가 늘어 첫 교전 관여율과 첫 교전 승률이 조금 움직였다.
+    // 관여율이 훨씬 크게 움직였어도 뒤로 간다.
     @Test
     fun `타격대는 첫 교전 관여율과 첫 교전 승률을 먼저 띄운다`() {
         val current = stats(kast = 0.90, survival = 0.40, firstDeaths = 20)
@@ -129,7 +130,7 @@ class DynamicSelectionTest {
     }
 
     // 이코와 풀바이는 라운드가 없어 판단을 보류했지만 관심사라 자리를 지킨다.
-    // 그 뒤에 전략가 우선 지표가 오고, 가장 크게 움직인 어시(13배)는 다섯 칸을 넘어 빠진다.
+    // 그 뒤에 전략가 우선 지표가 오고 가장 크게 움직인 어시(13배)는 다섯 칸을 넘어 빠진다.
     @Test
     fun `관심사 지표는 역할 우선 지표보다 앞에 늘 둔다`() {
         val current = stats(kast = 0.73, survival = 0.40, assistsPerRound = 0.60, forceBuyWins = 14)
@@ -171,7 +172,8 @@ class DynamicSelectionTest {
         assertEquals(listOf(moved(MULTI_KILL_RATE), moved(KAST), steady(SURVIVAL_RATE)), select(current, Role.DUELIST))
     }
 
-    // 역할마다 원래 높고 낮은 건 상관없다. 동적 칸은 내 지난 기록과 견준다.
+    // 역할마다 원래 높고 낮은 건 상관없다.
+    // 동적 칸은 내 지난 기록과 견준다.
     @Test
     fun `트레이드 받은 데스 비율이 움직이면 어느 역할에서든 띄운다`() {
         val current = stats(traded = 0.40)
@@ -197,7 +199,7 @@ class DynamicSelectionTest {
         assertEquals(true, select(current, Role.SENTINEL).any { it.metric == MULTI_KILL_RATE })
     }
 
-    // 전략가에게 첫 킬 계열은 크게 띄우지 않는 지표지만, 사용자가 에임을 보겠다고 골랐다
+    // 전략가에게 첫 킬 계열은 크게 띄우지 않는 지표지만 사용자가 에임을 보겠다고 골랐다
     @Test
     fun `역할이 크게 띄우지 않는 지표라도 관심사로 고르면 넣는다`() {
         assertEquals(

@@ -107,7 +107,7 @@ class PingScreenTest {
         assertEquals(NineThirty, at)
     }
 
-    // 화면이 들고 있는 지금은 탭을 열어 둔 만큼 지난 시각이라, "지금"은 시각을 비워 보내고 보내는 순간에 채운다
+    // 화면이 들고 있는 지금은 탭을 열어 둔 만큼 지난 시각이라 "지금"은 시각을 비워 보내고 보내는 순간에 채운다
     @Test
     fun `지금으로 부르면 시각을 비워 보낸다`() = runComposeUiTest {
         var sent = false
@@ -197,7 +197,8 @@ class PingScreenTest {
         onNodeWithText("민석의 초대").assertExists()
         onNodeWithText("21:00").assertExists()
         onNodeWithText("오늘 · 35분 뒤").assertExists()
-        // 부른 친구는 참석으로 치고 나도 센다. 나를 빼면 몇 명이 모이는지 세기 어렵다.
+        // 부른 친구는 참석으로 치고 나도 센다.
+        // 나를 빼면 몇 명이 모이는지 세기 어렵다.
         onNodeWithText("2명 참석 · 2명 응답 전").assertExists()
         onNodeWithText("나").assertExists()
         onNodeWithText("준호").assertExists()

@@ -60,7 +60,8 @@ import org.jetbrains.compose.resources.stringResource
 
 internal val BarGap = 5.dp
 
-// 8주 중 가장 낮은 값이 차지하는 막대 높이 비율이다. 0부터 그리면 피해량 140과 165가 거의 같은 높이라 추이가 안 보인다.
+// 8주 중 가장 낮은 값이 차지하는 막대 높이 비율이다.
+// 0부터 그리면 피해량 140과 165가 거의 같은 높이라 추이가 안 보인다.
 private const val LOWEST_BAR = 0.35f
 
 // 한 주를 고르면 나머지 막대는 이만큼만 남겨 고른 막대가 먼저 보이게 한다
@@ -68,7 +69,8 @@ private const val DIMMED_BAR = 0.35f
 
 /**
  * S1-a, 8주 흐름 시트, 홈 흐름 입구가 같이 쓰는 주별 막대입니다.
- * 기간에 든 주만 `--accent`로 칠하고, 경기가 없는 주는 바닥 선만 남기며, 액트가 바뀐 곳에 세로선을 긋습니다.
+ * 기간에 든 주만 `--accent`로 칠하고 경기가 없는 주는 바닥 선만 남깁니다.
+ * 액트가 바뀐 곳에 세로선을 긋습니다.
  * 남과 견주는 숫자가 아니라 내 기록이라 표본이 적은 주도 똑같이 그립니다.
  * 화면 읽기 프로그램은 주마다 값을 읽습니다.
  *
@@ -93,7 +95,8 @@ internal fun TrendBarRow(
 ) {
     val colors = OvalitTheme.colors
     val values = report.trend.map { week -> week.metrics?.let(metric.value) }
-    // 점선도 같은 눈금에 올린다. 데스가 없어 K/D 막대가 빠진 주가 있으면 평균이 막대 범위를 벗어날 수 있다.
+    // 점선도 같은 눈금에 올린다.
+    // 데스가 없어 K/D 막대가 빠진 주가 있으면 평균이 막대 범위를 벗어날 수 있다.
     val scale = values.filterNotNull() + listOfNotNull(baseline)
     val low = scale.minOrNull() ?: 0.0
     val high = scale.maxOrNull() ?: 0.0
@@ -162,7 +165,8 @@ internal fun TrendBarRow(
     }
 }
 
-// 위의 큰 숫자가 기간에 든 주들의 합계라 그 주들만 --accent다. 나머지는 --bar로 두면 카드 위에서 거의 안 보여 [rest]를 쓴다.
+// 위의 큰 숫자가 기간에 든 주들의 합계라 그 주들만 --accent다.
+// 나머지는 --bar로 두면 카드 위에서 거의 안 보여 [rest]를 쓴다.
 @Composable
 private fun barColor(week: TrendWeek, index: Int, selected: Int?, rest: Color): Color {
     val colors = OvalitTheme.colors
@@ -180,7 +184,8 @@ private fun weekAt(x: Float, width: Int, count: Int): Int =
 private fun barFraction(value: Double, low: Double, high: Double): Float =
     if (high <= low) 1f else LOWEST_BAR + (1 - LOWEST_BAR) * ((value - low) / (high - low)).toFloat().coerceIn(0f, 1f)
 
-// 경기가 없는 주도 바닥 선을 남긴다. 칸이 빠지면 몇 주 전인지 셀 수 없다.
+// 경기가 없는 주도 바닥 선을 남긴다.
+// 칸이 빠지면 몇 주 전인지 셀 수 없다.
 @Composable
 private fun Bar(fraction: Float?, color: Color, modifier: Modifier = Modifier) {
     val shape = RoundedCornerShape(2.dp)

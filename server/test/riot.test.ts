@@ -368,7 +368,8 @@ describe("사용자 호출 한도", () => {
     const cached = crypto.randomUUID();
     t.upstream.json(matchUrl(cached), matchFixture(cached, [me, ...strangers(9)]));
     expect((await t.call("GET", `/riot/matches/${cached}`, me.token)).status).toBe(200);
-    // 나머지 119번은 Riot이 모르는 경기로 채운다. 404도 Riot에 한 번 간 것이다.
+    // 나머지 119번은 Riot이 모르는 경기로 채운다.
+    // 404도 Riot에 한 번 간 것이다.
     for (let i = 0; i < 119; i++) {
       const id = crypto.randomUUID();
       t.upstream.on(matchUrl(id), () => new Response(null, { status: 404 }));

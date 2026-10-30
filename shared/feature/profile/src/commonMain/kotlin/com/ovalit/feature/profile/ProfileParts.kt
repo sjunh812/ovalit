@@ -50,7 +50,8 @@ internal fun ShareBar(fraction: Float, highlighted: Boolean, modifier: Modifier 
     }
 }
 
-// S6과 S7의 맨 위 줄이다. 친구 기록이면 "민석의 요원"처럼 이름 뒤에 ownerSuffix를 붙인다.
+// S6과 S7의 맨 위 줄이다.
+// 친구 기록이면 "민석의 요원"처럼 이름 뒤에 ownerSuffix를 붙인다.
 // 이름이 길면 이름만 줄여 "의 요원"을 남긴다.
 @Composable
 internal fun RecordsTopBar(
@@ -82,7 +83,8 @@ internal fun RecordsTopBar(
     }
 }
 
-// 보던 친구를 끊었거나 친구가 전적을 비공개로 바꿨을 때 띄운다. 숫자는 하나도 남기지 않는다.
+// 보던 친구를 끊었거나 친구가 전적을 비공개로 바꿨을 때 띄운다.
+// 숫자는 하나도 남기지 않는다.
 @Composable
 internal fun RecordsHidden(title: StringResource, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
@@ -96,9 +98,11 @@ internal fun RecordsHidden(title: StringResource, onBack: () -> Unit) {
 }
 
 /**
- * S7을 세는 동안 보이는 스켈레톤입니다. 제목 밑에 주 역할 묶음과 요원 줄 다섯 자리를 잡습니다.
+ * S7을 세는 동안 보이는 스켈레톤입니다.
+ * 제목 밑에 주 역할 묶음과 요원 줄 다섯 자리를 잡습니다.
  *
- * @param title 내 기록이면 제목을 그대로 둡니다. 친구 기록은 이름을 받기 전이라 `null`이고 제목 자리만 잡습니다.
+ * @param title 내 기록이면 제목을 그대로 둡니다.
+ *   친구 기록은 이름을 받기 전이라 `null`이고 제목 자리만 잡습니다.
  */
 @Composable
 internal fun AgentsSkeleton(title: StringResource?, onBack: () -> Unit) {
@@ -220,7 +224,8 @@ internal fun WeaponsSkeleton(title: StringResource?, onBack: () -> Unit) {
     }
 }
 
-// 펼친 계열의 숫자 세 칸이다. 실제 표의 K/D, 피해량, 헤드샷 열 폭(48, 52, 56dp)과 같다.
+// 펼친 계열의 숫자 세 칸이다.
+// 실제 표의 K/D, 피해량, 헤드샷 열 폭(48, 52, 56dp)과 같다.
 @Composable
 private fun CategoryCells(block: @Composable () -> Unit) {
     Row {
@@ -230,13 +235,15 @@ private fun CategoryCells(block: @Composable () -> Unit) {
     }
 }
 
-// 무기 표의 숫자 칸 하나다. 실제 표처럼 54dp 폭에 오른쪽으로 붙인다.
+// 무기 표의 숫자 칸 하나다.
+// 실제 표처럼 54dp 폭에 오른쪽으로 붙인다.
 @Composable
 private fun SkeletonCell(content: @Composable () -> Unit) {
     Box(modifier = Modifier.width(54.dp), contentAlignment = Alignment.CenterEnd) { content() }
 }
 
-// 오른쪽 "이번 액트 50경기" 자리도 잡는다. 없으면 나타날 때 그 글자만 툭 튄다.
+// 오른쪽 "이번 액트 50경기" 자리도 잡는다.
+// 없으면 나타날 때 그 글자만 툭 튄다.
 @Composable
 private fun SkeletonTopBar(title: StringResource?, onBack: () -> Unit, description: String) {
     val caption: @Composable RowScope.() -> Unit = { OvalitSkeleton(description) { SkeletonBlock(width = 84.dp, height = 12.dp) } }

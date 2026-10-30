@@ -57,7 +57,7 @@ class MetricFormatTest {
         assertEquals("0.5", MetricFormat.ONE_DECIMAL.formatGap(12.0, 11.5))
     }
 
-    // 지금은 음수 값을 띄우는 곳이 없지만, 생기면 "0.-5"나 "-,123"처럼 깨지지 않아야 한다
+    // 지금은 음수 값을 띄우는 곳이 없지만 생기면 "0.-5"나 "-,123"처럼 깨지지 않아야 한다
     @Test
     fun `음수는 부호를 앞에 한 번만 붙인다`() {
         assertEquals("−0.50", MetricFormat.TWO_DECIMALS.format(-0.5))

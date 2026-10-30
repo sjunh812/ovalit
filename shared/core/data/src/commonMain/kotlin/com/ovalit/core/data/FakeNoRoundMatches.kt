@@ -13,7 +13,8 @@ import com.ovalit.core.model.Shots
 import kotlin.random.Random
 import kotlin.time.Instant
 
-// 라운드가 없는 가짜 경기다. 데스매치, 팀 데스매치, 건틀릿: 글리치의 응답 모양은 아직 못 봤다.
+// 라운드가 없는 가짜 경기다.
+// 데스매치, 팀 데스매치, 건틀릿: 글리치의 응답 모양은 아직 못 봤다.
 // Riot 문서대로 teams[]에 데스매치는 사람마다 한 줄(numPoints가 킬), 팀 모드는 팀마다 한 줄을 두고 라운드 기록은 비운다.
 
 private const val DEATHMATCH_PLAYERS = 14
@@ -21,7 +22,8 @@ private const val DEATHMATCH_KILLS_TO_WIN = 40
 private const val TEAM_DEATHMATCH_KILLS_TO_WIN = 100
 private const val GAUNTLET_TEAMS = 8
 
-// 건틀릿 경기장과 로봇은 카탈로그에 없다. 이름을 지어 붙이지 않고 화면이 "알 수 없는 맵"과 빈 얼굴로 그리는지 본다.
+// 건틀릿 경기장과 로봇은 카탈로그에 없다.
+// 이름을 지어 붙이지 않고 화면이 "알 수 없는 맵"과 빈 얼굴로 그리는지 본다.
 private val GauntletArena = MapId("fake-gauntlet-arena")
 private val GauntletRobots = List(4) { AgentId("fake-gauntlet-robot-$it") }
 
@@ -72,7 +74,8 @@ internal fun Random.fakeTeamDeathmatch(id: MatchId, startedAt: Instant, owner: O
 }
 
 /**
- * 건틀릿: 글리치입니다. 두 명씩 여덟 팀이 2대2 대진을 이어 가며 마지막 한 팀이 남을 때까지 싸웁니다.
+ * 건틀릿: 글리치입니다.
+ * 두 명씩 여덟 팀이 2대2 대진을 이어 가며 마지막 한 팀이 남을 때까지 싸웁니다.
  * 요원 대신 로봇을 써서 역할이 없습니다.
  * 응답이 등수를 어떻게 주는지 몰라 등수를 그대로 담습니다.
  */
@@ -97,7 +100,8 @@ internal fun Random.fakeGauntlet(id: MatchId, startedAt: Instant, owner: Owner):
     )
 }
 
-// 여덟 팀 토너먼트에서 그 등수까지 이긴 대진 수다. 1등은 셋, 2등은 둘, 3·4등은 하나다.
+// 여덟 팀 토너먼트에서 그 등수까지 이긴 대진 수다.
+// 1등은 셋, 2등은 둘, 3·4등은 하나다.
 private fun bracketWins(placement: Int): Int = when (placement) {
     1 -> 3
     2 -> 2
@@ -105,14 +109,16 @@ private fun bracketWins(placement: Int): Int = when (placement) {
     else -> 0
 }
 
-// 팀 점수를 사람마다 들쭉날쭉하게 나눈다. 다 더하면 팀 점수와 같다.
+// 팀 점수를 사람마다 들쭉날쭉하게 나눈다.
+// 다 더하면 팀 점수와 같다.
 private fun Random.split(total: Int, people: Int): List<Int> {
     val weights = List(people) { nextDouble(0.6, 1.4) }
     val shares = weights.map { (total * it / weights.sum()).toInt() }
     return shares.mapIndexed { index, share -> if (index == 0) share + total - shares.sum() else share }
 }
 
-// 응답이 한 판을 한 라운드로 줄 수도 있어 뛴 라운드를 1로 둔다. 화면이 전투점수를 나누지 않는지 이 경우로 본다.
+// 응답이 한 판을 한 라운드로 줄 수도 있어 뛴 라운드를 1로 둔다.
+// 화면이 전투점수를 나누지 않는지 이 경우로 본다.
 private fun Random.noRoundLine(
     player: PlayerId,
     riotId: String,

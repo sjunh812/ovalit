@@ -93,7 +93,7 @@ fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Co
 
 /**
  * 내 프로필과 S5를 세는 동안의 모양입니다.
- * 배너와 머리 줄은 그대로 그리고 이름과 첫 카드 자리만 잡아서, 밀려 들어오는 동안에도 머리가 보입니다.
+ * 배너와 머리 줄은 그대로 그리고 이름과 첫 카드 자리만 잡아서 밀려 들어오는 동안에도 머리가 보입니다.
  */
 @Composable
 fun ProfileSkeleton(topBar: @Composable BoxScope.() -> Unit) {
@@ -122,7 +122,7 @@ fun ProfileSkeleton(topBar: @Composable BoxScope.() -> Unit) {
 
 /**
  * 배너가 상태 표시줄 밑을 벗어나면 그 자리를 바탕색으로 덮습니다.
- * 머리가 화면 맨 위까지 깔려 있어서, 안 덮으면 내린 글자가 시계와 겹칩니다.
+ * 머리가 화면 맨 위까지 깔려 있어서 안 덮으면 내린 글자가 시계와 겹칩니다.
  * 배너가 아직 그 자리에 있을 때는 배너 색이 보이게 비워 둡니다.
  */
 @Composable
@@ -146,7 +146,7 @@ fun BoxScope.ProfileStatusBarScrim(scrollState: ScrollState) {
 
 /**
  * Riot ID와 티어, 가장 많이 뛴 역할입니다.
- * 목업 S5처럼 이름 옆에 엠블럼을 두고, 아래 줄에 "다이아몬드 2 · 타격대 78%"를 씁니다.
+ * 목업 S5처럼 이름 옆에 엠블럼을 두고 아래 줄에 "다이아몬드 2 · 타격대 78%"를 씁니다.
  * 역할 이름만 한 단계 밝고 굵게 올립니다.
  * [trailing]은 그 뒤에 붙는 말입니다.
  *

@@ -31,23 +31,27 @@ import kotlin.math.roundToInt
 import kotlin.time.Instant
 
 /**
- * Riot 경기 상세를 [Match]로 옮깁니다. 지표는 [Match]에서 `core/model`이 세고, 여기서는 그 계산이 믿는 값을 맞춰 담습니다.
+ * Riot 경기 상세를 [Match]로 옮깁니다.
+ * 지표는 [Match]에서 `core/model`이 세고 여기서는 그 계산이 믿는 값을 맞춰 담습니다.
  *
  * - 라운드는 [me]가 뛴 라운드만 담습니다.
  *   그 라운드 `playerStats`에 [me]가 없으면 튕겨서 못 뛴 것으로 봅니다.
  *   스코어를 그리는 [Match.roundOutcomes]에는 못 뛴 라운드도 넣습니다.
  * - 킬은 그 라운드 사람마다의 `kills[]`를 모두 모아 시각순으로 둡니다.
- *   스킬로 자기나 우리 팀을 죽인 것도 그대로 담고, 킬로 세지 않는 일은 `core/model`이 [Match.allies]로 가립니다.
- * - 피해량과 맞힌 부위는 상대에게 준 것만 셉니다. 스킬로 자기나 우리 팀에 준 피해는 뺍니다.
+ *   스킬로 자기나 우리 팀을 죽인 것도 그대로 담고 킬로 세지 않는 일은 `core/model`이 [Match.allies]로 가립니다.
+ * - 피해량과 맞힌 부위는 상대에게 준 것만 셉니다.
+ *   스킬로 자기나 우리 팀에 준 피해는 뺍니다.
  * - 라운드가 없는 모드(데스매치, 팀 데스매치, 에스컬레이션, 눈싸움, 큐를 모르는 모드)는 라운드를 0으로 둡니다.
  *   스코어보드의 K/D/A와 `damage[]`에서 모은 맞힌 부위만 씁니다.
  * - 관전자와 코치는 스코어보드와 팀에 넣지 않습니다.
  * - 요원·무기·맵·액트·카드 UUID는 소문자로 옮깁니다.
- *   Riot은 같은 UUID를 응답마다 대소문자를 달리 주고, 서버의 역할 표와 카탈로그는 소문자 키입니다.
+ *   Riot은 같은 UUID를 응답마다 대소문자를 달리 주고 서버의 역할 표와 카탈로그는 소문자 키입니다.
  *
- * @param me 누구 눈으로 볼지입니다. 내 경기는 내 PUUID, 친구 경기는 친구 PUUID입니다.
+ * @param me 누구 눈으로 볼지입니다.
+ *   내 경기는 내 PUUID, 친구 경기는 친구 PUUID입니다.
  *   서버가 가린 친구 경기에서도 친구는 가리지 않아 PUUID 그대로 옵니다.
- * @param roleOf 서버의 요원 역할 표(`/content/roles`)입니다. 표에 없는 새 요원이면 `null`을 돌려줍니다.
+ * @param roleOf 서버의 요원 역할 표(`/content/roles`)입니다.
+ *   표에 없는 새 요원이면 `null`을 돌려줍니다.
  * @return 커스텀 게임, 끝나지 않은 경기, [me]가 뛰지 않았거나 관전한 경기면 `null`입니다.
  *   끝나지 않은 경기를 저장하면 틀린 결과가 그대로 남아서 받지 않습니다.
  * @throws RiotResponseFormatException 경기 ID나 시작 시각처럼 없으면 저장할 수 없는 값이 빠졌을 때 던집니다.
@@ -118,7 +122,7 @@ fun MatchDto.toMatch(me: PlayerId, roleOf: (AgentId) -> Role?): Match? {
 
 /**
  * 응답의 `roundNum`을 [Round.number]로 옮길 때 더하는 값입니다.
- * 앱은 1부터 세고, 피스톨 라운드(1, 13)와 S3 라운드 줄이 이 번호를 믿습니다.
+ * 앱은 1부터 세고 피스톨 라운드(1, 13)와 S3 라운드 줄이 이 번호를 믿습니다.
  *
  * Riot 문서는 0부터인지 1부터인지 적지 않았고 실제 응답도 아직 못 봤습니다.
  * 커뮤니티 자료는 0부터라고 합니다.
@@ -137,7 +141,7 @@ private fun List<RoundResultDto>.numbered(): List<Pair<Int, RoundResultDto>> {
 /**
  * 항복한 라운드가 응답에 어떻게 오는지 아직 못 봤습니다.
  * `roundResultCode`나 `roundResult`에 `Surrendered`가 온다고 보고 가립니다.
- * 스코어에는 `teams[].roundsWon`이 그 라운드까지 셌을 때만 넣고, 내 라운드에는 넣지 않습니다.
+ * 스코어에는 `teams[].roundsWon`이 그 라운드까지 셌을 때만 넣고 내 라운드에는 넣지 않습니다.
  */
 internal val RoundResultDto.isSurrender: Boolean
     get() = ending() == RoundEnding.SURRENDERED
@@ -145,7 +149,8 @@ internal val RoundResultDto.isSurrender: Boolean
 private class Participant(val id: PlayerId, val dto: PlayerDto)
 
 /**
- * 누가 누구 편인지입니다. 데스매치는 모두가 서로 적이라 팀 ID와 상관없이 나 말고는 모두 상대입니다.
+ * 누가 누구 편인지입니다.
+ * 데스매치는 모두가 서로 적이라 팀 ID와 상관없이 나 말고는 모두 상대입니다.
  *
  * 스코어보드에 없는 사람(관전자, 코치, 응답에 없는 PUUID)은 누구 편도 아니라 피해량과 구매 유형을 셀 때 빠집니다.
  */
@@ -173,7 +178,7 @@ private class Sides(
 
     /**
      * 그 라운드에 내가 공격이었는지 수비였는지입니다.
-     * 이긴 팀의 진영(`winningTeamRole`)이 오면 그걸로 가리고, 없으면 스파이크를 설치하거나 해체한 사람의 편으로 가립니다.
+     * 이긴 팀의 진영(`winningTeamRole`)이 오면 그걸로 가리고 없으면 스파이크를 설치하거나 해체한 사람의 편으로 가립니다.
      * 둘 다 없으면 `null`입니다.
      */
     fun mySide(round: RoundResultDto): Side? {
@@ -189,7 +194,8 @@ private class Sides(
     private fun String?.knownPlayer(): PlayerId? = this?.takeIf { it.isNotBlank() }?.let(::PlayerId)?.takeIf(::isKnown)
 }
 
-// 값이 Attacker, Defender로 온다고 짐작한다. 실제 응답에서 다른 값이 오면 null이라 진영별 지표에서 빠질 뿐이다.
+// 값이 Attacker, Defender로 온다고 짐작한다.
+// 실제 응답에서 다른 값이 오면 null이라 진영별 지표에서 빠질 뿐이다.
 private fun String?.toSide(): Side? = when {
     this == null -> null
     startsWith("attack", ignoreCase = true) -> Side.ATTACK
@@ -205,7 +211,8 @@ private fun RoundResultDto.toRound(number: Int, mine: PlayerRoundStatsDto, sides
     return Round(
         number = number,
         won = sides.won(this),
-        // 같은 킬이 두 사람의 kills[]에 함께 들어 있어도 한 번만 센다. 세이지 부활로 두 번 죽은 건 시각이 달라 둘 다 남는다.
+        // 같은 킬이 두 사람의 kills[]에 함께 들어 있어도 한 번만 센다.
+        // 세이지 부활로 두 번 죽은 건 시각이 달라 둘 다 남는다.
         kills = playerStats.flatMap { it.kills }.mapNotNull { it.toKillEvent() }.distinct().sortedBy { it.atMillis },
         myDamage = dealt.sumOf { it.damage },
         myShots = dealt.shots(),
@@ -245,7 +252,8 @@ private fun List<Hit>.shots(): Shots = fold(Shots.None) { total, hit -> total + 
 
 private fun KillDto.toKillEvent(): KillEvent? {
     val victim = victim?.takeIf { it.isNotBlank() } ?: return null
-    // 스파이크 폭발과 낙사는 누구 킬로 오는지 모른다. 킬러가 비었거나 스파이크면 자기 스킬로 죽은 것처럼 데스로만 센다.
+    // 스파이크 폭발과 낙사는 누구 킬로 오는지 모른다.
+    // 킬러가 비었거나 스파이크면 자기 스킬로 죽은 것처럼 데스로만 센다.
     val bySpike = finishingDamage?.damageType.equals("Bomb", ignoreCase = true)
     val killer = killer?.takeIf { it.isNotBlank() && !bySpike } ?: victim
     return KillEvent(
@@ -258,7 +266,8 @@ private fun KillDto.toKillEvent(): KillEvent? {
     )
 }
 
-// economy.weapon은 라운드 시작 로드아웃이라 주워 쓴 총이 안 잡힌다. 무기별 킬은 마지막 피해를 준 무기로 센다.
+// economy.weapon은 라운드 시작 로드아웃이라 주워 쓴 총이 안 잡힌다.
+// 무기별 킬은 마지막 피해를 준 무기로 센다.
 // 스킬은 damageItem이 Ultimate 같은 슬롯 이름이라 무기로 담지 않는다.
 private fun FinishingDamageDto.weapon(): WeaponId? {
     val type = damageType?.trim().orEmpty()
@@ -308,7 +317,8 @@ private fun endingOf(value: String?): RoundEnding? {
 
 private fun TeamDto.toMatchTeam(lineup: List<Participant>): MatchTeam? {
     val id = teamId?.takeIf { it.isNotBlank() } ?: return null
-    // 데스매치는 팀 ID가 그 사람의 PUUID다. 플레이어 줄의 teamId도 같은 값으로 오는지 몰라 PUUID로도 찾는다.
+    // 데스매치는 팀 ID가 그 사람의 PUUID다.
+    // 플레이어 줄의 teamId도 같은 값으로 오는지 몰라 PUUID로도 찾는다.
     val members = lineup.filter { it.dto.teamId == id }.ifEmpty { lineup.filter { it.id.value == id } }
     return MatchTeam(members = members.mapTo(mutableSetOf()) { it.id }, won = won, points = numPoints)
 }
@@ -323,7 +333,8 @@ private fun List<MatchTeam>.myTeamWon(me: PlayerId): Boolean? {
     }
 }
 
-// teams[]가 없을 때만 쓴다. 이긴 라운드가 더 많으면 이긴 경기다.
+// teams[]가 없을 때만 쓴다.
+// 이긴 라운드가 더 많으면 이긴 경기다.
 private fun List<Boolean>.majority(): Boolean? {
     val won = count { it }
     return when {
@@ -335,7 +346,7 @@ private fun List<Boolean>.majority(): Boolean? {
 
 /**
  * 스코어보드 한 줄입니다.
- * 킬·데스·어시와 전투점수는 게임 스코어보드와 같게 `stats`를 그대로 옮기고, 응답에 라운드별로만 있는 피해량과 맞힌 부위는 모든 라운드를 더합니다.
+ * 킬·데스·어시와 전투점수는 게임 스코어보드와 같게 `stats`를 그대로 옮기고 응답에 라운드별로만 있는 피해량과 맞힌 부위는 모든 라운드를 더합니다.
  * 라운드가 없는 모드는 뛴 라운드를 0으로 두어 전투점수와 피해량을 나누지 않습니다.
  */
 private fun Participant.toScoreline(sides: Sides, hasRounds: Boolean, roundResults: List<RoundResultDto>): Scoreline {
@@ -374,7 +385,8 @@ private fun PlayerDto.riotId(): String {
 
 private val Uuid = Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
 
-// UUID만 소문자로 바꾼다. 맵은 /Game/Maps/Ascent/Ascent 같은 경로로 올 수도 있어 그대로 둔다.
+// UUID만 소문자로 바꾼다.
+// 맵은 /Game/Maps/Ascent/Ascent 같은 경로로 올 수도 있어 그대로 둔다.
 private fun String?.contentIdOrNull(): String? {
     val value = this?.trim()?.takeIf { it.isNotEmpty() } ?: return null
     return if (Uuid.matches(value)) value.lowercase() else value

@@ -33,7 +33,8 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 
-// 프리뷰와 UI 테스트가 같이 쓴다. 숫자를 바꾸면 ReportScreenTest의 기대값도 같이 바꿔야 한다.
+// 프리뷰와 UI 테스트가 같이 쓴다.
+// 숫자를 바꾸면 ReportScreenTest의 기대값도 같이 바꿔야 한다.
 internal object ReportPreviewData {
 
     private val thisWeek = MatchMetrics(
@@ -88,7 +89,9 @@ internal object ReportPreviewData {
     private val act = ActId("preview")
     private val previousAct = ActId("previous")
 
-    // 7주 전부터 지난주까지다. 이번 주는 아래에서 따로 붙인다. 셋째 주는 한 판만 뛰어 라운드가 모자란 주다.
+    // 7주 전부터 지난주까지다.
+    // 이번 주는 아래에서 따로 붙인다.
+    // 셋째 주는 한 판만 뛰어 라운드가 모자란 주다.
     private val weeklyDamagePerRound = listOf(128, 131, 142, 126, 135, 129, 133)
 
     private val trend = weeklyDamagePerRound.mapIndexed { index, adr ->
@@ -142,7 +145,8 @@ internal object ReportPreviewData {
     private fun agentWeek(kills: Int, deaths: Int, assists: Int, matches: Int) =
         thisWeek.copy(matches = matches, kills = kills, deaths = deaths, assists = assists)
 
-    // 이번 주 일곱 판이다. 요원 칸은 판 수가 적어 승패로 적는다.
+    // 이번 주 일곱 판이다.
+    // 요원 칸은 판 수가 적어 승패로 적는다.
     private val periodAgents = listOf(
         AgentStats(AgentId("add6443a-41bd-e414-f6ad-e58d267f4e95"), Role.DUELIST, matches = 4, wins = 3, decided = 4,
             metrics = agentWeek(kills = 70, deaths = 48, assists = 18, matches = 4)),
@@ -180,7 +184,8 @@ internal object ReportPreviewData {
         ),
     )
 
-    // 3주 전에 액트가 바뀌었다. 기간 앞 새 액트 주가 셋뿐이라 평소 범위를 말하지 않는다.
+    // 3주 전에 액트가 바뀌었다.
+    // 기간 앞 새 액트 주가 셋뿐이라 평소 범위를 말하지 않는다.
     val newAct = moved.copy(
         trend = trend.mapIndexed { index, week ->
             when {
@@ -215,7 +220,8 @@ internal object ReportPreviewData {
         period = ReportPeriod(firstDay = LocalDate(2026, 9, 14), weeks = 1, includesThisWeek = false),
     )
 
-    // 라운드 운영을 관심사로 골랐다. 관심사 셋이 앞에 늘 있고 그 뒤에 움직인 지표가 붙어 다섯 칸이 된다.
+    // 라운드 운영을 관심사로 골랐다.
+    // 관심사 셋이 앞에 늘 있고 그 뒤에 움직인 지표가 붙어 다섯 칸이 된다.
     val focused = moved.copy(
         dynamic = listOf(
             DynamicSlot(DynamicMetric.FORCE_BUY_WIN_RATE, Movement.MOVED),

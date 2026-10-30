@@ -82,7 +82,8 @@ class FriendsViewModelTest {
         friends.gate.complete(Unit)
     }
 
-    // 친구가 수백 명이면 다시 같이 할 사람을 찾기 어렵다. 라이벌은 가장 자주 보는 친구라 맨 앞이다.
+    // 친구가 수백 명이면 다시 같이 할 사람을 찾기 어렵다.
+    // 라이벌은 가장 자주 보는 친구라 맨 앞이다.
     @Test
     fun `라이벌을 맨 앞에 두고 나머지는 최근에 같이 뛴 친구부터 세운다`() = runTest {
         val now = Clock.System.now()
@@ -102,7 +103,8 @@ class FriendsViewModelTest {
         assertEquals(listOf("rival", "recent", "old", "never"), state.friends.map { it.friend.id.value })
     }
 
-    // 앱 모듈이 이때 알림을 켜 달라고 묻는다. 수락하지 못했으면 친구가 부를 일도 없다.
+    // 앱 모듈이 이때 알림을 켜 달라고 묻는다.
+    // 수락하지 못했으면 친구가 부를 일도 없다.
     @Test
     fun `친구 요청을 수락하면 다 끝난 뒤에 알린다`() = runTest {
         val friends = FakeFriendRepository()

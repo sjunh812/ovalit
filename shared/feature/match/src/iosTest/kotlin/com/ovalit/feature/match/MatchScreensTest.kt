@@ -72,7 +72,8 @@ class MatchScreensTest {
         onNode(hasText("어제") and hasText("승", substring = true)).assertDoesNotExist()
     }
 
-    // 좁은 화면에서 글자를 키우면 한 줄에 안 들어간다. 날짜를 꺾지 않고 승패를 다음 줄로 내린다.
+    // 좁은 화면에서 글자를 키우면 한 줄에 안 들어간다.
+    // 날짜를 꺾지 않고 승패를 다음 줄로 내린다.
     @Test
     fun `날짜 머리가 한 줄에 안 들어가면 승패를 다음 줄로 내린다`() = runComposeUiTest {
         val day = MatchDay(LocalDate(2026, 9, 20), listOf(MatchPreviewData.detailMatch))
@@ -100,7 +101,8 @@ class MatchScreensTest {
         onAllNodes(hasStateDescription("패배")).fetchSemanticsNodes().let { assertTrue(it.isNotEmpty()) }
     }
 
-    // 색만으로는 승패가 갈리지 않는다. 줄마다 같은 자리에 두어 위아래로 훑으면 보이게 한다.
+    // 색만으로는 승패가 갈리지 않는다.
+    // 줄마다 같은 자리에 두어 위아래로 훑으면 보이게 한다.
     @Test
     fun `경기 줄은 아랫줄 맨 앞에 승패를 적는다`() = runComposeUiTest {
         setContent { Themed { MatchesScreen(MatchPreviewData.matches, {}, {}, {}) } }
@@ -216,7 +218,8 @@ class MatchScreensTest {
         onNodeWithText("2라운드").assertExists()
     }
 
-    // docs/screens.md S3: 진 클러치는 적지 않는다. 이 테스트는 적는 쪽만 본다.
+    // docs/screens.md S3: 진 클러치는 적지 않는다.
+    // 이 테스트는 적는 쪽만 본다.
     @Test
     fun `라운드 탭에 에이스와 이긴 클러치를 적는다`() = runComposeUiTest {
         setContent { Themed { Detail() } }
@@ -250,7 +253,8 @@ class MatchScreensTest {
         onAllNodesWithText("상대 팀").fetchSemanticsNodes().let { assertTrue(it.isNotEmpty()) }
     }
 
-    // 데스매치와 건틀릿은 승패 대신 등수로 끝난다. 라운드가 없어 전투점수도 없다.
+    // 데스매치와 건틀릿은 승패 대신 등수로 끝난다.
+    // 라운드가 없어 전투점수도 없다.
     @Test
     fun `등수로 끝나는 경기 줄은 스코어 대신 등수를 적고 아랫줄에 승패를 두지 않는다`() = runComposeUiTest {
         setContent { Themed { MatchesScreen(MatchPreviewData.otherMatches, {}, {}, {}) } }

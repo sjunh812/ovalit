@@ -13,7 +13,8 @@ private val OneDayLater = Instant.fromEpochMilliseconds(0) + 1.days
 
 class InsightTest {
 
-    // 네 판 모두 공격 40라운드 중 30라운드, 수비 40라운드 중 20라운드를 살아남는다. 75%와 50%다.
+    // 네 판 모두 공격 40라운드 중 30라운드, 수비 40라운드 중 20라운드를 살아남는다.
+    // 75%와 50%다.
     @Test
     fun `공수 생존율이 크게 벌어지면 높은 쪽을 주어로 문장을 만든다`() {
         val insight = assertNotNull(sides(attack = 30 to 10, defense = 20 to 20).insight(Role.SENTINEL))
@@ -31,7 +32,8 @@ class InsightTest {
         assertNull(sides(attack = 75 to 25, defense = 66 to 34, games = 10).insight(Role.SENTINEL))
     }
 
-    // 75%와 65%를 네 판 160라운드씩으로 쟀다. 같은 사람이 같은 실력으로 뛰어도 이 정도는 우연히 벌어진다.
+    // 75%와 65%를 네 판 160라운드씩으로 쟀다.
+    // 같은 사람이 같은 실력으로 뛰어도 이 정도는 우연히 벌어진다.
     @Test
     fun `격차가 기준을 넘어도 우연히 벌어질 만한 폭이면 문장을 만들지 않는다`() {
         val matches = sides(attack = 30 to 10, defense = 26 to 14)
@@ -61,7 +63,8 @@ class InsightTest {
         assertNull((agentMatches(Jett, Role.DUELIST, survived = 16, died = 24, games = 60) + raze).insight(role = null))
     }
 
-    // 제트는 판마다 다 살거나 다 죽었다. 그런 사람이면 레이즈 세 판을 모두 산 것도 우연히 좋은 날이 겹친 것일 수 있다.
+    // 제트는 판마다 다 살거나 다 죽었다.
+    // 그런 사람이면 레이즈 세 판을 모두 산 것도 우연히 좋은 날이 겹친 것일 수 있다.
     // 레이즈 세 판만 보면 흔들림이 0이라 두 쪽 경기를 모아 잰다.
     @Test
     fun `경기가 적은 쪽은 두 쪽 경기를 모아 잰 흔들림도 본다`() {
@@ -85,7 +88,8 @@ class InsightTest {
         assertNull(matches.insight(Role.SENTINEL, minZ = 0.0))
     }
 
-    // 감시자는 생존율이 우선이다. 관여율이 더 벌어져도 생존율부터 본다.
+    // 감시자는 생존율이 우선이다.
+    // 관여율이 더 벌어져도 생존율부터 본다.
     @Test
     fun `역할의 우선 지표가 기준을 넘으면 그것부터 고른다`() {
         val insight = assertNotNull(sides(attack = 30 to 10, defense = 20 to 20, attackOpenedByMe = 10).insight(Role.SENTINEL))
@@ -131,7 +135,8 @@ class InsightTest {
         assertNull(insight(Queue.SPIKE_RUSH, QueueFilter.OTHER))
     }
 
-    // 한 주 다섯 판은 공수가 비슷했지만 이번 액트 앞 주들까지 합치면 수비가 크게 낮다. 지난 액트 경기는 넣지 않는다.
+    // 한 주 다섯 판은 공수가 비슷했지만 이번 액트 앞 주들까지 합치면 수비가 크게 낮다.
+    // 지난 액트 경기는 넣지 않는다.
     @Test
     fun `홈 리포트는 이번 액트 경기를 모두 모아 견준다`() {
         val now = Instant.fromEpochMilliseconds(0) + 30.days
@@ -160,7 +165,8 @@ class InsightTest {
         assertNull(assertNotNull(report.insight).recent)
     }
 
-    // 이번 주 레이즈는 30라운드뿐이라 동적 칸 최소 표본(40라운드)에 못 미친다. 한쪽만 적으면 무엇과 견주는지 모른다.
+    // 이번 주 레이즈는 30라운드뿐이라 동적 칸 최소 표본(40라운드)에 못 미친다.
+    // 한쪽만 적으면 무엇과 견주는지 모른다.
     @Test
     fun `이번 주에 한쪽 표본이 모자라면 이번 주 값을 붙이지 않는다`() {
         val act = agentMatches(Jett, Role.DUELIST, survived = 45, died = 15) + agentMatches(Raze, Role.DUELIST, survived = 20, died = 20)
@@ -191,7 +197,7 @@ class InsightTest {
         assertEquals(0.3 to 0.1, insight.during(matches.take(2) + matches.takeLast(2), rifles).recent.values())
     }
 
-    // 감시자는 첫 킬 쪽을 크게 띄우지 않지만, 에임 올리기를 골랐으면 첫 교전 승률부터 본다
+    // 감시자는 첫 킬 쪽을 크게 띄우지 않지만 에임 올리기를 골랐으면 첫 교전 승률부터 본다
     @Test
     fun `관심사 지표가 기준을 넘으면 역할 기준보다 먼저 고른다`() {
         val insight = assertNotNull(aimGap().insight(Role.SENTINEL, Focus.AIM))
@@ -235,7 +241,8 @@ class InsightTest {
         assertEquals(InsightMetric.KAST, insight(Focus.CONSISTENCY)?.metric)
     }
 
-    // 멀티킬 라운드 비율도 공수로 나눠 본다. 타격대의 우선 지표인 첫 교전 승률은 두 진영이 같다.
+    // 멀티킬 라운드 비율도 공수로 나눠 본다.
+    // 타격대의 우선 지표인 첫 교전 승률은 두 진영이 같다.
     @Test
     fun `멀티킬 라운드 비율이 공수로 벌어지면 문장을 만든다`() {
         val insight = assertNotNull(multiKillGap().insight(Role.DUELIST))
@@ -244,7 +251,7 @@ class InsightTest {
         assertEquals(false, insight.isRolePriority)
     }
 
-    // 동적 칸처럼 K/D를 크게 띄우지 않는 역할은 멀티킬도 빼지만, 에임 올리기를 골랐으면 본다
+    // 동적 칸처럼 K/D를 크게 띄우지 않는 역할은 멀티킬도 빼지만 에임 올리기를 골랐으면 본다
     @Test
     fun `척후대와 전략가는 에임 올리기를 고르지 않았으면 멀티킬로 문장을 만들지 않는다`() {
         for (role in listOf(Role.INITIATOR, Role.CONTROLLER)) {
@@ -256,7 +263,8 @@ class InsightTest {
         assertEquals(InsightMetric.MULTI_KILL_RATE, multiKillGap().insight(Role.SENTINEL)?.metric)
     }
 
-    // 두 쪽 모두 이름이 있으면 높은 쪽을 주어로 둔다. "제트로 뛴 판은 레이즈보다 높아요"
+    // 두 쪽 모두 이름이 있으면 높은 쪽을 주어로 둔다.
+    // "제트로 뛴 판은 레이즈보다 높아요"
     @Test
     fun `같은 역할의 요원끼리 견주고 높은 쪽을 주어로 둔다`() {
         val matches = agentMatches(Jett, Role.DUELIST, survived = 45, died = 15) + agentMatches(Raze, Role.DUELIST, survived = 20, died = 20)
@@ -288,7 +296,8 @@ class InsightTest {
         assertNull(matches.insight(role = null))
     }
 
-    // 승률은 차이가 클 때만 나온다. 10판씩이면 100%와 20%쯤은 벌어져야 우연을 넘는다.
+    // 승률은 차이가 클 때만 나온다.
+    // 10판씩이면 100%와 20%쯤은 벌어져야 우연을 넘는다.
     @Test
     fun `역할끼리는 승률을 견주고 차이가 클 때만 문장을 만든다`() {
         fun games(role: Role, agent: AgentId, won: Int, lost: Int) = List(won + lost) { index ->
@@ -314,7 +323,8 @@ class InsightTest {
         assertEquals(InsightSubject.OnMap(Haven), insight.other.subject)
     }
 
-    // "다른 맵에서는 헤이븐보다 높아요"는 어색하다. 묶음과 견주면 이름 있는 쪽이 주어고 낮으면 "낮아요"다.
+    // "다른 맵에서는 헤이븐보다 높아요"는 어색하다.
+    // 묶음과 견주면 이름 있는 쪽이 주어고 낮으면 "낮아요"다.
     @Test
     fun `나머지 여럿과 견주면 이름 있는 쪽을 주어로 둔다`() {
         val matches = mapMatches(Ascent, survived = 45, died = 15) + mapMatches(Bind, survived = 45, died = 15) +
@@ -358,7 +368,8 @@ class InsightTest {
         assertNull(matches.insight(role = null, categories = mapOf(Vandal to WeaponCategory.RIFLE, Phantom to WeaponCategory.SMG)))
     }
 
-    // 연달아 뛸수록 어떤지 본다. 첫 두 판을 주어로 두면 무엇을 짚는지 흐려져서 늘 세 번째 판부터가 주어다.
+    // 연달아 뛸수록 어떤지 본다.
+    // 첫 두 판을 주어로 두면 무엇을 짚는지 흐려져서 늘 세 번째 판부터가 주어다.
     @Test
     fun `연달아 뛴 세 번째 판부터를 첫 두 판과 견준다`() {
         val insight = assertNotNull(sessions(early = 30 to 10, late = 20 to 20).insight(role = null))
@@ -378,7 +389,8 @@ class InsightTest {
         assertEquals(true, insight.leadIsHigher)
     }
 
-    // 앞 판이 끝나고 한 시간 넘게 쉬면 새로 센다. 판 길이도 쉰 시간에서 뺀다.
+    // 앞 판이 끝나고 한 시간 넘게 쉬면 새로 센다.
+    // 판 길이도 쉰 시간에서 뺀다.
     @Test
     fun `한 시간 넘게 쉬었으면 다시 첫 판부터 센다`() {
         assertNull(sessions(early = 30 to 10, late = 20 to 20, gapMinutes = 61).insight(role = null))
@@ -407,7 +419,7 @@ class InsightTest {
  * 경기 [games]개에 똑같은 공수 라운드를 담습니다.
  * 판마다 같아서 흔들림은 라운드가 서로 따로 논다고 쳤을 때의 값만 남습니다.
  * [attack]과 [defense]는 (살아남은 라운드, 죽은 라운드)입니다.
- * 공격에서 죽는 라운드 중 앞의 [attackOpenedByMe]라운드는 내가 첫 킬을 낸 뒤 죽고, 나머지는 첫 데스입니다.
+ * 공격에서 죽는 라운드 중 앞의 [attackOpenedByMe]라운드는 내가 첫 킬을 낸 뒤 죽고 나머지는 첫 데스입니다.
  * 피해량은 라운드마다 평균 위아래로 20씩 오갑니다.
  */
 private fun sides(
@@ -441,7 +453,7 @@ private fun side(side: Side?, survived: Int, died: Int, openedByMe: Int, damage:
 
 /**
  * 공격에서는 첫 킬 20번에 첫 데스 10번, 수비에서는 첫 킬 5번에 첫 데스 25번인 경기들입니다.
- * 첫 교전 승률이 67%와 17%로 벌어지고, 관여율도 75%와 38%로 벌어집니다.
+ * 첫 교전 승률이 67%와 17%로 벌어지고 관여율도 75%와 38%로 벌어집니다.
  * 생존율은 두 진영 모두 25%입니다.
  */
 private fun aimGap(games: Int = 4) = sides(attack = 10 to 30, defense = 10 to 30, games = games, attackOpenedByMe = 20, defenseOpenedByMe = 5)
@@ -449,7 +461,7 @@ private fun aimGap(games: Int = 4) = sides(attack = 10 to 30, defense = 10 to 30
 /**
  * 공격 40라운드 중 12라운드, 수비 40라운드 중 2라운드에서 적을 둘 잡는 경기 넷입니다.
  * 멀티킬 라운드 비율이 30%와 5%로 벌어집니다.
- * 한 번도 죽지 않아 생존율과 관여율은 두 진영 모두 100%이고, 첫 교전도 모두 이겨 두 진영이 같습니다.
+ * 한 번도 죽지 않아 생존율과 관여율은 두 진영 모두 100%이고 첫 교전도 모두 이겨 두 진영이 같습니다.
  */
 private fun multiKillGap(): List<Match> {
     fun side(side: Side, multi: Int) = List(40) { index ->
@@ -466,7 +478,7 @@ private fun buys(attack: Pair<Int, Int>, defense: Pair<Int, Int>): List<Match> {
 
 /**
  * 하루에 네 판씩, 판 시작이 [gapMinutes]분 간격인 [days]일입니다.
- * 앞 두 판과 뒤 두 판의 (살아남은 라운드, 죽은 라운드)를 받고, 진영은 모릅니다.
+ * 앞 두 판과 뒤 두 판의 (살아남은 라운드, 죽은 라운드)를 받고 진영은 모릅니다.
  */
 private fun sessions(early: Pair<Int, Int>, late: Pair<Int, Int>, days: Int = 6, gapMinutes: Int = 40): List<Match> =
     (0 until days).flatMap { day ->
@@ -485,14 +497,16 @@ private val Haven = MapId("haven")
 private val Vandal = WeaponId("vandal")
 private val Phantom = WeaponId("phantom")
 
-// 살아남은 라운드와 트레이드 없이 죽은 라운드만 있어 생존율과 관여율이 같다. 진영은 모른다.
+// 살아남은 라운드와 트레이드 없이 죽은 라운드만 있어 생존율과 관여율이 같다.
+// 진영은 모른다.
 private fun agentMatches(agent: AgentId, role: Role, survived: Int, died: Int, games: Int = 3): List<Match> =
     List(games) { match(*outcomes(survived, died, side = null), role = role, agent = agent) }
 
 private fun mapMatches(map: MapId, survived: Int, died: Int): List<Match> =
     List(3) { match(*outcomes(survived, died, side = null), map = map) }
 
-// 맵 하나에서 공격과 수비를 (라운드, 살아남은 라운드)로 나눠 담은 경기 [games]개다. 수비가 null이면 진영을 모른다.
+// 맵 하나에서 공격과 수비를 (라운드, 살아남은 라운드)로 나눠 담은 경기 [games]개다.
+// 수비가 null이면 진영을 모른다.
 private fun mapSides(map: MapId, games: Int, attack: Pair<Int, Int>, defense: Pair<Int, Int>?): List<Match> = List(games) {
     val attackRounds = outcomes(attack.second, attack.first - attack.second, side = if (defense == null) null else Side.ATTACK)
     val defenseRounds = defense?.let { outcomes(it.second, it.first - it.second, side = Side.DEFENSE) }.orEmpty()
@@ -502,7 +516,8 @@ private fun mapSides(map: MapId, games: Int, attack: Pair<Int, Int>, defense: Pa
 private fun outcomes(survived: Int, died: Int, side: Side?): Array<Round> =
     (List(survived) { round(side = side) } + List(died) { round(kill(10.0, Enemy, Me), side = side) }).toTypedArray()
 
-// 그 무기를 들고 시작해 그 무기로 한 명씩 잡은 라운드 10개짜리 경기 셋이다. 맞힌 탄 10발 중 [head]발이 머리다.
+// 그 무기를 들고 시작해 그 무기로 한 명씩 잡은 라운드 10개짜리 경기 셋이다.
+// 맞힌 탄 10발 중 [head]발이 머리다.
 private fun weaponMatches(weapon: WeaponId, head: Int): List<Match> = List(3) {
     match(*Array(10) { round(kill(10.0, Me, Enemy, weapon = weapon), shots = Shots(head = head, body = 10 - head, leg = 0), carried = weapon) })
 }

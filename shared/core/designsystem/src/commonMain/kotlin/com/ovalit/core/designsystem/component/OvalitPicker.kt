@@ -23,7 +23,7 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 
 /**
  * 무엇을 보여 줄지 고르는 작은 버튼입니다.
- * [text]에 지금 고른 것을 적고, [onClick]에서 [OvalitSheetOption]을 담은 바텀시트를 엽니다.
+ * [text]에 지금 고른 것을 적고 [onClick]에서 [OvalitSheetOption]을 담은 바텀시트를 엽니다.
  * 제목 옆에 둘 때는 [OvalitPickerTitle]로 감쌉니다.
  */
 @Composable

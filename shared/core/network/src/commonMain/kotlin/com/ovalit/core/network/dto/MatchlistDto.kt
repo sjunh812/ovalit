@@ -2,7 +2,8 @@ package com.ovalit.core.network.dto
 
 import kotlinx.serialization.Serializable
 
-// VAL-MATCH-V1 `/val/match/v1/matchlists/by-puuid/{puuid}`의 응답이다. 우리 서버의 `/riot/matchlist`가 그대로 넘겨준다.
+// VAL-MATCH-V1 `/val/match/v1/matchlists/by-puuid/{puuid}`의 응답이다.
+// 우리 서버의 `/riot/matchlist`가 그대로 넘겨준다.
 
 @Serializable
 data class MatchlistDto(

@@ -3,19 +3,21 @@ package com.ovalit.core.model
 /**
  * 무기 값을 견줄 만한 최소 라운드입니다.
  * 헤드샷은 한 무기만 쓴 라운드로, K/D와 피해량은 들고 시작한 라운드로 셉니다.
- * 숫자는 표본과 상관없이 띄우고, 변화량과 짚을 점만 이만큼 넘긴 값을 씁니다.
+ * 숫자는 표본과 상관없이 띄우고 변화량과 짚을 점만 이만큼 넘긴 값을 씁니다.
  * 시작 기준선입니다.
  */
 const val MIN_WEAPON_ROUNDS = 20
 
 /**
- * 무기 하나의 성적입니다. 숫자마다 이 무기 몫을 가르는 기준이 다릅니다.
+ * 무기 하나의 성적입니다.
+ * 숫자마다 이 무기 몫을 가르는 기준이 다릅니다.
  *
  * - 킬은 그 무기로 낸 킬이라 정확합니다(`finishingDamage.damageItem`).
  * - 헤드샷은 내 킬이 전부 이 무기로 난 라운드만 셉니다(단일 무기 라운드).
  *   응답에 맞힌 탄이 라운드별로만 있고 무기별로는 없어서입니다.
  * - 데스, 어시스트, 피해량은 이 무기를 들고 시작한 라운드에서 셉니다([carriedRounds], `economy.weapon`).
- *   죽을 때 든 무기와 피해를 준 무기는 응답에 없어서입니다. 주워 쓴 총은 여기에 안 잡힙니다.
+ *   죽을 때 든 무기와 피해를 준 무기는 응답에 없어서입니다.
+ *   주워 쓴 총은 여기에 안 잡힙니다.
  */
 data class WeaponStats(
     val weapon: WeaponId,
@@ -63,8 +65,10 @@ enum class WeaponMetric { KD, DAMAGE_PER_ROUND, HEADSHOT_RATE }
  * @property current 홈 리포트와 같은 기간의 성적입니다.
  *   세 줄의 기간이 어긋나지 않게 표본이 적어도 이 값을 띄웁니다.
  *   그 기간에 이 무기를 안 썼거나 리포트를 만들 만큼 경기가 없으면 `null`입니다.
- * @property baseline 기간 바로 앞 [baselineWeeks]주의 성적입니다. 그동안 이 무기를 안 썼으면 `null`입니다.
- * @property movements 지표마다 동적 칸과 같은 규칙으로 봅니다. 화면은 [Movement.MOVED]인 변화량만 칠합니다.
+ * @property baseline 기간 바로 앞 [baselineWeeks]주의 성적입니다.
+ *   그동안 이 무기를 안 썼으면 `null`입니다.
+ * @property movements 지표마다 동적 칸과 같은 규칙으로 봅니다.
+ *   화면은 [Movement.MOVED]인 변화량만 칠합니다.
  */
 data class WeaponHighlight(
     val act: WeaponStats,
@@ -78,8 +82,10 @@ data class WeaponHighlight(
 
 /**
  * @property weapons 이번 액트에서 킬을 많이 낸 순서입니다.
- * @property highlights 그중 앞의 [HIGHLIGHTED_WEAPONS]개입니다. 많이 들고 시작한 순서가 아니라 킬 순서입니다.
- * @property period [highlights]가 보는 홈 리포트 기간입니다. 리포트를 만들 만큼 경기가 없으면 `null`입니다.
+ * @property highlights 그중 앞의 [HIGHLIGHTED_WEAPONS]개입니다.
+ *   많이 들고 시작한 순서가 아니라 킬 순서입니다.
+ * @property period [highlights]가 보는 홈 리포트 기간입니다.
+ *   리포트를 만들 만큼 경기가 없으면 `null`입니다.
  */
 data class WeaponReport(
     val matches: Int,
@@ -101,7 +107,8 @@ internal fun List<Match>.weaponStats(): List<WeaponStats> {
         val myTeam = match.allies + match.me
         for (round in match.rounds) {
             round.economy?.myWeapon?.let { weapon ->
-                // 어시스트는 리포트와 같은 기준이다. 스킬로 자기나 우리 팀을 죽인 킬은 세지 않는다.
+                // 어시스트는 리포트와 같은 기준이다.
+                // 스킬로 자기나 우리 팀을 죽인 킬은 세지 않는다.
                 val assists = round.kills.count { match.me in it.assistants && (it.killer in myTeam) != (it.victim in myTeam) }
                 val died = round.kills.any { it.victim == match.me }
                 carried[weapon] = (carried[weapon] ?: CarriedTotals()).plus(died = died, assists = assists, damage = round.myDamage)
@@ -114,7 +121,8 @@ internal fun List<Match>.weaponStats(): List<WeaponStats> {
         }
     }
 
-    // 들고 시작만 하고 킬이 없는 무기도 넣는다. 오딘을 다섯 라운드 사서 한 명도 못 잡은 것도 알아야 한다.
+    // 들고 시작만 하고 킬이 없는 무기도 넣는다.
+    // 오딘을 다섯 라운드 사서 한 명도 못 잡은 것도 알아야 한다.
     return (kills.keys + carried.keys)
         .map { weapon ->
             WeaponStats(

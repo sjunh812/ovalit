@@ -93,7 +93,8 @@ import org.koin.core.parameter.parametersOf
 private const val RECENT_MATCHES = 3
 
 /**
- * S5 친구 프로필입니다. 머리 바로 밑에 같이 뛴 경기를 둡니다.
+ * S5 친구 프로필입니다.
+ * 머리 바로 밑에 같이 뛴 경기를 둡니다.
  * 전적을 공개한 친구면 그 아래로 티어 카드, 통계, 나와 비교, 맞힌 부위, 요원, 무기, 최근 경기를 둡니다.
  * 비공개면 같이 뛴 경기만 보여줍니다.
  */
@@ -109,11 +110,13 @@ fun FriendProfileRoute(
 ) {
     FailureNoticesEffect(viewModel.notices)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    // 화면을 닫는 곳은 여기 하나다. 끊기 버튼에서도 닫으면 뒤로 가기가 두 번 돼 그 앞 화면까지 빠진다.
+    // 화면을 닫는 곳은 여기 하나다.
+    // 끊기 버튼에서도 닫으면 뒤로 가기가 두 번 돼 그 앞 화면까지 빠진다.
     LaunchedEffect(uiState) {
         if (uiState == FriendProfileUiState.Gone) onBack()
     }
-    // 친구가 끊겨 닫히는 동안에는 마지막 모습을 그린다. 바로 비우면 밀려나는 화면이 빈 바탕으로 나간다.
+    // 친구가 끊겨 닫히는 동안에는 마지막 모습을 그린다.
+    // 바로 비우면 밀려나는 화면이 빈 바탕으로 나간다.
     val lastShown = remember { LastShown() }
     if (uiState != FriendProfileUiState.Gone) lastShown.state = uiState
     FriendProfileScreen(
@@ -327,7 +330,8 @@ private fun RecentMatches(uiState: FriendProfileUiState.Success, name: String, o
 
 @Composable
 private fun TitleRow(title: String, caption: String) {
-    // 제목을 먼저 재고 설명은 남은 폭에서 꺾는다. 설명을 먼저 재면 친구 이름이 길 때 "나와 비교"가 밀려 꺾인다.
+    // 제목을 먼저 재고 설명은 남은 폭에서 꺾는다.
+    // 설명을 먼저 재면 친구 이름이 길 때 "나와 비교"가 밀려 꺾인다.
     Row(verticalAlignment = Alignment.Bottom) {
         OvalitText(
             text = title,

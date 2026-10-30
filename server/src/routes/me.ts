@@ -6,7 +6,7 @@ import { requireSession } from "../session";
 import { jsonBody, text } from "../validate";
 
 // 앱을 다시 깔거나 기기를 바꾸면 토큰이 새로 나온다.
-// 옛 토큰은 FCM이 404를 줄 때 지우는데, 그 전까지는 알림 하나가 토큰 수만큼 하위 요청을 쓰니 사람마다 최근 셋만 둔다.
+// 옛 토큰은 FCM이 404를 줄 때 지우는데 그 전까지는 알림 하나가 토큰 수만큼 하위 요청을 쓰니 사람마다 최근 셋만 둔다.
 const MAX_PUSH_TOKENS = 3;
 const MAX_PUSH_TOKEN_LENGTH = 4096;
 
@@ -14,7 +14,9 @@ export const me = new Hono<AppEnv>();
 
 me.use(requireSession);
 
-// ㅇㅂㅇ 미리 알림을 시작 몇 분 전에 받을지 고를 수 있는 값이다. 0은 받지 않는다. 스키마의 CHECK와 같아야 한다.
+// ㅇㅂㅇ 미리 알림을 시작 몇 분 전에 받을지 고를 수 있는 값이다.
+// 0은 받지 않는다.
+// 스키마의 CHECK와 같아야 한다.
 const REMIND_BEFORE_CHOICES = [0, 10, 30, 60];
 
 function profile(user: User) {
@@ -49,7 +51,8 @@ me.patch("/", async (c) => {
 });
 
 /**
- * 연동 해제입니다. 사용자 한 줄을 지우면 세션, 친구, 요청, 초대, ㅇㅂㅇ과 불려 간 자리, 기기 토큰이 스키마의 CASCADE로 같이 지워집니다.
+ * 연동 해제입니다.
+ * 사용자 한 줄을 지우면 세션, 친구, 요청, 초대, ㅇㅂㅇ과 불려 간 자리, 기기 토큰이 스키마의 CASCADE로 같이 지워집니다.
  * 띄워 둔 ㅇㅂㅇ이 살아 있으면 불려 간 친구에게 호스트가 취소했을 때와 같은 알림을 보냅니다.
  */
 me.delete("/", async (c) => {

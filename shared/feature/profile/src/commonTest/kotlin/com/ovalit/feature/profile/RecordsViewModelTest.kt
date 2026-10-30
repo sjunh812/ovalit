@@ -59,7 +59,8 @@ class RecordsViewModelTest {
         assertEquals(mine.size, state.weapons.matches)
     }
 
-    // 친구 경기는 기기에 저장된 것을 그대로 쓴다. 내 경기와 섞이면 친구 화면에 내 숫자가 뜬다.
+    // 친구 경기는 기기에 저장된 것을 그대로 쓴다.
+    // 내 경기와 섞이면 친구 화면에 내 숫자가 뜬다.
     @Test
     fun `친구 기록은 그 친구의 경기로 세고 제목에 이름을 붙인다`() = runTest {
         val friends = EditableFriends()

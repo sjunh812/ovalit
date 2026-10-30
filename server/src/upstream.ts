@@ -1,13 +1,17 @@
 import { ApiError } from "./errors";
 import { logFailure } from "./log";
 
-// Retry-After 없이 오는 application·method 429도 있다. 그때는 이만큼 쉬고 다시 부른다.
+// Retry-After 없이 오는 application·method 429도 있다.
+// 그때는 이만큼 쉬고 다시 부른다.
 const DEFAULT_RETRY_AFTER_SECONDS = 10;
-// service 429는 Riot 뒤쪽 서비스가 바쁘다는 뜻이라 우리 키의 몫과 상관없다. 이 isolate에서만 그 경로를 잠깐 쉰다.
+// service 429는 Riot 뒤쪽 서비스가 바쁘다는 뜻이라 우리 키의 몫과 상관없다.
+// 이 isolate에서만 그 경로를 잠깐 쉰다.
 const SERVICE_BACKOFF_SECONDS = 5;
-// 다른 isolate가 받은 429를 D1에서 읽어 오는 간격이다. 막힌 동안 다른 isolate가 이만큼은 더 부를 수 있다.
+// 다른 isolate가 받은 429를 D1에서 읽어 오는 간격이다.
+// 막힌 동안 다른 isolate가 이만큼은 더 부를 수 있다.
 const SYNC_INTERVAL_MS = 5_000;
-// PUUID(78자)와 경기 ID(UUID 36자)처럼 경로에 끼운 값이다. 같은 method 한도를 쓰는 경로를 하나로 묶는다.
+// PUUID(78자)와 경기 ID(UUID 36자)처럼 경로에 끼운 값이다.
+// 같은 method 한도를 쓰는 경로를 하나로 묶는다.
 const ID_SEGMENT = /^[A-Za-z0-9_-]{32,}$/;
 
 // Riot 레이트 리밋은 사용자마다가 아니라 앱 전체에 걸린다.
@@ -33,7 +37,8 @@ export async function send(upstream: typeof fetch, db: D1Database, url: string, 
     throw new ApiError(502, "riot_unavailable");
   }
   if (res.ok) return res;
-  // 실패한 응답의 본문은 읽지 않는다. 그대로 두면 연결이 본문을 다 받을 때까지 묶여 있다.
+  // 실패한 응답의 본문은 읽지 않는다.
+  // 그대로 두면 연결이 본문을 다 받을 때까지 묶여 있다.
   await res.body?.cancel().catch(() => {});
   if (res.status === 429) throw await rateLimitedBy(db, url, res);
   if (res.status === 404) throw new ApiError(404, "not_found");
@@ -41,7 +46,8 @@ export async function send(upstream: typeof fetch, db: D1Database, url: string, 
 }
 
 /**
- * `url`이 Riot 레이트 리밋에 걸린 범위면 503 `riot_rate_limited`를 던집니다. Riot은 부르지 않습니다.
+ * `url`이 Riot 레이트 리밋에 걸린 범위면 503 `riot_rate_limited`를 던집니다.
+ * Riot은 부르지 않습니다.
  * 다른 isolate가 적은 차단은 5초에 한 번까지만 D1에서 읽어 옵니다.
  */
 export async function throwIfBlocked(db: D1Database, url: string): Promise<void> {
@@ -75,7 +81,8 @@ async function rateLimitedBy(db: D1Database, url: string, res: Response): Promis
   return rateLimited(seconds);
 }
 
-// 429를 받을 때만 한 줄 쓴다. 범위마다 한 줄이라 늘어나지 않는다.
+// 429를 받을 때만 한 줄 쓴다.
+// 범위마다 한 줄이라 늘어나지 않는다.
 async function share(db: D1Database, scope: string, until: number): Promise<void> {
   try {
     await db
@@ -90,7 +97,8 @@ async function share(db: D1Database, scope: string, until: number): Promise<void
   }
 }
 
-// 요청이 몰려도 한 isolate에서 5초에 한 번만 읽는다. 읽다 실패하면 이 isolate가 아는 차단만으로 간다.
+// 요청이 몰려도 한 isolate에서 5초에 한 번만 읽는다.
+// 읽다 실패하면 이 isolate가 아는 차단만으로 간다.
 async function sync(db: D1Database): Promise<void> {
   const now = Date.now();
   if (now - syncedAt < SYNC_INTERVAL_MS) return;

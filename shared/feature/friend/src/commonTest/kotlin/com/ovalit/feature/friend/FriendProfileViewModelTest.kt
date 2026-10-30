@@ -69,7 +69,8 @@ class FriendProfileViewModelTest {
         assertEquals(FriendProfileUiState.Gone, viewModel.uiState.value)
     }
 
-    // 서버는 끊을 때 둘 사이의 ㅇㅂㅇ에서 서로를 뺀다. 다시 받지 않으면 끊은 친구의 초대가 홈에 남아 답할 수도 있다.
+    // 서버는 끊을 때 둘 사이의 ㅇㅂㅇ에서 서로를 뺀다.
+    // 다시 받지 않으면 끊은 친구의 초대가 홈에 남아 답할 수도 있다.
     @Test
     fun `친구를 끊으면 ㅇㅂㅇ을 다시 받는다`() = runTest {
         val pings = TestPingRepository()

@@ -27,12 +27,15 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 
 /**
- * 서버가 붙기 전까지 쓰는 가짜 ㅇㅂㅇ입니다. 처음에는 민석이 보낸 ㅇㅂㅇ 하나가 와 있습니다.
+ * 서버가 붙기 전까지 쓰는 가짜 ㅇㅂㅇ입니다.
+ * 처음에는 민석이 보낸 ㅇㅂㅇ 하나가 와 있습니다.
  * 내가 보내면 가짜 친구들이 잠시 뒤에 답합니다.
- * 첫째는 간다고 하고 둘째는 다음 30분 칸을 냅니다. 셋째는 답하지 않고 넷째는 못 간다고 합니다.
+ * 첫째는 간다고 하고 둘째는 다음 30분 칸을 냅니다.
+ * 셋째는 답하지 않고 넷째는 못 간다고 합니다.
  * 더 부른 친구는 간다고 합니다.
  *
- * @param replyDelay 가짜 친구가 답하기까지 기다리는 시간입니다. 테스트는 가상 시간으로 넘깁니다.
+ * @param replyDelay 가짜 친구가 답하기까지 기다리는 시간입니다.
+ *   테스트는 가상 시간으로 넘깁니다.
  */
 class FakePingRepository(
     private val friendRepository: FakeFriendRepository,
@@ -46,7 +49,7 @@ class FakePingRepository(
     private var nextId = 0
 
     // 서버처럼 친구를 끊으면 둘 사이의 ㅇㅂㅇ에서 서로를 뺀다.
-    // 끊은 친구가 보낸 초대는 내가 빠져 사라지고, 내가 보낸 초대에서는 그 친구가 빠진다.
+    // 끊은 친구가 보낸 초대는 내가 빠져 사라지고 내가 보낸 초대에서는 그 친구가 빠진다.
     override val pings: Flow<List<Ping>> = combine(all, friendRepository.friends) { list, friends ->
         val ids = friends.map { it.id }.toSet()
         list.mapNotNull { ping ->
@@ -124,7 +127,8 @@ class FakePingRepository(
     private suspend fun answerLikeFriends(sent: Ping) {
         val answers = listOf(
             PingAnswer.YES to null,
-            // 30분 단위 칸에서 하나 뒤를 낸다. 실제 앱도 칸에서만 고른다.
+            // 30분 단위 칸에서 하나 뒤를 낸다.
+            // 실제 앱도 칸에서만 고른다.
             PingAnswer.OTHER_TIME to pingSlots(sent.startsAt, timeZone).first(),
             null to null,
             PingAnswer.NO to null,

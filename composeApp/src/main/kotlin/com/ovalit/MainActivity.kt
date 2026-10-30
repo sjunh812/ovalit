@@ -26,7 +26,8 @@ import org.koin.compose.koinInject
 
 class MainActivity : ComponentActivity() {
 
-    // ㅇㅂㅇ 알림을 눌러 열 초대다. 화면이 받기 전에 온 것도 남게 채널에 담는다.
+    // ㅇㅂㅇ 알림을 눌러 열 초대다.
+    // 화면이 받기 전에 온 것도 남게 채널에 담는다.
     private val openPing = Channel<String>(Channel.CONFLATED)
 
     override fun onNewIntent(intent: Intent) {
@@ -38,7 +39,8 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        // 앱별 언어를 바꾸면 이 화면이 새 언어로 다시 만들어진다. 이름 카탈로그도 그 언어로 바꾼다.
+        // 앱별 언어를 바꾸면 이 화면이 새 언어로 다시 만들어진다.
+        // 이름 카탈로그도 그 언어로 바꾼다.
         AppLanguage.update(this)
         if (savedInstanceState == null) intent.getStringExtra(EXTRA_OPEN_PING)?.let(openPing::trySend)
 
@@ -46,7 +48,8 @@ class MainActivity : ComponentActivity() {
             val preferences = koinInject<UserPreferencesRepository>()
             val darkTheme = rememberDarkTheme()
 
-            // 앱 테마를 시스템과 다르게 고르면 상태 표시줄 글자색도 바꿔야 한다. 안 바꾸면 라이트 배경에 흰 시계가 뜬다.
+            // 앱 테마를 시스템과 다르게 고르면 상태 표시줄 글자색도 바꿔야 한다.
+            // 안 바꾸면 라이트 배경에 흰 시계가 뜬다.
             DisposableEffect(darkTheme) {
                 enableEdgeToEdge(
                     statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { darkTheme },
@@ -61,7 +64,8 @@ class MainActivity : ComponentActivity() {
             val adRenderer = remember { if (AdMobRenderer.enabled) AdMobRenderer(this, preferences, adScope, analytics) else null }
             DisposableEffect(adRenderer) { onDispose { adRenderer?.destroy() } }
 
-            // 테마가 바뀌어 다시 그려도 같은 흐름을 넘긴다. 새로 만들면 알림을 받는 LaunchedEffect가 다시 시작한다.
+            // 테마가 바뀌어 다시 그려도 같은 흐름을 넘긴다.
+            // 새로 만들면 알림을 받는 LaunchedEffect가 다시 시작한다.
             val pingsToOpen = remember { openPing.receiveAsFlow() }
             val platform = remember { AndroidOvalitPlatform(this) }
 

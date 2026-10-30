@@ -18,7 +18,7 @@ import com.ovalit.core.model.latestTier
 /**
  * 홈 오른쪽 위와 프로필 머리에 띄우는 사람 정보입니다.
  *
- * @property tierName 카탈로그에 그 번호가 없거나 경쟁전을 안 뛰었으면 `null`이고, 그러면 티어 줄을 두지 않습니다.
+ * @property tierName 카탈로그에 그 번호가 없거나 경쟁전을 안 뛰었으면 `null`이고 그러면 티어 줄을 두지 않습니다.
  */
 data class PlayerBadge(
     val riotId: String,

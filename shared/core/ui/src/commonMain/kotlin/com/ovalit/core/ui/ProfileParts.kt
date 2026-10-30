@@ -29,12 +29,15 @@ fun percentText(rate: Double?): String = rate?.let { MetricFormat.PERCENT.valueT
 
 /**
  * 승률을 KDA와 같은 구간 색으로 칠합니다.
- * 55% 미만은 [below], 55~60%는 `statHigh`, 60% 이상은 `statTop`입니다. 보이는 %로 가릅니다.
- * 승패가 갈린 판이 [MIN_COLORED_WIN_RATE_GAMES]판보다 적으면 운이 크게 섞여 칠하지 않습니다. 승률이 없으면 `t3`입니다.
+ * 55% 미만은 [below], 55~60%는 `statHigh`, 60% 이상은 `statTop`입니다.
+ * 보이는 %로 가릅니다.
+ * 승패가 갈린 판이 [MIN_COLORED_WIN_RATE_GAMES]판보다 적으면 운이 크게 섞여 칠하지 않습니다.
+ * 승률이 없으면 `t3`입니다.
  *
  * 경계를 바꾸거나 구간에 이름을 붙이면 등급처럼 읽혀서 그 전에 묻습니다(CLAUDE.md 지켜야 할 선).
  *
- * @param decided 승패가 갈린 판 수입니다. 비긴 판은 넣지 않습니다.
+ * @param decided 승패가 갈린 판 수입니다.
+ *   비긴 판은 넣지 않습니다.
  */
 @Composable
 fun winRateColor(rate: Double?, decided: Int, below: Color): Color {
@@ -48,7 +51,8 @@ fun winRateColor(rate: Double?, decided: Int, below: Color): Color {
     }
 }
 
-// 4판 4승처럼 판이 적은데 칠하면 운으로 오른 승률까지 잘한 것처럼 보인다. 시작 기준선이다.
+// 4판 4승처럼 판이 적은데 칠하면 운으로 오른 승률까지 잘한 것처럼 보인다.
+// 시작 기준선이다.
 private const val MIN_COLORED_WIN_RATE_GAMES = 5
 
 @Composable
@@ -69,8 +73,10 @@ fun WeaponThumb(weapon: WeaponId, name: String, width: Dp, height: Dp) {
 
 /**
  * KDA를 구간마다 칠합니다.
- * 2 미만은 [below], 2~3은 `statHigh`, 3 이상은 `statTop`입니다. 평균대는 칠하지 않고 잘한 구간만 눈에 띄게 합니다.
- * 보이는 두 자리로 반올림한 값으로 가릅니다. 1.995가 "2.00"으로 보이는데 칠하지 않으면 틀려 보입니다.
+ * 2 미만은 [below], 2~3은 `statHigh`, 3 이상은 `statTop`입니다.
+ * 평균대는 칠하지 않고 잘한 구간만 눈에 띄게 합니다.
+ * 보이는 두 자리로 반올림한 값으로 가릅니다.
+ * 1.995가 "2.00"으로 보이는데 칠하지 않으면 틀려 보입니다.
  *
  * 경계를 바꾸거나 구간에 이름을 붙이면 등급처럼 읽혀서 그 전에 묻습니다(CLAUDE.md 지켜야 할 선).
  */
@@ -98,7 +104,7 @@ internal fun kdaTier(kda: Double): KdaTier {
 
 /**
  * "1.92 (344/242/124)"의 두 조각입니다.
- * KDA는 (킬 + 어시) ÷ 데스이고, 표본이 모자라거나 데스가 없으면 [kda]가 `null`이라 합계만 적습니다.
+ * KDA는 (킬 + 어시) ÷ 데스이고 표본이 모자라거나 데스가 없으면 [kda]가 `null`이라 합계만 적습니다.
  * 킬과 어시를 더한 값이라 "평점"이라 부르지 않습니다(CLAUDE.md 지켜야 할 선).
  */
 class KdaText(val kda: Double?, val counts: String)

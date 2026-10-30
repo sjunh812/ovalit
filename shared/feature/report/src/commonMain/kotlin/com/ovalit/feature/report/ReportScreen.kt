@@ -165,7 +165,7 @@ internal fun ReportScreen(
     onOpenFriendRanking: (QueueFilter, FixedMetric) -> Unit = { _, _ -> },
 ) {
     // 첫 수집 뒤 홈으로 넘어오면 리포트가 전환 한가운데 도착한다.
-    // 그때 다 그리면 밀려 들어오던 화면이 멈춰서, 다 들어올 때까지 스켈레톤을 두고 그 뒤에도 묶음마다 한 프레임씩 나눠 그린다.
+    // 그때 다 그리면 밀려 들어오던 화면이 멈춰서 다 들어올 때까지 스켈레톤을 두고 그 뒤에도 묶음마다 한 프레임씩 나눠 그린다.
     val shown = rememberContentShown(loaded = uiState is ReportUiState.Success)
     val canvas = OvalitTheme.colors.canvas
     OvalitStaged(
@@ -216,7 +216,8 @@ internal fun ReportScreen(
                     Spacer(Modifier.height(OvalitSpacing.xs))
                     QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
                     Spacer(Modifier.height(OvalitSpacing.md))
-                    // 여러 판을 받는 동안만 뜬다. 밑의 숫자가 왜 그대로인지 여기서 알린다.
+                    // 여러 판을 받는 동안만 뜬다.
+                    // 밑의 숫자가 왜 그대로인지 여기서 알린다.
                     NewMatchesLine(newMatches, bottomSpacing = OvalitSpacing.lg)
 
                     Column(verticalArrangement = Arrangement.spacedBy(OvalitCardGap)) {
@@ -277,7 +278,8 @@ private fun ReportContent(
     var openDynamic by rememberSaveable { mutableStateOf<DynamicMetric?>(null) }
     var pickingRival by rememberSaveable { mutableStateOf(false) }
 
-    // 고정 칸과 달라진 점은 숫자 밑 한 줄을 같은 크기, 같은 줄 수로 둔다. 카드마다 따로 정하면 좁은 기기에서 한쪽만 두 줄이 된다.
+    // 고정 칸과 달라진 점은 숫자 밑 한 줄을 같은 크기, 같은 줄 수로 둔다.
+    // 카드마다 따로 정하면 좁은 기기에서 한쪽만 두 줄이 된다.
     val dynamicShown = queueFilter.hasDynamicMetrics && report.dynamic.isNotEmpty()
     val subLines = fixedSubLines(report.metrics, report.baseline, queueFilter.fixedMetrics) +
         if (dynamicShown) dynamicSubLines(report) else emptyList()
@@ -285,7 +287,8 @@ private fun ReportContent(
     // 짚을 점은 기타 모드에 없다
     val note = report.note?.takeIf { queueFilter.hasDynamicMetrics }
 
-    // 한 프레임에 한 묶음씩 그린다. 무거운 칸(고정 칸, 달라진 점, 요원·무기)은 따로 묶는다.
+    // 한 프레임에 한 묶음씩 그린다.
+    // 무거운 칸(고정 칸, 달라진 점, 요원·무기)은 따로 묶는다.
     OvalitCard {
         OvalitStage {
             PeriodHeader(report)
@@ -314,7 +317,8 @@ private fun ReportContent(
             )
             FixedMetricSummary(baseline = report.baseline)
         }
-        // 흐름 입구는 고정 칸 밑에 둔다. 고정 칸 첫 지표의 8주 막대라 그 숫자와 같이 읽힌다.
+        // 흐름 입구는 고정 칸 밑에 둔다.
+        // 고정 칸 첫 지표의 8주 막대라 그 숫자와 같이 읽힌다.
         OvalitStage {
             TrendEntry(
                 report = report,
@@ -329,7 +333,8 @@ private fun ReportContent(
         if (dynamicShown) {
             OvalitStage { OvalitCard { DynamicMetricSection(report, onOpenMetric = { openDynamic = it }, subLines = subLines) } }
         }
-        // 광고는 이번 주 숫자(기간, 고정 칸, 달라진 점)를 다 본 바로 뒤에 둔다. 그 사이에는 두지 않는다(docs/screens.md).
+        // 광고는 이번 주 숫자(기간, 고정 칸, 달라진 점)를 다 본 바로 뒤에 둔다.
+        // 그 사이에는 두지 않는다(docs/screens.md).
         AdSlot(AdPlacement.HOME) { ad -> OvalitCard { ad() } }
         report.insight?.let { insight ->
             OvalitStage {
@@ -404,7 +409,8 @@ private fun Reimport(onClick: () -> Unit) {
     }
 }
 
-// 기타 칩에서 데스매치만 뛰었으면 뛴 경기가 없는 게 아니다. 리포트에 넣지 않는 모드라서 경기 수를 따로 적는다.
+// 기타 칩에서 데스매치만 뛰었으면 뛴 경기가 없는 게 아니다.
+// 리포트에 넣지 않는 모드라서 경기 수를 따로 적는다.
 @Composable
 private fun NotEnoughMatches(report: WeeklyReport.NotEnoughMatches) {
     val played = report.played

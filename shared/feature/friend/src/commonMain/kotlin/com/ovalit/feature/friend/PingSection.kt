@@ -198,7 +198,8 @@ internal fun crowdCounts(crowd: List<PingMember>): String = listOfNotNull(
     crowd.count { it.answer == PingAnswer.NO }.takeIf { it > 0 }?.let { stringResource(Res.string.ping_count_no, it) },
 ).joinToString(" · ")
 
-// 같은 시각을 낸 친구들이다. 받은 요청 줄처럼 아바타, 두 줄 글, 오른쪽 버튼으로 두고 그 자리에서 받는다.
+// 같은 시각을 낸 친구들이다.
+// 받은 요청 줄처럼 아바타, 두 줄 글, 오른쪽 버튼으로 두고 그 자리에서 받는다.
 @Composable
 internal fun ProposalRow(members: List<PingMember>, time: String, onAccept: () -> Unit) {
     val colors = OvalitTheme.colors
@@ -228,7 +229,8 @@ internal fun ProposalRow(members: List<PingMember>, time: String, onAccept: () -
     }
 }
 
-// 참석자 줄 맨 밑에서 친구를 더 부르는 줄이다. 아바타 자리에 + 동그라미를 둬서 위 줄들과 이름 자리가 맞는다.
+// 참석자 줄 맨 밑에서 친구를 더 부르는 줄이다.
+// 아바타 자리에 + 동그라미를 둬서 위 줄들과 이름 자리가 맞는다.
 @Composable
 internal fun InviteMoreRow(onClick: () -> Unit) {
     val colors = OvalitTheme.colors
@@ -256,7 +258,8 @@ internal fun InviteMoreRow(onClick: () -> Unit) {
  * 보낸 ㅇㅂㅇ에 친구를 더 부르는 시트입니다.
  * 부르기 시트와 같은 아바타 고르기이고 시각은 이미 정해져 있어 없습니다.
  *
- * @param seats 더 부를 수 있는 자리입니다. 못 간다고 한 친구는 세지 않습니다.
+ * @param seats 더 부를 수 있는 자리입니다.
+ *   못 간다고 한 친구는 세지 않습니다.
  */
 @Composable
 internal fun PingInviteSheet(friends: List<Friend>, seats: Int, onInvite: (List<PlayerId>) -> Unit, onDismiss: () -> Unit) {
@@ -286,7 +289,9 @@ internal fun PingInviteSheet(friends: List<Friend>, seats: Int, onInvite: (List<
     }
 }
 
-// 친구 한 사람의 답이다. 강조는 색이 아니라 밝기로 한다. 참석이 가장 밝고 응답 전이 가장 옅다.
+// 친구 한 사람의 답이다.
+// 강조는 색이 아니라 밝기로 한다.
+// 참석이 가장 밝고 응답 전이 가장 옅다.
 @Composable
 internal fun MemberLine(member: PingMember, now: Instant, timeZone: TimeZone, isMe: Boolean = false) {
     val colors = OvalitTheme.colors
@@ -319,7 +324,8 @@ internal fun MemberLine(member: PingMember, now: Instant, timeZone: TimeZone, is
     }
 }
 
-// 참석은 체크, 다른 시간은 시계를 아바타 오른쪽 아래에 붙인다. 불참과 응답 전은 표시 없이 옅게 둔다.
+// 참석은 체크, 다른 시간은 시계를 아바타 오른쪽 아래에 붙인다.
+// 불참과 응답 전은 표시 없이 옅게 둔다.
 @Composable
 private fun StatusAvatar(member: PingMember, size: Dp, modifier: Modifier = Modifier, ring: Boolean = false) {
     val colors = OvalitTheme.colors
@@ -358,7 +364,8 @@ private fun StatusAvatar(member: PingMember, size: Dp, modifier: Modifier = Modi
 }
 
 /**
- * 갈게요, 다른 시간, 못 가요를 한 덩어리로 둔 버튼입니다. 고른 답은 액센트 면입니다.
+ * 갈게요, 다른 시간, 못 가요를 한 덩어리로 둔 버튼입니다.
+ * 고른 답은 액센트 면입니다.
  * 다른 시간을 골랐으면 그 칸에 낸 시각을 적습니다("15:00 제안").
  */
 @Composable
@@ -381,7 +388,8 @@ internal fun AnswerBar(
     }
 }
 
-// 답한 뒤의 줄이다. 버튼 줄과 높이와 면이 같아서 접혀도 화면 높이가 그대로다.
+// 답한 뒤의 줄이다.
+// 버튼 줄과 높이와 면이 같아서 접혀도 화면 높이가 그대로다.
 @Composable
 internal fun AnsweredLine(text: String, attending: Boolean, onChange: () -> Unit) {
     val colors = OvalitTheme.colors
@@ -454,9 +462,11 @@ private fun BarItem(
 }
 
 /**
- * 친구와 시각을 골라 부르는 시트입니다. 아바타를 눌러 친구를 고르고 시각은 휠로 고릅니다.
+ * 친구와 시각을 골라 부르는 시트입니다.
+ * 아바타를 눌러 친구를 고르고 시각은 휠로 고릅니다.
  *
- * @param tooMany 오늘 보낼 수 있는 만큼 이미 보냈으면 `true`입니다. 버튼 위에 그 말을 적습니다.
+ * @param tooMany 오늘 보낼 수 있는 만큼 이미 보냈으면 `true`입니다.
+ *   버튼 위에 그 말을 적습니다.
  */
 @Composable
 internal fun PingComposeSheet(
@@ -518,7 +528,8 @@ internal fun PingComposeSheet(
             enabled = picked.isNotEmpty() && !tooMany,
             onClick = {
                 haptics.confirm()
-                // "지금"은 시각을 비워 보낸다. 보내는 순간 ViewModel이 채운다.
+                // "지금"은 시각을 비워 보낸다.
+                // 보내는 순간 ViewModel이 채운다.
                 // 화면에 들고 있는 지금은 목록이 바뀔 때만 다시 정해져서 탭을 열어 둔 만큼 지난 시각이 된다.
                 // 서버는 1분 넘게 지난 시각을 받지 않는다.
                 onSend(picked.map(::PlayerId), startsAt)
@@ -533,9 +544,11 @@ internal fun PingComposeSheet(
  * 최근에 같이 뛴 친구가 앞이라 대개 밀 일이 없습니다.
  *
  * 줄을 시트 끝까지 넓히고 같은 폭을 목록 안쪽 여백으로 둡니다.
- * 그래서 첫 칸은 본문 선에 맞고 밀면 칸이 시트 끝까지 이어집니다. 누른 면도 줄 끝에서 잘리지 않습니다.
+ * 그래서 첫 칸은 본문 선에 맞고 밀면 칸이 시트 끝까지 이어집니다.
+ * 누른 면도 줄 끝에서 잘리지 않습니다.
  *
- * @param picked 고른 친구의 ID입니다. [limit]명을 채우면 나머지 칸을 흐리게 막습니다.
+ * @param picked 고른 친구의 ID입니다.
+ *   [limit]명을 채우면 나머지 칸을 흐리게 막습니다.
  */
 @Composable
 private fun FriendPickRow(friends: List<Friend>, picked: List<String>, limit: Int, onToggle: (Friend, Boolean) -> Unit) {
@@ -557,7 +570,8 @@ private fun FriendPickRow(friends: List<Friend>, picked: List<String>, limit: In
     }
 }
 
-// 고른 친구는 액센트 테두리와 체크를 단다. S0-4에서 관심사를 고르는 칸과 같은 표시다.
+// 고른 친구는 액센트 테두리와 체크를 단다.
+// S0-4에서 관심사를 고르는 칸과 같은 표시다.
 @Composable
 private fun FriendPick(friend: Friend, selected: Boolean, enabled: Boolean, onToggle: (Boolean) -> Unit) {
     val colors = OvalitTheme.colors
@@ -618,10 +632,12 @@ private fun PickLabel(text: String) {
 
 /**
  * 다른 시간으로 답하거나 보낸 초대의 시각을 옮길 때 띄우는 시트입니다.
- * 정해진 시간과 내가 이미 낸 시간도 휠에 흐리게 두고 고르지 못하게 합니다. 빼면 지금 몇 시로 잡혀 있는지 휠에서 안 보입니다.
+ * 정해진 시간과 내가 이미 낸 시간도 휠에 흐리게 두고 고르지 못하게 합니다.
+ * 빼면 지금 몇 시로 잡혀 있는지 휠에서 안 보입니다.
  * 휠은 정해진 시간 바로 다음 줄에서 시작합니다.
  *
- * @param proposed 내가 다른 시간으로 답해 둔 시각입니다. 같은 시각을 또 낼 일은 없어서 막습니다.
+ * @param proposed 내가 다른 시간으로 답해 둔 시각입니다.
+ *   같은 시각을 또 낼 일은 없어서 막습니다.
  */
 @Composable
 internal fun PingTimeSheet(

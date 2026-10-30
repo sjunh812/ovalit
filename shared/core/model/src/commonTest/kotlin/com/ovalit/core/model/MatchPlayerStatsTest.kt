@@ -28,7 +28,8 @@ class MatchPlayerStatsTest {
         assertEquals(0, stats.getValue(Ally).firstKills)
     }
 
-    // 리포트와 같은 규칙이다. 스킬로 자기를 죽였거나 팀킬은 첫 킬이 아니다.
+    // 리포트와 같은 규칙이다.
+    // 스킬로 자기를 죽였거나 팀킬은 첫 킬이 아니다.
     @Test
     fun `자기 스킬 사망과 팀킬은 첫 킬과 첫 데스로 세지 않는다`() {
         val match = match(

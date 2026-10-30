@@ -86,7 +86,7 @@ class FailureNotices {
 }
 
 /**
- * [block]을 띄우고, 실패하면 [onFailure]를 부른 뒤 [notices]로 알립니다.
+ * [block]을 띄우고 실패하면 [onFailure]를 부른 뒤 [notices]로 알립니다.
  * 취소는 그대로 던집니다.
  * `viewModelScope`에는 예외 처리기가 없어서 그냥 `launch`에서 던지면 앱이 죽습니다.
  */

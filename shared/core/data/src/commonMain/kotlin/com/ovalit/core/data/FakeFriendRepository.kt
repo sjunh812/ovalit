@@ -73,7 +73,8 @@ class FakeFriendRepository(
     // 받을 것은 없지만 당긴 티가 나게 잠깐 기다린다
     override suspend fun refresh() = delay(REFRESH_DELAY)
 
-    // 실제 링크는 서버가 만들어 준다. 경로만 서버의 초대 페이지(`/i/:code`)와 App Link에 맞춘다.
+    // 실제 링크는 서버가 만들어 준다.
+    // 경로만 서버의 초대 페이지(`/i/:code`)와 App Link에 맞춘다.
     override fun inviteLink(): String = "https://ovalit.netlify.app/i/K7Q2M"
 
     /** 가짜 ㅇㅂㅇ이 친구 이름을 찾을 때 씁니다. */
@@ -96,7 +97,8 @@ class FakeFriendRepository(
 
     private fun fakeFriends(): List<Friend> {
         val now = clock.now()
-        // 가짜 내 경기에 친구가 우리 팀으로 끼어 있다. 실제 저장소도 기기에 저장된 내 경기에서 찾는다.
+        // 가짜 내 경기에 친구가 우리 팀으로 끼어 있다.
+        // 실제 저장소도 기기에 저장된 내 경기에서 찾는다.
         val mine = fakeMatches(now)
         // 목업 S5의 민석은 다이아몬드 2다
         val seeds = listOf(101 to 17, 202 to 19, 303 to 14)

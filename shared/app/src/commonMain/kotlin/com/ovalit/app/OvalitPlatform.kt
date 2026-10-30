@@ -22,7 +22,8 @@ interface OvalitPlatform {
     fun HomeBackHandler(toast: OvalitToastState) {}
 
     /**
-     * 알림 권한과 그걸 묻는 길입니다. 앱 맨 위에서 한 번 부르고, 앱으로 돌아올 때마다 다시 확인합니다.
+     * 알림 권한과 그걸 묻는 길입니다.
+     * 앱 맨 위에서 한 번 부르고 앱으로 돌아올 때마다 다시 확인합니다.
      * 알림을 보내지 않는 iOS는 [NotificationPermission.NotNeeded]입니다.
      */
     @Composable

@@ -55,7 +55,8 @@ compose.resources {
     generateResClass = always
 }
 
-// 시뮬레이터에 까는 앱 번들을 만든다. 실행 파일 옆에 Compose 리소스와 Info.plist를 두고 임시 서명만 한다.
+// 시뮬레이터에 까는 앱 번들을 만든다.
+// 실행 파일 옆에 Compose 리소스와 Info.plist를 두고 임시 서명만 한다.
 // 기기용 서명과 배포는 범위 밖이다(CLAUDE.md 아키텍처).
 val iosAppBundle = layout.buildDirectory.dir("ios/$IOS_APP_NAME.app")
 val syncIosSimulatorApp = tasks.register<Sync>("syncIosSimulatorApp") {
@@ -65,7 +66,8 @@ val syncIosSimulatorApp = tasks.register<Sync>("syncIosSimulatorApp") {
         include("$executable.kexe")
         rename { executable }
     }
-    // 모든 모듈의 Compose 리소스(문구, 글꼴)를 모은 것이다. 앱은 번들의 compose-resources에서 읽는다.
+    // 모든 모듈의 Compose 리소스(문구, 글꼴)를 모은 것이다.
+    // 앱은 번들의 compose-resources에서 읽는다.
     from(layout.buildDirectory.dir("kotlin-multiplatform-resources/aggregated-resources/iosSimulatorArm64")) {
         into("compose-resources")
     }

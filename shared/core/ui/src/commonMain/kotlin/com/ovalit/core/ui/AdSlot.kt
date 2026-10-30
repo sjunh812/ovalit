@@ -55,7 +55,7 @@ val LocalAdRenderer = staticCompositionLocalOf<AdRenderer?> { null }
 
 /**
  * [placement]에 광고 하나를 둡니다.
- * [key]는 같은 자리에 광고가 여럿일 때 가르는 이름이고, 같은 키는 스크롤해 다시 보여도 같은 광고를 씁니다.
+ * [key]는 같은 자리에 광고가 여럿일 때 가르는 이름이고 같은 키는 스크롤해 다시 보여도 같은 광고를 씁니다.
  */
 @Composable
 fun AdSlot(
@@ -67,11 +67,13 @@ fun AdSlot(
 }
 
 /**
- * 날짜로 묶은 경기 목록에서 광고를 둘 묶음의 번호입니다. 그 묶음 바로 앞에 광고 한 줄을 둡니다.
+ * 날짜로 묶은 경기 목록에서 광고를 둘 묶음의 번호입니다.
+ * 그 묶음 바로 앞에 광고 한 줄을 둡니다.
  * 한 날짜 안에 끼우면 그날 경기처럼 읽혀서 묶음 사이에만 둡니다.
  * [FIRST_LIST_AD_AFTER]줄을 지난 첫 묶음 앞에 하나, 그 뒤로는 [LIST_AD_EVERY]줄이 넘을 때마다 하나입니다.
  *
- * @param daySizes 날짜 묶음마다의 경기 수입니다. 위에서부터입니다.
+ * @param daySizes 날짜 묶음마다의 경기 수입니다.
+ *   위에서부터입니다.
  */
 fun listAdBefore(daySizes: List<Int>): Set<Int> {
     val before = mutableSetOf<Int>()
@@ -86,6 +88,7 @@ fun listAdBefore(daySizes: List<Int>): Set<Int> {
     return before
 }
 
-// 첫 광고가 첫 화면 안에 들어오게 세 줄 뒤에 둔다. 시작 기준선이다.
+// 첫 광고가 첫 화면 안에 들어오게 세 줄 뒤에 둔다.
+// 시작 기준선이다.
 const val FIRST_LIST_AD_AFTER = 3
 const val LIST_AD_EVERY = 8

@@ -9,11 +9,14 @@ enum class ThemePreference {
 }
 
 /**
- * 기기에만 두는 설정입니다. 서버가 보고 움직이는 전적 공개와 ㅇㅂㅇ 시작 전 알림은 [AccountSettings]에 있습니다.
+ * 기기에만 두는 설정입니다.
+ * 서버가 보고 움직이는 전적 공개와 ㅇㅂㅇ 시작 전 알림은 [AccountSettings]에 있습니다.
  *
- * @property notifyWeeklyReport 서버가 월요일 오전 9시에 FCM 토픽으로 보내는 주간 리포트 알림입니다. 끄면 토픽 구독을 풉니다.
+ * @property notifyWeeklyReport 서버가 월요일 오전 9시에 FCM 토픽으로 보내는 주간 리포트 알림입니다.
+ *   끄면 토픽 구독을 풉니다.
  * @property notifyPing 친구가 보낸 ㅇㅂㅇ과 내가 보낸 ㅇㅂㅇ의 답을 알릴지입니다.
- * @property focus S0-4와 설정에서 고른 관심사입니다. 동적 칸 순서와 개선 포인트 문장을 고를 때 씁니다.
+ * @property focus S0-4와 설정에서 고른 관심사입니다.
+ *   동적 칸 순서와 개선 포인트 문장을 고를 때 씁니다.
  * @property seenProfileHint 홈의 "내 프로필은 여기서 볼 수 있어요" 말풍선을 띄웠는지입니다.
  *   사용자가 고르는 값이 아니라 한 번만 띄우려고 적어 둡니다.
  * @property seenNotificationPrimer 친구 요청을 수락하거나 파티를 모집했을 때 "친구가 부르면 알려드릴까요?"를 띄웠는지입니다.

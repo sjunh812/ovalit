@@ -26,7 +26,8 @@ class FriendRankingTest {
         assertEquals(listOf(1, 2, 3), ranked.map { it.rank })
     }
 
-    // 피해량은 정수로 보인다. 150.2와 149.8은 둘 다 150이라 같은 등수다.
+    // 피해량은 정수로 보인다.
+    // 150.2와 149.8은 둘 다 150이라 같은 등수다.
     @Test
     fun `보이는 값이 같으면 같은 등수이고 그 안에서는 내가 맨 앞이다`() {
         val ranked = rankFriends(
@@ -64,7 +65,8 @@ class FriendRankingTest {
         assertTrue(preview.hasMore)
     }
 
-    // 동률 무리 앞에 나를 두니 내 등수가 5면 늘 다섯 줄 안에 있다. "5 … 5"처럼 같은 등수가 띄워 놓이지 않는다.
+    // 동률 무리 앞에 나를 두니 내 등수가 5면 늘 다섯 줄 안에 있다.
+    // "5 … 5"처럼 같은 등수가 띄워 놓이지 않는다.
     @Test
     fun `다섯째 줄과 동률이면 내 줄을 다섯 줄 안에 둔다`() {
         val friends = listOf(200.0, 190.0, 180.0, 170.0, 160.0, 160.0, 160.0).mapIndexed { i, value -> friend("친구$i", value) }

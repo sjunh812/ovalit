@@ -69,7 +69,8 @@ sealed interface MatchDetailUiState {
 }
 
 /**
- * @property rank 건틀릿처럼 작은 팀 여럿이 등수를 다투는 경기에서 이 팀의 등수입니다. 그 밖에는 `null`입니다.
+ * @property rank 건틀릿처럼 작은 팀 여럿이 등수를 다투는 경기에서 이 팀의 등수입니다.
+ *   그 밖에는 `null`입니다.
  */
 data class ScoreboardGroup(
     val side: ScoreboardSide,
@@ -99,7 +100,8 @@ internal fun Match.scoreboardGroups(relation: (PlayerId) -> PlayerRelation): Lis
     val placements = placements()
     val stats = if (format == MatchFormat.ROUNDS) playerStats() else emptyMap()
     fun row(line: Scoreline) = ScoreboardRow(line, relation(line.player), placements[line.player], stats[line.player])
-    // 라운드제는 자리(라운드당 전투점수) 순이다. 합계로 세우면 튕겨서 덜 뛴 사람이 밀린다.
+    // 라운드제는 자리(라운드당 전투점수) 순이다.
+    // 합계로 세우면 튕겨서 덜 뛴 사람이 밀린다.
     // 라운드가 없는 팀 모드는 자리가 없어 킬 순이다.
     val order = compareBy<Scoreline> { placements[it.player]?.rank ?: Int.MAX_VALUE }
         .thenByDescending { it.kills }

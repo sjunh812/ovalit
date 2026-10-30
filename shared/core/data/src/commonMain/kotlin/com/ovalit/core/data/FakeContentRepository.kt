@@ -12,7 +12,8 @@ import kotlinx.coroutines.flow.map
  * [language]가 `"ja"`면 일본어 이름을, 아니면 한국어 이름을 냅니다.
  * 실제 저장소는 서버에 `locale`을 넘겨 그 언어의 카탈로그를 받습니다.
  *
- * @param language 화면 언어입니다. 앱이 켜진 채로 앱 언어를 바꾸면 새 값이 흘러 카탈로그도 그 언어로 다시 냅니다.
+ * @param language 화면 언어입니다.
+ *   앱이 켜진 채로 앱 언어를 바꾸면 새 값이 흘러 카탈로그도 그 언어로 다시 냅니다.
  */
 class FakeContentRepository(language: Flow<String> = flowOf("ko")) : ContentRepository {
 

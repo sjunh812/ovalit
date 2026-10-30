@@ -44,7 +44,8 @@ class RoundsOverviewTest {
         assertEquals(WinRecord(rounds = 1, wins = 1), overview.defense)
     }
 
-    // 장비가 상대보다 1,000 넘게 적었는데 이긴 라운드다. 피스톨은 모두 같은 크레드라 뺀다.
+    // 장비가 상대보다 1,000 넘게 적었는데 이긴 라운드다.
+    // 피스톨은 모두 같은 크레드라 뺀다.
     @Test
     fun `장비가 크게 밀렸는데 이긴 라운드를 센다`() {
         val match = match(

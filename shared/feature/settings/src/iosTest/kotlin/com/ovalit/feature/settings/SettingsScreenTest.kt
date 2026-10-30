@@ -32,7 +32,8 @@ import kotlinx.datetime.TimeZone
 @OptIn(ExperimentalTestApi::class)
 class SettingsScreenTest {
 
-    // 보상형 광고 한 편으로 24시간 광고를 숨긴다. 광고가 꺼져 있으면 줄이 없다.
+    // 보상형 광고 한 편으로 24시간 광고를 숨긴다.
+    // 광고가 꺼져 있으면 줄이 없다.
     @Test
     fun `광고 없이 보기 줄은 광고가 있을 때만 두고 누르면 시트를 띄운다`() = runComposeUiTest {
         val ads = CountingAds()
@@ -227,7 +228,8 @@ class SettingsScreenTest {
         assertEquals(Focus.CONSISTENCY, focus)
     }
 
-    // S0-4처럼 무엇을 먼저 보는지 적는다. 이름만으로는 어떤 지표가 올라오는지 모른다.
+    // S0-4처럼 무엇을 먼저 보는지 적는다.
+    // 이름만으로는 어떤 지표가 올라오는지 모른다.
     @Test
     fun `관심사 시트는 고르면 먼저 볼 지표를 적는다`() = runComposeUiTest {
         setContent { Settings() }

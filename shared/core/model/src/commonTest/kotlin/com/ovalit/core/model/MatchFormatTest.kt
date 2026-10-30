@@ -40,7 +40,8 @@ class MatchFormatTest {
         assertEquals(listOf(1, 2, 2, 4), match.standings().map { it.rank })
     }
 
-    // 건틀릿 응답이 등수를 어떻게 주는지는 아직 모른다. 등수가 오면 점수보다 먼저 쓴다.
+    // 건틀릿 응답이 등수를 어떻게 주는지는 아직 모른다.
+    // 등수가 오면 점수보다 먼저 쓴다.
     @Test
     fun `건틀릿은 두 사람씩 여덟 팀이 응답이 준 등수로 늘어선다`() {
         val match = gauntlet()
@@ -97,7 +98,8 @@ class MatchFormatTest {
     }
 }
 
-// 데스매치 네 사람이다. 점수는 Me, Ally, Enemy, OtherEnemy 순이고 기본값이면 Enemy가 1등, 내가 3등이다.
+// 데스매치 네 사람이다.
+// 점수는 Me, Ally, Enemy, OtherEnemy 순이고 기본값이면 Enemy가 1등, 내가 3등이다.
 private fun deathmatch(points: List<Int> = listOf(30, 12, 40, 35)): Match {
     val people = listOf(Me, Ally, Enemy, OtherEnemy)
     val players = people.zip(points) { player, kills -> line(player, kills = kills, onMyTeam = player == Me) }
@@ -107,7 +109,8 @@ private fun deathmatch(points: List<Int> = listOf(30, 12, 40, 35)): Match {
     )
 }
 
-// 건틀릿 여덟 팀이다. 나와 Ally가 2등이고, 응답의 점수와 상관없이 등수를 그대로 쓰는지 보려고 점수는 거꾸로 준다.
+// 건틀릿 여덟 팀이다.
+// 나와 Ally가 2등이고 응답의 점수와 상관없이 등수를 그대로 쓰는지 보려고 점수는 거꾸로 준다.
 private fun gauntlet(): Match {
     val others = List(12) { PlayerId("p$it") }
     val pairs = listOf(listOf(Enemy, OtherEnemy), listOf(Me, Ally)) + others.chunked(2)

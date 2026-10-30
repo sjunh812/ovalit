@@ -42,8 +42,10 @@ sealed interface MatchesUiState {
     data object Loading : MatchesUiState
 
     /**
-     * @property days 고른 큐와 필터에 맞는 경기를 날짜별로 묶었습니다. 최근 날짜가 위입니다.
-     * @property agents 필터에서 고를 수 있는 요원입니다. 고른 큐에서 많이 한 순입니다.
+     * @property days 고른 큐와 필터에 맞는 경기를 날짜별로 묶었습니다.
+     *   최근 날짜가 위입니다.
+     * @property agents 필터에서 고를 수 있는 요원입니다.
+     *   고른 큐에서 많이 한 순입니다.
      * @property noStoredMatches 설정에서 저장된 데이터를 지워 기기에 경기가 하나도 없는지입니다.
      *   "이 큐로 뛴 경기가 없어요"는 틀린 말이라 다시 불러올 곳을 알려 줍니다.
      */
@@ -74,7 +76,8 @@ data class MatchDay(val date: LocalDate, val matches: List<Match>) {
 
 data class DayRecord(val wins: Int, val losses: Int, val draws: Int)
 
-// 데스매치와 건틀릿은 승패가 아니라 등수로 끝나서 세지 않는다. 경기 줄도 그런 판에는 승패를 적지 않는다.
+// 데스매치와 건틀릿은 승패가 아니라 등수로 끝나서 세지 않는다.
+// 경기 줄도 그런 판에는 승패를 적지 않는다.
 // 이기거나 진 판이 하나도 없으면 "0승 0패"가 되니 적지 않는다.
 private fun List<Match>.dayRecord(): DayRecord? {
     val twoTeams = filter { it.format == MatchFormat.ROUNDS || it.format == MatchFormat.TEAM_POINTS }
@@ -108,7 +111,8 @@ class MatchesViewModel(
     private val refreshResults = RefreshResults()
 
     /**
-     * 당겨서 새 경기를 다 받으면 몇 판을 받았는지입니다. 화면 아래에 한 줄 띄웁니다.
+     * 당겨서 새 경기를 다 받으면 몇 판을 받았는지입니다.
+     * 화면 아래에 한 줄 띄웁니다.
      * 받는 동안 진행 줄이 떴어도 다 받으면 보냅니다.
      */
     val refreshed: Flow<Int> = refreshResults.flow
@@ -161,7 +165,8 @@ class MatchesViewModel(
     )
 
     /**
-     * 새로 끝난 경기를 받습니다. 받는 중에 또 당기거나 진행 줄이 떠 있으면 무시합니다.
+     * 새로 끝난 경기를 받습니다.
+     * 받는 중에 또 당기거나 진행 줄이 떠 있으면 무시합니다.
      * 실패해도 저장해 둔 경기는 그대로 둡니다.
      */
     fun refresh() {

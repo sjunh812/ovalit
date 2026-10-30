@@ -8,7 +8,9 @@ import org.jetbrains.compose.ComposeExtension
 import org.jetbrains.compose.resources.ResourcesExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
-// shared/feature 아래 모듈이 같이 쓴다. 기능 모듈은 core에만 기대고 서로를 모른다. 어디서 어디로 가는지는 shared/app이 정한다.
+// shared/feature 아래 모듈이 같이 쓴다.
+// 기능 모듈은 core에만 기대고 서로를 모른다.
+// 어디서 어디로 가는지는 shared/app이 정한다.
 class OvalitKmpFeatureConventionPlugin : Plugin<Project> {
 
     override fun apply(target: Project) = with(target) {

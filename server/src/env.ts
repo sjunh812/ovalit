@@ -4,7 +4,8 @@ export interface Env {
   RSO_CLIENT_ID?: string;
   RSO_CLIENT_SECRET?: string;
   /**
-   * RSO state에 HMAC 서명하는 키입니다. 32자 이상이어야 하고 `openssl rand -base64 32`로 만듭니다.
+   * RSO state에 HMAC 서명하는 키입니다.
+   * 32자 이상이어야 하고 `openssl rand -base64 32`로 만듭니다.
    * 없거나 짧으면 RSO를 띄우지 않습니다(503 `rso_not_configured`).
    * 바꾸면 그 전에 시작해 아직 Riot 로그인 중인 사람만 다시 시작합니다.
    */
@@ -16,8 +17,10 @@ export interface Env {
    */
   DEV_LOGIN?: string;
   /**
-   * 앱 서명 인증서의 SHA-256 지문입니다. 여럿이면 쉼표로 잇습니다(디버그 키, Play 앱 서명 키).
-   * 안드로이드가 이 값으로 `/auth/done` App Link를 우리 앱에 이어 줍니다. 비워 두면 `/.well-known/assetlinks.json`이 404입니다.
+   * 앱 서명 인증서의 SHA-256 지문입니다.
+   * 여럿이면 쉼표로 잇습니다(디버그 키, Play 앱 서명 키).
+   * 안드로이드가 이 값으로 `/auth/done` App Link를 우리 앱에 이어 줍니다.
+   * 비워 두면 `/.well-known/assetlinks.json`이 404입니다.
    */
   ANDROID_CERT_SHA256?: string;
   /**

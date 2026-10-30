@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 
 /**
  * 관여율(KAST)은 라운드마다 킬(K)·어시스트(A)·생존(S)·트레이드(T) 중 하나라도 했는지 봅니다.
- * 하나씩 떼어서 확인하고, 아무것도 못 한 라운드가 빠지는지 봅니다.
+ * 하나씩 떼어서 확인하고 아무것도 못 한 라운드가 빠지는지 봅니다.
  */
 class KastTest {
 
@@ -39,7 +39,8 @@ class KastTest {
         assertEquals(1, metrics.kastRounds)
     }
 
-    // 세이지 부활로 두 번 죽은 라운드다. 목록에는 나중 데스가 먼저 왔지만 먼저 죽은 쪽으로 트레이드를 본다.
+    // 세이지 부활로 두 번 죽은 라운드다.
+    // 목록에는 나중 데스가 먼저 왔지만 먼저 죽은 쪽으로 트레이드를 본다.
     @Test
     fun `두 번 죽은 라운드는 먼저 죽은 데스로 트레이드를 본다`() {
         val metrics = match(round(kill(30.0, OtherEnemy, Me), kill(10.0, Enemy, Me), kill(12.0, Ally, Enemy))).metrics()
@@ -47,7 +48,8 @@ class KastTest {
         assertEquals(1, metrics.kastRounds)
     }
 
-    // 스코어보드도 두 번 죽으면 데스 2다. 1로 세면 K/D와 KDA가 게임보다 높게 나온다.
+    // 스코어보드도 두 번 죽으면 데스 2다.
+    // 1로 세면 K/D와 KDA가 게임보다 높게 나온다.
     @Test
     fun `세이지 부활로 두 번 죽으면 데스를 두 번 센다`() {
         val metrics = match(round(kill(10.0, Enemy, Me), kill(30.0, OtherEnemy, Me))).metrics()
@@ -56,7 +58,8 @@ class KastTest {
         assertEquals(0, metrics.survivedRounds)
     }
 
-    // 트레이드 받은 데스 비율은 데스마다 센다. 분모가 데스 수라 분자도 데스로 세야 비율이 1을 넘지 않는다.
+    // 트레이드 받은 데스 비율은 데스마다 센다.
+    // 분모가 데스 수라 분자도 데스로 세야 비율이 1을 넘지 않는다.
     @Test
     fun `두 번 죽은 라운드는 갚은 데스마다 트레이드로 센다`() {
         val metrics = match(
@@ -81,7 +84,8 @@ class KastTest {
         assertEquals(0, metrics.kastRounds)
     }
 
-    // 우리 팀이 누군가를 잡았다고 다 트레이드가 아니다. 나를 죽인 사람이어야 한다.
+    // 우리 팀이 누군가를 잡았다고 다 트레이드가 아니다.
+    // 나를 죽인 사람이어야 한다.
     @Test
     fun `내 킬러가 아닌 다른 적을 잡은 건 트레이드가 아니다`() {
         val metrics = match(round(kill(10.0, Enemy, Me), kill(11.0, Ally, OtherEnemy))).metrics()

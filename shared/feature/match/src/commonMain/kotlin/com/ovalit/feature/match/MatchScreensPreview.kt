@@ -22,7 +22,8 @@ private fun MatchesEmptyPreview() {
     OvalitThemePreview { MatchesScreen(MatchPreviewData.empty, {}, {}, {}) }
 }
 
-// 좁은 폭과 큰 글씨에서 경기 줄을 본다. 오른쪽에 칩, 스코어, K/D/A가 몰려 가장 빡빡하다.
+// 좁은 폭과 큰 글씨에서 경기 줄을 본다.
+// 오른쪽에 칩, 스코어, K/D/A가 몰려 가장 빡빡하다.
 @Preview(widthDp = 320, heightDp = 568, fontScale = 1.5f)
 @Composable
 private fun MatchesSmallLargeFontPreview() {
@@ -47,7 +48,8 @@ private fun MatchDetailSmallLargeFontPreview() {
     OvalitThemePreview { MatchDetailScreen(MatchPreviewData.detail, {}, {}, {}, {}, {}) }
 }
 
-// 기타 칩이다. 데스매치와 건틀릿은 스코어 자리에 등수를, 팀 데스매치는 팀 점수를 적는다.
+// 기타 칩이다.
+// 데스매치와 건틀릿은 스코어 자리에 등수를, 팀 데스매치는 팀 점수를 적는다.
 @Preview(widthDp = 390, heightDp = 844)
 @Composable
 private fun OtherMatchesDarkPreview() {

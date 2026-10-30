@@ -13,7 +13,7 @@ interface ImportScheduler {
 
     /**
      * 새 경기를 [com.ovalit.core.model.NEW_MATCHES_IN_BACKGROUND_FROM]판 이상 남긴 채 앱 화면이 가려지면 부릅니다([NewMatchesWatcher]).
-     * 앱이 살아 있으면 받던 것을 기다리고, 앱이 닫혔으면 남은 경기를 받습니다.
+     * 앱이 살아 있으면 받던 것을 기다리고 앱이 닫혔으면 남은 경기를 받습니다.
      * 다 받으면 [total]판을 받았다고 알립니다.
      * 작업이 시작되기 전에 앱에서 다 받았어도 알림은 갑니다.
      */

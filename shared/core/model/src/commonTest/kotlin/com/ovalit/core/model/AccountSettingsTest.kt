@@ -6,7 +6,8 @@ import kotlin.test.assertNull
 
 class AccountSettingsTest {
 
-    // server/src/routes/me.ts의 REMIND_BEFORE_CHOICES와 같아야 한다. 다르면 PATCH /me가 400을 준다.
+    // server/src/routes/me.ts의 REMIND_BEFORE_CHOICES와 같아야 한다.
+    // 다르면 PATCH /me가 400을 준다.
     @Test
     fun `시작 전 알림은 서버의 remindBefore 값과 서로 옮긴다`() {
         val expected = mapOf(

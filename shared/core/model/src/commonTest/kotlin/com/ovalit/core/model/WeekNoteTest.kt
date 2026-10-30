@@ -13,7 +13,8 @@ import kotlinx.datetime.TimeZone
 
 class WeekNoteTest {
 
-    // 헤드샷 표준편차는 0.0076이라 기준선은 0.011이다. 21% → 30%는 표준편차의 12배다.
+    // 헤드샷 표준편차는 0.0076이라 기준선은 0.011이다.
+    // 21% → 30%는 표준편차의 12배다.
     @Test
     fun `평소 변동폭보다 크게 움직인 고정 지표를 짚는다`() {
         val note = note(current = fixed(head = 30))
@@ -27,7 +28,8 @@ class WeekNoteTest {
         assertNull(note(current = fixed(head = 22)))
     }
 
-    // K/D 1.10 → 1.60은 표준편차 0.045의 11배, 헤드샷 21% → 26%는 6.6배다. 더 크게 움직인 K/D를 고른다.
+    // K/D 1.10 → 1.60은 표준편차 0.045의 11배, 헤드샷 21% → 26%는 6.6배다.
+    // 더 크게 움직인 K/D를 고른다.
     @Test
     fun `여럿이 움직이면 평소 변동폭에 견줘 가장 크게 움직인 지표를 고른다`() {
         val note = note(current = fixed(kills = 160, head = 26))
@@ -35,7 +37,8 @@ class WeekNoteTest {
         assertEquals(FixedMetric.KD, note?.moved?.metric)
     }
 
-    // K/D 1.10 → 1.25는 3.3배, 헤드샷 21% → 30%는 12배다. 화면 순서가 앞선 K/D가 아니라 헤드샷을 고른다.
+    // K/D 1.10 → 1.25는 3.3배, 헤드샷 21% → 30%는 12배다.
+    // 화면 순서가 앞선 K/D가 아니라 헤드샷을 고른다.
     @Test
     fun `화면 순서가 아니라 움직인 크기로 고른다`() {
         val note = note(current = fixed(kills = 125, head = 30))
@@ -62,7 +65,8 @@ class WeekNoteTest {
     // 무기별 어시스트는 들고 시작한 라운드로만 세서 무기 KDA로 짚을 값이 없다
     @Test
     fun `KDA에는 무기를 붙이지 않는다`() {
-        // 밴달 K/D는 1.33에서 2.0으로 KDA와 같은 쪽으로 올랐다. 무기 K/D를 KDA로 적으면 이 줄이 붙는다.
+        // 밴달 K/D는 1.33에서 2.0으로 KDA와 같은 쪽으로 올랐다.
+        // 무기 K/D를 KDA로 적으면 이 줄이 붙는다.
         val vandal = WeaponTrend(Vandal, current = weapon(Vandal, head = 21).copy(kills = 60), baseline = weapon(Vandal, head = 21))
         val note = note(current = fixed(assists = 60), weapons = listOf(vandal))
 
@@ -71,7 +75,8 @@ class WeekNoteTest {
         assertNull(note?.weapon)
     }
 
-    // KDA 2.0인 소바를 뛴 판이 12.5%에서 80%로 늘고 KDA 1.1인 제트는 줄었다. 두 요원 모두 KDA는 그대로라 오른 몫은 비중이다.
+    // KDA 2.0인 소바를 뛴 판이 12.5%에서 80%로 늘고 KDA 1.1인 제트는 줄었다.
+    // 두 요원 모두 KDA는 그대로라 오른 몫은 비중이다.
     @Test
     fun `KDA는 킬과 어시를 더해 비중 몫을 잰다`() {
         val slices = listOf(
@@ -98,7 +103,8 @@ class WeekNoteTest {
         assertEquals(WeaponMetric.HEADSHOT_RATE, note?.weapon?.metric)
     }
 
-    // S6 위쪽 표는 두 표본을 다 넘긴 무기에만 변화량을 적는다. 한쪽만 넘긴 무기를 짚으면 S6 숫자와 맞지 않는다.
+    // S6 위쪽 표는 두 표본을 다 넘긴 무기에만 변화량을 적는다.
+    // 한쪽만 넘긴 무기를 짚으면 S6 숫자와 맞지 않는다.
     @Test
     fun `들고 시작한 라운드가 모자란 무기는 헤드샷이 올라도 붙이지 않는다`() {
         val note = note(current = fixed(head = 30), weapons = listOf(trend(Vandal, head = 30, carriedRounds = 12)))
@@ -106,7 +112,8 @@ class WeekNoteTest {
         assertNull(note?.weapon)
     }
 
-    // 헤드샷이 올랐는데 팬텀만 크게 떨어졌다. 반대로 움직인 무기를 붙이면 "헤드샷이 올랐다"와 어긋난다.
+    // 헤드샷이 올랐는데 팬텀만 크게 떨어졌다.
+    // 반대로 움직인 무기를 붙이면 "헤드샷이 올랐다"와 어긋난다.
     @Test
     fun `반대로 움직인 무기는 붙이지 않는다`() {
         val note = note(current = fixed(head = 30), weapons = listOf(phantom(head = 12)))
@@ -182,7 +189,8 @@ class WeekNoteTest {
         assertEquals(150.0, steady?.usual)
     }
 
-    // 비중은 평소와 같고 풀바이와 이코 모두 피해량이 떨어졌다. 실력이 달라진 것이라 무기와 요원을 적는다.
+    // 비중은 평소와 같고 풀바이와 이코 모두 피해량이 떨어졌다.
+    // 실력이 달라진 것이라 무기와 요원을 적는다.
     @Test
     fun `비중이 그대로면 비중을 적지 않는다`() {
         val slices = listOf(
@@ -226,7 +234,7 @@ class WeekNoteTest {
         assertEquals(110.0, mix?.steady?.current)
     }
 
-    // 피해량이 떨어진 건 피해량 0인 이코가 10%에서 14%로 늘어난 탓인데, 4%p라 짚을 만큼은 아니다.
+    // 피해량이 떨어진 건 피해량 0인 이코가 10%에서 14%로 늘어난 탓인데 4%p라 짚을 만큼은 아니다.
     // 뚜렷하게 바뀐 건 포스바이가 줄어든 것뿐인데 포스바이는 평균보다 낮아서 줄면 오히려 값을 올린다.
     // 거꾸로 짚지 않는다.
     @Test
@@ -268,7 +276,8 @@ class WeekNoteTest {
         assertEquals(0.75, note?.mix?.share)
     }
 
-    // 헤드샷 5%인 오퍼레이터 비중이 6%에서 40%로 늘었다. 밴달은 22% 그대로다.
+    // 헤드샷 5%인 오퍼레이터 비중이 6%에서 40%로 늘었다.
+    // 밴달은 22% 그대로다.
     // 밴달 값은 들고 시작한 라운드로 잰 22%가 아니라 S6과 같은 표본의 30%를 적는다.
     @Test
     fun `무기 비중이 헤드샷을 끌어내렸으면 무기 비중을 적고 S6과 같은 값으로 견준다`() {
@@ -284,7 +293,8 @@ class WeekNoteTest {
         assertEquals(0.21, note?.mix?.steady?.usual)
     }
 
-    // 내 과거 기록 가운데 최고를 짚는다. 평소 주들은 20~22%다.
+    // 내 과거 기록 가운데 최고를 짚는다.
+    // 평소 주들은 20~22%다.
     @Test
     fun `이번 액트 어느 주보다 높으면 이전 최고를 붙인다`() {
         assertEquals(0.22, note(current = fixed(head = 30), actWeeks = UsualWeeks)?.previousBest)
@@ -309,7 +319,8 @@ class WeekNoteTest {
         assertNull(note?.previousBest)
     }
 
-    // 세 주 중 최고는 최고라고 부를 만하지 않다. 라운드가 모자란 주는 S1-a 평소 범위처럼 뺀다.
+    // 세 주 중 최고는 최고라고 부를 만하지 않다.
+    // 라운드가 모자란 주는 S1-a 평소 범위처럼 뺀다.
     @Test
     fun `앞선 주가 넉 주에 못 미치면 최고를 붙이지 않는다`() {
         val short = fixed(head = 35).copy(rounds = 30)
@@ -388,7 +399,8 @@ class WeekNoteTest {
 
         val Usual = fixed()
 
-        // 지표마다 평소 값 위아래로 조금씩 흔들린다. K/D 표준편차는 0.045, 헤드샷은 0.0076이다.
+        // 지표마다 평소 값 위아래로 조금씩 흔들린다.
+        // K/D 표준편차는 0.045, 헤드샷은 0.0076이다.
         val UsualWeeks = listOf(-1, 1, 0, 0, -1, 1, 0, 0).map { d ->
             fixed(kills = 110 + 6 * d, score = 20_000 + 400 * d, damage = 14_000 + 300 * d, head = 21 + d)
         }
@@ -439,7 +451,8 @@ class WeekNoteTest {
             combatScore = score,
         )
 
-        // 풀바이 피해량은 두 기간 모두 150, 이코는 87.5다. 이코 비중만 16%에서 31%로 늘었다.
+        // 풀바이 피해량은 두 기간 모두 150, 이코는 87.5다.
+        // 이코 비중만 16%에서 31%로 늘었다.
         fun ecoGrew() = listOf(
             slice(MixGroup.Buy(BuyType.FULL_BUY), current = roundsOf(69, damage = 10_350), usual = roundsOf(336, damage = 50_400)),
             slice(MixGroup.Buy(BuyType.ECO), current = roundsOf(31, damage = 2_700), usual = roundsOf(64, damage = 5_600)),

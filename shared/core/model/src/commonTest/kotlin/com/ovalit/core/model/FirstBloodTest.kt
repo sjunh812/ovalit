@@ -50,7 +50,8 @@ class FirstBloodTest {
         assertEquals(1, metrics.firstKills)
     }
 
-    // 교전에서 진 게 아니다. 데스로는 세지만 첫 데스는 아니다.
+    // 교전에서 진 게 아니다.
+    // 데스로는 세지만 첫 데스는 아니다.
     @Test
     fun `내 스킬로 먼저 죽은 건 첫 데스가 아니다`() {
         val metrics = match(round(kill(3.0, Me, Me), kill(8.0, Enemy, Ally))).metrics()
@@ -68,7 +69,8 @@ class FirstBloodTest {
             round(kill(5.0, Ally, Enemy), won = true),
         ).metrics()
 
-        // 우리 팀 첫 킬까지 세면 3/4가 나온다. 내 첫 킬 두 번 중 한 번 이겼다.
+        // 우리 팀 첫 킬까지 세면 3/4가 나온다.
+        // 내 첫 킬 두 번 중 한 번 이겼다.
         assertEquals(1, metrics.firstKillRoundsWon)
         assertRate(0.5, metrics.firstKillWinRate)
     }

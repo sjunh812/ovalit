@@ -18,7 +18,8 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalTestApi::class)
 class OnboardingScreensTest {
 
-    // 신청서에 앱이 비밀번호를 만지지 않는다고 적었다. 연동 전에 그걸 알린다.
+    // 신청서에 앱이 비밀번호를 만지지 않는다고 적었다.
+    // 연동 전에 그걸 알린다.
     @Test
     fun `연동 동의는 공개와 해제와 비밀번호를 알리고 계속하기로 넘어간다`() = runComposeUiTest {
         var continued = false
@@ -41,7 +42,8 @@ class OnboardingScreensTest {
         onNodeWithText("리포트 보기").assertDoesNotExist()
     }
 
-    // 들어오자마자 시스템 창으로 묻지 않는다. 알림을 보낼 수 없으면 보내겠다고 적지 않고 직접 켜는 버튼을 둔다.
+    // 들어오자마자 시스템 창으로 묻지 않는다.
+    // 알림을 보낼 수 없으면 보내겠다고 적지 않고 직접 켜는 버튼을 둔다.
     @Test
     fun `알림 권한이 없으면 알리겠다고 적지 않고 알림 받기 버튼을 둔다`() = runComposeUiTest {
         var requested = 0

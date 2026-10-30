@@ -28,7 +28,8 @@ internal fun Avatar(riotId: String, size: Dp, modifier: Modifier = Modifier) {
     PlayerAvatar(riotId = riotId, size = size, modifier = modifier)
 }
 
-// 줄 안에 넣는 작은 버튼이다. 보이는 높이는 34dp, 눌리는 영역은 44dp이고 누름 효과는 보이는 버튼에만 단다.
+// 줄 안에 넣는 작은 버튼이다.
+// 보이는 높이는 34dp, 눌리는 영역은 44dp이고 누름 효과는 보이는 버튼에만 단다.
 @Composable
 internal fun SmallButton(text: String, filled: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = OvalitTheme.colors

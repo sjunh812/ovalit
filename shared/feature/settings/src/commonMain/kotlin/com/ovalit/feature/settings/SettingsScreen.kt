@@ -107,9 +107,11 @@ private val AvatarSize = 44.dp
  * S4 설정입니다.
  *
  * @param appVersion 앱 모듈만 버전을 알아서 밖에서 받습니다.
- * @param onUnlinked 연동을 해제하고 데이터를 다 지운 뒤에 불립니다. 앱 모듈이 여기서 인트로로 돌려보냅니다.
+ * @param onUnlinked 연동을 해제하고 데이터를 다 지운 뒤에 불립니다.
+ *   앱 모듈이 여기서 인트로로 돌려보냅니다.
  * @param onOpenProfile 맨 위 계정 줄을 누르면 내 프로필을 엽니다.
- * @param onSendFeedback 메일 앱을 엽니다. 받을 주소가 정해지지 않았으면 `null`이고 그 줄을 두지 않습니다.
+ * @param onSendFeedback 메일 앱을 엽니다.
+ *   받을 주소가 정해지지 않았으면 `null`이고 그 줄을 두지 않습니다.
  */
 @Composable
 fun SettingsRoute(
@@ -214,7 +216,8 @@ internal fun SettingsScreen(
                 }
 
                 // 휴대폰 설정에서 막혀 있으면 스위치가 켜져 있어도 알림이 오지 않는다.
-                // 켜러 가는 줄을 맨 위에 두고 막힌 스위치는 흐리게 둔다. 앱으로 돌아오면 다시 확인한다.
+                // 켜러 가는 줄을 맨 위에 두고 막힌 스위치는 흐리게 둔다.
+                // 앱으로 돌아오면 다시 확인한다.
                 SettingsCard(stringResource(Res.string.section_notifications)) {
                     if (notificationBlocks.analysisDone || notificationBlocks.weeklyReport) {
                         NotificationsBlockedRow(onClick = actions.onOpenNotificationSettings)
@@ -225,7 +228,8 @@ internal fun SettingsScreen(
                         onCheckedChange = actions.onNotifyAnalysisDoneChange,
                         enabled = !notificationBlocks.analysisDone,
                     )
-                    // 서버가 월요일 9시에 FCM 토픽으로 한 번 보낸다. 끄면 기기가 토픽 구독을 푼다.
+                    // 서버가 월요일 9시에 FCM 토픽으로 한 번 보낸다.
+                    // 끄면 기기가 토픽 구독을 푼다.
                     ToggleRow(
                         title = stringResource(Res.string.notify_weekly_report),
                         trailingLabel = stringResource(Res.string.notify_weekly_report_time),
@@ -272,7 +276,8 @@ internal fun SettingsScreen(
                         value = stringResource(preferences.focus.label),
                         onClick = { openSheet = SettingsSheet.FOCUS },
                     )
-                    // 보상형 광고로 24시간 광고를 숨긴다. 광고 줄의 ×로도 같은 광고를 본다.
+                    // 보상형 광고로 24시간 광고를 숨긴다.
+                    // 광고 줄의 ×로도 같은 광고를 본다.
                     // 숨기는 동안에는 언제까지인지만 적는다.
                     val ads = LocalAdRenderer.current
                     if (ads != null && ads.canOfferAdFree) {
@@ -333,7 +338,8 @@ internal fun SettingsScreen(
     }
 }
 
-// 연동한 계정이면 카드 전체가 눌려 내 프로필로 간다. 목업의 계정 줄에 "프로필 보기"와 화살표만 더했다.
+// 연동한 계정이면 카드 전체가 눌려 내 프로필로 간다.
+// 목업의 계정 줄에 "프로필 보기"와 화살표만 더했다.
 @Composable
 private fun AccountCard(account: Account?, onOpenProfile: () -> Unit) {
     val colors = OvalitTheme.colors
@@ -376,7 +382,8 @@ private fun AccountCard(account: Account?, onOpenProfile: () -> Unit) {
     }
 }
 
-// 묶음 하나를 담는 카드다. 묶음 이름은 친구 탭 카드처럼 카드 안 맨 위에 굵게 둔다.
+// 묶음 하나를 담는 카드다.
+// 묶음 이름은 친구 탭 카드처럼 카드 안 맨 위에 굵게 둔다.
 @Composable
 private fun SettingsCard(title: String, content: @Composable ColumnScope.() -> Unit) {
     // 줄마다 위아래 여백이 있어 카드 아래 여백은 줄인다
@@ -445,7 +452,8 @@ private fun NotificationsBlockedRow(onClick: () -> Unit) {
     )
 }
 
-// 누를 곳이 없는 화살표는 두지 않는다. [onClick]이 있을 때만 그린다.
+// 누를 곳이 없는 화살표는 두지 않는다.
+// [onClick]이 있을 때만 그린다.
 @Composable
 private fun ValueRow(
     title: String,
@@ -484,7 +492,8 @@ private fun ValueRow(
 }
 
 /**
- * [until]이 [now]보다 뒤면 그대로, 지났으면 `null`입니다. 지나는 순간 `null`로 바꿔 다시 그립니다.
+ * [until]이 [now]보다 뒤면 그대로, 지났으면 `null`입니다.
+ * 지나는 순간 `null`로 바꿔 다시 그립니다.
  * 그릴 때만 견주면 광고 없이 보기가 끝난 뒤에도 "오늘 16:20까지"에 멈춰 다시 누를 수 없습니다.
  */
 @Composable

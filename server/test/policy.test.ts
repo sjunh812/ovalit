@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { makePuuid, setup } from "./helpers";
 
-// 세션 없이 열리는 경로는 이것뿐이다. 늘리려면 전적에 닿지 않는지 먼저 따지고 여기를 고친다.
+// 세션 없이 열리는 경로는 이것뿐이다.
+// 늘리려면 전적에 닿지 않는지 먼저 따지고 여기를 고친다.
 const PUBLIC = new Set([
   "GET /health",
   "GET /content/tiers",
@@ -22,7 +23,8 @@ function concrete(path: string): string {
     .replace(":code", "ABCDEFGHJKMN");
 }
 
-// use()로 건 미들웨어는 ALL <경로>/*로 들어온다. app.all()로 만든 경로는 걸러내지 않는다.
+// use()로 건 미들웨어는 ALL <경로>/*로 들어온다.
+// app.all()로 만든 경로는 걸러내지 않는다.
 function isMiddleware(route: { method: string; path: string }): boolean {
   return route.method === "ALL" && route.path.endsWith("/*");
 }

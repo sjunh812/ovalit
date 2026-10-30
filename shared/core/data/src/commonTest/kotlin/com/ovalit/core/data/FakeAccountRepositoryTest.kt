@@ -52,7 +52,8 @@ class FakeAccountRepositoryTest {
         assertEquals(emptyList(), matches.observeMatches().first())
     }
 
-    // 서버는 연동을 해제하면 계정 줄을 지운다. 다시 연동하면 새 계정의 기본값부터 시작한다.
+    // 서버는 연동을 해제하면 계정 줄을 지운다.
+    // 다시 연동하면 새 계정의 기본값부터 시작한다.
     @Test
     fun `연동을 해제하면 계정 설정도 처음 값으로 돌아간다`() = runTest {
         val settings = FakeAccountSettingsRepository(latency = Duration.ZERO)

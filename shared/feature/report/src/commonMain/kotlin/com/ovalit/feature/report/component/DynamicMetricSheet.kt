@@ -73,7 +73,8 @@ internal fun DynamicMetricSheet(metric: DynamicMetric, report: WeeklyReport.Read
     }
 }
 
-// 시트는 따로 창을 띄워서 프리뷰에 안 나온다. 프리뷰와 테스트는 이 본문만 그린다.
+// 시트는 따로 창을 띄워서 프리뷰에 안 나온다.
+// 프리뷰와 테스트는 이 본문만 그린다.
 @Composable
 internal fun DynamicMetricSheetBody(metric: DynamicMetric, report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
     val slot = report.dynamic.firstOrNull { it.metric == metric } ?: DynamicSlot(metric, Movement.UNKNOWN)
@@ -113,7 +114,8 @@ private fun CurrentValue(slot: DynamicSlot, report: WeeklyReport.Ready) {
     val baseline = report.baseline
     val usual = baseline?.let { metric.value(it.metrics) }
 
-    // 좁은 화면에서 오른쪽 표본이 먼저 자리를 잡으면 큰 숫자와 변화량이 글자 단위로 꺾인다. 모자라면 표본을 다음 줄로 내린다.
+    // 좁은 화면에서 오른쪽 표본이 먼저 자리를 잡으면 큰 숫자와 변화량이 글자 단위로 꺾인다.
+    // 모자라면 표본을 다음 줄로 내린다.
     FlowRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -146,7 +148,8 @@ private fun CurrentValue(slot: DynamicSlot, report: WeeklyReport.Ready) {
                 )
             }
         }
-        // 이 비율을 몇 번으로 셌는지 적는다. 분모가 작으면 숫자가 크게 흔들린다.
+        // 이 비율을 몇 번으로 셌는지 적는다.
+        // 분모가 작으면 숫자가 크게 흔들린다.
         Column {
             OvalitText(
                 text = stringResource(Res.string.period_label_matches, periodLabel(report.period), report.metrics.matches),

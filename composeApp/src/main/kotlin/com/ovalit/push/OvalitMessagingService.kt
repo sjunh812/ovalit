@@ -18,7 +18,8 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 /**
- * 서버가 보낸 FCM 메시지를 받습니다. 서버는 알림 메시지가 아니라 데이터 메시지만 보내서 앱이 꺼져 있어도 여기로 옵니다.
+ * 서버가 보낸 FCM 메시지를 받습니다.
+ * 서버는 알림 메시지가 아니라 데이터 메시지만 보내서 앱이 꺼져 있어도 여기로 옵니다.
  * ㅇㅂㅇ은 받을 때마다 새로 받아 화면을 맞추고, 앱을 보고 있으면 화면에 이미 뜨니 알림은 띄우지 않습니다.
  */
 class OvalitMessagingService : FirebaseMessagingService(), KoinComponent {
@@ -33,7 +34,8 @@ class OvalitMessagingService : FirebaseMessagingService(), KoinComponent {
         scope.launch { push.register(token) }
     }
 
-    // FCM 작업 스레드에서 불려서 막아도 된다. 설정을 읽는 동안만 막고 나머지는 scope로 넘긴다.
+    // FCM 작업 스레드에서 불려서 막아도 된다.
+    // 설정을 읽는 동안만 막고 나머지는 scope로 넘긴다.
     override fun onMessageReceived(message: RemoteMessage) {
         val data = message.data
         val type = data["type"] ?: return

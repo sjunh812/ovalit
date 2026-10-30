@@ -237,7 +237,8 @@ private fun FilterButton(active: Boolean, onClick: () -> Unit) {
     }
 }
 
-// 그날 승패는 날짜 바로 뒤에 붙인다. 오른쪽 끝에 두면 날짜를 읽고 바로 경기 줄로 내려가서 눈에 안 들어왔다.
+// 그날 승패는 날짜 바로 뒤에 붙인다.
+// 오른쪽 끝에 두면 날짜를 읽고 바로 경기 줄로 내려가서 눈에 안 들어온다.
 // 한 줄에 안 들어가면 날짜를 꺾지 않고 승패를 다음 줄로 내린다.
 @Composable
 private fun DayHeader(day: MatchDay, today: LocalDate) {

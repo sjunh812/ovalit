@@ -42,9 +42,9 @@ data class OvalitColors(
 // 토큰을 바꾸면 그 표도 같은 커밋에서 고친다.
 // - card와 canvas를 bg, raised와 따로 둔다.
 //   라이트는 bg가 흰색이라 bg 위에 raised 카드를 올리면 카드가 바탕보다 어둡다.
-// - accent는 neg와 거의 같은 빨강이고, 그 위 흰 글자(onAccent) 대비가 3.4:1인 걸 알고 고른 값이다.
+// - accent는 neg와 거의 같은 빨강이고 그 위 흰 글자(onAccent) 대비가 3.4:1인 걸 알고 고른 값이다.
 // - KDA와 승률의 구간 색(statHigh, statTop)은 잘한 구간에만 칠한다.
-//   초록을 쓰지 않아 오르면 초록인 변화량과 겹치지 않고, 주황은 빨강(neg, accent)과 색상으로 가른다.
+//   초록을 쓰지 않아 오르면 초록인 변화량과 겹치지 않고 주황은 빨강(neg, accent)과 색상으로 가른다.
 internal val OvalitDarkColors = OvalitColors(
     bg = Color(0xFF101012),
     raised = Color(0xFF1C1C1F),
@@ -78,7 +78,7 @@ internal val OvalitDarkColors = OvalitColors(
 )
 
 // 라이트는 다크를 뒤집은 값이 아니다.
-// pos, neg, 구간 색은 흰 바탕에서 읽히게 어둡게 내렸고, accent는 글자로 쓰면 대비가 모자라 accentInk를 따로 둔다.
+// pos, neg, 구간 색은 흰 바탕에서 읽히게 어둡게 내렸고 accent는 글자로 쓰면 대비가 모자라 accentInk를 따로 둔다.
 // pos와 t3는 목업보다 한 단계 어둡다.
 // t3를 더 내리면 t2와 거의 같아져서 raised 위에서는 4.2:1에 머문다.
 internal val OvalitLightColors = OvalitColors(

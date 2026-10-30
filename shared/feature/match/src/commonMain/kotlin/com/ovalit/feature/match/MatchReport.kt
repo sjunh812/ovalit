@@ -65,14 +65,16 @@ private val MinNameWidth = 40.dp
 private val BaseCountColumn = 30.dp
 private val BaseDamageColumn = 60.dp
 
-// 큰 글씨에서 열 제목끼리 붙지 않게 열 폭도 글자 크기만큼 넓힌다. 이름 칸은 남은 폭을 쓴다.
+// 큰 글씨에서 열 제목끼리 붙지 않게 열 폭도 글자 크기만큼 넓힌다.
+// 이름 칸은 남은 폭을 쓴다.
 private val CountColumn: Dp
     @Composable get() = BaseCountColumn * LocalDensity.current.fontScale.coerceIn(1f, 1.6f)
 private val DamageColumn: Dp
     @Composable get() = BaseDamageColumn * LocalDensity.current.fontScale.coerceIn(1f, 1.6f)
 
 /**
- * S3 내 기록 탭입니다. 맞힌 부위, 상대마다 잡고 잡힌 수와 주고받은 피해, 이 판에서 쓴 무기를 둡니다.
+ * S3 내 기록 탭입니다.
+ * 맞힌 부위, 상대마다 잡고 잡힌 수와 주고받은 피해, 이 판에서 쓴 무기를 둡니다.
  * 내가 뛴 라운드만 셉니다.
  */
 @Composable
@@ -98,7 +100,8 @@ internal fun MatchReport(uiState: MatchDetailUiState.Success) {
     }
 }
 
-// 상대마다 한 줄이다. 킬·데스·어시는 숫자로 적고, 준 피해와 받은 피해는 숫자 밑에 가장 큰 값에 견준 막대를 긋는다.
+// 상대마다 한 줄이다.
+// 킬·데스·어시는 숫자로 적고, 준 피해와 받은 피해는 숫자 밑에 가장 큰 값에 견준 막대를 긋는다.
 @Composable
 private fun Duels(duels: List<Duel>, uiState: MatchDetailUiState.Success) {
     val colors = OvalitTheme.colors
@@ -157,7 +160,8 @@ private fun Duels(duels: List<Duel>, uiState: MatchDetailUiState.Success) {
     }
 }
 
-// 맞힌 부위와 같은 묶음 제목이다. 밑 열 제목 줄의 위 여백 4dp와 합쳐 제목과 내용 사이가 12dp다.
+// 맞힌 부위와 같은 묶음 제목이다.
+// 밑 열 제목 줄의 위 여백 4dp와 합쳐 제목과 내용 사이가 12dp다.
 @Composable
 private fun ReportTitle(text: String) {
     Box(Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.lg, bottom = OvalitSpacing.sm)) {
@@ -224,7 +228,8 @@ private fun Weapons(weapons: List<WeaponStats>, uiState: MatchDetailUiState.Succ
         ) {
             WeaponThumb(weapon.weapon, name, width = 44.dp, height = 22.dp)
             Spacer(Modifier.width(OvalitSpacing.md))
-            // 글자를 키워 이름이 안 들어가면 자르지 않고 조금 줄인다. "오퍼레…"로는 무슨 무기인지 모른다.
+            // 글자를 키워 이름이 안 들어가면 자르지 않고 조금 줄인다.
+            // "오퍼레…"로는 무슨 무기인지 모른다.
             OvalitText(
                 text = name,
                 modifier = Modifier.weight(1f),

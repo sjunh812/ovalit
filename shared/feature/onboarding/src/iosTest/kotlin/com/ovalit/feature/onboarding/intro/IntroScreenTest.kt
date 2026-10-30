@@ -40,7 +40,8 @@ class IntroScreenTest {
         assertEquals(1, started)
     }
 
-    // 화면 읽기 프로그램이 "버튼"이라고 읽어야 눌러도 되는 자리인지 안다. clickable만 걸면 그냥 글자다.
+    // 화면 읽기 프로그램이 "버튼"이라고 읽어야 눌러도 되는 자리인지 안다.
+    // clickable만 걸면 그냥 글자다.
     @Test
     fun `시작 버튼을 낭독기가 버튼으로 읽는다`() = runComposeUiTest {
         setContent {
@@ -51,7 +52,8 @@ class IntroScreenTest {
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
     }
 
-    // 지우면 프로덕션 키가 회수되는 문구다. 화면에서 사라지면 테스트가 먼저 잡는다.
+    // 지우면 프로덕션 키가 회수되는 문구다.
+    // 화면에서 사라지면 테스트가 먼저 잡는다.
     @Test
     fun `비공식 고지가 화면에 있다`() = runComposeUiTest {
         setContent {
@@ -61,7 +63,8 @@ class IntroScreenTest {
         onNodeWithText("Riot Games", substring = true).assertExists()
     }
 
-    // 작은 기기 + 큰 글자가 가장 빡빡한 조합이다. 한 화면에 다 안 들어가도 스크롤하면 버튼이 보여야 한다.
+    // 작은 기기 + 큰 글자가 가장 빡빡한 조합이다.
+    // 한 화면에 다 안 들어가도 스크롤하면 버튼이 보여야 한다.
     @Test
     fun `작은 기기에서 글자를 키워도 시작 버튼이 화면 안에 있다`() = runComposeUiTest {
         setContent {
@@ -78,7 +81,8 @@ class IntroScreenTest {
         onNodeWithText("Riot 계정으로 시작하기").performScrollTo().assertIsDisplayed()
     }
 
-    // 고지가 아래에서 잘려도 assertExists는 통과한다. 스크롤한 뒤 고지의 아랫변이 화면 안에 들어오는지 본다.
+    // 고지가 아래에서 잘려도 assertExists는 통과한다.
+    // 스크롤한 뒤 고지의 아랫변이 화면 안에 들어오는지 본다.
     @Test
     fun `작은 기기에서 글자를 키워도 비공식 고지를 끝까지 볼 수 있다`() = runComposeUiTest {
         setContent {

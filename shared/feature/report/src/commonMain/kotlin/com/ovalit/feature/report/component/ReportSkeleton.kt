@@ -24,7 +24,7 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * 리포트가 뜨기 전 홈의 자리를 잡는 스켈레톤입니다.
- * 홈과 같은 카드에 담아 내용이 나타날 때 카드가 움직이지 않고, 카드 안의 칸만 깜빡입니다.
+ * 홈과 같은 카드에 담아 내용이 나타날 때 카드가 움직이지 않고 카드 안의 칸만 깜빡입니다.
  *
  * @param withChips 칩 자리도 잡을지입니다.
  *   새 경기를 받느라 리포트만 기다릴 때는 칩이 이미 있어 끕니다.
@@ -47,10 +47,12 @@ internal fun ReportSkeleton(modifier: Modifier = Modifier, withChips: Boolean = 
         }
         SkeletonCard(description) {
             SkeletonBlock(width = 96.dp, height = 24.dp)
-            // 승패 줄이다. 없으면 리포트가 뜰 때 그 아래가 한 줄만큼 내려간다.
+            // 승패 줄이다.
+            // 없으면 리포트가 뜰 때 그 아래가 한 줄만큼 내려간다.
             Spacer(Modifier.height(OvalitSpacing.md))
             SkeletonBlock(width = 150.dp, height = 14.dp)
-            // 짚을 점 헤드라인과 무기·요원 줄이다. 고정 칸 위에 온다.
+            // 짚을 점 헤드라인과 무기·요원 줄이다.
+            // 고정 칸 위에 온다.
             Spacer(Modifier.height(OvalitSpacing.xl))
             SkeletonBlock(width = 220.dp, height = 18.dp)
             Spacer(Modifier.height(OvalitSpacing.sm))

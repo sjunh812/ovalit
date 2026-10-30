@@ -44,8 +44,10 @@ sealed interface FriendsUiState {
 
     /**
      * @property friends 라이벌이 맨 앞이고 그 뒤는 최근에 같이 뛴 친구부터입니다([byLastPlayedTogether]).
-     * @property pings 아직 끝나지 않은 ㅇㅂㅇ입니다. 받은 것과 내가 보낸 것이 섞여 있습니다.
-     * @property me 내 PUUID입니다. 연동하지 않았으면 `null`이고 ㅇㅂㅇ을 띄우지 않습니다.
+     * @property pings 아직 끝나지 않은 ㅇㅂㅇ입니다.
+     *   받은 것과 내가 보낸 것이 섞여 있습니다.
+     * @property me 내 PUUID입니다.
+     *   연동하지 않았으면 `null`이고 ㅇㅂㅇ을 띄우지 않습니다.
      * @property now 시각 글자("21:00", "내일 01:00")를 정할 때 쓰는 지금입니다.
      */
     data class Success(
@@ -58,7 +60,10 @@ sealed interface FriendsUiState {
     ) : FriendsUiState
 }
 
-/** @property report 친구 본인의 주간 리포트입니다. 전적을 공개하지 않았으면 `null`입니다. */
+/**
+ * @property report 친구 본인의 주간 리포트입니다.
+ *   전적을 공개하지 않았으면 `null`입니다.
+ */
 data class FriendRow(
     val friend: Friend,
     val report: WeeklyReport?,
@@ -84,7 +89,8 @@ class FriendsViewModel(
 
     val isRefreshing: StateFlow<Boolean> = refreshing
 
-    // 친구 목록이 바뀔 때만 센다. ㅇㅂㅇ 답이나 라이벌이 바뀔 때마다 친구 수백 명의 리포트를 다시 세지 않는다.
+    // 친구 목록이 바뀔 때만 센다.
+    // ㅇㅂㅇ 답이나 라이벌이 바뀔 때마다 친구 수백 명의 리포트를 다시 세지 않는다.
     private val friendRows = friendRepository.friends
         .map { friends ->
             friends.byLastPlayedTogether().map { friend ->
@@ -101,13 +107,15 @@ class FriendsViewModel(
         friendRows,
         friendRepository.requests,
         friendRepository.rival,
-        // 초대 줄의 시각 글자가 분마다 흐르게 지금을 같이 받는다. 친구 리포트는 다시 세지 않는다.
+        // 초대 줄의 시각 글자가 분마다 흐르게 지금을 같이 받는다.
+        // 친구 리포트는 다시 세지 않는다.
         combine(pingRepository.pings, minuteChanges) { pings, _ -> pings },
         accountRepository.account,
     ) { rows, requests, rival, pings, account ->
         FriendsUiState.Success(
             requests = requests,
-            // 라이벌은 가장 자주 보는 친구라 맨 앞에 둔다. 나머지는 이미 최근에 같이 뛴 순서다.
+            // 라이벌은 가장 자주 보는 친구라 맨 앞에 둔다.
+            // 나머지는 이미 최근에 같이 뛴 순서다.
             friends = rows.sortedByDescending { it.friend.id == rival },
             rivalId = rival,
             pings = if (account == null) emptyList() else pings,

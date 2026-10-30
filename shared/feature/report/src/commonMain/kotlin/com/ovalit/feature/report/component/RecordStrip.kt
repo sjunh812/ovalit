@@ -51,7 +51,7 @@ internal const val MAX_RECORD_CELLS = 20
 /**
  * 기간 경기의 승패 칸과 "4승 2패 · 67%"입니다.
  * 승패가 난 경기가 없으면 두지 않습니다.
- * 칸은 최근 [MAX_RECORD_CELLS]경기까지만 두고 넘치면 칸 앞에 "최근 20경기"를 적지만, 승패 글자는 기간 전체를 셉니다.
+ * 칸은 최근 [MAX_RECORD_CELLS]경기까지만 두고 넘치면 칸 앞에 "최근 20경기"를 적지만 승패 글자는 기간 전체를 셉니다.
  */
 @Composable
 internal fun RecordStrip(report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
@@ -60,7 +60,8 @@ internal fun RecordStrip(report: WeeklyReport.Ready, modifier: Modifier = Modifi
     val colors = OvalitTheme.colors
     val caption = OvalitTheme.typography.caption
 
-    // 리포트는 오래된 경기부터 담는다. 칸은 최근 경기가 왼쪽이라 뒤집는다.
+    // 리포트는 오래된 경기부터 담는다.
+    // 칸은 최근 경기가 왼쪽이라 뒤집는다.
     val cells = results.takeLast(MAX_RECORD_CELLS).reversed()
     val win = stringResource(Res.string.record_win)
     val loss = stringResource(Res.string.record_loss)

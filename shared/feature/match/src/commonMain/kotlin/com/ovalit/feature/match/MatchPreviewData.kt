@@ -26,7 +26,8 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
-// 프리뷰와 UI 테스트가 같이 쓴다. 목업 S3의 어센트 13 – 9 경기에 맞췄다.
+// 프리뷰와 UI 테스트가 같이 쓴다.
+// 목업 S3의 어센트 13 – 9 경기에 맞췄다.
 // ID는 번들 이미지가 붙도록 카탈로그 UUID를 쓴다.
 internal object MatchPreviewData {
 
@@ -129,7 +130,9 @@ internal object MatchPreviewData {
         Scoreline(id, riotId, agent, onMyTeam, tier = 16, playerCard = null, kills = kills, deaths = deaths, assists = assists,
             combatScore = kills * 150, damage = kills * 140, roundsPlayed = 1)
 
-    // 데스매치 열네 명이다. 나는 킬 31로 3등이다. 응답의 팀은 사람마다 하나이고 점수가 곧 킬이다.
+    // 데스매치 열네 명이다.
+    // 나는 킬 31로 3등이다.
+    // 응답의 팀은 사람마다 하나이고 점수가 곧 킬이다.
     val deathmatch: Match = run {
         val agents = listOf(jett, omen, sova, killjoy, raze)
         val others = strangers.take(13).mapIndexed { index, riotId ->
@@ -143,7 +146,8 @@ internal object MatchPreviewData {
         )
     }
 
-    // 건틀릿: 글리치 두 명씩 여덟 팀이다. 나와 준호가 2등이다.
+    // 건틀릿: 글리치 두 명씩 여덟 팀이다.
+    // 나와 준호가 2등이다.
     // 로봇 요원과 경기장은 카탈로그에 없어 얼굴 자리가 빈 면이고 맵은 "알 수 없는 맵"이다.
     val gauntlet: Match = run {
         val robot = { index: Int -> AgentId("gauntlet-robot-${index % 4}") }
@@ -223,7 +227,8 @@ internal object MatchPreviewData {
 
     val empty = matches.copy(days = emptyList())
 
-    // 기타 칩이다. 리포트에 넣는 스파이크 돌격과 목록에만 두는 데스매치, 건틀릿, 팀 데스매치가 섞인다.
+    // 기타 칩이다.
+    // 리포트에 넣는 스파이크 돌격과 목록에만 두는 데스매치, 건틀릿, 팀 데스매치가 섞인다.
     val otherMatches = matches.copy(
         queueFilter = QueueFilter.OTHER,
         days = listOf(

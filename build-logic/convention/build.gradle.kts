@@ -17,7 +17,8 @@ kotlin {
     }
 }
 
-// 플러그인은 각 모듈이 적용하고 여기서는 설정 타입만 쓴다. 런타임까지 끌고 가면 플러그인 버전이 두 벌로 갈린다.
+// 플러그인은 각 모듈이 적용하고 여기서는 설정 타입만 쓴다.
+// 런타임까지 끌고 가면 플러그인 버전이 두 벌로 갈린다.
 dependencies {
     compileOnly(libs.agp.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)

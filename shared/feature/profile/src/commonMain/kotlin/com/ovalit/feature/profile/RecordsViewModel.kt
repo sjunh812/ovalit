@@ -42,7 +42,10 @@ sealed interface RecordsUiState {
     /** 친구를 끊었거나 친구가 전적을 비공개로 바꿨을 때입니다. */
     data object Hidden : RecordsUiState
 
-    /** @property ownerName 친구 기록일 때 제목에 붙이는 이름입니다. 내 기록이면 `null`입니다. */
+    /**
+     * @property ownerName 친구 기록일 때 제목에 붙이는 이름입니다.
+     *   내 기록이면 `null`입니다.
+     */
     data class Success(
         val ownerName: String?,
         val agents: AgentReport,
@@ -52,7 +55,8 @@ sealed interface RecordsUiState {
 }
 
 /**
- * S6 무기와 S7 요원이 같이 씁니다. 내 기록이든 친구 기록이든 이번 액트의 경쟁 + 일반 경기만 셉니다.
+ * S6 무기와 S7 요원이 같이 씁니다.
+ * 내 기록이든 친구 기록이든 이번 액트의 경쟁 + 일반 경기만 셉니다.
  *
  * @param computation 경기를 세는 디스패처입니다.
  *   메인 스레드에서 세면 화면 전환이 멈춰서 기본은 [Dispatchers.Default]입니다.
@@ -68,7 +72,8 @@ class RecordsViewModel(
     weekChanges: Flow<Unit> = flowOf(Unit),
 ) : ViewModel() {
 
-    // 제목에 붙일 이름과 셀 경기다. 내 기록이면 이름이 null이다.
+    // 제목에 붙일 이름과 셀 경기다.
+    // 내 기록이면 이름이 null이다.
     // 친구를 끊었거나 친구가 전적을 비공개로 바꿨으면 통째로 null이다.
     private val source: Flow<Pair<String?, List<Match>>?> = when (owner) {
         RecordsOwner.Me -> matchRepository.settledMatches().map { null to it }

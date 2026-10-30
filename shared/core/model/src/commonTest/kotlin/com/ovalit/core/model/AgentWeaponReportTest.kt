@@ -82,7 +82,8 @@ class AgentWeaponReportTest {
         assertEquals(0.3, phantom.headshotRate)
     }
 
-    // 죽을 때 든 무기와 피해를 준 무기는 응답에 없다. 라운드를 시작할 때 든 무기로 나눈다.
+    // 죽을 때 든 무기와 피해를 준 무기는 응답에 없다.
+    // 라운드를 시작할 때 든 무기로 나눈다.
     @Test
     fun `데스와 어시스트와 피해량은 그 무기를 들고 시작한 라운드에서 센다`() {
         val died = round(myKill(Vandal), kill(20.0, Enemy, Me), damage = 150, carried = Phantom)
@@ -256,7 +257,7 @@ private fun game(
 /**
  * 팬텀만 쓴 [rounds]라운드를 5경기에 나눠 담습니다.
  * 라운드마다 4발을 맞히고 모두 합쳐 [head]발이 머리입니다.
- * 라운드마다 [damage]를 넣고, 앞의 [carried]라운드만 팬텀을 들고 시작합니다.
+ * 라운드마다 [damage]를 넣고 앞의 [carried]라운드만 팬텀을 들고 시작합니다.
  */
 private fun phantomWeek(weeksAgo: Int, head: Int, rounds: Int = 25, carried: Int = rounds, damage: Int = 140): List<Match> {
     val all = List(rounds) { index ->

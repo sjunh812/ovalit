@@ -90,7 +90,8 @@ class MatchesViewModelTest {
         assertEquals(state.agents.map { counts.getValue(it) }, state.agents.map { counts.getValue(it) }.sortedDescending())
     }
 
-    // 데스매치와 건틀릿은 등수로 끝나 승패가 없다. 경기 줄도 그런 판에는 승패를 적지 않는다.
+    // 데스매치와 건틀릿은 등수로 끝나 승패가 없다.
+    // 경기 줄도 그런 판에는 승패를 적지 않는다.
     @Test
     fun `날짜 머리 승패는 두 팀이 겨룬 경기만 세고 비긴 판은 따로 센다`() {
         val won = MatchPreviewData.detailMatch
@@ -158,7 +159,8 @@ class MatchesViewModelTest {
         assertEquals(listOf(1), refreshed)
     }
 
-    // 앱이 다시 보여 받던 것에 붙으면 저장소는 0을 돌려준다. 그사이 목록에 들어온 경기는 당긴 사람에게도 새 경기다.
+    // 앱이 다시 보여 받던 것에 붙으면 저장소는 0을 돌려준다.
+    // 그사이 목록에 들어온 경기는 당긴 사람에게도 새 경기다.
     @Test
     fun `받던 것에 붙어도 그사이 들어온 경기를 센다`() = runTest {
         val first = MatchPreviewData.detailMatch

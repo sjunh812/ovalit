@@ -44,7 +44,7 @@ internal fun VerticalLine() {
 
 /**
  * 짚을 점과 개선 포인트의 헤드라인 글꼴입니다.
- * 한 문장이라 본문처럼 줄을 끝까지 채우면 "높아요"만 다음 줄에 남아서, 제목처럼 줄 길이를 고르게 나눕니다(docs/design.md).
+ * 한 문장이라 본문처럼 줄을 끝까지 채우면 "높아요"만 다음 줄에 남아서 제목처럼 줄 길이를 고르게 나눕니다(docs/design.md).
  */
 @Composable
 internal fun headlineStyle(): TextStyle = OvalitTheme.typography.bodyStrong.copy(lineBreak = LineBreak.Heading)
@@ -111,7 +111,8 @@ internal const val MetricColumns = 3
 internal val MetricColumnGap = 14.dp
 internal val MetricRowGap = 20.dp
 
-// 칸을 누르면 면을 이만큼 칸 밖으로 넓힌다. 칸 사이 간격의 절반을 조금 넘겨 옆 칸 글자와 6dp 떨어진다.
+// 칸을 누르면 면을 이만큼 칸 밖으로 넓힌다.
+// 칸 사이 간격의 절반을 조금 넘겨 옆 칸 글자와 6dp 떨어진다.
 internal val CellPressOutset = 8.dp
 
 // 이름 뒤 간격 3dp와 화살표 10dp를 더한 폭이다
@@ -160,7 +161,8 @@ private fun TextStyle.strong(): TextStyle = copy(fontWeight = FontWeight.SemiBol
 private fun TextStyle.scaled(scale: Float): TextStyle =
     if (scale == 1f) this else copy(fontSize = fontSize * scale, lineHeight = lineHeight * scale)
 
-// 줄여 보는 비율이다. 0.85면 변화량이 9sp대까지 내려가 이보다 줄이면 읽기 어렵다.
+// 줄여 보는 비율이다.
+// 0.85면 변화량이 9sp대까지 내려가 이보다 줄이면 읽기 어렵다.
 private val SubLineScales = listOf(1f, 0.95f, 0.9f, 0.85f)
 
 private val SubLineGap = 6.dp

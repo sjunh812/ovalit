@@ -12,7 +12,8 @@ describe("isolate 메모리 캐시", () => {
   });
 
   it("크기를 넘으면 가장 오래 안 꺼낸 것부터 버린다", () => {
-    // 네 글자는 8바이트로 센다. 20바이트면 두 개까지 들어간다.
+    // 네 글자는 8바이트로 센다.
+    // 20바이트면 두 개까지 들어간다.
     const cache = new MemoryCache({ maxEntries: 10, maxBytes: 20 });
     cache.set("a", "aaaa", 60);
     cache.set("b", "bbbb", 60);

@@ -84,7 +84,8 @@ internal fun FixedMetricRow(
                     repeat(perRow) { index ->
                         val cell = row.getOrNull(index)
                         if (index > 0) {
-                            // 간격은 구분선 양옆에만 준다. 칸 폭 안에 넣으면 칸마다 내용 폭이 달라진다.
+                            // 간격은 구분선 양옆에만 준다.
+                            // 칸 폭 안에 넣으면 칸마다 내용 폭이 달라진다.
                             Spacer(Modifier.width(MetricColumnGap))
                             if (cell != null) VerticalLine() else Spacer(Modifier.width(1.dp))
                             Spacer(Modifier.width(MetricColumnGap))
@@ -92,7 +93,8 @@ internal fun FixedMetricRow(
                         if (cell == null) {
                             Spacer(Modifier.weight(1f))
                         } else {
-                            // 기타 모드로 바꾸면 자리마다 지표가 바뀐다. 자리로 묶으면 피해량 숫자가 K/D로 굴러가서 지표로 묶는다.
+                            // 기타 모드로 바꾸면 자리마다 지표가 바뀐다.
+                            // 자리로 묶으면 피해량 숫자가 K/D로 굴러가서 지표로 묶는다.
                             key(cell.metric) {
                                 FixedMetricCell(
                                     cell = cell,

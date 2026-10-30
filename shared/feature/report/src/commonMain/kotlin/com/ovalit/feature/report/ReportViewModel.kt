@@ -109,7 +109,8 @@ internal fun homeNudge(
 ): HomeNudge? = when {
     report !is WeeklyReport.Ready || !queueFilter.hasDynamicMetrics -> null
     !hasFriends -> HomeNudge.INVITE_FRIEND
-    // 라이벌로 둔 친구가 전적을 비공개로 바꾸면 라이벌 칸은 없지만 라이벌은 그대로다. 그때 또 고르라고 하지 않는다.
+    // 라이벌로 둔 친구가 전적을 비공개로 바꾸면 라이벌 칸은 없지만 라이벌은 그대로다.
+    // 그때 또 고르라고 하지 않는다.
     !hasRival && rivalCandidates.isNotEmpty() -> HomeNudge.PICK_RIVAL
     else -> null
 }
@@ -171,7 +172,8 @@ class ReportViewModel(
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    // 칩으로 고르기 전까지는 설정의 기본 큐를 따른다. 고른 칩은 저장하지 않아 앱을 새로 열면 기본 큐로 돌아간다.
+    // 칩으로 고르기 전까지는 설정의 기본 큐를 따른다.
+    // 고른 칩은 저장하지 않아 앱을 새로 열면 기본 큐로 돌아간다.
     private val selectedQueue = MutableStateFlow<QueueFilter?>(null)
 
     private val refreshing = MutableStateFlow(false)
@@ -213,7 +215,8 @@ class ReportViewModel(
 
     val uiState: StateFlow<ReportUiState> = combine(
         importedMatches,
-        // 리포트를 세는 데 쓰는 두 값만 본다. 테마나 광고 끝 시각이 바뀔 때마다 리포트를 처음부터 다시 세지 않는다.
+        // 리포트를 세는 데 쓰는 두 값만 본다.
+        // 테마나 광고 끝 시각이 바뀔 때마다 리포트를 처음부터 다시 세지 않는다.
         preferencesRepository.preferences.map { ReportPreferences(it.defaultQueue, it.focus) }.distinctUntilChanged(),
         selectedQueue,
         friendRepository.friends,
@@ -230,7 +233,8 @@ class ReportViewModel(
         )
         val standings = if (report is WeeklyReport.Ready) friends.standingsIn(report, filter, timeZone) else emptyList()
         val rival = standings.firstOrNull { it.id == rivalId }
-        // 이번 주를 보고 있었으면 새 경기도 이번 주라 기간은 그대로다. 숫자만 다 받은 뒤 바뀐다.
+        // 이번 주를 보고 있었으면 새 경기도 이번 주라 기간은 그대로다.
+        // 숫자만 다 받은 뒤 바뀐다.
         val periodMayChange = !(report is WeeklyReport.Ready && report.period.includesThisWeek)
         ReportUiState.Success(
             queueFilter = filter,
@@ -291,7 +295,9 @@ class ReportViewModel(
      * 당겼는데 그사이 취소된 초대가 남아 있으면 안 되니 홈 맨 위 ㅇㅂㅇ도 같이 다시 받습니다.
      */
     fun refresh() {
-        // ㅇㅂㅇ은 곁다리라 받지 못해도 알리지 않는다. 친구 탭을 당기면 실패를 알린다. 새 경기를 받는 중에 당겨도 ㅇㅂㅇ은 받는다.
+        // ㅇㅂㅇ은 곁다리라 받지 못해도 알리지 않는다.
+        // 친구 탭을 당기면 실패를 알린다.
+        // 새 경기를 받는 중에 당겨도 ㅇㅂㅇ은 받는다.
         viewModelScope.launch { runCatching { pingRepository.refresh() } }
         if (refreshing.value || newMatches.value != null) return
         refreshing.value = true

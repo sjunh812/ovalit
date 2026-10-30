@@ -174,7 +174,8 @@ private fun AgentsContent(uiState: RecordsUiState, onBack: () -> Unit) {
                 return@Column
             }
 
-            // 역할 표에 없는 새 요원만 뛰었으면 주 역할을 모른다. 역할 칸은 빼고 요원 표는 그대로 둔다.
+            // 역할 표에 없는 새 요원만 뛰었으면 주 역할을 모른다.
+            // 역할 칸은 빼고 요원 표는 그대로 둔다.
             val mainRole = report.mainRole
             if (mainRole != null) {
                 Spacer(Modifier.height(22.dp))
@@ -187,7 +188,8 @@ private fun AgentsContent(uiState: RecordsUiState, onBack: () -> Unit) {
                 OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))
             }
             Spacer(Modifier.height(18.dp))
-            // 처음에는 주 역할에 맞춘 묶음이다. 고른 건 화면을 떠나기 전까지 기억한다.
+            // 처음에는 주 역할에 맞춘 묶음이다.
+            // 고른 건 화면을 떠나기 전까지 기억한다.
             var chosen by rememberSaveable { mutableStateOf<String?>(null) }
             var choosing by remember { mutableStateOf(false) }
             val roleDefault = mainRole?.let(AgentColumns::defaultFor) ?: AgentColumns.KAST
@@ -301,7 +303,8 @@ private fun RoleShares(report: AgentReport, mainRole: Role) {
 
 private class MetricColumnSpec(val title: StringResource, val format: MetricFormat, val value: (MatchMetrics) -> Double?)
 
-// 요원별 표의 오른쪽 두 열이다. 처음에는 주 역할에 맞춘 묶음(defaultFor)을 보여주고 표 위 버튼으로 바꾼다.
+// 요원별 표의 오른쪽 두 열이다.
+// 처음에는 주 역할에 맞춘 묶음(defaultFor)을 보여주고 표 위 버튼으로 바꾼다.
 // 두 열씩 묶어 두어서 무엇을 골라도 표 모양이 그대로다.
 private enum class AgentColumns(val label: StringResource, private val specs: () -> List<MetricColumnSpec>) {
     FIRST_DUEL(
@@ -365,7 +368,8 @@ private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: 
     val columns = shown.columns
     val shownLabel = stringResource(shown.label)
 
-    // 버튼 높이로 제목 줄을 늘리지 않는다. 위 역할 묶음처럼 선에서 제목까지, 제목에서 표까지를 같게 둔다.
+    // 버튼 높이로 제목 줄을 늘리지 않는다.
+    // 위 역할 묶음처럼 선에서 제목까지, 제목에서 표까지를 같게 둔다.
     OvalitPickerTitle(
         title = { OvalitText(text = stringResource(Res.string.agents_by_agent), style = OvalitTheme.typography.bodyStrong) },
         picker = {
@@ -378,7 +382,8 @@ private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: 
         modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
     )
     Spacer(Modifier.height(12.dp))
-    // 열 제목을 칸마다 따로 줄이면 "전투점수"만 작아진다. 가장 긴 제목에 맞춘 크기를 셋에 같이 쓴다.
+    // 열 제목을 칸마다 따로 줄이면 "전투점수"만 작아진다.
+    // 가장 긴 제목에 맞춘 크기를 셋에 같이 쓴다.
     val titles = listOf(stringResource(CoreUiRes.string.column_win_rate)) + columns.map { stringResource(it.title) }
     val headerStyle = rememberFittingStyle(titles, OvalitTheme.typography.caption, MetricColumn - ColumnGap)
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter)) {
@@ -442,7 +447,8 @@ private fun AgentRow(agent: AgentStats, columns: List<MetricColumnSpec>, catalog
         Spacer(Modifier.width(OvalitSpacing.md))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             OvalitText(text = name, style = OvalitTheme.typography.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            // 칸이 좁으면 판 수를 통째로 다음 줄로 내린다. 한 문자열로 이으면 가운뎃점만 줄 끝에 남는다.
+            // 칸이 좁으면 판 수를 통째로 다음 줄로 내린다.
+            // 한 문자열로 이으면 가운뎃점만 줄 끝에 남는다.
             val caption = OvalitTheme.typography.caption
             SeparatedRow(
                 items = listOfNotNull<@Composable () -> Unit>(

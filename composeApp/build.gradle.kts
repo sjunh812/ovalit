@@ -8,15 +8,18 @@ plugins {
 }
 
 // google-services.json이 있을 때만 Firebase를 붙인다.
-// 공개 저장소라 이 파일은 올리지 않는다(.gitignore). 없으면 푸시, 사용 통계, 비정상 종료 보고 없이 빌드된다.
-// plugins {}는 조건을 걸 수 없어서 pluginManager로 붙인다. 두 플러그인은 루트 build.gradle.kts에 apply false로 올려 두었다.
+// 공개 저장소라 이 파일은 올리지 않는다(.gitignore).
+// 없으면 푸시, 사용 통계, 비정상 종료 보고 없이 빌드된다.
+// plugins {}는 조건을 걸 수 없어서 pluginManager로 붙인다.
+// 두 플러그인은 루트 build.gradle.kts에 apply false로 올려 두었다.
 val firebaseConfigured = file("google-services.json").exists()
 if (firebaseConfigured) {
     pluginManager.apply(libs.plugins.google.services.get().pluginId)
     pluginManager.apply(libs.plugins.firebase.crashlytics.get().pluginId)
 }
 
-// Google이 공개한 테스트용 ID다. 실제 광고가 아니라 노출과 클릭이 계정에 잡히지 않는다.
+// Google이 공개한 테스트용 ID다.
+// 실제 광고가 아니라 노출과 클릭이 계정에 잡히지 않는다.
 val ADMOB_TEST_APP_ID = "ca-app-pub-3940256099942544~3347511713"
 val ADMOB_TEST_NATIVE_UNIT_ID = "ca-app-pub-3940256099942544/2247696110"
 val ADMOB_TEST_REWARDED_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
@@ -45,7 +48,8 @@ android {
         // SDK는 앱 ID가 없으면 시작하지 않아서 그때는 Google 테스트 앱 ID를 넣는다.
         manifestPlaceholders["admobAppId"] = localProperty("admob.appId") ?: ADMOB_TEST_APP_ID
         buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", "\"${localProperty("admob.nativeUnitId").orEmpty()}\"")
-        // "24시간 광고 없이 보기"에 쓰는 보상형 광고다. 없으면 광고 줄의 ×가 그 광고만 바로 닫고 설정 줄이 없다.
+        // "24시간 광고 없이 보기"에 쓰는 보상형 광고다.
+        // 없으면 광고 줄의 ×가 그 광고만 바로 닫고 설정 줄이 없다.
         buildConfigField("String", "ADMOB_REWARDED_UNIT_ID", "\"${localProperty("admob.rewardedUnitId").orEmpty()}\"")
         // 설정의 "피드백 보내기"가 여는 메일의 받는 주소다.
         // 개인 주소를 저장소에 넣지 않으려고 local.properties에서 받고, 없으면 그 줄이 없다.
@@ -65,7 +69,8 @@ android {
 
     buildTypes {
         // 디버그 빌드에서 광고 자리를 보려면 local.properties에 admob.test=true를 두거나 -Povalit.ads.test=true로 빌드한다.
-        // Google 테스트 광고만 받는다. 릴리스는 이 값을 보지 않는다.
+        // Google 테스트 광고만 받는다.
+        // 릴리스는 이 값을 보지 않는다.
         debug {
             val testAds = (findProperty("ovalit.ads.test") ?: localProperty("admob.test"))?.toString() == "true"
             if (testAds) {
@@ -89,7 +94,8 @@ android {
             initWith(getByName("release"))
             signingConfig = signingConfigs.getByName("debug")
             matchingFallbacks += listOf("release")
-            // 개발 기기에서 속도를 보는 빌드라 Crashlytics에 매핑 파일을 올리지 않는다. 올리는 건 릴리스뿐이다.
+            // 개발 기기에서 속도를 보는 빌드라 Crashlytics에 매핑 파일을 올리지 않는다.
+            // 올리는 건 릴리스뿐이다.
             (this as ExtensionAware).extensions.findByName("firebaseCrashlytics")?.withGroovyBuilder {
                 setProperty("mappingFileUploadEnabled", false)
             }

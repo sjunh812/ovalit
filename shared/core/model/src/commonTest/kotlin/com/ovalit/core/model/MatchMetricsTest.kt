@@ -98,7 +98,8 @@ class MatchMetricsTest {
         assertNull(metrics.headshotRate)
     }
 
-    // 응답에는 스킬로 나를 죽인 것도 킬로 들어온다. 그대로 세면 K/D가 부풀어 오른다.
+    // 응답에는 스킬로 나를 죽인 것도 킬로 들어온다.
+    // 그대로 세면 K/D가 부풀어 오른다.
     @Test
     fun `나를 죽인 킬은 킬로 세지 않고 데스로만 센다`() {
         val metrics = match(round(kill(10.0, Me, Me))).metrics()
@@ -143,7 +144,8 @@ class MatchMetricsTest {
 
         assertRate(300.0, stomp.metrics().acs)
         assertRate(200.0, close.metrics().acs)
-        // 평균의 평균이면 250이 나온다. 총량 9,300을 39라운드로 나눠야 맞다.
+        // 평균의 평균이면 250이 나온다.
+        // 총량 9,300을 39라운드로 나눠야 맞다.
         assertRate(9_300.0 / 39, combined.acs)
         assertEquals(2, combined.matches)
         assertEquals(39, combined.rounds)

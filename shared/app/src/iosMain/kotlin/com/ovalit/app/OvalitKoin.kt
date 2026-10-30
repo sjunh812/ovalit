@@ -47,6 +47,7 @@ private fun preferencesPath(): String {
     return requireNotNull(documents?.path) + "/ovalit.preferences_pb"
 }
 
-// 화면 문구처럼 일본어면 일본어 이름을, 아니면 한국어 이름을 받는다. iOS는 앱 언어를 바꾸면 앱을 다시 띄워서 켤 때 한 번 정한다.
+// 화면 문구처럼 일본어면 일본어 이름을, 아니면 한국어 이름을 받는다.
+// iOS는 앱 언어를 바꾸면 앱을 다시 띄워서 켤 때 한 번 정한다.
 private fun appLanguage(): String =
     if ((NSLocale.preferredLanguages.firstOrNull() as? String)?.startsWith("ja") == true) "ja" else "ko"

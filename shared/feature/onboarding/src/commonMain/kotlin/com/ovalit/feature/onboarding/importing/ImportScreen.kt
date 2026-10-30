@@ -70,7 +70,8 @@ import com.ovalit.feature.onboarding.resources.import_title
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-// 목업의 선택지 순서다. 기본값인 "특별히 없어요"는 아무것도 안 고른 것과 같아서 맨 아래에 둔다.
+// 목업의 선택지 순서다.
+// 기본값인 "특별히 없어요"는 아무것도 안 고른 것과 같아서 맨 아래에 둔다.
 private val FocusOrder = listOf(Focus.AIM, Focus.ROUND_PLAY, Focus.CONSISTENCY, Focus.NONE)
 
 /**
@@ -240,7 +241,8 @@ private fun Progress(progress: ImportProgress?, onOpenReport: () -> Unit, onRetr
         Spacer(Modifier.height(12.dp))
         when {
             done -> OvalitPrimaryButton(text = stringResource(Res.string.import_open_report), onClick = onOpenReport)
-            // 멈춰도 받은 칸은 그대로 두고 남은 것만 이어 받는다. 기다리면 저절로 다시 시도한다.
+            // 멈춰도 받은 칸은 그대로 두고 남은 것만 이어 받는다.
+            // 기다리면 저절로 다시 시도한다.
             stoppedBy != null -> {
                 OvalitText(
                     text = stringResource(if (stoppedBy == OvalitError.Offline) Res.string.import_stopped_offline else Res.string.import_stopped_later),

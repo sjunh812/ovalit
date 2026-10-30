@@ -13,7 +13,7 @@ import org.jetbrains.compose.resources.Font
  * Pretendard Variable 한 벌입니다.
  *
  * 파일은 하나지만 굵기마다 `wght` 축 값을 넘겨 따로 등록합니다.
- * 안 넘기면 모두 기본 굵기로 나오고, 굵은 자리는 시스템이 억지로 두껍게 흉내 냅니다.
+ * 안 넘기면 모두 기본 굵기로 나오고 굵은 자리는 시스템이 억지로 두껍게 흉내 냅니다.
  *
  * 굵기는 이름 그대로입니다(SemiBold 600, Bold 700).
  * [FontWeight.Bold]도 꼭 등록합니다.

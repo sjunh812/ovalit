@@ -2,7 +2,7 @@ package com.ovalit.core.network
 
 // Riot 문서의 VAL-MATCH-V1 모양을 따라 손으로 짠 응답이다.
 // 실제 응답을 아직 못 봐서 값은 지어냈다.
-// 라운드마다 열 명의 장비 줄을 다 적으면 읽을 수 없어서 줄을 만드는 함수만 두고, 무엇이 일어났는지는 경기마다 손으로 적는다.
+// 라운드마다 열 명의 장비 줄을 다 적으면 읽을 수 없어서 줄을 만드는 함수만 두고 무엇이 일어났는지는 경기마다 손으로 적는다.
 
 internal const val ME = "p-me"
 internal const val A1 = "p-ally-1"
@@ -17,7 +17,8 @@ internal const val E5 = "p-enemy-5"
 internal val ALLIES = listOf(A1, A2, A3, A4)
 internal val ENEMIES = listOf(E1, E2, E3, E4, E5)
 
-// Riot은 같은 UUID를 대문자로 주기도 한다. 옮길 때 소문자로 바뀌는지 보려고 일부러 대문자로 둔다.
+// Riot은 같은 UUID를 대문자로 주기도 한다.
+// 옮길 때 소문자로 바뀌는지 보려고 일부러 대문자로 둔다.
 internal const val RAZE = "F94C3B30-42BE-E959-889C-5AA313DBA261"
 internal const val SAGE = "569fdd95-4d10-43ab-ca70-79becc718b46"
 internal const val JETT = "add6443a-41bd-e414-f6ad-e58d267f4e95"
@@ -74,8 +75,10 @@ internal fun roundStats(
 """.trimIndent()
 
 /**
- * 라운드 하나입니다. [blue]와 [red]는 팀마다 한 사람당 장비 가치이고, [kills]와 [damage]는 사람마다 낸 킬과 준 피해입니다.
- * [absent]에 든 사람은 그 라운드 `playerStats`에서 빠집니다. 튕겨서 못 뛴 사람입니다.
+ * 라운드 하나입니다.
+ * [blue]와 [red]는 팀마다 한 사람당 장비 가치이고 [kills]와 [damage]는 사람마다 낸 킬과 준 피해입니다.
+ * [absent]에 든 사람은 그 라운드 `playerStats`에서 빠집니다.
+ * 튕겨서 못 뛴 사람입니다.
  */
 internal fun round(
     num: Int,
@@ -204,7 +207,10 @@ private fun quietWin(num: Int, role: String?, blue: Int = 4_500, red: Int = 4_50
 )
 
 /**
- * 13대3으로 이긴 경쟁전입니다. 나는 블루 팀 레이즈이고 전반에 공격합니다. `roundNum`은 0부터입니다. 라운드마다 일어난 일:
+ * 13대3으로 이긴 경쟁전입니다.
+ * 나는 블루 팀 레이즈이고 전반에 공격합니다.
+ * `roundNum`은 0부터입니다.
+ * 라운드마다 일어난 일:
  *
  * 1. 피스톨. 고스트로 첫 킬 포함 2킬(멀티킬). 290 피해
  * 2. 이코. 10초에 죽고 3초 뒤 트레이드, 세이지가 살려 줬는데 40초에 또 죽고 7초 뒤에야 갚아 줌(데스 2, 트레이드 1). 짐
@@ -220,7 +226,7 @@ private fun quietWin(num: Int, role: String?, blue: Int = 4_500, red: Int = 4_50
  * 15. 이긴 팀 진영이 빠지고 상대가 설치한 스파이크를 해체해서 이김(수비로 가림)
  * 16. 이긴 팀 진영도 스파이크도 없이 이김(진영 모름)
  *
- * 관전자 한 명과 코치 한 명이 있고, 문서에 없는 필드도 섞여 있습니다.
+ * 관전자 한 명과 코치 한 명이 있고 문서에 없는 필드도 섞여 있습니다.
  */
 internal val CompetitiveMatch: String = matchJson(
     players = listOf(

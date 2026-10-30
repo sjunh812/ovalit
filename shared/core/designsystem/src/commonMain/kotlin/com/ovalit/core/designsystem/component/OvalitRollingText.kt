@@ -78,7 +78,7 @@ fun OvalitRollingText(
             drawContent()
             val laidOut = layout ?: return@drawWithContent
             if (!rolling) return@drawWithContent
-            // 한 글자씩 따로 재면 자간이 전체 글자와 달라 1px쯤 비껴 그려지고, 다 구른 뒤 제자리 글자로 바뀔 때 움찔한다.
+            // 한 글자씩 따로 재면 자간이 전체 글자와 달라 1px쯤 비껴 그려지고 다 구른 뒤 제자리 글자로 바뀔 때 움찔한다.
             // 그래서 전체 글자를 같은 조건으로 한 번 더 재고 바뀐 칸만 잘라 그린다.
             val input = laidOut.layoutInput
             fun layoutOf(value: String) = measurer.measure(

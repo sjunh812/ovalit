@@ -8,11 +8,12 @@ import { send, throwIfBlocked } from "./upstream";
 
 const RIOT_HOST = "https://kr.api.riotgames.com";
 const DAY = 24 * 60 * 60;
-// 끝난 경기는 결과가 바뀌지 않는다. 다시 받으면 레이트 리밋만 쓴다.
+// 끝난 경기는 결과가 바뀌지 않는다.
+// 다시 받으면 레이트 리밋만 쓴다.
 const MATCH_TTL = 30 * DAY;
 const CONTENT_TTL = 6 * 60 * 60;
 const STATUS_TTL = 60;
-// Riot이 없다고 한 경기 ID를 기억해 두고, 아무 ID나 넣은 요청이 그때마다 Riot 몫을 쓰지 않게 한다.
+// Riot이 없다고 한 경기 ID를 기억해 두고 아무 ID나 넣은 요청이 그때마다 Riot 몫을 쓰지 않게 한다.
 // 막 끝난 경기가 잠깐 404일 수도 있어서 길게 두지 않는다.
 const MISSING_TTL = 10 * 60;
 const MB = 1024 * 1024;
@@ -28,13 +29,16 @@ const memory = {
   missing: new MemoryCache({ maxEntries: 10_000, maxBytes: Number.POSITIVE_INFINITY }),
 };
 
-// 한 사람이 Riot 몫을 몰아 쓰지 못하게 사용자마다 센다. isolate 메모리에서 세니 막는다기보다 줄이는 정도다.
+// 한 사람이 Riot 몫을 몰아 쓰지 못하게 사용자마다 센다.
+// isolate 메모리에서 세니 막는다기보다 줄이는 정도다.
 const quotas = {
-  // 경기 ID 목록은 새 경기가 바로 보여야 해서 담아 두지 않는다. 대신 연달아 당겨도 10초에 한 번만 Riot에 간다.
+  // 경기 ID 목록은 새 경기가 바로 보여야 해서 담아 두지 않는다.
+  // 대신 연달아 당겨도 10초에 한 번만 Riot에 간다.
   matchlist: new Quota(1, 10_000),
   // 앱도 같은 친구의 경기는 1분에 한 번까지만 새로 받는다.
   friendMatchlist: new Quota(1, 60_000),
-  // 캐시에 없어 Riot에 가는 경기 상세다. 첫 수집 50경기가 한꺼번에 와도 걸리지 않게 넉넉히 둔다.
+  // 캐시에 없어 Riot에 가는 경기 상세다.
+  // 첫 수집 50경기가 한꺼번에 와도 걸리지 않게 넉넉히 둔다.
   matchDetails: new Quota(120, 60_000),
 };
 
@@ -90,10 +94,12 @@ export class RiotMatch {
 }
 
 /**
- * Riot 호출과 캐시를 한곳에 모았습니다. isolate 메모리, Cache API, Riot 순서로 찾습니다.
+ * Riot 호출과 캐시를 한곳에 모았습니다.
+ * isolate 메모리, Cache API, Riot 순서로 찾습니다.
  * 메모리는 isolate가 내려가거나 요청이 다른 isolate로 가면 비어 있고,
  * Cache API는 사용자 정의 도메인에서만 담깁니다(`*.workers.dev`에서는 아무것도 담기지 않습니다).
- * 그래서 둘 다 비어 있을 수 있습니다. 경기 참가자만 필요할 때는 D1의 `match_players`를 먼저 봅니다.
+ * 그래서 둘 다 비어 있을 수 있습니다.
+ * 경기 참가자만 필요할 때는 D1의 `match_players`를 먼저 봅니다.
  */
 export class Riot {
   constructor(
@@ -137,7 +143,7 @@ export class Riot {
 
   /**
    * 친구와 `viewer`만 남기고 가린 경기 JSON입니다.
-   * `viewer`가 경기 어디에도 없으면 누가 보든 결과가 같아서, 끝난 경기는 가린 결과를 isolate 메모리에 (경기, 친구)로 담아 둡니다.
+   * `viewer`가 경기 어디에도 없으면 누가 보든 결과가 같아서 끝난 경기는 가린 결과를 isolate 메모리에 (경기, 친구)로 담아 둡니다.
    * 친구 여럿이 같은 친구의 경기를 열 때 다시 가리지 않습니다.
    */
   redactedFor(matchId: string, match: RiotMatch, friend: string, viewer: string): string {
@@ -162,7 +168,8 @@ export class Riot {
     return this.cached(memory.status, "/val/status/v1/platform-data", STATUS_TTL);
   }
 
-  // recorded는 D1에 이미 적힌 참가자다. 넘겨받았으면 Riot에서 새로 받아도 다시 적지 않는다.
+  // recorded는 D1에 이미 적힌 참가자다.
+  // 넘겨받았으면 Riot에서 새로 받아도 다시 적지 않는다.
   private async match(matchId: string, recorded?: Set<string>): Promise<RiotMatch> {
     const path = `/val/match/v1/matches/${matchId}`;
     if (memory.missing.get(path) !== undefined) throw new ApiError(404, "not_found");
@@ -177,8 +184,10 @@ export class Riot {
     }
     const data = parse(raw);
     // 담거나 적는 건 다음 요청을 아끼려는 것이라 실패해도 Riot이 준 경기는 그대로 내려보낸다.
-    // 끝났다고 적힌 경기만 담고 적는다. 진행 중이거나 matchInfo가 없으면 참가자와 결과가 아직 바뀔 수 있다.
-    // 참가자는 부른 사람이 뛴 경기일 때만 적는다. 남의 경기 ID를 마구 물어 D1 쓰기 한도(하루 10만 행)를 쓰게 할 수 없다.
+    // 끝났다고 적힌 경기만 담고 적는다.
+    // 진행 중이거나 matchInfo가 없으면 참가자와 결과가 아직 바뀔 수 있다.
+    // 참가자는 부른 사람이 뛴 경기일 때만 적는다.
+    // 남의 경기 ID를 마구 물어 D1 쓰기 한도(하루 10만 행)를 쓰게 할 수 없다.
     if (data.matchInfo?.isCompleted === true) {
       const record = !recorded && playersIn(data).has(this.caller.puuid);
       await Promise.all([
@@ -200,12 +209,14 @@ export class Riot {
     } catch {
       return undefined;
     }
-    // 못 읽는 줄은 적지 않은 경기로 친다. Riot에서 다시 받아 확인한다.
+    // 못 읽는 줄은 적지 않은 경기로 친다.
+    // Riot에서 다시 받아 확인한다.
     if (!Array.isArray(puuids) || puuids.length === 0) return undefined;
     return new Set(puuids.filter((puuid) => typeof puuid === "string"));
   }
 
-  // 경기 하나에 한 줄이다. 사람마다 한 줄로 적으면 첫 수집 한 번이 D1 쓰기 500행을 쓴다(migrations/0008).
+  // 경기 하나에 한 줄이다.
+  // 사람마다 한 줄로 적으면 첫 수집 한 번이 D1 쓰기 500행을 쓴다(migrations/0008).
   private async recordPlayers(matchId: string, data: MatchData): Promise<void> {
     await this.env.DB.prepare("INSERT OR IGNORE INTO match_players (match_id, puuids, recorded_at) VALUES (?, ?, ?)")
       .bind(matchId, JSON.stringify([...playersIn(data)]), Date.now())
@@ -232,7 +243,8 @@ export class Riot {
     if (joined) return joined;
     // Riot이 막혀 있어 어차피 부르지 않을 요청으로 사용자 몫을 깎지 않는다.
     await throwIfBlocked(this.env.DB, url);
-    // 기다리는 사이에 누가 먼저 부르기 시작했을 수 있다. 여기서부터 등록까지는 기다리는 곳이 없다.
+    // 기다리는 사이에 누가 먼저 부르기 시작했을 수 있다.
+    // 여기서부터 등록까지는 기다리는 곳이 없다.
     const started = inflight.get(url);
     if (started) return started;
     if (limit) spend(limit.quota, limit.key);
@@ -254,7 +266,8 @@ export class Riot {
       if (!hit) return undefined;
       body = await hit.text();
     } catch (err) {
-      // 담아 둔 곳을 못 읽으면 없는 것으로 치고 Riot에서 받는다. 이것 때문에 요청이 실패하지는 않는다.
+      // 담아 둔 곳을 못 읽으면 없는 것으로 치고 Riot에서 받는다.
+      // 이것 때문에 요청이 실패하지는 않는다.
       logFailure("riot_cache", err);
       return undefined;
     }

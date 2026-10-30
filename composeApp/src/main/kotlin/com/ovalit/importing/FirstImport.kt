@@ -38,7 +38,8 @@ private const val NEW_MATCHES_WORK_NAME = "new-matches"
 /** 분석 완료와 쌓인 새 경기 알림의 채널입니다. 설정이 이 채널이 막혔는지 봅니다. */
 internal const val ANALYSIS_CHANNEL = "analysis_done"
 private const val KEY_TOTAL = "total"
-// 알림은 태그로 가른다. ㅇㅂㅇ 알림 ID는 초대 ID에서 만들어 어느 숫자와도 겹칠 수 있다.
+// 알림은 태그로 가른다.
+// ㅇㅂㅇ 알림 ID는 초대 ID에서 만들어 어느 숫자와도 겹칠 수 있다.
 private const val FIRST_IMPORT_TAG = "first_import"
 private const val NEW_MATCHES_TAG = "new_matches"
 
@@ -95,7 +96,8 @@ class FirstImportWorker(context: Context, params: WorkerParameters) : CoroutineW
     override suspend fun doWork(): Result {
         // 연동을 해제한 뒤 기다리던 작업이 돌면 RSO 세션 없이 전적을 요청한다(CLAUDE.md 지켜야 할 선)
         if (account.account.first() == null) return Result.success()
-        // 실패하면 WorkManager가 30초부터 늘려 가며 다시 띄운다. 받은 경기는 그대로라 남은 것만 받는다.
+        // 실패하면 WorkManager가 30초부터 늘려 가며 다시 띄운다.
+        // 받은 경기는 그대로라 남은 것만 받는다.
         try {
             matches.importRecent()
         } catch (e: CancellationException) {
@@ -107,7 +109,8 @@ class FirstImportWorker(context: Context, params: WorkerParameters) : CoroutineW
             AnalyticsEvents.TUTORIAL_COMPLETE,
             mapOf("match_bucket" to importBucket(matches.observeMatches().first().size), "finished_in_background" to (!AppVisibility.isVisible).toString()),
         )
-        // 화면을 보고 있으면 S0-4가 알려 주니 보내지 않는다. 받는 사이 연동을 해제했어도 보내지 않는다.
+        // 화면을 보고 있으면 S0-4가 알려 주니 보내지 않는다.
+        // 받는 사이 연동을 해제했어도 보내지 않는다.
         if (account.account.first() != null && preferences.preferences.first().notifyAnalysisDone && !AppVisibility.isVisible) {
             val count = matches.observeMatches().first().size
             notify(
@@ -128,7 +131,7 @@ class FirstImportWorker(context: Context, params: WorkerParameters) : CoroutineW
 /**
  * 오래 쉬었다 와서 쌓인 새 경기를 앱을 닫아도 이어 받습니다.
  * 다 받으면 "분석 완료" 알림 설정을 따라 알립니다.
- * 받을 판 수는 넘길 때 입력으로 받아 두어서, 작업이 시작되기 전에 앱에서 다 받았어도 알립니다.
+ * 받을 판 수는 넘길 때 입력으로 받아 두어서 작업이 시작되기 전에 앱에서 다 받았어도 알립니다.
  */
 class NewMatchesWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params), KoinComponent {
     private val account: AccountRepository by inject()

@@ -19,7 +19,8 @@ export async function sha256(text: string): Promise<string> {
   return base64url(new Uint8Array(digest));
 }
 
-// 0, O, 1, I를 뺐다. 링크가 잘려 사람이 옮겨 적을 때 헷갈리지 않게 한다.
+// 0, O, 1, I를 뺐다.
+// 링크가 잘려 사람이 옮겨 적을 때 헷갈리지 않게 한다.
 // 글자가 32개라 바이트를 32로 나눈 나머지를 써도 어느 글자로 치우치지 않는다.
 const INVITE_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 export const INVITE_CODE = /^[2-9A-HJ-NP-Z]{12}$/;

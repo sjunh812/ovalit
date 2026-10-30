@@ -95,7 +95,8 @@ internal fun NudgeBanner(
     }
 }
 
-// 아바타가 Riot ID 첫 글자라 많이 겹치면 글자가 가려져서 둘까지만 조금 겹친다. 앞사람이 위로 온다.
+// 아바타가 Riot ID 첫 글자라 많이 겹치면 글자가 가려져서 둘까지만 조금 겹친다.
+// 앞사람이 위로 온다.
 @Composable
 private fun StackedAvatars(riotIds: List<String>) {
     val colors = OvalitTheme.colors

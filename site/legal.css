@@ -6,6 +6,7 @@
   --t1: #191F28;
   --t2: #5F6873;
   --t3: #6B7684;
+  --accent: #FF4655;
   --accent-ink: #DA1638;
   color-scheme: light dark;
 }
@@ -37,7 +38,9 @@ body {
 
 header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 40px; }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--t1); text-decoration: none; font-weight: 700; font-size: 18px; }
-.brand svg { width: 32px; height: auto; color: var(--accent-ink); }
+/* 로고는 앱 아이콘처럼 발로란트 빨강(--accent) 말풍선에 흰 ㅇㅂㅇ이다. --accent-ink는 글자용이라 더 어둡다.
+   글자 자리는 뚫려 있어서 다크에서도 희게 보이도록 SVG에 흰 말풍선을 밑에 깐다. */
+.brand svg { width: 32px; height: auto; color: var(--accent); }
 .lang { display: flex; gap: 4px; background: var(--canvas); border-radius: 10px; padding: 3px; }
 .lang button {
   font: inherit; font-size: 14px; border: 0; background: transparent; color: var(--t2);

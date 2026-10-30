@@ -18,6 +18,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +49,7 @@ import com.ovalit.core.data.FakeAccountRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.ImportScheduler
 import com.ovalit.core.data.UserPreferencesRepository
+import com.ovalit.core.designsystem.component.OvalitLaunchAnimation
 import com.ovalit.core.designsystem.component.LocalOvalitToast
 import com.ovalit.core.designsystem.component.LocalScreenEntering
 import com.ovalit.core.designsystem.component.LocalTabReselects
@@ -212,6 +216,10 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
     val top = backStack.lastOrNull()
     LaunchedEffect(top) { (top as? Screen)?.let { analytics.screen(screenName(it)) } }
 
+    // 앱을 켤 때 시스템 스플래시에 이어 로고 애니메이션을 한 번 재생한다.
+    // 화면을 돌리거나 언어를 바꿔 다시 그려도 다시 재생하지 않는다.
+    var launching by rememberSaveable { mutableStateOf(true) }
+
     // 전환 중에 아래 화면이 어두워 보이게 하는 검은 바탕이다(OvalitTransitions).
     // 화면이 모두 불투명해서 평소에는 안 보인다.
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
@@ -362,6 +370,8 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
                 .navigationBarsPadding()
                 .padding(bottom = if (onTab) OvalitTabBarHeight + OvalitSpacing.md else OvalitSpacing.lg),
         )
+        // 밑 화면은 그동안 그려 두고 애니메이션이 흐려지면 드러난다
+        if (launching) OvalitLaunchAnimation(onFinished = { launching = false })
     }
 }
 

@@ -171,7 +171,7 @@ internal fun FriendProfileScreen(
                 val hasActMatches = profile != null && profile.agents.matches > 0
                 Spacer(Modifier.height(10.dp))
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.screen),
                     verticalAlignment = Alignment.Top,
                 ) {
                     ProfileIdentity(

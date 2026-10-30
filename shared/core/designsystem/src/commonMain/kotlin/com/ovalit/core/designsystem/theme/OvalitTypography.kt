@@ -39,14 +39,14 @@ data class OvalitTypography(
     val delta: TextStyle,
     val display: TextStyle,
     val titleL: TextStyle,
+    /** 홈 기간 이름("이번 주"), 시트 제목, 티어 이름입니다. */
     val titleM: TextStyle,
     val body: TextStyle,
     val bodyStrong: TextStyle,
-    /**
-     * 카드 제목("달라진 점", "요원")입니다.
-     * 섹션을 가르는 라벨이라 굵기는 Medium에 그치고, SemiBold는 그 카드가 말하는 문장과 숫자에 남깁니다.
-     */
+    /** 카드 제목("달라진 점", "요원")과 시트 안의 질문("어떻게 계산하나요?")입니다. */
     val cardTitle: TextStyle,
+    /** 버튼 글자입니다. 제목보다 한 단계 가볍게 SemiBold입니다. */
+    val button: TextStyle,
     val label: TextStyle,
     val caption: TextStyle,
 )
@@ -73,23 +73,28 @@ fun ovalitTypography(fontFamily: FontFamily = FontFamily.Default, locale: Locale
         localeList = locale,
     )
 
+    // 크기는 토스 TDS 단계(26, 22, 20, 17, 15, 13)를 따르고 제목은 토스와 당근 SEED처럼 Bold다(docs/design.md 글자).
     return OvalitTypography(
-        metricXl = metric(size = 44, lineHeight = 48, tracking = -1.4),
-        metricL = metric(size = 30, lineHeight = 34, tracking = -0.8),
+        // 시트와 프로필의 큰 숫자는 그 화면의 주인공이라 Bold다
+        metricXl = metric(size = 44, lineHeight = 48, tracking = -1.4).copy(fontWeight = FontWeight.Bold),
+        metricL = metric(size = 30, lineHeight = 34, tracking = -0.8).copy(fontWeight = FontWeight.Bold),
         // 홈 고정 칸과 달라진 점 숫자다.
-        // 한 화면에 여덟 개가 모여서 더 키우면 무겁고 홈 기간 제목(titleM)보다는 커야 한다.
-        metricM = metric(size = 20, lineHeight = 24, tracking = -0.5),
-        metricS = metric(size = 12, lineHeight = 16, tracking = 0.0),
-        delta = metric(size = 13, lineHeight = 18, tracking = 0.0).copy(fontWeight = FontWeight.Normal),
-        // 화면 제목, 홈 기간, 프로필 이름은 목업처럼 titleL이다.
-        // 목업에서도 그보다 큰 곳(온보딩 헤드라인, S3 맵 이름, S7 주 역할)만 display를 쓴다.
-        display = text(size = 24, lineHeight = 32, tracking = -0.6, weight = FontWeight.SemiBold, lineBreak = KoreanLineBreak),
-        titleL = text(size = 20, lineHeight = 28, tracking = -0.4, weight = FontWeight.SemiBold, lineBreak = KoreanLineBreak),
-        titleM = text(size = 17, lineHeight = 24, tracking = -0.3, weight = FontWeight.SemiBold, lineBreak = KoreanLineBreak),
+        // 한 화면에 여덟 개가 모여서 Bold면 무겁고 홈 기간 제목(titleM)보다는 커야 한다.
+        metricM = metric(size = 22, lineHeight = 26, tracking = -0.5),
+        metricS = metric(size = 13, lineHeight = 18, tracking = 0.0),
+        delta = metric(size = 14, lineHeight = 19, tracking = 0.0).copy(fontWeight = FontWeight.Normal),
+        // 화면 제목과 프로필 이름은 titleL이다.
+        // 그보다 큰 곳(온보딩 헤드라인, S3 맵 이름, S7 주 역할)만 display를 쓴다.
+        display = text(size = 26, lineHeight = 35, tracking = -0.6, weight = FontWeight.Bold, lineBreak = KoreanLineBreak),
+        titleL = text(size = 22, lineHeight = 30, tracking = -0.4, weight = FontWeight.Bold, lineBreak = KoreanLineBreak),
+        titleM = text(size = 20, lineHeight = 28, tracking = -0.3, weight = FontWeight.Bold, lineBreak = KoreanLineBreak),
         body = text(size = 15, lineHeight = 23, tracking = -0.1, weight = FontWeight.Normal),
         bodyStrong = text(size = 15, lineHeight = 23, tracking = -0.1, weight = FontWeight.SemiBold),
-        cardTitle = text(size = 15, lineHeight = 23, tracking = -0.1, weight = FontWeight.Medium),
-        label = text(size = 13, lineHeight = 18, tracking = 0.0, weight = FontWeight.Medium),
-        caption = text(size = 12, lineHeight = 17, tracking = 0.1, weight = FontWeight.Normal),
+        cardTitle = text(size = 17, lineHeight = 24, tracking = -0.2, weight = FontWeight.Bold, lineBreak = KoreanLineBreak),
+        button = text(size = 17, lineHeight = 24, tracking = -0.2, weight = FontWeight.SemiBold, lineBreak = KoreanLineBreak),
+        label = text(size = 14, lineHeight = 19, tracking = 0.0, weight = FontWeight.Medium),
+        // 토스는 가장 작은 13을 안 읽어도 되는 글에 쓴다.
+        // 이 앱의 작은 글씨(평소 값, 기간, 표본)는 읽어야 하는 글이라 12보다 작게 두지 않는다.
+        caption = text(size = 13, lineHeight = 18, tracking = 0.1, weight = FontWeight.Normal),
     )
 }

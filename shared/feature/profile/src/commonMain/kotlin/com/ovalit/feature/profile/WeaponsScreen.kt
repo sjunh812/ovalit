@@ -154,7 +154,7 @@ private fun WeaponsContent(uiState: RecordsUiState, onBack: () -> Unit) {
             if (report.weapons.isEmpty()) {
                 OvalitText(
                     text = stringResource(Res.string.no_matches),
-                    modifier = Modifier.padding(OvalitSpacing.gutter),
+                    modifier = Modifier.padding(OvalitSpacing.screen),
                     color = OvalitTheme.colors.t2,
                 )
                 return@Column
@@ -163,14 +163,14 @@ private fun WeaponsContent(uiState: RecordsUiState, onBack: () -> Unit) {
             Spacer(Modifier.height(OvalitSpacing.lg))
             Highlights(report, uiState.catalog)
             Spacer(Modifier.height(OvalitSpacing.xl))
-            OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))
+            OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.screen))
             Spacer(Modifier.height(18.dp))
             Categories(report, uiState.catalog)
             Spacer(Modifier.height(OvalitSpacing.lg))
             // 숫자마다 무기 몫을 가르는 기준이 달라서 표 밑에 한 번에 적는다
             OvalitText(
                 text = stringResource(Res.string.weapons_single_round_note),
-                modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
+                modifier = Modifier.padding(horizontal = OvalitSpacing.screen),
                 style = OvalitTheme.typography.caption,
                 color = OvalitTheme.colors.t3,
             )
@@ -222,7 +222,7 @@ private fun Highlights(report: WeaponReport, catalog: ContentCatalog) {
     val moveDown = stringResource(Res.string.weapons_moved_down)
     val actLabel = stringResource(Res.string.weapons_act_value)
 
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter)) {
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.screen)) {
         Row(verticalAlignment = Alignment.Bottom) {
             OvalitText(
                 text = stringResource(Res.string.weapons_top_title),
@@ -447,7 +447,7 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
     val nameWidth = rememberWidestWidth(names, OvalitTheme.typography.bodyStrong).coerceAtMost(MaxCategoryNameWidth)
     val killsWidth = rememberWidestWidth(killTexts, OvalitTheme.typography.metricS).coerceAtMost(MaxCategoryKillsWidth)
 
-    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter), verticalAlignment = Alignment.Bottom) {
+    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.screen), verticalAlignment = Alignment.Bottom) {
         OvalitText(
             text = stringResource(Res.string.weapons_by_category),
             modifier = Modifier.weight(1f),
@@ -461,7 +461,7 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
     }
     Spacer(Modifier.height(OvalitSpacing.sm))
     byCategory.forEachIndexed { index, (category, weapons) -> key(category) {
-        if (index > 0) OvalitDivider(Modifier.padding(start = OvalitSpacing.gutter), color = OvalitTheme.colors.lineWeak)
+        if (index > 0) OvalitDivider(Modifier.padding(start = OvalitSpacing.screen), color = OvalitTheme.colors.lineWeak)
         val key = category.key()
         CategoryRow(
             name = names[index],
@@ -479,7 +479,7 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
                     .fillMaxWidth()
                     // 계열 이름과 같은 자리에서 시작한다.
                     // 한 단계 들여 쓰면 무기 그림이 왼쪽에서 떨어져 떠 보인다.
-                    .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = 10.dp),
+                    .padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, bottom = 10.dp),
             ) {
                 // 줄마다 KDA 줄을 따로 줄이면 킬이 많은 총만 작아진다.
                 // 계열 안의 줄이 같은 크기를 쓴다.
@@ -524,7 +524,7 @@ private fun CategoryRow(
             .fillMaxWidth()
             .heightIn(min = 48.dp)
             .clickable(onClickLabel = action, role = SemanticsRole.Button, onClick = onToggle)
-            .padding(horizontal = OvalitSpacing.gutter),
+            .padding(horizontal = OvalitSpacing.screen),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val nameStyle = if (highlighted) OvalitTheme.typography.bodyStrong else OvalitTheme.typography.body

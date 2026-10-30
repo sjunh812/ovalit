@@ -67,7 +67,7 @@ fun OvalitTabHeader(
             .fillMaxWidth()
             .padding(top = OvalitSpacing.sm)
             .heightIn(min = HeaderHeight)
-            .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.sm),
+            .padding(start = OvalitSpacing.screen, end = OvalitSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(modifier = Modifier.weight(1f)) { leading() }
@@ -167,7 +167,7 @@ fun OvalitIconButton(icon: ImageVector, contentDescription: String, onClick: () 
 fun OvalitTopBarCaption(text: String, color: Color = OvalitTheme.colors.t3) {
     OvalitText(
         text = text,
-        modifier = Modifier.padding(end = OvalitSpacing.gutter - OvalitSpacing.sm),
+        modifier = Modifier.padding(end = OvalitSpacing.screen - OvalitSpacing.sm),
         style = OvalitTheme.typography.caption,
         color = color,
         maxLines = 1,

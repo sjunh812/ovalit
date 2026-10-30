@@ -82,7 +82,7 @@ fun OvalitToastHost(state: OvalitToastState, modifier: Modifier = Modifier) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = OvalitSpacing.gutter)
+                .padding(horizontal = OvalitSpacing.screen)
                 .clip(RoundedCornerShape(12.dp))
                 .background(colors.t1)
                 .semantics { liveRegion = LiveRegionMode.Polite }

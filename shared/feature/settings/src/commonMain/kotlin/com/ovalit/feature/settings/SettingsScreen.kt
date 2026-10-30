@@ -314,7 +314,7 @@ internal fun SettingsScreen(
 
             Spacer(Modifier.height(OvalitSpacing.xxl))
             Column(
-                modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
+                modifier = Modifier.padding(horizontal = OvalitSpacing.screen),
                 verticalArrangement = Arrangement.spacedBy(OvalitSpacing.sm),
             ) {
                 OvalitDisclaimer(textAlign = TextAlign.Start)
@@ -521,7 +521,7 @@ private fun adFreeUntilText(until: Instant, now: Instant, timeZone: TimeZone): S
 @Composable
 private fun UnlinkSection(onClick: () -> Unit) {
     Column(
-        modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
+        modifier = Modifier.padding(horizontal = OvalitSpacing.screen),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         OvalitDangerButton(text = stringResource(Res.string.unlink), onClick = onClick)

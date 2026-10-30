@@ -85,7 +85,7 @@ fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Co
             riotId = badge.riotId,
             size = AvatarSize,
             modifier = Modifier
-                .padding(start = OvalitSpacing.gutter, top = top + BannerHeight - AvatarSize / 2)
+                .padding(start = OvalitSpacing.screen, top = top + BannerHeight - AvatarSize / 2)
                 .border(3.dp, colors.canvas, CircleShape),
         )
     }
@@ -101,7 +101,7 @@ fun ProfileSkeleton(topBar: @Composable BoxScope.() -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
         ProfileBanner(PlayerBadge(riotId = "", tier = null, tierName = null), topBar = topBar)
         Spacer(Modifier.height(10.dp))
-        OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+        OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = OvalitSpacing.screen)) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SkeletonBlock(width = 140.dp, height = 24.dp)
                 SkeletonBlock(width = 180.dp, height = 14.dp)

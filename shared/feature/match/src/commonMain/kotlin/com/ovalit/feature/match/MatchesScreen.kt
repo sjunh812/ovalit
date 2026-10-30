@@ -130,14 +130,14 @@ internal fun MatchesScreen(
             Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
                 OvalitTabHeader(title = stringResource(Res.string.matches_title))
                 Spacer(Modifier.height(OvalitSpacing.xs))
-                OvalitSkeleton(stringResource(CoreUiRes.string.loading), Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+                OvalitSkeleton(stringResource(CoreUiRes.string.loading), Modifier.padding(horizontal = OvalitSpacing.screen)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.xs)) {
                         SkeletonBlock(width = 88.dp, height = 34.dp, radius = 10.dp)
                         repeat(3) { SkeletonBlock(width = 52.dp, height = 34.dp, radius = 10.dp) }
                     }
                 }
                 Spacer(Modifier.height(OvalitSpacing.md + OvalitSpacing.lg))
-                MatchRowsSkeleton(rows = 8, style = MatchRowStyle.LIST)
+                MatchRowsSkeleton(rows = 8, style = MatchRowStyle.LIST, horizontalPadding = OvalitSpacing.screen)
             }
             return@Box
         }
@@ -172,7 +172,7 @@ internal fun MatchesScreen(
                                     else -> Res.string.empty_queue
                                 },
                             ),
-                            modifier = Modifier.padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.xl),
+                            modifier = Modifier.padding(horizontal = OvalitSpacing.screen, vertical = OvalitSpacing.xl),
                             style = OvalitTheme.typography.body,
                             color = colors.t2,
                         )
@@ -195,6 +195,7 @@ internal fun MatchesScreen(
                                 catalog = uiState.catalog,
                                 timeLabel = matchTimeLabel(match.startedAt, uiState.now, uiState.timeZone),
                                 style = MatchRowStyle.LIST,
+                                horizontalPadding = OvalitSpacing.screen,
                                 onClick = { onOpenMatch(match.id) },
                             )
                             if (match != day.matches.last()) {
@@ -253,7 +254,7 @@ private fun DayHeader(day: MatchDay, today: LocalDate) {
         separator = { SeparatorDot(style, colors.t4) },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.lg, bottom = OvalitSpacing.xs)
+            .padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.lg, bottom = OvalitSpacing.xs)
             .semantics(mergeDescendants = true) { heading() },
         alignBaseline = true,
     )

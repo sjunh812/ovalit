@@ -54,7 +54,7 @@ internal fun MatchDetailSkeleton(bannerHeight: Dp, onBack: () -> Unit) {
             )
             OvalitSkeleton(
                 description = description,
-                modifier = Modifier.align(Alignment.BottomStart).padding(start = OvalitSpacing.gutter, bottom = 14.dp),
+                modifier = Modifier.align(Alignment.BottomStart).padding(start = OvalitSpacing.screen, bottom = 14.dp),
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     SkeletonBlock(width = 96.dp, height = 28.dp)
@@ -62,7 +62,7 @@ internal fun MatchDetailSkeleton(bannerHeight: Dp, onBack: () -> Unit) {
                 }
             }
         }
-        OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+        OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = OvalitSpacing.screen)) {
             Column {
                 Box(Modifier.fillMaxWidth().height(14.dp).background(colors.fill, RoundedCornerShape(3.dp)))
                 Spacer(Modifier.height(30.dp))

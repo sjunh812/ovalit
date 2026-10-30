@@ -327,7 +327,7 @@ private fun RequestsCard(requests: List<FriendRequest>, onAccept: (PlayerId) -> 
 @Composable
 private fun InviteButton(onInvite: () -> Unit) {
     Spacer(Modifier.height(OvalitSpacing.md))
-    Column(modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+    Column(modifier = Modifier.padding(horizontal = OvalitSpacing.screen)) {
         OvalitOutlinedButton(text = stringResource(Res.string.invite), onClick = onInvite)
         Spacer(Modifier.height(OvalitSpacing.sm))
         OvalitText(

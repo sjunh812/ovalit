@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.theme.OvalitTheme
 
@@ -77,9 +78,12 @@ fun OvalitTabBar(
                         contentDescription = null,
                         tint = if (selected) colors.t1 else colors.t3,
                     )
+                    // 아이콘 밑 한 단어라 Material 내비게이션 바 라벨처럼 12다
                     OvalitText(
                         text = tab.label,
                         style = OvalitTheme.typography.caption.copy(
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp,
                             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                         ),
                         color = if (selected) colors.t1 else colors.t3,

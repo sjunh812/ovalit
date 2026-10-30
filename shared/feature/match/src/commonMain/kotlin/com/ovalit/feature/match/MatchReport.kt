@@ -87,14 +87,14 @@ internal fun MatchReport(uiState: MatchDetailUiState.Success) {
 
     Column {
         if (shots.total > 0) {
-            Box(Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.lg)) { ShotsBreakdown(shots) }
+            Box(Modifier.padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.lg)) { ShotsBreakdown(shots) }
             Spacer(Modifier.height(OvalitSpacing.lg))
-            OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter), color = OvalitTheme.colors.lineWeak)
+            OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.screen), color = OvalitTheme.colors.lineWeak)
         }
         if (duels.isNotEmpty()) Duels(duels, uiState)
         if (weapons.isNotEmpty()) {
             Spacer(Modifier.height(OvalitSpacing.sm))
-            OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter), color = OvalitTheme.colors.lineWeak)
+            OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.screen), color = OvalitTheme.colors.lineWeak)
             Weapons(weapons, uiState)
         }
     }
@@ -114,10 +114,10 @@ private fun Duels(duels: List<Duel>, uiState: MatchDetailUiState.Success) {
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         // 이름 칸이 너무 좁아지면 "…"만 남기지 않고 이름을 빼고 얼굴만 둔다.
         // 상대 팀 안에서는 요원이 겹치지 않아 얼굴로 가릴 수 있다.
-        val nameRoom = currentMaxWidth - OvalitSpacing.gutter * 2 - FaceSize - OvalitSpacing.sm - countColumn * 3 - damageColumn * 2
+        val nameRoom = currentMaxWidth - OvalitSpacing.screen * 2 - FaceSize - OvalitSpacing.sm - countColumn * 3 - damageColumn * 2
         val showNames = nameRoom >= MinNameWidth
         Column {
-            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.xs)) {
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.screen, vertical = OvalitSpacing.xs)) {
                 Spacer(Modifier.weight(1f))
                 HeaderCell(stringResource(Res.string.report_kills), countColumn)
                 HeaderCell(stringResource(Res.string.report_deaths), countColumn)
@@ -132,7 +132,7 @@ private fun Duels(duels: List<Duel>, uiState: MatchDetailUiState.Success) {
                         .fillMaxWidth()
                         .heightIn(min = 46.dp)
                         .semantics(mergeDescendants = true) {}
-                        .padding(horizontal = OvalitSpacing.gutter, vertical = 6.dp),
+                        .padding(horizontal = OvalitSpacing.screen, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     AgentImage(line.agent, uiState.catalog.agents[line.agent], Modifier.size(FaceSize).clip(RoundedCornerShape(8.dp)))
@@ -164,7 +164,7 @@ private fun Duels(duels: List<Duel>, uiState: MatchDetailUiState.Success) {
 // 밑 열 제목 줄의 위 여백 4dp와 합쳐 제목과 내용 사이가 12dp다.
 @Composable
 private fun ReportTitle(text: String) {
-    Box(Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.lg, bottom = OvalitSpacing.sm)) {
+    Box(Modifier.padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.lg, bottom = OvalitSpacing.sm)) {
         ProfileSectionTitle(text)
     }
 }
@@ -210,7 +210,7 @@ private fun DamageCell(damage: Int, most: Int, color: Color) {
 private fun Weapons(weapons: List<WeaponStats>, uiState: MatchDetailUiState.Success) {
     val colors = OvalitTheme.colors
     ReportTitle(stringResource(Res.string.report_weapons_title))
-    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.xs)) {
+    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.screen, vertical = OvalitSpacing.xs)) {
         Spacer(Modifier.weight(1f))
         HeaderCell(stringResource(Res.string.report_kills), CountColumn)
         HeaderCell(stringResource(Res.string.report_damage), DamageColumn)
@@ -223,7 +223,7 @@ private fun Weapons(weapons: List<WeaponStats>, uiState: MatchDetailUiState.Succ
                 .fillMaxWidth()
                 .heightIn(min = 44.dp)
                 .semantics(mergeDescendants = true) {}
-                .padding(horizontal = OvalitSpacing.gutter, vertical = 6.dp),
+                .padding(horizontal = OvalitSpacing.screen, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             WeaponThumb(weapon.weapon, name, width = 44.dp, height = 22.dp)
@@ -244,7 +244,7 @@ private fun Weapons(weapons: List<WeaponStats>, uiState: MatchDetailUiState.Succ
     }
     OvalitText(
         text = stringResource(Res.string.report_weapons_note),
-        modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.sm),
+        modifier = Modifier.padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.sm),
         style = OvalitTheme.typography.caption,
         color = colors.t3,
     )

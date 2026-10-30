@@ -152,11 +152,11 @@ internal fun InsightSection(
             titleStyle = OvalitTheme.typography.cardTitle,
             caption = insight.matches.takeIf { it > 0 }?.let { AnnotatedString(stringResource(Res.string.insight_title_matches, it)) },
         )
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(SectionTitleGap - 6.dp))
         // 문장은 보통 굵기이고 차이 값만 굵게 한다.
         // 지난 기록과의 변화가 아니라 둘을 견준 차이라 오르내림 색은 쓰지 않는다.
         OvalitText(
-            text = headlineEmphasis(headline, gapText, SpanStyle(fontWeight = FontWeight.SemiBold)),
+            text = headlineEmphasis(headline, gapText, SpanStyle(fontWeight = FontWeight.Bold)),
             style = headlineStyle(),
         )
         // 제목과 문장이 이번 액트 이야기라 액트 값만 본문 크기로 밝게 두고, 그 액트 전체 표본을 줄 끝에 옅게 붙인다.

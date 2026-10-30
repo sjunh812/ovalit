@@ -13,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -134,7 +133,7 @@ private fun CurrentValue(slot: DynamicSlot, report: WeeklyReport.Ready) {
                     OvalitText(
                         text = metric.format.changeText(current, usual),
                         modifier = Modifier.alignByBaseline(),
-                        style = OvalitTheme.typography.delta.copy(fontSize = 13.sp, lineHeight = 18.sp),
+                        style = OvalitTheme.typography.delta,
                         color = changeColor(slot, current, usual),
                     )
                 }
@@ -170,7 +169,7 @@ private fun CurrentValue(slot: DynamicSlot, report: WeeklyReport.Ready) {
 @Composable
 private fun SheetBlock(title: String, body: String) {
     Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
-        OvalitText(text = title, style = OvalitTheme.typography.bodyStrong)
+        OvalitText(text = title, style = OvalitTheme.typography.cardTitle)
         OvalitText(text = body, style = OvalitTheme.typography.body, color = OvalitTheme.colors.t2)
     }
 }

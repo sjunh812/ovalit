@@ -22,7 +22,7 @@ fun QueueChips(
     Row(
         modifier = modifier
             .horizontalScroll(rememberScrollState())
-            .padding(horizontal = OvalitSpacing.gutter),
+            .padding(horizontal = OvalitSpacing.screen),
         horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.xs),
     ) {
         QueueFilter.entries.forEach { filter ->

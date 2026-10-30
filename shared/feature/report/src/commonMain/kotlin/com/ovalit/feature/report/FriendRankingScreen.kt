@@ -110,7 +110,7 @@ internal fun FriendRankingScreen(
                         title = { OvalitText(text = caption, style = OvalitTheme.typography.label, color = colors.t2) },
                         metric = metric,
                         onChoose = { choosing = true },
-                        modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
+                        modifier = Modifier.padding(horizontal = OvalitSpacing.screen),
                     )
                     Spacer(Modifier.height(SectionTitleGap))
                 }
@@ -121,7 +121,7 @@ internal fun FriendRankingScreen(
                     metric = metric,
                     top = top,
                     widths = widths,
-                    modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = BarRowGap),
+                    modifier = Modifier.padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, bottom = BarRowGap),
                 )
             }
             item { Spacer(Modifier.height(OvalitSpacing.xxl)) }
@@ -142,7 +142,7 @@ internal fun FriendRankingScreen(
 
 @Composable
 private fun RankingSkeleton() {
-    OvalitSkeleton(stringResource(CoreUiRes.string.loading), Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+    OvalitSkeleton(stringResource(CoreUiRes.string.loading), Modifier.padding(horizontal = OvalitSpacing.screen)) {
         Column(verticalArrangement = Arrangement.spacedBy(OvalitSpacing.lg)) {
             repeat(SKELETON_ROWS) {
                 Row(verticalAlignment = Alignment.CenterVertically) {

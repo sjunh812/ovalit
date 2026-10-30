@@ -23,6 +23,7 @@ import com.ovalit.BuildConfig
 import com.ovalit.core.data.Analytics
 import com.ovalit.core.data.AnalyticsEvents
 import com.ovalit.core.data.UserPreferencesRepository
+import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdRenderer
 import kotlin.time.Duration.Companion.hours
@@ -122,6 +123,8 @@ internal class AdMobRenderer(
                 NativeAdRow(
                     ad = loaded.ad,
                     verticalPadding = if (placement.inCard) 0.dp else 16.dp,
+                    // 화면에 바로 놓인 목록에서는 옆 경기 줄처럼 화면 여백이다
+                    horizontalPadding = if (placement.inCard) OvalitSpacing.gutter else OvalitSpacing.screen,
                     onClose = { onClose(key) },
                 )
             }

@@ -794,7 +794,7 @@ class ReportScreenTest {
         val styled = text.spanStyles.map { text.substring(it.start, it.end) to it.item }
 
         assertEquals(listOf("10"), styled.map { it.first })
-        assertEquals(FontWeight.SemiBold, styled.single().second.fontWeight)
+        assertEquals(FontWeight.Bold, styled.single().second.fontWeight)
         assertEquals(colors.pos, styled.single().second.color)
     }
 
@@ -1074,7 +1074,7 @@ class ReportScreenTest {
 
     // 오르내림은 헤드라인이 말한다.
     // 줄은 모두 같은 쪽으로 움직인 것이라 색 대신 밝기로 이번 값만 띄운다.
-    // SemiBold는 헤드라인의 바뀐 값에 남기고 줄의 숫자는 한 단계 가벼운 Medium이다.
+    // Bold는 헤드라인의 바뀐 값에 남기고 줄의 숫자는 Medium이다.
     @Test
     fun `짚을 점 숫자는 이번 값만 밝게 두고 색을 입히지 않는다`() = runComposeUiTest {
         lateinit var colors: OvalitColors
@@ -1359,7 +1359,7 @@ class ReportScreenTest {
         onNodeWithText("민석", substring = true).assertDoesNotExist()
     }
 
-    // 라이벌 줄처럼 11dp씩 띄우고, 제목 옆에 지표 버튼이 있어도 제목에서 첫 줄까지는 다른 묶음처럼 12dp다
+    // 라이벌 줄처럼 11dp씩 띄우고 제목 옆에 지표 버튼이 있어도 제목에서 첫 줄까지는 다른 카드처럼 16dp다
     @Test
     fun `친구 비교는 다른 묶음과 같은 간격으로 줄을 세운다`() = runComposeUiTest {
         val strong = ReportPreviewData.moved.metrics.copy(damage = 30_000)
@@ -1368,7 +1368,7 @@ class ReportScreenTest {
         val title = onNodeWithText("친구 비교").getUnclippedBoundsInRoot()
         val junho = onNodeWithText("준호", useUnmergedTree = true).getUnclippedBoundsInRoot()
         val me = onNodeWithText("나", useUnmergedTree = true).getUnclippedBoundsInRoot()
-        assertEquals(12f, (junho.top - title.bottom).value, absoluteTolerance = 0.5f)
+        assertEquals(16f, (junho.top - title.bottom).value, absoluteTolerance = 0.5f)
         assertEquals(11f, (me.top - junho.bottom).value, absoluteTolerance = 0.5f)
     }
 

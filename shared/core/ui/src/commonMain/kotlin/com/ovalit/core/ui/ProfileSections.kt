@@ -176,7 +176,7 @@ fun ProfileStatsSection(summary: ProfileSummary) {
 
     ProfileSection {
         ProfileSectionTitle(title = stringResource(Res.string.profile_stats_title))
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(SectionTitleGap))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             // 칸마다 따로 줄이면 "4번 중 2번"처럼 긴 칸만 작아져서 모든 칸을 한 크기로 맞춘다.
             // 세 칸에 가장 작게 줄여도 안 들어가면 두 칸씩 놓는다.
@@ -276,12 +276,11 @@ private const val UnitScale = 0.8f
 
 // 목업처럼 티어 이름(titleM)과 같은 크기다.
 // 홈의 큰 지표 숫자 크기를 쓰면 통계 칸들이 제목보다 커진다.
-// 지표 숫자라 홈 칸처럼 Medium이다(docs/design.md 글자).
+// 지표 숫자라 홈 칸처럼 SemiBold이고 Bold인 티어 이름보다 가볍다(docs/design.md 글자).
 @Composable
 private fun StatValueStyle(): TextStyle = OvalitTheme.typography.metricM.copy(
     fontSize = OvalitTheme.typography.titleM.fontSize,
-    lineHeight = 24.sp,
-    fontWeight = FontWeight.Medium,
+    lineHeight = OvalitTheme.typography.titleM.lineHeight,
 )
 
 // 칸이 좁아 열 시간부터는 분을 버린다.
@@ -322,7 +321,7 @@ fun ShotsBreakdown(shots: Shots) {
             title = stringResource(Res.string.profile_shots_title),
             caption = stringResource(Res.string.profile_shots_caption, shots.total.withThousands()),
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(SectionTitleGap))
         Row(
             modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
@@ -390,7 +389,7 @@ fun ProfileAgentsSection(report: AgentReport, catalog: ContentCatalog, onOpen: (
     // 역할 비중("타격대 78%")은 머리에 이미 있어서 여기 다시 적지 않는다
     ProfileSection(onClick = onOpen) {
         ProfileSectionTitle(title = stringResource(Res.string.profile_agents), chevron = onOpen != null)
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(SectionTitleGap))
         AgentTileRow(shown, catalog)
     }
 }
@@ -484,7 +483,7 @@ fun ProfileWeaponsSection(report: WeaponReport, catalog: ContentCatalog, onOpen:
 
     ProfileSection(onClick = onOpen) {
         ProfileSectionTitle(title = stringResource(Res.string.profile_weapons), chevron = onOpen != null)
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(SectionTitleGap))
         WeaponTileRow(shown, catalog)
     }
 }
@@ -592,6 +591,9 @@ fun ProfileSection(onClick: (() -> Unit)? = null, content: @Composable ColumnSco
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter), content = content)
     }
 }
+
+// 카드 제목과 내용 사이다. 홈 카드와 같다.
+private val SectionTitleGap = 16.dp
 
 @Composable
 fun ProfileSectionTitle(title: String, caption: String? = null, chevron: Boolean = false) {

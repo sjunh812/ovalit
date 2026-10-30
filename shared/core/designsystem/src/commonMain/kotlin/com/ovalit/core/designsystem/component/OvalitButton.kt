@@ -48,7 +48,7 @@ fun OvalitPrimaryButton(
         pressColor = colors.onAccent,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.sm)) {
-            OvalitText(text = text, style = OvalitTheme.typography.titleM, color = content)
+            OvalitText(text = text, style = OvalitTheme.typography.button, color = content)
             if (trailingIcon != null) OvalitIcon(trailingIcon, contentDescription = null, tint = content, size = 16.dp)
         }
     }

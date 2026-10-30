@@ -19,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitRollingText
@@ -251,7 +250,7 @@ private fun DynamicMetricColumn(
             text = column.value,
             // 숫자는 고정 칸처럼 Medium이다.
             // 크게 움직였는지는 변화량의 굵기가 가른다.
-            style = styles.value.copy(fontWeight = FontWeight.Medium),
+            style = styles.value,
             color = column.valueColor,
             autoSize = shrinkToFit(styles.value.fontSize, min = 14.sp),
         )

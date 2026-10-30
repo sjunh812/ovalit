@@ -167,7 +167,7 @@ internal fun Scoreboard(uiState: MatchDetailUiState.Success, onOpenPlayer: (Scor
         }
         OvalitText(
             text = stringResource(if (roundBased) Res.string.scoreboard_note else Res.string.scoreboard_note_names),
-            modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = 14.dp),
+            modifier = Modifier.padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = 14.dp),
             style = OvalitTheme.typography.caption,
             color = colors.t4,
         )
@@ -196,7 +196,7 @@ private fun groupTitle(group: ScoreboardGroup, uiState: MatchDetailUiState.Succe
 private fun TeamHeader(title: String, color: Color, showColumns: Boolean, roundBased: Boolean) {
     val colors = OvalitTheme.colors
     Row(
-        modifier = Modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.lg, bottom = 6.dp),
+        modifier = Modifier.fillMaxWidth().padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.lg, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         OvalitText(text = title, modifier = Modifier.weight(1f), style = OvalitTheme.typography.label, color = color)
@@ -209,7 +209,7 @@ private fun TeamHeader(title: String, color: Color, showColumns: Boolean, roundB
             }
         }
     }
-    OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter), color = colors.lineWeak)
+    OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.screen), color = colors.lineWeak)
 }
 
 @Composable
@@ -266,7 +266,7 @@ private fun PlayerRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 46.dp)
-                .padding(horizontal = OvalitSpacing.gutter, vertical = 7.dp),
+                .padding(horizontal = OvalitSpacing.screen, vertical = 7.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
@@ -381,7 +381,7 @@ private fun PlayerStats(row: ScoreboardRow) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = 2.dp, bottom = 12.dp),
+            .padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = 2.dp, bottom = 12.dp),
     ) {
         cells.forEach { (name, shown) ->
             Column(modifier = Modifier.weight(1f).semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -396,7 +396,7 @@ private fun PlayerStats(row: ScoreboardRow) {
 internal fun SectionLabel(text: String) {
     OvalitText(
         text = text,
-        modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.lg, bottom = OvalitSpacing.xs),
+        modifier = Modifier.padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.lg, bottom = OvalitSpacing.xs),
         style = OvalitTheme.typography.label,
         color = OvalitTheme.colors.t3,
     )

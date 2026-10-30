@@ -104,11 +104,11 @@ internal fun RoundList(uiState: MatchDetailUiState.Success) {
         Spacer(Modifier.height(OvalitSpacing.lg))
         RoundPicker(uiState.rounds, half = half, picked = round.number, onPick = { picked = it })
         Spacer(Modifier.height(OvalitSpacing.md))
-        OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter), color = OvalitTheme.colors.lineWeak)
+        OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.screen), color = OvalitTheme.colors.lineWeak)
         RoundDetail(round, uiState)
         if (uiState.match.queue.hasEconomy && uiState.buys.isNotEmpty()) {
             Spacer(Modifier.height(OvalitSpacing.sm))
-            OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter), color = OvalitTheme.colors.lineWeak)
+            OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.screen), color = OvalitTheme.colors.lineWeak)
             BuyTable(uiState)
         }
     }
@@ -126,7 +126,7 @@ private fun Overview(uiState: MatchDetailUiState.Success) {
         stringResource(Res.string.overview_defense) to record(overview.defense),
     )
     Column(
-        modifier = Modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.lg),
+        modifier = Modifier.fillMaxWidth().padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.lg),
         verticalArrangement = Arrangement.spacedBy(OvalitSpacing.md),
     ) {
         cells.chunked(2).forEach { pair ->
@@ -163,7 +163,7 @@ private fun RoundPicker(rounds: List<RoundSummary>, half: Int, picked: Int, onPi
     val state = rememberLazyListState(initialFirstVisibleItemIndex = (picked - 3).coerceAtLeast(0))
     LazyRow(
         state = state,
-        contentPadding = PaddingValues(horizontal = OvalitSpacing.gutter),
+        contentPadding = PaddingValues(horizontal = OvalitSpacing.screen),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.Bottom,
     ) {
@@ -235,7 +235,7 @@ private fun PickerCell(round: RoundSummary, most: Int, selected: Boolean, onClic
 private fun RoundDetail(round: RoundSummary, uiState: MatchDetailUiState.Success) {
     val colors = OvalitTheme.colors
     val caption = OvalitTheme.typography.caption
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.lg)) {
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.screen, vertical = OvalitSpacing.lg)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             OvalitText(text = stringResource(Res.string.round_title, round.number), style = OvalitTheme.typography.titleM)
             Spacer(Modifier.width(OvalitSpacing.sm))
@@ -379,7 +379,7 @@ private fun BuyTable(uiState: MatchDetailUiState.Success) {
     val overview = uiState.match.roundsOverview()
     Column {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.lg, bottom = OvalitSpacing.xs),
+            modifier = Modifier.fillMaxWidth().padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.lg, bottom = OvalitSpacing.xs),
         ) {
             OvalitText(text = stringResource(Res.string.buy_title), modifier = Modifier.weight(1f), style = OvalitTheme.typography.label, color = colors.t3)
             OvalitText(text = stringResource(Res.string.my_team), modifier = Modifier.weight(1f), style = caption, color = colors.t3, textAlign = TextAlign.End)
@@ -391,7 +391,7 @@ private fun BuyTable(uiState: MatchDetailUiState.Success) {
                     .fillMaxWidth()
                     .heightIn(min = 40.dp)
                     .semantics(mergeDescendants = true) {}
-                    .padding(horizontal = OvalitSpacing.gutter),
+                    .padding(horizontal = OvalitSpacing.screen),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 OvalitText(text = buyName(record.type), modifier = Modifier.weight(1f), style = OvalitTheme.typography.body, maxLines = 1)
@@ -423,13 +423,13 @@ private fun BuyTable(uiState: MatchDetailUiState.Success) {
                     value = overview.upsets.toString(),
                     emphasis = SpanStyle(fontWeight = FontWeight.SemiBold),
                 ),
-                modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.sm),
+                modifier = Modifier.padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.sm),
                 style = OvalitTheme.typography.body,
             )
         }
         OvalitText(
             text = stringResource(Res.string.economy_note),
-            modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.md),
+            modifier = Modifier.padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.md),
             style = caption,
             color = colors.t3,
         )

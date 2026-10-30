@@ -49,7 +49,7 @@ internal fun headlineEmphasis(text: String, value: String, emphasis: SpanStyle):
     if (start >= 0 && value.isNotEmpty()) addStyle(emphasis, start, start + value.length)
 }
 
-internal val SectionTitleGap = 12.dp
+internal val SectionTitleGap = 16.dp
 
 /** 막대가 있는 줄(라이벌, 친구 비교) 사이입니다. 친구 프로필의 나와 비교와 같습니다. */
 internal val BarRowGap = 11.dp
@@ -109,7 +109,7 @@ internal fun TitleWithCaption(
 // 목업처럼 옆으로 밀면 세 번째 칸이 화면 끝에서 잘린다(docs/DECISIONS.md).
 internal const val MetricColumns = 3
 internal val MetricColumnGap = 14.dp
-internal val MetricRowGap = 20.dp
+internal val MetricRowGap = 24.dp
 
 // 칸을 누르면 면을 이만큼 칸 밖으로 넓힌다.
 // 칸 사이 간격의 절반을 조금 넘겨 옆 칸 글자와 6dp 떨어진다.

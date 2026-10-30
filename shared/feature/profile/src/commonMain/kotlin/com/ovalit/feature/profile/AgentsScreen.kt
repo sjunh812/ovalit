@@ -168,7 +168,7 @@ private fun AgentsContent(uiState: RecordsUiState, onBack: () -> Unit) {
             if (report.matches == 0) {
                 OvalitText(
                     text = stringResource(Res.string.no_matches),
-                    modifier = Modifier.padding(OvalitSpacing.gutter),
+                    modifier = Modifier.padding(OvalitSpacing.screen),
                     color = OvalitTheme.colors.t2,
                 )
                 return@Column
@@ -181,11 +181,11 @@ private fun AgentsContent(uiState: RecordsUiState, onBack: () -> Unit) {
                 Spacer(Modifier.height(22.dp))
                 MainRole(report, mainRole, uiState.catalog)
                 Spacer(Modifier.height(22.dp))
-                OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))
+                OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.screen))
                 Spacer(Modifier.height(18.dp))
                 RoleShares(report, mainRole)
                 Spacer(Modifier.height(22.dp))
-                OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter))
+                OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.screen))
             }
             Spacer(Modifier.height(18.dp))
             // 처음에는 주 역할에 맞춘 묶음이다.
@@ -206,7 +206,7 @@ private fun AgentsContent(uiState: RecordsUiState, onBack: () -> Unit) {
             Spacer(Modifier.height(OvalitSpacing.lg))
             OvalitText(
                 text = stringResource(Res.string.agents_columns_note),
-                modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
+                modifier = Modifier.padding(horizontal = OvalitSpacing.screen),
                 style = OvalitTheme.typography.caption,
                 color = OvalitTheme.colors.t3,
             )
@@ -222,7 +222,7 @@ private fun MainRole(report: AgentReport, role: Role, catalog: ContentCatalog) {
     val focus = stringResource(role.focus)
     val sentence = stringResource(role.sentence, focus)
 
-    Column(modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+    Column(modifier = Modifier.padding(horizontal = OvalitSpacing.screen)) {
         OvalitText(text = stringResource(Res.string.agents_main_role), style = OvalitTheme.typography.label, color = colors.t3)
         Spacer(Modifier.height(9.dp))
         Row(verticalAlignment = Alignment.Bottom) {
@@ -268,7 +268,7 @@ private fun RoleShares(report: AgentReport, mainRole: Role) {
     val totalRounds = report.roles.sumOf { it.rounds }.coerceAtLeast(1)
 
     Column(
-        modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
+        modifier = Modifier.padding(horizontal = OvalitSpacing.screen),
         verticalArrangement = Arrangement.spacedBy(OvalitSpacing.md),
     ) {
         report.roles.forEach { share ->
@@ -379,14 +379,14 @@ private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: 
                 onClick = onChoose,
             )
         },
-        modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
+        modifier = Modifier.padding(horizontal = OvalitSpacing.screen),
     )
     Spacer(Modifier.height(12.dp))
     // 열 제목을 칸마다 따로 줄이면 "전투점수"만 작아진다.
     // 가장 긴 제목에 맞춘 크기를 셋에 같이 쓴다.
     val titles = listOf(stringResource(CoreUiRes.string.column_win_rate)) + columns.map { stringResource(it.title) }
     val headerStyle = rememberFittingStyle(titles, OvalitTheme.typography.caption, MetricColumn - ColumnGap)
-    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter)) {
+    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.screen)) {
         Spacer(Modifier.weight(1f))
         HeaderCell(titles[0], WinColumn, headerStyle)
         titles.drop(1).forEach { HeaderCell(it, MetricColumn, headerStyle) }
@@ -395,7 +395,7 @@ private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         // 한 줄이라도 "타격대 · 20판 · KDA 1.88"이 이름 밑에 안 들어가면 모든 줄에서 KDA를 한 줄 내린다.
         // 줄마다 따로 꺾으면 줄 높이가 제각각이다.
-        val nameWidth = currentMaxWidth - OvalitSpacing.gutter * 2 - ThumbnailSize - OvalitSpacing.md - WinColumn - MetricColumn * columns.size
+        val nameWidth = currentMaxWidth - OvalitSpacing.screen * 2 - ThumbnailSize - OvalitSpacing.md - WinColumn - MetricColumn * columns.size
         val captions = agents.map { agent ->
             AnnotatedString(listOfNotNull(roleText(agent), stringResource(CoreUiRes.string.agents_matches, agent.matches), rowKda(agent)?.text).joinToString(SEPARATOR))
         }
@@ -403,7 +403,7 @@ private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: 
         Column {
             agents.forEachIndexed { index, agent ->
                 if (index > 0) {
-                    OvalitDivider(Modifier.padding(start = OvalitSpacing.gutter + ThumbnailSize + OvalitSpacing.md), color = OvalitTheme.colors.lineWeak)
+                    OvalitDivider(Modifier.padding(start = OvalitSpacing.screen + ThumbnailSize + OvalitSpacing.md), color = OvalitTheme.colors.lineWeak)
                 }
                 AgentRow(agent, columns, catalog, stackKda)
             }
@@ -440,7 +440,7 @@ private fun AgentRow(agent: AgentStats, columns: List<MetricColumnSpec>, catalog
         modifier = Modifier
             .fillMaxWidth()
             .semantics(mergeDescendants = true) {}
-            .padding(horizontal = OvalitSpacing.gutter, vertical = 10.dp),
+            .padding(horizontal = OvalitSpacing.screen, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         AgentImage(agent.agent, name, Modifier.size(ThumbnailSize).clip(RoundedCornerShape(9.dp)))

@@ -53,14 +53,14 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
  * 바탕까지 눌리게 하면 정책 위반이라 요소마다 따로 등록합니다.
  */
 @Composable
-internal fun NativeAdRow(ad: NativeAd, verticalPadding: Dp, onClose: () -> Unit) {
+internal fun NativeAdRow(ad: NativeAd, verticalPadding: Dp, horizontalPadding: Dp, onClose: () -> Unit) {
     val colors = OvalitTheme.colors
     NativeAdFrame(ad) { adView ->
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 // ×의 눌리는 영역(36dp) 안쪽 여백만큼 오른쪽을 덜 띄워 × 그림의 오른쪽 끝이 다른 줄의 스코어 끝선에 맞는다
-                .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter - CloseInset, top = verticalPadding, bottom = verticalPadding),
+                .padding(start = horizontalPadding, end = horizontalPadding - CloseInset, top = verticalPadding, bottom = verticalPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             ad.icon?.drawable?.let { drawable ->

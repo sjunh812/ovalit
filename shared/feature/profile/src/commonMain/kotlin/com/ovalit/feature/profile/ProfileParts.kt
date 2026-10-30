@@ -91,7 +91,7 @@ internal fun RecordsHidden(title: StringResource, onBack: () -> Unit) {
         OvalitBackTopBar(onBack = onBack, title = stringResource(title))
         OvalitText(
             text = stringResource(Res.string.records_hidden),
-            modifier = Modifier.padding(OvalitSpacing.gutter),
+            modifier = Modifier.padding(OvalitSpacing.screen),
             color = OvalitTheme.colors.t2,
         )
     }
@@ -109,7 +109,7 @@ internal fun AgentsSkeleton(title: StringResource?, onBack: () -> Unit) {
     val description = stringResource(CoreUiRes.string.loading)
     Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
         SkeletonTopBar(title, onBack, description)
-        OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+        OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = OvalitSpacing.screen)) {
             Column {
                 Spacer(Modifier.height(22.dp))
                 SkeletonBlock(width = 56.dp, height = 12.dp)
@@ -144,7 +144,7 @@ internal fun WeaponsSkeleton(title: StringResource?, onBack: () -> Unit) {
     val description = stringResource(CoreUiRes.string.loading)
     Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
         SkeletonTopBar(title, onBack, description)
-        OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+        OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = OvalitSpacing.screen)) {
             Column {
                 Spacer(Modifier.height(OvalitSpacing.lg))
                 Row(verticalAlignment = Alignment.Bottom) {

@@ -15,13 +15,14 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 
 private val CardCorner = 20.dp
 
 val OvalitCardShape: Shape = RoundedCornerShape(CardCorner)
 
-/** 화면 가장자리와 카드 사이, 카드와 카드 사이입니다. */
+/** 카드와 카드 사이입니다. 화면 가장자리와 카드 사이는 `OvalitSpacing.screen`입니다. */
 val OvalitCardGap = 12.dp
 
 private val CardVerticalPadding = 20.dp
@@ -48,7 +49,7 @@ fun OvalitCard(
 ) {
     Column(
         modifier = modifier
-            .padding(horizontal = OvalitCardGap)
+            .padding(horizontal = OvalitSpacing.screen)
             .fillMaxWidth()
             // 면까지 같이 줄도록 누름 효과를 면보다 앞에 단다
             .then(
@@ -94,7 +95,7 @@ fun OvalitCardSlice(
     }
     Column(
         modifier = modifier
-            .padding(horizontal = OvalitCardGap)
+            .padding(horizontal = OvalitSpacing.screen)
             .fillMaxWidth()
             .clip(shape)
             .background(OvalitTheme.colors.card)

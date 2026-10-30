@@ -66,7 +66,7 @@ internal fun FriendMatchesScreen(uiState: FriendProfileUiState, onBack: () -> Un
             Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
                 OvalitBackTopBar(onBack = onBack)
                 Spacer(Modifier.height(OvalitSpacing.lg))
-                MatchRowsSkeleton(rows = 8, style = MatchRowStyle.COMPACT)
+                MatchRowsSkeleton(rows = 8, style = MatchRowStyle.COMPACT, horizontalPadding = OvalitSpacing.screen)
             }
             return@Box
         }
@@ -86,7 +86,7 @@ internal fun FriendMatchesScreen(uiState: FriendProfileUiState, onBack: () -> Un
                 item {
                     OvalitText(
                         text = stringResource(Res.string.matches_hidden),
-                        modifier = Modifier.padding(OvalitSpacing.gutter),
+                        modifier = Modifier.padding(OvalitSpacing.screen),
                         color = colors.t2,
                     )
                 }
@@ -101,7 +101,7 @@ internal fun FriendMatchesScreen(uiState: FriendProfileUiState, onBack: () -> Un
                     OvalitText(
                         text = dayLabel(date, today),
                         modifier = Modifier
-                            .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.lg, bottom = OvalitSpacing.xs)
+                            .padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.lg, bottom = OvalitSpacing.xs)
                             .semantics { heading() },
                         style = OvalitTheme.typography.label,
                         color = colors.t3,
@@ -114,6 +114,7 @@ internal fun FriendMatchesScreen(uiState: FriendProfileUiState, onBack: () -> Un
                             catalog = uiState.catalog,
                             timeLabel = matchTimeLabel(match.startedAt, uiState.now, uiState.timeZone),
                             style = MatchRowStyle.COMPACT,
+                            horizontalPadding = OvalitSpacing.screen,
                         )
                         if (match != matches.last()) OvalitDivider(Modifier.padding(start = 67.dp), color = colors.lineWeak)
                     }

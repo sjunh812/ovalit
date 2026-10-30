@@ -31,6 +31,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitSkeleton
@@ -76,6 +77,7 @@ private fun rowPadding(style: MatchRowStyle) = if (style == MatchRowStyle.COMPAC
  *
  * @param onClick `null`이면 누를 수 없는 줄입니다.
  *   친구 경기는 다른 사람 기록이 섞여 있어서 열지 않습니다.
+ * @param horizontalPadding 카드 안이면 카드 여백, 화면에 바로 놓이면 화면 여백입니다.
  */
 @Composable
 fun MatchRow(
@@ -84,6 +86,7 @@ fun MatchRow(
     timeLabel: String,
     style: MatchRowStyle,
     modifier: Modifier = Modifier,
+    horizontalPadding: Dp = OvalitSpacing.gutter,
     onClick: (() -> Unit)? = null,
 ) {
     val colors = OvalitTheme.colors
@@ -114,7 +117,7 @@ fun MatchRow(
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
             .semantics(mergeDescendants = true) { stateDescription = result }
-            .padding(horizontal = OvalitSpacing.gutter, vertical = rowPadding(style)),
+            .padding(horizontal = horizontalPadding, vertical = rowPadding(style)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         when (style) {
@@ -273,7 +276,7 @@ private fun ChipsThatFit(chips: List<@Composable () -> Unit>, modifier: Modifier
  * [MatchRow]와 같은 높이로 [rows]줄을 잡아 두어 내용이 나타날 때 줄이 움직이지 않습니다.
  */
 @Composable
-fun MatchRowsSkeleton(rows: Int, style: MatchRowStyle, modifier: Modifier = Modifier) {
+fun MatchRowsSkeleton(rows: Int, style: MatchRowStyle, modifier: Modifier = Modifier, horizontalPadding: Dp = OvalitSpacing.gutter) {
     val compact = style == MatchRowStyle.COMPACT
     OvalitSkeleton(description = stringResource(Res.string.loading), modifier = modifier) {
         Column {
@@ -281,7 +284,7 @@ fun MatchRowsSkeleton(rows: Int, style: MatchRowStyle, modifier: Modifier = Modi
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = OvalitSpacing.gutter, vertical = rowPadding(style)),
+                        .padding(horizontal = horizontalPadding, vertical = rowPadding(style)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     if (compact) SkeletonBlock(width = 34.dp, height = 34.dp, radius = 9.dp) else SkeletonBlock(width = 54.dp, height = 38.dp, radius = 8.dp)

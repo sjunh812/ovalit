@@ -109,7 +109,7 @@ internal fun WeekNoteHeadline(note: WeekNote, modifier: Modifier = Modifier) {
     val gap = headlineGap(moved)
     val emphasis = SpanStyle(
         color = if (moved.rose) OvalitTheme.colors.pos else OvalitTheme.colors.neg,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Bold,
     )
     OvalitText(
         text = headlineEmphasis(movedHeadline(moved, best, gap), gap, emphasis),

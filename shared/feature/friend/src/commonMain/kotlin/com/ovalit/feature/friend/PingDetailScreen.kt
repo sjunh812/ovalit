@@ -119,7 +119,7 @@ internal fun PingDetailScreen(
             !shown || uiState == PingDetailUiState.Loading -> PingDetailSkeleton()
             uiState == PingDetailUiState.Gone -> OvalitText(
                 text = stringResource(Res.string.ping_gone),
-                modifier = Modifier.padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.xl),
+                modifier = Modifier.padding(horizontal = OvalitSpacing.screen, vertical = OvalitSpacing.xl),
                 style = OvalitTheme.typography.body,
                 color = colors.t2,
             )
@@ -133,7 +133,7 @@ internal fun PingDetailScreen(
 private fun PingDetailSkeleton() {
     OvalitSkeleton(
         description = stringResource(CoreUiRes.string.loading),
-        modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
+        modifier = Modifier.padding(horizontal = OvalitSpacing.screen),
     ) {
         Column {
             Spacer(Modifier.height(OvalitSpacing.lg))
@@ -189,7 +189,7 @@ private fun ColumnScope.PingDetailContent(
     val scroll = rememberScrollState()
     val haptics = rememberOvalitHaptics()
 
-    Column(modifier = Modifier.weight(1f).verticalScroll(scroll).padding(horizontal = OvalitSpacing.gutter)) {
+    Column(modifier = Modifier.weight(1f).verticalScroll(scroll).padding(horizontal = OvalitSpacing.screen)) {
         Spacer(Modifier.height(OvalitSpacing.sm))
         Row(modifier = Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.Bottom) {
             // 오늘이 아니면 "내일", "새벽"도 크게 둔다.
@@ -231,7 +231,7 @@ private fun ColumnScope.PingDetailContent(
 
     // 본문이 버튼 밑으로 이어질 때만 선을 긋는다(docs/design.md)
     OvalitDivider(color = if (scroll.canScrollForward) colors.line else Color.Transparent)
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.md)) {
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.screen, vertical = OvalitSpacing.md)) {
         if (hosting) {
             ActionBar(
                 stringResource(Res.string.ping_change_time) to { sheet = DetailSheet.MOVE },

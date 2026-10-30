@@ -205,7 +205,7 @@ internal fun MatchDetailScreen(
                 AdSlot(AdPlacement.MATCH_DETAIL) { ad ->
                     Column {
                         Spacer(Modifier.height(OvalitSpacing.lg))
-                        OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.gutter), color = colors.lineWeak)
+                        OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.screen), color = colors.lineWeak)
                         ad()
                     }
                 }
@@ -311,7 +311,7 @@ private fun ScoreHeadline(uiState: MatchDetailUiState.Success, modifier: Modifie
     }.joinToString(SEPARATOR)
     val scoreDescription = stringResource(Res.string.score_description, score.myTeam, score.enemyTeam)
 
-    Column(modifier = modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = 14.dp)) {
+    Column(modifier = modifier.fillMaxWidth().padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, bottom = 14.dp)) {
         // 맵 이름 옆에는 승패만 적는다.
         // MVP와 순위는 바로 밑 스코어보드에 있다.
         Row(verticalAlignment = Alignment.Bottom) {
@@ -360,7 +360,7 @@ private fun StandingHeadline(uiState: MatchDetailUiState.Success, standing: Stan
         standing.teams,
     )
 
-    Column(modifier = modifier.fillMaxWidth().padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = 14.dp)) {
+    Column(modifier = modifier.fillMaxWidth().padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, bottom = 14.dp)) {
         OvalitText(
             text = uiState.catalog.mapName(match.map),
             style = OvalitTheme.typography.display,
@@ -388,7 +388,7 @@ private fun RoundStrip(uiState: MatchDetailUiState.Success) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = 14.dp)
+            .padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = 14.dp)
             .height(18.dp)
             .semantics(mergeDescendants = true) {},
         horizontalArrangement = Arrangement.spacedBy(2.dp),
@@ -410,7 +410,7 @@ private fun RoundStrip(uiState: MatchDetailUiState.Success) {
 private fun Tabs(tabs: List<DetailTab>, selected: DetailTab, onSelect: (DetailTab) -> Unit) {
     val colors = OvalitTheme.colors
     Column {
-        Row(modifier = Modifier.padding(horizontal = OvalitSpacing.gutter), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+        Row(modifier = Modifier.padding(horizontal = OvalitSpacing.screen), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
             tabs.forEach { tab ->
                 val isSelected = tab == selected
                 Column(

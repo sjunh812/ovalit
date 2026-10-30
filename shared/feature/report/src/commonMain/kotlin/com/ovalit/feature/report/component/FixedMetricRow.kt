@@ -187,7 +187,7 @@ private fun FixedMetricCell(
         Spacer(Modifier.height(6.dp))
         OvalitRollingText(
             text = cell.value,
-            style = styles.value.copy(fontWeight = if (highlighted) FontWeight.SemiBold else FontWeight.Medium),
+            style = styles.value.copy(fontWeight = if (highlighted) FontWeight.Bold else FontWeight.SemiBold),
             color = cell.valueColor,
             autoSize = shrinkToFit(styles.value.fontSize, min = 14.sp),
         )

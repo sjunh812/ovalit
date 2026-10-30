@@ -20,7 +20,6 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitLogo
 import com.ovalit.core.designsystem.component.OvalitTabHeader
@@ -111,9 +110,8 @@ internal fun PeriodHeader(report: WeeklyReport.Ready, modifier: Modifier = Modif
     Column(modifier = modifier.padding(horizontal = OvalitSpacing.gutter)) {
         TitleWithCaption(
             title = periodLabel(period),
-            // 홈 카드 제목처럼 Medium이다.
-            // 이 카드에서 굵게 읽혀야 할 것은 짚을 점 문장의 바뀐 값과 그 칸의 숫자다.
-            titleStyle = OvalitTheme.typography.titleM.copy(fontWeight = FontWeight.Medium),
+            // 홈 첫 카드의 제목이라 다른 카드 제목(cardTitle)보다 한 단계 크다
+            titleStyle = OvalitTheme.typography.titleM,
             caption = periodCaption(report),
         )
         if (!period.includesThisWeek) {

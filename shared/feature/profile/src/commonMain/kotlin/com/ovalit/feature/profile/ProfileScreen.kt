@@ -99,7 +99,7 @@ internal fun ProfileScreen(
                         mainRole = uiState.agents.mainRole,
                         mainRoleShare = uiState.agents.mainRoleShare,
                         trailing = stringResource(CoreUiRes.string.act_matches, uiState.agents.matches),
-                        modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
+                        modifier = Modifier.padding(horizontal = OvalitSpacing.screen),
                     )
                 }
 

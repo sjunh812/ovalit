@@ -35,6 +35,8 @@
 `notifyWeeklyReport`, `notifyPing`), 한 번만 띄우는 안내(`seenProfileHint`, `seenNotificationPrimer`,
 `askedNotificationPermission`), `adFreeUntil`.
 
+- 친구 요청 알림 스위치(기본 켬)는 FR-027로 정했고 아직 필드가 없다. 구현할 때 같은 자리에 더한다.
+
 - `Focus`: 에임 올리기(첫 교전 승률, 멀티킬 라운드 비율), 라운드 운영 다듬기(포스바이·이코·풀바이 승률), 기복 줄이기(관여율,
   생존율), 특별히 없어요.
 - `QueueFilter`: 경쟁 + 일반, 경쟁, 일반, 기타. 홈과 경기 탭에서 고른 칩은 저장하지 않는다.

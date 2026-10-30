@@ -161,7 +161,10 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 - [ ] T056 [US4] 실제 `FriendRepository`(`/friends`, `/friends/requests`, 수락·거절·끊기, 초대 링크 `POST /invites`와 `redeem`) in shared/core/data/src/commonMain/kotlin/com/ovalit/core/data/FriendRepository.kt와 새 구현 파일
 - [ ] T057 [US4] 친구 경기를 기기에 저장하고 S5를 열면 저장된 것을 바로 보여 준 뒤 10분이 지났을 때만 새 경기를 받는다. "마지막 갱신 3분 전", 같은 친구 당기기는 1분에 한 번 in shared/core/data/, shared/feature/friend/src/commonMain/kotlin/com/ovalit/feature/friend/FriendProfileScreen.kt
 - [ ] T058 [US4] 앱이 주(월요일 0시)마다 고정 칸 합계를 올리고, 친구 비교와 라이벌 대결을 친구 경기 대신 요약으로 센다(기간을 넓힐 때 더한 뒤 나누기) in shared/core/data/, shared/feature/report/src/commonMain/kotlin/com/ovalit/feature/report/ReportViewModel.kt
-- [ ] T059 [P] [US4] Figma 친구 탭(친구 목록 슬라이스, 받은 요청), S5(전적 비공개 상태 포함), 친구 요청 시트와 초대 링크 시트, 라이벌 고르기 시트, 친구 비교 전체 순위 in Figma "친구 (탭, S5)" 페이지
+- [ ] T059 [US4] 친구 요청·수락 푸시 서버: 요청을 새로 만들 때(스코어보드, 초대 링크) 받는 사람에게, 수락할 때 보낸 사람에게 알린다. 다른 푸시처럼 종류와 이름만 담고, 이미 보내 둔 요청을 다시 보내거나 이미 친구인 경우는 알리지 않는다 in server/src/routes/friends.ts, server/src/routes/invites.ts, server/src/push.ts, server/README.md, docs/backend.md ㅇㅂㅇ과 푸시, specs/001-ovalit-baseline/contracts/push.md
+- [ ] T060 [US4] 친구 요청·수락 푸시 테스트(요청·수락마다 한 번, 글 없이 종류와 이름만, 다시 보낸 요청과 이미 친구는 알리지 않기) in server/test/friends.test.ts, server/test/invites.test.ts
+- [ ] T061 [US4] 앱의 친구 요청 알림: 설정에 "친구 요청 알림" 스위치(기본 켬, 기기 설정 `UserPreferences`에 `notifyPing`과 같은 방식), 알림 채널과 문구(한국어·일본어), 누르면 친구 탭 in shared/core/model/src/commonMain/kotlin/com/ovalit/core/model/UserPreferences.kt, shared/feature/settings/src/commonMain/kotlin/com/ovalit/feature/settings/SettingsScreen.kt, composeApp/src/main/kotlin/com/ovalit/push/, docs/screens.md 설정 (S4)
+- [ ] T062 [P] [US4] Figma 친구 탭(친구 목록 슬라이스, 받은 요청, 친구 요청 알림 모양), S5(전적 비공개 상태 포함), 친구 요청 시트와 초대 링크 시트, 라이벌 고르기 시트, 친구 비교 전체 순위 in Figma "친구 (탭, S5)" 페이지
 
 **Checkpoint**: P4 독립 검사가 실제 계정 둘로 통과한다.
 
@@ -175,14 +178,14 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 
 ### 만든 것
 
-- [x] T060 [P] [US5] 서버 ㅇㅂㅇ(4명, 24시간 안, 하루 10번, 시간 바꾸면 다시 묻기)과 푸시·크론 in server/src/routes/pings.ts, push.ts, scheduled.ts
-- [x] T061 [P] [US5] ㅇㅂㅇ 화면과 홈·친구 탭 카드 in shared/feature/friend/src/commonMain/kotlin/com/ovalit/feature/friend/PingDetailScreen.kt, PingDetailViewModel.kt, PingSection.kt, shared/core/ui/src/commonMain/kotlin/com/ovalit/core/ui/PingRow.kt
-- [x] T062 [P] [US5] 푸시 받기와 알림(문구는 앱이 만든다) in composeApp/src/main/kotlin/com/ovalit/push/OvalitMessagingService.kt, PingNotifications.kt, PingActionReceiver.kt, OvalitPush.kt
+- [x] T063 [P] [US5] 서버 ㅇㅂㅇ(4명, 24시간 안, 하루 10번, 시간 바꾸면 다시 묻기)과 푸시·크론 in server/src/routes/pings.ts, push.ts, scheduled.ts
+- [x] T064 [P] [US5] ㅇㅂㅇ 화면과 홈·친구 탭 카드 in shared/feature/friend/src/commonMain/kotlin/com/ovalit/feature/friend/PingDetailScreen.kt, PingDetailViewModel.kt, PingSection.kt, shared/core/ui/src/commonMain/kotlin/com/ovalit/core/ui/PingRow.kt
+- [x] T065 [P] [US5] 푸시 받기와 알림(문구는 앱이 만든다) in composeApp/src/main/kotlin/com/ovalit/push/OvalitMessagingService.kt, PingNotifications.kt, PingActionReceiver.kt, OvalitPush.kt
 
 ### 남은 일
 
-- [ ] T063 [US5] 실제 `PingRepository`와 `PushRepository`(`/pings` 경로, `PUT /me/push-token`, 로그아웃 전 `DELETE /me/push-token`) in shared/core/data/src/commonMain/kotlin/com/ovalit/core/data/PingRepository.kt, PushRepository.kt와 새 구현 파일
-- [ ] T064 [P] [US5] Figma 오발있? 카드(친구 탭), 부르기 시트(고른 칸 accent 테두리와 체크, 옆으로 미는 친구 줄), 초대 화면(받은 쪽·보낸 쪽, 다른 시간 제안을 맨 위에), 30분 단위 휠, 알림 모양 in Figma "오발있? (파티 모집)" 페이지
+- [ ] T066 [US5] 실제 `PingRepository`와 `PushRepository`(`/pings` 경로, `PUT /me/push-token`, 로그아웃 전 `DELETE /me/push-token`) in shared/core/data/src/commonMain/kotlin/com/ovalit/core/data/PingRepository.kt, PushRepository.kt와 새 구현 파일
+- [ ] T067 [P] [US5] Figma 오발있? 카드(친구 탭), 부르기 시트(고른 칸 accent 테두리와 체크, 옆으로 미는 친구 줄), 초대 화면(받은 쪽·보낸 쪽, 다른 시간 제안을 맨 위에), 30분 단위 휠, 알림 모양 in Figma "오발있? (파티 모집)" 페이지
 
 **Checkpoint**: P5 독립 검사가 실제 계정 둘로 통과한다.
 
@@ -196,15 +199,15 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 
 ### 만든 것
 
-- [x] T065 [P] [US6] 설정 S4(전적 공개, 알림, 관심사, 기본 큐, 저장된 데이터 지우기, 연동 해제, 광고 없이 보기) in shared/feature/settings/src/commonMain/kotlin/com/ovalit/feature/settings/SettingsScreen.kt, SettingsSheets.kt, SettingsViewModel.kt, NotificationBlocks.kt
-- [x] T066 [P] [US6] 서버 계정(`GET/PATCH/DELETE /me`, 해제 때 같이 지우기) in server/src/routes/me.ts, users.ts
-- [x] T067 [P] [US6] Riot 비공식 고지(영문 원문) in shared/core/designsystem/src/commonMain/kotlin/com/ovalit/core/designsystem/component/OvalitDisclaimer.kt
-- [x] T068 [P] [US6] 앱을 지운 사람의 삭제 요청(메일)과 이용약관 in site/privacy/index.html, site/terms/index.html
+- [x] T068 [P] [US6] 설정 S4(전적 공개, 알림, 관심사, 기본 큐, 저장된 데이터 지우기, 연동 해제, 광고 없이 보기) in shared/feature/settings/src/commonMain/kotlin/com/ovalit/feature/settings/SettingsScreen.kt, SettingsSheets.kt, SettingsViewModel.kt, NotificationBlocks.kt
+- [x] T069 [P] [US6] 서버 계정(`GET/PATCH/DELETE /me`, 해제 때 같이 지우기) in server/src/routes/me.ts, users.ts
+- [x] T070 [P] [US6] Riot 비공식 고지(영문 원문) in shared/core/designsystem/src/commonMain/kotlin/com/ovalit/core/designsystem/component/OvalitDisclaimer.kt
+- [x] T071 [P] [US6] 앱을 지운 사람의 삭제 요청(메일)과 이용약관 in site/privacy/index.html, site/terms/index.html
 
 ### 남은 일
 
-- [ ] T069 [US6] 실제 `AccountSettingsRepository`(`PATCH /me {statsPublic?, remindBefore?}`, 서버 값을 따른다)와 연동 해제(`DELETE /me` 뒤 기기 기록과 보내지 않은 보고 지우기) in shared/core/data/src/commonMain/kotlin/com/ovalit/core/data/AccountSettingsRepository.kt, AccountSettingsSync.kt와 새 구현 파일
-- [ ] T070 [P] [US6] Figma S4 설정(묶음 카드, 오발있? 카드의 파티 모집 알림과 시작 전 알림, 연동 해제 위험 버튼, 맨 아래 영문 고지) in Figma "설정 (S4)" 페이지
+- [ ] T072 [US6] 실제 `AccountSettingsRepository`(`PATCH /me {statsPublic?, remindBefore?}`, 서버 값을 따른다)와 연동 해제(`DELETE /me` 뒤 기기 기록과 보내지 않은 보고 지우기) in shared/core/data/src/commonMain/kotlin/com/ovalit/core/data/AccountSettingsRepository.kt, AccountSettingsSync.kt와 새 구현 파일
+- [ ] T073 [P] [US6] Figma S4 설정(묶음 카드, 오발있? 카드의 파티 모집 알림과 시작 전 알림, 친구 요청 알림 스위치, 연동 해제 위험 버튼, 맨 아래 영문 고지) in Figma "설정 (S4)" 페이지
 
 **Checkpoint**: 모든 이야기가 따로 돌아간다.
 
@@ -214,12 +217,13 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 
 **Purpose**: 출시 전 공통 일
 
-- [ ] T071 광고 동의 창(UMP)을 붙인다. 출시 전에, 광고 단위 ID는 Riot 승인 뒤 제품 설명에 광고를 적고 나서 in composeApp/src/main/kotlin/com/ovalit/ads/, docs/RELEASE.md
-- [ ] T072 [P] 새로 넣는 문구는 같은 커밋에서 일본어도 고친다 in shared/**/composeResources/values-ja/strings.xml, docs/i18n-ja.md
-- [ ] T073 [P] Figma 상태 화면 다크판(지금은 라이트만) in Figma 각 화면 페이지의 상태 섹션
-- [ ] T074 실제 계정으로 [quickstart.md](quickstart.md) 전체를 돌고 SC-001(첫 수집 1분 안팎)과 SC-007(통계·오류 보고에 Riot 값 0건)을 잰다 in specs/001-ovalit-baseline/quickstart.md
-- [ ] T075 열린 결정을 닫을 때마다 결정을 남기고 스펙과 규칙 문서를 같은 커밋에서 맞춘다 in docs/DECISIONS.md, specs/001-ovalit-baseline/research.md, spec.md
-- [ ] T076 Figma에서 화면이 확정되면 바로 앱에 반영한다. 지금 앱과 달라진 곳은 그 화면 모듈과 `docs/screens.md`·`docs/design.md`를 같은 커밋에서 고치고, 심사 목업에서 벗어나는 부분은 반영 전에 사용자에게 묻고 `docs/DECISIONS.md`에 남긴다(spec.md Clarifications 2026-10-30) in shared/feature/, docs/screens.md, docs/design.md
+- [ ] T074 광고 동의 창(UMP)을 붙인다. 출시 전에, 광고 단위 ID는 Riot 승인 뒤 제품 설명에 광고를 적고 나서 in composeApp/src/main/kotlin/com/ovalit/ads/, docs/RELEASE.md
+- [ ] T075 [P] 새로 넣는 문구는 같은 커밋에서 일본어도 고친다 in shared/**/composeResources/values-ja/strings.xml, docs/i18n-ja.md
+- [ ] T076 [P] 접근성 점검(FR-037): 가장 큰 글꼴과 좁은 폭(320dp)에서 글자가 겹치거나 잘리지 않는지, 승패와 증감이 색만이 아니라 글자로도 보이는지, TalkBack이 지표 값과 승패를 읽는지 본다. Figma 화면마다 큰 글꼴 상태를 한 장씩 더한다 in shared/feature/, Figma 각 화면 페이지
+- [ ] T077 [P] Figma 상태 화면 다크판(지금은 라이트만) in Figma 각 화면 페이지의 상태 섹션
+- [ ] T078 실제 계정으로 [quickstart.md](quickstart.md) 전체를 돌고 SC-001(첫 수집 1분 안팎)과 SC-007(통계·오류 보고에 Riot 값 0건)을 잰다 in specs/001-ovalit-baseline/quickstart.md
+- [ ] T079 열린 결정을 닫을 때마다 결정을 남기고 스펙과 규칙 문서를 같은 커밋에서 맞춘다 in docs/DECISIONS.md, specs/001-ovalit-baseline/research.md, spec.md
+- [ ] T080 Figma에서 화면이 확정되면 바로 앱에 반영한다. 지금 앱과 달라진 곳은 그 화면 모듈과 `docs/screens.md`·`docs/design.md`를 같은 커밋에서 고치고, 심사 목업에서 벗어나는 부분은 반영 전에 사용자에게 묻고 `docs/DECISIONS.md`에 남긴다(spec.md Clarifications 2026-10-30) in shared/feature/, docs/screens.md, docs/design.md
 
 ---
 
@@ -228,8 +232,8 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 ### Phase Dependencies
 
 - **Setup, Foundational**: 끝났다(T019만 남음, 다른 일을 막지 않는다).
-- **Figma 작업**(T030, T031, T045, T046, T049, T059, T064, T070, T073): 지금 할 수 있고 서로 기대지 않는다.
-- **실제 서버 연결**: Riot 프로덕션 키 승인이 먼저다. 그 안에서 T035(HTTP 클라이언트)가 T036, T037, T038, T056, T063, T069보다 먼저다.
+- **Figma 작업**(T030, T031, T045, T046, T049, T062, T067, T073, T077): 지금 할 수 있고 서로 기대지 않는다.
+- **실제 서버 연결**: Riot 프로덕션 키 승인이 먼저다. 그 안에서 T035(HTTP 클라이언트)가 T036, T037, T038, T056, T066, T069보다 먼저다.
 - **로컬 DB**: T032(결정) → T033 → T034. T039(시작 화면)는 T033과 T038 뒤다.
 - **주간 요약**: T054 → T055, T058. T058은 T056 뒤다.
 - **전투점수 칸**(T042)과 응답 확인(T041)은 실제 응답을 받은 뒤다.
@@ -238,14 +242,14 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 
 - **US1**: 다른 이야기에 기대지 않는다. 실제 연동(T035~T040)이 US3~US6의 실제 저장소 작업보다 먼저다.
 - **US2, US3**: US1의 실제 경기 받기(T036)만 있으면 된다.
-- **US4**: 실제 서버 연결(T035) 뒤. 주간 요약(T054)은 US4 안에서 닫힌다.
+- **US4**: 실제 서버 연결(T035) 뒤. 주간 요약(T054)은 US4 안에서 닫힌다. 친구 요청 푸시 서버(T059, T060)는 로컬 서버로 지금 할 수 있고, 앱 쪽(T061)은 실제 친구 저장소(T056) 뒤다.
 - **US5**: 실제 친구 저장소(T056) 뒤.
 - **US6**: 실제 계정 저장소(T038) 뒤.
 
 ### Parallel Opportunities
 
 - Figma 화면 작업은 모두 [P]다. 한 세션에서 한 화면씩 그리고 사용자에게 보여 준 뒤 다음으로 간다.
-- 실제 서버 연결 뒤 T056(친구), T063(ㅇㅂㅇ·푸시), T069(설정)는 서로 다른 저장소라 같이 할 수 있다.
+- 실제 서버 연결 뒤 T056(친구), T066(ㅇㅂㅇ·푸시), T072(설정)는 서로 다른 저장소라 같이 할 수 있다.
 
 ---
 
@@ -263,8 +267,8 @@ Task: "T054 주간 요약 서버 표와 경로(서버는 로컬 D1로 돈다)"
 
 ```text
 Task: "T056 실제 FriendRepository"
-Task: "T063 실제 PingRepository와 PushRepository"
-Task: "T069 실제 AccountSettingsRepository와 연동 해제"
+Task: "T066 실제 PingRepository와 PushRepository"
+Task: "T072 실제 AccountSettingsRepository와 연동 해제"
 ```
 
 ---
@@ -283,7 +287,7 @@ Task: "T069 실제 AccountSettingsRepository와 연동 해제"
 1. US1 실제 연동 → 출시 가능한 최소 앱(혼자 쓰는 리포트).
 2. US2·US3은 저장소 교체만으로 따라온다.
 3. US4(친구와 주간 요약) → US5(ㅇㅂㅇ) → US6(설정의 서버 연결).
-4. 출시 전 T071(UMP)과 T074(실측).
+4. 출시 전 T074(UMP)와 T078(실측).
 
 ---
 

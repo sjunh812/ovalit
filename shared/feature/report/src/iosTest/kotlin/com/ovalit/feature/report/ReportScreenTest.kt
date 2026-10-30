@@ -81,6 +81,7 @@ import com.ovalit.core.ui.LocalAdRenderer
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.core.ui.WRAPPING_SEPARATOR
+import com.ovalit.core.ui.format
 import com.ovalit.core.ui.keepTogether
 import com.ovalit.feature.report.component.DynamicMetricSheetBody
 import com.ovalit.feature.report.component.MetricSheetBody
@@ -453,7 +454,17 @@ class ReportScreenTest {
         tapWeek("피해량", index = 3)
 
         onNode(hasText("4주 전") and hasText("126") and hasText("7경기 · 150라운드")).assertExists()
-        onNodeWithText("점선은 지난 4주 평균이에요.", substring = true).assertExists()
+    }
+
+    // 평균선은 막대 뒤의 옅은 실선이라 밑에 따로 풀지 않고 선 끝에 평소 값을 적는다
+    @Test
+    fun `지표 설명 시트는 평균선 끝에 평소 값을 적는다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved
+        setContent { Sheet(FixedMetric.DAMAGE, report) }
+
+        val usual = FixedMetric.DAMAGE.format.format(FixedMetric.DAMAGE.value(report.baseline!!.metrics)!!)
+        onNodeWithText("평소 $usual").assertExists()
+        onNodeWithText("점선", substring = true).assertDoesNotExist()
     }
 
     // 카드 머리 오른쪽 글은 보조 정보라 굵기를 쓰지 않는다.

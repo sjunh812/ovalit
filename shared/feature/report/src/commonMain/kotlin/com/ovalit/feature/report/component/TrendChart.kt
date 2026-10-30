@@ -19,11 +19,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -50,15 +51,22 @@ import com.ovalit.feature.report.resources.period_date_range
 import com.ovalit.feature.report.resources.sheet_trend_act_marker
 import com.ovalit.feature.report.resources.sheet_trend_description
 import com.ovalit.feature.report.resources.sheet_trend_start
-import com.ovalit.feature.report.resources.trend_baseline_note
 import com.ovalit.feature.report.resources.trend_week_empty
 import com.ovalit.feature.report.resources.trend_week_sample
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.number
 import kotlinx.datetime.plus
 import org.jetbrains.compose.resources.stringResource
+import kotlin.math.min
+import kotlin.math.roundToInt
 
 internal val BarGap = 5.dp
+
+// 가로선이 있는 막대는 칸의 이만큼만 차지하고 24dp를 넘지 않는다
+private const val THIN_BAR = 0.55f
+private val MaxThinBar = 24.dp
+private val ThinBarRadius = 4.dp
+private val BaselineLabelGap = 6.dp
 
 // 8주 중 가장 낮은 값이 차지하는 막대 높이 비율이다.
 // 0부터 그리면 피해량 140과 165가 거의 같은 높이라 추이가 안 보인다.
@@ -78,7 +86,8 @@ private const val DIMMED_BAR = 0.35f
  * @param onSelect 막대를 누르거나 옆으로 끌면 고른 주를 알립니다.
  *   고른 막대를 다시 누르면 `null`을 넘깁니다.
  *   이 인자가 `null`이면 누를 수 없습니다.
- * @param baseline 지난 4주 평균이고, 있으면 그 높이에 점선을 긋습니다.
+ * @param baseline 지난 4주 평균이고, 있으면 그 높이에 막대 뒤로 가로선을 긋고 막대를 가늘게 그려 그 사이로 선이 보이게 합니다.
+ * @param baselineLabel 가로선 오른쪽 끝에 적을 글("평소 138")이고, 있으면 그만큼 막대 자리를 줄입니다.
  * @param restColor 기간 밖 막대 색입니다.
  *   면 위에 그릴 때는 면과 갈리게 진하게 넘깁니다.
  */
@@ -91,11 +100,12 @@ internal fun TrendBarRow(
     selected: Int? = null,
     onSelect: ((Int?) -> Unit)? = null,
     baseline: Double? = null,
+    baselineLabel: String? = null,
     restColor: Color = OvalitTheme.colors.t5,
 ) {
     val colors = OvalitTheme.colors
     val values = report.trend.map { week -> week.metrics?.let(metric.value) }
-    // 점선도 같은 눈금에 올린다.
+    // 가로선도 같은 눈금에 올린다.
     // 데스가 없어 K/D 막대가 빠진 주가 있으면 평균이 막대 범위를 벗어날 수 있다.
     val scale = values.filterNotNull() + listOfNotNull(baseline)
     val low = scale.minOrNull() ?: 0.0
@@ -105,62 +115,91 @@ internal fun TrendBarRow(
         stringResource(metric.label),
         values.map { value -> value?.let { metric.format.valueText(it) } ?: NO_VALUE }.joinToString(SEPARATOR),
     )
-    val lineColor = colors.t3
+    // 평균선은 구분선만큼 옅게 둔다(Apple 스크린 타임의 평균선이 흰 바탕에서 #E5E5E5 남짓이다)
+    val lineColor = colors.bar
+    val baselineAt = baseline?.let { barFraction(it, low, high) }
     val currentSelected by rememberUpdatedState(selected)
     val currentOnSelect by rememberUpdatedState(onSelect)
     val count = report.trend.size
 
-    Row(
-        modifier = modifier
-            .clearAndSetSemantics { contentDescription = description }
-            .then(
-                if (onSelect == null) {
-                    Modifier
-                } else {
-                    Modifier
-                        .pointerInput(count) {
-                            detectTapGestures { offset ->
-                                val index = weekAt(offset.x, size.width, count)
-                                currentOnSelect?.invoke(if (index == currentSelected) null else index)
+    val bars: @Composable (Modifier) -> Unit = { barsModifier ->
+        Row(
+            modifier = barsModifier
+                .clearAndSetSemantics { contentDescription = description }
+                .then(
+                    if (onSelect == null) {
+                        Modifier
+                    } else {
+                        Modifier
+                            .pointerInput(count) {
+                                detectTapGestures { offset ->
+                                    val index = weekAt(offset.x, size.width, count)
+                                    currentOnSelect?.invoke(if (index == currentSelected) null else index)
+                                }
                             }
+                            // 옆으로 끌면 손가락 밑 주를 따라 고른다
+                            .pointerInput(count) {
+                                detectHorizontalDragGestures(
+                                    onDragStart = { offset -> currentOnSelect?.invoke(weekAt(offset.x, size.width, count)) },
+                                ) { change, _ -> currentOnSelect?.invoke(weekAt(change.position.x, size.width, count)) }
+                            }
+                    },
+                )
+                .then(
+                    if (baselineAt == null) {
+                        Modifier
+                    } else {
+                        // 평균선은 Apple 스크린 타임처럼 막대 뒤에 옅은 실선으로 깐다.
+                        // 막대 위에 그으면 리포트 기간 막대에 취소선처럼 걸린다.
+                        Modifier.drawBehind {
+                            val y = size.height * (1 - baselineAt)
+                            drawLine(color = lineColor, start = Offset(0f, y), end = Offset(size.width, y), strokeWidth = 1.dp.toPx())
                         }
-                        // 옆으로 끌면 손가락 밑 주를 따라 고른다
-                        .pointerInput(count) {
-                            detectHorizontalDragGestures(
-                                onDragStart = { offset -> currentOnSelect?.invoke(weekAt(offset.x, size.width, count)) },
-                            ) { change, _ -> currentOnSelect?.invoke(weekAt(change.position.x, size.width, count)) }
-                        }
-                },
-            )
-            .then(
-                if (baseline == null) {
-                    Modifier
-                } else {
-                    Modifier.drawWithContent {
-                        drawContent()
-                        val y = size.height * (1 - barFraction(baseline, low, high))
-                        drawLine(
-                            color = lineColor,
-                            start = Offset(0f, y),
-                            end = Offset(size.width, y),
-                            strokeWidth = 1.dp.toPx(),
-                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(3.dp.toPx(), 3.dp.toPx())),
-                        )
-                    }
-                },
-            ),
-        horizontalArrangement = Arrangement.spacedBy(gap),
-        verticalAlignment = Alignment.Bottom,
-    ) {
-        report.trend.forEachIndexed { index, week ->
-            if (week.startsNewAct) {
-                Box(Modifier.width(1.dp).fillMaxHeight().background(colors.t4))
+                    },
+                ),
+            horizontalArrangement = Arrangement.spacedBy(gap),
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            report.trend.forEachIndexed { index, week ->
+                if (week.startsNewAct) {
+                    Box(Modifier.width(1.dp).fillMaxHeight().background(colors.t4))
+                }
+                Bar(
+                    fraction = values[index]?.let { barFraction(it, low, high) },
+                    color = barColor(week, index, selected, restColor),
+                    thin = baselineAt != null,
+                    modifier = Modifier.weight(1f),
+                )
             }
-            Bar(
-                fraction = values[index]?.let { barFraction(it, low, high) },
-                color = barColor(week, index, selected, restColor),
-                modifier = Modifier.weight(1f),
+        }
+    }
+
+    if (baselineAt == null || baselineLabel == null) {
+        bars(modifier)
+        return
+    }
+    // 글은 가로선 높이에 맞추고 막대는 글이 차지한 만큼 줄인다
+    Layout(
+        content = {
+            bars(Modifier)
+            OvalitText(
+                text = baselineLabel,
+                style = OvalitTheme.typography.caption,
+                color = colors.t3,
+                maxLines = 1,
             )
+        },
+        modifier = modifier,
+    ) { measurables, constraints ->
+        val label = measurables[1].measure(constraints.copy(minWidth = 0, minHeight = 0))
+        val labelGap = BaselineLabelGap.roundToPx()
+        val barsWidth = (constraints.maxWidth - label.width - labelGap).coerceAtLeast(0)
+        val barsPlaceable = measurables[0].measure(constraints.copy(minWidth = barsWidth, maxWidth = barsWidth))
+        val height = barsPlaceable.height
+        layout(constraints.maxWidth, height) {
+            barsPlaceable.place(0, 0)
+            val lineY = (height * (1 - baselineAt)).roundToInt()
+            label.place(barsWidth + labelGap, (lineY - label.height / 2).coerceIn(0, (height - label.height).coerceAtLeast(0)))
         }
     }
 }
@@ -186,13 +225,14 @@ private fun barFraction(value: Double, low: Double, high: Double): Float =
 
 // 경기가 없는 주도 바닥 선을 남긴다.
 // 칸이 빠지면 몇 주 전인지 셀 수 없다.
+// 가로선이 있으면 막대를 칸보다 가늘게 그려 막대 사이로 선이 보이게 하고, 끝만 둥글게 한다.
 @Composable
-private fun Bar(fraction: Float?, color: Color, modifier: Modifier = Modifier) {
-    val shape = RoundedCornerShape(2.dp)
+private fun Bar(fraction: Float?, color: Color, thin: Boolean, modifier: Modifier = Modifier) {
+    val shape = if (thin) RoundedCornerShape(topStart = ThinBarRadius, topEnd = ThinBarRadius) else RoundedCornerShape(2.dp)
     Box(modifier = modifier.fillMaxHeight(), contentAlignment = Alignment.BottomCenter) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
+                .then(if (thin) Modifier.thinBarWidth() else Modifier.fillMaxWidth())
                 .then(
                     when {
                         fraction == null -> Modifier.height(2.dp).background(OvalitTheme.colors.fill, shape)
@@ -299,15 +339,13 @@ internal fun TrendAxis(report: WeeklyReport.Ready, modifier: Modifier = Modifier
 
 /**
  * 막대 밑 안내입니다.
- * 액트가 바뀐 곳과 점선이 있을 때만 그 뜻을 적습니다.
- *
- * @param baselineWeeks 점선을 그었으면 그 평균의 주 수입니다.
+ * 액트가 바뀐 곳이 있을 때만 세로선의 뜻을 적습니다.
+ * 가로선은 끝에 "평소 138"을 적어 따로 풀지 않습니다.
  */
 @Composable
-internal fun TrendNotes(report: WeeklyReport.Ready, modifier: Modifier = Modifier, baselineWeeks: Int? = null) {
+internal fun TrendNotes(report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
     val notes = buildList {
         if (report.trend.any { it.startsNewAct }) add(stringResource(Res.string.sheet_trend_act_marker))
-        if (baselineWeeks != null) add(stringResource(Res.string.trend_baseline_note, baselineWeeks))
     }
     if (notes.isEmpty()) return
     Column(modifier = modifier) {
@@ -323,3 +361,9 @@ internal fun TrendNotes(report: WeeklyReport.Ready, modifier: Modifier = Modifie
 // 이번 주에서 끝나면 첫 막대는 7주 전이다
 private fun firstBarWeeksAgo(report: WeeklyReport.Ready): Int =
     if (report.period.includesThisWeek) TREND_WEEKS - 1 else TREND_WEEKS
+
+private fun Modifier.thinBarWidth(): Modifier = layout { measurable, constraints ->
+    val width = min(constraints.maxWidth * THIN_BAR, MaxThinBar.toPx()).roundToInt()
+    val placeable = measurable.measure(constraints.copy(minWidth = width, maxWidth = width))
+    layout(placeable.width, placeable.height) { placeable.place(0, 0) }
+}

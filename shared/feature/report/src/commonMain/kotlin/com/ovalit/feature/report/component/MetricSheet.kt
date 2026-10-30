@@ -67,6 +67,7 @@ import com.ovalit.feature.report.resources.sheet_method_title
 import com.ovalit.feature.report.resources.sheet_per_match_kd
 import com.ovalit.feature.report.resources.sheet_per_match_kda
 import com.ovalit.feature.report.resources.sheet_sample_rounds
+import com.ovalit.feature.report.resources.dynamic_usual
 import com.ovalit.feature.report.resources.sheet_usual_average
 import com.ovalit.feature.report.resources.sheet_usual_missing
 import com.ovalit.feature.report.resources.sheet_usual_range
@@ -245,10 +246,11 @@ private fun TrendBars(metric: FixedMetric, report: WeeklyReport.Ready) {
             selected = selected,
             onSelect = { selected = it },
             baseline = baseline?.second,
+            baselineLabel = baseline?.let { stringResource(Res.string.dynamic_usual, metric.format.valueText(it.second)) },
         )
         Spacer(Modifier.height(OvalitSpacing.sm))
         TrendAxis(report)
-        TrendNotes(report, baselineWeeks = baseline?.first)
+        TrendNotes(report)
     }
 }
 

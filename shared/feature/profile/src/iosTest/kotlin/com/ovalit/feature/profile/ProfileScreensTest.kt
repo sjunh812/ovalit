@@ -13,6 +13,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.isHeading
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -21,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.WeaponId
+import com.ovalit.core.ui.MetricFormat
+import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.WeaponThumb
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -156,20 +159,24 @@ class ProfileScreensTest {
 
     // 견주는 숫자가 아니라 내 기록이라 판 수가 적어도 가리지 않는다
     @Test
-    fun `판 수가 적은 요원 칸에도 승률과 KDA를 적는다`() = runComposeUiTest {
+    fun `판 수가 적은 요원 칸에도 승률을 적는다`() = runComposeUiTest {
         val base = ProfilePreviewData.success
         val thin = base.copy(agents = base.agents.copy(agents = base.agents.agents.filterNot { it.isMeasurable }))
         setContent { Themed { ProfileScreen(thin, {}, {}, {}, {}, {}) } }
 
         onNodeWithText("3판", useUnmergedTree = true).performScrollTo().assertExists()
-        onAllNodesWithText("KDA ", substring = true, useUnmergedTree = true).assertCountEquals(thin.agents.agents.take(3).size)
+        thin.agents.agents.take(3).forEach { agent ->
+            val rate = agent.winRate?.let { "${MetricFormat.PERCENT.format(it)}%" } ?: NO_VALUE
+            onAllNodesWithText(rate, useUnmergedTree = true).onFirst().assertExists()
+        }
     }
 
+    // 이름 밑은 "19판 · 58%" 한 줄이고 KDA는 칸을 눌러 가는 S7에서 본다(docs/screens.md)
     @Test
-    fun `요원 칸에는 승률 밑에 KDA를 적는다`() = runComposeUiTest {
+    fun `요원 칸에는 KDA 없이 판 수와 승률 한 줄만 적는다`() = runComposeUiTest {
         setContent { Themed { ProfileScreen(ProfilePreviewData.success, {}, {}, {}, {}, {}) } }
 
-        onAllNodesWithText("KDA ", substring = true, useUnmergedTree = true).assertCountEquals(3)
+        onAllNodesWithText("KDA ", substring = true, useUnmergedTree = true).assertCountEquals(0)
     }
 
     // 같은 칸에 다른 무기가 오면 앞 무기 그림이 남지 않아야 한다

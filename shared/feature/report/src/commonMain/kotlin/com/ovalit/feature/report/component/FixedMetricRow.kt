@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitRollingText
@@ -49,6 +50,8 @@ import org.jetbrains.compose.resources.stringResource
  * 홈 위쪽 고정 칸입니다.
  * 한 줄에 세 칸씩 두고 칸마다 이름, 숫자, 그 밑에 "+75 · 평소 177"을 둡니다.
  * 달라진 점과 같은 격자라 두 카드의 칸 경계가 위아래로 맞습니다.
+ * 숫자는 Medium이고 짚을 점이 말한 칸([highlighted])만 SemiBold입니다.
+ * 같은 무게의 숫자 여러 개보다 그 주의 중심 숫자 하나가 먼저 보여야 합니다(docs/design.md 글자).
  */
 @Composable
 internal fun FixedMetricRow(
@@ -58,6 +61,7 @@ internal fun FixedMetricRow(
     onOpenMetric: (FixedMetric) -> Unit,
     modifier: Modifier = Modifier,
     subLines: List<Pair<String?, String>>? = null,
+    highlighted: FixedMetric? = null,
 ) {
     val typography = OvalitTheme.typography
     val cells = fixedCells(metrics, baseline, fixedMetrics)
@@ -84,11 +88,9 @@ internal fun FixedMetricRow(
                     repeat(perRow) { index ->
                         val cell = row.getOrNull(index)
                         if (index > 0) {
-                            // 간격은 구분선 양옆에만 준다.
-                            // 칸 폭 안에 넣으면 칸마다 내용 폭이 달라진다.
-                            Spacer(Modifier.width(MetricColumnGap))
-                            if (cell != null) VerticalLine() else Spacer(Modifier.width(1.dp))
-                            Spacer(Modifier.width(MetricColumnGap))
+                            // 칸 사이는 선 없이 여백으로 가른다.
+                            // 간격을 칸 폭 안에 넣으면 칸마다 내용 폭이 달라져서 칸 밖에 둔다.
+                            Spacer(Modifier.width(MetricColumnGap * 2 + 1.dp))
                         }
                         if (cell == null) {
                             Spacer(Modifier.weight(1f))
@@ -99,6 +101,7 @@ internal fun FixedMetricRow(
                                 FixedMetricCell(
                                     cell = cell,
                                     styles = styles,
+                                    highlighted = cell.metric == highlighted,
                                     onClick = { onOpenMetric(cell.metric) },
                                     modifier = Modifier.weight(1f),
                                 )
@@ -150,7 +153,13 @@ private class FixedCell(
 private class FixedCellStyles(val label: TextStyle, val value: TextStyle, val subLine: MetricSubLineStyle)
 
 @Composable
-private fun FixedMetricCell(cell: FixedCell, styles: FixedCellStyles, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun FixedMetricCell(
+    cell: FixedCell,
+    styles: FixedCellStyles,
+    highlighted: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val colors = OvalitTheme.colors
     Column(
         // 칸에 여백이 없어서 누른 면만 칸 밖으로 넓힌다
@@ -178,7 +187,7 @@ private fun FixedMetricCell(cell: FixedCell, styles: FixedCellStyles, onClick: (
         Spacer(Modifier.height(6.dp))
         OvalitRollingText(
             text = cell.value,
-            style = styles.value,
+            style = styles.value.copy(fontWeight = if (highlighted) FontWeight.SemiBold else FontWeight.Medium),
             color = cell.valueColor,
             autoSize = shrinkToFit(styles.value.fontSize, min = 14.sp),
         )

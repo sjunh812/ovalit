@@ -104,8 +104,18 @@ internal fun WeekNoteHeadline(note: WeekNote, modifier: Modifier = Modifier) {
     val format = moved.metric.format
     // 보이는 자릿수로 이전 최고와 같으면 최고라고 할 수 없다
     val best = note.previousBest?.let { format.steps(moved.current) > format.steps(it) } == true
-    // 평균이 얼마에서 얼마가 됐는지는 바로 밑 고정 칸에 있어 헤드라인에 다시 적지 않는다
-    OvalitText(text = movedHeadline(moved, best), modifier = modifier.padding(horizontal = OvalitSpacing.gutter), style = headlineStyle())
+    // 평균이 얼마에서 얼마가 됐는지는 바로 밑 고정 칸에 있어 헤드라인에 다시 적지 않는다.
+    // 바뀐 값만 굵게, 칸 밑 변화량과 같은 오르내림 색으로 칠한다.
+    val gap = headlineGap(moved)
+    val emphasis = SpanStyle(
+        color = if (moved.rose) OvalitTheme.colors.pos else OvalitTheme.colors.neg,
+        fontWeight = FontWeight.SemiBold,
+    )
+    OvalitText(
+        text = headlineEmphasis(movedHeadline(moved, best, gap), gap, emphasis),
+        modifier = modifier.padding(horizontal = OvalitSpacing.gutter),
+        style = headlineStyle(),
+    )
 }
 
 /**
@@ -154,7 +164,7 @@ internal fun WeekNoteLines(note: WeekNote, catalog: ContentCatalog, modifier: Mo
 }
 
 // 보이는 자릿수로 뺀 차이가 0이면 "0 올랐어요"가 되니 헤드라인도 근거 줄도 두지 않는다
-private val WeekNote.isShown: Boolean
+internal val WeekNote.isShown: Boolean
     get() = moved.metric.format.let { it.steps(moved.current) != it.steps(moved.usual) }
 
 /** 짚을 점 한 칸입니다. 앞에 무기나 요원 그림, 이름, "평소 → 이번" 숫자 순서입니다. 표본(라운드, 판)은 S6·S7에서 봅니다. */
@@ -324,7 +334,7 @@ private fun changeText(usual: String, current: String): AnnotatedString {
             append(usual)
             append(pattern.substring(usualAt + USUAL_MARK.length, currentAt).keepTogether())
         }
-        withStyle(SpanStyle(color = colors.t1, fontWeight = FontWeight.SemiBold)) { append(current) }
+        withStyle(SpanStyle(color = colors.t1, fontWeight = FontWeight.Medium)) { append(current) }
         withStyle(SpanStyle(color = colors.t3)) { append(pattern.substring(currentAt + CURRENT_MARK.length)) }
     }
 }
@@ -378,14 +388,20 @@ private fun MixGroup.lead(catalog: ContentCatalog): NoteLead? = when (this) {
     is MixGroup.Agent -> NoteLead.Agent(agent, catalog.agentName(agent))
 }
 
-// 차이는 보이는 자릿수로 반올림한 값끼리 뺀다(CLAUDE.md 지표 규칙)
+/**
+ * 헤드라인에 넣는 차이 글자("5%p", "21")입니다.
+ * 차이는 보이는 자릿수로 반올림한 값끼리 뺍니다(CLAUDE.md 지표 규칙).
+ */
 @Composable
-private fun movedHeadline(moved: MovedMetric, best: Boolean): String {
+private fun headlineGap(moved: MovedMetric): String {
     val format = moved.metric.format
     val gap = format.formatGap(moved.current, moved.usual)
-    val gapText = if (format == MetricFormat.PERCENT) stringResource(Res.string.gap_percent, gap) else gap
-    return stringResource(moved.metric.headline(moved.rose, best), gapText)
+    return if (format == MetricFormat.PERCENT) stringResource(Res.string.gap_percent, gap) else gap
 }
+
+@Composable
+private fun movedHeadline(moved: MovedMetric, best: Boolean, gap: String): String =
+    stringResource(moved.metric.headline(moved.rose, best), gap)
 
 private fun FixedMetric.headline(rose: Boolean, best: Boolean): StringResource {
     val (up, down, record) = when (this) {

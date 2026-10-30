@@ -371,7 +371,7 @@ private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: 
     // 버튼 높이로 제목 줄을 늘리지 않는다.
     // 위 역할 묶음처럼 선에서 제목까지, 제목에서 표까지를 같게 둔다.
     OvalitPickerTitle(
-        title = { OvalitText(text = stringResource(Res.string.agents_by_agent), style = OvalitTheme.typography.bodyStrong) },
+        title = { OvalitText(text = stringResource(Res.string.agents_by_agent), style = OvalitTheme.typography.cardTitle) },
         picker = {
             OvalitPickerButton(
                 text = shownLabel,

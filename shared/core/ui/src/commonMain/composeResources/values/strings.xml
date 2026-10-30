@@ -123,7 +123,6 @@
     <string name="column_win_rate">승률</string>
     <string name="profile_weapon_kills">%1$s킬</string>
     <string name="profile_weapon_headshot">헤드샷 %1$s</string>
-    <string name="profile_weapon_damage">피해량 %1$s</string>
     <string name="kda_counts">%1$s/%2$s/%3$s</string>
     <string name="kda_with_counts">%1$s (%2$s)</string>
     <string name="kda_ratio">KDA %1$s</string>

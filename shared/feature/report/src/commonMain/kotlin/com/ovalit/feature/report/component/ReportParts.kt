@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -19,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -32,22 +33,21 @@ import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.rememberFittingStyle
 import com.ovalit.core.ui.shrinkToFit
 
-@Composable
-internal fun VerticalLine() {
-    Box(
-        Modifier
-            .width(1.dp)
-            .fillMaxHeight()
-            .background(OvalitTheme.colors.line),
-    )
-}
-
 /**
- * 짚을 점과 개선 포인트의 헤드라인 글꼴입니다.
- * 한 문장이라 본문처럼 줄을 끝까지 채우면 "높아요"만 다음 줄에 남아서 제목처럼 줄 길이를 고르게 나눕니다(docs/design.md).
+ * 짚을 점과 돌아보기의 헤드라인 글꼴입니다.
+ * 문장은 보통 굵기로 두고 바뀐 값만 [headlineEmphasis]로 굵게 합니다.
+ * 문장 전체가 굵으면 무엇이 바뀌었는지가 묻힙니다(docs/design.md 글자).
+ * 한 문장이라 본문처럼 줄을 끝까지 채우면 "높아요"만 다음 줄에 남아서 제목처럼 줄 길이를 고르게 나눕니다.
  */
 @Composable
-internal fun headlineStyle(): TextStyle = OvalitTheme.typography.bodyStrong.copy(lineBreak = LineBreak.Heading)
+internal fun headlineStyle(): TextStyle = OvalitTheme.typography.body.copy(lineBreak = LineBreak.Heading)
+
+/** [text] 안의 첫 [value]만 [emphasis]로 칠한 헤드라인입니다. 값이 문장에 없으면 그대로 둡니다. */
+internal fun headlineEmphasis(text: String, value: String, emphasis: SpanStyle): AnnotatedString = buildAnnotatedString {
+    append(text)
+    val start = text.indexOf(value)
+    if (start >= 0 && value.isNotEmpty()) addStyle(emphasis, start, start + value.length)
+}
 
 internal val SectionTitleGap = 12.dp
 

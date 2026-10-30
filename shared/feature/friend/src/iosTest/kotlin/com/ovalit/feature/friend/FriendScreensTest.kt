@@ -148,14 +148,13 @@ class FriendScreensTest {
         assertEquals(order.sorted(), order)
     }
 
-    // 요원과 무기 칸은 내 프로필과 같다
+    // 요원과 무기 칸은 내 프로필과 같다.
+    // 이름 밑은 한 줄이고 KDA와 피해량은 칸을 눌러 가는 친구 기록에서 본다(docs/screens.md).
     @Test
-    fun `친구의 요원과 무기 칸에는 KDA와 킬 수와 헤드샷을 적는다`() = runComposeUiTest {
+    fun `친구의 요원과 무기 칸에는 이름 밑 한 줄만 적는다`() = runComposeUiTest {
         setContent { Themed { FriendProfileScreen(FriendPreviewData.profile, {}, {}, {}) } }
 
-        // 제트는 (330 + 72) ÷ 260이다.
-        // 요원 칸에는 합계 없이 KDA만 둔다.
-        onNodeWithText("KDA 1.55", useUnmergedTree = true).assertExists()
+        onAllNodesWithText("KDA ", substring = true, useUnmergedTree = true).assertCountEquals(0)
         onNodeWithText("330/260/72", substring = true, useUnmergedTree = true).assertDoesNotExist()
         onNodeWithText("260킬", useUnmergedTree = true).assertExists()
         onNodeWithText("헤드샷 28%", useUnmergedTree = true).assertExists()

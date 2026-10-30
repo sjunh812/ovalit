@@ -92,7 +92,7 @@ internal fun RivalSection(
     Column(modifier = modifier.padding(horizontal = OvalitSpacing.gutter)) {
         TitleWithCaption(
             title = stringResource(Res.string.rival_title, rival.riotId),
-            titleStyle = OvalitTheme.typography.bodyStrong,
+            titleStyle = OvalitTheme.typography.cardTitle,
             caption = AnnotatedString(
                 if (theirs == null) {
                     stringResource(Res.string.rival_no_matches, periodLabel(report.period))
@@ -138,7 +138,7 @@ internal fun FriendRankingSection(
 
     Column(modifier = modifier.padding(horizontal = OvalitSpacing.gutter)) {
         RankingTitle(
-            title = { OvalitText(text = stringResource(Res.string.friends_title), style = OvalitTheme.typography.bodyStrong) },
+            title = { OvalitText(text = stringResource(Res.string.friends_title), style = OvalitTheme.typography.cardTitle) },
             metric = metric,
             onChoose = { choosing = true },
         )

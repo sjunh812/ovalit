@@ -117,7 +117,6 @@
     <string name="profile_weapon_kills">%1$sキル</string>
     <!-- 무기 세 칸의 좁은 줄이라 일본 유저가 흔히 쓰는 약칭 HS率로 줄였다 -->
     <string name="profile_weapon_headshot">HS率 %1$s</string>
-    <string name="profile_weapon_damage">ダメージ %1$s</string>
     <string name="kda_counts">%1$s/%2$s/%3$s</string>
     <string name="kda_with_counts">%1$s (%2$s)</string>
     <string name="kda_ratio">KDA %1$s</string>

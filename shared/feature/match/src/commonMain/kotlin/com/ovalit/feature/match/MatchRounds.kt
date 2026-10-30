@@ -37,6 +37,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -131,7 +133,7 @@ private fun Overview(uiState: MatchDetailUiState.Success) {
                 pair.forEach { (label, value) ->
                     Column(modifier = Modifier.weight(1f).semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         OvalitText(text = label, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t3, maxLines = 1)
-                        OvalitText(text = value, style = OvalitTheme.typography.bodyStrong, maxLines = 1)
+                        OvalitText(text = value, style = OvalitTheme.typography.body.copy(fontWeight = FontWeight.Medium), maxLines = 1)
                     }
                 }
             }
@@ -395,10 +397,10 @@ private fun BuyTable(uiState: MatchDetailUiState.Success) {
                 OvalitText(
                     text = stringResource(Res.string.buy_record, record.rounds, record.wins),
                     modifier = Modifier.weight(1f),
-                    style = OvalitTheme.typography.bodyStrong,
+                    style = OvalitTheme.typography.body.copy(fontWeight = FontWeight.Medium),
                     textAlign = TextAlign.End,
                     maxLines = 1,
-                    autoSize = shrinkToFit(OvalitTheme.typography.bodyStrong.fontSize),
+                    autoSize = shrinkToFit(OvalitTheme.typography.body.fontSize),
                 )
                 OvalitText(
                     text = stringResource(Res.string.buy_record, record.enemyRounds, record.enemyWins),
@@ -412,10 +414,17 @@ private fun BuyTable(uiState: MatchDetailUiState.Success) {
             }
         }
         if (overview.upsets > 0) {
+            // 문장은 보통 굵기이고 이긴 횟수만 굵게 한다(docs/design.md 글자)
+            val upsets = overview.upsets.toString()
+            val sentence = stringResource(Res.string.economy_upsets, overview.upsets)
+            val at = sentence.indexOf(upsets)
             OvalitText(
-                text = stringResource(Res.string.economy_upsets, overview.upsets),
+                text = buildAnnotatedString {
+                    append(sentence)
+                    if (at >= 0) addStyle(SpanStyle(fontWeight = FontWeight.SemiBold), at, at + upsets.length)
+                },
                 modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, top = OvalitSpacing.sm),
-                style = OvalitTheme.typography.bodyStrong,
+                style = OvalitTheme.typography.body,
             )
         }
         OvalitText(

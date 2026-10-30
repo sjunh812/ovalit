@@ -19,7 +19,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -112,7 +111,9 @@ internal fun PeriodHeader(report: WeeklyReport.Ready, modifier: Modifier = Modif
     Column(modifier = modifier.padding(horizontal = OvalitSpacing.gutter)) {
         TitleWithCaption(
             title = periodLabel(period),
-            titleStyle = OvalitTheme.typography.titleM,
+            // 홈 카드 제목처럼 Medium이다.
+            // 이 카드에서 굵게 읽혀야 할 것은 짚을 점 문장의 바뀐 값과 그 칸의 숫자다.
+            titleStyle = OvalitTheme.typography.titleM.copy(fontWeight = FontWeight.Medium),
             caption = periodCaption(report),
         )
         if (!period.includesThisWeek) {
@@ -132,18 +133,13 @@ private fun periodCaption(report: WeeklyReport.Ready): AnnotatedString {
     val last = report.period.lastDay
     val range = stringResource(Res.string.period_date_range, first.month.number, first.day, last.month.number, last.day)
     val matches = stringResource(Res.string.period_matches, report.metrics.matches)
-    val role = report.mainRole?.let { stringResource(it.label) }
     val roleText = report.mainRole?.let { mainRoleText(it, report.mainRoleShare) }
-    val emphasis = SpanStyle(color = OvalitTheme.colors.t2, fontWeight = FontWeight.SemiBold)
 
-    // 기간 줄의 강조는 이 한 곳뿐이라(docs/screens.md) 역할 이름만 한 단계 밝고 굵게 둔다.
+    // 카드 머리 오른쪽 글은 모두 보통 굵기 --t3다(docs/screens.md).
     // 좁으면 항목 사이에서만 줄이 바뀐다.
     return buildAnnotatedString {
-        if (role != null && roleText != null) {
-            val kept = roleText.keepTogether()
-            val start = kept.indexOf(role.keepTogether())
-            append(kept)
-            if (start >= 0) addStyle(emphasis, start, start + role.length)
+        if (roleText != null) {
+            append(roleText.keepTogether())
             append(WRAPPING_SEPARATOR)
         }
         append(range.keepTogether())

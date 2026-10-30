@@ -218,7 +218,7 @@ private fun MainRole(role: Role, share: Double?) {
             }
             append(text.substring(0, start))
             appendInlineContent(RoleIconId)
-            withStyle(SpanStyle(color = colors.t2, fontWeight = FontWeight.SemiBold)) { append(name) }
+            withStyle(SpanStyle(color = colors.t2)) { append(name) }
             append(text.substring(start + name.length))
         },
         // 아이콘 자리에 든 대체 글자를 읽지 않게 글자만 따로 알린다

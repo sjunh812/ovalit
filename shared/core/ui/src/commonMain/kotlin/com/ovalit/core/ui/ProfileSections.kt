@@ -73,7 +73,6 @@ import com.ovalit.core.ui.resources.profile_shots_head
 import com.ovalit.core.ui.resources.profile_shots_leg
 import com.ovalit.core.ui.resources.profile_shots_title
 import com.ovalit.core.ui.resources.profile_stats_title
-import com.ovalit.core.ui.resources.profile_weapon_damage
 import com.ovalit.core.ui.resources.profile_weapon_headshot
 import com.ovalit.core.ui.resources.profile_weapon_kills
 import com.ovalit.core.ui.resources.profile_weapons
@@ -277,9 +276,13 @@ private const val UnitScale = 0.8f
 
 // 목업처럼 티어 이름(titleM)과 같은 크기다.
 // 홈의 큰 지표 숫자 크기를 쓰면 통계 칸들이 제목보다 커진다.
+// 지표 숫자라 홈 칸처럼 Medium이다(docs/design.md 글자).
 @Composable
-private fun StatValueStyle(): TextStyle =
-    OvalitTheme.typography.metricM.copy(fontSize = OvalitTheme.typography.titleM.fontSize, lineHeight = 24.sp)
+private fun StatValueStyle(): TextStyle = OvalitTheme.typography.metricM.copy(
+    fontSize = OvalitTheme.typography.titleM.fontSize,
+    lineHeight = 24.sp,
+    fontWeight = FontWeight.Medium,
+)
 
 // 칸이 좁아 열 시간부터는 분을 버린다.
 @Composable
@@ -337,7 +340,7 @@ fun ShotsBreakdown(shots: Shots) {
             val typography = OvalitTheme.typography
             val lines = parts.map { part ->
                 buildAnnotatedString {
-                    withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) { append(percentText(part.count.toDouble() / shots.total)) }
+                    withStyle(SpanStyle(fontWeight = FontWeight.Medium)) { append(percentText(part.count.toDouble() / shots.total)) }
                     append(part.count.withThousands())
                 }
             }
@@ -364,7 +367,7 @@ private fun ShotLegend(part: ShotPart, total: Int, stacked: Boolean, modifier: M
         // 한 글줄로 두면 "3,737"이 쉼표에서 갈라진다.
         SeparatedRow(
             items = listOf(
-                { OvalitText(text = percentText(part.count.toDouble() / total), style = typography.label.copy(fontWeight = FontWeight.SemiBold)) },
+                { OvalitText(text = percentText(part.count.toDouble() / total), style = typography.label) },
                 { OvalitText(text = part.count.withThousands(), style = typography.label, color = colors.t3) },
             ),
             separator = { Spacer(Modifier.width(ShotGap)) },
@@ -399,8 +402,12 @@ fun ProfileAgentsSection(report: AgentReport, catalog: ContentCatalog, onOpen: (
  * 승률과 KDA는 표본이 적어도 그대로 적습니다.
  * 견주는 숫자가 아니라 그 사람의 기록이라 표본으로 가리지 않습니다.
  *
- * @param showRecord 판 수 대신 "2승 1패"를 적습니다.
+ * 이름 밑은 한 줄입니다(사용자 결정).
+ * 프로필과 S5는 "19판 · 58%"이고 KDA는 카드를 눌러 가는 S7에 있습니다.
+ *
+ * @param showRecord 판 수 대신 "2승 1패"를 적고 승률 대신 KDA를 붙여 "2승 1패 · KDA 1.53"으로 둡니다.
  *   홈처럼 기간이 짧은 곳에 씁니다.
+ *   승률은 승패에서 읽힙니다.
  */
 @Composable
 fun AgentTileRow(agents: List<AgentStats>, catalog: ContentCatalog, showRecord: Boolean = false) {
@@ -411,7 +418,8 @@ fun AgentTileRow(agents: List<AgentStats>, catalog: ContentCatalog, showRecord: 
         // 한 칸이라도 승률이 판 수 옆에 안 들어가면 모든 칸의 승률을 아래로 내린다
         val lines = shown.map { agent ->
             val first = agentFirstLine(agent, showRecord)
-            AnnotatedString(first + TILE_SEPARATOR + percentText(agent.winRate))
+            val second = if (showRecord) agent.metrics.kda?.let { kdaRatioText(it) } ?: NO_VALUE else percentText(agent.winRate)
+            AnnotatedString(first + TILE_SEPARATOR + second)
         }
         val stacked = !rememberFitsOnOneLine(lines, caption, tileWidth)
         Row(horizontalArrangement = Arrangement.spacedBy(TileGap)) {
@@ -446,24 +454,25 @@ private fun AgentTile(agent: AgentStats, catalog: ContentCatalog, stacked: Boole
         Spacer(Modifier.height(2.dp))
         // 좁은 칸에서 승률이 다음 줄로 내려가도 줄 끝에 점이 남지 않게 SeparatedRow로 잇는다
         val caption = OvalitTheme.typography.caption
+        val kda = agent.metrics.kda?.let { kdaRatioText(it) }
         SeparatedRow(
             items = listOfNotNull<@Composable () -> Unit>(
                 { OvalitText(text = matches, style = caption, color = colors.t3) },
-                { OvalitText(text = winRate, style = caption, color = winColor) },
+                if (showRecord) {
+                    kda?.let { { OvalitText(text = it, style = caption, color = colors.t3) } }
+                } else {
+                    { OvalitText(text = winRate, style = caption, color = winColor) }
+                },
             ),
             separator = { OvalitText(text = TILE_SEPARATOR, style = caption, color = colors.t5) },
             stacked = stacked,
         )
-        // 합계까지 적으면 칸이 무거워서 KDA만 둔다
-        agent.metrics.kda?.let { kda ->
-            OvalitText(text = kdaRatioText(kda), style = caption, color = colors.t3, maxLines = 1)
-        }
     }
 }
 
 /**
  * S6 위쪽 세 줄과 같은 무기입니다.
- * 이번 액트 킬 수, 헤드샷, 라운드당 피해량을 적습니다.
+ * 이번 액트 킬 수와 헤드샷을 적고 라운드당 피해량은 S6에서 봅니다.
  * [onOpen]이 있으면 섹션 전체가 눌리고 S6으로 갑니다.
  */
 @Composable
@@ -478,7 +487,12 @@ fun ProfileWeaponsSection(report: WeaponReport, catalog: ContentCatalog, onOpen:
     }
 }
 
-/** 무기 세 칸입니다. 내 프로필, S5, 홈이 같이 씁니다. 킬 수, 헤드샷, 라운드당 피해량을 적습니다. */
+/**
+ * 무기 세 칸입니다.
+ * 내 프로필, S5, 홈이 같이 씁니다.
+ * 이름 밑은 "39킬 · 헤드샷 44%" 한 줄입니다(사용자 결정).
+ * 라운드당 피해량은 카드를 눌러 가는 S6에 있습니다.
+ */
 @Composable
 fun WeaponTileRow(weapons: List<WeaponStats>, catalog: ContentCatalog) {
     val shown = weapons.take(SHOWN_TILES)
@@ -487,7 +501,7 @@ fun WeaponTileRow(weapons: List<WeaponStats>, catalog: ContentCatalog) {
         val lines = shown.map { weaponLine(it) }
         // 한 칸이라도 헤드샷과 피해량이 한 줄에 안 들어가면 모든 칸에서 피해량을 아래로 내린다
         val stacked = !rememberFitsOnOneLine(
-            lines.map { it.headshot + AnnotatedString(TILE_SEPARATOR) + it.damage },
+            lines.map { it.kills + AnnotatedString(TILE_SEPARATOR) + it.headshot },
             OvalitTheme.typography.caption,
             tileWidth,
         )
@@ -500,17 +514,15 @@ fun WeaponTileRow(weapons: List<WeaponStats>, catalog: ContentCatalog) {
     }
 }
 
-private class WeaponLine(val kills: AnnotatedString, val headshot: AnnotatedString, val damage: AnnotatedString)
+private class WeaponLine(val kills: AnnotatedString, val headshot: AnnotatedString)
 
 @Composable
 private fun weaponLine(weapon: WeaponStats): WeaponLine {
     val kills = weapon.kills.withThousands()
     val headshot = percentText(weapon.headshotRate)
-    val damage = weapon.damagePerRound?.let { MetricFormat.INTEGER.format(it) } ?: NO_VALUE
     return WeaponLine(
         kills = valueFirst(stringResource(Res.string.profile_weapon_kills, kills), kills),
         headshot = valueFirst(stringResource(Res.string.profile_weapon_headshot, headshot), headshot),
-        damage = valueFirst(stringResource(Res.string.profile_weapon_damage, damage), damage),
     )
 }
 
@@ -540,11 +552,10 @@ private fun WeaponTile(weapon: WeaponStats, line: WeaponLine, stacked: Boolean, 
         Spacer(Modifier.height(8.dp))
         OvalitText(text = name, style = OvalitTheme.typography.label, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(2.dp))
-        OvalitText(text = line.kills, style = caption)
         SeparatedRow(
             items = listOf(
+                { OvalitText(text = line.kills, style = caption) },
                 { OvalitText(text = line.headshot, style = caption) },
-                { OvalitText(text = line.damage, style = caption) },
             ),
             separator = { OvalitText(text = TILE_SEPARATOR, style = caption, color = colors.t5) },
             stacked = stacked,
@@ -583,7 +594,7 @@ fun ProfileSection(onClick: (() -> Unit)? = null, content: @Composable ColumnSco
 @Composable
 fun ProfileSectionTitle(title: String, caption: String? = null, chevron: Boolean = false) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        OvalitText(text = title, modifier = Modifier.weight(1f), style = OvalitTheme.typography.bodyStrong)
+        OvalitText(text = title, modifier = Modifier.weight(1f), style = OvalitTheme.typography.cardTitle)
         if (caption != null) {
             OvalitText(text = caption, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t3)
         }

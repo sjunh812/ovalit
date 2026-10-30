@@ -143,7 +143,7 @@ internal fun PingListCard(
         // "오발있?"은 앱 이름이라 무슨 기능인지 버튼의 "파티 모집"이 알려 준다.
         // 제목 옆에 같은 말을 또 붙이지 않는다.
         val title = @Composable {
-            OvalitText(text = stringResource(Res.string.ping_title), style = OvalitTheme.typography.bodyStrong)
+            OvalitText(text = stringResource(Res.string.ping_title), style = OvalitTheme.typography.cardTitle)
         }
         Box(modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
             if (canCompose) {

@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ovalit.core.designsystem.component.OvalitRollingText
@@ -103,11 +104,8 @@ internal fun DynamicMetricSection(
                         repeat(perRow) { index ->
                             val column = row.getOrNull(index)
                             if (index > 0) {
-                                // 간격은 구분선 양옆에만 준다.
-                                // 칸 폭 안에 넣으면 칸마다 내용 폭이 달라진다.
-                                Spacer(Modifier.width(MetricColumnGap))
-                                if (column != null) VerticalLine() else Spacer(Modifier.width(1.dp))
-                                Spacer(Modifier.width(MetricColumnGap))
+                                // 고정 칸처럼 선 없이 여백으로 가른다
+                                Spacer(Modifier.width(MetricColumnGap * 2 + 1.dp))
                             }
                             if (column == null) {
                                 Spacer(Modifier.weight(1f))
@@ -151,7 +149,7 @@ private fun DynamicSectionTitle(report: WeeklyReport.Ready) {
     Column(modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
         TitleWithCaption(
             title = title,
-            titleStyle = OvalitTheme.typography.bodyStrong,
+            titleStyle = OvalitTheme.typography.cardTitle,
             caption = caption?.let(::AnnotatedString),
         )
         if (movements.all { it == Movement.UNKNOWN }) {
@@ -251,7 +249,9 @@ private fun DynamicMetricColumn(
         Spacer(Modifier.height(6.dp))
         OvalitRollingText(
             text = column.value,
-            style = styles.value,
+            // 숫자는 고정 칸처럼 Medium이다.
+            // 크게 움직였는지는 변화량의 굵기가 가른다.
+            style = styles.value.copy(fontWeight = FontWeight.Medium),
             color = column.valueColor,
             autoSize = shrinkToFit(styles.value.fontSize, min = 14.sp),
         )

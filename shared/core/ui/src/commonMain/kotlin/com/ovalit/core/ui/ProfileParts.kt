@@ -115,7 +115,10 @@ fun kdaText(kda: Double?, kills: Int, deaths: Int, assists: Int): KdaText = KdaT
     counts = stringResource(Res.string.kda_counts, kills.withThousands(), deaths.withThousands(), assists.withThousands()),
 )
 
-/** KDA만 굵게 두고 구간 색을 칠한 한 줄입니다. */
+/**
+ * KDA에 구간 색을 칠하고 합계("(17/15/3)")는 옅게 둔 한 줄입니다.
+ * KDA는 지표 숫자라 Medium이고, 합계는 근거라 `--t3`로 물러나게 둡니다(docs/design.md 글자).
+ */
 @Composable
 fun KdaText.annotated(): AnnotatedString {
     val kda = kda ?: return AnnotatedString(counts)
@@ -124,13 +127,16 @@ fun KdaText.annotated(): AnnotatedString {
     val start = text.indexOf(ratio)
     return buildAnnotatedString {
         append(text)
-        addStyle(SpanStyle(color = kdaColor(kda, below = OvalitTheme.colors.t2), fontWeight = FontWeight.SemiBold), start, start + ratio.length)
+        addStyle(SpanStyle(color = kdaColor(kda, below = OvalitTheme.colors.t2), fontWeight = FontWeight.Medium), start, start + ratio.length)
+        // 괄호까지 합계 덩어리 전체를 옅게 둔다.
+        // 숫자만 옅게 하면 괄호가 더 진해 보인다.
+        if (start >= 0) addStyle(SpanStyle(color = OvalitTheme.colors.t3, fontWeight = FontWeight.Normal), start + ratio.length, text.length)
     }
 }
 
 /**
  * "KDA 2.13"입니다.
- * 숫자만 굵게 두고 구간 색을 칠합니다.
+ * 숫자만 Medium으로 두고 구간 색을 칠합니다.
  *
  * @param below 2 미만일 때 숫자 색입니다.
  * @param label "KDA" 글자에 덧씌울 모양입니다.
@@ -144,7 +150,7 @@ fun kdaRatioText(kda: Double, below: Color = OvalitTheme.colors.t2, label: SpanS
     return buildAnnotatedString {
         append(text)
         if (label != null) addStyle(label, 0, start)
-        addStyle(SpanStyle(color = kdaColor(kda, below), fontWeight = FontWeight.SemiBold), start, start + value.length)
+        addStyle(SpanStyle(color = kdaColor(kda, below), fontWeight = FontWeight.Medium), start, start + value.length)
     }
 }
 

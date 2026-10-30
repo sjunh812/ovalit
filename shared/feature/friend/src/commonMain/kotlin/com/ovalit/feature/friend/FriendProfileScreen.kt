@@ -308,7 +308,7 @@ private fun RecentMatches(uiState: FriendProfileUiState.Success, name: String, o
     OvalitCard {
         // 버튼 높이로 줄을 늘리지 않아 다른 카드와 제목 자리가 같다
         OvalitPickerTitle(
-            title = { OvalitText(text = stringResource(Res.string.recent_title, name), style = OvalitTheme.typography.bodyStrong) },
+            title = { OvalitText(text = stringResource(Res.string.recent_title, name), style = OvalitTheme.typography.cardTitle) },
             picker = {
                 if (matches.size > RECENT_MATCHES) {
                     OvalitTextButton(text = stringResource(Res.string.recent_all), onClick = onOpenMatches)
@@ -336,7 +336,7 @@ private fun TitleRow(title: String, caption: String) {
         OvalitText(
             text = title,
             modifier = Modifier.alignByBaseline(),
-            style = OvalitTheme.typography.bodyStrong,
+            style = OvalitTheme.typography.cardTitle,
             maxLines = 1,
         )
         Spacer(Modifier.width(OvalitSpacing.sm))

@@ -121,7 +121,7 @@ internal fun InsightSection(
     )
     // 적게 뛴 쪽의 숫자는 크게 흔들려서 몇 판, 몇 라운드로 센 숫자인지 같이 적는다.
     // 한 주 표본이라 판단은 하지 않고, 액트 동안의 차이가 이번 주에도 이어졌는지 숫자만 붙인다.
-    val actValues = valuesText(leadName to lead, otherName to other, format, SpanStyle(color = OvalitTheme.colors.t1, fontWeight = FontWeight.SemiBold))
+    val actValues = valuesText(leadName to lead, otherName to other, format, SpanStyle(color = OvalitTheme.colors.t1, fontWeight = FontWeight.Medium))
     val actSample = totalSample(lead, other)
     val recent = insight.recent?.let {
         val values = valuesText(leadName to it.lead, otherName to it.other, format, SpanStyle(color = OvalitTheme.colors.t2))
@@ -149,12 +149,17 @@ internal fun InsightSection(
     ) {
         TitleWithCaption(
             title = stringResource(Res.string.insight_title),
-            titleStyle = OvalitTheme.typography.bodyStrong,
+            titleStyle = OvalitTheme.typography.cardTitle,
             caption = insight.matches.takeIf { it > 0 }?.let { AnnotatedString(stringResource(Res.string.insight_title_matches, it)) },
         )
         Spacer(Modifier.height(6.dp))
-        OvalitText(text = headline, style = headlineStyle())
-        // 제목과 문장이 이번 액트 이야기라 액트 값만 본문 크기로 굵게 두고, 그 액트 전체 표본을 줄 끝에 옅게 붙인다.
+        // 문장은 보통 굵기이고 차이 값만 굵게 한다.
+        // 지난 기록과의 변화가 아니라 둘을 견준 차이라 오르내림 색은 쓰지 않는다.
+        OvalitText(
+            text = headlineEmphasis(headline, gapText, SpanStyle(fontWeight = FontWeight.SemiBold)),
+            style = headlineStyle(),
+        )
+        // 제목과 문장이 이번 액트 이야기라 액트 값만 본문 크기로 밝게 두고, 그 액트 전체 표본을 줄 끝에 옅게 붙인다.
         // 이번 주 값은 한 주 표본이라 같은 무게로 두면 근거처럼 읽혀서 밑에 작은 회색 한 줄로 참고만 하게 둔다.
         Column(modifier = Modifier.padding(top = OvalitSpacing.xs), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Row(modifier = Modifier.semantics(mergeDescendants = true) {}) {

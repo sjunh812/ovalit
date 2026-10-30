@@ -38,7 +38,7 @@ internal fun RecentMatchesSection(
     OvalitCard {
         // 버튼 높이로 줄을 늘리지 않아 다른 카드와 제목 자리가 같다
         OvalitPickerTitle(
-            title = { OvalitText(text = stringResource(Res.string.profile_recent), style = OvalitTheme.typography.bodyStrong) },
+            title = { OvalitText(text = stringResource(Res.string.profile_recent), style = OvalitTheme.typography.cardTitle) },
             picker = {
                 if (uiState.hasMoreMatches) {
                     OvalitTextButton(text = stringResource(Res.string.profile_recent_all), onClick = onOpenMatches)

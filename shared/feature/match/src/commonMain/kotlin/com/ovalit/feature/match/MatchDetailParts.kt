@@ -64,6 +64,7 @@ import com.ovalit.core.ui.AgentImage
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.PlacementLabel
+import com.ovalit.core.model.MatchPlacement
 import com.ovalit.core.ui.TierEmblem
 import com.ovalit.core.ui.annotated
 import com.ovalit.core.ui.columnLabel
@@ -239,7 +240,9 @@ private fun PlayerRow(
     val isMe = row.relation == PlayerRelation.ME
     val isFriend = row.relation == PlayerRelation.FRIEND
     val emphasized = isMe || isFriend
-    val numberStyle = OvalitTheme.typography.metricS.copy(fontWeight = if (isMe) FontWeight.SemiBold else FontWeight.Medium)
+    // 숫자는 모두 Medium이다.
+    // 내 줄은 면(`--raised`)과 이름 굵기로 이미 가려서 숫자는 밝기만 올린다.
+    val numberStyle = OvalitTheme.typography.metricS.copy(fontWeight = FontWeight.Medium)
     val numberColor = if (isMe) colors.t1 else colors.t2
     val widths = columnWidths()
 
@@ -309,7 +312,9 @@ private fun PlayerRow(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
-                        row.placement?.let { PlacementLabel(it) }
+                        // MVP와 팀 MVP만 칩이고 등수는 옅은 글자다(사용자 결정).
+                        // 열 줄 모두 칩이면 칩이 이름보다 먼저 보인다.
+                        row.placement?.let { if (it.award == null) RankHint(it) else PlacementLabel(it) }
                     }
                 }
             }
@@ -341,6 +346,17 @@ private fun PlayerRow(
         }
         if (roundBased) OvalitExpandable(visible = expanded) { PlayerStats(row) }
     }
+}
+
+/** 스코어보드 이름 옆의 등수("4등")입니다. 칩 없이 작고 옅은 글자로 둡니다. */
+@Composable
+private fun RankHint(placement: MatchPlacement) {
+    OvalitText(
+        text = rankText(placement),
+        style = OvalitTheme.typography.caption,
+        color = OvalitTheme.colors.t4,
+        maxLines = 1,
+    )
 }
 
 // 펼친 줄의 그 판 기록이다.

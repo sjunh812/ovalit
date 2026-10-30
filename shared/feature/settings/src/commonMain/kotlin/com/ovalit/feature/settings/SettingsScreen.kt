@@ -391,7 +391,7 @@ private fun SettingsCard(title: String, content: @Composable ColumnScope.() -> U
         OvalitText(
             text = title,
             modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = OvalitSpacing.xs),
-            style = OvalitTheme.typography.bodyStrong,
+            style = OvalitTheme.typography.cardTitle,
         )
         content()
     }

@@ -339,13 +339,13 @@ private fun InviteButton(onInvite: () -> Unit) {
 }
 
 // 카드 맨 위 제목이다.
-// 홈 카드의 묶음 제목과 같이 굵은 본문 글자로 둔다.
+// 홈 카드의 묶음 제목과 같은 카드 제목 글자로 둔다.
 @Composable
 private fun CardTitle(text: String) {
     OvalitText(
         text = text,
         modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = OvalitSpacing.xs),
-        style = OvalitTheme.typography.bodyStrong,
+        style = OvalitTheme.typography.cardTitle,
     )
 }
 

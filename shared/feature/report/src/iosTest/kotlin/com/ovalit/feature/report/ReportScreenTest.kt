@@ -456,16 +456,16 @@ class ReportScreenTest {
         onNodeWithText("점선은 지난 4주 평균이에요.", substring = true).assertExists()
     }
 
-    // 동적 칸과 개선 포인트가 이 역할에 맞춰 골라지니 한눈에 들어와야 한다
+    // 카드 머리 오른쪽 글은 보조 정보라 굵기를 쓰지 않는다.
+    // 굵게 읽혀야 할 것은 짚을 점 문장의 바뀐 값과 그 칸의 숫자다(docs/design.md 글자).
     @Test
-    fun `기간 줄에서 역할 이름만 굵게 둔다`() = runComposeUiTest {
+    fun `기간 줄은 모두 보통 굵기다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
         val caption = onNodeWithText("타격대\u00a078%$WRAPPING_SEPARATOR", substring = true)
             .fetchSemanticsNode().config[SemanticsProperties.Text].first()
-        val bold = caption.spanStyles.filter { it.item.fontWeight == FontWeight.SemiBold }
 
-        assertEquals(listOf("타격대"), bold.map { caption.text.substring(it.start, it.end) })
+        assertTrue(caption.spanStyles.none { it.item.fontWeight != null }, "${caption.spanStyles}")
     }
 
     // 칸 폭에 간격을 넣으면 가운데 칸만 좁아져 첫 칸이 넓어 보인다
@@ -746,6 +746,26 @@ class ReportScreenTest {
         onNodeWithText("트레이드 받은 데스", useUnmergedTree = true).assertExists()
     }
 
+    // 문장 전체가 굵으면 무엇이 바뀌었는지가 묻힌다(docs/design.md 글자)
+    @Test
+    fun `짚을 점 헤드라인은 바뀐 값만 굵게 오르내림 색으로 칠한다`() = runComposeUiTest {
+        lateinit var colors: OvalitColors
+        setContent {
+            OvalitTheme {
+                colors = OvalitTheme.colors
+                ReportScreen(ReportUiState.Success(QueueFilter.COMPETITIVE_AND_UNRATED, ReportPreviewData.moved), onSelectQueue = {}, catalog = NamedCatalog)
+            }
+        }
+
+        val text = onNodeWithText("피해량이 평소보다 10 올랐어요", useUnmergedTree = true)
+            .fetchSemanticsNode().config[SemanticsProperties.Text].single()
+        val styled = text.spanStyles.map { text.substring(it.start, it.end) to it.item }
+
+        assertEquals(listOf("10"), styled.map { it.first })
+        assertEquals(FontWeight.SemiBold, styled.single().second.fontWeight)
+        assertEquals(colors.pos, styled.single().second.color)
+    }
+
     // 프리뷰 데이터는 피해량이 128 → 138로 올랐다.
     // 그 변화를 밴달과 제트가 가장 많이 끌었다.
     @Test
@@ -1021,9 +1041,10 @@ class ReportScreenTest {
     }
 
     // 오르내림은 헤드라인이 말한다.
-    // 줄은 모두 같은 쪽으로 움직인 것이라 색 대신 밝기와 굵기로 이번 값만 띄운다.
+    // 줄은 모두 같은 쪽으로 움직인 것이라 색 대신 밝기로 이번 값만 띄운다.
+    // SemiBold는 헤드라인의 바뀐 값에 남기고 줄의 숫자는 한 단계 가벼운 Medium이다.
     @Test
-    fun `짚을 점 숫자는 이번 값만 굵게 두고 색을 입히지 않는다`() = runComposeUiTest {
+    fun `짚을 점 숫자는 이번 값만 밝게 두고 색을 입히지 않는다`() = runComposeUiTest {
         lateinit var colors: OvalitColors
         setContent {
             OvalitTheme {
@@ -1036,7 +1057,7 @@ class ReportScreenTest {
             .fetchSemanticsNode().config[SemanticsProperties.Text].single()
         val current = text.spanStyles.single { text.substring(it.start, it.end) == "140" }.item
         val usual = text.spanStyles.single { text.substring(it.start, it.end).startsWith("118") }.item
-        assertEquals(FontWeight.SemiBold, current.fontWeight)
+        assertEquals(FontWeight.Medium, current.fontWeight)
         assertEquals(colors.t1, current.color)
         assertEquals(colors.t3, usual.color)
         assertTrue(text.spanStyles.none { it.item.color == colors.pos || it.item.color == colors.neg })

@@ -75,6 +75,7 @@ import com.ovalit.feature.report.component.TrendEntry
 import com.ovalit.feature.report.component.TrendSheet
 import com.ovalit.feature.report.component.WeekNoteHeadline
 import com.ovalit.feature.report.component.WeekNoteLines
+import com.ovalit.feature.report.component.isShown
 import com.ovalit.feature.report.component.dynamicSubLines
 import com.ovalit.feature.report.component.fixedSubLines
 import com.ovalit.feature.report.resources.Res
@@ -314,6 +315,7 @@ private fun ReportContent(
                 fixedMetrics = queueFilter.fixedMetrics,
                 onOpenMetric = { openMetric = it },
                 subLines = subLines,
+                highlighted = note?.takeIf { it.isShown }?.moved?.metric,
             )
             FixedMetricSummary(baseline = report.baseline)
         }

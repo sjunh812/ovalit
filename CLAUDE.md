@@ -15,6 +15,8 @@
 | `docs/RELEASE.md` | 출시 전에 채울 값과 순서 |
 | `server/README.md` | 서버 실행과 배포 |
 | `docs/PRD.md` | 밖에서 읽는 제품 소개. 규칙은 위 문서가 기준이고 여기는 까닭과 범위만 둔다 |
+| `.specify/memory/constitution.md` | Spec Kit 헌법. 아래 "지켜야 할 선"과 같은 내용이다 |
+| `specs/` | Spec Kit으로 다시 쓰는 PRD와 스펙. 위 규칙 문서와 어긋나면 안 된다 |
 
 기획과 화면 목업은 저장소 밖 claude.ai 아티팩트에 있다. 프로덕션 키 심사에 낸 원본이라 고치지 않는다.
 
@@ -33,7 +35,8 @@
 되돌려놓는다.
 
 - 지켜야 할 선, 지표 규칙, 역할군, 용어, 색 토큰, 화면 구조, 서버 규칙 중 하나라도 바뀌면 **같은 커밋에서** 그 규칙이 있는
-  문서(`CLAUDE.md`, `docs/screens.md`, `docs/design.md`, `docs/backend.md`)를 고친다. 네 문서 모두 규칙집이라 단정형이다.
+  문서(`CLAUDE.md`, `docs/screens.md`, `docs/design.md`, `docs/backend.md`)를 고친다. 네 문서 모두 규칙집이라 단정형이다. 지켜야
+  할 선이 바뀌면 Spec Kit 헌법(`.specify/memory/constitution.md`)도 같은 커밋에서 고친다.
 - 기획서와 달라진 결정은 `docs/DECISIONS.md`에 날짜, 무엇이 바뀌었는지, 왜를 남긴다. 규칙 문서에는 결론과 지키는 까닭만 두고
   지난 경위는 DECISIONS에 둔다.
 - "사용자 결정"이라 적힌 규칙은 사용자가 다른 안과 견줘 고른 것이다. 일반 원칙과 어긋나 보여도 묻기 전에 되돌리지 않는다.

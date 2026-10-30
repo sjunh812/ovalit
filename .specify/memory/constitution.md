@@ -1,50 +1,101 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# 오발있(Ovalit) Constitution
+
+이 헌법은 `CLAUDE.md`의 "지켜야 할 선"과 그에 버금가는 원칙을 Spec Kit이 읽는 자리로 옮긴 것이다. 스펙(`specs/`), 계획,
+작업은 모두 이 원칙을 넘어서는 안 된다. 지키지 않으면 Riot 프로덕션 키가 회수되거나, 사용자가 믿고 쓸 수 없는 숫자가 나온다.
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. 본인의 과거와만 견준다
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+- 여러 지표를 가중합한 종합 점수를 만들지 않는다. MMR을 대신하는 점수로 읽힌다.
+- 비교 대상은 본인의 과거뿐이다. 앱이 만든 분포에서 몇 등인지도 보여 주지 않는다.
+- 예외는 서로 수락한 친구다. 라이벌 대결과 친구 비교는 그 친구들끼리만 줄을 세운다.
+- KDA는 "KDA"라고만 부르고 "평점"이라 부르지 않는다. KDA와 승률의 구간 색은 사용자 결정으로 둔 예외이고, 구간 경계를 바꾸거나
+  구간에 이름을 붙이기 전에 사용자에게 묻는다.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+까닭: Riot 프로덕션 키 승인 조건이고, 신청서에 "compared against the player's own past"라고 적었다.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. 게임 결정을 대신하지 않는다
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+- "밴달 쓰세요"처럼 무엇을 하라고 정해 주지 않는다. "3주 전부터 팬텀 비중이 늘었어요"처럼 사실만 짚는다.
+- "추천"이라는 말을 쓰지 않는다. 요원을 짚을 때는 둘 이상일 때만 적는다.
+- 상점 조회, 스카우팅, 인게임 오버레이, 닉네임 변경 이력은 만들지 않는다.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+까닭: Riot 정책은 중요한 결정을 짚되 선택지를 여럿 주라고 한다("may highlight decisions that are important and give
+multiple choices").
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### III. 서로 수락한 친구에게만 보인다
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+- 닉네임 검색이 없다. 친구는 같이 뛴 경기의 스코어보드나 초대 링크로만 추가한다.
+- 프로필과 경기는 서로 수락한 친구끼리만 본다. 친구가 전적 공개를 끄면 볼 수 없다.
+- 앱을 쓰지 않는 사람은 내가 뛴 경기 안의 기록까지만 보여 준다. 다른 경기, 통산 승률, 티어 추이는 보여 주지 않는다.
+- 내가 뛰지 않은 친구 경기는 친구와 나 말고 모두 가린다.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+까닭: Riot 정책과 개인정보 보호. 같이 뛰지 않은 사람을 찾아볼 수 있으면 스카우팅이 된다.
+
+### IV. Riot 데이터와 비밀을 밖으로 내보내지 않는다
+
+- RSO 인증 전에는 어떤 전적도 요청하지 않는다. 앱은 비밀번호를 만지지 않고 RSO는 Custom Tabs로 띄운다.
+- Riot이 준 값(PUUID, Riot ID, 친구 이름, 경기와 파티 모집 ID, 티어, 요원·맵·무기, 지표 값)은 사용 통계, 비정상 종료 보고,
+  피드백 메일에 넣지 않는다.
+- Riot 키, RSO `client_secret` 같은 비밀값은 서버에만 둔다. 세션 토큰과 로그인 코드는 해시만 저장한다.
+- Riot 비공식 앱이라는 고지는 개발자 포털이 지정한 영문 원문 그대로 인트로와 설정 하단에 둔다.
+
+까닭: Riot 약관은 게임 정보를 허락받지 않은 곳으로 내보내지 말라고 하고, 신청서에 앱이 비밀번호를 만지지 않는다고 적었다.
+
+### V. 무료로 다 쓰고, 수익은 승인 뒤에 낸다
+
+- 모든 기능을 무료로 쓸 수 있다. 무료 등급에 광고는 넣을 수 있다.
+- 수익은 개발자 포털에서 제품이 Approved나 Acknowledged가 된 뒤에만 낸다. 실제 광고 단위 ID는 승인 뒤 제품 설명에 광고를 적고
+  나서 넣는다.
+- 광고를 봐야 기능이 열리는 보상형 광고는 넣지 않는다. "24시간 광고 없이 보기"는 Riot 데이터를 잠그지 않아 예외다.
+
+까닭: Riot 정책이 허락하는 수익 방법은 구독, 후원, 크라우드펀딩 같은 것뿐이다.
+
+### VI. 돈이 드는 것을 쓰지 않는다
+
+- 백엔드는 카드 등록 없이 쓸 수 있고 한도를 넘으면 과금이 아니라 차단되는 무료 한도 안에서 돈다.
+- 앱과 서버에 들어가는 라이브러리와 폰트는 상업 이용이 무료인 라이선스(Apache-2.0, MIT, SIL OFL)만 쓴다. Google 서비스
+  셋(Firebase, FCM, AdMob)은 사용자 결정으로 둔 예외다.
+- 유료 SDK, 유료 분석 도구, 유료 CI를 넣지 않는다. 유료 구간이 있는 선택지는 제안하기 전에 무료 한도부터 적는다.
+- 피할 수 없는 비용은 출시 직전의 Google Play 개발자 등록 25달러 하나다.
+
+까닭: 개인이 비용 없이 운영할 수 있어야 한다.
+
+### VII. 숫자는 정직하게 세고, Riot 호출은 아낀다
+
+- 총량을 더한 뒤 나눈다. 평균의 평균을 만들지 않는다.
+- 분모가 0이면 비워 둔다. 0으로 채우지 않는다.
+- 변화량은 화면에 보이는 자릿수로 반올림한 값끼리 뺀다.
+- 공식 기준이 없어 정한 숫자는 "시작 기준선"이라고 적고 실데이터를 보고 조정한다.
+- 끝난 경기는 한 번 받아 저장하면 다시 요청하지 않는다. Riot 레이트 리밋은 앱 전체가 나눠 쓴다.
+
+까닭: 숫자가 틀리면 앱을 믿을 수 없고, 한 사람의 낭비가 모두의 몫을 줄인다.
+
+## 제품 범위
+
+- 앱은 최근 경기에서 지표가 어떻게 움직였는지 보여 주고 그 주에 무엇이 달라졌는지 짚는다. 경기와 친구, 파티 모집(ㅇㅂㅇ)이
+  그 둘레의 기능이다.
+- 출시는 안드로이드만 한다. iOS는 시뮬레이터에서 도는 데까지다.
+- 화면에 뜨는 말은 사용자가 실제로 쓰는 말(요원, 경기, 첫 킬)로 쓰고 말투는 해요체다. 법적 고지만 합니다체다.
+
+## 문서와 결정
+
+- 이 저장소가 구현의 기준이다. 규칙은 `CLAUDE.md`, `docs/screens.md`, `docs/design.md`, `docs/backend.md`에 두고, 기획과 달라진
+  결정은 날짜와 까닭을 붙여 `docs/DECISIONS.md`에 남긴다.
+- Spec Kit 문서(`specs/`)는 위 규칙 문서와 어긋나면 안 된다. 어긋나면 어느 쪽이 맞는지 정하고 같은 커밋에서 다른 쪽을 고친다.
+- "사용자 결정"이라 적힌 규칙은 사용자가 다른 안과 견줘 고른 것이다. 묻기 전에 되돌리지 않는다.
+- 심사에 낸 화면 목업 아티팩트, 기획 정리, 프로덕션 키 신청서, `site/index.html`(ovalit.netlify.app의 목업)과 `site/riot.txt`는
+  고치지 않는다. 심사자가 신청서와 목업을 나란히 놓고 본다.
+- 새 디자인은 Figma 파일에서 따로 진행하고, 심사에 낸 목업에서 벗어나는 화면은 사용자에게 묻고 `docs/DECISIONS.md`에 남긴다.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- 이 헌법은 `CLAUDE.md`의 "지켜야 할 선"과 같은 내용을 담는다. 둘 중 하나를 바꾸면 같은 커밋에서 다른 하나도 고친다.
+- 원칙을 바꾸려면 사용자가 정하고, 바꾼 까닭을 `docs/DECISIONS.md`에 적는다. Riot 정책에서 온 원칙(I~V)은 Riot의 정책이나
+  승인 조건이 바뀌었을 때만 바꾼다.
+- 버전은 유의적 버전을 따른다. 원칙을 빼거나 뜻을 바꾸면 MAJOR, 원칙이나 절을 더하거나 크게 넓히면 MINOR, 표현만 다듬으면
+  PATCH다.
+- 모든 스펙과 계획은 Constitution Check에서 이 원칙을 하나씩 확인한다. 어기는 부분이 있으면 그 까닭과 사용자 결정을 함께 적는다.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-10-30 | **Last Amended**: 2026-10-30

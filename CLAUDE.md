@@ -239,8 +239,8 @@ Google 서비스 셋은 무료로 쓰는 독점 라이선스 SDK라 라이선스
   - 화면 이름은 고정된 표로 보낸다(`screenName`). 경로 키를 그대로 쓰면 친구와 경기 ID가 섞인다. 이벤트는 `AnalyticsEvents`에
     모으고 받은 경기 수 같은 값은 구간으로만 보낸다.
 - 광고는 AdMob 네이티브 광고다. 가입과 지급에 카드 등록이 필요 없다. 광고 단위 ID는 `admob.appId`, `admob.nativeUnitId`,
-  `admob.rewardedUnitId`이고, 없으면 광고를 요청하지 않아 광고 자리가 없다. 디버그 빌드는 `admob.test=true`나
-  `-Povalit.ads.test=true`로 Google 테스트 광고만 받는다. SDK가 광고 ID 권한(AD_ID)을 붙이니 Play 데이터 보안에 적고 출시 전에
+  `admob.rewardedUnitId`이고, 없으면 광고를 요청하지 않아 광고 자리가 없다. 개발 빌드(디버그, benchmark)는
+  `admob.test=true`나 `-Povalit.ads.test=true`로 Google 테스트 광고만 받는다. SDK가 광고 ID 권한(AD_ID)을 붙이니 Play 데이터 보안에 적고 출시 전에
   동의 창(UMP)을 붙인다.
 
 ## 데이터

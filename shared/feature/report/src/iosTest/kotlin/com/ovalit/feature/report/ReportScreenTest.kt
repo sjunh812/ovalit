@@ -1185,30 +1185,32 @@ class ReportScreenTest {
         onNodeWithText("킬 ÷", substring = true).assertDoesNotExist()
     }
 
-    // 위 칸들은 모두 이번 주 숫자라 이번 액트로 견준 문장은 제목으로 떼고 몇 경기로 견줬는지 적는다
+    // 위 칸들은 모두 이번 주 숫자라 이번 액트로 견준 문장은 제목으로 떼고 몇 경기로 견줬는지 적는다.
+    // 이번 주 요원과 무기는 이번 주 카드라 액트 단위인 돌아보기보다 먼저 둔다.
     @Test
-    fun `개선 포인트는 이번 액트 돌아보기 묶음으로 달라진 점과 이번 주 요원 사이에 둔다`() = runComposeUiTest {
+    fun `개선 포인트는 이번 액트 돌아보기 묶음으로 이번 주 무기 밑에 둔다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
         val dynamic = onNodeWithText("달라진 점").getUnclippedBoundsInRoot()
+        val agents = onNodeWithText("이번 주 요원", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val weapons = onNodeWithText("이번 주 무기", useUnmergedTree = true).getUnclippedBoundsInRoot()
         val title = onNodeWithText("이번 액트 돌아보기").getUnclippedBoundsInRoot()
         val headline = onNodeWithText("공격에서 첫 교전 승률이 수비보다 14%p 높아요.").getUnclippedBoundsInRoot()
-        val agents = onNodeWithText("이번 주 요원", useUnmergedTree = true).getUnclippedBoundsInRoot()
         onNodeWithText("33경기", useUnmergedTree = true).assertExists()
-        assertTrue(dynamic.bottom <= title.top && title.bottom <= headline.top && headline.bottom <= agents.top)
+        assertTrue(dynamic.bottom <= agents.top && agents.bottom <= weapons.top && weapons.bottom <= title.top && title.bottom <= headline.top)
     }
 
-    // 광고는 이번 주 숫자를 다 본 바로 뒤에 둔다.
-    // 기간, 고정 칸, 달라진 점 사이에는 두지 않는다.
+    // 광고는 첫 화면에서 보이게 이번 주 카드 바로 밑에 둔다.
+    // 이번 주 카드 안(기간, 짚을 점, 고정 칸 사이)에는 두지 않는다.
     @Test
-    fun `홈 광고는 달라진 점과 이번 액트 돌아보기 사이에 둔다`() = runComposeUiTest {
+    fun `홈 광고는 이번 주 카드와 달라진 점 사이에 둔다`() = runComposeUiTest {
         setContent { CompositionLocalProvider(LocalAdRenderer provides LabelAds) { Report(ReportPreviewData.moved) } }
 
         val fixed = onNodeWithText("전투점수", useUnmergedTree = true).getUnclippedBoundsInRoot()
-        val dynamic = onNodeWithText("달라진 점", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val trend = onNodeWithText("지난 8주 흐름 한눈에 보기", substring = true, useUnmergedTree = true).getUnclippedBoundsInRoot()
         val ad = onNodeWithText("광고 HOME", useUnmergedTree = true).getUnclippedBoundsInRoot()
-        val insight = onNodeWithText("이번 액트 돌아보기", useUnmergedTree = true).getUnclippedBoundsInRoot()
-        assertTrue(fixed.bottom <= dynamic.top && dynamic.bottom <= ad.top && ad.bottom <= insight.top)
+        val dynamic = onNodeWithText("달라진 점", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        assertTrue(fixed.bottom <= trend.top && trend.bottom <= ad.top && ad.bottom <= dynamic.top)
     }
 
     // 한 주 경기를 둘로 나누면 우연한 차이가 대부분이라 이번 액트 경기로 견준다

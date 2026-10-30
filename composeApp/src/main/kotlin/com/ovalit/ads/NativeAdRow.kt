@@ -77,9 +77,10 @@ internal fun NativeAdRow(ad: NativeAd, verticalPadding: Dp, onClose: () -> Unit)
             }
             Column(modifier = Modifier.weight(1f)) {
                 AdAsset(adView, register = { headlineView = it }) {
+                    // 경기 줄 이름처럼 Medium이다(docs/design.md 굵기 표)
                     OvalitText(
                         text = ad.headline.orEmpty(),
-                        style = OvalitTheme.typography.bodyStrong,
+                        style = OvalitTheme.typography.body.copy(fontWeight = FontWeight.Medium),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )

@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.ApplicationBuildType
 import java.util.Properties
 
 plugins {
@@ -67,17 +68,20 @@ android {
         buildConfig = true
     }
 
+    // 개발 빌드(디버그, benchmark)에서 광고 자리를 보려면 local.properties에 admob.test=true를 두거나 -Povalit.ads.test=true로 빌드한다.
+    // Google 테스트 광고만 받는다.
+    // 릴리스는 이 값을 보지 않는다.
+    val testAds = (findProperty("ovalit.ads.test") ?: localProperty("admob.test"))?.toString() == "true"
+    fun ApplicationBuildType.useTestAds() {
+        if (!testAds) return
+        manifestPlaceholders["admobAppId"] = ADMOB_TEST_APP_ID
+        buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", "\"$ADMOB_TEST_NATIVE_UNIT_ID\"")
+        buildConfigField("String", "ADMOB_REWARDED_UNIT_ID", "\"$ADMOB_TEST_REWARDED_UNIT_ID\"")
+    }
+
     buildTypes {
-        // 디버그 빌드에서 광고 자리를 보려면 local.properties에 admob.test=true를 두거나 -Povalit.ads.test=true로 빌드한다.
-        // Google 테스트 광고만 받는다.
-        // 릴리스는 이 값을 보지 않는다.
         debug {
-            val testAds = (findProperty("ovalit.ads.test") ?: localProperty("admob.test"))?.toString() == "true"
-            if (testAds) {
-                manifestPlaceholders["admobAppId"] = ADMOB_TEST_APP_ID
-                buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", "\"$ADMOB_TEST_NATIVE_UNIT_ID\"")
-                buildConfigField("String", "ADMOB_REWARDED_UNIT_ID", "\"$ADMOB_TEST_REWARDED_UNIT_ID\"")
-            }
+            useTestAds()
         }
         release {
             isMinifyEnabled = true
@@ -94,6 +98,7 @@ android {
             initWith(getByName("release"))
             signingConfig = signingConfigs.getByName("debug")
             matchingFallbacks += listOf("release")
+            useTestAds()
             // 개발 기기에서 속도를 보는 빌드라 Crashlytics에 매핑 파일을 올리지 않는다.
             // 올리는 건 릴리스뿐이다.
             (this as ExtensionAware).extensions.findByName("firebaseCrashlytics")?.withGroovyBuilder {

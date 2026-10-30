@@ -332,19 +332,20 @@ private fun ReportContent(
     }
 
     if (queueFilter.hasDynamicMetrics) {
+        // 광고는 첫 화면에서 보이게 이번 주 카드와 달라진 점 사이에 카드 하나로 둔다(사용자 결정).
+        // 카드 안(기간, 짚을 점, 고정 칸 사이)에는 두지 않는다(docs/screens.md).
+        AdSlot(AdPlacement.HOME) { ad -> OvalitCard { ad() } }
         if (dynamicShown) {
             OvalitStage { OvalitCard { DynamicMetricSection(report, onOpenMetric = { openDynamic = it }, subLines = subLines) } }
         }
-        // 광고는 이번 주 숫자(기간, 고정 칸, 달라진 점)를 다 본 바로 뒤에 둔다.
-        // 그 사이에는 두지 않는다(docs/screens.md).
-        AdSlot(AdPlacement.HOME) { ad -> OvalitCard { ad() } }
+        // 이번 주 요원과 무기는 이번 주 카드라 액트 단위인 돌아보기보다 먼저 둔다(사용자 결정).
+        // S6과 S7이 경쟁 + 일반만 보니 기타 모드에는 두지 않는다.
+        OvalitStage { PeriodPicksSection(report, catalog, onOpenAgents = onOpenAgents, onOpenWeapons = onOpenWeapons) }
         report.insight?.let { insight ->
             OvalitStage {
                 OvalitCard { InsightSection(insight = insight, role = report.mainRole, period = report.period, catalog = catalog) }
             }
         }
-        // S6과 S7이 경쟁 + 일반만 보니 기타 모드에는 두지 않는다
-        OvalitStage { PeriodPicksSection(report, catalog, onOpenAgents = onOpenAgents, onOpenWeapons = onOpenWeapons) }
         rival?.let {
             OvalitStage { OvalitCard { RivalSection(report = report, mine = report.metrics, rival = it) } }
         }

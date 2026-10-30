@@ -156,7 +156,7 @@
     <string name="insight_reason_focus">「%1$s」を選んだので優先して見ました。</string>
     <string name="insight_reason_role">%1$sにとって%2$sは優先して見る指標です。</string>
     <string name="insight_metric_multi_kill">マルチキルラウンド率</string>
-    <string name="gap_percent">%1$spt</string>
+    <string name="gap_percent">%1$s%</string>
     <!-- 라이벌과 친구 비교 -->
     <string name="rival_title">ライバル · %1$s</string>
     <string name="rival_lead">%1$d項目中%2$d項目リード</string>

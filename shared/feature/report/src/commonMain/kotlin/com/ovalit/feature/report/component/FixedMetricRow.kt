@@ -60,7 +60,7 @@ internal fun FixedMetricRow(
     fixedMetrics: List<FixedMetric>,
     onOpenMetric: (FixedMetric) -> Unit,
     modifier: Modifier = Modifier,
-    subLines: List<Pair<String?, String>>? = null,
+    lines: List<MetricLineText>? = null,
     highlighted: FixedMetric? = null,
 ) {
     val typography = OvalitTheme.typography
@@ -74,8 +74,7 @@ internal fun FixedMetricRow(
         val cellWidth = (currentMaxWidth - OvalitSpacing.gutter * 2 - gaps) / perRow
         val styles = FixedCellStyles(
             label = rememberFittingStyle(cells.map { it.label }, typography.caption, cellWidth - ChevronSpace),
-            value = rememberFittingStyle(cells.map { it.value }, typography.metricM, cellWidth, min = 14.sp),
-            subLine = rememberSubLineStyle(subLines ?: cells.map { it.change to it.usual }, cellWidth),
+            line = rememberMetricLineStyle(lines ?: cells.map { MetricLineText(it.value, it.change, it.usual) }, cellWidth),
         )
         Column(verticalArrangement = Arrangement.spacedBy(MetricRowGap)) {
             cells.chunked(perRow).forEach { row ->
@@ -115,12 +114,12 @@ internal fun FixedMetricRow(
 }
 
 /**
- * 고정 칸마다 숫자 밑 한 줄의 변화량과 평소 값 글자입니다.
- * 달라진 점과 같은 크기를 쓰려고 홈이 모읍니다([rememberSubLineStyle]).
+ * 고정 칸마다 숫자, 변화량, 평소 값 글자입니다.
+ * 달라진 점과 같은 크기를 쓰려고 홈이 모읍니다([rememberMetricLineStyle]).
  */
 @Composable
-internal fun fixedSubLines(metrics: MatchMetrics, baseline: Baseline?, fixedMetrics: List<FixedMetric>): List<Pair<String?, String>> =
-    fixedCells(metrics, baseline, fixedMetrics).map { it.change to it.usual }
+internal fun fixedMetricLines(metrics: MatchMetrics, baseline: Baseline?, fixedMetrics: List<FixedMetric>): List<MetricLineText> =
+    fixedCells(metrics, baseline, fixedMetrics).map { MetricLineText(it.value, it.change, it.usual) }
 
 @Composable
 private fun fixedCells(metrics: MatchMetrics, baseline: Baseline?, fixedMetrics: List<FixedMetric>): List<FixedCell> {
@@ -150,7 +149,7 @@ private class FixedCell(
     val usual: String,
 )
 
-private class FixedCellStyles(val label: TextStyle, val value: TextStyle, val subLine: MetricSubLineStyle)
+private class FixedCellStyles(val label: TextStyle, val line: MetricLineStyle)
 
 @Composable
 private fun FixedMetricCell(
@@ -185,14 +184,15 @@ private fun FixedMetricCell(
         }
         // 달라진 점 칸과 같은 간격이다
         Spacer(Modifier.height(6.dp))
-        OvalitRollingText(
-            text = cell.value,
-            style = styles.value.copy(fontWeight = if (highlighted) FontWeight.Bold else FontWeight.SemiBold),
-            color = cell.valueColor,
-            autoSize = shrinkToFit(styles.value.fontSize, min = 14.sp),
-        )
-        Spacer(Modifier.height(2.dp))
-        MetricSubLine(cell.change, cell.changeColor, cell.usual, styles.subLine)
+        MetricValueLines(styles.line, cell.change, cell.changeColor, cell.usual) { valueModifier, valueStyle ->
+            OvalitRollingText(
+                text = cell.value,
+                modifier = valueModifier,
+                style = valueStyle.copy(fontWeight = if (highlighted) FontWeight.Bold else FontWeight.SemiBold),
+                color = cell.valueColor,
+                autoSize = shrinkToFit(valueStyle.fontSize, min = 14.sp),
+            )
+        }
     }
 }
 

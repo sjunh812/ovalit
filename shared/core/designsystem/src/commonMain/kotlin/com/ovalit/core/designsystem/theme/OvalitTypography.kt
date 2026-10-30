@@ -82,7 +82,8 @@ fun ovalitTypography(fontFamily: FontFamily = FontFamily.Default, locale: Locale
         // 한 화면에 여덟 개가 모여서 Bold면 무겁고 홈 기간 제목(titleM)보다는 커야 한다.
         metricM = metric(size = 22, lineHeight = 26, tracking = -0.5),
         metricS = metric(size = 13, lineHeight = 18, tracking = 0.0),
-        delta = metric(size = 14, lineHeight = 19, tracking = 0.0).copy(fontWeight = FontWeight.Normal),
+        // 홈 칸의 숫자 밑 한 줄은 384dp 폰에서 칸이 93dp라 13보다 키우면 한 줄에 들지 않는다
+        delta = metric(size = 13, lineHeight = 18, tracking = 0.0).copy(fontWeight = FontWeight.Normal),
         // 화면 제목과 프로필 이름은 titleL이다.
         // 그보다 큰 곳(온보딩 헤드라인, S3 맵 이름, S7 주 역할)만 display를 쓴다.
         display = text(size = 26, lineHeight = 35, tracking = -0.6, weight = FontWeight.Bold, lineBreak = KoreanLineBreak),
@@ -92,7 +93,8 @@ fun ovalitTypography(fontFamily: FontFamily = FontFamily.Default, locale: Locale
         bodyStrong = text(size = 15, lineHeight = 23, tracking = -0.1, weight = FontWeight.SemiBold),
         cardTitle = text(size = 17, lineHeight = 24, tracking = -0.2, weight = FontWeight.Bold, lineBreak = KoreanLineBreak),
         button = text(size = 17, lineHeight = 24, tracking = -0.2, weight = FontWeight.SemiBold, lineBreak = KoreanLineBreak),
-        label = text(size = 14, lineHeight = 19, tracking = 0.0, weight = FontWeight.Medium),
+        // 짚을 점 근거 줄처럼 반쪽 폭에 이름과 숫자를 나란히 두는 곳이 있어 13이다
+        label = text(size = 13, lineHeight = 18, tracking = 0.0, weight = FontWeight.Medium),
         // 토스는 가장 작은 13을 안 읽어도 되는 글에 쓴다.
         // 이 앱의 작은 글씨(평소 값, 기간, 표본)는 읽어야 하는 글이라 12보다 작게 두지 않는다.
         caption = text(size = 13, lineHeight = 18, tracking = 0.1, weight = FontWeight.Normal),

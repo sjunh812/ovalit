@@ -276,9 +276,9 @@ class ReportScreenTest {
         onNodeWithText("판당 ${perMatch(metrics.kills)}킬 · ${perMatch(metrics.deaths)}데스 · ${perMatch(metrics.assists)}어시").assertExists()
     }
 
-    // 변화량이 무엇과 견준 값인지 옆의 평소 값이 말한다
+    // 숫자와 변화량을 한 덩어리로 읽고 무엇과 견줬는지는 밑의 평소 값이 조용히 말한다(사용자 결정)
     @Test
-    fun `고정 칸 숫자 밑에 변화량과 평소 값을 나란히 둔다`() = runComposeUiTest {
+    fun `고정 칸은 숫자 옆에 변화량을 두고 밑에 평소 값을 둔다`() = runComposeUiTest {
         val report = ReportPreviewData.moved
         setContent { Report(report) }
 
@@ -287,13 +287,14 @@ class ReportScreenTest {
         val usualBounds = onNodeWithText(usual, useUnmergedTree = true).getUnclippedBoundsInRoot()
         val value = onNodeWithText(MetricFormat.INTEGER.valueTextFor(assertNotNull(report.metrics.acs)), useUnmergedTree = true)
             .getUnclippedBoundsInRoot()
-        assertTrue(changeBounds.top >= value.bottom, "변화량이 숫자 밑에 없다")
-        assertTrue(usualBounds.left > changeBounds.right && usualBounds.top < changeBounds.bottom, "평소 값이 변화량 옆에 없다")
+        assertTrue(changeBounds.left > value.right && changeBounds.top < value.bottom, "변화량이 숫자 옆에 없다")
+        assertTrue(usualBounds.top >= value.bottom, "평소 값이 숫자 밑에 없다")
     }
 
-    // 한 칸만 두 줄이 되면 그 칸만 높아져 줄이 어긋난다
+    // 숫자 옆에 변화량이 안 들어가면 평소 값 앞으로 내린다.
+    // 한 칸만 내리면 그 칸만 높아져 줄이 어긋난다.
     @Test
-    fun `칸이 좁으면 변화량과 평소 값을 모든 칸에서 두 줄로 내린다`() = runComposeUiTest {
+    fun `칸이 좁으면 모든 칸에서 변화량을 숫자 밑으로 내린다`() = runComposeUiTest {
         val report = ReportPreviewData.moved
         setContent {
             CompositionLocalProvider(LocalDensity provides Density(density = 2f, fontScale = 2f)) {
@@ -301,15 +302,16 @@ class ReportScreenTest {
             }
         }
 
-        val (change, usual) = combatSubLine(report)
+        val (change, _) = combatSubLine(report)
         val changeBounds = onNodeWithText(change, useUnmergedTree = true).getUnclippedBoundsInRoot()
-        val usualBounds = onNodeWithText(usual, useUnmergedTree = true).getUnclippedBoundsInRoot()
-        assertTrue(usualBounds.top >= changeBounds.bottom, "좁은데 평소 값이 변화량 옆에 끼었다")
+        val value = onNodeWithText(MetricFormat.INTEGER.valueTextFor(assertNotNull(report.metrics.acs)), useUnmergedTree = true)
+            .getUnclippedBoundsInRoot()
+        assertTrue(changeBounds.top >= value.bottom, "좁은데 변화량이 숫자 옆에 끼었다")
     }
 
-    // 카드마다 따로 정하면 폭이 좁은 기기에서 글자가 한 자 긴 달라진 점만 두 줄로 내려가 위 고정 칸과 어긋난다
+    // 카드마다 따로 정하면 폭이 좁은 기기에서 글자가 한 자 긴 달라진 점만 변화량이 내려가 위 고정 칸과 어긋난다
     @Test
-    fun `고정 칸과 달라진 점은 숫자 밑 한 줄을 같은 크기 같은 줄 수로 둔다`() {
+    fun `고정 칸과 달라진 점은 변화량을 같은 크기 같은 자리에 둔다`() {
         listOf(360 to 1f, 320 to 1.15f, 300 to 1.3f, 300 to 2f).forEach { (width, fontScale) ->
             runComposeUiTest {
                 setContent {
@@ -328,7 +330,7 @@ class ReportScreenTest {
                 val beside = usuals.map { usual ->
                     changes.any { change -> change.right <= usual.left && change.top < usual.bottom && change.bottom > usual.top }
                 }
-                assertEquals(1, beside.distinct().size, "${width}dp ×$fontScale: 어떤 칸만 두 줄이다")
+                assertEquals(1, beside.distinct().size, "${width}dp ×$fontScale: 어떤 칸만 변화량이 내려갔다")
                 assertEquals(1, usuals.map { it.height }.distinct().size, "${width}dp ×$fontScale: 칸마다 글자 크기가 다르다")
             }
         }
@@ -937,7 +939,7 @@ class ReportScreenTest {
         val insight = sideInsight(InsightMetric.MULTI_KILL_RATE, lead = 0.30 to 40, other = 0.05 to 40, focus = Focus.AIM)
         setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
 
-        onNodeWithText("공격에서 멀티킬 라운드 비율이 수비보다 25%p 높아요.").assertExists()
+        onNodeWithText("공격에서 멀티킬 라운드 비율이 수비보다 25% 높아요.").assertExists()
         onNode(actLine("공격" to "30%", "수비" to "5%", "80라운드")).assertExists()
         onNodeWithText("에임 올리기를 고르셔서 먼저 봤어요.").assertExists()
     }
@@ -954,7 +956,7 @@ class ReportScreenTest {
         )
         setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
 
-        onNodeWithText("제트로 뛴 판은 생존율이 레이즈보다 25%p 높아요.").assertExists()
+        onNodeWithText("제트로 뛴 판은 생존율이 레이즈보다 25% 높아요.").assertExists()
         onNode(actLine("제트" to "75%", "레이즈" to "50%", "15판")).assertExists()
     }
 
@@ -969,7 +971,7 @@ class ReportScreenTest {
         )
         setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
 
-        onNodeWithText("레이즈로 뛴 판은 관여율이 다른 타격대 요원보다 14%p 낮아요.").assertExists()
+        onNodeWithText("레이즈로 뛴 판은 관여율이 다른 타격대 요원보다 14% 낮아요.").assertExists()
     }
 
     // 역할끼리는 승률만 견주고, 우연을 넘을 만큼 차이가 클 때만 나온다.
@@ -985,7 +987,7 @@ class ReportScreenTest {
         )
         setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
 
-        onNodeWithText("전략가로 뛴 판은 승률이 타격대보다 44%p 높아요.").assertExists()
+        onNodeWithText("전략가로 뛴 판은 승률이 타격대보다 44% 높아요.").assertExists()
         onNodeWithText("추천", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
@@ -1006,7 +1008,7 @@ class ReportScreenTest {
         )
         setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
 
-        onNodeWithText("연달아 뛴 세 번째 판부터는 관여율이 첫 두 판보다 12%p 낮아요.").assertExists()
+        onNodeWithText("연달아 뛴 세 번째 판부터는 관여율이 첫 두 판보다 12% 낮아요.").assertExists()
         onNode(actLine("세 번째 판부터" to "61%", "첫 두 판" to "73%", "50판")).assertExists()
         onNodeWithText(recentLine("이번 주", "세 번째 판부터" to "55%", "첫 두 판" to "70%", "14판")).assertExists()
         onNodeWithText("쉬", substring = true, useUnmergedTree = true).assertDoesNotExist()
@@ -1036,13 +1038,13 @@ class ReportScreenTest {
         var insight by mutableStateOf(map)
         setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
 
-        onNodeWithText("헤이븐에서는 관여율이 다른 맵보다 14%p 낮아요.").assertExists()
+        onNodeWithText("헤이븐에서는 관여율이 다른 맵보다 14% 낮아요.").assertExists()
         onNode(actLine("헤이븐" to "58%", "다른 맵" to "72%", "50판")).assertExists()
         insight = rifles
-        onNodeWithText("밴달을 든 라운드는 헤드샷이 다른 소총보다 11%p 낮아요.").assertExists()
+        onNodeWithText("밴달을 든 라운드는 헤드샷이 다른 소총보다 11% 낮아요.").assertExists()
         onNode(actLine("밴달" to "14%", "다른 소총" to "25%", "392라운드")).assertExists()
         insight = twoRifles
-        onNodeWithText("팬텀을 든 라운드는 헤드샷이 밴달보다 11%p 높아요.").assertExists()
+        onNodeWithText("팬텀을 든 라운드는 헤드샷이 밴달보다 11% 높아요.").assertExists()
     }
 
     // 근거 두 칸을 한 줄에 나란히 두어 고정 칸이 덜 내려가게 한다
@@ -1153,7 +1155,7 @@ class ReportScreenTest {
     }
 
     // 21.4%와 21.2%는 둘 다 21%로 보인다.
-    // "0%p 올랐어요"라고 쓰지 않고, 빈 칸 몫의 간격도 남기지 않는다.
+    // "0% 올랐어요"라고 쓰지 않고 빈 칸 몫의 간격도 남기지 않는다.
     @Test
     fun `보이는 자릿수로 차이가 없으면 짚을 점을 두지 않는다`() = runComposeUiTest {
         val flat = WeekNote(MovedMetric(FixedMetric.HEADSHOT_RATE, current = 0.214, usual = 0.212))
@@ -1216,7 +1218,7 @@ class ReportScreenTest {
         val agents = onNodeWithText("이번 주 요원", useUnmergedTree = true).getUnclippedBoundsInRoot()
         val weapons = onNodeWithText("이번 주 무기", useUnmergedTree = true).getUnclippedBoundsInRoot()
         val title = onNodeWithText("이번 액트 돌아보기").getUnclippedBoundsInRoot()
-        val headline = onNodeWithText("공격에서 첫 교전 승률이 수비보다 14%p 높아요.").getUnclippedBoundsInRoot()
+        val headline = onNodeWithText("공격에서 첫 교전 승률이 수비보다 14% 높아요.").getUnclippedBoundsInRoot()
         onNodeWithText("33경기", useUnmergedTree = true).assertExists()
         assertTrue(dynamic.bottom <= agents.top && agents.bottom <= weapons.top && weapons.bottom <= title.top && title.bottom <= headline.top)
     }
@@ -1239,7 +1241,7 @@ class ReportScreenTest {
     fun `개선 포인트는 이번 액트 공수를 높은 쪽부터 사실만 적는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        onNodeWithText("공격에서 첫 교전 승률이 수비보다 14%p 높아요.").assertExists()
+        onNodeWithText("공격에서 첫 교전 승률이 수비보다 14% 높아요.").assertExists()
         onNode(actLine("공격" to "58%", "수비" to "44%", "776라운드")).assertExists()
         onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요.").assertExists()
     }
@@ -1302,7 +1304,7 @@ class ReportScreenTest {
         }
         setContent { Report(report) }
 
-        onNodeWithText("수비에서 첫 교전 승률이 공격보다 14%p 높아요.").assertExists()
+        onNodeWithText("수비에서 첫 교전 승률이 공격보다 14% 높아요.").assertExists()
     }
 
     @Test
@@ -1654,5 +1656,5 @@ private fun Social(
 // 친구1이 가장 높다.
 private val ManyFriends = ReportPreviewData.manyFriends(150)
 
-// "+13", "−0.10", "+3%p"처럼 부호로 시작하는 변화량 글자다
+// "+13", "−0.10", "+3%"처럼 부호로 시작하는 변화량 글자다
 private val ChangeText = Regex("^[+−-]\\d.*")

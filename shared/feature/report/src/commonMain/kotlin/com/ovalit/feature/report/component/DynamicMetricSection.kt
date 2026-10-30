@@ -63,7 +63,7 @@ internal fun DynamicMetricSection(
     report: WeeklyReport.Ready,
     modifier: Modifier = Modifier,
     onOpenMetric: (DynamicMetric) -> Unit = {},
-    subLines: List<Pair<String?, String>>? = null,
+    lines: List<MetricLineText>? = null,
 ) {
     val typography = OvalitTheme.typography
     val columns = dynamicColumns(report)
@@ -78,7 +78,6 @@ internal fun DynamicMetricSection(
             val perRow = columns.size.coerceAtMost(MetricColumns)
             val gaps = (MetricColumnGap * 2 + 1.dp) * (perRow - 1)
             val columnWidth = (currentMaxWidth - OvalitSpacing.gutter * 2 - gaps) / perRow
-            val valueStyle = rememberFittingStyle(columns.map { it.value }, typography.metricM, columnWidth, min = 14.sp)
             // 가장 작은 글자로도 한 줄에 안 들어가는 이름이 있으면 모든 칸 이름을 두 줄로 꺾는다.
             // 그때는 가장 긴 어절이 들어가는 크기를 쓴다.
             val labels = columns.map { it.label }
@@ -89,8 +88,7 @@ internal fun DynamicMetricSection(
             val styles = DynamicColumnStyles(
                 label = if (wrapLabels) wordLabel else oneLineLabel,
                 wrapLabels = wrapLabels,
-                value = valueStyle,
-                subLine = rememberSubLineStyle(subLines ?: columns.map { it.change to it.usual }, columnWidth),
+                line = rememberMetricLineStyle(lines ?: columns.map { MetricLineText(it.value, it.change, it.usual) }, columnWidth),
             )
             Column(verticalArrangement = Arrangement.spacedBy(MetricRowGap)) {
                 columns.chunked(perRow).forEach { row ->
@@ -175,17 +173,16 @@ private class DynamicColumn(
 private class DynamicColumnStyles(
     val label: TextStyle,
     val wrapLabels: Boolean,
-    val value: TextStyle,
-    val subLine: MetricSubLineStyle,
+    val line: MetricLineStyle,
 )
 
 /**
- * 칸마다 숫자 밑 한 줄의 변화량과 평소 값 글자입니다.
- * 고정 칸과 같은 크기를 쓰려고 홈이 모읍니다([rememberSubLineStyle]).
+ * 칸마다 숫자, 변화량, 평소 값 글자입니다.
+ * 고정 칸과 같은 크기를 쓰려고 홈이 모읍니다([rememberMetricLineStyle]).
  */
 @Composable
-internal fun dynamicSubLines(report: WeeklyReport.Ready): List<Pair<String?, String>> =
-    dynamicColumns(report).map { it.change to it.usual }
+internal fun dynamicMetricLines(report: WeeklyReport.Ready): List<MetricLineText> =
+    dynamicColumns(report).map { MetricLineText(it.value, it.change, it.usual) }
 
 @Composable
 private fun dynamicColumns(report: WeeklyReport.Ready): List<DynamicColumn> =
@@ -246,16 +243,17 @@ private fun DynamicMetricColumn(
             OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = colors.t4, size = 10.dp)
         }
         Spacer(Modifier.height(6.dp))
-        OvalitRollingText(
-            text = column.value,
-            // 숫자는 고정 칸처럼 Medium이다.
-            // 크게 움직였는지는 변화량의 굵기가 가른다.
-            style = styles.value,
-            color = column.valueColor,
-            autoSize = shrinkToFit(styles.value.fontSize, min = 14.sp),
-        )
-        Spacer(Modifier.height(2.dp))
-        MetricSubLine(column.change, column.changeColor, column.usual, styles.subLine, strong = column.slot.movement == Movement.MOVED)
+        // 숫자와 변화량은 고정 칸과 같은 굵기다.
+        // 크게 움직였는지는 칸을 누르면 뜨는 시트에 적는다.
+        MetricValueLines(styles.line, column.change, column.changeColor, column.usual) { valueModifier, valueStyle ->
+            OvalitRollingText(
+                text = column.value,
+                modifier = valueModifier,
+                style = valueStyle,
+                color = column.valueColor,
+                autoSize = shrinkToFit(valueStyle.fontSize, min = 14.sp),
+            )
+        }
     }
 }
 

@@ -15,7 +15,6 @@
     <string name="metric_headshot_short">HS率</string>
 
     <string name="value_percent">%1$s%</string>
-    <string name="value_percent_point">%1$spt</string>
 
     <string name="role_duelist">デュエリスト</string>
     <string name="role_initiator">イニシエーター</string>

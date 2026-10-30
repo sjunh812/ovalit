@@ -389,7 +389,7 @@ private fun MixGroup.lead(catalog: ContentCatalog): NoteLead? = when (this) {
 }
 
 /**
- * 헤드라인에 넣는 차이 글자("5%p", "21")입니다.
+ * 헤드라인에 넣는 차이 글자("5%", "21")입니다.
  * 차이는 보이는 자릿수로 반올림한 값끼리 뺍니다(CLAUDE.md 지표 규칙).
  */
 @Composable

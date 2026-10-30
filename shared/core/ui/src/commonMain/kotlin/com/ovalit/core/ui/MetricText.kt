@@ -15,7 +15,6 @@ import com.ovalit.core.ui.resources.period_past_weeks
 import com.ovalit.core.ui.resources.period_recent_weeks
 import com.ovalit.core.ui.resources.period_this_week
 import com.ovalit.core.ui.resources.value_percent
-import com.ovalit.core.ui.resources.value_percent_point
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -53,11 +52,11 @@ fun MetricFormat.valueText(value: Double): String =
 
 /**
  * 화면에 띄우는 변화량입니다.
- * 퍼센트 지표는 "+11%p"처럼 단위를 붙입니다.
- * 옆의 "평소 28%"와 같은 단위인지 한 번 더 생각하지 않게 하고 짚을 점 헤드라인("9%p 올랐어요")과 맞춥니다.
+ * 퍼센트 지표는 "+11%"처럼 밑의 "평소 28%"와 같은 단위를 붙입니다(사용자 결정).
+ * 퍼센트포인트라 엄밀히는 "%p"지만 칸이 좁고 바로 밑에 평소 값이 있어 p를 뺍니다.
  */
 @Composable
 fun MetricFormat.changeText(current: Double, baseline: Double): String {
     val change = formatChange(current, baseline)
-    return if (this == MetricFormat.PERCENT) stringResource(Res.string.value_percent_point, change) else change
+    return if (this == MetricFormat.PERCENT) stringResource(Res.string.value_percent, change) else change
 }

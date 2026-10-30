@@ -76,8 +76,8 @@ import com.ovalit.feature.report.component.TrendSheet
 import com.ovalit.feature.report.component.WeekNoteHeadline
 import com.ovalit.feature.report.component.WeekNoteLines
 import com.ovalit.feature.report.component.isShown
-import com.ovalit.feature.report.component.dynamicSubLines
-import com.ovalit.feature.report.component.fixedSubLines
+import com.ovalit.feature.report.component.dynamicMetricLines
+import com.ovalit.feature.report.component.fixedMetricLines
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.not_enough_body
 import com.ovalit.feature.report.resources.not_enough_not_counted
@@ -279,11 +279,11 @@ private fun ReportContent(
     var openDynamic by rememberSaveable { mutableStateOf<DynamicMetric?>(null) }
     var pickingRival by rememberSaveable { mutableStateOf(false) }
 
-    // 고정 칸과 달라진 점은 숫자 밑 한 줄을 같은 크기, 같은 줄 수로 둔다.
-    // 카드마다 따로 정하면 좁은 기기에서 한쪽만 두 줄이 된다.
+    // 고정 칸과 달라진 점은 숫자와 변화량, 평소 값을 같은 크기, 같은 배치로 둔다.
+    // 카드마다 따로 정하면 좁은 기기에서 한쪽만 변화량이 내려간다.
     val dynamicShown = queueFilter.hasDynamicMetrics && report.dynamic.isNotEmpty()
-    val subLines = fixedSubLines(report.metrics, report.baseline, queueFilter.fixedMetrics) +
-        if (dynamicShown) dynamicSubLines(report) else emptyList()
+    val metricLines = fixedMetricLines(report.metrics, report.baseline, queueFilter.fixedMetrics) +
+        if (dynamicShown) dynamicMetricLines(report) else emptyList()
 
     // 짚을 점은 기타 모드에 없다
     val note = report.note?.takeIf { queueFilter.hasDynamicMetrics }
@@ -314,7 +314,7 @@ private fun ReportContent(
                 baseline = report.baseline,
                 fixedMetrics = queueFilter.fixedMetrics,
                 onOpenMetric = { openMetric = it },
-                subLines = subLines,
+                lines = metricLines,
                 highlighted = note?.takeIf { it.isShown }?.moved?.metric,
             )
             FixedMetricSummary(baseline = report.baseline)
@@ -336,7 +336,7 @@ private fun ReportContent(
         // 카드 안(기간, 짚을 점, 고정 칸 사이)에는 두지 않는다(docs/screens.md).
         AdSlot(AdPlacement.HOME) { ad -> OvalitCard { ad() } }
         if (dynamicShown) {
-            OvalitStage { OvalitCard { DynamicMetricSection(report, onOpenMetric = { openDynamic = it }, subLines = subLines) } }
+            OvalitStage { OvalitCard { DynamicMetricSection(report, onOpenMetric = { openDynamic = it }, lines = metricLines) } }
         }
         // 이번 주 요원과 무기는 이번 주 카드라 액트 단위인 돌아보기보다 먼저 둔다(사용자 결정).
         // S6과 S7이 경쟁 + 일반만 보니 기타 모드에는 두지 않는다.

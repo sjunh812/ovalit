@@ -25,21 +25,21 @@
     <string name="dynamic_usual">평소 %1$s</string>
 
     <!-- 이번 주 짚을 점. 움직인 숫자만 적고 "쓰세요", "추천"은 쓰지 않는다 -->
-    <string name="note_up_combat_score">전투점수가 평소보다 %1$s 올랐어요</string>
-    <string name="note_down_combat_score">전투점수가 평소보다 %1$s 떨어졌어요</string>
-    <string name="note_up_kd">K/D가 평소보다 %1$s 올랐어요</string>
-    <string name="note_down_kd">K/D가 평소보다 %1$s 떨어졌어요</string>
-    <string name="note_up_kda">KDA가 평소보다 %1$s 올랐어요</string>
-    <string name="note_down_kda">KDA가 평소보다 %1$s 떨어졌어요</string>
-    <string name="note_up_damage">피해량이 평소보다 %1$s 올랐어요</string>
-    <string name="note_down_damage">피해량이 평소보다 %1$s 떨어졌어요</string>
-    <string name="note_up_headshot">헤드샷이 평소보다 %1$s 올랐어요</string>
-    <string name="note_down_headshot">헤드샷이 평소보다 %1$s 떨어졌어요</string>
-    <string name="note_best_combat_score">전투점수가 평소보다 %1$s 올라 이번 액트 최고예요</string>
-    <string name="note_best_kd">K/D가 평소보다 %1$s 올라 이번 액트 최고예요</string>
-    <string name="note_best_kda">KDA가 평소보다 %1$s 올라 이번 액트 최고예요</string>
-    <string name="note_best_damage">피해량이 평소보다 %1$s 올라 이번 액트 최고예요</string>
-    <string name="note_best_headshot">헤드샷이 평소보다 %1$s 올라 이번 액트 최고예요</string>
+    <string name="note_up_combat_score">전투점수가 평소보다 %1$s 올랐어요.</string>
+    <string name="note_down_combat_score">전투점수가 평소보다 %1$s 떨어졌어요.</string>
+    <string name="note_up_kd">K/D가 평소보다 %1$s 올랐어요.</string>
+    <string name="note_down_kd">K/D가 평소보다 %1$s 떨어졌어요.</string>
+    <string name="note_up_kda">KDA가 평소보다 %1$s 올랐어요.</string>
+    <string name="note_down_kda">KDA가 평소보다 %1$s 떨어졌어요.</string>
+    <string name="note_up_damage">피해량이 평소보다 %1$s 올랐어요.</string>
+    <string name="note_down_damage">피해량이 평소보다 %1$s 떨어졌어요.</string>
+    <string name="note_up_headshot">헤드샷이 평소보다 %1$s 올랐어요.</string>
+    <string name="note_down_headshot">헤드샷이 평소보다 %1$s 떨어졌어요.</string>
+    <string name="note_best_combat_score">전투점수가 평소보다 %1$s 올라 이번 액트 최고예요.</string>
+    <string name="note_best_kd">K/D가 평소보다 %1$s 올라 이번 액트 최고예요.</string>
+    <string name="note_best_kda">KDA가 평소보다 %1$s 올라 이번 액트 최고예요.</string>
+    <string name="note_best_damage">피해량이 평소보다 %1$s 올라 이번 액트 최고예요.</string>
+    <string name="note_best_headshot">헤드샷이 평소보다 %1$s 올라 이번 액트 최고예요.</string>
     <string name="note_case_change">%1$s → %2$s</string>
     <string name="note_mix_buy">%1$s 라운드 비중</string>
     <string name="note_mix_share">%1$s 비중</string>
@@ -141,11 +141,11 @@
     <string name="insight_side_attack">공격</string>
     <string name="insight_side_defense">수비</string>
     <!-- 요원과 역할은 "제트로 뛴 판은", "전략가로 뛴 판은"으로 같은 틀을 쓴다. %5$s는 높아요나 낮아요다. -->
-    <string name="insight_side">%1$s에서 %2$s %3$s보다 %4$s %5$s</string>
-    <string name="insight_played_as">%1$s 뛴 판은 %2$s %3$s보다 %4$s %5$s</string>
-    <string name="insight_map">%1$s에서는 %2$s %3$s보다 %4$s %5$s</string>
-    <string name="insight_weapon">%1$s 든 라운드는 %2$s %3$s보다 %4$s %5$s</string>
-    <string name="insight_session">연달아 뛴 %1$s는 %2$s %3$s보다 %4$s %5$s</string>
+    <string name="insight_side">%1$s에서 %2$s %3$s보다 %4$s %5$s.</string>
+    <string name="insight_played_as">%1$s 뛴 판은 %2$s %3$s보다 %4$s %5$s.</string>
+    <string name="insight_map">%1$s에서는 %2$s %3$s보다 %4$s %5$s.</string>
+    <string name="insight_weapon">%1$s 든 라운드는 %2$s %3$s보다 %4$s %5$s.</string>
+    <string name="insight_session">연달아 뛴 %1$s는 %2$s %3$s보다 %4$s %5$s.</string>
     <string name="insight_higher">높아요</string>
     <string name="insight_lower">낮아요</string>
     <string name="insight_other_agents">다른 %1$s 요원</string>
@@ -158,8 +158,8 @@
     <string name="insight_title_matches">%1$d경기</string>
     <string name="insight_matches">%1$d판</string>
     <string name="insight_rounds">%1$d라운드</string>
-    <string name="insight_reason_focus">%1$s 고르셔서 먼저 봤어요</string>
-    <string name="insight_reason_role">%1$s에게 %2$s 먼저 보는 지표예요</string>
+    <string name="insight_reason_focus">%1$s 고르셔서 먼저 봤어요.</string>
+    <string name="insight_reason_role">%1$s에게 %2$s 먼저 보는 지표예요.</string>
     <string name="insight_metric_multi_kill">멀티킬 라운드 비율</string>
     <string name="gap_percent">%1$s%p</string>
     <!-- 라이벌과 친구 비교 -->

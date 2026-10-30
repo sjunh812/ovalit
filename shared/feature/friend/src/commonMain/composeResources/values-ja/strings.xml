@@ -45,7 +45,7 @@
     <string name="ping_title">今日やる？</string>
     <string name="ping_gone">終了したか、キャンセルされた募集です</string>
     <string name="ping_proposals_title">別の時間の提案</string>
-    <string name="ping_compose_hint">時間を決めて、フレンドを%1$d人まで一度に誘えます</string>
+    <string name="ping_compose_hint">時間を決めて、フレンドを%1$d人まで一度に誘えます。</string>
     <string name="ping_compose_open">パーティー募集</string>
     <string name="ping_compose_title">誰とやりましょうか？</string>
     <string name="ping_reply_yes">行きます</string>

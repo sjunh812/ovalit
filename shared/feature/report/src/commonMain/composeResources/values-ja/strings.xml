@@ -26,21 +26,21 @@
     <string name="dynamic_usual">普段 %1$s</string>
 
     <!-- 이번 주 짚을 점. 움직인 숫자만 적고 결정을 대신하는 말이나 「おすすめ」는 쓰지 않는다 -->
-    <string name="note_up_combat_score">バトルスコアが普段より%1$s上がりました</string>
-    <string name="note_down_combat_score">バトルスコアが普段より%1$s下がりました</string>
-    <string name="note_up_kd">K/Dが普段より%1$s上がりました</string>
-    <string name="note_down_kd">K/Dが普段より%1$s下がりました</string>
-    <string name="note_up_kda">KDAが普段より%1$s上がりました</string>
-    <string name="note_down_kda">KDAが普段より%1$s下がりました</string>
-    <string name="note_up_damage">ダメージが普段より%1$s上がりました</string>
-    <string name="note_down_damage">ダメージが普段より%1$s下がりました</string>
-    <string name="note_up_headshot">ヘッドショット率が普段より%1$s上がりました</string>
-    <string name="note_down_headshot">ヘッドショット率が普段より%1$s下がりました</string>
-    <string name="note_best_combat_score">バトルスコアが普段より%1$s上がり、今ACTの最高記録です</string>
-    <string name="note_best_kd">K/Dが普段より%1$s上がり、今ACTの最高記録です</string>
-    <string name="note_best_kda">KDAが普段より%1$s上がり、今ACTの最高記録です</string>
-    <string name="note_best_damage">ダメージが普段より%1$s上がり、今ACTの最高記録です</string>
-    <string name="note_best_headshot">ヘッドショット率が普段より%1$s上がり、今ACTの最高記録です</string>
+    <string name="note_up_combat_score">バトルスコアが普段より%1$s上がりました。</string>
+    <string name="note_down_combat_score">バトルスコアが普段より%1$s下がりました。</string>
+    <string name="note_up_kd">K/Dが普段より%1$s上がりました。</string>
+    <string name="note_down_kd">K/Dが普段より%1$s下がりました。</string>
+    <string name="note_up_kda">KDAが普段より%1$s上がりました。</string>
+    <string name="note_down_kda">KDAが普段より%1$s下がりました。</string>
+    <string name="note_up_damage">ダメージが普段より%1$s上がりました。</string>
+    <string name="note_down_damage">ダメージが普段より%1$s下がりました。</string>
+    <string name="note_up_headshot">ヘッドショット率が普段より%1$s上がりました。</string>
+    <string name="note_down_headshot">ヘッドショット率が普段より%1$s下がりました。</string>
+    <string name="note_best_combat_score">バトルスコアが普段より%1$s上がり、今ACTの最高記録です。</string>
+    <string name="note_best_kd">K/Dが普段より%1$s上がり、今ACTの最高記録です。</string>
+    <string name="note_best_kda">KDAが普段より%1$s上がり、今ACTの最高記録です。</string>
+    <string name="note_best_damage">ダメージが普段より%1$s上がり、今ACTの最高記録です。</string>
+    <string name="note_best_headshot">ヘッドショット率が普段より%1$s上がり、今ACTの最高記録です。</string>
     <string name="note_case_change">%1$s → %2$s</string>
     <string name="note_mix_buy">%1$sラウンドの割合</string>
     <string name="note_mix_share">%1$sの割合</string>
@@ -138,11 +138,11 @@
          틀에 직접 쓴다. %5$s는 高いです나 低いです다. -->
     <string name="insight_side_attack">攻撃</string>
     <string name="insight_side_defense">防衛</string>
-    <string name="insight_side">%1$sでは%2$sが%3$sより%4$s%5$s</string>
-    <string name="insight_played_as">%1$sでプレイした試合は、%2$sが%3$sより%4$s%5$s</string>
-    <string name="insight_map">%1$sでは%2$sが%3$sより%4$s%5$s</string>
-    <string name="insight_weapon">%1$sを持ったラウンドは、%2$sが%3$sより%4$s%5$s</string>
-    <string name="insight_session">連戦の%1$sは、%2$sが%3$sより%4$s%5$s</string>
+    <string name="insight_side">%1$sでは%2$sが%3$sより%4$s%5$s。</string>
+    <string name="insight_played_as">%1$sでプレイした試合は、%2$sが%3$sより%4$s%5$s。</string>
+    <string name="insight_map">%1$sでは%2$sが%3$sより%4$s%5$s。</string>
+    <string name="insight_weapon">%1$sを持ったラウンドは、%2$sが%3$sより%4$s%5$s。</string>
+    <string name="insight_session">連戦の%1$sは、%2$sが%3$sより%4$s%5$s。</string>
     <string name="insight_higher">高いです</string>
     <string name="insight_lower">低いです</string>
     <string name="insight_other_agents">ほかの%1$s</string>
@@ -156,8 +156,8 @@
     <string name="insight_matches">%1$d試合</string>
     <string name="insight_rounds">%1$dラウンド</string>
     <!-- 관심사 이름은 「エイムを磨く」처럼 구절이라 괄호로 묶는다 -->
-    <string name="insight_reason_focus">「%1$s」を選んだので優先して見ました</string>
-    <string name="insight_reason_role">%1$sにとって%2$sは優先して見る指標です</string>
+    <string name="insight_reason_focus">「%1$s」を選んだので優先して見ました。</string>
+    <string name="insight_reason_role">%1$sにとって%2$sは優先して見る指標です。</string>
     <string name="insight_metric_multi_kill">マルチキルラウンド率</string>
     <string name="gap_percent">%1$spt</string>
     <!-- 라이벌과 친구 비교 -->

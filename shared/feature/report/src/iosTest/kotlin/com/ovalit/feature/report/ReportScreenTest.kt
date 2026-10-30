@@ -757,7 +757,7 @@ class ReportScreenTest {
             }
         }
 
-        val text = onNodeWithText("피해량이 평소보다 10 올랐어요", useUnmergedTree = true)
+        val text = onNodeWithText("피해량이 평소보다 10 올랐어요.", useUnmergedTree = true)
             .fetchSemanticsNode().config[SemanticsProperties.Text].single()
         val styled = text.spanStyles.map { text.substring(it.start, it.end) to it.item }
 
@@ -772,7 +772,7 @@ class ReportScreenTest {
     fun `짚을 점은 움직인 지표와 같은 쪽 무기와 요원을 숫자로 적는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
 
-        onNodeWithText("피해량이 평소보다 10 올랐어요").assertExists()
+        onNodeWithText("피해량이 평소보다 10 올랐어요.").assertExists()
         // 평균이 얼마였는지는 고정 칸에 이미 있어 다시 적지 않는다
         onNodeWithText("→ 이번 주", substring = true).assertDoesNotExist()
         onNode(noteRow("밴달", "118 → 140")).assertExists()
@@ -792,7 +792,7 @@ class ReportScreenTest {
 
         onNodeWithText("짚을 점", substring = true).assertDoesNotExist()
         val record = onNodeWithText("5승 2패", useUnmergedTree = true).getUnclippedBoundsInRoot()
-        val headline = onNodeWithText("피해량이 평소보다 10 올랐어요").getUnclippedBoundsInRoot()
+        val headline = onNodeWithText("피해량이 평소보다 10 올랐어요.").getUnclippedBoundsInRoot()
         val firstCell = onNodeWithText("피해량").getUnclippedBoundsInRoot()
         val lastCell = onNodeWithText("헤드샷").getUnclippedBoundsInRoot()
         val weapon = onNode(noteRow("밴달", "118 → 140")).getUnclippedBoundsInRoot()
@@ -820,7 +820,7 @@ class ReportScreenTest {
         val note = assertNotNull(ReportPreviewData.moved.note).copy(previousBest = 135.4)
         setContent { Report(ReportPreviewData.moved.copy(note = note), catalog = NamedCatalog) }
 
-        onNodeWithText("피해량이 평소보다 10 올라 이번 액트 최고예요").assertExists()
+        onNodeWithText("피해량이 평소보다 10 올라 이번 액트 최고예요.").assertExists()
         onNodeWithText("이전 최고", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
@@ -831,7 +831,7 @@ class ReportScreenTest {
         val note = assertNotNull(ReportPreviewData.moved.note).copy(previousBest = 137.6)
         setContent { Report(ReportPreviewData.moved.copy(note = note), catalog = NamedCatalog) }
 
-        onNodeWithText("피해량이 평소보다 10 올랐어요").assertExists()
+        onNodeWithText("피해량이 평소보다 10 올랐어요.").assertExists()
     }
 
     // 이코 라운드가 늘어 떨어진 피해량을 무기 하나가 끌어내린 것처럼 적으면 틀린 얘기가 된다
@@ -843,7 +843,7 @@ class ReportScreenTest {
         )
         setContent { Report(ReportPreviewData.moved.copy(note = note), catalog = NamedCatalog) }
 
-        onNodeWithText("피해량이 평소보다 18 떨어졌어요").assertExists()
+        onNodeWithText("피해량이 평소보다 18 떨어졌어요.").assertExists()
         onNode(noteRow("이코 라운드 비중", "16% → 31%")).assertExists()
         onNode(noteRow("풀바이 라운드만 보면", "158 → 156")).assertExists()
     }
@@ -905,9 +905,9 @@ class ReportScreenTest {
         val insight = sideInsight(InsightMetric.MULTI_KILL_RATE, lead = 0.30 to 40, other = 0.05 to 40, focus = Focus.AIM)
         setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
 
-        onNodeWithText("공격에서 멀티킬 라운드 비율이 수비보다 25%p 높아요").assertExists()
+        onNodeWithText("공격에서 멀티킬 라운드 비율이 수비보다 25%p 높아요.").assertExists()
         onNode(actLine("공격" to "30%", "수비" to "5%", "80라운드")).assertExists()
-        onNodeWithText("에임 올리기를 고르셔서 먼저 봤어요").assertExists()
+        onNodeWithText("에임 올리기를 고르셔서 먼저 봤어요.").assertExists()
     }
 
     // 두 쪽 모두 이름이 있으면 판 수와 상관없이 높은 쪽이 주어다
@@ -922,7 +922,7 @@ class ReportScreenTest {
         )
         setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
 
-        onNodeWithText("제트로 뛴 판은 생존율이 레이즈보다 25%p 높아요").assertExists()
+        onNodeWithText("제트로 뛴 판은 생존율이 레이즈보다 25%p 높아요.").assertExists()
         onNode(actLine("제트" to "75%", "레이즈" to "50%", "15판")).assertExists()
     }
 
@@ -937,7 +937,7 @@ class ReportScreenTest {
         )
         setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
 
-        onNodeWithText("레이즈로 뛴 판은 관여율이 다른 타격대 요원보다 14%p 낮아요").assertExists()
+        onNodeWithText("레이즈로 뛴 판은 관여율이 다른 타격대 요원보다 14%p 낮아요.").assertExists()
     }
 
     // 역할끼리는 승률만 견주고, 우연을 넘을 만큼 차이가 클 때만 나온다.
@@ -953,7 +953,7 @@ class ReportScreenTest {
         )
         setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
 
-        onNodeWithText("전략가로 뛴 판은 승률이 타격대보다 44%p 높아요").assertExists()
+        onNodeWithText("전략가로 뛴 판은 승률이 타격대보다 44%p 높아요.").assertExists()
         onNodeWithText("추천", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
 
@@ -974,7 +974,7 @@ class ReportScreenTest {
         )
         setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
 
-        onNodeWithText("연달아 뛴 세 번째 판부터는 관여율이 첫 두 판보다 12%p 낮아요").assertExists()
+        onNodeWithText("연달아 뛴 세 번째 판부터는 관여율이 첫 두 판보다 12%p 낮아요.").assertExists()
         onNode(actLine("세 번째 판부터" to "61%", "첫 두 판" to "73%", "50판")).assertExists()
         onNodeWithText(recentLine("이번 주", "세 번째 판부터" to "55%", "첫 두 판" to "70%", "14판")).assertExists()
         onNodeWithText("쉬", substring = true, useUnmergedTree = true).assertDoesNotExist()
@@ -1004,13 +1004,13 @@ class ReportScreenTest {
         var insight by mutableStateOf(map)
         setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
 
-        onNodeWithText("헤이븐에서는 관여율이 다른 맵보다 14%p 낮아요").assertExists()
+        onNodeWithText("헤이븐에서는 관여율이 다른 맵보다 14%p 낮아요.").assertExists()
         onNode(actLine("헤이븐" to "58%", "다른 맵" to "72%", "50판")).assertExists()
         insight = rifles
-        onNodeWithText("밴달을 든 라운드는 헤드샷이 다른 소총보다 11%p 낮아요").assertExists()
+        onNodeWithText("밴달을 든 라운드는 헤드샷이 다른 소총보다 11%p 낮아요.").assertExists()
         onNode(actLine("밴달" to "14%", "다른 소총" to "25%", "392라운드")).assertExists()
         insight = twoRifles
-        onNodeWithText("팬텀을 든 라운드는 헤드샷이 밴달보다 11%p 높아요").assertExists()
+        onNodeWithText("팬텀을 든 라운드는 헤드샷이 밴달보다 11%p 높아요.").assertExists()
     }
 
     // 근거 두 칸을 한 줄에 나란히 두어 고정 칸이 덜 내려가게 한다
@@ -1032,7 +1032,7 @@ class ReportScreenTest {
         val weaponName = onNode(noteName("밴달", "118 → 140"), useUnmergedTree = true).getUnclippedBoundsInRoot()
         val agentName = onNode(noteName("제트", "124 → 146"), useUnmergedTree = true).getUnclippedBoundsInRoot()
         val weaponChange = onNodeWithText(noteChange("118 → 140"), useUnmergedTree = true).getUnclippedBoundsInRoot()
-        val headline = onNodeWithText("피해량이 평소보다 10 올랐어요").getUnclippedBoundsInRoot()
+        val headline = onNodeWithText("피해량이 평소보다 10 올랐어요.").getUnclippedBoundsInRoot()
         assertTrue(agentName.top >= weaponName.bottom, "요원 칸이 무기 칸 밑에 있어야 한다")
         assertEquals(weaponName.left, agentName.left)
         // 그림 자리를 두어 이름이 헤드라인보다 안쪽에서 시작한다
@@ -1104,7 +1104,7 @@ class ReportScreenTest {
         val damage = sideInsight(InsightMetric.DAMAGE, lead = 143.0 to 70, other = 121.0 to 76)
         setContent { Report(ReportPreviewData.moved.copy(insight = damage)) }
 
-        onNodeWithText("공격에서 피해량이 수비보다 22 높아요").assertExists()
+        onNodeWithText("공격에서 피해량이 수비보다 22 높아요.").assertExists()
         onNode(actLine("공격" to "143", "수비" to "121", "146라운드")).assertExists()
     }
 
@@ -1115,7 +1115,7 @@ class ReportScreenTest {
         val flat = note.copy(weapon = note.weapon?.copy(current = 140.2, usual = 139.8))
         setContent { Report(ReportPreviewData.moved.copy(note = flat), catalog = NamedCatalog) }
 
-        onNodeWithText("피해량이 평소보다 10 올랐어요").assertExists()
+        onNodeWithText("피해량이 평소보다 10 올랐어요.").assertExists()
         onNode(noteRow("밴달", "140 → 140")).assertDoesNotExist()
         onNode(noteRow("제트", "124 → 146")).assertExists()
     }
@@ -1181,7 +1181,7 @@ class ReportScreenTest {
 
         val dynamic = onNodeWithText("달라진 점").getUnclippedBoundsInRoot()
         val title = onNodeWithText("이번 액트 돌아보기").getUnclippedBoundsInRoot()
-        val headline = onNodeWithText("공격에서 첫 교전 승률이 수비보다 14%p 높아요").getUnclippedBoundsInRoot()
+        val headline = onNodeWithText("공격에서 첫 교전 승률이 수비보다 14%p 높아요.").getUnclippedBoundsInRoot()
         val agents = onNodeWithText("이번 주 요원", useUnmergedTree = true).getUnclippedBoundsInRoot()
         onNodeWithText("33경기", useUnmergedTree = true).assertExists()
         assertTrue(dynamic.bottom <= title.top && title.bottom <= headline.top && headline.bottom <= agents.top)
@@ -1205,9 +1205,9 @@ class ReportScreenTest {
     fun `개선 포인트는 이번 액트 공수를 높은 쪽부터 사실만 적는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        onNodeWithText("공격에서 첫 교전 승률이 수비보다 14%p 높아요").assertExists()
+        onNodeWithText("공격에서 첫 교전 승률이 수비보다 14%p 높아요.").assertExists()
         onNode(actLine("공격" to "58%", "수비" to "44%", "776라운드")).assertExists()
-        onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요").assertExists()
+        onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요.").assertExists()
     }
 
     // 제목과 문장이 이번 액트 이야기라 액트 줄이 먼저다.
@@ -1218,7 +1218,7 @@ class ReportScreenTest {
 
         val act = onNode(actLine("공격" to "58%", "수비" to "44%", "776라운드")).getUnclippedBoundsInRoot()
         val recent = onNodeWithText(recentLine("이번 주", "공격" to "71%", "수비" to "45%", "138라운드")).getUnclippedBoundsInRoot()
-        val reason = onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요").getUnclippedBoundsInRoot()
+        val reason = onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요.").getUnclippedBoundsInRoot()
         assertTrue(act.bottom <= recent.top && recent.bottom <= reason.top)
     }
 
@@ -1252,7 +1252,7 @@ class ReportScreenTest {
         val report = ReportPreviewData.moved.let { it.copy(insight = it.insight?.copy(isRolePriority = false, focus = Focus.AIM)) }
         setContent { Report(report) }
 
-        onNodeWithText("에임 올리기를 고르셔서 먼저 봤어요").assertExists()
+        onNodeWithText("에임 올리기를 고르셔서 먼저 봤어요.").assertExists()
     }
 
     @Test
@@ -1268,7 +1268,7 @@ class ReportScreenTest {
         }
         setContent { Report(report) }
 
-        onNodeWithText("수비에서 첫 교전 승률이 공격보다 14%p 높아요").assertExists()
+        onNodeWithText("수비에서 첫 교전 승률이 공격보다 14%p 높아요.").assertExists()
     }
 
     @Test

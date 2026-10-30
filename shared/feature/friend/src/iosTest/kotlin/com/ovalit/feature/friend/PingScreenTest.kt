@@ -80,7 +80,7 @@ class PingScreenTest {
         onNodeWithText("오발있?").assertExists()
         onNodeWithText("파티 모집").assertExists()
         onNodeWithText("부르기").assertDoesNotExist()
-        onNodeWithText("시간을 정해 친구를 4명까지 한 번에 불러요").assertExists()
+        onNodeWithText("시간을 정해 친구를 4명까지 한 번에 불러요.").assertExists()
     }
 
     @Test

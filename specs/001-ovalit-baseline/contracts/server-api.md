@@ -32,12 +32,17 @@
 | --- | --- | --- |
 | 계정 | `GET /me`, `PATCH /me {statsPublic?, remindBefore?}`, `DELETE /me`(연동 해제), `POST /auth/logout` | FR-029, FR-030 |
 | 기기 토큰 | `PUT /me/push-token`, `DELETE /me/push-token` | FR-027 |
-| 콘텐츠 | `GET /content`(VAL-CONTENT ko-KR), `GET /status`(점검 안내) | FR-035 |
+| 콘텐츠 | `GET /content`(VAL-CONTENT, 지금은 ko-KR만), `GET /status`(점검 안내) | FR-035 |
 | 내 경기 | `GET /riot/matchlist`, `GET /riot/matches/:matchId`, `GET /riot/matches/:matchId/app-users` | FR-003, FR-004, FR-024 |
 | 친구 | `GET /friends`, `GET /friends/requests`, `POST /friends/requests {puuid, matchId}`, `POST /friends/requests/:puuid/accept`, `POST /friends/requests/:puuid/decline`, `DELETE /friends/:puuid` | FR-021, FR-028 |
 | 친구 경기 | `GET /friends/:puuid/matchlist`, `GET /friends/:puuid/matches/:matchId` | FR-022, FR-023 |
 | 초대 링크 | `POST /invites`, `POST /invites/:code/redeem` | FR-021 |
 | ㅇㅂㅇ | `GET /pings`, `POST /pings {friends, startsAt}`, `POST /pings/:id/reply {answer, proposedAt?}`, `POST /pings/:id/time {startsAt}`, `POST /pings/:id/members {friends}`, `DELETE /pings/:id` | FR-026, FR-027 |
+
+계획(FR-035, 아직 구현 전, T083): `GET /content`와 `GET /content/tiers`가 `locale` 인자(`ko-KR`, `ja-JP`)를 받아 그 언어의 이름을
+내려준다. 지금은 둘 다 한국어뿐이라 실제 서버를 붙이면 앱 언어를 일본어로 바꿔도 요원·맵·무기·티어 이름이 한국어로 남는다.
+서버는 언어마다 따로 담아 두고 앱은 `AppLanguage.current`를 따라 다시 받는다. 구현할 때 `server/README.md`의 엔드포인트 표와 이
+표를 같은 커밋에서 고친다.
 
 ## 서버가 지키는 약속
 

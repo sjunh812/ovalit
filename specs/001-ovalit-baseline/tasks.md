@@ -85,10 +85,10 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 
 ### 남은 일: 문서와 디자인
 
-- [ ] T029 [US1] 홈 순서 어긋남 정리: `docs/screens.md` 홈 (S1)은 "큐 칩, ㅇㅂㅇ 카드, 새 경기 진행 줄"인데 `ReportScreen.kt`는 진행 줄을 칩 바로 밑, ㅇㅂㅇ 카드를 카드 목록 맨 위에 둔다. 사용자에게 어느 쪽이 맞는지 묻고 다른 쪽을 고친다 in docs/screens.md, shared/feature/report/src/commonMain/kotlin/com/ovalit/feature/report/ReportScreen.kt, research.md 열린 결정 표
-- [ ] T030 [P] [US1] Figma 온보딩 S0-1 인트로(로고, "오늘 발로란트 할 사람 있어?", 영문 비공식 고지), S0-2 연동 동의, S0-4 불러오는 중(관심사 고르기, 50칸, 멈춤과 "이어서 불러오기", 알림 약속 유무)을 라이트·다크와 화면 설명으로 in Figma "화면" 페이지의 "온보딩 (S0)" 줄
+- [x] T029 [US1] 홈 순서 어긋남 정리: `docs/screens.md` 홈 (S1)은 "큐 칩, ㅇㅂㅇ 카드, 새 경기 진행 줄"인데 `ReportScreen.kt`는 진행 줄을 칩 바로 밑, ㅇㅂㅇ 카드를 카드 목록 맨 위에 둔다. 사용자에게 어느 쪽이 맞는지 묻고 다른 쪽을 고친다(2026-10-30 앱 순서로 정해 문서를 고쳤다) in docs/screens.md, shared/feature/report/src/commonMain/kotlin/com/ovalit/feature/report/ReportScreen.kt, research.md 열린 결정 표
+- [ ] T030 [P] [US1] Figma 온보딩 S0-1 인트로(로고, "오늘 발로란트 할 사람?", 영문 비공식 고지), S0-2 연동 동의, S0-4 불러오는 중(관심사 고르기, 50칸, 멈춤과 "이어서 불러오기", 알림 약속 유무)을 라이트·다크와 화면 설명으로 in Figma "화면" 페이지의 "온보딩 (S0)" 줄
 - [ ] T031 [P] [US1] Figma 홈 나머지 상태: 기타 칩 리포트(K/D, KDA, 헤드샷만), 달라진 점 시트, 8주 흐름 시트(막대를 끈 상태 포함), "이번 주는 큰 변화 없음", 짚을 점의 비중 줄 in Figma "화면" 페이지의 "홈 상태" 섹션
-- [ ] T085 [US1] 로그인 풀림 화면과 점검 안내 줄의 자리와 문구를 정한다. 심사 목업과 `docs/screens.md`에 없는 화면이라 사용자에게 먼저 묻고 `docs/screens.md`에 절을 더한 뒤 Figma에 그린다. T040이 이 결과를 따른다 in docs/screens.md, docs/DECISIONS.md, Figma "화면" 페이지의 "로그인 풀림과 점검 안내" 줄
+- [ ] T085 [US1] 로그인 풀림 화면과 점검 안내 줄의 자리와 문구를 정한다. 심사 목업과 `docs/screens.md`에 없는 화면이라 사용자에게 먼저 묻고 `docs/screens.md`에 절을 더한 뒤 Figma에 그린다. 2026-10-30에 칩 밑 한 줄로 정해 `docs/screens.md` 절을 더했고 Figma가 남았다. T040이 이 결과를 따른다 in docs/screens.md, docs/DECISIONS.md, Figma "화면" 페이지의 "로그인 풀림과 점검 안내" 줄
 
 ### 남은 일: 실제 연동과 저장(프로덕션 키 승인 뒤)
 
@@ -101,7 +101,7 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 - [ ] T037 [US1] RSO 연결: S0-3을 Custom Tabs로 띄우고 PKCE verifier를 만들어 challenge만 넘기며, App Link `/auth/done?code=`를 받아 `POST /auth/session`으로 세션을 받는다. WebView 금지, 커스텀 스킴 금지 in shared/feature/onboarding/, composeApp/src/main/AndroidManifest.xml(호스트는 `local.properties`의 `ovalit.server.host`)
 - [ ] T038 [US1] 실제 `AccountRepository`: 계정 값은 기기에서 읽은 뒤 처음 내보낸다(읽기 전에 `null`을 먼저 내보내지 않기), 로그인이 풀리면 다시 시도하지 않고 멈춘다 in shared/core/data/src/commonMain/kotlin/com/ovalit/core/data/AccountRepository.kt와 새 구현 파일
 - [ ] T039 [US1] 시작 화면을 연동과 첫 수집 상태로 고른다(연동 전 인트로, 첫 수집 중 S0-4에서 `start()`로 이어 받기, 나머지 홈) in shared/app/src/commonMain/kotlin/com/ovalit/app/OvalitApp.kt
-- [ ] T040 [US1] 로그인 풀림 화면과 점검 안내 줄(`GET /status`). 자리와 문구는 T085에서 정한 `docs/screens.md` 절을 따른다 in shared/feature/report/, shared/core/ui/
+- [ ] T040 [US1] 로그인 풀림 줄과 점검 안내 줄(`GET /status`). 자리와 문구는 T085에서 정한 `docs/screens.md` 절을 따른다 in shared/feature/report/, shared/core/ui/
 - [ ] T041 [US1] "아직 확인하지 못한 것"(맵 ID 형태, `roundNum` 시작, 항복 라운드, 튕긴 사람, 라운드 없는 모드, 건틀릿 큐 ID, 킬의 `damageType`)을 실제 응답으로 확인하고 옮겨 담기와 테스트를 고친다 in shared/core/network/src/commonMain/kotlin/com/ovalit/core/network/MatchMapper.kt, shared/core/network/src/commonTest/, CLAUDE.md 데이터
 - [ ] T042 [US1] 전투점수 칸 결정: 실제 경기 응답에 `players[].stats.score`와 Performance Score가 어떻게 오는지 보고 사용자에게 묻는다. 바뀌면 고정 칸(`FixedMetric`), 문서, Figma를 같은 커밋에서 고친다 in shared/core/model/src/commonMain/kotlin/com/ovalit/core/model/FixedMetric.kt, CLAUDE.md 지켜야 할 선, .specify/memory/constitution.md, docs/DECISIONS.md
 
@@ -122,7 +122,7 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 
 ### 남은 일
 
-- [ ] T045 [P] [US2] Figma S2 경기 목록(날짜 머리, 경기 줄 칩 MVP·팀 MVP·에이스·클러치 톤온톤, 등수로 끝나는 경기 줄, 거르기 시트, 진행 줄 상태)을 라이트·다크와 화면 설명으로 in Figma "화면" 페이지의 "경기 (S2)" 줄
+- [x] T045 [P] [US2] Figma S2 경기 목록(날짜 머리, 경기 줄 칩 MVP·팀 MVP·에이스·클러치 톤온톤, 등수로 끝나는 경기 줄, 거르기 시트, 진행 줄 상태)을 라이트·다크와 화면 설명으로 in Figma "화면" 페이지의 "경기 (S2)" 줄
 - [ ] T046 [P] [US2] Figma S3 경기 상세 세 탭(스코어보드 친구 표시, 라운드 막대는 이긴 라운드만 pos, 내 기록)과 상태(라운드 없는 모드, 스켈레톤) in Figma "화면" 페이지의 "경기 상세 (S3)" 줄
 
 **Checkpoint**: P2 독립 검사가 통과한다.
@@ -164,11 +164,11 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 
 ### 남은 일
 
-- [ ] T054 [US4] 주간 요약 서버: 표(주, 액트, 큐, 합계: 경기·라운드 수, 킬·데스·어시, 전투점수, 피해량, 맞힌 부위별 탄)와 올리기·받기 경로. "세션이 있어야 받고, 서로 수락한 친구가 전적을 공개했을 때만 내려준다. 친구를 끊거나 연동을 해제하면 지운다". 시작 전에 [research.md](research.md) 열린 결정 "주간 요약 규칙"(올리는 때, 친구를 끊을 때 지우는 대상, D1 하루 쓰기 예산)을 닫고 `docs/backend.md`에 먼저 적는다 in server/migrations/0011_weekly_summaries.sql, server/src/routes/, contracts/server-api.md, docs/backend.md 친구 비교 요약
+- [ ] T054 [US4] 주간 요약 서버: 표(주, 액트, 큐, 합계: 경기·라운드 수, 킬·데스·어시, 전투점수, 피해량, 맞힌 부위별 탄)와 올리기·받기 경로. "세션이 있어야 받고, 서로 수락한 친구가 전적을 공개했을 때만 내려준다". 사람마다 주당 한 줄을 덮어쓰고, 친구를 끊으면 지우지 않고 내주지만 않으며, 연동을 해제하면 지운다([research.md](research.md) 친구 비교 요약, 2026-10-30) in server/migrations/0011_weekly_summaries.sql, server/src/routes/, contracts/server-api.md, docs/backend.md 친구 비교 요약
 - [ ] T055 [US4] 주간 요약 서버 테스트(세션 없음 401, 친구 아님·비공개 차단, 끊기·해제 뒤 삭제, 비율이 아니라 합계만 받기) in server/test/summaries.test.ts
 - [ ] T056 [US4] 실제 `FriendRepository`(`/friends`, `/friends/requests`, 수락·거절·끊기, 초대 링크 `POST /invites`와 `redeem`) in shared/core/data/src/commonMain/kotlin/com/ovalit/core/data/FriendRepository.kt와 새 구현 파일
 - [ ] T057 [US4] 친구 경기를 기기에 저장하고 S5를 열면 저장된 것을 바로 보여 준 뒤 10분이 지났을 때만 새 경기를 받는다. "마지막 갱신 3분 전", 같은 친구 당기기는 1분에 한 번 in shared/core/data/, shared/feature/friend/src/commonMain/kotlin/com/ovalit/feature/friend/FriendProfileScreen.kt
-- [ ] T058 [US4] 앱이 T054 전에 정한 때에 고정 칸 합계를 올리고(지금 `docs/backend.md`는 주(월요일 0시)마다), 친구 비교와 라이벌 대결을 친구 경기 대신 요약으로 센다(기간을 넓힐 때 더한 뒤 나누기) in shared/core/data/, shared/feature/report/src/commonMain/kotlin/com/ovalit/feature/report/ReportViewModel.kt
+- [ ] T058 [US4] 앱이 새 경기를 받을 때마다 그 경기가 든 주의 고정 칸 합계를 올리고(첫 수집 뒤에는 받은 주마다), 친구 비교와 라이벌 대결을 친구 경기 대신 요약으로 센다(기간을 넓힐 때 더한 뒤 나누기) in shared/core/data/, shared/feature/report/src/commonMain/kotlin/com/ovalit/feature/report/ReportViewModel.kt
 - [ ] T059 [US4] 친구 요청·수락 푸시 서버: 요청을 새로 만들 때(스코어보드, 초대 링크) 받는 사람에게, 수락할 때 보낸 사람에게 알린다. 다른 푸시처럼 종류와 이름만 담고, 이미 보내 둔 요청을 다시 보내거나 이미 친구인 경우는 알리지 않는다. 신청서에 푸시 알림이 없어서 같은 커밋에서 `docs/RELEASE.md` "신청서와 다른 것" 표에 친구 요청 푸시를 한 줄 더한다 in server/src/routes/friends.ts, server/src/routes/invites.ts, server/src/push.ts, server/README.md, docs/backend.md ㅇㅂㅇ과 푸시, specs/001-ovalit-baseline/contracts/push.md, docs/RELEASE.md
 - [ ] T060 [US4] 친구 요청·수락 푸시 테스트(요청·수락마다 한 번, 글 없이 종류와 이름만, 다시 보낸 요청과 이미 친구는 알리지 않기) in server/test/friends.test.ts, server/test/invites.test.ts
 - [ ] T061 [US4] 앱의 친구 요청 알림: 설정에 "친구 요청 알림" 스위치(기본 켬, 기기 설정 `UserPreferences`에 `notifyPing`과 같은 방식), 알림 채널과 문구(한국어·일본어), 누르면 친구 탭. 스위치 자리는 [research.md](research.md) 열린 결정 "친구 요청 알림 스위치 자리"를 따른다. T059가 `docs/RELEASE.md` 표에 더한 줄에 설정 스위치를 같이 적는다 in shared/core/model/src/commonMain/kotlin/com/ovalit/core/model/UserPreferences.kt, shared/feature/settings/src/commonMain/kotlin/com/ovalit/feature/settings/SettingsScreen.kt, composeApp/src/main/kotlin/com/ovalit/push/, docs/screens.md 설정 (S4), docs/RELEASE.md
@@ -215,7 +215,7 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 ### 남은 일
 
 - [ ] T072 [US6] 실제 `AccountSettingsRepository`(`PATCH /me {statsPublic?, remindBefore?}`, 서버 값을 따른다)와 연동 해제(`DELETE /me` 뒤 기기 기록과 보내지 않은 보고 지우기) in shared/core/data/src/commonMain/kotlin/com/ovalit/core/data/AccountSettingsRepository.kt, AccountSettingsSync.kt와 새 구현 파일
-- [ ] T073 [P] [US6] Figma S4 설정(묶음 카드, 오발있? 카드의 파티 모집 알림과 시작 전 알림, 친구 요청 알림 스위치, 연동 해제 위험 버튼, 맨 아래 영문 고지). 친구 요청 알림 스위치는 [research.md](research.md) 열린 결정 "친구 요청 알림 스위치 자리"를 닫은 뒤에 그린다 in Figma "화면" 페이지의 "설정 (S4)" 줄
+- [ ] T073 [P] [US6] Figma S4 설정(묶음 카드, 오발있? 카드의 파티 모집 알림과 시작 전 알림, 친구 요청 알림 스위치, 연동 해제 위험 버튼, 맨 아래 영문 고지). 친구 요청 알림 스위치는 알림 카드에 둔다([research.md](research.md) 친구 요청 알림 스위치) in Figma "화면" 페이지의 "설정 (S4)" 줄
 
 **Checkpoint**: 모든 이야기가 따로 돌아간다.
 
@@ -243,10 +243,10 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 ### Phase Dependencies
 
 - **Setup, Foundational**: 끝났다(T019만 남음, 다른 일을 막지 않는다).
-- **Figma 작업**(T030, T031, T045, T046, T049, T062, T067, T077): 지금 할 수 있고 서로 기대지 않는다. 모두 "화면" 페이지에 줄을 더하는 일이고 새 페이지를 만들지 않는다. T073(설정)은 친구 요청 알림 스위치 자리를 정한 뒤에 마친다. T085(로그인 풀림과 점검 안내)는 사용자에게 묻는 것부터다.
+- **Figma 작업**(T030, T031, T045, T046, T049, T062, T067, T077): 지금 할 수 있고 서로 기대지 않는다. 모두 "화면" 페이지에 줄을 더하는 일이고 새 페이지를 만들지 않는다. T085(로그인 풀림과 점검 안내)는 자리와 문구를 정했고 그리기만 남았다.
 - **실제 서버 연결**: Riot 프로덕션 키 승인이 먼저다. 그 안에서 T035(HTTP 클라이언트)가 T082, T036, T037, T038, T056, T066, T072보다 먼저다. T040은 T085 뒤다.
 - **로컬 DB**: T032(결정) → T033 → T034. T039(시작 화면)는 T033과 T038 뒤다.
-- **주간 요약**: research.md 열린 결정 "주간 요약 규칙" → T054 → T055, T058. T058은 T056 뒤다.
+- **주간 요약**: T054 → T055, T058. T058은 T056 뒤다.
 - **전투점수 칸**(T042)과 응답 확인(T041)은 실제 응답을 받은 뒤다.
 - **제품 설명과 광고**: 승인 전에는 신청서와 제품 설명을 고치지 않는다. 승인 직후 T081 → T074. T059와 T080은 신청서와 달라지는 기능을 `docs/RELEASE.md` 표에 쌓아 두고 T081이 그 표를 한 번에 옮긴다.
 - **서버 콘텐츠 언어**(T083)는 로컬 서버로 지금 할 수 있고 실제 서버를 붙이기 전에 끝낸다.

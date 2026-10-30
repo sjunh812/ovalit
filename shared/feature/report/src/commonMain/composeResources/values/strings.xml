@@ -80,7 +80,7 @@
     <string name="sheet_combat_score_method">경기마다 받은 전투점수를 전부 더해 뛴 라운드 수로 나눠요.</string>
     <string name="sheet_combat_score_formula">%1$s점 ÷ %2$s라운드 = %3$s</string>
     <string name="sheet_kd_body">한 번 죽을 때마다 적을 몇 번 처치했는지예요.</string>
-    <string name="sheet_kd_method">킬을 전부 더해 데스 수로 나눠요. 스킬로 자기나 우리 팀을 죽인 건 킬로 세지 않고, 자기를 죽인 건 데스에는 넣어요.</string>
+    <string name="sheet_kd_method">킬을 전부 더해 데스 수로 나눠요. 스킬로 자기나 우리 팀을 죽인 건 킬로 세지 않고 자기를 죽인 건 데스에는 넣어요.</string>
     <string name="sheet_kd_formula">%1$s킬 ÷ %2$s데스 = %3$s</string>
     <string name="sheet_kda_body">한 번 죽을 때마다 킬과 어시스트를 합쳐 몇 번 했는지예요. K/D와 달리 어시스트도 들어가요.</string>
     <string name="sheet_kda_method">킬과 어시스트를 전부 더해 데스 수로 나눠요. 경기마다 KDA를 먼저 내지 않고 다 더한 뒤에 나눠요.</string>

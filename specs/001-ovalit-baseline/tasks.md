@@ -20,7 +20,7 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 
 - **[P]**: 다른 파일을 고치고 앞선 미완료 작업에 기대지 않아 같이 할 수 있다
 - **[Story]**: 사용자 이야기(US1~US6)
-- **Figma**: 파일 "오발있"의 "화면" 페이지 안 줄(섹션) 이름을 경로로 쓴다. 무료 플랜이라 페이지는 기획 개요, 기초, 화면 셋뿐이고
+- **Figma**: 파일 "오발있"의 "화면" 페이지 안 줄(섹션) 이름을 경로로 쓴다. 무료 플랜이라 페이지는 "표지 · 흐름", "디자인 시스템", "화면" 셋뿐이고
   새 페이지를 만들지 않는다(`docs/DECISIONS.md` 2026-10-30). 화면마다 한 줄씩 아래로 쌓고 줄마다 화면 섹션과 상태 섹션을 나란히
   둔다. 새 화면은 "홈 (S1)" 줄과 같은 틀(라이트 + 파란 번호, 화면 설명 패널, 다크, 옆 상태 섹션에 상태별 화면과 "언제 뜨는지")로
   그리고, 그리기 전에 심사 목업의 그 화면과 `docs/screens.md`의 그 절을 본다
@@ -54,11 +54,11 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 - [x] T014 서버 공통(라우팅, 세션, 에러, Riot 레이트 리밋, 가리기) in server/src/app.ts, session.ts, errors.ts, riot.ts, redact.ts
 - [x] T015 서버 인증(RSO + PKCE + App Link, 서명한 state) in server/src/rso.ts, state.ts, routes/auth.ts, routes/public.ts
 - [x] T016 [P] 콘텐츠 표(티어 이름, 요원 역할)와 VAL-CONTENT·VAL-STATUS 대리 in server/src/data/, server/src/routes/content.ts
-- [x] T017 [P] Figma 기초: 색 변수(라이트·다크 두 컬렉션 28개씩), 간격 변수, 글자 스타일 12개, 로고·아이콘 21개, 홈 컴포넌트 in Figma "기초" 페이지
-- [x] T018 [P] Figma 기획 개요(스펙·헌법·화면 흐름·성공 기준·용어) in Figma "기획 개요" 페이지
+- [x] T017 [P] Figma 기초: 색 변수(라이트·다크 두 컬렉션 28개씩), 간격 변수, 글자 스타일 12개, 로고·아이콘 21개, 홈 컴포넌트 in Figma "디자인 시스템" 페이지(2026-10-30 "기초"에서 이름을 바꿈)
+- [x] T018 [P] Figma 기획 개요(스펙·헌법·화면 흐름·성공 기준·용어) in Figma "표지 · 흐름" 페이지(2026-10-30 표지, 화면 흐름 지도, 진행 현황, 지켜야 할 선, 용어로 다시 꾸밈)
 - [x] T087 [P] AdMob 네이티브 광고 자리(광고 단위 ID가 없으면 요청하지 않고 자리도 없다, 숫자를 읽는 중간에 두지 않는다, 24시간 광고 없이 보기) in shared/core/ui/src/commonMain/kotlin/com/ovalit/core/ui/AdSlot.kt, composeApp/src/main/kotlin/com/ovalit/ads/AdMobRenderer.kt, NativeAdRow.kt, AdFreeSheet.kt
 - [x] T088 [P] 일본어 화면 문구(모듈마다 `values-ja/strings.xml` 10개, 용어는 `docs/i18n-ja.md`) in shared/**/composeResources/values-ja/strings.xml, composeApp/src/main/res/values-ja/strings.xml
-- [ ] T019 [P] 숫자 글자 스타일 다섯(metricXl, metricL, metricM, metricS, delta)에 Tabular figures 켜기(API로는 못 켜서 사용자가 Figma 글자 패널에서) in Figma "기초" 페이지
+- [ ] T019 [P] 숫자 글자 스타일 다섯(metricXl, metricL, metricM, metricS, delta)에 Tabular figures 켜기(API로는 못 켜서 사용자가 Figma 글자 패널에서) in Figma "디자인 시스템" 페이지
 
 **Checkpoint**: 기초가 갖춰져 이야기마다 따로 진행할 수 있다.
 

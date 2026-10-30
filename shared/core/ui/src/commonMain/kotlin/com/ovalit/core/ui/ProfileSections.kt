@@ -416,12 +416,14 @@ fun AgentTileRow(agents: List<AgentStats>, catalog: ContentCatalog, showRecord: 
         val caption = OvalitTheme.typography.caption
         val tileWidth = (currentMaxWidth - TileGap * (SHOWN_TILES - 1)) / SHOWN_TILES
         // 한 칸이라도 승률이 판 수 옆에 안 들어가면 모든 칸의 승률을 아래로 내린다
+        // 칸 안에서 그리는 것처럼 조각마다 KDA 숫자의 굵기까지 담아 잰다.
+        // 글자만 이어 한 번에 재면 좁게 나와서 한 칸만 혼자 줄을 바꿨다.
         val lines = shown.map { agent ->
-            val first = agentFirstLine(agent, showRecord)
-            val second = if (showRecord) agent.metrics.kda?.let { kdaRatioText(it) } ?: NO_VALUE else percentText(agent.winRate)
-            AnnotatedString(first + TILE_SEPARATOR + second)
+            val kda = if (showRecord) agent.metrics.kda?.let { kdaRatioText(it) } else null
+            val second = kda ?: AnnotatedString(if (showRecord) NO_VALUE else percentText(agent.winRate))
+            listOf(AnnotatedString(agentFirstLine(agent, showRecord)), AnnotatedString(TILE_SEPARATOR), second)
         }
-        val stacked = !rememberFitsOnOneLine(lines, caption, tileWidth)
+        val stacked = !rememberPiecesFitOnOneLine(lines, caption, tileWidth)
         Row(horizontalArrangement = Arrangement.spacedBy(TileGap)) {
             shown.forEach { agent -> AgentTile(agent, catalog, stacked, showRecord, Modifier.weight(1f)) }
             repeat(SHOWN_TILES - shown.size) { Spacer(Modifier.weight(1f)) }

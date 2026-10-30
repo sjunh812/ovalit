@@ -87,6 +87,21 @@ fun rememberFitsOnOneLine(lines: List<AnnotatedString>, style: TextStyle, width:
     }
 }
 
+/**
+ * 줄마다 조각을 따로 그려 이어 붙였을 때 모든 줄이 [width] 안에 드는지 봅니다.
+ * `SeparatedRow`처럼 조각을 나눠 놓는 줄에 씁니다.
+ * 조각마다 폭이 픽셀로 올림돼서 한 줄을 통째로 잰 폭보다 1~2px 넓습니다.
+ */
+@Composable
+fun rememberPiecesFitOnOneLine(lines: List<List<AnnotatedString>>, style: TextStyle, width: Dp): Boolean {
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    return remember(lines, style, width, density, measurer) {
+        val available = with(density) { width.toPx() }
+        lines.all { pieces -> pieces.sumOf { measurer.measure(it, style, softWrap = false, maxLines = 1).size.width } <= available }
+    }
+}
+
 /** [texts] 중 가장 긴 것을 [style]로 한 줄에 그렸을 때의 폭입니다. 이름 칸 폭을 글자에 맞춰 잡을 때 씁니다. */
 @Composable
 fun rememberWidestWidth(texts: List<String>, style: TextStyle): Dp {

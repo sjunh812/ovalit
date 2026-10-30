@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>개인정보처리방침 · Privacy Policy — 오발있 Ovalit</title>
+<meta name="description" content="오발있(Ovalit)이 처리하는 개인정보와 보관 기간, 삭제 방법입니다. What personal data Ovalit processes, how long it is kept, and how to delete it.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="../legal.css">
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <a class="brand" href="../">
+      <svg viewBox="152 280 720 544" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M272 280H752A120 120 0 0 1 872 400V598A120 120 0 0 1 752 718H432L322.5 813.8Q312 823 312 809V718H272A120 120 0 0 1 152 598V400A120 120 0 0 1 272 280ZM228 499a88 88 0 1 0 176 0a88 88 0 1 0-176 0ZM272 499a44 44 0 1 0 88 0a44 44 0 1 0-88 0ZM620 499a88 88 0 1 0 176 0a88 88 0 1 0-176 0ZM664 499a44 44 0 1 0 88 0a44 44 0 1 0-88 0ZM430 422A8 8 0 0 1 438 414H466A8 8 0 0 1 474 422V463H550V422A8 8 0 0 1 558 414H586A8 8 0 0 1 594 422V573A10 10 0 0 1 584 583H440A10 10 0 0 1 430 573ZM474 499H550V548H474Z"/></svg>
+      <span>오발있 · Ovalit</span>
+    </a>
+    <div class="lang" role="group" aria-label="언어 · Language">
+      <button type="button" data-set-lang="ko" aria-pressed="false">한국어</button>
+      <button type="button" data-set-lang="en" aria-pressed="false">English</button>
+    </div>
+  </header>
+
+  <main>
+    <article class="doc" lang="ko">
+      <h1>개인정보처리방침</h1>
+      <p class="effective">시행일 2026년 10월 30일</p>
+      <p class="lead">오발있(이하 "앱")은 발로란트 경기 기록을 돌아보는 Riot Games 비공식 앱입니다. 이 방침은 앱이 어떤 정보를 왜 처리하고, 얼마나 보관하며, 어떻게 지우는지 설명합니다.</p>
+
+      <h2>1. 처리하는 정보와 목적</h2>
+      <div class="table"><table>
+        <thead><tr><th>정보</th><th>받는 경로</th><th>목적</th></tr></thead>
+        <tbody>
+          <tr><td>Riot 계정 식별자(PUUID)와 Riot ID</td><td>Riot 로그인(RSO)으로 연동할 때</td><td>계정 연동, 경기 기록 불러오기, 친구 기능</td></tr>
+          <tr><td>경기 기록(내가 뛴 경기와 그 경기의 다른 참가자 기록)</td><td>Riot API</td><td>주간 리포트 계산, 같이 뛴 사람인지 확인해 친구 요청 받기</td></tr>
+          <tr><td>친구 관계와 요청, 파티 모집 시각과 답, 전적 공개·알림 설정</td><td>앱에서 직접 입력</td><td>친구와 파티 모집 기능</td></tr>
+          <tr><td>푸시 알림 토큰</td><td>기기(Firebase Cloud Messaging)</td><td>친구 요청과 파티 모집 알림</td></tr>
+          <tr><td>앱 사용 기록(연 화면, 누른 기능, 앱 인스턴스 ID)과 비정상 종료 보고</td><td>기기(Firebase Analytics, Crashlytics)</td><td>오류 수정과 기능 개선</td></tr>
+          <tr><td>광고 식별자</td><td>기기(Google AdMob)</td><td>앱에 광고를 보여 줄 때 광고 표시</td></tr>
+        </tbody>
+      </table></div>
+      <ul>
+        <li>앱은 Riot 계정 비밀번호를 받지 않습니다. 비밀번호는 Riot 로그인 페이지에서만 입력합니다.</li>
+        <li>앱 사용 기록과 오류 보고에는 Riot이 준 정보(Riot ID, 친구 이름, 경기, 요원·맵·무기, 지표 값)를 넣지 않습니다.</li>
+        <li>로그인을 유지하는 세션 토큰은 서버에 원문이 아니라 해시값만 저장합니다.</li>
+        <li>경기 기록을 받으려고 Riot API에 Riot 계정 식별자를 보냅니다.</li>
+      </ul>
+
+      <h2>2. 보관 기간과 파기</h2>
+      <ul>
+        <li>Riot 계정 식별자, 친구, 요청, 초대, 파티 모집, 알림 토큰은 연동을 해제할 때까지 보관하고, 해제하면 바로 지웁니다.</li>
+        <li>경기 상세는 서버에 최대 30일 담아 두었다가 지웁니다. 같이 뛴 경기의 참가자 기록은 10주가 지나면 지웁니다.</li>
+        <li>끝난 파티 모집은 시작 시각이 지나면 지웁니다.</li>
+        <li>기기에 저장한 경기 기록은 앱 설정의 "저장된 데이터 삭제"나 앱 삭제로 지워집니다.</li>
+        <li>앱 사용 기록과 오류 보고는 Google이 정한 기간 동안 보관됩니다. 연동을 해제하면 기기에 쌓인 기록과 아직 보내지 않은 보고를 지웁니다.</li>
+      </ul>
+
+      <h2>3. 다른 사람에게 보이는 정보</h2>
+      <ul>
+        <li>프로필과 경기 기록은 서로 수락한 친구에게만 보입니다. 설정에서 전적 공개를 끄면 친구도 볼 수 없습니다.</li>
+        <li>친구 요청은 같이 뛴 경기에서만 보낼 수 있고, 닉네임으로 찾는 기능은 없습니다.</li>
+        <li>친구의 경기 중 내가 뛰지 않은 경기는 친구와 나를 뺀 다른 참가자를 가려서 보여 줍니다.</li>
+        <li>앱을 쓰지 않는 사람의 기록은 내가 함께 뛴 경기 안에서만 보입니다.</li>
+      </ul>
+
+      <h2>4. 제3자 제공, 처리 위탁, 국외 이전</h2>
+      <p>개인정보를 팔거나 제3자에게 제공하지 않습니다. 법령에 따라 요구받은 경우만 예외입니다. 서비스를 운영하려고 아래 업체에 처리를 맡기며, 이 업체들의 서버가 국외에 있어 정보가 국외로 전송·보관될 수 있습니다. 앱을 쓰는 동안 암호화된 연결(HTTPS)로 보냅니다.</p>
+      <div class="table"><table>
+        <thead><tr><th>받는 곳(국가)</th><th>항목</th><th>맡기는 일</th><th>보관</th></tr></thead>
+        <tbody>
+          <tr><td>Cloudflare, Inc.(미국)</td><td>Riot 계정 식별자, Riot ID, 경기 기록, 친구와 파티 모집 정보, 알림 토큰</td><td>서버와 데이터베이스 운영</td><td>2절의 기간</td></tr>
+          <tr><td>Google LLC(미국)</td><td>앱 사용 기록, 오류 보고, 알림 토큰, 광고 식별자</td><td>사용 통계, 오류 보고, 푸시 알림, 광고(Firebase, AdMob)</td><td>Google이 정한 기간</td></tr>
+        </tbody>
+      </table></div>
+
+      <h2 id="delete">5. 이용자의 권리와 삭제 요청</h2>
+      <ul>
+        <li>앱 설정의 "Riot 계정 연동 해제"로 언제든 서버에 있는 정보를 지울 수 있습니다.</li>
+        <li>앱을 이미 지웠거나 앱에서 지울 수 없으면 <a href="mailto:sjunh812@naver.com">sjunh812@naver.com</a>으로 Riot ID를 적어 삭제를 요청해 주세요. 본인임을 확인한 뒤 법이 정한 기간(10일) 안에 지우고 결과를 알려 드립니다.</li>
+        <li>정보의 열람, 정정, 처리 정지도 같은 메일로 요청할 수 있습니다.</li>
+      </ul>
+
+      <h2>6. 만 14세 미만 아동</h2>
+      <p>앱은 만 14세 미만 아동을 대상으로 하지 않으며, 알면서 그 정보를 처리하지 않습니다. 처리한 사실을 알게 되면 바로 지웁니다.</p>
+
+      <h2>7. 안전하게 지키는 방법</h2>
+      <ul>
+        <li>모든 통신을 HTTPS로 암호화합니다.</li>
+        <li>세션 토큰과 로그인 코드는 해시값만 저장합니다.</li>
+        <li>Riot API 키 같은 서버 비밀값은 앱에 넣지 않고 서버에만 둡니다.</li>
+      </ul>
+
+      <h2>8. 쿠키</h2>
+      <p>이 웹사이트와 앱은 쿠키로 이용자를 추적하지 않습니다. 앱 안의 광고는 1절의 광고 식별자를 씁니다.</p>
+
+      <h2>9. 개인정보 보호책임자</h2>
+      <p>성명 서준형 · 이메일 <a href="mailto:sjunh812@naver.com">sjunh812@naver.com</a></p>
+
+      <h2>10. 권익 침해 구제</h2>
+      <p>개인정보 침해로 상담이나 구제가 필요하면 아래 기관에 문의할 수 있습니다.</p>
+      <ul>
+        <li>개인정보침해신고센터 <a href="https://privacy.kisa.or.kr">privacy.kisa.or.kr</a> · 118</li>
+        <li>개인정보분쟁조정위원회 <a href="https://www.kopico.go.kr">kopico.go.kr</a> · 1833-6972</li>
+        <li>대검찰청 <a href="https://www.spo.go.kr">spo.go.kr</a> · 1301</li>
+        <li>경찰청 <a href="https://ecrm.police.go.kr">ecrm.police.go.kr</a> · 182</li>
+      </ul>
+
+      <h2>11. 방침의 변경</h2>
+      <p>방침을 바꾸면 이 페이지에 새 시행일과 함께 알립니다.</p>
+    </article>
+
+    <article class="doc" lang="en">
+      <h1>Privacy Policy</h1>
+      <p class="effective">Effective October 30, 2026</p>
+      <p class="lead">Ovalit (the "App") is an unofficial app for reviewing your VALORANT matches. This policy explains what information the App processes and why, how long it is kept, and how to delete it.</p>
+
+      <h2>1. Information we process and why</h2>
+      <div class="table"><table>
+        <thead><tr><th>Information</th><th>Source</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>Riot account identifier (PUUID) and Riot ID</td><td>Riot Sign On (RSO) when you link your account</td><td>Linking your account, loading your matches, friend features</td></tr>
+          <tr><td>Match history (your matches and the other players in those matches)</td><td>Riot API</td><td>Calculating your weekly report; confirming you played together before accepting a friend request</td></tr>
+          <tr><td>Friends and friend requests, party invite times and replies, sharing and notification settings</td><td>Entered in the App</td><td>Friend and party invite features</td></tr>
+          <tr><td>Push notification token</td><td>Your device (Firebase Cloud Messaging)</td><td>Friend request and party invite notifications</td></tr>
+          <tr><td>App usage (screens opened, features used, app instance ID) and crash reports</td><td>Your device (Firebase Analytics, Crashlytics)</td><td>Fixing bugs and improving features</td></tr>
+          <tr><td>Advertising ID</td><td>Your device (Google AdMob)</td><td>Showing ads, when the App shows ads</td></tr>
+        </tbody>
+      </table></div>
+      <ul>
+        <li>The App never receives your Riot password. You enter it only on Riot's sign-in page.</li>
+        <li>Usage data and crash reports never include information from Riot (Riot IDs, friend names, matches, agents, maps, weapons, or stats).</li>
+        <li>The session token that keeps you signed in is stored on our server only as a hash.</li>
+        <li>We send your Riot account identifier to the Riot API to load your matches.</li>
+      </ul>
+
+      <h2>2. Retention and deletion</h2>
+      <ul>
+        <li>Your Riot account identifier, friends, requests, invites, party invites, and notification tokens are kept until you unlink your account, and are deleted immediately when you do.</li>
+        <li>Match details are cached on our server for up to 30 days. Records of players in matches you played are deleted after 10 weeks.</li>
+        <li>Party invites are deleted after their start time passes.</li>
+        <li>Match history saved on your device is removed with "저장된 데이터 삭제" (Delete saved data) in the App's settings or by uninstalling the App.</li>
+        <li>Usage data and crash reports are kept for the periods set by Google. Unlinking your account clears usage data collected on the device and crash reports not yet sent.</li>
+      </ul>
+
+      <h2>3. What other people can see</h2>
+      <ul>
+        <li>Your profile and matches are visible only to friends you have mutually accepted. If you turn off "전적 공개" (match sharing) in settings, friends cannot see them either.</li>
+        <li>Friend requests can only be sent from a match you played together. There is no search by player name.</li>
+        <li>In a friend's matches that you did not play, players other than you and your friend are hidden.</li>
+        <li>Records of people who do not use the App are shown only within matches you played with them.</li>
+      </ul>
+
+      <h2>4. Sharing, processors, and international transfers</h2>
+      <p>We do not sell your information or share it with third parties, except when required by law. We use the processors below to run the service. Their servers are located outside Korea, so your information may be transferred to and stored in other countries. Data is sent over an encrypted connection (HTTPS) while you use the App.</p>
+      <div class="table"><table>
+        <thead><tr><th>Recipient (country)</th><th>Information</th><th>Service</th><th>Retention</th></tr></thead>
+        <tbody>
+          <tr><td>Cloudflare, Inc. (United States)</td><td>Riot account identifier, Riot ID, match history, friend and party invite data, notification tokens</td><td>Server and database hosting</td><td>As in section 2</td></tr>
+          <tr><td>Google LLC (United States)</td><td>App usage, crash reports, notification tokens, advertising ID</td><td>Analytics, crash reporting, push notifications, ads (Firebase, AdMob)</td><td>As set by Google</td></tr>
+        </tbody>
+      </table></div>
+
+      <h2 id="delete-en">5. Your rights and deletion requests</h2>
+      <ul>
+        <li>You can delete your information on our server at any time with "Riot 계정 연동 해제" (Unlink Riot account) in the App's settings.</li>
+        <li>If you have already uninstalled the App or cannot delete it in the App, email <a href="mailto:sjunh812@naver.com">sjunh812@naver.com</a> with your Riot ID. After verifying that the request is yours, we will delete your information within 10 days, as required by Korean law, and let you know.</li>
+        <li>You can request access, correction, or suspension of processing at the same address.</li>
+      </ul>
+
+      <h2>6. Children under 14</h2>
+      <p>The App is not intended for children under 14, and we do not knowingly process their information. If we learn that we have, we delete it right away.</p>
+
+      <h2>7. How we protect your information</h2>
+      <ul>
+        <li>All communication is encrypted with HTTPS.</li>
+        <li>Session tokens and sign-in codes are stored only as hashes.</li>
+        <li>Server secrets such as the Riot API key are kept on the server, never in the App.</li>
+      </ul>
+
+      <h2>8. Cookies</h2>
+      <p>This website and the App do not use cookies to track you. Ads in the App use the advertising ID described in section 1.</p>
+
+      <h2>9. Privacy officer</h2>
+      <p>Junhyung Seo · <a href="mailto:sjunh812@naver.com">sjunh812@naver.com</a></p>
+
+      <h2>10. Getting help</h2>
+      <p>If you need advice or a remedy for a privacy issue, you can contact these Korean authorities.</p>
+      <ul>
+        <li>Personal Information Infringement Report Center <a href="https://privacy.kisa.or.kr">privacy.kisa.or.kr</a> · 118</li>
+        <li>Personal Information Dispute Mediation Committee <a href="https://www.kopico.go.kr">kopico.go.kr</a> · 1833-6972</li>
+        <li>Supreme Prosecutors' Office <a href="https://www.spo.go.kr">spo.go.kr</a> · 1301</li>
+        <li>Korean National Police Agency <a href="https://ecrm.police.go.kr">ecrm.police.go.kr</a> · 182</li>
+      </ul>
+
+      <h2>11. Changes to this policy</h2>
+      <p>If we change this policy, we will post the new version on this page with a new effective date.</p>
+    </article>
+  </main>
+
+  <footer class="bottom">
+    <nav>
+      <a href="../terms/">이용약관 · Terms of Service</a>
+      <a href="../">오발있 · Ovalit</a>
+    </nav>
+    <p class="disclaimer" lang="en">Ovalit isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
+  </footer>
+</div>
+<script src="../legal.js"></script>
+</body>
+</html>

@@ -1,0 +1,1912 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ovalit — VALORANT match review · mockups</title>
+<meta name="description" content="Mockups for Ovalit, a Korean-language VALORANT match-review app. Submitted with a Riot production API key application.">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Sans+KR:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root, [data-theme="dark"] {
+  --bg: #100E0C;
+  --raised: #1A1714;
+  --line-weak: #1C1917;
+  --line: #23201C;
+  --fill: #2A2621;
+  --t1: #F5F2ED;
+  --t2: #9A9289;
+  --t3: #6D665E;
+  --t4: #57514A;
+  --pos: #3FCF8E;
+  --neg: #E5484D;
+  --accent: #E0B252;
+  --on-accent: #100E0C;
+  --ag1-bg: #1E2A38;
+  --ag1-fg: #90B4D6;
+  --ag2-bg: #382E1E;
+  --ag2-fg: #D6B890;
+  --ag3-bg: #26381E;
+  --ag3-fg: #AFD690;
+  --ag4-bg: #381E32;
+  --ag4-fg: #D690C8;
+  --ag5-bg: #1E3833;
+  --ag5-fg: #90D6C9;
+  --t1-dim: #CFC9C0;
+  --t5: #443F39;
+  --bar: #322D27;
+  --accent-ink: #E0B252;
+  --ag6-bg: #38251E;
+  --ag6-fg: #D6A290;
+  --ag7-bg: #2E1E38;
+  --ag7-fg: #BE90D6;
+  --sheet: #1A1714;
+  --scrim: rgba(0, 0, 0, 0.6);
+  --grab: #443F39;
+}
+[data-theme="light"] {
+  --bg: #FDFCFA;
+  --raised: #F7F4F0;
+  --line-weak: #EFEAE4;
+  --line: #E5DFD7;
+  --fill: #F2EDE7;
+  --t1: #191510;
+  --t2: #6E675E;
+  --t3: #928B82;
+  --t4: #ACA49A;
+  --pos: #0E8A52;
+  --neg: #C2262C;
+  --accent: #E0B252;
+  --on-accent: #100E0C;
+  --ag1-bg: #E3ECF6;
+  --ag1-fg: #2F5F8C;
+  --ag2-bg: #F6EFE3;
+  --ag2-fg: #8C6A2F;
+  --ag3-bg: #E9F3E3;
+  --ag3-fg: #4A7A2F;
+  --ag4-bg: #F6E6F1;
+  --ag4-fg: #8C3070;
+  --ag5-bg: #E0F1EE;
+  --ag5-fg: #1F6E62;
+  --t1-dim: #46403A;
+  --t5: #C8C1B8;
+  --bar: #EAE5DE;
+  --accent-ink: #8A6410;
+  --ag6-bg: #F6E8E3;
+  --ag6-fg: #8C4A30;
+  --ag7-bg: #EFE6F6;
+  --ag7-fg: #6A3090;
+  --sheet: #FDFCFA;
+  --scrim: rgba(17, 19, 26, 0.32);
+  --grab: #C8C1B8;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: #0A0908; color: #F5F2ED;
+  font-family: "IBM Plex Sans KR", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1320px; margin: 0 auto; padding: 0 24px 96px 24px; }
+header { padding: 72px 0 0 0; max-width: 680px; }
+.mark { display: block; margin-bottom: 26px; }
+h1 { margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -0.8px; line-height: 1.2; }
+h1 span { color: #9A9289; font-weight: 500; }
+.lede { margin: 18px 0 0 0; font-size: 15px; line-height: 1.75; color: #CFC9C0; }
+.lede + .lede { margin-top: 14px; }
+.meta { margin-top: 30px; padding-top: 22px; border-top: 1px solid #23201C; display: flex; flex-wrap: wrap; gap: 10px 30px; font-size: 13px; color: #9A9289; }
+.meta b { color: #F5F2ED; font-weight: 600; }
+.meta a { color: #E0B252; }
+section { margin-top: 72px; }
+h2 { margin: 0 0 4px 0; font-size: 12px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #6D665E; }
+.grid { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 46px 36px; }
+.card { margin: 0; width: 390px; }
+figcaption { margin-bottom: 14px; }
+h3 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -0.2px; color: #F5F2ED; }
+.note { margin: 7px 0 0 0; font-size: 12.5px; line-height: 1.65; color: #9A9289; }
+.frame { width: 390px; height: 844px; border-radius: 22px; overflow: hidden; border: 1px solid #23201C; }
+footer { margin-top: 84px; padding-top: 26px; border-top: 1px solid #23201C; font-size: 12.5px; line-height: 1.75; color: #6D665E; }
+footer a { color: #E0B252; }
+@media (max-width: 520px) {
+  .wrap { padding: 0 16px 64px 16px; }
+  header { padding-top: 48px; }
+  h1 { font-size: 27px; }
+  .card, .frame { width: 100%; max-width: 390px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+<svg class="mark" width="112" height="52" viewBox="0 0 160 74" fill="none" stroke="#E0B252" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" aria-label="Ovalit"><circle cx="27" cy="32.5" r="17.5"></circle><path d="M61.5 23v28a8 8 0 0 0 8 8h21a8 8 0 0 0 8-8V23"></path><path d="M61.5 37.5h37"></path><circle cx="133" cy="32.5" r="17.5"></circle></svg>
+<h1>Ovalit <span>오발있</span></h1>
+<p class="lede">A Korean-language VALORANT match-review app for Android. A player links their Riot account through RSO and gets a weekly report that breaks their own matches down round by round — economy-round win rate, first-engagement outcomes, per-weapon performance, KAST, headshot rate, ACS and ADR.</p>
+<p class="lede">The point is to show a player what to work on between sessions, not during a match. Players can add friends inside the app and compare the same metrics with them, one metric at a time. The app never produces a composite skill score.</p>
+<div class="meta">
+<span><b>Platform</b> Android · Google Play · Korea</span>
+<span><b>APIs</b> VAL-MATCH-V1, VAL-CONTENT-V1, VAL-STATUS-V1, RSO</span>
+<span><b>Status</b> Mockups. Not yet built.</span>
+</div>
+</header>
+
+<section><h2>Onboarding and consent</h2><div class="grid">
+<figure class="card" id="Onboard1">
+<figcaption><h3>S0-1 · Intro</h3><p class="note">Logo, one line, start button. Nothing else.</p></figcaption>
+<div class="frame"><div data-theme="dark" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--t1); overflow: hidden; position: relative;">
+
+  <div style="padding: 232px 32px 0 32px; display: flex; flex-direction: column; align-items: center;">
+
+    <span style="width: 78px; height: 78px; border-radius: 22px; background: var(--accent); display: flex; align-items: center; justify-content: center;">
+      <svg width="53" height="25" viewBox="0 0 160 74" fill="none" stroke="var(--on-accent)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><circle cx="27" cy="32.5" r="17.5"></circle><path d="M61.5 23v28a8 8 0 0 0 8 8h21a8 8 0 0 0 8-8V23"></path><path d="M61.5 37.5h37"></path><circle cx="133" cy="32.5" r="17.5"></circle></svg>
+    </span>
+
+    <h1 style="margin: 26px 0 0 0; font-size: 30px; font-weight: 700; letter-spacing: -1.1px; line-height: 1; color: var(--t1);">오발있</h1>
+
+    <p style="margin: 13px 0 0 0; font-size: 13.5px; line-height: 1.65; color: var(--t2); text-align: center;">내 발로란트 실력 진단부터<br>친구와 비교까지</p>
+
+  </div>
+
+  <div style="position: absolute; left: 0; bottom: 0; width: 390px; box-sizing: border-box; padding: 0 24px 34px 24px;">
+    <a href="#Onboard2" style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 12px; background: var(--accent); color: var(--on-accent); font-size: 15px; font-weight: 700; letter-spacing: -0.2px; text-decoration: none;">Riot 계정으로 시작하기</a>
+    <div style="margin-top: 14px; font-size: 11.5px; color: var(--t3); line-height: 1.6; text-align: center;">비밀번호는 Riot 로그인 페이지에서만 입력해요.</div>
+  </div>
+
+</div></div>
+</figure>
+<figure class="card" id="Onboard2">
+<figcaption><h3>S0-2 · Consent</h3><p class="note">States plainly that linking the account makes the player&#x27;s stats visible to other users of the app. RSO opens in Chrome Custom Tabs from this button; the app never handles the password.</p></figcaption>
+<div class="frame"><div data-theme="dark" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--t1); overflow: hidden; position: relative;">
+
+  <div style="padding: 20px 24px 0 24px; display: flex; align-items: center;">
+    <a href="#Onboard1" aria-label="뒤로" style="color: var(--t2); display: flex; align-items: center; text-decoration: none;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l-6 6 6 6"></path></svg>
+    </a>
+  </div>
+
+  <div style="padding: 44px 24px 0 24px; display: flex; flex-direction: column;">
+
+    <h1 style="margin: 0; font-size: 25px; font-weight: 700; letter-spacing: -0.7px; line-height: 1.42; color: var(--t1);">Riot 계정을<br>연동할게요.</h1>
+
+    <div style="margin-top: 40px; display: flex; flex-direction: column;">
+
+      <div style="padding: 17px 0; border-top: 1px solid var(--line); display: flex; gap: 13px;">
+        <span style="flex-shrink: 0; width: 18px; color: var(--t3); display: flex; align-items: center; justify-content: center; padding-top: 1px;">
+          <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15.5V9M7.3 15.5V5M11.7 15.5v-4M16 15.5V7"></path></svg>
+        </span>
+        <div style="flex-grow: 1;">
+          <div style="font-size: 13.5px; font-weight: 600; color: var(--t1);">최근 50경기를 불러와요</div>
+          <div style="margin-top: 5px; font-size: 11.5px; color: var(--t2); line-height: 1.55;">경쟁과 일반 경기를 라운드 단위로 분석해요. 처음 한 번만 1분 정도 걸려요.</div>
+        </div>
+      </div>
+
+      <div style="padding: 17px 0; border-top: 1px solid var(--line); display: flex; gap: 13px;">
+        <span style="flex-shrink: 0; width: 18px; color: var(--t3); display: flex; align-items: center; justify-content: center; padding-top: 1px;">
+          <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.4" cy="7" r="2.7"></circle><path d="M2.6 16.3c0-2.7 2.1-4.4 4.8-4.4s4.8 1.7 4.8 4.4"></path><path d="M13.3 5.1a2.7 2.7 0 0 1 0 5.2"></path><path d="M14.5 12.4c1.8.5 2.9 1.9 2.9 3.9"></path></svg>
+        </span>
+        <div style="flex-grow: 1;">
+          <div style="font-size: 13.5px; font-weight: 600; color: var(--t1);">전적이 다른 사용자에게 공개돼요</div>
+          <div style="margin-top: 5px; font-size: 11.5px; color: var(--t2); line-height: 1.55;">계정을 연동하면 회원님의 발로란트 전적이 이 앱의 다른 사용자에게 공개돼요.</div>
+        </div>
+      </div>
+
+      <div style="padding: 17px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); display: flex; gap: 13px;">
+        <span style="flex-shrink: 0; width: 18px; color: var(--t3); display: flex; align-items: center; justify-content: center; padding-top: 1px;">
+          <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 3.2A7.2 7.2 0 1 1 3.4 12"></path><path d="M3 4.2v3.6h3.6"></path></svg>
+        </span>
+        <div style="flex-grow: 1;">
+          <div style="font-size: 13.5px; font-weight: 600; color: var(--t1);">언제든 해제할 수 있어요</div>
+          <div style="margin-top: 5px; font-size: 11.5px; color: var(--t2); line-height: 1.55;">설정에서 연동을 해제하면 저장된 데이터도 같이 지워요.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top: 26px; display: flex; gap: 10px;">
+      <span style="flex-shrink: 0; color: var(--t4); padding-top: 1px;">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8.6" width="12" height="8" rx="1.6"></rect><path d="M7 8.6V6.2a3 3 0 0 1 6 0v2.4"></path></svg>
+      </span>
+      <span style="font-size: 11.5px; color: var(--t3); line-height: 1.6;">비밀번호는 Riot 로그인 페이지에서만 입력해요. 이 앱은 비밀번호를 받지도, 저장하지도 않아요.</span>
+    </div>
+
+  </div>
+
+  <div style="position: absolute; left: 0; bottom: 0; width: 390px; box-sizing: border-box; padding: 0 24px 34px 24px;">
+    <a href="#Onboard3" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; border-radius: 12px; background: var(--accent); color: var(--on-accent); font-size: 15px; font-weight: 700; letter-spacing: -0.2px; text-decoration: none;">
+      Riot 계정으로 계속하기
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h11M11 5.5l4.5 4.5L11 14.5"></path></svg>
+    </a>
+    <div style="margin-top: 14px; font-size: 11px; color: var(--t4); line-height: 1.6; text-align: center;">계속하면 Riot Games 로그인 페이지로 이동해요.</div>
+  </div>
+
+</div></div>
+</figure>
+<figure class="card" id="Onboard3">
+<figcaption><h3>S0-4 · Initial sync</h3><p class="note">The last 50 matches, capped at 8 weeks, with per-match progress. The player also picks what the report should lead with.</p></figcaption>
+<div class="frame"><div data-theme="dark" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--t1); overflow: hidden; position: relative;">
+
+  <div style="padding: 72px 24px 0 24px; display: flex; flex-direction: column;">
+
+    <h1 style="margin: 0; font-size: 25px; font-weight: 700; letter-spacing: -0.7px; line-height: 1.42; color: var(--t1);">어떤 게<br>제일 궁금하세요?</h1>
+
+    <p style="margin: 14px 0 0 0; font-size: 12.5px; line-height: 1.6; color: var(--t3);">고르신 쪽을 리포트 위에 올려드려요.<br>나중에 설정에서 바꿔도 돼요.</p>
+
+    <div style="margin-top: 28px; display: flex; flex-direction: column; gap: 9px;">
+
+      <button type="button" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; background: transparent; border: 1px solid var(--line); font-family: inherit; text-align: left; cursor: pointer;">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 14px; font-weight: 600; color: var(--t1);">에임 올리기</span>
+          <span style="font-size: 11px; color: var(--t3);">헤드샷 비율, 첫 교전 승률, 무기별 성적</span>
+        </div>
+        <span style="width: 18px; height: 18px; flex-shrink: 0; border-radius: 999px; border: 1.5px solid var(--t4);"></span>
+      </button>
+
+      <button type="button" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; background: transparent; border: 1px solid var(--line); font-family: inherit; text-align: left; cursor: pointer;">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 14px; font-weight: 600; color: var(--t1);">라운드 운영 다듬기</span>
+          <span style="font-size: 11px; color: var(--t3);">이코·포스바이·풀바이 승률, 스킬 사용, 스파이크 설치</span>
+        </div>
+        <span style="width: 18px; height: 18px; flex-shrink: 0; border-radius: 999px; border: 1.5px solid var(--t4);"></span>
+      </button>
+
+      <button type="button" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; background: transparent; border: 1px solid var(--line); font-family: inherit; text-align: left; cursor: pointer;">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 14px; font-weight: 600; color: var(--t1);">기복 줄이기</span>
+          <span style="font-size: 11px; color: var(--t3);">관여율, 생존율, 경기마다 들쑥날쑥한 정도</span>
+        </div>
+        <span style="width: 18px; height: 18px; flex-shrink: 0; border-radius: 999px; border: 1.5px solid var(--t4);"></span>
+      </button>
+
+      <button type="button" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; background: var(--fill); border: 1px solid var(--accent); font-family: inherit; text-align: left; cursor: pointer;">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 14px; font-weight: 600; color: var(--t1);">특별히 없어요</span>
+          <span style="font-size: 11px; color: var(--t2);">그 주에 제일 많이 움직인 것부터 보여드릴게요</span>
+        </div>
+        <span style="width: 18px; height: 18px; flex-shrink: 0; border-radius: 999px; background: var(--accent); display: flex; align-items: center; justify-content: center;">
+          <svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="var(--on-accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5l4 4 8-9"></path></svg>
+        </span>
+      </button>
+
+    </div>
+
+  </div>
+
+  <div style="position: absolute; left: 0; bottom: 0; width: 390px; box-sizing: border-box; padding: 0 24px 34px 24px;">
+
+    <div style="padding-top: 18px; border-top: 1px solid var(--line);">
+
+      <div style="display: flex; align-items: baseline; gap: 8px;">
+        <span style="flex-grow: 1; font-size: 12.5px; font-weight: 600; color: var(--t1);">경기를 불러오고 있어요</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--t2);">37 / 50</span>
+      </div>
+
+      <div style="margin-top: 11px; display: flex; gap: 3px;">
+        <span style="flex-grow: 1; height: 14px; border-radius: 2px; background: var(--pos);"></span>
+        <span style="flex-grow: 1; height: 14px; border-radius: 2px; background: var(--neg);"></span>
+        <span style="flex-grow: 1; height: 14px; border-radius: 2px; background: var(--pos);"></span>
+        <span style="flex-grow: 1; height: 14px; border-radius: 2px; background: var(--pos);"></span>
+        <span style="flex-grow: 1; height: 14px; border-radius: 2px; background: var(--neg);"></span>
+        <span style="flex-grow: 1; height: 14px; border-radius: 2px; background: var(--pos);"></span>
+        <span style="flex-grow: 1; height: 14px; border-radius: 2px; background: var(--pos);"></span>
+        <span style="flex-grow: 1; height: 14px; border-radius: 2px; background: var(--neg);"></span>
+        <span style="flex-grow: 1; height: 14px; border-radius: 2px; background: var(--pos);"></span>
+        <span style="flex-grow: 1; height: 14px; border-radius: 2px; background: var(--pos);"></span>
+        <span style="flex-grow: 1; height: 14px; border-radius: 2px; background: var(--neg);"></span>
+        <span style="flex-grow: 1; height: 14px; border-radius: 2px; background: var(--pos);"></span>
+        <span style="flex-grow: 1; height: 14px; border-radius: 2px; background: var(--pos);"></span>
+        <span style="flex-grow: 1; height: 14px; border-radius: 2px; background: var(--line-weak);"></span>
+        <span style="flex-grow: 1; height: 14px; border-radius: 2px; background: var(--line-weak);"></span>
+        <span style="flex-grow: 1; height: 14px; border-radius: 2px; background: var(--line-weak);"></span>
+      </div>
+
+      <div style="margin-top: 12px; font-size: 11px; color: var(--t3); line-height: 1.55;">앱을 닫아도 계속 분석해요. 다 모으면 알림으로 알려드릴게요.</div>
+
+    </div>
+
+  </div>
+
+</div></div>
+</figure>
+</div></section><section><h2>The report</h2><div class="grid">
+<figure class="card" id="Home">
+<figcaption><h3>S1 · Weekly report</h3><p class="note">Four fixed metrics, then three that actually moved this week, then one improvement line. No composite score anywhere.</p></figcaption>
+<div class="frame"><div data-theme="dark" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--t1); overflow: hidden; position: relative;">
+
+  <div style="display: flex; flex-direction: column;">
+
+    <div style="padding: 20px 20px 0 20px; display: flex; align-items: center; gap: 10px;">
+      <span style="flex-grow: 1; font-size: 18px; font-weight: 700; letter-spacing: -0.6px; color: var(--t1);">오발있</span>
+      <span style="width: 16px; height: 16px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+      <span style="font-size: 11.5px; font-weight: 500; color: var(--t2);">플래티넘 2</span>
+      <span style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+    </div>
+
+    <div style="padding: 14px 20px 0 20px; display: flex; gap: 4px;">
+      <span style="font-size: 12px; font-weight: 600; color: var(--t1); background: var(--fill); padding: 6px 12px; border-radius: 8px;">경쟁 + 일반</span>
+      <span style="font-size: 12px; font-weight: 500; color: var(--t2); padding: 6px 12px;">경쟁</span>
+      <span style="font-size: 12px; font-weight: 500; color: var(--t2); padding: 6px 12px;">일반</span>
+      <span style="font-size: 12px; font-weight: 500; color: var(--t2); padding: 6px 12px;">기타</span>
+    </div>
+
+    <div style="padding: 22px 20px 0 20px; display: flex; align-items: baseline; gap: 8px;">
+      <span style="flex-grow: 1; font-size: 20px; font-weight: 700; letter-spacing: -0.4px; color: var(--t1);">이번 주</span>
+      <span style="font-size: 11.5px; color: var(--t3);">전략가 · 9/13 – 9/19 · 11경기</span>
+    </div>
+
+    <div style="margin: 16px 20px 0 20px; display: flex;">
+      <div style="flex-grow: 1; flex-basis: 0; padding-right: 10px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 5px;">
+        <span style="display: flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 500; color: var(--t2);">전투점수<svg width="9" height="9" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg></span>
+        <span style="font-family: Archivo, sans-serif; font-size: 23px; font-weight: 700; letter-spacing: -0.6px; color: var(--t1); line-height: 1;">241</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 600; color: var(--pos);">+18</span>
+      </div>
+      <div style="flex-grow: 1; flex-basis: 0; padding: 0 10px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 5px;">
+        <span style="display: flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 500; color: var(--t2);">K/D<svg width="9" height="9" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg></span>
+        <span style="font-family: Archivo, sans-serif; font-size: 23px; font-weight: 700; letter-spacing: -0.6px; color: var(--t1); line-height: 1;">1.42</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 600; color: var(--pos);">+0.11</span>
+      </div>
+      <div style="flex-grow: 1; flex-basis: 0; padding: 0 10px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 5px;">
+        <span style="display: flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 500; color: var(--t2);">피해량<svg width="9" height="9" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg></span>
+        <span style="font-family: Archivo, sans-serif; font-size: 23px; font-weight: 700; letter-spacing: -0.6px; color: var(--t1); line-height: 1;">162</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 600; color: var(--pos);">+12</span>
+      </div>
+      <div style="flex-grow: 1; flex-basis: 0; padding-left: 10px; display: flex; flex-direction: column; gap: 5px;">
+        <span style="display: flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 500; color: var(--t2);">헤드샷<svg width="9" height="9" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg></span>
+        <span style="font-family: Archivo, sans-serif; font-size: 23px; font-weight: 700; letter-spacing: -0.6px; color: var(--t1); line-height: 1;">24%</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 600; color: var(--pos);">+5</span>
+      </div>
+    </div>
+
+    <div style="margin: 13px 20px 0 20px; display: flex; flex-direction: column; gap: 4px;">
+      <span style="font-size: 11px; color: var(--t3);">판당 16.2 / 11.4 / 4.9 · 11경기 496라운드</span>
+      <span style="font-size: 10.5px; color: var(--t4);">4주 평균 223 · 1.31 · 150 · 19%</span>
+    </div>
+
+    <div style="margin: 22px 20px 0 20px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; align-items: baseline; gap: 8px;">
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">달라진 점</span>
+      <span style="font-size: 11px; color: var(--t3);">전략가 기준 · 지난 4주 대비</span>
+    </div>
+
+    <div style="padding-left: 20px; margin-top: 14px; display: flex;">
+      <div style="flex-shrink: 0; width: 150px; box-sizing: border-box; padding-right: 18px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 11.5px; font-weight: 500; color: var(--t2);">포스바이 승률</span>
+        <div style="display: flex; align-items: baseline; gap: 6px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 25px; font-weight: 700; letter-spacing: -0.7px; color: var(--t1); line-height: 1;">22%</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 11px; font-weight: 600; color: var(--neg);">−9</span>
+        </div>
+        <div style="font-size: 10.5px; color: var(--t3); line-height: 1.5;">4주 평균 31%<br>판당 2.5R</div>
+      </div>
+      <div style="flex-shrink: 0; width: 150px; box-sizing: border-box; padding: 0 18px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 11.5px; font-weight: 500; color: var(--t2);">생존율</span>
+        <div style="display: flex; align-items: baseline; gap: 6px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 25px; font-weight: 700; letter-spacing: -0.7px; color: var(--t1); line-height: 1;">41%</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 11px; font-weight: 600; color: var(--neg);">−4</span>
+        </div>
+        <div style="font-size: 10.5px; color: var(--t3); line-height: 1.5;">4주 평균 45%<br>라운드 496</div>
+      </div>
+      <div style="flex-shrink: 0; width: 150px; box-sizing: border-box; padding: 0 18px; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 11.5px; font-weight: 500; color: var(--t2);">라운드 관여율</span>
+        <div style="display: flex; align-items: baseline; gap: 6px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 25px; font-weight: 700; letter-spacing: -0.7px; color: var(--t1); line-height: 1;">68%</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 11px; font-weight: 600; color: var(--neg);">−5</span>
+        </div>
+        <div style="font-size: 10.5px; color: var(--t3); line-height: 1.5;">4주 평균 73%<br>KAST · 목표 70%</div>
+      </div>
+    </div>
+
+    <div style="margin: 20px 20px 0 20px; padding-top: 18px; border-top: 1px solid var(--line);">
+      <div style="font-size: 14.5px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1); line-height: 1.5;">수비 라운드 생존율이 공격보다 13%p 낮아요.</div>
+      <div style="margin-top: 6px; font-size: 11.5px; color: var(--t2); line-height: 1.55;">공격 48%, 수비 35%예요. 전략가는 수비에서 오래 버틸수록 라운드가 풀립니다.</div>
+    </div>
+
+    <div style="margin: 20px 20px 0 20px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 8px;">
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">라이벌 · 준호#KR1</span>
+      <span style="font-size: 11px; color: var(--t3);">3개 중 2개 앞섬</span>
+    </div>
+
+    <div style="margin: 13px 20px 0 20px; display: flex; flex-direction: column; gap: 11px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 42px; font-size: 11px; color: var(--t2);">K/D</span>
+        <span style="width: 34px; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--t1);">1.42</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; overflow: hidden;">
+          <div style="width: 54%; background: var(--t1);"></div>
+        </div>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--t3);">1.18</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 42px; font-size: 11px; color: var(--t2);">피해량</span>
+        <span style="width: 34px; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--t1);">162</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; overflow: hidden;">
+          <div style="width: 53%; background: var(--t1);"></div>
+        </div>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--t3);">147</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 42px; font-size: 11px; color: var(--t2);">헤드샷</span>
+        <span style="width: 34px; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--t3);">24%</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; flex-direction: row-reverse; overflow: hidden;">
+          <div style="width: 53%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--t1);">27%</span>
+      </div>
+    </div>
+
+    <div style="margin: 20px 20px 0 20px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 8px;">
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">친구 비교</span>
+      <span style="font-size: 11px; color: var(--t2);">피해량 ▾</span>
+    </div>
+
+    <div style="margin: 13px 20px 0 20px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 11px; font-family: Archivo, sans-serif; font-size: 11px; font-weight: 600; color: var(--t3);">1</span>
+        <span style="width: 54px; font-size: 12px; font-weight: 600; color: var(--t1);">나</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; overflow: hidden;">
+          <div style="width: 100%; background: var(--accent);"></div>
+        </div>
+        <span style="width: 28px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--t1);">162</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 11px; font-family: Archivo, sans-serif; font-size: 11px; font-weight: 600; color: var(--t3);">2</span>
+        <span style="width: 54px; font-size: 12px; color: var(--t2);">준호</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; overflow: hidden;">
+          <div style="width: 91%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 28px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--t2);">147</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 11px; font-family: Archivo, sans-serif; font-size: 11px; font-weight: 600; color: var(--t3);">3</span>
+        <span style="width: 54px; font-size: 12px; color: var(--t2);">민석</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; overflow: hidden;">
+          <div style="width: 84%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 28px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--t2);">136</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 11px; font-family: Archivo, sans-serif; font-size: 11px; font-weight: 600; color: var(--t3);">4</span>
+        <span style="width: 54px; font-size: 12px; color: var(--t2);">재현</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; overflow: hidden;">
+          <div style="width: 76%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 28px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--t2);">123</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="position: absolute; left: 0; top: 780px; width: 390px; height: 64px; box-sizing: border-box; background: var(--bg); border-top: 1px solid var(--line-weak); display: flex; align-items: flex-start; padding: 11px 12px 0 12px;">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--t1);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 9.2 10 3.2l7 6V17H12.5v-4.6h-5V17H3z"></path></svg>
+      <span style="font-size: 10px; font-weight: 600;">홈</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--t3);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 5.5h12M4 10h12M4 14.5h12"></path></svg>
+      <span style="font-size: 10px; font-weight: 500;">경기</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--t3);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7.6" cy="7" r="2.6"></circle><path d="M2.8 16.2c0-2.6 2.1-4.3 4.8-4.3s4.8 1.7 4.8 4.3"></path><path d="M13.4 5.2a2.6 2.6 0 0 1 0 5"></path><path d="M14.6 12.3c1.7.5 2.8 1.9 2.8 3.9"></path></svg>
+      <span style="font-size: 10px; font-weight: 500;">친구</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--t3);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 6.6h12M5 13.4h12"></path><circle cx="8" cy="6.6" r="2"></circle><circle cx="12" cy="13.4" r="2"></circle></svg>
+      <span style="font-size: 10px; font-weight: 500;">설정</span>
+    </div>
+  </div>
+
+</div></div>
+</figure>
+<figure class="card" id="StatSheet">
+<figcaption><h3>S1-a · Metric explainer</h3><p class="note">Opens on tap: one-line definition, 12-week trend, a published benchmark, and the formula.</p></figcaption>
+<div class="frame"><div data-theme="dark" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--t1); overflow: hidden; position: relative;">
+
+  <div style="padding: 20px 20px 0 20px; display: flex; flex-direction: column; opacity: 0.45;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="flex-grow: 1; font-size: 18px; font-weight: 700; letter-spacing: -0.6px; color: var(--t1);">오발있</span>
+      <div style="width: 30px; height: 30px; border-radius: 999px; background: var(--fill);"></div>
+    </div>
+    <div style="margin-top: 36px; display: flex; align-items: baseline; gap: 8px;">
+      <span style="flex-grow: 1; font-size: 20px; font-weight: 700; letter-spacing: -0.4px; color: var(--t1);">이번 주</span>
+      <span style="font-size: 11.5px; color: var(--t3);">9/13 – 9/19 · 11경기</span>
+    </div>
+    <div style="margin-top: 16px; display: flex;">
+      <div style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 10.5px; color: var(--t2);">전투점수</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 23px; font-weight: 700; color: var(--t1); line-height: 1;">241</span>
+      </div>
+      <div style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 10.5px; color: var(--t2);">K/D</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 23px; font-weight: 700; color: var(--t1); line-height: 1;">1.42</span>
+      </div>
+      <div style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 10.5px; color: var(--t2);">피해량</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 23px; font-weight: 700; color: var(--t1); line-height: 1;">162</span>
+      </div>
+      <div style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 10.5px; color: var(--t2);">헤드샷</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 23px; font-weight: 700; color: var(--t1); line-height: 1;">24%</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 0; top: 0; width: 390px; height: 844px; background: var(--scrim);"></div>
+
+  <div style="position: absolute; left: 0; bottom: 0; width: 390px; box-sizing: border-box; background: var(--sheet); border-radius: 20px 20px 0 0; padding: 10px 24px 34px 24px;">
+
+    <div style="display: flex; justify-content: center;">
+      <span style="width: 34px; height: 4px; border-radius: 999px; background: var(--grab);"></span>
+    </div>
+
+    <div style="margin-top: 22px; display: flex; align-items: baseline; gap: 8px;">
+      <span style="font-size: 19px; font-weight: 700; letter-spacing: -0.4px; color: var(--t1);">피해량</span>
+      <span style="font-family: Archivo, sans-serif; font-size: 12px; font-weight: 600; color: var(--t3);">ADR</span>
+    </div>
+    <div style="margin-top: 7px; font-size: 13px; color: var(--t2); line-height: 1.6;">한 라운드에서 적에게 입힌 피해의 평균. 킬로 이어지지 않은 피해도 들어갑니다.</div>
+
+    <div style="margin-top: 24px; display: flex; align-items: baseline; gap: 8px;">
+      <span style="font-family: Archivo, sans-serif; font-size: 40px; font-weight: 700; letter-spacing: -1.2px; color: var(--t1); line-height: 1;">162</span>
+      <span style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 600; color: var(--pos);">+12</span>
+      <span style="flex-grow: 1;"></span>
+      <span style="font-size: 11px; color: var(--t3); text-align: right; line-height: 1.5;">최근 11경기<br>496라운드</span>
+    </div>
+
+    <div style="margin-top: 20px; display: flex; align-items: flex-end; gap: 5px; height: 62px;">
+      <span style="flex-grow: 1; height: 38%; background: var(--bar); border-radius: 2px;"></span>
+      <span style="flex-grow: 1; height: 46%; background: var(--bar); border-radius: 2px;"></span>
+      <span style="flex-grow: 1; height: 41%; background: var(--bar); border-radius: 2px;"></span>
+      <span style="flex-grow: 1; height: 55%; background: var(--bar); border-radius: 2px;"></span>
+      <span style="flex-grow: 1; height: 49%; background: var(--bar); border-radius: 2px;"></span>
+      <span style="flex-grow: 1; height: 62%; background: var(--bar); border-radius: 2px;"></span>
+      <span style="flex-grow: 1; height: 58%; background: var(--bar); border-radius: 2px;"></span>
+      <span style="flex-grow: 1; height: 51%; background: var(--bar); border-radius: 2px;"></span>
+      <span style="flex-grow: 1; height: 66%; background: var(--bar); border-radius: 2px;"></span>
+      <span style="flex-grow: 1; height: 72%; background: var(--bar); border-radius: 2px;"></span>
+      <span style="flex-grow: 1; height: 79%; background: var(--bar); border-radius: 2px;"></span>
+      <span style="flex-grow: 1; height: 88%; background: var(--accent); border-radius: 2px;"></span>
+    </div>
+    <div style="margin-top: 8px; display: flex;">
+      <span style="flex-grow: 1; font-size: 10.5px; color: var(--t4);">12주 전</span>
+      <span style="font-size: 10.5px; color: var(--t4);">이번 주</span>
+    </div>
+
+    <div style="margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line);">
+      <div style="font-size: 13px; font-weight: 700; color: var(--t1);">어느 정도면 괜찮나요?</div>
+      <div style="margin-top: 7px; font-size: 12.5px; color: var(--t2); line-height: 1.65;">150을 넘기면 라운드마다 제 몫은 하고 있다고 봅니다. 프로 경기 평균은 160~180 사이예요.</div>
+    </div>
+
+    <div style="margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line);">
+      <div style="font-size: 13px; font-weight: 700; color: var(--t1);">어떻게 계산하나요?</div>
+      <div style="margin-top: 7px; font-size: 12.5px; color: var(--t2); line-height: 1.65;">경기에서 입힌 피해를 전부 더해 플레이한 라운드 수로 나눕니다.</div>
+      <div style="margin-top: 10px; padding: 11px 13px; background: var(--fill); border-radius: 9px; font-family: Archivo, sans-serif; font-size: 11.5px; color: var(--t2);">80,352 피해 ÷ 496 라운드 = 162</div>
+    </div>
+
+  </div>
+
+</div></div>
+</figure>
+<figure class="card" id="MatchList">
+<figcaption><h3>S2 · Match list</h3><p class="note">The player&#x27;s own matches.</p></figcaption>
+<div class="frame"><div data-theme="dark" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--t1); overflow: hidden; position: relative;">
+
+  <div style="display: flex; flex-direction: column;">
+
+    <div style="padding: 20px 20px 0 20px; display: flex; align-items: center; gap: 10px;">
+      <span style="flex-grow: 1; font-size: 20px; font-weight: 700; letter-spacing: -0.4px; color: var(--t1);">경기</span>
+      <button type="button" aria-label="필터" style="width: 32px; height: 32px; border-radius: 8px; background: transparent; border: 0; color: var(--t2); display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer;">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 5.5h14M6 10h8M8.5 14.5h3"></path></svg>
+      </button>
+    </div>
+
+    <div style="padding: 14px 20px 0 20px; display: flex; gap: 4px;">
+      <span style="font-size: 12px; font-weight: 600; color: var(--t1); background: var(--fill); padding: 6px 12px; border-radius: 8px;">경쟁 + 일반</span>
+      <span style="font-size: 12px; font-weight: 500; color: var(--t2); padding: 6px 12px;">경쟁</span>
+      <span style="font-size: 12px; font-weight: 500; color: var(--t2); padding: 6px 12px;">일반</span>
+      <span style="font-size: 12px; font-weight: 500; color: var(--t2); padding: 6px 12px;">기타</span>
+    </div>
+
+    <div style="margin-top: 22px; display: flex; flex-direction: column;">
+
+      <div style="padding: 0 20px 10px 20px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.2px; color: var(--t3);">오늘</div>
+
+      <a href="#MatchDetail" style="text-decoration: none; padding: 13px 20px; display: flex; align-items: center; gap: 13px;">
+        <span style="position: relative; width: 54px; height: 38px; flex-shrink: 0;"><span style="position: absolute; inset: 0; border-radius: 8px; background: linear-gradient(135deg, var(--fill), var(--line));"></span><span style="position: absolute; left: -5px; bottom: -4px; width: 24px; height: 24px; border-radius: 999px; background: linear-gradient(135deg, var(--line), var(--raised)); border: 2px solid var(--bg); box-sizing: border-box;"></span></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 14px; font-weight: 600; letter-spacing: -0.2px; color: var(--t1);">어센트</span>
+          <span style="font-size: 11px; color: var(--t3);">경쟁 · 2시간 전</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 700; color: var(--pos);">13 – 9</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 11px; font-weight: 500; color: var(--t2);">21/13/5 · ADR 174</span>
+        </div>
+      </a>
+      <div style="height: 1px; background: var(--line-weak); margin-left: 87px;"></div>
+
+      <a href="#MatchDetail" style="text-decoration: none; padding: 13px 20px; display: flex; align-items: center; gap: 13px;">
+        <span style="position: relative; width: 54px; height: 38px; flex-shrink: 0;"><span style="position: absolute; inset: 0; border-radius: 8px; background: linear-gradient(135deg, var(--fill), var(--line));"></span><span style="position: absolute; left: -5px; bottom: -4px; width: 24px; height: 24px; border-radius: 999px; background: linear-gradient(135deg, var(--line), var(--raised)); border: 2px solid var(--bg); box-sizing: border-box;"></span></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 14px; font-weight: 600; letter-spacing: -0.2px; color: var(--t1);">헤이븐</span>
+          <span style="font-size: 11px; color: var(--t3);">경쟁 · 3시간 전</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 700; color: var(--neg);">8 – 13</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 11px; font-weight: 500; color: var(--t2);">12/17/3 · ADR 118</span>
+        </div>
+      </a>
+      <div style="height: 1px; background: var(--line-weak); margin-left: 87px;"></div>
+
+      <a href="#MatchDetail" style="text-decoration: none; padding: 13px 20px; display: flex; align-items: center; gap: 13px;">
+        <span style="position: relative; width: 54px; height: 38px; flex-shrink: 0;"><span style="position: absolute; inset: 0; border-radius: 8px; background: linear-gradient(135deg, var(--fill), var(--line));"></span><span style="position: absolute; left: -5px; bottom: -4px; width: 24px; height: 24px; border-radius: 999px; background: linear-gradient(135deg, var(--line), var(--raised)); border: 2px solid var(--bg); box-sizing: border-box;"></span></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 14px; font-weight: 600; letter-spacing: -0.2px; color: var(--t1);">바인드</span>
+          <span style="font-size: 11px; color: var(--t3);">일반 · 5시간 전</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 700; color: var(--pos);">13 – 11</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 11px; font-weight: 500; color: var(--t2);">18/11/7 · ADR 169</span>
+        </div>
+      </a>
+
+      <div style="padding: 24px 20px 10px 20px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.2px; color: var(--t3);">어제</div>
+
+      <a href="#MatchDetail" style="text-decoration: none; padding: 13px 20px; display: flex; align-items: center; gap: 13px;">
+        <span style="position: relative; width: 54px; height: 38px; flex-shrink: 0;"><span style="position: absolute; inset: 0; border-radius: 8px; background: linear-gradient(135deg, var(--fill), var(--line));"></span><span style="position: absolute; left: -5px; bottom: -4px; width: 24px; height: 24px; border-radius: 999px; background: linear-gradient(135deg, var(--line), var(--raised)); border: 2px solid var(--bg); box-sizing: border-box;"></span></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 14px; font-weight: 600; letter-spacing: -0.2px; color: var(--t1);">로터스</span>
+          <span style="font-size: 11px; color: var(--t3);">경쟁 · 23:40</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 700; color: var(--pos);">13 – 10</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 11px; font-weight: 500; color: var(--t2);">16/14/9 · ADR 152</span>
+        </div>
+      </a>
+      <div style="height: 1px; background: var(--line-weak); margin-left: 87px;"></div>
+
+      <a href="#MatchDetail" style="text-decoration: none; padding: 13px 20px; display: flex; align-items: center; gap: 13px;">
+        <span style="position: relative; width: 54px; height: 38px; flex-shrink: 0;"><span style="position: absolute; inset: 0; border-radius: 8px; background: linear-gradient(135deg, var(--fill), var(--line));"></span><span style="position: absolute; left: -5px; bottom: -4px; width: 24px; height: 24px; border-radius: 999px; background: linear-gradient(135deg, var(--line), var(--raised)); border: 2px solid var(--bg); box-sizing: border-box;"></span></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 14px; font-weight: 600; letter-spacing: -0.2px; color: var(--t1);">스플릿</span>
+          <span style="font-size: 11px; color: var(--t3);">경쟁 · 22:55</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 700; color: var(--neg);">6 – 13</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 11px; font-weight: 500; color: var(--t2);">9/16/4 · ADR 96</span>
+        </div>
+      </a>
+      <div style="height: 1px; background: var(--line-weak); margin-left: 87px;"></div>
+
+      <a href="#MatchDetail" style="text-decoration: none; padding: 13px 20px; display: flex; align-items: center; gap: 13px;">
+        <span style="position: relative; width: 54px; height: 38px; flex-shrink: 0;"><span style="position: absolute; inset: 0; border-radius: 8px; background: linear-gradient(135deg, var(--fill), var(--line));"></span><span style="position: absolute; left: -5px; bottom: -4px; width: 24px; height: 24px; border-radius: 999px; background: linear-gradient(135deg, var(--line), var(--raised)); border: 2px solid var(--bg); box-sizing: border-box;"></span></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 14px; font-weight: 600; letter-spacing: -0.2px; color: var(--t1);">아이스박스</span>
+          <span style="font-size: 11px; color: var(--t3);">경쟁 · 21:30</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 700; color: var(--pos);">13 – 8</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 11px; font-weight: 500; color: var(--t2);">24/10/6 · ADR 196</span>
+        </div>
+      </a>
+      <div style="height: 1px; background: var(--line-weak); margin-left: 87px;"></div>
+
+      <a href="#MatchDetail" style="text-decoration: none; padding: 13px 20px; display: flex; align-items: center; gap: 13px;">
+        <span style="position: relative; width: 54px; height: 38px; flex-shrink: 0;"><span style="position: absolute; inset: 0; border-radius: 8px; background: linear-gradient(135deg, var(--fill), var(--line));"></span><span style="position: absolute; left: -5px; bottom: -4px; width: 24px; height: 24px; border-radius: 999px; background: linear-gradient(135deg, var(--line), var(--raised)); border: 2px solid var(--bg); box-sizing: border-box;"></span></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 14px; font-weight: 600; letter-spacing: -0.2px; color: var(--t1);">펄</span>
+          <span style="font-size: 11px; color: var(--t3);">경쟁 · 20:15</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 14px; font-weight: 700; color: var(--neg);">11 – 13</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 11px; font-weight: 500; color: var(--t2);">14/15/8 · ADR 141</span>
+        </div>
+      </a>
+
+    </div>
+
+  </div>
+
+  <div style="position: absolute; left: 0; top: 780px; width: 390px; height: 64px; box-sizing: border-box; background: var(--bg); border-top: 1px solid var(--line-weak); display: flex; align-items: flex-start; padding: 11px 12px 0 12px;">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--t3);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 9.2 10 3.2l7 6V17H12.5v-4.6h-5V17H3z"></path></svg>
+      <span style="font-size: 10px; font-weight: 500;">홈</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--t1);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 5.5h12M4 10h12M4 14.5h12"></path></svg>
+      <span style="font-size: 10px; font-weight: 600;">경기</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--t3);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7.6" cy="7" r="2.6"></circle><path d="M2.8 16.2c0-2.6 2.1-4.3 4.8-4.3s4.8 1.7 4.8 4.3"></path><path d="M13.4 5.2a2.6 2.6 0 0 1 0 5"></path><path d="M14.6 12.3c1.7.5 2.8 1.9 2.8 3.9"></path></svg>
+      <span style="font-size: 10px; font-weight: 500;">친구</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--t3);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 6.6h12M5 13.4h12"></path><circle cx="8" cy="6.6" r="2"></circle><circle cx="12" cy="13.4" r="2"></circle></svg>
+      <span style="font-size: 10px; font-weight: 500;">설정</span>
+    </div>
+  </div>
+
+</div></div>
+</figure>
+<figure class="card" id="MatchDetail">
+<figcaption><h3>S3 · Match detail</h3><p class="note">Scoreboard and round timeline. Non-members are shown with that match&#x27;s stats only and are not tappable — no profile, no other matches, no aggregate history.</p></figcaption>
+<div class="frame"><div data-theme="dark" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--t1); overflow: hidden; position: relative;">
+
+  <div style="display: flex; flex-direction: column;">
+
+    <div style="position: relative; width: 390px; height: 196px; background: linear-gradient(158deg, var(--fill) 0%, var(--raised) 52%, var(--bg) 100%); overflow: hidden;">
+      <div style="position: absolute; left: 0; bottom: 0; width: 390px; height: 120px; background: linear-gradient(to bottom, rgba(0,0,0,0), var(--bg));"></div>
+
+      <div style="position: absolute; left: 0; top: 0; padding: 20px 20px 0 20px; display: flex; align-items: center; gap: 12px; width: 390px; box-sizing: border-box;">
+        <a href="#MatchList" aria-label="뒤로" style="color: var(--t1); display: flex; align-items: center; text-decoration: none;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l-6 6 6 6"></path></svg>
+        </a>
+        <span style="flex-grow: 1;"></span>
+        <span style="font-size: 11px; color: var(--t2);">경쟁 · 9/19 14:20 · 38분</span>
+      </div>
+
+      <div style="position: absolute; left: 0; bottom: 0; padding: 0 20px 14px 20px; width: 390px; box-sizing: border-box;">
+        <div style="font-size: 22px; font-weight: 700; letter-spacing: -0.5px; color: var(--t1);">어센트</div>
+        <div style="margin-top: 6px; display: flex; align-items: baseline; gap: 9px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 36px; font-weight: 700; letter-spacing: -1px; color: var(--pos); line-height: 1;">13</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 20px; font-weight: 500; color: var(--t4); line-height: 1;">–</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 36px; font-weight: 700; letter-spacing: -1px; color: var(--t4); line-height: 1;">9</span>
+          <span style="flex-grow: 1;"></span>
+          <span style="font-size: 11px; color: var(--t2);">전반 8–4 · 후반 5–5</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: 14px 20px 0 20px; display: flex; gap: 2px; align-items: flex-end;">
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="width: 7px;"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+    </div>
+
+    <div style="margin: 22px 0 0 0; padding: 0 20px; display: flex; gap: 20px; border-bottom: 1px solid var(--line-weak);">
+      <span style="font-size: 13px; font-weight: 600; color: var(--t1); padding-bottom: 11px; border-bottom: 2px solid var(--t1); margin-bottom: -1px;">스코어보드</span>
+      <span style="font-size: 13px; font-weight: 500; color: var(--t3); padding-bottom: 11px;">라운드</span>
+      <span style="font-size: 13px; font-weight: 500; color: var(--t3); padding-bottom: 11px;">이코노미</span>
+    </div>
+
+    <div style="padding: 16px 20px 0 20px; display: flex; align-items: center;">
+      <span style="flex-grow: 1; font-size: 12px; font-weight: 600; color: var(--pos);">우리 팀</span>
+      <span style="width: 54px; text-align: right; font-size: 10.5px; color: var(--t3);">K / D / A</span>
+      <span style="width: 34px; text-align: right; font-size: 10.5px; color: var(--t3);">ADR</span>
+      <span style="width: 16px;"></span>
+    </div>
+
+    <div style="margin-top: 10px; display: flex; flex-direction: column;">
+
+      <div style="padding: 7px 20px; display: flex; align-items: center; gap: 10px; background: var(--raised);">
+        <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 7px;"><span style="font-size: 13px; font-weight: 700; color: var(--t1);">나</span><span style="width: 15px; height: 15px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span></div>
+        <span style="width: 54px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 600; color: var(--t1);">21/13/5</span>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 600; color: var(--t1);">174</span>
+        <span style="width: 16px;"></span>
+      </div>
+
+      <a href="#Profile" style="text-decoration: none; padding: 7px 20px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 7px;"><div style="display: flex; align-items: center; gap: 7px;"><span style="font-size: 13px; font-weight: 500; color: var(--t1);">준호#KR1</span><span style="font-size: 9.5px; font-weight: 600; color: var(--accent-ink);">친구</span></div><span style="width: 15px; height: 15px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span></div>
+        <span style="width: 54px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">18/14/3</span>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">151</span>
+        <span style="width: 16px; display: flex; justify-content: flex-end; color: var(--t3);">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4l6 6-6 6"></path></svg>
+        </span>
+      </a>
+
+      <div style="padding: 7px 20px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 7px;"><span style="font-size: 13px; font-weight: 400; color: var(--t2);">Hwan#KR2</span><span style="width: 15px; height: 15px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span></div>
+        <span style="width: 54px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">14/16/9</span>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">139</span>
+        <span style="width: 16px;"></span>
+      </div>
+
+      <div style="padding: 7px 20px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 7px;"><span style="font-size: 13px; font-weight: 400; color: var(--t2);">bloom#1004</span><span style="width: 15px; height: 15px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span></div>
+        <span style="width: 54px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">11/15/12</span>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">121</span>
+        <span style="width: 16px;"></span>
+      </div>
+
+      <div style="padding: 7px 20px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 7px;"><span style="font-size: 13px; font-weight: 400; color: var(--t2);">난나야#KR1</span><span style="width: 15px; height: 15px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span></div>
+        <span style="width: 54px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">13/14/7</span>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">144</span>
+        <span style="width: 16px;"></span>
+      </div>
+
+    </div>
+
+    <div style="padding: 20px 20px 0 20px; display: flex; align-items: center;">
+      <span style="flex-grow: 1; font-size: 12px; font-weight: 600; color: var(--t2);">상대 팀</span>
+    </div>
+
+    <div style="margin-top: 10px; display: flex; flex-direction: column;">
+
+      <a href="#Profile" style="text-decoration: none; padding: 7px 20px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 7px;"><div style="display: flex; align-items: center; gap: 7px;"><span style="font-size: 13px; font-weight: 500; color: var(--t1);">민석#KR3</span><span style="font-size: 9.5px; font-weight: 600; color: var(--accent-ink);">친구</span></div><span style="width: 15px; height: 15px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span></div>
+        <span style="width: 54px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">19/15/4</span>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">163</span>
+        <span style="width: 16px; display: flex; justify-content: flex-end; color: var(--t3);">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4l6 6-6 6"></path></svg>
+        </span>
+      </a>
+
+      <div style="padding: 7px 20px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 7px;"><span style="font-size: 13px; font-weight: 400; color: var(--t2);">Ash#KR1</span><span style="width: 15px; height: 15px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span></div>
+        <span style="width: 54px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">17/16/8</span>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">147</span>
+        <span style="width: 16px;"></span>
+      </div>
+
+      <div style="padding: 7px 20px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 7px;"><span style="font-size: 13px; font-weight: 400; color: var(--t2);">rev#9922</span><span style="width: 15px; height: 15px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span></div>
+        <span style="width: 54px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">14/17/6</span>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">129</span>
+        <span style="width: 16px;"></span>
+      </div>
+
+    </div>
+
+    <div style="padding: 14px 20px 0 20px; font-size: 10.5px; color: var(--t4); line-height: 1.5;">앱을 쓰는 플레이어의 프로필만 열 수 있어요.</div>
+
+  </div>
+
+</div></div>
+</figure>
+<figure class="card" id="Profile">
+<figcaption><h3>S5 · Friend profile</h3><p class="note">Viewable only between mutually confirmed friends. Leads with matches played together, which is the one number a friend-based app can produce.</p></figcaption>
+<div class="frame"><div data-theme="dark" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--t1); overflow: hidden; position: relative;">
+
+  <div style="display: flex; flex-direction: column;">
+
+    <div style="position: relative; width: 390px; height: 144px; background: linear-gradient(145deg, var(--fill) 0%, var(--raised) 58%, var(--line) 100%); overflow: hidden;">
+      <div style="position: absolute; left: 0; bottom: 0; width: 390px; height: 58px; background: linear-gradient(to bottom, rgba(0,0,0,0), var(--bg));"></div>
+      <div style="position: absolute; left: 0; top: 0; width: 390px; box-sizing: border-box; padding: 20px 20px 0 20px; display: flex; align-items: center;">
+        <a href="#MatchDetail" aria-label="뒤로" style="color: var(--t1); display: flex; align-items: center; text-decoration: none;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l-6 6 6 6"></path></svg>
+        </a>
+        <span style="flex-grow: 1;"></span>
+        <button type="button" aria-label="더보기" style="width: 32px; height: 32px; background: transparent; border: 0; color: var(--t1); display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer;">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="4.5" r="1.5"></circle><circle cx="10" cy="10" r="1.5"></circle><circle cx="10" cy="15.5" r="1.5"></circle></svg>
+        </button>
+      </div>
+    </div>
+
+    <div style="position: relative; z-index: 1; margin-top: -32px; padding: 0 20px;">
+      <span style="display: block; width: 64px; height: 64px; border-radius: 999px; background: linear-gradient(135deg, var(--line), var(--raised)); border: 3px solid var(--bg); box-sizing: border-box;"></span>
+      <div style="margin-top: 10px; display: flex; align-items: flex-start; gap: 10px;">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 5px;">
+          <div style="display: flex; align-items: center; gap: 7px;">
+            <span style="font-size: 20px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.15; color: var(--t1);">민석#KR3</span>
+            <span style="width: 18px; height: 18px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+          </div>
+          <span style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--t3);">
+            다이아몬드 2
+            <span style="color: var(--t5);">·</span>
+            <span style="width: 14px; height: 14px; flex-shrink: 0; border-radius: 4px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+            주로 타격대
+          </span>
+        </div>
+        <button type="button" style="flex-shrink: 0; height: 34px; padding: 0 13px; border-radius: 9px; background: transparent; border: 1px solid var(--line); color: var(--t1); font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer;">라이벌 지정</button>
+      </div>
+    </div>
+
+    <div style="margin: 20px 20px 0 20px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; align-items: center;">
+      <span style="flex-grow: 1; font-size: 12.5px; color: var(--t2);">같이 한 경기</span>
+      <span style="font-family: Archivo, sans-serif; font-size: 12.5px; color: var(--t3); margin-right: 12px;">12경기</span>
+      <span style="width: 62px; text-align: right; font-family: Archivo, sans-serif; font-size: 13px; font-weight: 700; color: var(--t1);">8승 4패</span>
+    </div>
+
+    <div style="margin: 18px 20px 0 20px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; align-items: baseline; gap: 8px;">
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">이번 주</span>
+      <span style="font-size: 11px; color: var(--t3);">9경기</span>
+    </div>
+
+    <div style="margin: 14px 20px 0 20px; display: flex;">
+      <div style="flex-grow: 1; flex-basis: 0; padding-right: 10px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 10.5px; font-weight: 500; color: var(--t2);">전투점수</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 23px; font-weight: 700; letter-spacing: -0.6px; color: var(--t1); line-height: 1;">218</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 600; color: var(--pos);">+9</span>
+      </div>
+      <div style="flex-grow: 1; flex-basis: 0; padding: 0 10px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 10.5px; font-weight: 500; color: var(--t2);">K/D</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 23px; font-weight: 700; letter-spacing: -0.6px; color: var(--t1); line-height: 1;">1.18</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 600; color: var(--neg);">−0.04</span>
+      </div>
+      <div style="flex-grow: 1; flex-basis: 0; padding: 0 10px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 10.5px; font-weight: 500; color: var(--t2);">피해량</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 23px; font-weight: 700; letter-spacing: -0.6px; color: var(--t1); line-height: 1;">147</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 600; color: var(--pos);">+3</span>
+      </div>
+      <div style="flex-grow: 1; flex-basis: 0; padding-left: 10px; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 10.5px; font-weight: 500; color: var(--t2);">헤드샷</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 23px; font-weight: 700; letter-spacing: -0.6px; color: var(--t1); line-height: 1;">27%</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 600; color: var(--pos);">+2</span>
+      </div>
+    </div>
+
+    <div style="margin: 18px 20px 0 20px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; align-items: baseline; gap: 8px;">
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">나와 비교</span>
+      <span style="font-size: 11px; color: var(--t3);">나 · 민석</span>
+    </div>
+
+    <div style="margin: 13px 20px 0 20px; display: flex; flex-direction: column; gap: 11px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 48px; font-size: 11px; color: var(--t2);">전투점수</span>
+        <span style="width: 30px; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--t1);">241</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; overflow: hidden;">
+          <div style="width: 53%; background: var(--t1);"></div>
+        </div>
+        <span style="width: 30px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--t3);">218</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 48px; font-size: 11px; color: var(--t2);">K/D</span>
+        <span style="width: 30px; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--t1);">1.42</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; overflow: hidden;">
+          <div style="width: 55%; background: var(--t1);"></div>
+        </div>
+        <span style="width: 30px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--t3);">1.18</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 48px; font-size: 11px; color: var(--t2);">피해량</span>
+        <span style="width: 30px; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--t1);">162</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; overflow: hidden;">
+          <div style="width: 52%; background: var(--t1);"></div>
+        </div>
+        <span style="width: 30px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--t3);">147</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 48px; font-size: 11px; color: var(--t2);">헤드샷</span>
+        <span style="width: 30px; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--t3);">24%</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; flex-direction: row-reverse; overflow: hidden;">
+          <div style="width: 53%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 30px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--t1);">27%</span>
+      </div>
+    </div>
+
+    <div style="margin: 18px 20px 0 20px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; align-items: baseline; gap: 8px;">
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">민석의 최근 경기</span>
+      <span style="font-size: 11px; color: var(--t3);">전체 보기</span>
+    </div>
+
+    <div style="margin-top: 12px; display: flex; flex-direction: column;">
+
+      <div style="padding: 11px 20px; display: flex; align-items: center; gap: 13px;">
+        <span style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 13.5px; font-weight: 600; color: var(--t1);">어센트</span>
+          <span style="font-size: 10.5px; color: var(--t3);">경쟁 · 2시간 전</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 13.5px; font-weight: 700; color: var(--neg);">9 – 13</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 500; color: var(--t2);">19/15/4 · 163</span>
+        </div>
+      </div>
+      <div style="height: 1px; background: var(--line-weak); margin-left: 67px;"></div>
+
+      <div style="padding: 11px 20px; display: flex; align-items: center; gap: 13px;">
+        <span style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 13.5px; font-weight: 600; color: var(--t1);">로터스</span>
+          <span style="font-size: 10.5px; color: var(--t3);">경쟁 · 어제</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 13.5px; font-weight: 700; color: var(--pos);">13 – 10</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 500; color: var(--t2);">17/12/6 · 151</span>
+        </div>
+      </div>
+      <div style="height: 1px; background: var(--line-weak); margin-left: 67px;"></div>
+
+      <div style="padding: 11px 20px; display: flex; align-items: center; gap: 13px;">
+        <span style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 13.5px; font-weight: 600; color: var(--t1);">펄</span>
+          <span style="font-size: 10.5px; color: var(--t3);">경쟁 · 어제</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 13.5px; font-weight: 700; color: var(--neg);">11 – 13</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 500; color: var(--t2);">12/16/9 · 128</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div></div>
+</figure>
+<figure class="card" id="Weapons">
+<figcaption><h3>S6 · Weapons</h3><p class="note">Grouped by weapon class, with the guns currently hitting and missing pulled to the top.</p></figcaption>
+<div class="frame"><div data-theme="dark" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--t1); overflow: hidden; position: relative;">
+
+  <div style="display: flex; flex-direction: column;">
+
+    <div style="padding: 20px 20px 0 20px; display: flex; align-items: center; gap: 12px;">
+      <a href="#Home" aria-label="뒤로" style="color: var(--t2); display: flex; align-items: center; text-decoration: none;">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l-6 6 6 6"></path></svg>
+      </a>
+      <span style="flex-grow: 1; font-size: 20px; font-weight: 700; letter-spacing: -0.4px; color: var(--t1);">무기</span>
+      <span style="font-size: 11px; color: var(--t3);">최근 50경기</span>
+    </div>
+
+    <div style="padding: 24px 20px 0 20px; display: flex; flex-direction: column; gap: 14px;">
+
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="width: 40px; height: 24px; flex-shrink: 0; border-radius: 5px; background: var(--fill);"></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <div style="display: flex; align-items: baseline; gap: 7px;">
+            <span style="font-size: 14.5px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">팬텀</span>
+            <span style="font-size: 11px; color: var(--pos);">요즘 잘 맞아요</span>
+          </div>
+          <span style="font-size: 11px; color: var(--t3);">254킬 · 단일 무기 118라운드</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px;">
+          <div style="display: flex; align-items: baseline; gap: 5px;">
+            <span style="font-family: Archivo, sans-serif; font-size: 18px; font-weight: 700; color: var(--t1); line-height: 1;">27%</span>
+            <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 600; color: var(--pos);">+6</span>
+          </div>
+          <span style="font-size: 10px; color: var(--t4);">4주 평균 21%</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="width: 40px; height: 24px; flex-shrink: 0; border-radius: 5px; background: var(--fill);"></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <div style="display: flex; align-items: baseline; gap: 7px;">
+            <span style="font-size: 14.5px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">밴달</span>
+            <span style="font-size: 11px; color: var(--neg);">최근 떨어졌어요</span>
+          </div>
+          <span style="font-size: 11px; color: var(--t3);">198킬 · 단일 무기 94라운드</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px;">
+          <div style="display: flex; align-items: baseline; gap: 5px;">
+            <span style="font-family: Archivo, sans-serif; font-size: 18px; font-weight: 700; color: var(--t1); line-height: 1;">15%</span>
+            <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 600; color: var(--neg);">−7</span>
+          </div>
+          <span style="font-size: 10px; color: var(--t4);">4주 평균 22%</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin: 10px 20px 0 20px; font-size: 10.5px; color: var(--t4); line-height: 1.55;">헤드샷 비율은 그 무기만 쓴 라운드를 기준으로 계산해요.</div>
+
+    <div style="margin: 24px 20px 0 20px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; align-items: baseline; gap: 8px;">
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">계열별</span>
+      <span style="font-size: 11px; color: var(--t3);">810킬</span>
+    </div>
+
+    <div style="margin-top: 12px; display: flex; flex-direction: column;">
+
+      <div style="padding: 11px 20px; display: flex; align-items: center; gap: 12px;">
+        <span style="width: 54px; font-size: 13.5px; font-weight: 700; color: var(--t1);">소총</span>
+        <div style="flex-grow: 1; height: 4px; background: var(--fill); display: flex; overflow: hidden; border-radius: 2px;">
+          <div style="width: 63%; background: var(--accent);"></div>
+        </div>
+        <span style="width: 52px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--t1);">512킬</span>
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t3); flex-shrink: 0;"><path d="M4 8l6 6 6-6"></path></svg>
+      </div>
+
+      <div style="padding: 0 20px 10px 20px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 12px; padding-left: 12px;">
+          <span style="width: 32px; height: 19px; flex-shrink: 0; border-radius: 4px; background: var(--fill);"></span>
+          <span style="flex-grow: 1; font-size: 12.5px; color: var(--t1);">팬텀</span>
+          <span style="width: 46px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; color: var(--t2);">254킬</span>
+          <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 600; color: var(--t1);">27%</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding-left: 12px;">
+          <span style="width: 32px; height: 19px; flex-shrink: 0; border-radius: 4px; background: var(--fill);"></span>
+          <span style="flex-grow: 1; font-size: 12.5px; color: var(--t1);">밴달</span>
+          <span style="width: 46px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; color: var(--t2);">198킬</span>
+          <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 600; color: var(--t1);">15%</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding-left: 12px;">
+          <span style="width: 32px; height: 19px; flex-shrink: 0; border-radius: 4px; background: var(--fill);"></span>
+          <span style="flex-grow: 1; font-size: 12.5px; color: var(--t1);">가디언</span>
+          <span style="width: 46px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; color: var(--t2);">38킬</span>
+          <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 600; color: var(--t1);">31%</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding-left: 12px;">
+          <span style="width: 32px; height: 19px; flex-shrink: 0; border-radius: 4px; background: var(--fill);"></span>
+          <span style="flex-grow: 1; font-size: 12.5px; color: var(--t1);">불독</span>
+          <span style="width: 46px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; color: var(--t2);">22킬</span>
+          <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 600; color: var(--t3);">표본 부족</span>
+        </div>
+      </div>
+      <div style="height: 1px; background: var(--line-weak); margin-left: 20px;"></div>
+
+      <div style="padding: 13px 20px; display: flex; align-items: center; gap: 12px;">
+        <span style="width: 54px; font-size: 13.5px; font-weight: 500; color: var(--t1);">권총</span>
+        <div style="flex-grow: 1; height: 4px; background: var(--fill); display: flex; overflow: hidden; border-radius: 2px;">
+          <div style="width: 15%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 52px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 600; color: var(--t2);">121킬</span>
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg>
+      </div>
+      <div style="height: 1px; background: var(--line-weak); margin-left: 20px;"></div>
+
+      <div style="padding: 13px 20px; display: flex; align-items: center; gap: 12px;">
+        <span style="width: 54px; font-size: 13.5px; font-weight: 500; color: var(--t1);">기관단총</span>
+        <div style="flex-grow: 1; height: 4px; background: var(--fill); display: flex; overflow: hidden; border-radius: 2px;">
+          <div style="width: 8%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 52px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 600; color: var(--t2);">65킬</span>
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg>
+      </div>
+      <div style="height: 1px; background: var(--line-weak); margin-left: 20px;"></div>
+
+      <div style="padding: 13px 20px; display: flex; align-items: center; gap: 12px;">
+        <span style="width: 54px; font-size: 13.5px; font-weight: 500; color: var(--t1);">저격총</span>
+        <div style="flex-grow: 1; height: 4px; background: var(--fill); display: flex; overflow: hidden; border-radius: 2px;">
+          <div style="width: 7%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 52px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 600; color: var(--t2);">57킬</span>
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg>
+      </div>
+      <div style="height: 1px; background: var(--line-weak); margin-left: 20px;"></div>
+
+      <div style="padding: 13px 20px; display: flex; align-items: center; gap: 12px;">
+        <span style="width: 54px; font-size: 13.5px; font-weight: 500; color: var(--t1);">산탄총</span>
+        <div style="flex-grow: 1; height: 4px; background: var(--fill); display: flex; overflow: hidden; border-radius: 2px;">
+          <div style="width: 4%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 52px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 600; color: var(--t2);">32킬</span>
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg>
+      </div>
+      <div style="height: 1px; background: var(--line-weak); margin-left: 20px;"></div>
+
+      <div style="padding: 13px 20px; display: flex; align-items: center; gap: 12px;">
+        <span style="width: 54px; font-size: 13.5px; font-weight: 500; color: var(--t1);">기관총</span>
+        <div style="flex-grow: 1; height: 4px; background: var(--fill); display: flex; overflow: hidden; border-radius: 2px;">
+          <div style="width: 3%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 52px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 600; color: var(--t2);">23킬</span>
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg>
+      </div>
+
+    </div>
+
+  </div>
+
+</div></div>
+</figure>
+<figure class="card" id="Agents">
+<figcaption><h3>S7 · Agents</h3><p class="note">Agents played, and the role split that decides how every other metric is read.</p></figcaption>
+<div class="frame"><div data-theme="dark" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--t1); overflow: hidden; position: relative;">
+
+  <div style="display: flex; flex-direction: column;">
+
+    <div style="padding: 20px 20px 0 20px; display: flex; align-items: center; gap: 12px;">
+      <a href="#Home" aria-label="뒤로" style="color: var(--t2); display: flex; align-items: center; text-decoration: none;">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l-6 6 6 6"></path></svg>
+      </a>
+      <span style="flex-grow: 1; font-size: 20px; font-weight: 700; letter-spacing: -0.4px; color: var(--t1);">요원</span>
+      <span style="font-size: 11px; color: var(--t3);">최근 50경기</span>
+    </div>
+
+    <div style="margin: 22px 20px 0 20px;">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.2px; color: var(--t3);">주 역할</span>
+      <div style="margin-top: 9px; display: flex; align-items: baseline; gap: 9px;">
+        <span style="font-size: 26px; font-weight: 700; letter-spacing: -0.8px; color: var(--t1); line-height: 1;">전략가</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 13px; font-weight: 600; color: var(--accent);">56%</span>
+        <span style="flex-grow: 1;"></span>
+        <span style="font-size: 11.5px; color: var(--t3);">오멘 · 바이퍼</span>
+      </div>
+      <div style="margin-top: 11px; font-size: 11.5px; color: var(--t2); line-height: 1.6;">전략가는 <span style="color: var(--t1); font-weight: 600;">라운드 관여율과 생존율</span>로 봐요. 퍼블이 적은 건 역할상 자연스러워요.</div>
+    </div>
+
+    <div style="margin: 22px 20px 0 20px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="width: 46px; font-size: 12.5px; font-weight: 600; color: var(--t1);">전략가</span>
+        <div style="flex-grow: 1; height: 4px; background: var(--fill); display: flex; overflow: hidden; border-radius: 2px;">
+          <div style="width: 56%; background: var(--accent);"></div>
+        </div>
+        <span style="width: 42px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 700; color: var(--t1);">28판</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="width: 46px; font-size: 12.5px; color: var(--t2);">타격대</span>
+        <div style="flex-grow: 1; height: 4px; background: var(--fill); display: flex; overflow: hidden; border-radius: 2px;">
+          <div style="width: 24%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 42px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; color: var(--t2);">12판</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="width: 46px; font-size: 12.5px; color: var(--t2);">척후대</span>
+        <div style="flex-grow: 1; height: 4px; background: var(--fill); display: flex; overflow: hidden; border-radius: 2px;">
+          <div style="width: 14%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 42px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; color: var(--t2);">7판</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="width: 46px; font-size: 12.5px; color: var(--t2);">감시자</span>
+        <div style="flex-grow: 1; height: 4px; background: var(--fill); display: flex; overflow: hidden; border-radius: 2px;">
+          <div style="width: 6%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 42px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; color: var(--t2);">3판</span>
+      </div>
+    </div>
+
+    <div style="margin: 22px 20px 0 20px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; align-items: center;">
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">요원별</span>
+      <span style="width: 40px; text-align: right; font-size: 10.5px; color: var(--t3);">승률</span>
+      <span style="width: 46px; text-align: right; font-size: 10.5px; color: var(--t3);">관여율</span>
+      <span style="width: 38px; text-align: right; font-size: 10.5px; color: var(--t3);">생존</span>
+    </div>
+
+    <div style="margin-top: 12px; display: flex; flex-direction: column;">
+
+      <div style="padding: 10px 20px; display: flex; align-items: center; gap: 12px;">
+        <span style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 13.5px; font-weight: 600; color: var(--t1);">오멘</span>
+          <span style="font-size: 10.5px; color: var(--t3);">전략가 · 18판</span>
+        </div>
+        <span style="width: 40px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--pos);">61%</span>
+        <span style="width: 46px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 600; color: var(--t1);">71%</span>
+        <span style="width: 38px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; color: var(--t2);">46%</span>
+      </div>
+      <div style="height: 1px; background: var(--line-weak); margin-left: 66px;"></div>
+
+      <div style="padding: 10px 20px; display: flex; align-items: center; gap: 12px;">
+        <span style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 13.5px; font-weight: 600; color: var(--t1);">바이퍼</span>
+          <span style="font-size: 10.5px; color: var(--t3);">전략가 · 10판</span>
+        </div>
+        <span style="width: 40px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--t2);">50%</span>
+        <span style="width: 46px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 600; color: var(--t1);">68%</span>
+        <span style="width: 38px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; color: var(--t2);">44%</span>
+      </div>
+      <div style="height: 1px; background: var(--line-weak); margin-left: 66px;"></div>
+
+      <div style="padding: 10px 20px; display: flex; align-items: center; gap: 12px;">
+        <span style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 13.5px; font-weight: 600; color: var(--t1);">제트</span>
+          <span style="font-size: 10.5px; color: var(--t3);">타격대 · 9판</span>
+        </div>
+        <span style="width: 40px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--neg);">44%</span>
+        <span style="width: 46px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 600; color: var(--t1);">64%</span>
+        <span style="width: 38px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; color: var(--t2);">32%</span>
+      </div>
+      <div style="height: 1px; background: var(--line-weak); margin-left: 66px;"></div>
+
+      <div style="padding: 10px 20px; display: flex; align-items: center; gap: 12px;">
+        <span style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 13.5px; font-weight: 600; color: var(--t1);">소바</span>
+          <span style="font-size: 10.5px; color: var(--t3);">척후대 · 7판</span>
+        </div>
+        <span style="width: 40px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--pos);">57%</span>
+        <span style="width: 46px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 600; color: var(--t1);">74%</span>
+        <span style="width: 38px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; color: var(--t2);">41%</span>
+      </div>
+      <div style="height: 1px; background: var(--line-weak); margin-left: 66px;"></div>
+
+      <div style="padding: 10px 20px; display: flex; align-items: center; gap: 12px;">
+        <span style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 13.5px; font-weight: 600; color: var(--t1);">킬조이</span>
+          <span style="font-size: 10.5px; color: var(--t3);">감시자 · 3판</span>
+        </div>
+        <span style="width: 40px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; color: var(--t3);">표본</span>
+        <span style="width: 46px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; color: var(--t3);">부족</span>
+        <span style="width: 38px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; color: var(--t3);">—</span>
+      </div>
+
+    </div>
+
+    <div style="margin: 16px 20px 0 20px; font-size: 10.5px; color: var(--t4); line-height: 1.6;">지표 열은 주 역할에 맞춰 바뀌어요. 타격대가 주 역할이면 퍼블 관여율과 첫 교전 승률이 대신 들어옵니다.</div>
+
+  </div>
+
+</div></div>
+</figure>
+<figure class="card" id="Settings">
+<figcaption><h3>S4 · Settings</h3><p class="note">Public/private toggle, stored-data deletion, and account unlink. Unlinking deletes every stored match and report.</p></figcaption>
+<div class="frame"><div data-theme="dark" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--t1); overflow: hidden; position: relative;">
+
+  <div style="display: flex; flex-direction: column;">
+
+    <div style="padding: 20px 20px 0 20px;">
+      <span style="font-size: 20px; font-weight: 700; letter-spacing: -0.4px; color: var(--t1);">설정</span>
+    </div>
+
+    <div style="padding: 18px 20px 0 20px; display: flex; align-items: center; gap: 13px;">
+      <span style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-size: 15px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">나#KR1</span>
+        <span style="font-size: 11px; color: var(--t3);">Riot 계정 연동됨 · 9월 19일</span>
+      </div>
+    </div>
+
+    <div style="padding: 26px 20px 8px 20px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.2px; color: var(--t3);">공개</div>
+
+    <div style="padding: 11px 20px; display: flex; align-items: flex-start; gap: 14px;">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 13.5px; font-weight: 500; color: var(--t1);">전적 공개</span>
+        <span style="font-size: 11px; color: var(--t3); line-height: 1.55;">끄면 친구도 내 리포트와 경기를 볼 수 없어요. 친구 비교에서도 빠져요.</span>
+      </div>
+      <span style="flex-shrink: 0; width: 42px; height: 25px; border-radius: 999px; background: var(--accent); display: flex; align-items: center; justify-content: flex-end; padding: 0 3px; box-sizing: border-box; margin-top: 2px;">
+        <span style="width: 19px; height: 19px; border-radius: 999px; background: var(--on-accent);"></span>
+      </span>
+    </div>
+
+    <div style="padding: 20px 20px 8px 20px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.2px; color: var(--t3);">알림</div>
+
+    <div style="padding: 12px 20px; display: flex; align-items: center; gap: 14px;">
+      <span style="flex-grow: 1; font-size: 13.5px; font-weight: 500; color: var(--t1);">분석 완료</span>
+      <span style="flex-shrink: 0; width: 42px; height: 25px; border-radius: 999px; background: var(--accent); display: flex; align-items: center; justify-content: flex-end; padding: 0 3px; box-sizing: border-box;">
+        <span style="width: 19px; height: 19px; border-radius: 999px; background: var(--on-accent);"></span>
+      </span>
+    </div>
+    <div style="height: 1px; background: var(--line-weak); margin-left: 20px;"></div>
+
+    <div style="padding: 12px 20px; display: flex; align-items: center; gap: 14px;">
+      <span style="flex-grow: 1; font-size: 13.5px; font-weight: 500; color: var(--t1);">주간 리포트</span>
+      <span style="font-size: 11.5px; color: var(--t3); margin-right: 4px;">월요일 오전</span>
+      <span style="flex-shrink: 0; width: 42px; height: 25px; border-radius: 999px; background: var(--accent); display: flex; align-items: center; justify-content: flex-end; padding: 0 3px; box-sizing: border-box;">
+        <span style="width: 19px; height: 19px; border-radius: 999px; background: var(--on-accent);"></span>
+      </span>
+    </div>
+    <div style="height: 1px; background: var(--line-weak); margin-left: 20px;"></div>
+
+    <div style="padding: 12px 20px; display: flex; align-items: center; gap: 14px;">
+      <span style="flex-grow: 1; font-size: 13.5px; font-weight: 500; color: var(--t1);">라이벌 대결 결과</span>
+      <span style="flex-shrink: 0; width: 42px; height: 25px; border-radius: 999px; background: var(--fill); display: flex; align-items: center; justify-content: flex-start; padding: 0 3px; box-sizing: border-box;">
+        <span style="width: 19px; height: 19px; border-radius: 999px; background: var(--t4);"></span>
+      </span>
+    </div>
+
+    <div style="padding: 20px 20px 8px 20px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.2px; color: var(--t3);">표시</div>
+
+    <div style="padding: 13px 20px; display: flex; align-items: center; gap: 10px;">
+      <span style="flex-grow: 1; font-size: 13.5px; font-weight: 500; color: var(--t1);">테마</span>
+      <span style="font-size: 12.5px; color: var(--t2);">시스템 설정</span>
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg>
+    </div>
+    <div style="height: 1px; background: var(--line-weak); margin-left: 20px;"></div>
+
+    <div style="padding: 13px 20px; display: flex; align-items: center; gap: 10px;">
+      <span style="flex-grow: 1; font-size: 13.5px; font-weight: 500; color: var(--t1);">기본 큐</span>
+      <span style="font-size: 12.5px; color: var(--t2);">경쟁 + 일반</span>
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg>
+    </div>
+
+    <div style="padding: 20px 20px 8px 20px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.2px; color: var(--t3);">데이터</div>
+
+    <div style="padding: 13px 20px; display: flex; align-items: center; gap: 10px;">
+      <span style="flex-grow: 1; font-size: 13.5px; font-weight: 500; color: var(--t1);">저장된 경기</span>
+      <span style="font-family: Archivo, sans-serif; font-size: 12.5px; color: var(--t2);">127</span>
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg>
+    </div>
+    <div style="height: 1px; background: var(--line-weak); margin-left: 20px;"></div>
+
+    <div style="padding: 13px 20px; display: flex; align-items: center; gap: 10px;">
+      <span style="flex-grow: 1; font-size: 13.5px; font-weight: 500; color: var(--t1);">저장된 데이터 삭제</span>
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg>
+    </div>
+
+    <div style="margin: 20px 20px 0 20px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button type="button" style="width: 100%; height: 46px; border-radius: 11px; background: transparent; border: 1px solid var(--line); color: var(--neg); font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer;">Riot 계정 연동 해제</button>
+      <div style="margin-top: 9px; font-size: 11px; color: var(--t3); line-height: 1.55; text-align: center;">연동을 해제하면 저장된 경기와 리포트가 모두 지워져요.</div>
+    </div>
+
+    <div style="margin: 22px 20px 0 20px; font-size: 10.5px; color: var(--t4); line-height: 1.6;">이 앱은 Riot Games의 공식 서비스가 아니며, Riot Games가 보증하거나 후원하지 않습니다. · 버전 1.0.0</div>
+
+  </div>
+
+  <div style="position: absolute; left: 0; top: 780px; width: 390px; height: 64px; box-sizing: border-box; background: var(--bg); border-top: 1px solid var(--line-weak); display: flex; align-items: flex-start; padding: 11px 12px 0 12px;">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--t3);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 9.2 10 3.2l7 6V17H12.5v-4.6h-5V17H3z"></path></svg>
+      <span style="font-size: 10px; font-weight: 500;">홈</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--t3);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 5.5h12M4 10h12M4 14.5h12"></path></svg>
+      <span style="font-size: 10px; font-weight: 500;">경기</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--t3);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7.6" cy="7" r="2.6"></circle><path d="M2.8 16.2c0-2.6 2.1-4.3 4.8-4.3s4.8 1.7 4.8 4.3"></path><path d="M13.4 5.2a2.6 2.6 0 0 1 0 5"></path><path d="M14.6 12.3c1.7.5 2.8 1.9 2.8 3.9"></path></svg>
+      <span style="font-size: 10px; font-weight: 500;">친구</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--t1);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 6.6h12M5 13.4h12"></path><circle cx="8" cy="6.6" r="2"></circle><circle cx="12" cy="13.4" r="2"></circle></svg>
+      <span style="font-size: 10px; font-weight: 600;">설정</span>
+    </div>
+  </div>
+
+</div></div>
+</figure>
+</div></section><section><h2>Light mode</h2><div class="grid">
+<figure class="card" id="HomeLight">
+<figcaption><h3>S1 · Light</h3></figcaption>
+<div class="frame"><div data-theme="light" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--t1); overflow: hidden; position: relative;">
+
+  <div style="display: flex; flex-direction: column;">
+
+    <div style="padding: 20px 20px 0 20px; display: flex; align-items: center; gap: 10px;">
+      <span style="flex-grow: 1; font-size: 18px; font-weight: 700; letter-spacing: -0.6px; color: var(--t1);">오발있</span>
+      <span style="width: 16px; height: 16px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+      <span style="font-size: 11.5px; font-weight: 500; color: var(--t2);">플래티넘 2</span>
+      <span style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+    </div>
+
+    <div style="padding: 14px 20px 0 20px; display: flex; gap: 4px;">
+      <span style="font-size: 12px; font-weight: 600; color: var(--t1); background: var(--fill); padding: 6px 12px; border-radius: 8px;">경쟁 + 일반</span>
+      <span style="font-size: 12px; font-weight: 500; color: var(--t2); padding: 6px 12px;">경쟁</span>
+      <span style="font-size: 12px; font-weight: 500; color: var(--t2); padding: 6px 12px;">일반</span>
+      <span style="font-size: 12px; font-weight: 500; color: var(--t2); padding: 6px 12px;">기타</span>
+    </div>
+
+    <div style="padding: 22px 20px 0 20px; display: flex; align-items: baseline; gap: 8px;">
+      <span style="flex-grow: 1; font-size: 20px; font-weight: 700; letter-spacing: -0.4px; color: var(--t1);">이번 주</span>
+      <span style="font-size: 11.5px; color: var(--t3);">전략가 · 9/13 – 9/19 · 11경기</span>
+    </div>
+
+    <div style="margin: 16px 20px 0 20px; display: flex;">
+      <div style="flex-grow: 1; flex-basis: 0; padding-right: 10px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 5px;">
+        <span style="display: flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 500; color: var(--t2);">전투점수<svg width="9" height="9" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg></span>
+        <span style="font-family: Archivo, sans-serif; font-size: 23px; font-weight: 700; letter-spacing: -0.6px; color: var(--t1); line-height: 1;">241</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 600; color: var(--pos);">+18</span>
+      </div>
+      <div style="flex-grow: 1; flex-basis: 0; padding: 0 10px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 5px;">
+        <span style="display: flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 500; color: var(--t2);">K/D<svg width="9" height="9" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg></span>
+        <span style="font-family: Archivo, sans-serif; font-size: 23px; font-weight: 700; letter-spacing: -0.6px; color: var(--t1); line-height: 1;">1.42</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 600; color: var(--pos);">+0.11</span>
+      </div>
+      <div style="flex-grow: 1; flex-basis: 0; padding: 0 10px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 5px;">
+        <span style="display: flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 500; color: var(--t2);">피해량<svg width="9" height="9" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg></span>
+        <span style="font-family: Archivo, sans-serif; font-size: 23px; font-weight: 700; letter-spacing: -0.6px; color: var(--t1); line-height: 1;">162</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 600; color: var(--pos);">+12</span>
+      </div>
+      <div style="flex-grow: 1; flex-basis: 0; padding-left: 10px; display: flex; flex-direction: column; gap: 5px;">
+        <span style="display: flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 500; color: var(--t2);">헤드샷<svg width="9" height="9" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color: var(--t4); flex-shrink: 0;"><path d="M8 4l6 6-6 6"></path></svg></span>
+        <span style="font-family: Archivo, sans-serif; font-size: 23px; font-weight: 700; letter-spacing: -0.6px; color: var(--t1); line-height: 1;">24%</span>
+        <span style="font-family: Archivo, sans-serif; font-size: 10.5px; font-weight: 600; color: var(--pos);">+5</span>
+      </div>
+    </div>
+
+    <div style="margin: 13px 20px 0 20px; display: flex; flex-direction: column; gap: 4px;">
+      <span style="font-size: 11px; color: var(--t3);">판당 16.2 / 11.4 / 4.9 · 11경기 496라운드</span>
+      <span style="font-size: 10.5px; color: var(--t4);">4주 평균 223 · 1.31 · 150 · 19%</span>
+    </div>
+
+    <div style="margin: 22px 20px 0 20px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; align-items: baseline; gap: 8px;">
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">달라진 점</span>
+      <span style="font-size: 11px; color: var(--t3);">전략가 기준 · 지난 4주 대비</span>
+    </div>
+
+    <div style="padding-left: 20px; margin-top: 14px; display: flex;">
+      <div style="flex-shrink: 0; width: 150px; box-sizing: border-box; padding-right: 18px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 11.5px; font-weight: 500; color: var(--t2);">포스바이 승률</span>
+        <div style="display: flex; align-items: baseline; gap: 6px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 25px; font-weight: 700; letter-spacing: -0.7px; color: var(--t1); line-height: 1;">22%</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 11px; font-weight: 600; color: var(--neg);">−9</span>
+        </div>
+        <div style="font-size: 10.5px; color: var(--t3); line-height: 1.5;">4주 평균 31%<br>판당 2.5R</div>
+      </div>
+      <div style="flex-shrink: 0; width: 150px; box-sizing: border-box; padding: 0 18px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 11.5px; font-weight: 500; color: var(--t2);">생존율</span>
+        <div style="display: flex; align-items: baseline; gap: 6px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 25px; font-weight: 700; letter-spacing: -0.7px; color: var(--t1); line-height: 1;">41%</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 11px; font-weight: 600; color: var(--neg);">−4</span>
+        </div>
+        <div style="font-size: 10.5px; color: var(--t3); line-height: 1.5;">4주 평균 45%<br>라운드 496</div>
+      </div>
+      <div style="flex-shrink: 0; width: 150px; box-sizing: border-box; padding: 0 18px; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 11.5px; font-weight: 500; color: var(--t2);">라운드 관여율</span>
+        <div style="display: flex; align-items: baseline; gap: 6px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 25px; font-weight: 700; letter-spacing: -0.7px; color: var(--t1); line-height: 1;">68%</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 11px; font-weight: 600; color: var(--neg);">−5</span>
+        </div>
+        <div style="font-size: 10.5px; color: var(--t3); line-height: 1.5;">4주 평균 73%<br>KAST · 목표 70%</div>
+      </div>
+    </div>
+
+    <div style="margin: 20px 20px 0 20px; padding-top: 18px; border-top: 1px solid var(--line);">
+      <div style="font-size: 14.5px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1); line-height: 1.5;">수비 라운드 생존율이 공격보다 13%p 낮아요.</div>
+      <div style="margin-top: 6px; font-size: 11.5px; color: var(--t2); line-height: 1.55;">공격 48%, 수비 35%예요. 전략가는 수비에서 오래 버틸수록 라운드가 풀립니다.</div>
+    </div>
+
+    <div style="margin: 20px 20px 0 20px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 8px;">
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">라이벌 · 준호#KR1</span>
+      <span style="font-size: 11px; color: var(--t3);">3개 중 2개 앞섬</span>
+    </div>
+
+    <div style="margin: 13px 20px 0 20px; display: flex; flex-direction: column; gap: 11px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 42px; font-size: 11px; color: var(--t2);">K/D</span>
+        <span style="width: 34px; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--t1);">1.42</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; overflow: hidden;">
+          <div style="width: 54%; background: var(--t1);"></div>
+        </div>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--t3);">1.18</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 42px; font-size: 11px; color: var(--t2);">피해량</span>
+        <span style="width: 34px; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--t1);">162</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; overflow: hidden;">
+          <div style="width: 53%; background: var(--t1);"></div>
+        </div>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--t3);">147</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 42px; font-size: 11px; color: var(--t2);">헤드샷</span>
+        <span style="width: 34px; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--t3);">24%</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; flex-direction: row-reverse; overflow: hidden;">
+          <div style="width: 53%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--t1);">27%</span>
+      </div>
+    </div>
+
+    <div style="margin: 20px 20px 0 20px; padding-top: 18px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 8px;">
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">친구 비교</span>
+      <span style="font-size: 11px; color: var(--t2);">피해량 ▾</span>
+    </div>
+
+    <div style="margin: 13px 20px 0 20px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 11px; font-family: Archivo, sans-serif; font-size: 11px; font-weight: 600; color: var(--t3);">1</span>
+        <span style="width: 54px; font-size: 12px; font-weight: 600; color: var(--t1);">나</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; overflow: hidden;">
+          <div style="width: 100%; background: var(--accent);"></div>
+        </div>
+        <span style="width: 28px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 700; color: var(--t1);">162</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 11px; font-family: Archivo, sans-serif; font-size: 11px; font-weight: 600; color: var(--t3);">2</span>
+        <span style="width: 54px; font-size: 12px; color: var(--t2);">준호</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; overflow: hidden;">
+          <div style="width: 91%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 28px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--t2);">147</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 11px; font-family: Archivo, sans-serif; font-size: 11px; font-weight: 600; color: var(--t3);">3</span>
+        <span style="width: 54px; font-size: 12px; color: var(--t2);">민석</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; overflow: hidden;">
+          <div style="width: 84%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 28px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--t2);">136</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 11px; font-family: Archivo, sans-serif; font-size: 11px; font-weight: 600; color: var(--t3);">4</span>
+        <span style="width: 54px; font-size: 12px; color: var(--t2);">재현</span>
+        <div style="flex-grow: 1; height: 3px; background: var(--fill); display: flex; overflow: hidden;">
+          <div style="width: 76%; background: var(--t4);"></div>
+        </div>
+        <span style="width: 28px; text-align: right; font-family: Archivo, sans-serif; font-size: 12.5px; font-weight: 500; color: var(--t2);">123</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="position: absolute; left: 0; top: 780px; width: 390px; height: 64px; box-sizing: border-box; background: var(--bg); border-top: 1px solid var(--line-weak); display: flex; align-items: flex-start; padding: 11px 12px 0 12px;">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--t1);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 9.2 10 3.2l7 6V17H12.5v-4.6h-5V17H3z"></path></svg>
+      <span style="font-size: 10px; font-weight: 600;">홈</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--t3);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 5.5h12M4 10h12M4 14.5h12"></path></svg>
+      <span style="font-size: 10px; font-weight: 500;">경기</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--t3);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7.6" cy="7" r="2.6"></circle><path d="M2.8 16.2c0-2.6 2.1-4.3 4.8-4.3s4.8 1.7 4.8 4.3"></path><path d="M13.4 5.2a2.6 2.6 0 0 1 0 5"></path><path d="M14.6 12.3c1.7.5 2.8 1.9 2.8 3.9"></path></svg>
+      <span style="font-size: 10px; font-weight: 500;">친구</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--t3);">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 6.6h12M5 13.4h12"></path><circle cx="8" cy="6.6" r="2"></circle><circle cx="12" cy="13.4" r="2"></circle></svg>
+      <span style="font-size: 10px; font-weight: 500;">설정</span>
+    </div>
+  </div>
+
+</div></div>
+</figure>
+<figure class="card" id="MatchDetailLight">
+<figcaption><h3>S3 · Light</h3></figcaption>
+<div class="frame"><div data-theme="light" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--t1); overflow: hidden; position: relative;">
+
+  <div style="display: flex; flex-direction: column;">
+
+    <div style="position: relative; width: 390px; height: 196px; background: linear-gradient(158deg, var(--fill) 0%, var(--raised) 52%, var(--bg) 100%); overflow: hidden;">
+      <div style="position: absolute; left: 0; bottom: 0; width: 390px; height: 120px; background: linear-gradient(to bottom, rgba(0,0,0,0), var(--bg));"></div>
+
+      <div style="position: absolute; left: 0; top: 0; padding: 20px 20px 0 20px; display: flex; align-items: center; gap: 12px; width: 390px; box-sizing: border-box;">
+        <a href="#MatchList" aria-label="뒤로" style="color: var(--t1); display: flex; align-items: center; text-decoration: none;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l-6 6 6 6"></path></svg>
+        </a>
+        <span style="flex-grow: 1;"></span>
+        <span style="font-size: 11px; color: var(--t2);">경쟁 · 9/19 14:20 · 38분</span>
+      </div>
+
+      <div style="position: absolute; left: 0; bottom: 0; padding: 0 20px 14px 20px; width: 390px; box-sizing: border-box;">
+        <div style="font-size: 22px; font-weight: 700; letter-spacing: -0.5px; color: var(--t1);">어센트</div>
+        <div style="margin-top: 6px; display: flex; align-items: baseline; gap: 9px;">
+          <span style="font-family: Archivo, sans-serif; font-size: 36px; font-weight: 700; letter-spacing: -1px; color: var(--pos); line-height: 1;">13</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 20px; font-weight: 500; color: var(--t4); line-height: 1;">–</span>
+          <span style="font-family: Archivo, sans-serif; font-size: 36px; font-weight: 700; letter-spacing: -1px; color: var(--t4); line-height: 1;">9</span>
+          <span style="flex-grow: 1;"></span>
+          <span style="font-size: 11px; color: var(--t2);">전반 8–4 · 후반 5–5</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: 14px 20px 0 20px; display: flex; gap: 2px; align-items: flex-end;">
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="width: 7px;"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 18px; background: var(--pos);"></span>
+      <span style="flex-grow: 1; height: 11px; background: var(--bar);"></span>
+    </div>
+
+    <div style="margin: 22px 0 0 0; padding: 0 20px; display: flex; gap: 20px; border-bottom: 1px solid var(--line-weak);">
+      <span style="font-size: 13px; font-weight: 600; color: var(--t1); padding-bottom: 11px; border-bottom: 2px solid var(--t1); margin-bottom: -1px;">스코어보드</span>
+      <span style="font-size: 13px; font-weight: 500; color: var(--t3); padding-bottom: 11px;">라운드</span>
+      <span style="font-size: 13px; font-weight: 500; color: var(--t3); padding-bottom: 11px;">이코노미</span>
+    </div>
+
+    <div style="padding: 16px 20px 0 20px; display: flex; align-items: center;">
+      <span style="flex-grow: 1; font-size: 12px; font-weight: 600; color: var(--pos);">우리 팀</span>
+      <span style="width: 54px; text-align: right; font-size: 10.5px; color: var(--t3);">K / D / A</span>
+      <span style="width: 34px; text-align: right; font-size: 10.5px; color: var(--t3);">ADR</span>
+      <span style="width: 16px;"></span>
+    </div>
+
+    <div style="margin-top: 10px; display: flex; flex-direction: column;">
+
+      <div style="padding: 7px 20px; display: flex; align-items: center; gap: 10px; background: var(--raised);">
+        <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 7px;"><span style="font-size: 13px; font-weight: 700; color: var(--t1);">나</span><span style="width: 15px; height: 15px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span></div>
+        <span style="width: 54px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 600; color: var(--t1);">21/13/5</span>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 600; color: var(--t1);">174</span>
+        <span style="width: 16px;"></span>
+      </div>
+
+      <a href="#Profile" style="text-decoration: none; padding: 7px 20px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 7px;"><div style="display: flex; align-items: center; gap: 7px;"><span style="font-size: 13px; font-weight: 500; color: var(--t1);">준호#KR1</span><span style="font-size: 9.5px; font-weight: 600; color: var(--accent-ink);">친구</span></div><span style="width: 15px; height: 15px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span></div>
+        <span style="width: 54px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">18/14/3</span>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">151</span>
+        <span style="width: 16px; display: flex; justify-content: flex-end; color: var(--t3);">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4l6 6-6 6"></path></svg>
+        </span>
+      </a>
+
+      <div style="padding: 7px 20px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 7px;"><span style="font-size: 13px; font-weight: 400; color: var(--t2);">Hwan#KR2</span><span style="width: 15px; height: 15px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span></div>
+        <span style="width: 54px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">14/16/9</span>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">139</span>
+        <span style="width: 16px;"></span>
+      </div>
+
+      <div style="padding: 7px 20px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 7px;"><span style="font-size: 13px; font-weight: 400; color: var(--t2);">bloom#1004</span><span style="width: 15px; height: 15px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span></div>
+        <span style="width: 54px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">11/15/12</span>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">121</span>
+        <span style="width: 16px;"></span>
+      </div>
+
+      <div style="padding: 7px 20px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 7px;"><span style="font-size: 13px; font-weight: 400; color: var(--t2);">난나야#KR1</span><span style="width: 15px; height: 15px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span></div>
+        <span style="width: 54px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">13/14/7</span>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">144</span>
+        <span style="width: 16px;"></span>
+      </div>
+
+    </div>
+
+    <div style="padding: 20px 20px 0 20px; display: flex; align-items: center;">
+      <span style="flex-grow: 1; font-size: 12px; font-weight: 600; color: var(--t2);">상대 팀</span>
+    </div>
+
+    <div style="margin-top: 10px; display: flex; flex-direction: column;">
+
+      <a href="#Profile" style="text-decoration: none; padding: 7px 20px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 7px;"><div style="display: flex; align-items: center; gap: 7px;"><span style="font-size: 13px; font-weight: 500; color: var(--t1);">민석#KR3</span><span style="font-size: 9.5px; font-weight: 600; color: var(--accent-ink);">친구</span></div><span style="width: 15px; height: 15px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span></div>
+        <span style="width: 54px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">19/15/4</span>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">163</span>
+        <span style="width: 16px; display: flex; justify-content: flex-end; color: var(--t3);">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4l6 6-6 6"></path></svg>
+        </span>
+      </a>
+
+      <div style="padding: 7px 20px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 7px;"><span style="font-size: 13px; font-weight: 400; color: var(--t2);">Ash#KR1</span><span style="width: 15px; height: 15px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span></div>
+        <span style="width: 54px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">17/16/8</span>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">147</span>
+        <span style="width: 16px;"></span>
+      </div>
+
+      <div style="padding: 7px 20px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: linear-gradient(135deg, var(--fill), var(--line));"></span>
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 7px;"><span style="font-size: 13px; font-weight: 400; color: var(--t2);">rev#9922</span><span style="width: 15px; height: 15px; flex-shrink: 0; border-radius: 999px; background: linear-gradient(135deg, var(--fill), var(--line));"></span></div>
+        <span style="width: 54px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">14/17/6</span>
+        <span style="width: 34px; text-align: right; font-family: Archivo, sans-serif; font-size: 12px; font-weight: 500; color: var(--t2);">129</span>
+        <span style="width: 16px;"></span>
+      </div>
+
+    </div>
+
+    <div style="padding: 14px 20px 0 20px; font-size: 10.5px; color: var(--t4); line-height: 1.5;">앱을 쓰는 플레이어의 프로필만 열 수 있어요.</div>
+
+  </div>
+
+</div></div>
+</figure>
+</div></section><section><h2>Brand</h2><div class="grid">
+<figure class="card" id="AppIcon">
+<figcaption><h3>App icon</h3></figcaption>
+<div class="frame"><div data-theme="dark" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--t1); overflow: hidden; position: relative;">
+
+  <div style="padding: 20px 20px 0 20px;">
+    <span style="font-size: 20px; font-weight: 700; letter-spacing: -0.4px; color: var(--t1);">앱 아이콘</span>
+    <div style="margin-top: 7px; font-size: 11.5px; color: var(--t3); line-height: 1.55;">획 11, ㅂ 아래 모서리 8. ㅂ의 위 기둥을 3 늘리고 글자 전체를 ㅇ보다 8.5만큼 내려 잡았습니다. 금색 바탕이 기본, 검정이 보조예요.</div>
+  </div>
+
+  <div style="margin-top: 20px; padding: 0 20px; display: flex; gap: 16px;">
+    <div class="cell" style="flex-grow: 1;">
+      <span style="width: 100px; height: 100px; border-radius: 26px; background: var(--accent); display: flex; align-items: center; justify-content: center;">
+        <svg width="65" height="30" viewBox="0 0 160 74" fill="none" stroke="var(--on-accent)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><circle cx="27" cy="32.5" r="17.5"></circle><path d="M61.5 23v28a8 8 0 0 0 8 8h21a8 8 0 0 0 8-8V23"></path><path d="M61.5 37.5h37"></path><circle cx="133" cy="32.5" r="17.5"></circle></svg>
+      </span>
+      <span style="font-size: 11.5px; font-weight: 600; color: var(--t1);">기본</span>
+    </div>
+    <div class="cell" style="flex-grow: 1;">
+      <span style="width: 100px; height: 100px; border-radius: 26px; background: var(--on-accent); display: flex; align-items: center; justify-content: center;">
+        <svg width="65" height="30" viewBox="0 0 160 74" fill="none" stroke="var(--accent)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><circle cx="27" cy="32.5" r="17.5"></circle><path d="M61.5 23v28a8 8 0 0 0 8 8h21a8 8 0 0 0 8-8V23"></path><path d="M61.5 37.5h37"></path><circle cx="133" cy="32.5" r="17.5"></circle></svg>
+      </span>
+      <span style="font-size: 11.5px; font-weight: 600; color: var(--t2);">반전</span>
+    </div>
+  </div>
+
+  <div style="margin: 24px 20px 0 20px; padding-top: 17px; border-top: 1px solid var(--line);">
+    <div style="font-size: 14px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">런처 마스크</div>
+    <div style="margin-top: 7px; font-size: 11.5px; color: var(--t3); line-height: 1.6;">안드로이드는 제조사마다 아이콘을 다른 모양으로 잘라내요. 어느 쪽으로 잘려도 마크가 온전해야 합니다.</div>
+
+    <div style="margin-top: 15px; display: flex; gap: 17px;">
+      <div class="cell" style="gap: 8px;">
+        <span style="width: 60px; height: 60px; border-radius: 999px; background: var(--accent); display: flex; align-items: center; justify-content: center;">
+          <svg width="39" height="18" viewBox="0 0 160 74" fill="none" stroke="var(--on-accent)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><circle cx="27" cy="32.5" r="17.5"></circle><path d="M61.5 23v28a8 8 0 0 0 8 8h21a8 8 0 0 0 8-8V23"></path><path d="M61.5 37.5h37"></path><circle cx="133" cy="32.5" r="17.5"></circle></svg>
+        </span>
+        <span style="font-size: 10.5px; color: var(--t3);">원형</span>
+      </div>
+      <div class="cell" style="gap: 8px;">
+        <span style="width: 60px; height: 60px; border-radius: 18px; background: var(--accent); display: flex; align-items: center; justify-content: center;">
+          <svg width="39" height="18" viewBox="0 0 160 74" fill="none" stroke="var(--on-accent)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><circle cx="27" cy="32.5" r="17.5"></circle><path d="M61.5 23v28a8 8 0 0 0 8 8h21a8 8 0 0 0 8-8V23"></path><path d="M61.5 37.5h37"></path><circle cx="133" cy="32.5" r="17.5"></circle></svg>
+        </span>
+        <span style="font-size: 10.5px; color: var(--t3);">스퀘어클</span>
+      </div>
+      <div class="cell" style="gap: 8px;">
+        <span style="width: 60px; height: 60px; border-radius: 10px; background: var(--accent); display: flex; align-items: center; justify-content: center;">
+          <svg width="39" height="18" viewBox="0 0 160 74" fill="none" stroke="var(--on-accent)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><circle cx="27" cy="32.5" r="17.5"></circle><path d="M61.5 23v28a8 8 0 0 0 8 8h21a8 8 0 0 0 8-8V23"></path><path d="M61.5 37.5h37"></path><circle cx="133" cy="32.5" r="17.5"></circle></svg>
+        </span>
+        <span style="font-size: 10.5px; color: var(--t3);">둥근 사각</span>
+      </div>
+      <div class="cell" style="gap: 8px;">
+        <span style="width: 60px; height: 60px; border-radius: 4px; background: var(--accent); display: flex; align-items: center; justify-content: center;">
+          <svg width="39" height="18" viewBox="0 0 160 74" fill="none" stroke="var(--on-accent)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><circle cx="27" cy="32.5" r="17.5"></circle><path d="M61.5 23v28a8 8 0 0 0 8 8h21a8 8 0 0 0 8-8V23"></path><path d="M61.5 37.5h37"></path><circle cx="133" cy="32.5" r="17.5"></circle></svg>
+        </span>
+        <span style="font-size: 10.5px; color: var(--t3);">사각</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin: 22px 20px 0 20px; padding-top: 17px; border-top: 1px solid var(--line);">
+    <div style="font-size: 14px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">적응형 아이콘 규격</div>
+    <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 9px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;">
+        <span style="width: 74px; font-size: 11.5px; color: var(--t2);">캔버스</span>
+        <span style="flex-grow: 1; font-family: Archivo, sans-serif; font-size: 12px; color: var(--t1);">108 × 108 dp</span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 10px;">
+        <span style="width: 74px; font-size: 11.5px; color: var(--t2);">안전 영역</span>
+        <span style="flex-grow: 1; font-family: Archivo, sans-serif; font-size: 12px; color: var(--t1);">중앙 지름 72 dp</span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 10px;">
+        <span style="width: 74px; font-size: 11.5px; color: var(--t2);">마크 크기</span>
+        <span style="flex-grow: 1; font-family: Archivo, sans-serif; font-size: 12px; color: var(--t1);">70 × 24 dp <span style="font-family: 'IBM Plex Sans KR', sans-serif; color: var(--t3);">(폭이 캔버스의 65%)</span></span>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 10px;">
+        <span style="width: 74px; font-size: 11.5px; color: var(--t2);">배경</span>
+        <span style="flex-grow: 1; font-size: 12px; color: var(--t1);">금색 단색. 그라데이션 없음</span>
+      </div>
+    </div>
+    <div style="margin-top: 12px; font-size: 11px; color: var(--t4); line-height: 1.6;">가로로 긴 마크라 양 끝 ㅇ이 원형 마스크의 한계를 정합니다. 폭 75dp를 넘기면 왼쪽 ㅇ 바깥이 잘려요.</div>
+  </div>
+
+  <div style="margin: 22px 20px 0 20px; padding-top: 17px; border-top: 1px solid var(--line);">
+    <div style="font-size: 14px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">홈 화면에서</div>
+    <div style="margin-top: 14px; display: flex; gap: 20px; align-items: flex-start;">
+      <div class="cell" style="gap: 7px;">
+        <span style="width: 52px; height: 52px; border-radius: 15px; background: var(--accent); display: flex; align-items: center; justify-content: center;">
+          <svg width="34" height="16" viewBox="0 0 160 74" fill="none" stroke="var(--on-accent)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><circle cx="27" cy="32.5" r="17.5"></circle><path d="M61.5 23v28a8 8 0 0 0 8 8h21a8 8 0 0 0 8-8V23"></path><path d="M61.5 37.5h37"></path><circle cx="133" cy="32.5" r="17.5"></circle></svg>
+        </span>
+        <span style="font-size: 10.5px; color: var(--t2);">오발있</span>
+      </div>
+      <div class="cell" style="gap: 7px;">
+        <span style="width: 52px; height: 52px; border-radius: 15px; background: var(--fill); display: flex; align-items: center; justify-content: center;">
+          <svg width="31" height="31" viewBox="0 0 100 100" fill="none" stroke="var(--t4)" stroke-width="8" stroke-linecap="round"><path d="M28 34h44M28 50h44M28 66h30"></path></svg>
+        </span>
+        <span style="font-size: 10.5px; color: var(--t4);">다른 앱</span>
+      </div>
+      <div class="cell" style="gap: 7px;">
+        <span style="width: 52px; height: 52px; border-radius: 15px; background: var(--fill); display: flex; align-items: center; justify-content: center;">
+          <svg width="31" height="31" viewBox="0 0 100 100" fill="none" stroke="var(--t4)" stroke-width="8" stroke-linecap="round"><circle cx="50" cy="50" r="26"></circle></svg>
+        </span>
+        <span style="font-size: 10.5px; color: var(--t4);">다른 앱</span>
+      </div>
+      <div class="cell" style="gap: 7px;">
+        <span style="width: 52px; height: 52px; border-radius: 15px; background: var(--fill); display: flex; align-items: center; justify-content: center;">
+          <svg width="31" height="31" viewBox="0 0 100 100" fill="none" stroke="var(--t4)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M50 26l20 12v24L50 74 30 62V38z"></path></svg>
+        </span>
+        <span style="font-size: 10.5px; color: var(--t4);">다른 앱</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin: 22px 20px 0 20px; padding-top: 17px; border-top: 1px solid var(--line);">
+    <div style="font-size: 14px; font-weight: 700; letter-spacing: -0.2px; color: var(--t1);">앱 안에서</div>
+    <div style="margin-top: 13px; display: flex; align-items: center; gap: 11px;">
+      <svg width="46" height="21" viewBox="0 0 160 74" fill="none" stroke="var(--t1)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><circle cx="27" cy="32.5" r="17.5"></circle><path d="M61.5 23v28a8 8 0 0 0 8 8h21a8 8 0 0 0 8-8V23"></path><path d="M61.5 37.5h37"></path><circle cx="133" cy="32.5" r="17.5"></circle></svg>
+      <span style="width: 1px; height: 17px; background: var(--line);"></span>
+      <span style="font-size: 19px; font-weight: 700; letter-spacing: -0.6px; color: var(--t1);">오발있</span>
+    </div>
+    <div style="margin-top: 11px; font-size: 11px; color: var(--t4); line-height: 1.6;">헤더와 인트로에서는 타일 없이 마크만 씁니다. 금색은 버튼에만 남기고요.</div>
+  </div>
+
+</div></div>
+</figure>
+</div></section>
+
+<footer>
+<p>Every screen above is a static mockup. Numbers shown are illustrative, not real player data.</p>
+<p>This app is not endorsed by Riot Games and does not reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
+</footer>
+
+</div>
+</body>
+</html>

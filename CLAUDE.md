@@ -19,7 +19,8 @@
 기획과 화면 목업은 저장소 밖 claude.ai 아티팩트에 있다. 프로덕션 키 심사에 낸 원본이라 고치지 않는다.
 
 - 화면 목업: [발로란트 전적 진단 앱 — 화면](https://claude.ai/artifact/8bAN3dfUBywjmw43Y1euVv). 심사에 낸 것과 같은 화면이다
-  (https://ovalit.netlify.app/).
+  (https://ovalit.netlify.app/). 그 사이트의 배포 폴더는 `site/`이고, 목업(`index.html`)과 `riot.txt`는 고치지 않고 개인정보처리방침과
+  이용약관만 더한다(`docs/RELEASE.md`).
 - 기획 정리: https://claude.ai/artifact/9uEr7ynVcSTSDLBZFH5LKW
 - 프로덕션 키 신청서: https://claude.ai/artifact/RVCJYCfD4BF4W6Q2seXKF8 (2026-09-19 제출)
 

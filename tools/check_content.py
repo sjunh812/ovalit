@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """새 요원, 맵, 무기, 모드, 티어가 나왔는지 valorant-api.com과 저장소를 견줍니다.
 
-GitHub Actions(.github/workflows/content-watch.yml)가 매일 돌리고, 저장소가 모르는 것이 있으면 이슈를 열거나
-고칩니다. 공개 저장소의 표준 러너와 valorant-api.com은 무료입니다(CLAUDE.md 비용). Riot 키는 개발용이
-24시간마다 바뀌어서 쓰지 않습니다. 표준 라이브러리만 씁니다.
+GitHub Actions(.github/workflows/content-watch.yml)가 매일 돌리고, 저장소가 모르는 것이 있으면 이슈를 열거나 고칩니다.
+공개 저장소의 표준 러너와 valorant-api.com은 무료입니다(CLAUDE.md 비용).
+Riot 키는 개발용이 24시간마다 바뀌어서 쓰지 않습니다. 표준 라이브러리만 씁니다.
 
     tools/check_content.py [--out report.md]
 

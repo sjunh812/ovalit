@@ -67,5 +67,5 @@ footer.bottom nav { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 16
 footer.bottom a { color: var(--t2); }
 .disclaimer { font-size: 13px; line-height: 1.6; }
 
-/* 스크립트가 고른 언어만 보인다. 스크립트가 없으면 두 언어를 다 보인다. */
+/* 스크립트가 고른 언어만 보인다. 스크립트가 없으면 두 언어가 다 보인다. */
 html[data-lang="ko"] [lang="en"].doc, html[data-lang="en"] [lang="ko"].doc { display: none; }

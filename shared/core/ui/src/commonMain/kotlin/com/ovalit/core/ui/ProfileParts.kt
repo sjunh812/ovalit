@@ -48,7 +48,7 @@ fun winRateColor(rate: Double?, decided: Int, below: Color): Color {
     }
 }
 
-// 4판 4승처럼 판이 적으면 운으로 오른 승률까지 잘한 것처럼 칠하게 된다. 시작 기준선이다.
+// 4판 4승처럼 판이 적은데 칠하면 운으로 오른 승률까지 잘한 것처럼 보인다. 시작 기준선이다.
 private const val MIN_COLORED_WIN_RATE_GAMES = 5
 
 @Composable

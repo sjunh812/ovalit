@@ -155,7 +155,7 @@ internal fun InsightSection(
         Spacer(Modifier.height(6.dp))
         OvalitText(text = headline, style = headlineStyle())
         // 제목과 문장이 이번 액트 이야기라 액트 값만 본문 크기로 굵게 두고, 그 액트 전체 표본을 줄 끝에 옅게 붙인다.
-        // 이번 주 값은 한 주 표본이라 같은 무게로 두면 근거처럼 읽혀서, 밑에 작은 회색 한 줄로 참고만 하게 둔다.
+        // 이번 주 값은 한 주 표본이라 같은 무게로 두면 근거처럼 읽혀서 밑에 작은 회색 한 줄로 참고만 하게 둔다.
         Column(modifier = Modifier.padding(top = OvalitSpacing.xs), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Row(modifier = Modifier.semantics(mergeDescendants = true) {}) {
                 OvalitText(

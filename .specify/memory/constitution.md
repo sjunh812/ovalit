@@ -86,7 +86,7 @@ multiple choices").
 - Spec Kit 문서(`specs/`)는 위 규칙 문서와 어긋나면 안 된다. 어긋나면 어느 쪽이 맞는지 정하고 같은 커밋에서 다른 쪽을 고친다.
 - "사용자 결정"이라 적힌 규칙은 사용자가 다른 안과 견줘 골랐다. 묻기 전에 되돌리지 않는다.
 - 심사에 낸 화면 목업 아티팩트, 기획 정리, 프로덕션 키 신청서, `site/index.html`(ovalit.netlify.app의 목업)과 `site/riot.txt`는
-  고치지 않는다. 심사자가 신청서와 목업을 나란히 놓고 본다.
+  고치지 않는다. Riot 정책은 제품 설명을 지금 버전에 맞게 두라고 한다.
 - 새 디자인은 Figma 파일에서 따로 만든다. 심사에 낸 목업에서 벗어나는 화면은 사용자에게 묻고 `docs/DECISIONS.md`에 남긴다.
 
 ## Governance
@@ -98,4 +98,4 @@ multiple choices").
   PATCH다.
 - 모든 스펙과 계획은 Constitution Check에서 이 원칙을 하나씩 확인한다. 어기는 것이 있으면 그 까닭과 사용자 결정을 함께 적는다.
 
-**Version**: 1.0.1 | **Ratified**: 2026-10-30 | **Last Amended**: 2026-10-30
+**Version**: 1.0.2 | **Ratified**: 2026-10-30 | **Last Amended**: 2026-10-30

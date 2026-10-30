@@ -447,13 +447,23 @@ class ReportScreenTest {
         onNodeWithText("40라운드", substring = true).assertDoesNotExist()
     }
 
+    // 차트 위에 줄을 따로 두면 맨 위 숫자, 표본과 같은 값이 한 번 더 뜬다.
+    // 막대를 누르면 맨 위 자리가 그 주 값으로 바뀌고 지난 4주 평균과 견준 변화량은 리포트 기간에만 둔다.
     @Test
-    fun `지표 설명 시트도 막대를 누르면 막대 위에 그 주 값을 띄운다`() = runComposeUiTest {
+    fun `지표 설명 시트는 막대를 누르면 맨 위 숫자와 표본이 그 주 값으로 바뀐다`() = runComposeUiTest {
         setContent { Sheet(FixedMetric.DAMAGE, ReportPreviewData.moved) }
 
+        onNodeWithText("138").assertExists()
+        onNodeWithText("+10").assertExists()
+        onNodeWithText("이번 주 7경기").assertExists()
+        onNodeWithText("146라운드").assertExists()
         tapWeek("피해량", index = 3)
 
-        onNode(hasText("4주 전") and hasText("126") and hasText("7경기 · 150라운드")).assertExists()
+        onNodeWithText("126").assertExists()
+        onNodeWithText("4주 전 7경기").assertExists()
+        onNodeWithText("150라운드").assertExists()
+        onNodeWithText("+10").assertDoesNotExist()
+        onNodeWithText("138").assertDoesNotExist()
     }
 
     // 평균선은 막대 뒤의 옅은 실선이라 밑에 따로 풀지 않고 선 끝에 평소 값을 적는다
@@ -696,11 +706,22 @@ class ReportScreenTest {
         onNodeWithText("비교할 기록이 모자라요").assertExists()
     }
 
+    // 지난 4주 평균은 막대 뒤 가로선 끝에 한 번만 적는다
     @Test
-    fun `고정 칸 시트에는 칸 밑에서 뺀 평균을 적는다`() = runComposeUiTest {
+    fun `고정 칸 시트는 평균을 가로선 끝에만 적는다`() = runComposeUiTest {
         setContent { Sheet(FixedMetric.DAMAGE, ReportPreviewData.moved) }
 
-        onNodeWithText("지난 4주 평균 128").assertExists()
+        onNodeWithText("평소 128").assertExists()
+        onNodeWithText("지난 4주 평균", substring = true).assertDoesNotExist()
+    }
+
+    // 계산식이 이미 보여 주는 문장은 빼고 계산식으로 알 수 없는 것만 적는다
+    @Test
+    fun `계산 방법은 계산식과 계산식으로 알 수 없는 것만 적는다`() = runComposeUiTest {
+        setContent { Sheet(FixedMetric.DAMAGE, ReportPreviewData.moved) }
+
+        onNodeWithText("20,108 피해 ÷ 146라운드 = 138").assertExists()
+        onNodeWithText("전부 더해", substring = true).assertDoesNotExist()
     }
 
     // "라운드 153" 같은 표본은 칸에 두지 않고 시트에서 풀어 적는다

@@ -254,7 +254,6 @@ internal fun TrendReadout(
     report: WeeklyReport.Ready,
     selected: Int?,
     modifier: Modifier = Modifier,
-    metric: FixedMetric? = null,
 ) {
     val colors = OvalitTheme.colors
     val typography = OvalitTheme.typography
@@ -262,7 +261,6 @@ internal fun TrendReadout(
     val first = week?.firstDay ?: report.period.firstDay
     val last = week?.firstDay?.plus(6, DateTimeUnit.DAY) ?: report.period.lastDay
     val metrics = if (week == null) report.metrics else week.metrics
-    val value = metrics?.let { metric?.value?.invoke(it) }
 
     FlowRow(
         modifier = modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
@@ -273,7 +271,7 @@ internal fun TrendReadout(
         Row(verticalAlignment = Alignment.CenterVertically) {
             OvalitText(
                 text = if (week == null) periodLabel(report.period) else weekLabel(report, selected),
-                style = if (metric == null) typography.bodyStrong else typography.label,
+                style = typography.bodyStrong,
                 color = colors.t1,
                 maxLines = 1,
             )
@@ -286,15 +284,6 @@ internal fun TrendReadout(
             )
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (metric != null) {
-                OvalitText(
-                    text = value?.let { metric.format.valueText(it) } ?: NO_VALUE,
-                    style = typography.metricS,
-                    color = colors.t1,
-                    maxLines = 1,
-                )
-                Spacer(Modifier.width(6.dp))
-            }
             OvalitText(
                 text = metrics?.let { stringResource(Res.string.trend_week_sample, it.matches, it.rounds) }
                     ?: stringResource(Res.string.trend_week_empty),
@@ -308,7 +297,7 @@ internal fun TrendReadout(
 
 // 막대는 이번 주나 지난주에서 끝난다
 @Composable
-private fun weekLabel(report: WeeklyReport.Ready, index: Int): String {
+internal fun weekLabel(report: WeeklyReport.Ready, index: Int): String {
     val weeksAgo = report.trend.size - 1 - index + if (report.period.includesThisWeek) 0 else 1
     return when (weeksAgo) {
         0 -> stringResource(CoreUiRes.string.period_this_week)

@@ -76,22 +76,20 @@
     <!-- S1-a 지표 설명 시트. 화면 라벨은 한글이고 정식 명칭은 여기서 알려준다. -->
     <string name="sheet_open">%1$s 설명 보기</string>
     <string name="sheet_combat_score_name">ACS</string>
-    <string name="sheet_combat_score_body">킬, 피해, 어시스트로 쌓이는 전투점수를 뛴 라운드 수로 나눈 값이에요.</string>
-    <string name="sheet_combat_score_method">경기마다 받은 전투점수를 전부 더해 뛴 라운드 수로 나눠요.</string>
+    <string name="sheet_combat_score_body">킬, 피해, 어시스트로 쌓이는 전투점수의 라운드당 평균이에요.</string>
     <string name="sheet_combat_score_formula">%1$s점 ÷ %2$s라운드 = %3$s</string>
     <string name="sheet_kd_body">한 번 죽을 때마다 적을 몇 번 처치했는지예요.</string>
-    <string name="sheet_kd_method">킬을 전부 더해 데스 수로 나눠요. 스킬로 자기나 우리 팀을 죽인 건 킬로 세지 않고 자기를 죽인 건 데스에는 넣어요.</string>
+    <string name="sheet_kd_note">스킬로 자기나 우리 팀을 죽인 건 킬로 세지 않고 자기를 죽인 건 데스에는 넣어요.</string>
     <string name="sheet_kd_formula">%1$s킬 ÷ %2$s데스 = %3$s</string>
     <string name="sheet_kda_body">한 번 죽을 때마다 킬과 어시스트를 합쳐 몇 번 했는지예요. K/D와 달리 어시스트도 들어가요.</string>
-    <string name="sheet_kda_method">킬과 어시스트를 전부 더해 데스 수로 나눠요. 경기마다 KDA를 먼저 내지 않고 다 더한 뒤에 나눠요.</string>
+    <string name="sheet_kda_note">경기마다 KDA를 먼저 내지 않고 킬, 어시스트, 데스를 다 더한 뒤에 나눠요.</string>
     <string name="sheet_kda_formula">(%1$s킬 + %2$s어시) ÷ %3$s데스 = %4$s</string>
     <string name="sheet_damage_name">ADR</string>
     <string name="sheet_damage_body">한 라운드에 적에게 입힌 피해의 평균이에요. 킬로 이어지지 않은 피해도 들어가요.</string>
-    <string name="sheet_damage_method">경기에서 입힌 피해를 전부 더해 뛴 라운드 수로 나눠요.</string>
     <string name="sheet_damage_formula">%1$s 피해 ÷ %2$s라운드 = %3$s</string>
     <string name="sheet_headshot_name">HS%</string>
     <string name="sheet_headshot_body">맞힌 탄 중 머리에 맞은 탄의 비율이에요. 킬 중 헤드샷 킬의 비율과는 달라요.</string>
-    <string name="sheet_headshot_method">머리에 맞은 탄을 머리, 몸, 다리에 맞힌 탄 전체로 나눠요. 경기마다 비율을 먼저 내지 않고 탄 수를 다 더한 뒤에 나눠요.</string>
+    <string name="sheet_headshot_note">경기마다 비율을 먼저 내지 않고 탄 수를 다 더한 뒤에 나눠요.</string>
     <string name="sheet_headshot_formula">머리 %1$s발 ÷ 맞힌 탄 %2$s발 = %3$s</string>
     <string name="sheet_sample_rounds">%1$d라운드</string>
     <string name="sheet_trend_start">%1$d주 전</string>

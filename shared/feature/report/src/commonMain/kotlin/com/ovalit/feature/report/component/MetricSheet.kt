@@ -45,30 +45,28 @@ import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.period_label_matches
 import com.ovalit.feature.report.resources.sheet_combat_score_body
 import com.ovalit.feature.report.resources.sheet_combat_score_formula
-import com.ovalit.feature.report.resources.sheet_combat_score_method
 import com.ovalit.feature.report.resources.sheet_combat_score_name
 import com.ovalit.feature.report.resources.sheet_damage_body
 import com.ovalit.feature.report.resources.sheet_damage_formula
-import com.ovalit.feature.report.resources.sheet_damage_method
 import com.ovalit.feature.report.resources.sheet_damage_name
 import com.ovalit.feature.report.resources.sheet_headshot_body
 import com.ovalit.feature.report.resources.sheet_headshot_formula
-import com.ovalit.feature.report.resources.sheet_headshot_method
+import com.ovalit.feature.report.resources.sheet_headshot_note
 import com.ovalit.feature.report.resources.sheet_headshot_name
 import com.ovalit.feature.report.resources.sheet_kd_body
 import com.ovalit.feature.report.resources.sheet_kd_formula
-import com.ovalit.feature.report.resources.sheet_kd_method
+import com.ovalit.feature.report.resources.sheet_kd_note
 import com.ovalit.feature.report.resources.sheet_kd_no_deaths
 import com.ovalit.feature.report.resources.sheet_kda_body
 import com.ovalit.feature.report.resources.sheet_kda_formula
-import com.ovalit.feature.report.resources.sheet_kda_method
+import com.ovalit.feature.report.resources.sheet_kda_note
 import com.ovalit.feature.report.resources.sheet_kda_no_deaths
 import com.ovalit.feature.report.resources.sheet_method_title
 import com.ovalit.feature.report.resources.sheet_per_match_kd
 import com.ovalit.feature.report.resources.sheet_per_match_kda
 import com.ovalit.feature.report.resources.sheet_sample_rounds
+import com.ovalit.feature.report.resources.trend_week_empty
 import com.ovalit.feature.report.resources.dynamic_usual
-import com.ovalit.feature.report.resources.sheet_usual_average
 import com.ovalit.feature.report.resources.sheet_usual_missing
 import com.ovalit.feature.report.resources.sheet_usual_range
 import com.ovalit.feature.report.resources.sheet_usual_same
@@ -100,24 +98,13 @@ internal fun MetricSheet(
 // 프리뷰와 테스트는 이 본문만 그린다.
 @Composable
 internal fun MetricSheetBody(metric: FixedMetric, report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
+    // 막대를 누르면 맨 위 숫자와 표본이 그 주 값으로 바뀐다.
+    // 처음에는 리포트 기간이다.
+    var selected by rememberSaveable { mutableStateOf<Int?>(null) }
     Column(modifier = modifier) {
-        CurrentValue(metric, report)
-        val usual = report.baseline?.let { baseline -> metric.value(baseline.metrics)?.let { baseline.weeks to it } }
-        if (usual != null) {
-            Spacer(Modifier.height(OvalitSpacing.xs))
-            OvalitText(
-                text = stringResource(Res.string.sheet_usual_average, usual.first, metric.format.valueText(usual.second)),
-                style = OvalitTheme.typography.caption,
-                color = OvalitTheme.colors.t2,
-            )
-        }
-        // 판당 킬·데스·어시는 홈 칸에 두지 않고 K/D와 KDA 시트에서 푼다
-        perMatchText(metric, report.metrics)?.let { text ->
-            Spacer(Modifier.height(OvalitSpacing.xs))
-            OvalitText(text = text, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t2)
-        }
+        CurrentValue(metric, report, selected)
         Spacer(Modifier.height(OvalitSpacing.xl))
-        TrendBars(metric, report)
+        TrendBars(metric, report, selected, onSelect = { selected = it })
         Spacer(Modifier.height(22.dp))
         HorizontalLine()
         Spacer(Modifier.height(18.dp))
@@ -139,11 +126,12 @@ private fun perMatchText(metric: FixedMetric, metrics: MatchMetrics): String? {
     }
 }
 
+// 계산 방법은 계산식이 이미 보여 줘서 계산식만으로는 알 수 없는 것이 있을 때만 note로 밑에 적는다
 private class SheetText(
     val name: StringResource?,
     val body: StringResource,
-    val method: StringResource,
     val formula: StringResource,
+    val note: StringResource? = null,
 )
 
 private val FixedMetric.sheetText: SheetText
@@ -151,41 +139,43 @@ private val FixedMetric.sheetText: SheetText
         FixedMetric.COMBAT_SCORE -> SheetText(
             name = Res.string.sheet_combat_score_name,
             body = Res.string.sheet_combat_score_body,
-            method = Res.string.sheet_combat_score_method,
             formula = Res.string.sheet_combat_score_formula,
         )
         // K/D는 화면 라벨이 곧 정식 명칭이다
         FixedMetric.KD -> SheetText(
             name = null,
             body = Res.string.sheet_kd_body,
-            method = Res.string.sheet_kd_method,
             formula = Res.string.sheet_kd_formula,
+            note = Res.string.sheet_kd_note,
         )
         FixedMetric.DAMAGE -> SheetText(
             name = Res.string.sheet_damage_name,
             body = Res.string.sheet_damage_body,
-            method = Res.string.sheet_damage_method,
             formula = Res.string.sheet_damage_formula,
         )
         FixedMetric.HEADSHOT_RATE -> SheetText(
             name = Res.string.sheet_headshot_name,
             body = Res.string.sheet_headshot_body,
-            method = Res.string.sheet_headshot_method,
             formula = Res.string.sheet_headshot_formula,
+            note = Res.string.sheet_headshot_note,
         )
         // KDA도 화면 라벨이 곧 정식 명칭이다
         FixedMetric.KDA -> SheetText(
             name = null,
             body = Res.string.sheet_kda_body,
-            method = Res.string.sheet_kda_method,
             formula = Res.string.sheet_kda_formula,
+            note = Res.string.sheet_kda_note,
         )
     }
 
+// 지난 4주 평균은 막대 뒤 가로선 끝에 적어서 여기 따로 두지 않는다
 @Composable
-private fun CurrentValue(metric: FixedMetric, report: WeeklyReport.Ready) {
-    val current = metric.value(report.metrics)
-    val usual = report.baseline?.let { metric.value(it.metrics) }
+private fun CurrentValue(metric: FixedMetric, report: WeeklyReport.Ready, selected: Int?) {
+    val week = selected?.let { report.trend.getOrNull(it) }
+    val metrics = if (week == null) report.metrics else week.metrics
+    val current = metrics?.let { metric.value(it) }
+    // 변화량은 리포트 기간을 지난 4주 평균과 견준 값이라 다른 주를 고르면 뺀다
+    val usual = if (week == null) report.baseline?.let { metric.value(it.metrics) } else null
 
     // 좁은 화면에서 오른쪽 표본이 먼저 자리를 잡으면 큰 숫자와 변화량이 꺾인다.
     // 모자라면 표본을 다음 줄로 내린다.
@@ -195,33 +185,42 @@ private fun CurrentValue(metric: FixedMetric, report: WeeklyReport.Ready) {
         verticalArrangement = Arrangement.spacedBy(OvalitSpacing.sm),
         itemVerticalAlignment = Alignment.Bottom,
     ) {
-        Row {
-            OvalitText(
-                text = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
-                modifier = Modifier.alignByBaseline(),
-                style = OvalitTheme.typography.metricXl,
-                // KDA 숫자는 어디서나 구간 색이다(docs/design.md)
-                color = if (metric == FixedMetric.KDA && current != null) kdaColor(current, below = OvalitTheme.colors.t1) else OvalitTheme.colors.t1,
-            )
-            if (current != null && usual != null) {
-                Spacer(Modifier.width(OvalitSpacing.sm))
+        Column {
+            Row {
                 OvalitText(
-                    text = metric.format.changeText(current, usual),
+                    text = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
                     modifier = Modifier.alignByBaseline(),
-                    style = OvalitTheme.typography.delta.copy(fontSize = 13.sp, lineHeight = 18.sp),
-                    color = directionColor(metric.format, current, usual),
+                    style = OvalitTheme.typography.metricXl,
+                    // KDA 숫자는 어디서나 구간 색이다(docs/design.md)
+                    color = if (metric == FixedMetric.KDA && current != null) kdaColor(current, below = OvalitTheme.colors.t1) else OvalitTheme.colors.t1,
                 )
+                if (current != null && usual != null) {
+                    Spacer(Modifier.width(OvalitSpacing.sm))
+                    OvalitText(
+                        text = metric.format.changeText(current, usual),
+                        modifier = Modifier.alignByBaseline(),
+                        style = OvalitTheme.typography.delta.copy(fontSize = 13.sp, lineHeight = 18.sp),
+                        color = directionColor(metric.format, current, usual),
+                    )
+                }
+            }
+            // 판당 킬·데스·어시는 홈 칸에 두지 않고 K/D와 KDA 시트에서 푼다
+            metrics?.let { perMatchText(metric, it) }?.let { text ->
+                Spacer(Modifier.height(OvalitSpacing.xs))
+                OvalitText(text = text, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t2)
             }
         }
+        val label = if (selected == null || week == null) periodLabel(report.period) else weekLabel(report, selected)
         Column(horizontalAlignment = Alignment.End) {
             OvalitText(
-                text = stringResource(Res.string.period_label_matches, periodLabel(report.period), report.metrics.matches),
+                text = if (metrics == null) label else stringResource(Res.string.period_label_matches, label, metrics.matches),
                 style = OvalitTheme.typography.caption,
                 color = OvalitTheme.colors.t3,
                 textAlign = TextAlign.End,
             )
             OvalitText(
-                text = stringResource(Res.string.sheet_sample_rounds, report.metrics.rounds),
+                text = metrics?.let { stringResource(Res.string.sheet_sample_rounds, it.rounds) }
+                    ?: stringResource(Res.string.trend_week_empty),
                 style = OvalitTheme.typography.caption,
                 color = OvalitTheme.colors.t3,
                 textAlign = TextAlign.End,
@@ -231,22 +230,17 @@ private fun CurrentValue(metric: FixedMetric, report: WeeklyReport.Ready) {
 }
 
 @Composable
-private fun TrendBars(metric: FixedMetric, report: WeeklyReport.Ready) {
-    // 막대를 누르면 그 주 값을 막대 위에 띄운다.
-    // 처음에는 리포트 기간이다.
-    var selected by rememberSaveable { mutableStateOf<Int?>(null) }
-    val baseline = report.baseline?.let { baseline -> metric.value(baseline.metrics)?.let { baseline.weeks to it } }
+private fun TrendBars(metric: FixedMetric, report: WeeklyReport.Ready, selected: Int?, onSelect: (Int?) -> Unit) {
+    val baseline = report.baseline?.let { metric.value(it.metrics) }
     Column {
-        TrendReadout(report, selected, metric = metric)
-        Spacer(Modifier.height(OvalitSpacing.sm))
         TrendBarRow(
             metric = metric,
             report = report,
             modifier = Modifier.fillMaxWidth().height(TrendHeight),
             selected = selected,
-            onSelect = { selected = it },
-            baseline = baseline?.second,
-            baselineLabel = baseline?.let { stringResource(Res.string.dynamic_usual, metric.format.valueText(it.second)) },
+            onSelect = onSelect,
+            baseline = baseline,
+            baselineLabel = baseline?.let { stringResource(Res.string.dynamic_usual, metric.format.valueText(it)) },
         )
         Spacer(Modifier.height(OvalitSpacing.sm))
         TrendAxis(report)
@@ -311,7 +305,7 @@ private fun MethodSection(metric: FixedMetric, metrics: MatchMetrics) {
         }
     }
 
-    SheetSection(title = stringResource(Res.string.sheet_method_title), body = stringResource(metric.sheetText.method))
+    OvalitText(text = stringResource(Res.string.sheet_method_title), style = OvalitTheme.typography.bodyStrong)
     Spacer(Modifier.height(10.dp))
     if (formula != null) {
         OvalitText(
@@ -329,6 +323,10 @@ private fun MethodSection(metric: FixedMetric, metrics: MatchMetrics) {
             style = OvalitTheme.typography.caption,
             color = OvalitTheme.colors.t3,
         )
+    }
+    metric.sheetText.note?.let { note ->
+        Spacer(Modifier.height(10.dp))
+        OvalitText(text = stringResource(note), style = OvalitTheme.typography.body, color = OvalitTheme.colors.t2)
     }
 }
 

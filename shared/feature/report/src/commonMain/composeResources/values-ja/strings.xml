@@ -76,22 +76,20 @@
     <!-- S1-a 지표 설명 시트. 칸 이름 옆에 작게 정식 명칭을 둔다 -->
     <string name="sheet_open">%1$sの説明を見る</string>
     <string name="sheet_combat_score_name">ACS</string>
-    <string name="sheet_combat_score_body">キル、ダメージ、アシストでたまるバトルスコアを、プレイしたラウンド数で割った値です。</string>
-    <string name="sheet_combat_score_method">試合ごとのバトルスコアをすべて足して、プレイしたラウンド数で割ります。</string>
+    <string name="sheet_combat_score_body">キル、ダメージ、アシストでたまるバトルスコアの1ラウンドあたりの平均です。</string>
     <string name="sheet_combat_score_formula">%1$s点 ÷ %2$sラウンド = %3$s</string>
     <string name="sheet_kd_body">1回デスするごとに、敵を何回倒したかを表します。</string>
-    <string name="sheet_kd_method">キルをすべて足してデス数で割ります。アビリティで自分や味方を倒したものはキルに数えず、自分を倒したものはデスに含めます。</string>
+    <string name="sheet_kd_note">アビリティで自分や味方を倒したものはキルに数えず、自分を倒したものはデスに含めます。</string>
     <string name="sheet_kd_formula">%1$sキル ÷ %2$sデス = %3$s</string>
     <string name="sheet_kda_body">1回デスするごとに、キルとアシストを合わせて何回したかを表します。K/Dと違ってアシストも含まれます。</string>
-    <string name="sheet_kda_method">キルとアシストをすべて足してデス数で割ります。試合ごとにKDAを出すのではなく、すべて足してから割ります。</string>
+    <string name="sheet_kda_note">試合ごとにKDAを出すのではなく、キル・アシスト・デスをすべて足してから割ります。</string>
     <string name="sheet_kda_formula">(%1$sキル + %2$sアシスト) ÷ %3$sデス = %4$s</string>
     <string name="sheet_damage_name">ADR</string>
     <string name="sheet_damage_body">1ラウンドで敵に与えたダメージの平均です。キルにつながらなかったダメージも含まれます。</string>
-    <string name="sheet_damage_method">試合で与えたダメージをすべて足して、プレイしたラウンド数で割ります。</string>
     <string name="sheet_damage_formula">%1$sダメージ ÷ %2$sラウンド = %3$s</string>
     <string name="sheet_headshot_name">HS%</string>
     <string name="sheet_headshot_body">当てた弾のうち、頭に当たった弾の割合です。キルのうちヘッドショットキルが占める割合とは違います。</string>
-    <string name="sheet_headshot_method">頭に当たった弾を、頭・体・脚に当てた弾の合計で割ります。試合ごとに割合を出すのではなく、弾数をすべて足してから割ります。</string>
+    <string name="sheet_headshot_note">試合ごとに割合を出すのではなく、弾数をすべて足してから割ります。</string>
     <string name="sheet_headshot_formula">頭 %1$s発 ÷ 命中 %2$s発 = %3$s</string>
     <string name="sheet_sample_rounds">%1$dラウンド</string>
     <string name="sheet_trend_start">%1$d週間前</string>

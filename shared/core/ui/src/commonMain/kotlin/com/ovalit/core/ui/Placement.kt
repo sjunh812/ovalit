@@ -96,8 +96,9 @@ fun MatchChip(text: String, tone: MatchChipTone, modifier: Modifier = Modifier) 
     val (container, content) = when (tone) {
         MatchChipTone.MVP -> colors.mvpContainer to colors.mvp
         MatchChipTone.TEAM_MVP -> colors.teamMvpContainer to colors.teamMvp
-        MatchChipTone.ACE -> colors.aceContainer to colors.ace
-        MatchChipTone.CLUTCH -> colors.clutchContainer to colors.clutch
+        // 에이스와 클러치는 무채색이다.
+        // 색을 입히면 MVP 금색, KDA 구간색과 같은 계열이 겹쳐 한 색이 두 뜻이 된다(docs/design.md 색 쓰기).
+        MatchChipTone.ACE, MatchChipTone.CLUTCH -> colors.fill to colors.t1
         MatchChipTone.QUIET -> colors.fill to colors.t2
     }
     // 이름 옆에 붙는 작은 표시라 글자보다 한 단계 작게 둔다.

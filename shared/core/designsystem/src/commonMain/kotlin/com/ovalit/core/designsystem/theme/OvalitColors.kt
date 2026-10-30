@@ -31,10 +31,6 @@ data class OvalitColors(
     val mvpContainer: Color,
     val teamMvp: Color,
     val teamMvpContainer: Color,
-    val ace: Color,
-    val aceContainer: Color,
-    val clutch: Color,
-    val clutchContainer: Color,
     val isDark: Boolean,
 )
 
@@ -70,10 +66,6 @@ internal val OvalitDarkColors = OvalitColors(
     mvpContainer = Color(0xFF3A3020),
     teamMvp = Color(0xFFC3CDD9),
     teamMvpContainer = Color(0xFF2B3139),
-    ace = Color(0xFFFF9147),
-    aceContainer = Color(0xFF3D261A),
-    clutch = Color(0xFF7EB6FF),
-    clutchContainer = Color(0xFF1D2A3D),
     isDark = true,
 )
 
@@ -96,7 +88,7 @@ internal val OvalitLightColors = OvalitColors(
     t4 = Color(0xFFA9B0B8),
     t5 = Color(0xFFC9CED4),
     pos = Color(0xFF0A7D4A),
-    neg = Color(0xFFC2262C),
+    neg = Color(0xFFB01E2A),
     accent = Color(0xFFFF4655),
     accentInk = Color(0xFFDA1638),
     onAccent = Color(0xFFFFFFFF),
@@ -106,9 +98,5 @@ internal val OvalitLightColors = OvalitColors(
     mvpContainer = Color(0xFFFFF1CC),
     teamMvp = Color(0xFF3B4A5C),
     teamMvpContainer = Color(0xFFE4E9F0),
-    ace = Color(0xFFA84400),
-    aceContainer = Color(0xFFFFEADB),
-    clutch = Color(0xFF1D5BAA),
-    clutchContainer = Color(0xFFE4EEFB),
     isDark = false,
 )

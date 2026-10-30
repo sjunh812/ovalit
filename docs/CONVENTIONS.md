@@ -307,7 +307,8 @@ UI는 시뮬레이터에서 돌립니다. 처음 한 번은 시뮬레이터를 �
 
 ## iOS 시뮬레이터
 
-출시는 안드로이드뿐이라 Xcode 프로젝트를 두지 않습니다. `shared/app`이 iOS 실행 파일을 만들고 그 옆에 모든 모듈의 Compose
+지금은 시뮬레이터에서만 돌려서 Xcode 프로젝트를 두지 않습니다. iOS를 낼 때 실기기 서명과 App Store 제출을 위해 `iosApp`
+Xcode 프로젝트를 둡니다(`CLAUDE.md` 아키텍처). `shared/app`이 iOS 실행 파일을 만들고 그 옆에 모든 모듈의 Compose
 리소스와 `Info.plist`를 묶어 `shared/app/build/ios/Ovalit.app`을 만듭니다. 서명은 시뮬레이터용 임시 서명뿐입니다.
 
 ```bash

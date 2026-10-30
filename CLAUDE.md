@@ -83,9 +83,10 @@ individually"에 걸릴 수 있다. 홈 고정 칸, 라이벌 대결, 친구 비
 
 ## 아키텍처
 
-- CMP(Compose Multiplatform)로 쓰고 출시는 안드로이드만 한다. iOS는 시뮬레이터에서 도는 데까지다. TestFlight 외부 테스트에 Beta
-  App Review가 걸려 배포할 길이 없다. 시뮬레이터용 앱은 Xcode 프로젝트 없이 `shared/app`의 실행 파일을 앱 번들로 묶어 만든다
-  (`docs/CONVENTIONS.md`).
+- CMP(Compose Multiplatform)로 쓴다. 출시는 안드로이드가 먼저이고 iOS도 낸다(사용자 결정, 동시 출시는 아니다). 그래서 기능과
+  화면은 처음부터 iOS에서도 돌게 만들고, 플랫폼에 기대는 것은 iOS에서 무엇으로 대신할지 같이 정한다. 지금 iOS는 시뮬레이터에서
+  돌리고 Xcode 프로젝트 없이 `shared/app`의 실행 파일을 앱 번들로 묶어 만든다(`docs/CONVENTIONS.md`). iOS를 낼 때 실기기 서명,
+  푸시 권한, App Store 제출을 위해 Kotlin을 framework로 넣는 Xcode 프로젝트(`iosApp`)를 둔다.
 - DI는 Koin 4다. Hilt는 KMP를 지원하지 않는다. 회사 코드와 다르니 주의한다.
 - nowinandroid에서 UDF, `sealed interface UiState`, `stateIn(WhileSubscribed(5_000))`, Repository 분리, `build-logic` convention
   plugin, 테스트 대역을 모은 `core/testing`을 가져온다. SyncWorker 주기 동기화 계층, FTS 전문 검색, 20여 개 모듈 구조는 버린다.
@@ -94,7 +95,8 @@ individually"에 걸릴 수 있다. 홈 고정 칸, 라이벌 대결, 친구 비
   멀티플랫폼이고 `NavDisplay`는 JetBrains 것이다. 안드로이드에서는 JetBrains 것이 Google `navigation3-ui`로 풀린다. 기능 모듈은
   `ReportRoute`처럼 ViewModel을 받아 그리는 진입 컴포저블까지만 내놓고 어디서 어디로 가는지는 `shared/app`이 정한다.
 - 플랫폼마다 다른 일(홈에서 뒤로 두 번 종료, 알림 권한, 공유 창, 피드백 메일)은 `OvalitPlatform`으로 받는다. 광고, 푸시,
-  WorkManager, Firebase는 `composeApp`에만 있고 iOS에는 없다.
+  WorkManager, Firebase는 지금 `composeApp`에만 있고 iOS에는 없다. iOS를 낼 때 AdMob iOS, APNs와 FCM, Firebase iOS,
+  BGTaskScheduler로 붙인다.
 - 백엔드가 있다. RSO가 Authorization Code 방식이라 `client_secret` 교환이 서버에서 일어나야 하고 RGAPI 키도 앱에 넣을 수 없다.
   앱은 서버가 준 세션 토큰만 든다.
 - 서버가 보고 움직이는 설정(전적 공개, 시작 전 알림)은 서버에 두고 서버 값을 따른다(`AccountSettingsRepository`, `PATCH /me`).
@@ -211,7 +213,8 @@ individually"에 걸릴 수 있다. 홈 고정 칸, 라이벌 대결, 친구 비
 ## 비용
 
 무료가 아니면 쓰지 않는다. 유료 구간이 있는 선택지는 제안하기 전에 무료 한도부터 적는다. 피할 수 없는 비용은 출시 직전에 드는
-Google Play 개발자 등록 1회 25달러 하나다. 그 전까지 드는 돈은 없어야 한다.
+Google Play 개발자 등록 1회 25달러와, iOS를 낼 때 드는 Apple Developer Program 연 99달러다(사용자 결정). 그 전까지 드는 돈은
+없어야 한다.
 
 - 백엔드는 무료 한도 안에서 돌아가야 한다. 카드 등록 없이 쓸 수 있고 한도를 넘으면 과금이 아니라 차단되는 곳을 고른다.
 - 앱과 Worker에 들어가는 라이브러리와 폰트는 상업 이용이 무료인 라이선스(Apache-2.0, MIT, SIL OFL)만 쓴다. 배포물에 들어가지

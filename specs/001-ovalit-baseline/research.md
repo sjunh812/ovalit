@@ -8,8 +8,8 @@ CLARIFICATION"으로 남긴 항목은 없다. 정하지 않은 것은 정하는 
 
 ### 화면 프레임워크와 출시 범위
 
-- **결정**: Compose Multiplatform 한 벌로 쓰고 출시는 안드로이드만 한다. iOS는 시뮬레이터에서 도는 데까지이고 Xcode 프로젝트
-  없이 `shared/app`의 실행 파일을 앱 번들로 묶는다.
+- **결정**: Compose Multiplatform 한 벌로 쓴다. 출시는 안드로이드가 먼저이고 iOS도 낸다(2026-10-30 사용자 결정). 지금 iOS는
+  시뮬레이터에서 돌리고 Xcode 프로젝트 없이 `shared/app`의 실행 파일을 앱 번들로 묶는다. iOS를 낼 때 Xcode 프로젝트(`iosApp`)를 둔다.
 - **까닭**: TestFlight 외부 테스트에 Beta App Review가 걸려 iOS를 배포할 길이 없다. 그래도 화면 테스트(Compose UI Test)는 iOS
   시뮬레이터에서만 돌아서 iOS 타깃이 쓸모 있다.
 - **견준 안**: 안드로이드 전용 Jetpack Compose(화면 테스트를 JVM에서 돌리려면 Robolectric이 필요), 별도 iOS 앱(배포 길이 없다).

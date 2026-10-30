@@ -14,7 +14,7 @@
 
 | | |
 | --- | --- |
-| 플랫폼 | Android(Google Play 한국 출시 예정). iOS는 같은 코드로 시뮬레이터에서만 확인합니다 |
+| 플랫폼 | Android(Google Play 한국 출시 예정)가 먼저이고 iOS(App Store)도 냅니다. 같은 코드가 iOS에서도 돕니다 |
 | 지금 상태 | 모든 화면이 가짜 데이터로 돌아갑니다. Riot 프로덕션 키 심사를 기다리고 있습니다(2026년 9월 19일 신청) |
 | 데이터 | Riot 공식 API만 씁니다. VAL-MATCH-V1, VAL-CONTENT-V1, VAL-STATUS-V1, 로그인은 RSO입니다 |
 | 비용 | 출시 전까지 0원입니다. 서버와 도구 모두 무료 한도 안에서 돌립니다 |
@@ -204,10 +204,10 @@ flowchart LR
     FCM --> App
 ```
 
-- 앱은 Kotlin Multiplatform과 Compose Multiplatform으로 만들고 Android로 출시합니다. 같은 코드가 iOS 시뮬레이터에서도 돌아갑니다.
+- 앱은 Kotlin Multiplatform과 Compose Multiplatform으로 만들고 Android를 먼저, iOS를 뒤이어 출시합니다. 같은 코드가 두 플랫폼에서 돕니다.
 - Riot API 키와 RSO 비밀값은 서버에만 둡니다.
 - 끝난 경기는 결과가 바뀌지 않으니 한 번 받은 뒤로는 다시 요청하지 않습니다. Riot 레이트 리밋은 앱 전체가 나눠 쓰는 몫이라 아껴 씁니다.
-- 서버, 푸시, 사용 통계, CI 모두 무료 한도 안에서 돌립니다. 출시 전에 드는 비용은 Google Play 개발자 등록비 25달러 하나입니다.
+- 서버, 푸시, 사용 통계, CI 모두 무료 한도 안에서 돌립니다. 출시 전에 드는 비용은 Google Play 개발자 등록비 25달러와, iOS를 낼 때의 Apple Developer Program 연 99달러입니다.
 
 ## 아직 정하지 못한 것
 

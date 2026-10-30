@@ -6,7 +6,7 @@
 
 **Note**: 이 계획은 새로 만들 것을 고르는 계획이 아니다. 이미 만든 앱과 서버가 쓰는 기술과 구조를 스펙에 맞춰 옮겨 적은 기준
 계획이다. 결정의 원본은 `CLAUDE.md`, `docs/backend.md`, `docs/CONVENTIONS.md`이고, 여기와 어긋나면 그쪽이 기준이다. 아직 정하지
-않은 것은 [research.md](research.md)의 "열린 결정"에 정하는 조건과 함께 둔다.
+않은 것은 [research.md](research.md)의 "열린 결정"에 정하는 조건을 붙여 둔다.
 
 ## Summary
 
@@ -144,5 +144,5 @@ FTS는 버렸다. 기능 모듈은 ViewModel을 받아 그리는 진입 컴포�
 
 ## Complexity Tracking
 
-헌법을 어기는 부분이 없어 비워 둔다. 헌법이 미리 허락한 사용자 결정(KDA·승률 구간 색, Google 서비스 셋, 전투점수 예외)은 위반이
+헌법을 어기는 것이 없어 비워 둔다. 헌법이 미리 허락한 사용자 결정(KDA·승률 구간 색, Google 서비스 셋, 전투점수 예외)은 위반이
 아니라 [research.md](research.md)에 까닭과 함께 적었다.

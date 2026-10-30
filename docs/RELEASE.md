@@ -13,12 +13,15 @@ Play에 앱을 올릴 때 보는 문서입니다. 처음 한 번 해 둘 것, �
 
 - 심사 중에는 포털이나 지원 사이트로 메시지를 보내지 않습니다. FAQ에 메시지를 여러 번 보내면 줄 맨 뒤로 밀릴 수 있다고 적혀
   있습니다. FAQ가 밝힌 기간은 최대 3주이지만 커뮤니티 보고로는 VALORANT가 3~8개월 걸립니다.
-- 프로덕션 키가 나오기 전에는 Play 공개 테스트도 하지 않습니다. 개발용 키로 공개 제품을 운영할 수 없고, 정책은 공개 알파와
+- 프로덕션 키가 나오기 전에는 Play 공개 테스트도 하지 않습니다. 개발용 키로 공개 제품을 운영할 수 없고 정책은 공개 알파와
   베타도 공개 사용으로 봅니다.
 - ovalit.netlify.app은 심사자가 앱이 하는 일과 이용약관, 개인정보처리방침을 확인하는 곳이라 심사 내내 열려 있어야 합니다.
   링크가 열리지 않아 반려된 사례가 있습니다.
 - 정책은 제품 설명을 지금 버전에 맞게 두고 기능을 바꾸면 제품 페이지로 다시 심사받으라고 합니다. 설명을 고치는 것도 심사라
-  승인 전에는 손대지 않고, 승인 직후 아래를 한 번에 적습니다.
+  승인 전에는 손대지 않고 승인 직후 아래를 한 번에 적습니다. Riot 개발자 Discord(#rules-faq)도 신청서를 지우고 다시 내면 줄
+  맨 뒤로 간다고 하고, 같은 서버의 안내 봇은 승인 전에 신청서를 고쳐도 줄 맨 뒤로 간다고 합니다.
+- 포털에서 제품 상태가 unverified면 심사하지 않는다고 같은 봇이 안내합니다. 사이트 소유 확인(riot.txt)이 풀리지 않았는지
+  가끔 포털에서 상태를 봅니다.
 
 | 신청서와 다른 것 | 신청서 | 지금 앱 |
 | --- | --- | --- |
@@ -40,7 +43,7 @@ Play에 앱을 올릴 때 보는 문서입니다. 처음 한 번 해 둘 것, �
 | 어디에 | 무엇 | 쓰는 곳 | 없으면 |
 | --- | --- | --- | --- |
 | `composeApp/google-services.json` | Firebase 콘솔 > 프로젝트 설정 > 내 앱에서 받은 파일 | 푸시, 사용 통계, 비정상 종료 보고 | 셋 다 없이 돕니다 |
-| `local.properties` | `admob.appId`, `admob.nativeUnitId`, `admob.rewardedUnitId` | 광고 | 광고 자리가 비고, 보상형이 없으면 광고 줄의 ×가 그 광고만 바로 닫습니다 |
+| `local.properties` | `admob.appId`, `admob.nativeUnitId`, `admob.rewardedUnitId` | 광고 | 광고 자리가 비고 보상형이 없으면 광고 줄의 ×가 그 광고만 바로 닫습니다 |
 | `local.properties` | `admob.test` | `true`면 디버그 빌드가 Google 테스트 광고를 받습니다. 빌드할 때 `-Povalit.ads.test=true`로도 됩니다 | 디버그도 위 ID를 씁니다 |
 | `local.properties` | `ovalit.feedback.email` | 설정의 "피드백 보내기"가 여는 메일의 받는 주소 | 그 줄이 없습니다 |
 | `local.properties` | `ovalit.server.host` | RSO 로그인과 초대 링크의 App Link 호스트 | 아무 데도 이어지지 않는 예약 도메인을 씁니다 |
@@ -56,8 +59,8 @@ Play에 앱을 올릴 때 보는 문서입니다. 처음 한 번 해 둘 것, �
    keytool -genkeypair -v -keystore ~/ovalit-upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000
    ```
 
-2. `composeApp/build.gradle.kts`의 `release`에 서명 설정을 더하고, 키 경로와 비밀번호는 `local.properties`에서 읽게 합니다.
-3. Play Console에서 Play 앱 서명을 켭니다. 배포용 키는 Google이 들고, 우리는 업로드 키로만 서명합니다.
+2. `composeApp/build.gradle.kts`의 `release`에 서명 설정을 더하고 키 경로와 비밀번호는 `local.properties`에서 읽게 합니다.
+3. Play Console에서 Play 앱 서명을 켭니다. 배포용 키는 Google이 들고 우리는 업로드 키로만 서명합니다.
 4. Play 앱 서명 키의 SHA-256 지문을 서버의 `ANDROID_CERT_SHA256`에 넣습니다. App Link(`/.well-known/assetlinks.json`)가 이
    지문으로 검증합니다. 디버그 키 지문과 다릅니다.
 
@@ -79,7 +82,7 @@ Play에 앱을 올릴 때 보는 문서입니다. 처음 한 번 해 둘 것, �
 ## 사용 통계 이벤트
 
 Firebase는 이벤트 이름에 영문, 숫자, 밑줄만 받아서 이름은 영어로 두고 뜻은 여기와 코드(`AnalyticsEvents`)에 적습니다. 이벤트 자체에는
-설명 칸이 없고, 매개변수를 GA4 관리 > 맞춤 정의 > 맞춤 측정기준(범위: 이벤트)으로 등록할 때 설명을 한국어로 적을 수 있습니다.
+설명 칸이 없고 매개변수를 GA4 관리 > 맞춤 정의 > 맞춤 측정기준(범위: 이벤트)으로 등록할 때 설명을 한국어로 적을 수 있습니다.
 등록해야 보고서에서 매개변수로 나눠 볼 수 있습니다. Riot이 준 값은 어느 이벤트에도 넣지 않습니다(CLAUDE.md 지켜야 할 선).
 
 | 이벤트 | 뜻 | 매개변수 |
@@ -124,14 +127,14 @@ Firebase의 [Play 데이터 보안 안내](https://firebase.google.com/docs/andr
 | 기기 또는 기타 ID | FCM 토큰 | 우리 서버, Firebase | 앱 기능(알림) | 필수 |
 | 기기 또는 기타 ID | 앱 인스턴스 ID, 광고 ID | Firebase, AdMob | 분석, 광고 | 광고 ID는 기기 설정에서 끌 수 있습니다 |
 
-- 경기 기록은 Riot이 준 것을 서버가 30일까지 담아 두었다가 앱으로 넘기고, 앱은 기기에 저장합니다. Riot 데이터는 Firebase로
+- 경기 기록은 Riot이 준 것을 서버가 30일까지 담아 두었다가 앱으로 넘기고 앱은 기기에 저장합니다. Riot 데이터는 Firebase로
   보내지 않습니다.
 - 서비스 제공자(Google, Cloudflare)가 처리하는 것이라 "공유"가 아닙니다.
 - 세션 토큰과 로그인 코드는 해시만 저장합니다.
 
 ### 데이터 삭제
 
-- 앱 안에서는 설정의 "Riot 계정 연동 해제"가 서버의 사용자 줄을 지우고, 거기 걸린 세션, 친구, 요청, 초대, ㅇㅂㅇ, 기기 토큰이
+- 앱 안에서는 설정의 "Riot 계정 연동 해제"가 서버의 사용자 줄을 지우고 거기 걸린 세션, 친구, 요청, 초대, ㅇㅂㅇ, 기기 토큰이
   같이 지워집니다.
 - Play는 앱을 지운 사람도 삭제를 요청할 수 있는 웹 주소를 따로 요구합니다. 개인정보처리방침의 삭제 요청 절
   (https://ovalit.netlify.app/privacy/#delete)이 메일로 요청받는 방법을 적어 두었습니다. 요청이 많아지면 서버에 요청 양식을

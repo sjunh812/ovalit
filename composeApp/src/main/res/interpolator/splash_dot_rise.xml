@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 출렁임의 올라가는 반입니다. OvalitLaunchAnimation의 SineOut과 같습니다. -->
+<pathInterpolator xmlns:android="http://schemas.android.com/apk/res/android"
+    android:controlX1="0.39"
+    android:controlY1="0.575"
+    android:controlX2="0.565"
+    android:controlY2="1" />

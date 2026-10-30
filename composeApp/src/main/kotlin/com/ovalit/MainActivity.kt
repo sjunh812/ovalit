@@ -30,13 +30,28 @@ class MainActivity : ComponentActivity() {
     // 화면이 받기 전에 온 것도 남게 채널에 담는다.
     private val openPing = Channel<String>(Channel.CONFLATED)
 
+    // 스플래시를 걷으면 라이브러리가 상태 표시줄 색을 테마 기본값(흰 글자)으로 되돌린다.
+    // 걷은 직후에 앱이 고른 색을 다시 입힌다.
+    private val splashHandoff = AndroidSplashHandoff(onRemoved = { applySystemBars() })
+    private var appDarkTheme = false
+
+    // 앱 테마를 시스템과 다르게 고르면 상태 표시줄 글자색도 바꿔야 한다.
+    // 안 바꾸면 라이트 배경에 흰 시계가 뜬다.
+    private fun applySystemBars() {
+        val dark = appDarkTheme
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { dark },
+            navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { dark },
+        )
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         intent.getStringExtra(EXTRA_OPEN_PING)?.let(openPing::trySend)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        installSplashScreen().setOnExitAnimationListener(splashHandoff::onExit)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         // 앱별 언어를 바꾸면 이 화면이 새 언어로 다시 만들어진다.
@@ -48,13 +63,9 @@ class MainActivity : ComponentActivity() {
             val preferences = koinInject<UserPreferencesRepository>()
             val darkTheme = rememberDarkTheme()
 
-            // 앱 테마를 시스템과 다르게 고르면 상태 표시줄 글자색도 바꿔야 한다.
-            // 안 바꾸면 라이트 배경에 흰 시계가 뜬다.
             DisposableEffect(darkTheme) {
-                enableEdgeToEdge(
-                    statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { darkTheme },
-                    navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { darkTheme },
-                )
+                appDarkTheme = darkTheme
+                applySystemBars()
                 onDispose {}
             }
 
@@ -71,7 +82,12 @@ class MainActivity : ComponentActivity() {
 
             OvalitTheme(darkTheme = darkTheme) {
                 CompositionLocalProvider(LocalAdRenderer provides adRenderer) {
-                    OvalitApp(appVersion = BuildConfig.VERSION_NAME, platform = platform, openPing = pingsToOpen)
+                    OvalitApp(
+                        appVersion = BuildConfig.VERSION_NAME,
+                        platform = platform,
+                        openPing = pingsToOpen,
+                        splashHandoff = splashHandoff,
+                    )
                     adRenderer?.Sheets()
                 }
             }

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 점이 떠오를 때 살짝 넘쳤다가 제 크기로 섭니다. OvalitLaunchAnimation의 Overshoot와 같습니다. -->
+<pathInterpolator xmlns:android="http://schemas.android.com/apk/res/android"
+    android:controlX1="0.2"
+    android:controlY1="0.9"
+    android:controlX2="0.3"
+    android:controlY2="1.3" />

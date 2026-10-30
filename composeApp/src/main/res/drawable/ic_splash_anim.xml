@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  안드로이드 12 이상의 시스템 스플래시는 앱이 뜨기를 기다리는 동안 이 애니메이션을 돌립니다.
+  입력 중 점 셋이 차례로 떠오르고(150ms부터 60ms 간격, 160ms), 350ms부터 900ms마다 80ms씩 어긋나 한 번씩 출렁입니다(250ms).
+  앱이 뜨면 OvalitLaunchAnimation이 시작 시각을 넘겨받아 같은 위상에서 이어 그리므로 두 곳의 숫자가 같아야 합니다.
+  반복은 끝이 없고, 안드로이드 13 이상은 앱이 스플래시를 걷을 때까지, 12는 windowSplashScreenAnimationDuration까지 돕니다.
+-->
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:drawable="@drawable/ic_splash_mark">
+
+    <target android:name="dot_0">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="160"
+                    android:interpolator="@interpolator/splash_dot_appear"
+                    android:startOffset="150">
+                    <propertyValuesHolder
+                        android:propertyName="scaleX"
+                        android:valueFrom="0"
+                        android:valueTo="1"
+                        android:valueType="floatType" />
+                    <propertyValuesHolder
+                        android:propertyName="scaleY"
+                        android:valueFrom="0"
+                        android:valueTo="1"
+                        android:valueType="floatType" />
+                </objectAnimator>
+                <objectAnimator
+                    android:duration="900"
+                    android:repeatCount="infinite"
+                    android:startOffset="350">
+                    <propertyValuesHolder
+                        android:propertyName="translateY"
+                        android:valueType="floatType">
+                        <keyframe android:fraction="0" android:value="0" android:valueType="floatType" />
+                        <keyframe android:fraction="0.1388889" android:interpolator="@interpolator/splash_dot_rise" android:value="-26" android:valueType="floatType" />
+                        <keyframe android:fraction="0.2777778" android:interpolator="@interpolator/splash_dot_fall" android:value="0" android:valueType="floatType" />
+                        <keyframe android:fraction="1" android:value="0" android:valueType="floatType" />
+                    </propertyValuesHolder>
+                </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+
+    <target android:name="dot_1">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="160"
+                    android:interpolator="@interpolator/splash_dot_appear"
+                    android:startOffset="210">
+                    <propertyValuesHolder
+                        android:propertyName="scaleX"
+                        android:valueFrom="0"
+                        android:valueTo="1"
+                        android:valueType="floatType" />
+                    <propertyValuesHolder
+                        android:propertyName="scaleY"
+                        android:valueFrom="0"
+                        android:valueTo="1"
+                        android:valueType="floatType" />
+                </objectAnimator>
+                <objectAnimator
+                    android:duration="900"
+                    android:repeatCount="infinite"
+                    android:startOffset="430">
+                    <propertyValuesHolder
+                        android:propertyName="translateY"
+                        android:valueType="floatType">
+                        <keyframe android:fraction="0" android:value="0" android:valueType="floatType" />
+                        <keyframe android:fraction="0.1388889" android:interpolator="@interpolator/splash_dot_rise" android:value="-26" android:valueType="floatType" />
+                        <keyframe android:fraction="0.2777778" android:interpolator="@interpolator/splash_dot_fall" android:value="0" android:valueType="floatType" />
+                        <keyframe android:fraction="1" android:value="0" android:valueType="floatType" />
+                    </propertyValuesHolder>
+                </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+
+    <target android:name="dot_2">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="160"
+                    android:interpolator="@interpolator/splash_dot_appear"
+                    android:startOffset="270">
+                    <propertyValuesHolder
+                        android:propertyName="scaleX"
+                        android:valueFrom="0"
+                        android:valueTo="1"
+                        android:valueType="floatType" />
+                    <propertyValuesHolder
+                        android:propertyName="scaleY"
+                        android:valueFrom="0"
+                        android:valueTo="1"
+                        android:valueType="floatType" />
+                </objectAnimator>
+                <objectAnimator
+                    android:duration="900"
+                    android:repeatCount="infinite"
+                    android:startOffset="510">
+                    <propertyValuesHolder
+                        android:propertyName="translateY"
+                        android:valueType="floatType">
+                        <keyframe android:fraction="0" android:value="0" android:valueType="floatType" />
+                        <keyframe android:fraction="0.1388889" android:interpolator="@interpolator/splash_dot_rise" android:value="-26" android:valueType="floatType" />
+                        <keyframe android:fraction="0.2777778" android:interpolator="@interpolator/splash_dot_fall" android:value="0" android:valueType="floatType" />
+                        <keyframe android:fraction="1" android:value="0" android:valueType="floatType" />
+                    </propertyValuesHolder>
+                </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>

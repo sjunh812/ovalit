@@ -10,7 +10,12 @@
 
     <style name="Theme.Ovalit.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/brand_surface</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_mark</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_anim</item>
+        <!--
+          안드로이드 12는 이 시간이 지나면 스플래시 애니메이션을 멈춥니다(13부터는 쓰지 않습니다).
+          앱이 뜰 때까지 점이 출렁이게 넉넉히 둡니다. 스플래시를 이 시간만큼 붙잡아 두지는 않습니다.
+        -->
+        <item name="windowSplashScreenAnimationDuration">5000</item>
         <item name="postSplashScreenTheme">@style/Theme.Ovalit</item>
     </style>
 

@@ -50,6 +50,7 @@ import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.ImportScheduler
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.designsystem.component.OvalitLaunchAnimation
+import com.ovalit.core.designsystem.component.SplashHandoff
 import com.ovalit.core.designsystem.component.LocalOvalitToast
 import com.ovalit.core.designsystem.component.LocalScreenEntering
 import com.ovalit.core.designsystem.component.LocalTabReselects
@@ -170,9 +171,16 @@ private val BackStackConfiguration = SavedStateConfiguration {
  *
  * @param openPing ㅇㅂㅇ 알림을 눌러 열 초대 ID입니다.
  *   알림이 없는 iOS는 비워 둡니다.
+ * @param splashHandoff 시스템 스플래시의 점 애니메이션을 로고 애니메이션이 이어받는 길입니다.
+ *   스플래시가 움직이지 않는 iOS는 비워 둡니다.
  */
 @Composable
-fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<String> = emptyFlow()) {
+fun OvalitApp(
+    appVersion: String,
+    platform: OvalitPlatform,
+    openPing: Flow<String> = emptyFlow(),
+    splashHandoff: SplashHandoff = SplashHandoff.None,
+) {
     val backStack = rememberNavBackStack(BackStackConfiguration, Intro)
     // ㅇㅂㅇ 알림을 누르면 친구 탭 위에 그 초대 화면을 연다.
     // 연동 전이면 무시한다.
@@ -219,6 +227,8 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
     // 앱을 켤 때 시스템 스플래시에 이어 로고 애니메이션을 한 번 재생한다.
     // 화면을 돌리거나 언어를 바꿔 다시 그려도 다시 재생하지 않는다.
     var launching by rememberSaveable { mutableStateOf(true) }
+    // 다시 만들어진 화면에서 재생하지 않을 때도 스플래시는 걷어야 한다
+    LaunchedEffect(Unit) { if (!launching) splashHandoff.takeOver() }
 
     // 전환 중에 아래 화면이 어두워 보이게 하는 검은 바탕이다(OvalitTransitions).
     // 화면이 모두 불투명해서 평소에는 안 보인다.
@@ -371,7 +381,7 @@ fun OvalitApp(appVersion: String, platform: OvalitPlatform, openPing: Flow<Strin
                 .padding(bottom = if (onTab) OvalitTabBarHeight + OvalitSpacing.md else OvalitSpacing.lg),
         )
         // 밑 화면은 그동안 그려 두고 애니메이션이 흐려지면 드러난다
-        if (launching) OvalitLaunchAnimation(onFinished = { launching = false })
+        if (launching) OvalitLaunchAnimation(onFinished = { launching = false }, splash = splashHandoff)
     }
 }
 

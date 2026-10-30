@@ -1,5 +1,6 @@
 package com.ovalit
 
+import android.view.View
 import androidx.core.splashscreen.SplashScreenViewProvider
 import com.ovalit.core.designsystem.component.SplashHandoff
 import kotlinx.coroutines.CompletableDeferred
@@ -29,11 +30,16 @@ internal class AndroidSplashHandoff(private val onRemoved: () -> Unit) : SplashH
     // 스플래시 없이 열린 경우(다른 앱에서 열기 등)에는 넘어올 것이 없어 오래 기다리지 않는다
     override suspend fun awaitIconElapsed(): Long? = withTimeoutOrNull(WAIT_MILLIS) { iconElapsed.await() }
 
+    // 걷으면 점을 그리던 아이콘 층은 바로 없어지는데 빨간 바탕은 다음 프레임에 지워져서 한 프레임 동안 말풍선 없는 빨간 화면이 비친다.
+    // 그래서 이번 프레임에는 바탕까지 숨겨 밑의 로고 애니메이션이 보이게 하고 다음 프레임에 걷는다.
     override fun takeOver() {
         takenOver = true
         provider?.let {
-            it.remove()
-            onRemoved()
+            it.view.visibility = View.INVISIBLE
+            it.view.postOnAnimation {
+                it.remove()
+                onRemoved()
+            }
         }
         provider = null
     }

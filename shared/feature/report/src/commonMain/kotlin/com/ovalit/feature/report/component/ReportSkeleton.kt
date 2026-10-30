@@ -46,7 +46,7 @@ internal fun ReportSkeleton(modifier: Modifier = Modifier, withChips: Boolean = 
             Spacer(Modifier.height(OvalitSpacing.md))
         }
         SkeletonCard(description) {
-            SkeletonBlock(width = 96.dp, height = 28.dp)
+            SkeletonBlock(width = 96.dp, height = 24.dp)
             // 승패 줄이다. 없으면 리포트가 뜰 때 그 아래가 한 줄만큼 내려간다.
             Spacer(Modifier.height(OvalitSpacing.md))
             SkeletonBlock(width = 150.dp, height = 14.dp)
@@ -64,7 +64,7 @@ internal fun ReportSkeleton(modifier: Modifier = Modifier, withChips: Boolean = 
                             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 if (index < cells) {
                                     SkeletonBlock(width = 44.dp, height = 12.dp)
-                                    SkeletonBlock(width = 58.dp, height = 26.dp)
+                                    SkeletonBlock(width = 58.dp, height = 24.dp)
                                     SkeletonBlock(width = 72.dp, height = 12.dp)
                                 }
                             }
@@ -81,7 +81,7 @@ internal fun ReportSkeleton(modifier: Modifier = Modifier, withChips: Boolean = 
                 repeat(3) {
                     Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         SkeletonBlock(width = 56.dp, height = 12.dp)
-                        SkeletonBlock(width = 64.dp, height = 26.dp)
+                        SkeletonBlock(width = 64.dp, height = 24.dp)
                         SkeletonBlock(width = 72.dp, height = 12.dp)
                     }
                 }

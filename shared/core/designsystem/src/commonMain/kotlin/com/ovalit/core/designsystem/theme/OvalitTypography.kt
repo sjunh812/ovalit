@@ -68,8 +68,8 @@ fun ovalitTypography(fontFamily: FontFamily = FontFamily.Default, locale: Locale
         metricXl = metric(size = 44, lineHeight = 48, tracking = -1.4),
         metricL = metric(size = 30, lineHeight = 34, tracking = -0.8),
         // 홈 고정 칸과 달라진 점 숫자다.
-        // 한 화면에 여덟 개가 모여서 더 키우면 무겁고, 제목(titleL)보다는 커야 한다.
-        metricM = metric(size = 22, lineHeight = 26, tracking = -0.5),
+        // 한 화면에 여덟 개가 모여서 더 키우면 무겁고, 홈 기간 제목(titleM)보다는 커야 한다.
+        metricM = metric(size = 20, lineHeight = 24, tracking = -0.5),
         metricS = metric(size = 12, lineHeight = 16, tracking = 0.0),
         delta = metric(size = 11, lineHeight = 16, tracking = 0.0).copy(fontWeight = FontWeight.Normal),
         // 화면 제목, 홈 기간, 프로필 이름은 목업처럼 titleL이다.

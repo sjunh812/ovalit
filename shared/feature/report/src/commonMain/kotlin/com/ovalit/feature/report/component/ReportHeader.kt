@@ -112,7 +112,7 @@ internal fun PeriodHeader(report: WeeklyReport.Ready, modifier: Modifier = Modif
     Column(modifier = modifier.padding(horizontal = OvalitSpacing.gutter)) {
         TitleWithCaption(
             title = periodLabel(period),
-            titleStyle = OvalitTheme.typography.titleL,
+            titleStyle = OvalitTheme.typography.titleM,
             caption = periodCaption(report),
         )
         if (!period.includesThisWeek) {

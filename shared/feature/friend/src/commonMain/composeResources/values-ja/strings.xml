@@ -27,7 +27,6 @@
     <string name="shared_matches">一緒にプレイした試合</string>
     <string name="shared_count">%1$d試合</string>
     <string name="shared_record">%1$d勝%2$d敗</string>
-    <string name="no_act_matches">今ACTはまだプレイした試合がありません</string>
     <string name="private_body">戦績を公開していないフレンドです。一緒にプレイした試合だけ見られます。</string>
     <string name="compare_title">自分と比較</string>
     <!-- 다른 칸은 이번 액트인데 나와 비교만 내 리포트 기간이라 기간을 같이 적는다 -->

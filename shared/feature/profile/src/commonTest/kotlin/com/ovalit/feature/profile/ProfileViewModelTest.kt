@@ -3,6 +3,7 @@ package com.ovalit.feature.profile
 import com.ovalit.core.data.FakeAccountRepository
 import com.ovalit.core.data.FakeContentRepository
 import com.ovalit.core.data.FakeMatchRepository
+import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.testing.SameThread
 import com.ovalit.core.testing.StepClock
 import kotlin.test.AfterTest
@@ -55,10 +56,10 @@ class ProfileViewModelTest {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
 
         val state = assertIs<ProfileUiState.Success>(viewModel.uiState.value)
-        assertTrue(state.agents.matches > 0)
-        assertEquals(state.agents.matches, state.weapons.matches)
-        assertTrue(state.weapons.weapons.all { it.weapon in state.catalog.weapons })
-        assertTrue(state.agents.agents.all { it.agent in state.catalog.agents })
+        assertTrue(state.report.agents.matches > 0)
+        assertEquals(state.report.agents.matches, state.report.weapons.matches)
+        assertTrue(state.report.weapons.weapons.all { it.weapon in state.catalog.weapons })
+        assertTrue(state.report.agents.agents.all { it.agent in state.catalog.agents })
     }
 
     // 최근 경기의 "3분 전"이 화면을 켜 둔 동안 멈추면 안 된다
@@ -85,7 +86,7 @@ class ProfileViewModelTest {
 
         val after = assertIs<ProfileUiState.Success>(viewModel.uiState.value)
         assertEquals(start + 5.minutes, after.now)
-        assertSame(before.summary, after.summary)
+        assertSame(before.report, after.report)
     }
 
     // 메인 스레드에서 세면 홈에서 넘어오는 전환이 멈춘다
@@ -125,6 +126,33 @@ class ProfileViewModelTest {
         val all = matches.observeMatches().first().sortedByDescending { it.startedAt }
         assertEquals(all.take(3), state.recentMatches)
         assertTrue(state.hasMoreMatches)
-        assertEquals(state.agents.matches, state.summary.metrics.matches)
+        assertEquals(state.report.agents.matches, state.report.summary.metrics.matches)
+    }
+
+    // 칩을 바꿀 때 머리와 티어 카드까지 바뀌면 칩이 어디까지 고르는지 알 수 없다
+    @Test
+    fun `큐 칩은 통계부터 무기까지만 바꾸고 머리와 티어 카드는 그대로 둔다`() = runTest {
+        val matches = FakeMatchRepository()
+        val viewModel = ProfileViewModel(
+            FakeAccountRepository(matches),
+            matches,
+            FakeContentRepository(),
+            Clock.System,
+            TimeZone.of("Asia/Seoul"),
+            computation = SameThread,
+        )
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+        val all = assertIs<ProfileUiState.Success>(viewModel.uiState.value).report
+
+        viewModel.selectQueue(QueueFilter.COMPETITIVE)
+
+        val competitive = assertIs<ProfileUiState.Success>(viewModel.uiState.value).report
+        assertEquals(QueueFilter.COMPETITIVE, competitive.queueFilter)
+        assertEquals(all.actMatches, competitive.actMatches)
+        assertEquals(all.competitive, competitive.competitive)
+        assertEquals(all.mainRole, competitive.mainRole)
+        assertEquals(all.competitive?.matches, competitive.agents.matches)
+        assertTrue(competitive.agents.matches < all.agents.matches)
+        assertEquals(competitive.agents.matches, competitive.weapons.matches)
     }
 }

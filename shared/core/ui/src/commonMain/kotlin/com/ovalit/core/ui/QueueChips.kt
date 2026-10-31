@@ -14,12 +14,16 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.model.QueueFilter
 import org.jetbrains.compose.resources.stringResource
 
-/** 홈과 경기 탭 맨 위의 큐 칩(경쟁 + 일반 · 경쟁 · 일반 · 기타)입니다. 고른 칩은 저장하지 않습니다(CLAUDE.md 큐). */
+/**
+ * 큐 칩입니다. 고른 칩은 저장하지 않습니다(CLAUDE.md 큐).
+ * 홈과 경기 탭은 맨 위에 경쟁 + 일반 · 경쟁 · 일반 · 기타를 두고 프로필은 티어 카드 밑에 기타를 뺀 셋을 둡니다([ProfileQueueChips]).
+ */
 @Composable
 fun QueueChips(
     selected: QueueFilter,
     onSelect: (QueueFilter) -> Unit,
     modifier: Modifier = Modifier,
+    filters: List<QueueFilter> = QueueFilter.entries,
 ) {
     Row(
         modifier = modifier
@@ -27,7 +31,7 @@ fun QueueChips(
             .padding(horizontal = OvalitSpacing.screen),
         horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.xs),
     ) {
-        QueueFilter.entries.forEach { filter ->
+        filters.forEach { filter ->
             OvalitChip(text = stringResource(filter.label), selected = filter == selected, onClick = { onSelect(filter) })
         }
     }

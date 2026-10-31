@@ -7,16 +7,11 @@ import com.ovalit.core.data.ContentRepository
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.settledMatches
 import com.ovalit.core.model.Account
-import com.ovalit.core.model.AgentReport
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Match
-import com.ovalit.core.model.ProfileSummary
+import com.ovalit.core.model.ProfileReport
 import com.ovalit.core.model.QueueFilter
-import com.ovalit.core.model.WeaponReport
-import com.ovalit.core.model.agentReport
-import com.ovalit.core.model.currentActMatches
-import com.ovalit.core.model.profileSummary
-import com.ovalit.core.model.weaponReport
+import com.ovalit.core.model.profileReport
 import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.core.ui.playerBadge
 import kotlin.coroutines.CoroutineContext
@@ -24,6 +19,7 @@ import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -36,15 +32,14 @@ sealed interface ProfileUiState {
     data object Loading : ProfileUiState
 
     /**
+     * @property report 머리와 티어 카드는 이번 액트 경쟁 + 일반, 통계부터 무기까지는 큐 칩이 고른 큐로 셉니다.
      * @property recentMatches 큐와 액트를 가리지 않은 가장 최근 경기입니다.
-     *   내 경기라 누르면 S3가 열립니다.
+     *   칩을 따르지 않고 내 경기라 누르면 S3가 열립니다.
      */
     data class Success(
         val account: Account?,
         val badge: PlayerBadge?,
-        val summary: ProfileSummary,
-        val agents: AgentReport,
-        val weapons: WeaponReport,
+        val report: ProfileReport,
         val recentMatches: List<Match>,
         val hasMoreMatches: Boolean,
         val catalog: ContentCatalog,
@@ -55,7 +50,8 @@ sealed interface ProfileUiState {
 
 /**
  * 내 프로필 상태를 만듭니다.
- * 최근 경기 말고는 모두 이번 액트의 경쟁 + 일반 경기만 셉니다.
+ * 최근 경기 말고는 모두 이번 액트 경기만 세고 통계부터 무기까지는 큐 칩을 따릅니다.
+ * 고른 칩은 저장하지 않아 화면을 다시 열면 경쟁 + 일반입니다.
  * S6 무기와 S7 요원은 [RecordsViewModel]이 맡습니다.
  *
  * @param computation 경기를 세는 디스패처입니다.
@@ -72,21 +68,21 @@ class ProfileViewModel(
     minuteChanges: Flow<Unit> = flowOf(Unit),
 ) : ViewModel() {
 
+    private val queueFilter = MutableStateFlow(QueueFilter.PROFILE)
+
     // 화면을 켜 둔 채 월요일 0시를 넘기면 무기 칸의 "이번 주"를 다시 잡는다(홈과 같다)
     private val counted: Flow<ProfileUiState> = combine(
         accountRepository.account,
         matchRepository.settledMatches(),
         contentRepository.catalog,
+        queueFilter,
         weekChanges,
-    ) { account, matches, catalog, _ ->
-        val actMatches = matches.currentActMatches(QueueFilter.PROFILE)
+    ) { account, matches, catalog, filter, _ ->
         val latest = matches.sortedByDescending { it.startedAt }
         ProfileUiState.Success(
             account = account,
             badge = account?.let { playerBadge(it.riotId, matches, catalog) },
-            summary = actMatches.profileSummary(),
-            agents = actMatches.agentReport(),
-            weapons = matches.weaponReport(now = clock.now(), timeZone = timeZone, queueFilter = QueueFilter.PROFILE),
+            report = matches.profileReport(filter, now = clock.now(), timeZone = timeZone),
             recentMatches = latest.take(RECENT_MATCHES),
             hasMoreMatches = latest.size > RECENT_MATCHES,
             catalog = catalog,
@@ -104,6 +100,10 @@ class ProfileViewModel(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = ProfileUiState.Loading,
     )
+
+    fun selectQueue(filter: QueueFilter) {
+        queueFilter.value = filter
+    }
 
     private companion object {
         const val RECENT_MATCHES = 3

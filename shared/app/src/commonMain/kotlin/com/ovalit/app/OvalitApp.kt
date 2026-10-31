@@ -231,8 +231,8 @@ fun OvalitApp(
                             ReportRoute(
                                 onOpenProfile = { backStack.push(Profile) },
                                 onShareInvite = { platform.shareInvite(friends.inviteLink(), analytics) },
-                                onOpenAgents = { backStack.push(Agents) },
-                                onOpenWeapons = { backStack.push(Weapons) },
+                                onOpenAgents = { backStack.push(Agents(it.name)) },
+                                onOpenWeapons = { backStack.push(Weapons(it.name)) },
                                 onOpenPing = { backStack.push(PingDetail(it.value)) },
                                 // 설정에서 저장된 데이터를 지웠으면 첫 수집을 다시 띄우고 S0-4에서 받는 걸 보여준다
                                 onReimport = {
@@ -246,8 +246,8 @@ fun OvalitApp(
                     entry<Profile> {
                         ProfileRoute(
                             onBack = { backStack.removeLastOrNull() },
-                            onOpenAgents = { backStack.push(Agents) },
-                            onOpenWeapons = { backStack.push(Weapons) },
+                            onOpenAgents = { backStack.push(Agents(it.name)) },
+                            onOpenWeapons = { backStack.push(Weapons(it.name)) },
                             onOpenMatch = { backStack.push(MatchDetail(it.value)) },
                             onOpenMatches = { backStack.selectTab(Matches) },
                         )
@@ -283,8 +283,8 @@ fun OvalitApp(
                             friendId = PlayerId(key.id),
                             onBack = { backStack.removeLastOrNull() },
                             onOpenMatches = { backStack.push(FriendMatches(key.id)) },
-                            onOpenAgents = { backStack.push(FriendAgents(key.id)) },
-                            onOpenWeapons = { backStack.push(FriendWeapons(key.id)) },
+                            onOpenAgents = { backStack.push(FriendAgents(key.id, it.name)) },
+                            onOpenWeapons = { backStack.push(FriendWeapons(key.id, it.name)) },
                         )
                     }
                     entry<PingDetail> { key ->
@@ -297,10 +297,18 @@ fun OvalitApp(
                         FriendMatchesRoute(friendId = PlayerId(key.id), onBack = { backStack.removeLastOrNull() })
                     }
                     entry<FriendAgents> { key ->
-                        AgentsRoute(owner = RecordsOwner.Friend(PlayerId(key.id)), onBack = { backStack.removeLastOrNull() })
+                        AgentsRoute(
+                            owner = RecordsOwner.Friend(PlayerId(key.id)),
+                            onBack = { backStack.removeLastOrNull() },
+                            queueFilter = QueueFilter.valueOf(key.queue),
+                        )
                     }
                     entry<FriendWeapons> { key ->
-                        WeaponsRoute(owner = RecordsOwner.Friend(PlayerId(key.id)), onBack = { backStack.removeLastOrNull() })
+                        WeaponsRoute(
+                            owner = RecordsOwner.Friend(PlayerId(key.id)),
+                            onBack = { backStack.removeLastOrNull() },
+                            queueFilter = QueueFilter.valueOf(key.queue),
+                        )
                     }
                     entry<FriendRanking> { key ->
                         FriendRankingRoute(
@@ -309,8 +317,12 @@ fun OvalitApp(
                             onBack = { backStack.removeLastOrNull() },
                         )
                     }
-                    entry<Agents> { AgentsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }) }
-                    entry<Weapons> { WeaponsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }) }
+                    entry<Agents> { key ->
+                        AgentsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }, queueFilter = QueueFilter.valueOf(key.queue))
+                    }
+                    entry<Weapons> { key ->
+                        WeaponsRoute(owner = RecordsOwner.Me, onBack = { backStack.removeLastOrNull() }, queueFilter = QueueFilter.valueOf(key.queue))
+                    }
                     entry<Settings>(clazzContentKey = ::tabContentKey, metadata = TabTransitions) {
                         TabScaffold(selected = Settings, onSelect = backStack::selectTab) {
                             SettingsRoute(

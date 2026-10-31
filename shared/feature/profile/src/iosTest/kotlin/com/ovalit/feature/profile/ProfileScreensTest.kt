@@ -21,6 +21,7 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
+import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeaponId
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.core.ui.NO_VALUE
@@ -161,11 +162,12 @@ class ProfileScreensTest {
     @Test
     fun `판 수가 적은 요원 칸에도 승률을 적는다`() = runComposeUiTest {
         val base = ProfilePreviewData.success
-        val thin = base.copy(agents = base.agents.copy(agents = base.agents.agents.filterNot { it.isMeasurable }))
+        val agents = base.report.agents.copy(agents = base.report.agents.agents.filterNot { it.isMeasurable })
+        val thin = base.copy(report = base.report.copy(agents = agents))
         setContent { Themed { ProfileScreen(thin, {}, {}, {}, {}, {}) } }
 
         onNodeWithText("3판", useUnmergedTree = true).performScrollTo().assertExists()
-        thin.agents.agents.take(3).forEach { agent ->
+        agents.agents.take(3).forEach { agent ->
             val rate = agent.winRate?.let { "${MetricFormat.PERCENT.format(it)}%" } ?: NO_VALUE
             onAllNodesWithText(rate, useUnmergedTree = true).onFirst().assertExists()
         }
@@ -376,6 +378,38 @@ class ProfileScreensTest {
         onNodeWithText("지금은 이 친구의 기록을 볼 수 없어요").assertExists()
         onNodeWithText("이번 액트", substring = true).assertDoesNotExist()
         onNodeWithText("요원별").assertDoesNotExist()
+    }
+
+    // 경쟁 + 일반이면 지금처럼 "이번 액트 N경기"만 적는다
+    @Test
+    fun `프로필 칩으로 고른 큐로 연 요원 화면은 제목 줄에 큐를 적는다`() = runComposeUiTest {
+        val records = ProfilePreviewData.records.copy(queueFilter = QueueFilter.COMPETITIVE)
+        setContent { Themed { AgentsScreen(records, onBack = {}) } }
+
+        onNodeWithText("경쟁 · 이번 액트 ${records.agents.matches}경기", useUnmergedTree = true).assertExists()
+    }
+
+    // 칩은 티어 카드 밑에 두고 기타 칩은 없다(docs/screens.md 내 프로필)
+    @Test
+    fun `큐 칩을 누르면 고른 큐를 넘기고 기타 칩은 두지 않는다`() = runComposeUiTest {
+        var selected: QueueFilter? = null
+        setContent { Themed { ProfileScreen(ProfilePreviewData.success, {}, {}, {}, {}, {}, onSelectQueue = { selected = it }) } }
+
+        onNodeWithText("일반").performClick()
+
+        assertEquals(QueueFilter.UNRATED, selected)
+        onNodeWithText("기타").assertDoesNotExist()
+        onNodeWithText("${ProfilePreviewData.report.agents.matches}경기", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun `고른 큐에 이번 액트 경기가 없으면 통계 대신 한 줄만 두고 칩은 남긴다`() = runComposeUiTest {
+        setContent { Themed { ProfileScreen(ProfilePreviewData.noUnrated, {}, {}, {}, {}, {}) } }
+
+        onNodeWithText("이번 액트에 뛴 일반전이 없어요").assertExists()
+        onNodeWithText("통계").assertDoesNotExist()
+        onNodeWithText("경쟁 + 일반").assertExists()
+        onNodeWithText("플래티넘 2", useUnmergedTree = true).assertExists()
     }
 }
 

@@ -76,6 +76,29 @@ class RecordsViewModelTest {
         assertEquals(theirs.size, state.weapons.matches)
     }
 
+    // 프로필 칩으로 경쟁을 골라 요원 카드를 누르면 카드에서 본 "19판"이 S7에서도 같아야 한다
+    @Test
+    fun `프로필 칩이 넘긴 큐로 센다`() = runTest {
+        val viewModel = RecordsViewModel(
+            RecordsOwner.Me,
+            myMatches,
+            EditableFriends(),
+            FakeContentRepository(),
+            Clock.System,
+            TimeZone.of("Asia/Seoul"),
+            queueFilter = QueueFilter.COMPETITIVE,
+            computation = SameThread,
+        )
+        collect(viewModel)
+
+        val state = assertIs<RecordsUiState.Success>(viewModel.uiState.value)
+        val competitive = myMatches.observeMatches().first().currentActMatches(QueueFilter.COMPETITIVE)
+        assertEquals(QueueFilter.COMPETITIVE, state.queueFilter)
+        assertTrue(competitive.isNotEmpty())
+        assertEquals(competitive.size, state.agents.matches)
+        assertEquals(competitive.size, state.weapons.matches)
+    }
+
     // 보는 중에 친구가 전적을 비공개로 바꾸거나 친구가 끊기면 숫자를 거둔다
     @Test
     fun `친구가 전적을 비공개로 바꾸거나 친구가 끊기면 기록을 감춘다`() = runTest {

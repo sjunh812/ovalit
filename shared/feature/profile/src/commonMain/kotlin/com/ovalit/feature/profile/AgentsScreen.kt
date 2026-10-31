@@ -55,6 +55,7 @@ import com.ovalit.core.model.AgentStats
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchMetrics
+import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.Role
 import com.ovalit.core.ui.AgentImage
 import com.ovalit.core.ui.MetricFormat
@@ -67,6 +68,7 @@ import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.kdaRatioText
 import com.ovalit.core.ui.label
+import com.ovalit.core.ui.noActMatches
 import com.ovalit.core.ui.percentText
 import com.ovalit.core.ui.rememberFitsOnOneLine
 import com.ovalit.core.ui.rememberFittingStyle
@@ -101,7 +103,6 @@ import com.ovalit.feature.profile.resources.column_first_duel_involvement
 import com.ovalit.feature.profile.resources.column_first_duel_win
 import com.ovalit.feature.profile.resources.column_kast
 import com.ovalit.feature.profile.resources.column_survival
-import com.ovalit.feature.profile.resources.no_matches
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -119,7 +120,8 @@ fun AgentsRoute(
     owner: RecordsOwner,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: RecordsViewModel = koinViewModel { parametersOf(owner) },
+    queueFilter: QueueFilter = QueueFilter.PROFILE,
+    viewModel: RecordsViewModel = koinViewModel { parametersOf(owner, queueFilter) },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     AgentsScreen(uiState, onBack, modifier, loadingTitle = Res.string.agents_title.takeIf { owner == RecordsOwner.Me })
@@ -163,11 +165,12 @@ private fun AgentsContent(uiState: RecordsUiState, onBack: () -> Unit) {
                 ownerSuffix = Res.string.agents_owner_suffix,
                 ownerName = uiState.ownerName,
                 matches = report.matches,
+                queueFilter = uiState.queueFilter,
                 onBack = onBack,
             )
             if (report.matches == 0) {
                 OvalitText(
-                    text = stringResource(Res.string.no_matches),
+                    text = stringResource(uiState.queueFilter.noActMatches),
                     modifier = Modifier.padding(OvalitSpacing.screen),
                     color = OvalitTheme.colors.t2,
                 )

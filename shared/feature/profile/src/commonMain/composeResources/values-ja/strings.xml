@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 일본어. 한국어 values/strings.xml과 키가 같다. 용어는 docs/i18n-ja.md -->
 <resources>
-    <string name="no_matches">今ACTはまだプレイした試合がありません</string>
     <!-- 친구의 S6·S7 제목은 "ミンソクのエージェント"다. 이름이 길면 이름만 줄이려고 "のエージェント"를 따로 둔다 -->
     <string name="agents_owner_suffix">のエージェント</string>
     <string name="weapons_owner_suffix">の武器</string>
     <string name="records_hidden">今はこのフレンドの記録を見られません</string>
+    <string name="records_queue_matches">%1$s · 今ACT %2$d試合</string>
 
     <!-- 내 프로필 -->
     <string name="profile_recent">最近の試合</string>

@@ -144,8 +144,9 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 
 ### 남은 일
 
-- [ ] T049 [P] [US3] Figma 내 프로필, S6, S7(목업에 없는 화면이라 `docs/screens.md`만 근거로, 배너는 카드 그림 전까지 fill 면) in Figma "화면" 페이지의 "프로필 (내 프로필, S6, S7)" 줄
+- [ ] T049 [P] [US3] Figma 내 프로필, S6, S7(목업에 없는 화면이라 `docs/screens.md`만 근거로, 배너는 카드 그림 전까지 fill 면) in Figma "화면" 페이지의 "프로필 (내 프로필, S6, S7)" 줄. 내 프로필 라이트·다크와 번호 9개, 상태 3장(경쟁 칩, 고른 큐에 경기 없음, S5 큐 칩)은 2026-10-31에 "내 프로필"·"내 프로필 상태" 섹션에 그렸고 S6, S7이 남았다. S6, S7은 프로필 칩으로 고른 큐를 제목 줄에 적은 모양("경쟁 · 이번 액트 34경기")도 그린다
 - [ ] T050 [US3] 실제 서버 연결 뒤 플레이어 카드를 서버 정적 에셋(`/cards/{uuid}_small|wide.png`)에서 받아 아바타와 프로필 배너에 쓴다. 받기 전에는 Riot ID 첫 글자 in shared/core/ui/src/commonMain/kotlin/com/ovalit/core/ui/
+- [x] T091 [US3] 내 프로필과 S5에 큐 칩(경쟁 + 일반 · 경쟁 · 일반, 기본 경쟁 + 일반)을 두고 통계, 맞힌 부위, 요원, 무기(S5는 나와 비교도)가 칩을 따르게 한다. 그 카드로 연 S7, S6도 고른 큐로 세고 제목 줄에 큐를 적는다. 홈 칩도 S7, S6에 넘긴다. 프로토타입은 Figma "프로토타입 · S6·S7 큐 이어받기"다. 티어 카드, 같이 뛴 경기, 최근 경기는 따르지 않는다(사용자 결정 2026-10-31). 칩 자리는 티어 카드 밑(B안, 사용자 결정 2026-10-31)이고 프로토타입은 Figma "화면" 페이지 "프로토타입 · 프로필 큐 칩"(node 54:1890), 디자인은 "내 프로필"·"내 프로필 상태" 섹션이다 in shared/feature/profile/src/commonMain/kotlin/com/ovalit/feature/profile/ProfileScreen.kt, ProfileViewModel.kt, shared/feature/friend/src/commonMain/kotlin/com/ovalit/feature/friend/FriendProfileScreen.kt, docs/screens.md 내 프로필·S5
 
 **Checkpoint**: P3 독립 검사가 통과한다.
 

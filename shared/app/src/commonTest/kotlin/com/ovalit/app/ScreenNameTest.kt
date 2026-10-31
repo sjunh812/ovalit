@@ -14,7 +14,7 @@ class ScreenNameTest {
         val id = "puuid-or-match-id-1234"
         val keys = listOf(
             Intro, Consent, Import, Report, Matches, MatchDetail(id), Friends, FriendProfile(id), FriendMatches(id),
-            Profile, Agents, Weapons, FriendAgents(id), FriendWeapons(id), PingDetail(id), FriendRanking(queue = id, metric = id),
+            Profile, Agents(), Weapons(), FriendAgents(id), FriendWeapons(id), PingDetail(id), FriendRanking(queue = id, metric = id),
             Settings,
         )
 

@@ -46,6 +46,7 @@ import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.ProfileSummary
+import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.Shots
 import com.ovalit.core.model.WeaponReport
 import com.ovalit.core.model.WeaponStats
@@ -65,6 +66,9 @@ import com.ovalit.core.ui.resources.profile_competitive_matches
 import com.ovalit.core.ui.resources.profile_count
 import com.ovalit.core.ui.resources.profile_kda
 import com.ovalit.core.ui.resources.profile_most_kills
+import com.ovalit.core.ui.resources.profile_no_act_matches
+import com.ovalit.core.ui.resources.profile_no_competitive_matches
+import com.ovalit.core.ui.resources.profile_no_unrated_matches
 import com.ovalit.core.ui.resources.profile_per_match
 import com.ovalit.core.ui.resources.profile_play_time
 import com.ovalit.core.ui.resources.profile_shots_body
@@ -147,7 +151,7 @@ fun ProfileTierCard(record: CompetitiveRecord, catalog: ContentCatalog) {
  * 내 프로필과 S5가 같이 씁니다.
  */
 @Composable
-fun ProfileStatsSection(summary: ProfileSummary) {
+fun ProfileStatsSection(summary: ProfileSummary, caption: String? = null) {
     val metrics = summary.metrics
     val main = listOf(FixedMetric.DAMAGE, FixedMetric.KD, FixedMetric.COMBAT_SCORE).map { metric ->
         StatCell(stringResource(metric.label), metric.value(metrics)?.let { metric.format.valueText(it) })
@@ -175,7 +179,7 @@ fun ProfileStatsSection(summary: ProfileSummary) {
     )
 
     ProfileSection {
-        ProfileSectionTitle(title = stringResource(Res.string.profile_stats_title))
+        ProfileSectionTitle(title = stringResource(Res.string.profile_stats_title), caption = caption)
         Spacer(Modifier.height(SectionTitleGap))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             // 칸마다 따로 줄이면 "4번 중 2번"처럼 긴 칸만 작아져서 모든 칸을 한 크기로 맞춘다.
@@ -584,6 +588,42 @@ fun ProfileAdSlot(key: String) {
             OvalitCard { ad() }
         }
     }
+}
+
+/**
+ * 프로필(내 프로필, S5)의 큐 칩입니다. 티어 카드 밑, 통계 위에 둡니다(docs/screens.md 내 프로필).
+ * 늘 경쟁전인 티어 카드를 칩 위에 두어야 칩이 그 밑 칸만 고른다는 게 자리로 드러납니다.
+ * 위는 카드 간격의 두 배, 밑은 다음 카드가 띄우는 카드 간격이라 칩이 밑 칸에 붙어 읽힙니다.
+ */
+@Composable
+fun ProfileQueueChips(selected: QueueFilter, onSelect: (QueueFilter) -> Unit) {
+    Spacer(Modifier.height(OvalitCardGap * 2))
+    QueueChips(selected = selected, onSelect = onSelect, filters = QueueFilter.PROFILE_CHIPS)
+}
+
+/**
+ * 고른 큐에 이번 액트 경기가 없을 때 통계부터 무기까지 대신 두는 한 줄입니다.
+ * 칩은 홈·경기 탭처럼 숨기지 않습니다.
+ */
+@Composable
+fun ProfileQueueEmptySection(queueFilter: QueueFilter) {
+    ProfileSection {
+        OvalitText(text = stringResource(queueFilter.noActMatches), style = OvalitTheme.typography.body, color = OvalitTheme.colors.t2)
+    }
+}
+
+/** 이번 액트에 그 큐 경기가 없다는 한 줄입니다. 프로필과 S6, S7이 같이 씁니다. */
+val QueueFilter.noActMatches: StringResource
+    get() = when (this) {
+        QueueFilter.COMPETITIVE -> Res.string.profile_no_competitive_matches
+        QueueFilter.UNRATED -> Res.string.profile_no_unrated_matches
+        QueueFilter.COMPETITIVE_AND_UNRATED, QueueFilter.OTHER -> Res.string.profile_no_act_matches
+    }
+
+/** 이번 액트에 경쟁 + 일반 경기가 한 판도 없어 티어 카드와 칩도 두지 않을 때입니다. */
+@Composable
+fun ProfileNoActMatchesSection() {
+    ProfileQueueEmptySection(QueueFilter.PROFILE)
 }
 
 @Composable

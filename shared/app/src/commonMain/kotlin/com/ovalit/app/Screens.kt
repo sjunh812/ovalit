@@ -1,6 +1,7 @@
 package com.ovalit.app
 
 import androidx.navigation3.runtime.NavKey
+import com.ovalit.core.model.QueueFilter
 import kotlinx.serialization.Serializable
 
 /**
@@ -50,14 +51,16 @@ internal data class FriendMatches(val id: String) : Screen {
 @Serializable
 internal data object Profile : Screen
 
+/** S7입니다. 홈, 내 프로필, S5 칩이 고른 큐를 이름으로 들고 가서 카드에서 본 숫자와 같게 셉니다. */
 @Serializable
-internal data object Agents : Screen
+internal data class Agents(val queue: String = QueueFilter.PROFILE.name) : Screen
+
+/** S6입니다. 큐는 [Agents]와 같습니다. */
+@Serializable
+internal data class Weapons(val queue: String = QueueFilter.PROFILE.name) : Screen
 
 @Serializable
-internal data object Weapons : Screen
-
-@Serializable
-internal data class FriendAgents(val id: String) : Screen {
+internal data class FriendAgents(val id: String, val queue: String = QueueFilter.PROFILE.name) : Screen {
     override fun toString(): String = "FriendAgents"
 }
 
@@ -67,7 +70,7 @@ internal data class PingDetail(val id: String) : Screen {
 }
 
 @Serializable
-internal data class FriendWeapons(val id: String) : Screen {
+internal data class FriendWeapons(val id: String, val queue: String = QueueFilter.PROFILE.name) : Screen {
     override fun toString(): String = "FriendWeapons"
 }
 
@@ -92,8 +95,8 @@ internal fun screenName(key: Screen): String = when (key) {
     is FriendProfile -> "friend_profile"
     is FriendMatches -> "friend_matches"
     Profile -> "my_profile"
-    Agents -> "agents"
-    Weapons -> "weapons"
+    is Agents -> "agents"
+    is Weapons -> "weapons"
     is FriendAgents -> "friend_agents"
     is FriendWeapons -> "friend_weapons"
     is PingDetail -> "ping_detail"

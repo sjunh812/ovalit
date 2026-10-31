@@ -45,19 +45,24 @@ sealed interface RecordsUiState {
     /**
      * @property ownerName 친구 기록일 때 제목에 붙이는 이름입니다.
      *   내 기록이면 `null`입니다.
+     * @property queueFilter 센 큐입니다.
+     *   경쟁 + 일반이 아니면 제목 줄에 큐를 적습니다.
      */
     data class Success(
         val ownerName: String?,
         val agents: AgentReport,
         val weapons: WeaponReport,
         val catalog: ContentCatalog,
+        val queueFilter: QueueFilter = QueueFilter.PROFILE,
     ) : RecordsUiState
 }
 
 /**
  * S6 무기와 S7 요원이 같이 씁니다.
- * 내 기록이든 친구 기록이든 이번 액트의 경쟁 + 일반 경기만 셉니다.
+ * 내 기록이든 친구 기록이든 이번 액트 경기만 셉니다.
  *
+ * @param queueFilter 셀 큐입니다.
+ *   홈, 내 프로필, S5에서 열면 그 화면 칩이 고른 큐를 넘겨받아 카드에서 본 숫자와 같게 셉니다.
  * @param computation 경기를 세는 디스패처입니다.
  *   메인 스레드에서 세면 화면 전환이 멈춰서 기본은 [Dispatchers.Default]입니다.
  */
@@ -68,6 +73,7 @@ class RecordsViewModel(
     contentRepository: ContentRepository,
     clock: Clock,
     timeZone: TimeZone,
+    queueFilter: QueueFilter = QueueFilter.PROFILE,
     computation: CoroutineContext = Dispatchers.Default,
     weekChanges: Flow<Unit> = flowOf(Unit),
 ) : ViewModel() {
@@ -89,9 +95,10 @@ class RecordsViewModel(
         val (ownerName, matches) = source ?: return@combine RecordsUiState.Hidden
         RecordsUiState.Success(
             ownerName = ownerName,
-            agents = matches.currentActMatches(QueueFilter.PROFILE).agentReport(),
-            weapons = matches.weaponReport(now = clock.now(), timeZone = timeZone, queueFilter = QueueFilter.PROFILE),
+            agents = matches.currentActMatches(queueFilter).agentReport(),
+            weapons = matches.weaponReport(now = clock.now(), timeZone = timeZone, queueFilter = queueFilter),
             catalog = catalog,
+            queueFilter = queueFilter,
         )
     }.flowOn(computation).stateIn(
         scope = viewModelScope,

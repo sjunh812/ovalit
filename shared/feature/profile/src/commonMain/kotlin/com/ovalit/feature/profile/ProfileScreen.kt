@@ -20,17 +20,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBackTopBar
 import com.ovalit.core.designsystem.component.OvalitStage
 import com.ovalit.core.designsystem.component.OvalitStaged
-import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.rememberContentShown
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
+import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.ui.PlayerBadge
 import com.ovalit.core.ui.ProfileAdSlot
 import com.ovalit.core.ui.ProfileAgentsSection
 import com.ovalit.core.ui.ProfileBanner
+import com.ovalit.core.ui.ProfileHeaderInset
 import com.ovalit.core.ui.ProfileIdentity
-import com.ovalit.core.ui.ProfileSection
+import com.ovalit.core.ui.ProfileNoActMatchesSection
+import com.ovalit.core.ui.ProfileQueueChips
+import com.ovalit.core.ui.ProfileQueueEmptySection
 import com.ovalit.core.ui.ProfileShotsSection
 import com.ovalit.core.ui.ProfileSkeleton
 import com.ovalit.core.ui.ProfileStatsSection
@@ -39,8 +42,7 @@ import com.ovalit.core.ui.ProfileTierCard
 import com.ovalit.core.ui.ProfileWeaponsSection
 import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.act_matches
-import com.ovalit.feature.profile.resources.Res
-import com.ovalit.feature.profile.resources.no_matches
+import com.ovalit.core.ui.resources.profile_queue_matches
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -48,28 +50,29 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ProfileRoute(
     onBack: () -> Unit,
-    onOpenAgents: () -> Unit,
-    onOpenWeapons: () -> Unit,
+    onOpenAgents: (QueueFilter) -> Unit,
+    onOpenWeapons: (QueueFilter) -> Unit,
     onOpenMatch: (MatchId) -> Unit,
     onOpenMatches: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    ProfileScreen(uiState, onBack, onOpenAgents, onOpenWeapons, onOpenMatch, onOpenMatches, modifier)
+    ProfileScreen(uiState, onBack, onOpenAgents, onOpenWeapons, onOpenMatch, onOpenMatches, modifier, onSelectQueue = viewModel::selectQueue)
 }
 
 // 칸 순서는 docs/screens.md의 내 프로필을 따른다.
-// 최근 경기 말고는 모두 이번 액트의 경쟁 + 일반 경기로 센 숫자다.
+// 머리와 티어 카드는 이번 액트의 경쟁 + 일반 경기로, 통계부터 무기까지는 큐 칩이 고른 큐로 센 숫자다.
 @Composable
 internal fun ProfileScreen(
     uiState: ProfileUiState,
     onBack: () -> Unit,
-    onOpenAgents: () -> Unit,
-    onOpenWeapons: () -> Unit,
+    onOpenAgents: (QueueFilter) -> Unit,
+    onOpenWeapons: (QueueFilter) -> Unit,
     onOpenMatch: (MatchId) -> Unit,
     onOpenMatches: () -> Unit,
     modifier: Modifier = Modifier,
+    onSelectQueue: (QueueFilter) -> Unit = {},
 ) {
     val colors = OvalitTheme.colors
     // 밀려 들어오는 중에 내용이 도착하면 다 들어올 때까지 스켈레톤을 두고, 묶음마다 한 프레임씩 그린 뒤 서서히 바꾼다.
@@ -83,7 +86,8 @@ internal fun ProfileScreen(
     ) {
         if (uiState !is ProfileUiState.Success) return@OvalitStaged
         val badge = uiState.badge ?: PlayerBadge(riotId = "", tier = null, tierName = null)
-        val competitive = uiState.summary.competitive
+        val report = uiState.report
+        val competitive = report.competitive
         val scrollState = rememberScrollState()
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -96,27 +100,36 @@ internal fun ProfileScreen(
                     ProfileIdentity(
                         badge = badge,
                         showTier = competitive == null,
-                        mainRole = uiState.agents.mainRole,
-                        mainRoleShare = uiState.agents.mainRoleShare,
-                        trailing = stringResource(CoreUiRes.string.act_matches, uiState.agents.matches),
-                        modifier = Modifier.padding(horizontal = OvalitSpacing.screen),
+                        mainRole = report.mainRole,
+                        mainRoleShare = report.mainRoleShare,
+                        trailing = stringResource(CoreUiRes.string.act_matches, report.actMatches),
+                        modifier = Modifier.padding(horizontal = ProfileHeaderInset),
                     )
                 }
 
                 Spacer(Modifier.height(OvalitSpacing.sm))
-                if (uiState.agents.matches == 0) {
-                    ProfileSection {
-                        OvalitText(text = stringResource(Res.string.no_matches), style = OvalitTheme.typography.body, color = colors.t2)
-                    }
+                if (report.actMatches == 0) {
+                    ProfileNoActMatchesSection()
                 } else {
                     OvalitStage {
                         competitive?.let { ProfileTierCard(it, uiState.catalog) }
-                        ProfileStatsSection(uiState.summary)
+                        ProfileQueueChips(selected = report.queueFilter, onSelect = onSelectQueue)
+                        if (report.isQueueEmpty) {
+                            ProfileQueueEmptySection(report.queueFilter)
+                        } else {
+                            ProfileStatsSection(
+                                summary = report.summary,
+                                caption = stringResource(CoreUiRes.string.profile_queue_matches, report.agents.matches),
+                            )
+                        }
                     }
-                    OvalitStage { ProfileShotsSection(uiState.summary.metrics.shots) }
-                    OvalitStage { ProfileAgentsSection(uiState.agents, uiState.catalog, onOpenAgents) }
-                    OvalitStage { ProfileWeaponsSection(uiState.weapons, uiState.catalog, onOpenWeapons) }
-                    ProfileAdSlot(key = "profile-me")
+                    if (!report.isQueueEmpty) {
+                        OvalitStage { ProfileShotsSection(report.summary.metrics.shots) }
+                        // S7, S6도 칩이 고른 큐로 세어 카드에서 본 숫자와 같게 연다
+                        OvalitStage { ProfileAgentsSection(report.agents, uiState.catalog) { onOpenAgents(report.queueFilter) } }
+                        OvalitStage { ProfileWeaponsSection(report.weapons, uiState.catalog) { onOpenWeapons(report.queueFilter) } }
+                        ProfileAdSlot(key = "profile-me")
+                    }
                 }
                 OvalitStage { RecentMatchesSection(uiState, onOpenMatch, onOpenMatches) }
                 Spacer(Modifier.height(OvalitSpacing.xxl))

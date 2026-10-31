@@ -91,6 +91,10 @@
     <string name="profile_competitive">コンペティティブ</string>
     <string name="profile_competitive_matches">コンペ %1$d試合</string>
     <string name="profile_stats_title">スタッツ</string>
+    <string name="profile_queue_matches">%1$d試合</string>
+    <string name="profile_no_act_matches">今ACTはまだプレイした試合がありません</string>
+    <string name="profile_no_competitive_matches">今ACTにプレイしたコンペはありません</string>
+    <string name="profile_no_unrated_matches">今ACTにプレイしたアンレートはありません</string>
     <string name="profile_most_kills">最多キル</string>
     <string name="profile_kda">KDA</string>
     <string name="profile_per_match">1試合あたり %1$s</string>

@@ -100,8 +100,8 @@ import org.koin.compose.viewmodel.koinViewModel
 fun ReportRoute(
     onOpenProfile: () -> Unit,
     onShareInvite: () -> Unit,
-    onOpenAgents: () -> Unit,
-    onOpenWeapons: () -> Unit,
+    onOpenAgents: (QueueFilter) -> Unit,
+    onOpenWeapons: (QueueFilter) -> Unit,
     modifier: Modifier = Modifier,
     onOpenPing: (PingId) -> Unit = {},
     onReimport: () -> Unit = {},
@@ -154,8 +154,8 @@ internal fun ReportScreen(
     isRefreshing: Boolean = false,
     onRefresh: () -> Unit = {},
     catalog: ContentCatalog = ContentCatalog.Empty,
-    onOpenAgents: () -> Unit = {},
-    onOpenWeapons: () -> Unit = {},
+    onOpenAgents: (QueueFilter) -> Unit = {},
+    onOpenWeapons: (QueueFilter) -> Unit = {},
     homePing: HomePing? = null,
     onOpenPing: (PingId) -> Unit = {},
     timeZone: TimeZone = TimeZone.currentSystemDefault(),
@@ -238,8 +238,9 @@ internal fun ReportScreen(
                                 onShareInvite = onShareInvite,
                                 onSelectRival = onSelectRival,
                                 catalog = catalog,
-                                onOpenAgents = onOpenAgents,
-                                onOpenWeapons = onOpenWeapons,
+                                // S7, S6도 칩이 고른 큐로 세어 카드에서 본 숫자와 같게 연다
+                                onOpenAgents = { onOpenAgents(uiState.queueFilter) },
+                                onOpenWeapons = { onOpenWeapons(uiState.queueFilter) },
                                 onOpenFriendRanking = { metric -> onOpenFriendRanking(uiState.queueFilter, metric) },
                             )
                             is WeeklyReport.NotEnoughMatches -> NotEnoughMatches(report)

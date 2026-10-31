@@ -29,6 +29,13 @@ private fun ProfileNoCompetitivePreview() {
     OvalitThemePreview { ProfileScreen(ProfilePreviewData.noCompetitive, {}, {}, {}, {}, {}) }
 }
 
+// 일반 칩을 골랐는데 이번 액트에 일반전이 없을 때다
+@Preview(widthDp = 390, heightDp = 900)
+@Composable
+private fun ProfileNoUnratedPreview() {
+    OvalitThemePreview { ProfileScreen(ProfilePreviewData.noUnrated, {}, {}, {}, {}, {}) }
+}
+
 @Preview(widthDp = 390, heightDp = 1000)
 @Composable
 private fun AgentsDarkPreview() {

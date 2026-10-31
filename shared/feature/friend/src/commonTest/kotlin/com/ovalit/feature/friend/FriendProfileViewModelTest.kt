@@ -6,6 +6,10 @@ import com.ovalit.core.data.FakeMatchRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.PingRepository
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.model.Queue
+import com.ovalit.core.model.QueueFilter
+import com.ovalit.core.model.WeeklyReport
+import com.ovalit.core.model.metricsIn
 import com.ovalit.core.testing.SameThread
 import com.ovalit.core.testing.TestPingRepository
 import kotlin.test.AfterTest
@@ -13,6 +17,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlinx.coroutines.Dispatchers
@@ -129,6 +134,28 @@ class FriendProfileViewModelTest {
         assertEquals(FriendProfileUiState.Loading, viewModel.uiState.value)
         advanceUntilIdle()
         assertIs<FriendProfileUiState.Success>(viewModel.uiState.value)
+    }
+
+    // 나와 비교는 칩 밑이라 칩을 따르고 머리와 티어 카드는 그대로다(docs/screens.md 친구 프로필)
+    @Test
+    fun `큐 칩을 바꾸면 친구 칸과 내 리포트가 같은 큐를 센다`() = runTest {
+        val source = FakeFriendRepository()
+        val public = source.friends.first().first { it.statsPublic && it.matches.any { match -> match.queue == Queue.COMPETITIVE } }
+        val viewModel = FriendProfileViewModel(public.id, source, TestPingRepository(), FakeMatchRepository(), FakeContentRepository(), Clock.System, TimeZone.of("Asia/Seoul"), computation = SameThread)
+        collect(viewModel)
+        val all = assertIs<FriendProfileUiState.Success>(viewModel.uiState.value)
+
+        viewModel.selectQueue(QueueFilter.COMPETITIVE)
+
+        val competitive = assertIs<FriendProfileUiState.Success>(viewModel.uiState.value)
+        val before = assertNotNull(all.theirProfile)
+        val after = assertNotNull(competitive.theirProfile)
+        assertEquals(QueueFilter.COMPETITIVE, after.queueFilter)
+        assertEquals(before.actMatches, after.actMatches)
+        assertEquals(before.competitive, after.competitive)
+        assertEquals(before.competitive?.matches, after.agents.matches)
+        val myReport = assertIs<WeeklyReport.Ready>(competitive.myReport)
+        assertEquals(public.metricsIn(myReport, QueueFilter.COMPETITIVE, TimeZone.of("Asia/Seoul")), competitive.theirMetricsInMyPeriod)
     }
 
     private suspend fun viewModel(pings: PingRepository = TestPingRepository()): FriendProfileViewModel {

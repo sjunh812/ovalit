@@ -49,6 +49,7 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.Movement
+import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeaponCategory
 import com.ovalit.core.model.WeaponHighlight
 import com.ovalit.core.model.WeaponMetric
@@ -65,6 +66,7 @@ import com.ovalit.core.ui.columnLabel
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.kdaText
 import com.ovalit.core.ui.label
+import com.ovalit.core.ui.noActMatches
 import com.ovalit.core.ui.percentText
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.rememberFittingStyle
@@ -77,7 +79,6 @@ import com.ovalit.feature.profile.resources.Res
 import com.ovalit.feature.profile.resources.column_damage
 import com.ovalit.feature.profile.resources.column_headshot
 import com.ovalit.feature.profile.resources.column_kda
-import com.ovalit.feature.profile.resources.no_matches
 import com.ovalit.feature.profile.resources.weapons_act_value
 import com.ovalit.feature.profile.resources.weapons_by_category
 import com.ovalit.feature.profile.resources.weapons_category_unknown
@@ -105,7 +106,8 @@ fun WeaponsRoute(
     owner: RecordsOwner,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: RecordsViewModel = koinViewModel { parametersOf(owner) },
+    queueFilter: QueueFilter = QueueFilter.PROFILE,
+    viewModel: RecordsViewModel = koinViewModel { parametersOf(owner, queueFilter) },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     WeaponsScreen(uiState, onBack, modifier, loadingTitle = Res.string.weapons_title.takeIf { owner == RecordsOwner.Me })
@@ -149,11 +151,12 @@ private fun WeaponsContent(uiState: RecordsUiState, onBack: () -> Unit) {
                 ownerSuffix = Res.string.weapons_owner_suffix,
                 ownerName = uiState.ownerName,
                 matches = report.matches,
+                queueFilter = uiState.queueFilter,
                 onBack = onBack,
             )
             if (report.weapons.isEmpty()) {
                 OvalitText(
-                    text = stringResource(Res.string.no_matches),
+                    text = stringResource(uiState.queueFilter.noActMatches),
                     modifier = Modifier.padding(OvalitSpacing.screen),
                     color = OvalitTheme.colors.t2,
                 )

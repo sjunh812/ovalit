@@ -198,10 +198,10 @@ class ReportScreenTest {
         setContent {
             OvalitTheme {
                 ReportScreen(
-                    uiState = ReportUiState.Success(QueueFilter.COMPETITIVE_AND_UNRATED, ReportPreviewData.moved),
+                    uiState = ReportUiState.Success(QueueFilter.COMPETITIVE, ReportPreviewData.moved),
                     onSelectQueue = {},
-                    onOpenAgents = { opened += "agents" },
-                    onOpenWeapons = { opened += "weapons" },
+                    onOpenAgents = { opened += "agents:${it.name} " },
+                    onOpenWeapons = { opened += "weapons:${it.name}" },
                 )
             }
         }
@@ -212,7 +212,8 @@ class ReportScreenTest {
         onNodeWithText("이번 주 요원").performScrollTo().performClick()
         onNodeWithText("이번 주 무기").performScrollTo().performClick()
 
-        assertEquals("agentsweapons", opened)
+        // S7, S6도 홈 칩이 고른 큐로 연다(docs/screens.md 무기와 요원)
+        assertEquals("agents:COMPETITIVE weapons:COMPETITIVE", opened)
     }
 
     @Test

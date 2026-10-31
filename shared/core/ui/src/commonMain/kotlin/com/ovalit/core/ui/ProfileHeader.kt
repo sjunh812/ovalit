@@ -63,6 +63,14 @@ private val BannerHeight = 104.dp
 private val AvatarSize = 64.dp
 
 /**
+ * 프로필 머리(아바타, 이름, 역할 줄, S5 라이벌 버튼)를 화면 가장자리에서 띄우는 여백입니다.
+ * 카드 테두리(`screen`)에 카드 안 여백(`gutter`)을 더해 밑 카드의 글자와 한 세로줄에 섭니다.
+ *
+ * 카드 밖 글자는 보통 카드 테두리에 맞추지만 이름 바로 밑이 티어 카드라 테두리에 맞추면 엠블럼보다 20dp 왼쪽으로 치우쳐 보였다.
+ */
+val ProfileHeaderInset = OvalitSpacing.screen + OvalitSpacing.gutter
+
+/**
  * 내 프로필과 S5 머리의 배너와 아바타입니다.
  *
  * 배너는 상태 표시줄 밑까지 깔리고 그 높이만큼 길어집니다.
@@ -85,7 +93,7 @@ fun ProfileBanner(badge: PlayerBadge, modifier: Modifier = Modifier, topBar: @Co
             riotId = badge.riotId,
             size = AvatarSize,
             modifier = Modifier
-                .padding(start = OvalitSpacing.screen, top = top + BannerHeight - AvatarSize / 2)
+                .padding(start = ProfileHeaderInset, top = top + BannerHeight - AvatarSize / 2)
                 .border(3.dp, colors.canvas, CircleShape),
         )
     }
@@ -101,7 +109,7 @@ fun ProfileSkeleton(topBar: @Composable BoxScope.() -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
         ProfileBanner(PlayerBadge(riotId = "", tier = null, tierName = null), topBar = topBar)
         Spacer(Modifier.height(10.dp))
-        OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = OvalitSpacing.screen)) {
+        OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = ProfileHeaderInset)) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SkeletonBlock(width = 140.dp, height = 24.dp)
                 SkeletonBlock(width = 180.dp, height = 14.dp)

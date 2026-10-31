@@ -261,11 +261,14 @@ private fun LocalDate.plusWeeks(weeks: Int) = plus(weeks, DateTimeUnit.WEEK)
 
 private fun LocalDate.minusWeeks(weeks: Int) = minus(weeks, DateTimeUnit.WEEK)
 
-/** S6·S7과 프로필이 보는 경기입니다. 고른 큐에서 리포트에 넣는 경기만 골라 가장 최근 경기의 액트만 남깁니다. */
+/**
+ * S6·S7과 프로필이 보는 경기입니다. 고른 큐에서 리포트에 넣는 경기만 골라 이번 액트만 남깁니다.
+ * 이번 액트는 고른 큐와 상관없이 경쟁 + 일반의 가장 최근 경기로 정합니다.
+ * 고른 큐로 정하면 프로필 칩에서 일반을 골랐을 때 이번 액트에 일반전이 없어도 지난 액트 일반전을 이번 액트처럼 띄운다.
+ */
 fun Iterable<Match>.currentActMatches(queueFilter: QueueFilter): List<Match> {
-    val counted = filter { it.queue in queueFilter.countedQueues }
-    val act = counted.maxByOrNull { it.startedAt }?.act ?: return emptyList()
-    return counted.filter { it.act == act }
+    val act = filter { it.queue in QueueFilter.PROFILE.countedQueues }.maxByOrNull { it.startedAt }?.act ?: return emptyList()
+    return filter { it.act == act && it.queue in queueFilter.countedQueues }
 }
 
 /**

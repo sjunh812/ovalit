@@ -26,11 +26,14 @@ import com.ovalit.core.designsystem.component.OvalitTopBarCaption
 import com.ovalit.core.designsystem.component.SkeletonBlock
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.core.model.QueueFilter
+import com.ovalit.core.ui.label
 import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.act_matches
 import com.ovalit.core.ui.resources.loading
 import com.ovalit.feature.profile.resources.Res
 import com.ovalit.feature.profile.resources.records_hidden
+import com.ovalit.feature.profile.resources.records_queue_matches
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -59,6 +62,7 @@ internal fun RecordsTopBar(
     ownerSuffix: StringResource,
     ownerName: String?,
     matches: Int,
+    queueFilter: QueueFilter,
     onBack: () -> Unit,
 ) {
     val style = OvalitTheme.typography.titleL
@@ -79,7 +83,13 @@ internal fun RecordsTopBar(
             }
         },
     ) {
-        OvalitTopBarCaption(stringResource(CoreUiRes.string.act_matches, matches))
+        // 프로필 칩으로 경쟁이나 일반을 골라 열었으면 카드에서 본 숫자와 같은 큐라는 걸 적는다
+        val caption = if (queueFilter == QueueFilter.PROFILE) {
+            stringResource(CoreUiRes.string.act_matches, matches)
+        } else {
+            stringResource(Res.string.records_queue_matches, stringResource(queueFilter.label), matches)
+        }
+        OvalitTopBarCaption(caption)
     }
 }
 

@@ -35,9 +35,14 @@ enum class QueueFilter(val queues: Set<Queue>) {
 
     companion object {
         /**
-         * 큐 칩이 없는 화면(프로필, S5, S6, S7, 친구 목록)이 세는 큐입니다.
+         * 큐 칩이 없는 화면(친구 목록)이 세는 큐입니다.
+         * 프로필(내 프로필, S5) 칩의 처음 값이고 칩과 상관없는 이번 액트, 머리, 티어 카드도 이 큐로 셉니다.
+         * S6·S7은 연 화면(홈, 내 프로필, S5)의 칩이 고른 큐로 셉니다.
          * 기타 모드는 라운드 수와 경제 규칙이 달라 섞으면 비율이 틀어집니다.
          */
         val PROFILE = COMPETITIVE_AND_UNRATED
+
+        /** 프로필 칩입니다. 기타 모드는 프로필에 세지 않아 기타 칩이 없습니다. */
+        val PROFILE_CHIPS = listOf(COMPETITIVE_AND_UNRATED, COMPETITIVE, UNRATED)
     }
 }

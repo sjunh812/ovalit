@@ -48,6 +48,7 @@ import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.FixedMetric
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.FailureNoticesEffect
 import com.ovalit.core.ui.HeadToHeadRow
@@ -56,7 +57,11 @@ import com.ovalit.core.ui.MatchRowStyle
 import com.ovalit.core.ui.ProfileAdSlot
 import com.ovalit.core.ui.ProfileAgentsSection
 import com.ovalit.core.ui.ProfileBanner
+import com.ovalit.core.ui.ProfileHeaderInset
 import com.ovalit.core.ui.ProfileIdentity
+import com.ovalit.core.ui.ProfileNoActMatchesSection
+import com.ovalit.core.ui.ProfileQueueChips
+import com.ovalit.core.ui.ProfileQueueEmptySection
 import com.ovalit.core.ui.ProfileSection
 import com.ovalit.core.ui.ProfileShotsSection
 import com.ovalit.core.ui.ProfileSkeleton
@@ -69,13 +74,13 @@ import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.recentMatchTimeLabel
 import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.act_matches
+import com.ovalit.core.ui.resources.profile_queue_matches
 import com.ovalit.feature.friend.resources.Res
 import com.ovalit.feature.friend.resources.cancel
 import com.ovalit.feature.friend.resources.compare_caption
 import com.ovalit.feature.friend.resources.compare_no_matches
 import com.ovalit.feature.friend.resources.compare_title
 import com.ovalit.feature.friend.resources.more
-import com.ovalit.feature.friend.resources.no_act_matches
 import com.ovalit.feature.friend.resources.private_body
 import com.ovalit.feature.friend.resources.recent_all
 import com.ovalit.feature.friend.resources.recent_title
@@ -104,8 +109,8 @@ fun FriendProfileRoute(
     friendId: PlayerId,
     onBack: () -> Unit,
     onOpenMatches: () -> Unit,
-    onOpenAgents: () -> Unit,
-    onOpenWeapons: () -> Unit,
+    onOpenAgents: (QueueFilter) -> Unit,
+    onOpenWeapons: (QueueFilter) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: FriendProfileViewModel = koinViewModel(key = friendId.value) { parametersOf(friendId.value) },
 ) {
@@ -128,6 +133,7 @@ fun FriendProfileRoute(
         onOpenMatches = onOpenMatches,
         onOpenAgents = onOpenAgents,
         onOpenWeapons = onOpenWeapons,
+        onSelectQueue = viewModel::selectQueue,
         modifier = modifier,
     )
 }
@@ -140,8 +146,9 @@ internal fun FriendProfileScreen(
     onUnfriend: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenMatches: () -> Unit = {},
-    onOpenAgents: () -> Unit = {},
-    onOpenWeapons: () -> Unit = {},
+    onOpenAgents: (QueueFilter) -> Unit = {},
+    onOpenWeapons: (QueueFilter) -> Unit = {},
+    onSelectQueue: (QueueFilter) -> Unit = {},
 ) {
     val colors = OvalitTheme.colors
     val haptics = rememberOvalitHaptics()
@@ -168,19 +175,20 @@ internal fun FriendProfileScreen(
                     }
                 }
                 val profile = uiState.theirProfile
-                val competitive = profile?.summary?.competitive
-                val hasActMatches = profile != null && profile.agents.matches > 0
+                val competitive = profile?.competitive
+                val hasActMatches = profile != null && profile.actMatches > 0
+                val showStats = profile != null && hasActMatches && !profile.isQueueEmpty
                 Spacer(Modifier.height(10.dp))
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.screen),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = ProfileHeaderInset),
                     verticalAlignment = Alignment.Top,
                 ) {
                     ProfileIdentity(
                         badge = uiState.badge,
                         showTier = competitive == null,
-                        mainRole = profile?.agents?.mainRole,
-                        mainRoleShare = profile?.agents?.mainRoleShare,
-                        trailing = profile?.let { stringResource(CoreUiRes.string.act_matches, it.agents.matches) },
+                        mainRole = profile?.mainRole,
+                        mainRoleShare = profile?.mainRoleShare,
+                        trailing = profile?.let { stringResource(CoreUiRes.string.act_matches, it.actMatches) },
                         modifier = Modifier.weight(1f),
                     )
                     // 라이벌로 둔 친구가 전적을 비공개로 바꿔도 해제할 수 있어야 한다
@@ -227,19 +235,26 @@ internal fun FriendProfileScreen(
                     }
                 } else {
                     // 내 프로필과 같은 칸을 같은 순서로 쓰고 통계 다음에만 나와 비교를 끼운다.
+                    // 나와 비교는 칩 밑이라 칩을 따르고 고른 큐에 친구 경기가 없으면 그 안에서 없다고 적는다.
                     if (hasActMatches) {
                         competitive?.let { ProfileTierCard(it, uiState.catalog) }
-                        ProfileStatsSection(profile.summary)
-                    } else {
-                        ProfileSection {
-                            OvalitText(text = stringResource(Res.string.no_act_matches), style = OvalitTheme.typography.body, color = colors.t2)
+                        ProfileQueueChips(selected = profile.queueFilter, onSelect = onSelectQueue)
+                        if (profile.isQueueEmpty) {
+                            ProfileQueueEmptySection(profile.queueFilter)
+                        } else {
+                            ProfileStatsSection(
+                                summary = profile.summary,
+                                caption = stringResource(CoreUiRes.string.profile_queue_matches, profile.agents.matches),
+                            )
                         }
+                    } else {
+                        ProfileNoActMatchesSection()
                     }
                     (uiState.myReport as? WeeklyReport.Ready)?.let { mine -> CompareSection(mine, uiState, name) }
-                    if (hasActMatches) {
+                    if (showStats) {
                         ProfileShotsSection(profile.summary.metrics.shots)
-                        ProfileAgentsSection(profile.agents, uiState.catalog, onOpen = onOpenAgents)
-                        ProfileWeaponsSection(profile.weapons, uiState.catalog, onOpen = onOpenWeapons)
+                        ProfileAgentsSection(profile.agents, uiState.catalog) { onOpenAgents(profile.queueFilter) }
+                        ProfileWeaponsSection(profile.weapons, uiState.catalog) { onOpenWeapons(profile.queueFilter) }
                         ProfileAdSlot(key = "profile-friend-${uiState.friend.id.value}")
                     }
                     RecentMatches(uiState, name, onOpenMatches)

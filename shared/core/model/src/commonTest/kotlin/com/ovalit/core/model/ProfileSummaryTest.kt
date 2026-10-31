@@ -3,32 +3,34 @@ package com.ovalit.core.model
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlin.time.Instant
+import kotlinx.datetime.TimeZone
 
 class ProfileSummaryTest {
 
     // 일반전 응답에도 티어가 있지만 티어가 오르내리는 건 경쟁전뿐이다
     @Test
     fun `지금 티어는 가장 최근 경쟁전에서 읽는다`() {
-        val summary = listOf(
+        val record = listOf(
             game(Queue.COMPETITIVE, startedAt = 4, tier = 16),
             game(Queue.UNRATED, startedAt = 5, tier = 20),
             game(Queue.COMPETITIVE, startedAt = 1, tier = 15),
             game(Queue.COMPETITIVE, startedAt = 3, tier = 17),
-        ).profileSummary()
+        ).competitiveRecord()
 
-        assertEquals(16, summary.competitive?.currentTier)
+        assertEquals(16, record?.currentTier)
     }
 
     @Test
     fun `가장 최근 경쟁전에 티어가 빠져 있으면 그 앞 판을 본다`() {
-        val summary = listOf(
+        val record = listOf(
             game(Queue.COMPETITIVE, startedAt = 1, tier = 15),
             game(Queue.COMPETITIVE, startedAt = 2, tier = null),
-        ).profileSummary()
+        ).competitiveRecord()
 
-        assertEquals(15, summary.competitive?.currentTier)
-        assertEquals(2, summary.competitive?.matches)
+        assertEquals(15, record?.currentTier)
+        assertEquals(2, record?.matches)
     }
 
     @Test
@@ -39,7 +41,7 @@ class ProfileSummaryTest {
             game(Queue.COMPETITIVE, won = false),
             game(Queue.COMPETITIVE, won = null),
             game(Queue.UNRATED, won = false),
-        ).profileSummary().competitive!!
+        ).competitiveRecord()!!
 
         assertEquals(4, record.matches)
         assertEquals(2, record.wins)
@@ -49,7 +51,7 @@ class ProfileSummaryTest {
 
     @Test
     fun `경쟁전을 안 뛰었으면 티어 머리를 두지 않는다`() {
-        assertNull(listOf(game(Queue.UNRATED)).profileSummary().competitive)
+        assertNull(listOf(game(Queue.UNRATED)).competitiveRecord())
     }
 
     @Test
@@ -65,18 +67,52 @@ class ProfileSummaryTest {
         assertEquals(105L * 60_000, summary.playTimeMillis)
     }
 
+    // 칩을 바꿀 때 머리와 티어 카드까지 바뀌면 칩이 어디까지 고르는지 알 수 없다
+    @Test
+    fun `프로필 칩은 통계부터 무기까지만 고르고 머리와 티어 카드는 경쟁 + 일반으로 센다`() {
+        val matches = listOf(
+            game(Queue.COMPETITIVE, startedAt = 1, kills = 2),
+            game(Queue.COMPETITIVE, startedAt = 2, kills = 2),
+            game(Queue.UNRATED, startedAt = 3, kills = 7),
+        )
+
+        val report = matches.profileReport(QueueFilter.UNRATED, now = Instant.fromEpochMilliseconds(4), timeZone = TimeZone.UTC)
+
+        assertEquals(3, report.actMatches)
+        assertEquals(2, report.competitive?.matches)
+        assertEquals(1, report.agents.matches)
+        assertEquals(7, report.summary.metrics.kills)
+        assertEquals(1, report.weapons.matches)
+    }
+
+    // 지난 액트 일반전을 이번 액트처럼 띄우면 액트를 넘는 숫자가 섞인다
+    @Test
+    fun `고른 큐에 이번 액트 경기가 없으면 지난 액트 경기를 세지 않고 비운다`() {
+        val matches = listOf(
+            game(Queue.UNRATED, startedAt = 1, act = ActId("old")),
+            game(Queue.COMPETITIVE, startedAt = 2, act = ActId("new")),
+        )
+
+        val report = matches.profileReport(QueueFilter.UNRATED, now = Instant.fromEpochMilliseconds(3), timeZone = TimeZone.UTC)
+
+        assertTrue(report.isQueueEmpty)
+        assertEquals(0, report.weapons.matches)
+        assertEquals(1, report.actMatches)
+    }
+
     @Test
     fun `경기가 없으면 최다 킬을 비운다`() {
         val summary = emptyList<Match>().profileSummary()
 
         assertNull(summary.mostKills)
-        assertNull(summary.competitive)
+        assertNull(emptyList<Match>().competitiveRecord())
     }
 }
 
 private fun game(
     queue: Queue,
     startedAt: Long = 0,
+    act: ActId = ActId("act"),
     tier: Int? = 16,
     won: Boolean? = true,
     kills: Int = 0,
@@ -86,6 +122,7 @@ private fun game(
     return match(
         *rounds.toTypedArray(),
         queue = queue,
+        act = act,
         startedAt = Instant.fromEpochMilliseconds(startedAt),
         won = won,
         players = listOf(

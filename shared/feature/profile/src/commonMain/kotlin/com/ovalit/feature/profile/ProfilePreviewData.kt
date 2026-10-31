@@ -14,9 +14,11 @@ import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.Movement
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.model.ProfileReport
 import com.ovalit.core.model.ProfileSummary
 import com.ovalit.core.model.ReportPeriod
 import com.ovalit.core.model.Queue
+import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.Role
 import com.ovalit.core.model.RoleShare
 import com.ovalit.core.model.Scoreline
@@ -180,8 +182,18 @@ internal object ProfilePreviewData {
         ),
         mostKills = 28,
         playTimeMillis = (31.hours + 20.minutes).inWholeMilliseconds,
-        competitive = CompetitiveRecord(matches = 32, wins = 18, losses = 14, currentTier = 16),
         highlights = HighlightCount(aces = 2, clutches = 3, clutchAttempts = 7),
+    )
+
+    val report = ProfileReport(
+        queueFilter = QueueFilter.PROFILE,
+        actMatches = agents.matches,
+        mainRole = agents.mainRole,
+        mainRoleShare = agents.mainRoleShare,
+        competitive = CompetitiveRecord(matches = 32, wins = 18, losses = 14, currentTier = 16),
+        summary = summary,
+        agents = agents,
+        weapons = weapons,
     )
 
     private fun recent(id: String, map: MapId, hoursAgo: Int, won: Int, lost: Int, k: Int, d: Int, a: Int): Match {
@@ -221,9 +233,7 @@ internal object ProfilePreviewData {
             tier = 16,
             tierName = "플래티넘 2",
         ),
-        summary = summary,
-        agents = agents,
-        weapons = weapons,
+        report = report,
         recentMatches = recentMatches,
         hasMoreMatches = true,
         catalog = catalog,
@@ -239,5 +249,13 @@ internal object ProfilePreviewData {
     val friendRecords = records.copy(ownerName = "민석")
 
     // 이번 액트에 경쟁전을 안 뛰었으면 티어 칸이 없고 티어는 이름 줄에 남는다
-    val noCompetitive = success.copy(summary = summary.copy(competitive = null))
+    val noCompetitive = success.copy(report = report.copy(competitive = null))
+
+    // 일반 칩을 골랐는데 이번 액트에 일반전이 없으면 통계부터 무기까지 대신 한 줄만 둔다
+    val noUnrated = success.copy(
+        report = report.copy(
+            queueFilter = QueueFilter.UNRATED,
+            agents = agents.copy(matches = 0, mainRole = null, roles = emptyList(), agents = emptyList()),
+        ),
+    )
 }

@@ -26,7 +26,6 @@
     <string name="shared_matches">같이 뛴 경기</string>
     <string name="shared_count">%1$d경기</string>
     <string name="shared_record">%1$d승 %2$d패</string>
-    <string name="no_act_matches">이번 액트에 뛴 경기가 아직 없어요</string>
     <string name="private_body">전적을 공개하지 않은 친구예요. 같이 뛴 경기만 볼 수 있어요.</string>
     <string name="compare_title">나와 비교</string>
     <!-- 다른 칸은 이번 액트인데 나와 비교만 내 리포트 기간이라 기간을 같이 적는다 -->

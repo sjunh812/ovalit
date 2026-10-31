@@ -98,6 +98,11 @@
     <string name="profile_competitive">경쟁전</string>
     <string name="profile_competitive_matches">경쟁전 %1$d판</string>
     <string name="profile_stats_title">통계</string>
+    <!-- 프로필 칩이 고른 큐의 이번 액트 경기 수다. 통계 제목 옆에 둔다 -->
+    <string name="profile_queue_matches">%1$d경기</string>
+    <string name="profile_no_act_matches">이번 액트에 뛴 경기가 아직 없어요</string>
+    <string name="profile_no_competitive_matches">이번 액트에 뛴 경쟁전이 없어요</string>
+    <string name="profile_no_unrated_matches">이번 액트에 뛴 일반전이 없어요</string>
     <string name="profile_most_kills">최다 킬</string>
     <string name="profile_kda">KDA</string>
     <string name="profile_per_match">판당 %1$s</string>

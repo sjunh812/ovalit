@@ -17,8 +17,10 @@ import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.model.PlayerCardId
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.model.ProfileReport
 import com.ovalit.core.model.ProfileSummary
 import com.ovalit.core.model.Queue
+import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.ReportPeriod
 import com.ovalit.core.model.Role
 import com.ovalit.core.model.RoleShare
@@ -112,12 +114,16 @@ internal object FriendPreviewData {
 
     // 민석의 이번 액트.
     // 목업 S5의 "다이아몬드 2 · 타격대"에 맞췄다.
-    private val minseokProfile = FriendProfile(
+    private val minseokProfile = ProfileReport(
+        queueFilter = QueueFilter.PROFILE,
+        actMatches = 29,
+        mainRole = Role.DUELIST,
+        mainRoleShare = 1.0,
+        competitive = CompetitiveRecord(matches = 22, wins = 13, losses = 9, currentTier = 19),
         summary = ProfileSummary(
             metrics = metrics(29, 640, 510, 426, 135_600, 92_800, 26),
             mostKills = 29,
             playTimeMillis = 17 * 3_600_000L,
-            competitive = CompetitiveRecord(matches = 22, wins = 13, losses = 9, currentTier = 19),
             highlights = HighlightCount(aces = 1, clutches = 2, clutchAttempts = 5),
         ),
         agents = AgentReport(

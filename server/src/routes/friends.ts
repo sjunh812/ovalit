@@ -1,9 +1,11 @@
 import { type Context, Hono } from "hono";
 import type { AppEnv } from "../env";
 import { ApiError } from "../errors";
+import { notify } from "../push";
 import { FRIEND_CAP, friendCount, friendsFull, relationsTo, sendRequest } from "../relations";
 import { rawJson, riotFor } from "../riot";
 import { requireSession } from "../session";
+import { SUMMARY_COLUMNS, SUMMARY_KEEP_WEEKS, week, weekCutoff } from "../summaries";
 import * as validate from "../validate";
 
 export const friends = new Hono<AppEnv>();
@@ -111,6 +113,9 @@ friends.post("/requests/:puuid/accept", async (c) => {
     db.prepare(`DELETE FROM friend_requests WHERE from_user = ?2 AND to_user = ${otherId} AND ${befriended}`).bind(other, me),
   ]);
   if (forward!.meta.changes === 0) throw await acceptRefusal(db, me, other);
+  // 요청을 보낸 사람에게 수락을 알린다
+  const requester = await db.prepare("SELECT id FROM users WHERE puuid = ?").bind(other).first<{ id: number }>();
+  if (requester) notify(c, [{ userId: requester.id, data: { type: "friend_accept", name: c.var.user.gameName } }]);
   return c.json({ status: "friends" });
 });
 
@@ -163,6 +168,34 @@ friends.delete("/:puuid", async (c) => {
   ]);
   if (removed!.meta.changes === 0) throw new ApiError(404, "not_friend");
   return c.body(null, 204);
+});
+
+// 친구마다 둘 수 있는 주와 한 주의 줄(액트 둘, 큐 둘)을 곱한 만큼이다
+const SUMMARY_LIMIT = FRIEND_CAP * SUMMARY_KEEP_WEEKS * 4;
+
+/**
+ * 친구들의 주간 요약입니다(docs/backend.md 친구 비교 요약).
+ * 친구 비교와 라이벌 대결은 친구 경기를 받지 않고 이걸로 셉니다.
+ * Riot을 부르지 않습니다.
+ * 서로 수락한 친구가 전적을 공개했을 때만 내줍니다.
+ * 끊은 친구의 요약은 남아 있어도 내주지 않습니다.
+ * `since`(월요일)부터이고 빠지면 둘 수 있는 가장 오래된 주부터입니다.
+ */
+friends.get("/summaries", async (c) => {
+  const since = c.req.query("since");
+  const from = since === undefined ? weekCutoff() : week(since);
+  const { results } = await c.env.DB.prepare(
+    `SELECT u.puuid, s.week, s.act, s.queue, ${SUMMARY_COLUMNS.map((column) => `s.${column}`).join(", ")}
+     FROM weekly_summaries s
+     JOIN users u ON u.id = s.user_id
+     JOIN friendships f ON f.user_a = MIN(u.id, ?1) AND f.user_b = MAX(u.id, ?1)
+     WHERE s.week >= ?2 AND u.stats_public = 1
+     ORDER BY u.puuid, s.week
+     LIMIT ?3`,
+  )
+    .bind(c.var.user.id, from, SUMMARY_LIMIT)
+    .all<Record<string, string | number>>();
+  return c.json(results);
 });
 
 /** 친구의 경기 목록과 경기는 서로 수락한 친구이고 그 친구가 전적을 공개했을 때만 엽니다. 아니면 403입니다. */

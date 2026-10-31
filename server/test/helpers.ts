@@ -1,13 +1,15 @@
 import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
 import { env } from "cloudflare:workers";
-import { createApp } from "../src/app";
+import { createApp, type Deps } from "../src/app";
 import { base64url } from "../src/crypto";
 import type { Env } from "../src/env";
-import { clearAccessTokens } from "../src/push";
+import { clearUserLimits } from "../src/limit";
+import { clearAccessTokens, clearPushQuotas } from "../src/push";
 import { cacheKey, clearMemoryCaches, clearQuotas } from "../src/riot";
 import { clearAuthQuotas } from "../src/routes/auth";
 import { clearUsedStates } from "../src/state";
 import { clearRiotBlocks } from "../src/upstream";
+import { clearRiotIdChecks } from "../src/users";
 
 // 실제 키는 쓰지 않는다.
 // wrangler가 .dev.vars를 읽어 오더라도 여기 값으로 덮어쓴다.
@@ -28,7 +30,11 @@ export function makePuuid(): string {
 
 type Handler = (req: Request) => Response | Promise<Response>;
 
-/** Riot 대신 응답하고 어떤 요청이 나갔는지 적어 둡니다. 등록하지 않은 주소는 500을 돌려줍니다. */
+/**
+ * Riot 대신 응답하고 어떤 요청이 나갔는지 적어 둡니다.
+ * 등록하지 않은 주소는 500을 돌려줍니다.
+ * 실제 `fetch`처럼 요청의 `signal`이 끊기면 답을 기다리지 않고 그 까닭(시간 초과면 `TimeoutError`)으로 실패합니다.
+ */
 export class FakeUpstream {
   readonly calls: Request[] = [];
   private readonly routes = new Map<string, Handler>();
@@ -50,8 +56,20 @@ export class FakeUpstream {
     const req = new Request(input, init);
     this.calls.push(req.clone());
     const handler = this.routes.get(req.url);
-    return handler ? handler(req) : new Response("unexpected upstream call", { status: 500 });
+    if (!handler) return new Response("unexpected upstream call", { status: 500 });
+    const signal = init?.signal;
+    if (!signal) return handler(req);
+    signal.throwIfAborted();
+    return new Promise<Response>((resolve, reject) => {
+      signal.addEventListener("abort", () => reject(signal.reason), { once: true });
+      Promise.resolve(handler(req)).then(resolve, reject);
+    });
   };
+}
+
+/** 답하지 않는 Riot이나 FCM입니다. 요청이 시간 초과로 끊길 때까지 기다립니다. */
+export function never(): Promise<Response> {
+  return new Promise(() => {});
 }
 
 export interface TestUser {
@@ -61,15 +79,22 @@ export interface TestUser {
   token: string;
 }
 
-export function setup(overrides: Partial<Env> = {}) {
-  // isolate 메모리에 남은 레이트 리밋, 사용자 호출 한도, FCM 액세스 토큰이 다음 테스트로 이어지지 않게 비운다.
+/**
+ * `deps.timeoutMs`로 밖으로 나가는 요청을 끊는 시간을 줄입니다.
+ * 답하지 않는 Riot을 볼 때 씁니다.
+ */
+export function setup(overrides: Partial<Env> = {}, deps: Omit<Deps, "fetch"> = {}) {
+  // isolate 메모리에 남은 레이트 리밋, 사용자 호출 한도, 알림 횟수, FCM 액세스 토큰이 다음 테스트로 이어지지 않게 비운다.
   clearRiotBlocks();
   clearQuotas();
+  clearUserLimits();
   clearAuthQuotas();
   clearUsedStates();
   clearAccessTokens();
+  clearPushQuotas();
+  clearRiotIdChecks();
   const upstream = new FakeUpstream();
-  const app = createApp({ fetch: upstream.fetch });
+  const app = createApp({ fetch: upstream.fetch, ...deps });
   const testEnv: Env = { ...env, ...TEST_SECRETS, ...overrides };
 
   // waitUntil로 넘긴 일(알림)이 끝날 때까지 기다렸다가 응답을 돌려준다.
@@ -96,6 +121,14 @@ export function setup(overrides: Partial<Env> = {}) {
 }
 
 export const RIOT = "https://kr.api.riotgames.com";
+
+/**
+ * account-v1의 Riot ID 주소입니다.
+ * 서버는 로그인한 지 하루가 지난 사람의 요청을 받으면 뒤에서 이 주소를 한 번 부릅니다.
+ */
+export function accountUrl(puuid: string): string {
+  return `https://asia.api.riotgames.com/riot/account/v1/accounts/by-puuid/${puuid}`;
+}
 
 export function matchUrl(matchId: string): string {
   return `${RIOT}/val/match/v1/matches/${matchId}`;
@@ -232,14 +265,27 @@ export async function addFriends(user: TestUser, n: number): Promise<void> {
 
 /**
  * D1을 감싸 준비한 SQL을 `sql`에 적어 둡니다.
- * `failBatch`를 주면 `batch`가 그 에러로 실패하고, `failSql`을 주면 그 패턴에 맞는 SQL을 돌릴 때 실패합니다.
+ * `failBatch`를 주면 `batch`가 그 에러로 실패합니다(`failBatches`를 주면 처음 그만큼만).
+ * `failSql`을 주면 그 패턴에 맞는 SQL을 돌릴 때 실패합니다.
+ * `beforeSql`을 주면 그 패턴에 맞는 SQL을 처음 돌리기 직전에 `beforeSql.run`을 한 번 돌려 끝나기를 기다립니다.
+ * 다른 요청이 먼저 끼어든 것처럼 만들 때 씁니다(`batch`에 든 SQL이어도 됩니다).
  * 로그인처럼 `batch`를 쓰는 준비를 마친 뒤 `t.env.DB`에 넣어 씁니다.
  */
 export function watchDb(
   db: D1Database,
-  options: { failBatch?: Error; failSql?: { pattern: RegExp; error: Error } } = {},
+  options: {
+    failBatch?: Error;
+    failBatches?: number;
+    failSql?: { pattern: RegExp; error: Error };
+    beforeSql?: { pattern: RegExp; run: () => Promise<unknown> };
+  } = {},
 ): { db: D1Database; sql: string[] } {
   const sql: string[] = [];
+  let batches = 0;
+  let cutIn: Promise<unknown> | undefined;
+  const runBefore = () => (cutIn ??= options.beforeSql!.run());
+  // batch는 D1이 만든 문장만 받으니 감싼 문장을 원래 문장으로 되돌려 넘긴다
+  const originals = new WeakMap<object, D1PreparedStatement>();
   const failing = (statement: D1PreparedStatement, error: Error): D1PreparedStatement =>
     new Proxy(statement, {
       get(target, prop) {
@@ -249,16 +295,40 @@ export function watchDb(
         return typeof value === "function" ? value.bind(target) : value;
       },
     });
+  const delayed = (statement: D1PreparedStatement): D1PreparedStatement => {
+    const proxy = new Proxy(statement, {
+      get(target, prop) {
+        if (prop === "bind") return (...values: unknown[]) => delayed(target.bind(...values));
+        const value: unknown = Reflect.get(target, prop, target);
+        if (prop === "run" || prop === "all" || prop === "first" || prop === "raw") {
+          return async (...args: unknown[]) => {
+            await runBefore();
+            return (value as (...args: unknown[]) => unknown).apply(target, args);
+          };
+        }
+        return typeof value === "function" ? value.bind(target) : value;
+      },
+    });
+    originals.set(proxy, statement);
+    return proxy;
+  };
   const watched = new Proxy(db, {
     get(target, prop) {
       if (prop === "prepare") {
         return (query: string) => {
           sql.push(query);
           const statement = target.prepare(query);
-          return options.failSql?.pattern.test(query) ? failing(statement, options.failSql.error) : statement;
+          if (options.failSql?.pattern.test(query)) return failing(statement, options.failSql.error);
+          return options.beforeSql?.pattern.test(query) ? delayed(statement) : statement;
         };
       }
-      if (prop === "batch" && options.failBatch) return () => Promise.reject(options.failBatch);
+      if (prop === "batch") {
+        return async (statements: D1PreparedStatement[]) => {
+          if (options.failBatch && batches++ < (options.failBatches ?? Number.POSITIVE_INFINITY)) throw options.failBatch;
+          if (statements.some((statement) => originals.has(statement))) await runBefore();
+          return target.batch(statements.map((statement) => originals.get(statement) ?? statement));
+        };
+      }
       const value: unknown = Reflect.get(target, prop, target);
       return typeof value === "function" ? value.bind(target) : value;
     },

@@ -1,7 +1,8 @@
 import { env } from "cloudflare:workers";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { redactMatch } from "../src/redact";
 import {
+  accountUrl,
   addFriends,
   makeFriends,
   makePuuid,
@@ -15,6 +16,7 @@ import {
   type TestUser,
   userId,
 } from "./helpers";
+import { fakeFcm, fcmServiceAccount, registerToken } from "./push-helpers";
 
 type T = ReturnType<typeof setup>;
 
@@ -40,6 +42,92 @@ async function requestRows(from: TestUser, to: TestUser): Promise<number> {
     .first<{ n: number }>();
   return row!.n;
 }
+
+let serviceAccount: string;
+
+beforeAll(async () => {
+  ({ serviceAccount } = await fcmServiceAccount());
+});
+
+// 푸시에는 글 없이 종류와 이름만 담는다(docs/backend.md)
+describe("친구 요청 알림", () => {
+  function withPush(): T {
+    return setup({ FCM_SERVICE_ACCOUNT: serviceAccount });
+  }
+
+  it("새 요청은 받는 사람에게 한 번 알리고 같은 요청을 다시 보내면 알리지 않는다", async () => {
+    const t = withPush();
+    const sent = fakeFcm(t);
+    const me = await t.login("me");
+    const other = await t.login("other");
+    const phone = await registerToken(t, other);
+    const matchId = playedMatch(t, me, other);
+
+    expect((await t.call("POST", "/friends/requests", me.token, { puuid: other.puuid, matchId })).status).toBe(201);
+    expect(sent).toEqual([{ token: phone, data: { type: "friend_request", name: "me" }, android: expect.anything() }]);
+
+    sent.length = 0;
+    await t.call("POST", "/friends/requests", me.token, { puuid: other.puuid, matchId });
+    expect(sent).toEqual([]);
+  });
+
+  it("수락하면 요청을 보낸 사람에게 알리고 이미 친구면 알리지 않는다", async () => {
+    const t = withPush();
+    const sent = fakeFcm(t);
+    const me = await t.login("me");
+    const other = await t.login("other");
+    const myPhone = await registerToken(t, me);
+    await sendRequestRow(me, other);
+
+    expect((await t.call("POST", `/friends/requests/${me.puuid}/accept`, other.token)).status).toBe(200);
+    expect(sent).toEqual([{ token: myPhone, data: { type: "friend_accept", name: "other" }, android: expect.anything() }]);
+
+    sent.length = 0;
+    const matchId = playedMatch(t, me, other);
+    expect((await t.call("POST", "/friends/requests", me.token, { puuid: other.puuid, matchId })).status).toBe(409);
+    expect(sent).toEqual([]);
+  });
+
+  it("같은 사람이 보낸 친구 요청 알림은 하루에 한 번이고 넘어도 요청은 들어간다", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const t = withPush();
+    const sent = fakeFcm(t);
+    const me = await t.login("me");
+    const other = await t.login("other");
+    const third = await t.login("third");
+    for (const user of [me, other, third]) t.upstream.json(accountUrl(user.puuid), { puuid: user.puuid, gameName: user.gameName, tagLine: "KR1" });
+    const phone = await registerToken(t, other);
+    const matchId = playedMatch(t, me, other, third);
+    const request = (from: TestUser) => t.call("POST", "/friends/requests", from.token, { puuid: other.puuid, matchId });
+    const decline = (from: TestUser) => t.call("POST", `/friends/requests/${from.puuid}/decline`, other.token);
+
+    expect((await request(me)).status).toBe(201);
+    expect((await decline(me)).status).toBe(204);
+    expect((await request(me)).status).toBe(201);
+    expect(await requestRows(me, other)).toBe(1);
+    // 다른 사람이 보낸 요청은 따로 센다.
+    expect((await request(third)).status).toBe(201);
+    expect(sent.map((message) => message.data.name)).toEqual(["me", "third"]);
+
+    vi.advanceTimersByTime(24 * 60 * 60 * 1000);
+    sent.length = 0;
+    await decline(me);
+    expect((await request(me)).status).toBe(201);
+    expect(sent).toEqual([{ token: phone, data: { type: "friend_request", name: "me" }, android: expect.anything() }]);
+  });
+
+  it("거절하면 아무에게도 알리지 않는다", async () => {
+    const t = withPush();
+    const sent = fakeFcm(t);
+    const me = await t.login("me");
+    const other = await t.login("other");
+    await registerToken(t, me);
+    await sendRequestRow(me, other);
+
+    expect((await t.call("POST", `/friends/requests/${me.puuid}/decline`, other.token)).status).toBe(204);
+    expect(sent).toEqual([]);
+  });
+});
 
 describe("스코어보드 친구 요청", () => {
   it("같이 뛴 경기가 있으면 요청이 가고 상대의 받은 요청에 뜬다", async () => {

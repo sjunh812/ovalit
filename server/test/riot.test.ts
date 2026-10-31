@@ -8,6 +8,7 @@ import {
   makeFriends,
   matchFixture,
   matchUrl,
+  never,
   RIOT,
   recordedPlayers,
   sendRequestRow,
@@ -165,6 +166,36 @@ describe("Riot 에러 옮기기", () => {
       throw new TypeError("network down");
     });
     expect(res.status).toBe(502);
+  });
+
+  it("200을 받은 뒤 본문을 받다 끊겨도 502다", async () => {
+    const body = new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode('{"matchInfo":'));
+        controller.error(new TypeError("connection reset"));
+      },
+    });
+    const res = await matchWith(() => new Response(body, { status: 200 }));
+    expect(res.status).toBe(502);
+    expect(await res.json()).toEqual({ error: "riot_unavailable" });
+  });
+
+  it("Riot이 답하지 않으면 정한 시간에 끊어 같이 기다리던 요청까지 502를 주고, 다음 요청은 Riot에 다시 간다", async () => {
+    const t = setup({}, { timeoutMs: 20 });
+    const me = await t.login();
+    const friend = await t.login();
+    const id = crypto.randomUUID();
+    t.upstream.on(matchUrl(id), never);
+    const both = await Promise.all([me, friend].map((user) => t.call("GET", `/riot/matches/${id}`, user.token)));
+    for (const res of both) {
+      expect(res.status).toBe(502);
+      expect(await res.json()).toEqual({ error: "riot_unavailable" });
+    }
+    expect(t.upstream.callsTo(matchUrl(id))).toHaveLength(1);
+
+    t.upstream.json(matchUrl(id), matchFixture(id, [me, friend, ...strangers(8)]));
+    expect((await t.call("GET", `/riot/matches/${id}`, me.token)).status).toBe(200);
+    expect(t.upstream.callsTo(matchUrl(id))).toHaveLength(2);
   });
 
   it("키가 없으면 Riot을 부르지 않고 503이다", async () => {

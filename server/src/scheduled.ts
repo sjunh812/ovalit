@@ -1,7 +1,9 @@
 import { type Deps, upstreamFetch } from "./app";
 import type { Env } from "./env";
+import { logFailure } from "./log";
 import { type Notice, type Push, pushFrom } from "./push";
 import { PING_LENGTH_MS } from "./routes/pings";
+import { weekCutoff } from "./summaries";
 
 /** 월요일 00:00 UTC, 한국 시각으로 월요일 오전 9시입니다. `wrangler.jsonc`의 `triggers`와 같은 문자열이어야 합니다. */
 export const WEEKLY_CRON = "0 0 * * 1";
@@ -32,8 +34,20 @@ export function createScheduled(deps: Deps = {}): ExportedHandlerScheduledHandle
       return;
     }
     const now = Date.now();
-    await cleanUp(env.DB, now);
-    if (push) await remind(env.DB, push, now);
+    // 둘은 서로 기대지 않는다.
+    // 지우다 실패해도 곧 시작할 ㅇㅂㅇ은 알리고, 알리다 실패해도 지울 것은 지운다.
+    // 에러에 SQL과 PUUID가 섞일 수 있어 이름만 남기고 다음 크론에 다시 한다.
+    try {
+      await cleanUp(env.DB, now);
+    } catch (err) {
+      logFailure("cron_cleanup", err);
+    }
+    if (!push) return;
+    try {
+      await remind(env.DB, push, now);
+    } catch (err) {
+      logFailure("cron_remind", err);
+    }
   };
 }
 
@@ -47,6 +61,14 @@ async function cleanUp(db: D1Database, now: number): Promise<void> {
     db
       .prepare("DELETE FROM match_players WHERE match_id IN (SELECT match_id FROM match_players WHERE recorded_at < ? LIMIT ?)")
       .bind(now - MATCH_PLAYERS_KEEP_MS, CLEANUP_LIMIT),
+    // 둘 수 있는 주가 지난 요약을 지운다.
+    // 줄 ID가 없는 표라 키로 고른다.
+    db
+      .prepare(
+        `DELETE FROM weekly_summaries WHERE (user_id, week, act, queue) IN
+         (SELECT user_id, week, act, queue FROM weekly_summaries WHERE week < ? LIMIT ?)`,
+      )
+      .bind(weekCutoff(now), CLEANUP_LIMIT),
     // 풀린 차단을 지워 둔다.
     // isolate마다 5초에 한 번 이 표를 읽으니 비어 있어야 읽는 행이 거의 없다.
     db.prepare("DELETE FROM riot_blocks WHERE blocked_until <= ?").bind(now),

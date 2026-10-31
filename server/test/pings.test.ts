@@ -1,9 +1,17 @@
 import { createExecutionContext, createScheduledController, waitOnExecutionContext } from "cloudflare:test";
 import { env } from "cloudflare:workers";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { randomToken } from "../src/crypto";
+import { randomToken, sha256 } from "../src/crypto";
 import { createScheduled, WEEKLY_CRON } from "../src/scheduled";
-import { makeFriends, makePuuid, sendRequestRow, setup, type TestUser, userId } from "./helpers";
+import { makeFriends, makePuuid, namedError, never, sendRequestRow, setup, type TestUser, userId, watchDb } from "./helpers";
+import {
+  FCM_CLIENT_EMAIL as CLIENT_EMAIL,
+  FCM_SEND_URL as SEND_URL,
+  FCM_TOKEN_URL as TOKEN_URL,
+  fakeFcm,
+  fcmServiceAccount,
+  registerToken,
+} from "./push-helpers";
 
 type T = ReturnType<typeof setup>;
 
@@ -11,11 +19,6 @@ const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 const EVERY_FIVE_MINUTES = "*/5 * * * *";
-const PROJECT = "ovalit-test";
-const CLIENT_EMAIL = "push@ovalit-test.iam.gserviceaccount.com";
-const TOKEN_URL = "https://oauth2.googleapis.com/token";
-const SEND_URL = `https://fcm.googleapis.com/v1/projects/${PROJECT}/messages:send`;
-
 interface Member {
   puuid: string;
   gameName: string;
@@ -34,31 +37,12 @@ interface Ping {
   members: Member[];
 }
 
-interface Sent {
-  token?: string;
-  topic?: string;
-  data: Record<string, string>;
-  android: unknown;
-}
 
 let keys: CryptoKeyPair;
 let serviceAccount: string;
 
-// RSA 키는 만드는 데 시간이 걸려 파일마다 한 번만 만든다.
 beforeAll(async () => {
-  keys = (await crypto.subtle.generateKey(
-    { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
-    true,
-    ["sign", "verify"],
-  )) as CryptoKeyPair;
-  const der = new Uint8Array((await crypto.subtle.exportKey("pkcs8", keys.privateKey)) as ArrayBuffer);
-  const lines = btoa(String.fromCharCode(...der)).match(/.{1,64}/g)!.join("\n");
-  serviceAccount = JSON.stringify({
-    type: "service_account",
-    project_id: PROJECT,
-    client_email: CLIENT_EMAIL,
-    private_key: `-----BEGIN PRIVATE KEY-----\n${lines}\n-----END PRIVATE KEY-----\n`,
-  });
+  ({ keys, serviceAccount } = await fcmServiceAccount());
 });
 
 afterEach(() => {
@@ -68,18 +52,6 @@ afterEach(() => {
 
 function withPush(): T {
   return setup({ FCM_SERVICE_ACCOUNT: serviceAccount });
-}
-
-/** FCM 대신 답하고 보낸 메시지를 모읍니다. `answer`로 토큰마다 응답을 바꿉니다. */
-function fakeFcm(t: T, answer: (token: string) => Response = () => Response.json({ name: "projects/x/messages/1" })): Sent[] {
-  const sent: Sent[] = [];
-  t.upstream.json(TOKEN_URL, { access_token: "fcm-access", expires_in: 3599, token_type: "Bearer" });
-  t.upstream.on(SEND_URL, async (req) => {
-    const { message } = await req.json<{ message: Sent }>();
-    sent.push(message);
-    return message.token ? answer(message.token) : Response.json({ name: "projects/x/messages/2" });
-  });
-  return sent;
 }
 
 async function friendOf(t: T, host: TestUser, gameName = "friend"): Promise<TestUser> {
@@ -106,10 +78,6 @@ async function failure(res: Response): Promise<{ status: number; body: unknown }
   return { status: res.status, body: await res.json() };
 }
 
-async function registerToken(t: T, user: TestUser, token = `device-${randomToken(8)}`): Promise<string> {
-  expect((await t.call("PUT", "/me/push-token", user.token, { token })).status).toBe(204);
-  return token;
-}
 
 async function tokenOwner(token: string): Promise<number | undefined> {
   const row = await env.DB.prepare("SELECT user_id FROM push_tokens WHERE token = ?").bind(token).first<{ user_id: number }>();
@@ -303,6 +271,27 @@ describe("오발있 띄우기", () => {
   });
 });
 
+describe("쓰기 한도", () => {
+  it("띄우기, 대답, 시간 바꾸기, 더 부르기, 취소는 한 사람이 합쳐서 한 시간에 60번까지다", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const t = setup();
+    const host = await t.login();
+    const friend = await friendOf(t, host);
+    const ping = await open(t, host, [friend]);
+    for (let i = 0; i < 59; i++) {
+      expect((await t.call("POST", `/pings/${ping.id}/time`, host.token, { startsAt: Date.now() + HOUR + i * MINUTE })).status).toBe(200);
+    }
+    const over = await t.call("DELETE", `/pings/${ping.id}`, host.token);
+    expect(await failure(over)).toEqual({ status: 429, body: { error: "too_many_requests" } });
+    expect(over.headers.get("Retry-After")).toBe("3600");
+    expect(await visible(t, friend)).toHaveLength(1);
+    // 부른 친구는 따로 센다.
+    expect((await reply(t, friend, ping, "yes")).status).toBe(200);
+    vi.advanceTimersByTime(HOUR);
+    expect((await t.call("DELETE", `/pings/${ping.id}`, host.token)).status).toBe(204);
+  });
+});
+
 describe("대답", () => {
   it("부른 친구만 대답할 수 있다", async () => {
     const t = setup();
@@ -484,6 +473,34 @@ describe("친구 더 부르기", () => {
     expect(await failure(await invite(t, host, ping, [stranger]))).toEqual({ status: 403, body: { error: "not_friend" } });
   });
 
+  it("그사이 다른 요청이 같은 친구를 먼저 불렀으면 하나도 더하지 않고 알리지도 않는다", async () => {
+    const t = withPush();
+    const sent = fakeFcm(t);
+    const host = await t.login("host");
+    const a = await friendOf(t, host, "a");
+    const b = await friendOf(t, host, "b");
+    const c = await friendOf(t, host, "c");
+    await registerToken(t, b);
+    await registerToken(t, c);
+    const ping = await open(t, host, [a]);
+    sent.length = 0;
+    const bId = await userId(b.puuid);
+    // 이 요청이 확인을 마치고 넣기 직전에 b를 부른 다른 요청이 먼저 들어간 것처럼 만든다
+    t.env.DB = watchDb(env.DB, {
+      beforeSql: {
+        pattern: /^\s*INSERT INTO ping_members/,
+        run: () =>
+          env.DB.prepare("INSERT INTO ping_members (ping_id, user_id, position, updated_at) VALUES (?, ?, 2, ?)")
+            .bind(ping.id, bId, Date.now())
+            .run(),
+      },
+    }).db;
+
+    expect(await failure(await invite(t, host, ping, [b, c]))).toEqual({ status: 409, body: { error: "already_invited" } });
+    expect(await count("SELECT COUNT(*) AS n FROM ping_members WHERE ping_id = ? AND user_id = ?", ping.id, await userId(c.puuid))).toBe(0);
+    expect(sent).toEqual([]);
+  });
+
   it("호스트만 더 부를 수 있고 끝났거나 취소한 오발있에는 못 부른다", async () => {
     const t = setup();
     const host = await t.login();
@@ -649,6 +666,49 @@ describe("기기 토큰", () => {
       .bind(await userId(user.puuid))
       .all<{ token: string }>();
     expect(new Set(results.map((row) => row.token))).toEqual(new Set([tokens[0], tokens[2], newest]));
+  });
+
+  it("로그아웃하거나 세션이 끝나면 그 세션으로 맡긴 토큰만 지운다", async () => {
+    const t = setup();
+    const puuid = makePuuid();
+    const phone = await t.login("tester", puuid);
+    const tablet = await t.login("tester", puuid);
+    const phoneToken = await registerToken(t, phone);
+    const tabletToken = await registerToken(t, tablet);
+    // 마이그레이션 0012 전에 맡겨 세션이 비어 있는 토큰이다
+    const legacy = `legacy-${randomToken(8)}`;
+    await env.DB.prepare("INSERT INTO push_tokens (token, user_id, updated_at) VALUES (?, ?, ?)")
+      .bind(legacy, await userId(puuid), Date.now())
+      .run();
+
+    expect((await t.call("POST", "/auth/logout", phone.token)).status).toBe(204);
+    expect(await tokenOwner(phoneToken)).toBeUndefined();
+    expect(await tokenOwner(tabletToken)).toBeDefined();
+
+    await env.DB.prepare("UPDATE sessions SET expires_at = ? WHERE token_hash = ?").bind(Date.now() - 1, await sha256(tablet.token)).run();
+    expect((await t.call("GET", "/me", tablet.token)).status).toBe(401);
+    expect(await tokenOwner(tabletToken)).toBeUndefined();
+    expect(await tokenOwner(legacy)).toBeDefined();
+  });
+
+  it("다시 맡기면 지금 세션으로 옮겨 가고 세션 다섯을 넘겨 밀려난 세션의 토큰은 지운다", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const t = setup();
+    const puuid = makePuuid();
+    const first = await t.login("tester", puuid);
+    const token = await registerToken(t, first);
+    vi.advanceTimersByTime(1);
+    const second = await t.login("tester", puuid);
+    await registerToken(t, second, token);
+    expect((await t.call("POST", "/auth/logout", first.token)).status).toBe(204);
+    expect(await tokenOwner(token)).toBeDefined();
+
+    for (let i = 0; i < 5; i++) {
+      vi.advanceTimersByTime(1);
+      await t.login("tester", puuid);
+    }
+    expect((await t.call("GET", "/me", second.token)).status).toBe(401);
+    expect(await tokenOwner(token)).toBeUndefined();
   });
 
   it("토큰은 1자에서 4096자까지 받는다", async () => {
@@ -851,6 +911,7 @@ describe("알림", () => {
       gone: new Response(null, { status: 404 }),
       unregistered: fcmError(400, [{ "@type": "FcmError", errorCode: "UNREGISTERED" }]),
       malformed: fcmError(400, [{ "@type": "FcmError", errorCode: "INVALID_ARGUMENT" }]),
+      otherProject: fcmError(403, [{ "@type": "FcmError", errorCode: "SENDER_ID_MISMATCH" }]),
       badPayload: fcmError(400, [
         { "@type": "FcmError", errorCode: "INVALID_ARGUMENT" },
         { "@type": "BadRequest", fieldViolations: [{ field: "message.data[0].value" }] },
@@ -870,7 +931,7 @@ describe("알림", () => {
 
     await open(t, host, friends);
 
-    for (const name of ["gone", "unregistered", "malformed"]) expect(await tokenOwner(tokens[name]!)).toBeUndefined();
+    for (const name of ["gone", "unregistered", "malformed", "otherProject"]) expect(await tokenOwner(tokens[name]!)).toBeUndefined();
     for (const name of ["badPayload", "serverDown", "fine"]) expect(await tokenOwner(tokens[name]!)).toBeDefined();
   });
 
@@ -888,6 +949,56 @@ describe("알림", () => {
     expect(await tokenOwner(token)).toBeDefined();
     // 에러 메시지에 토큰이 섞일 수 있어 이름만 남긴다.
     expect(errors).toHaveBeenCalledWith("push", "TypeError");
+  });
+
+  it("FCM이 답하지 않아도 정한 시간에 끊고 요청은 성공한다", async () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const t = setup({ FCM_SERVICE_ACCOUNT: serviceAccount }, { timeoutMs: 20 });
+    t.upstream.on(TOKEN_URL, never);
+    const host = await t.login();
+    const friend = await friendOf(t, host);
+    await registerToken(t, friend);
+    const ping = await open(t, host, [friend]);
+    expect(await visible(t, friend)).toEqual([ping]);
+    expect(errors).toHaveBeenCalledWith("push", "TimeoutError");
+  });
+
+  it("오발있 하나에서 한 사람이 받는 알림은 한 시간에 20번까지이고 넘어도 대답은 그대로 들어간다", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const t = withPush();
+    const sent = fakeFcm(t);
+    const host = await t.login("host");
+    const friend = await friendOf(t, host, "friend");
+    await registerToken(t, host);
+    const ping = await open(t, host, [friend]);
+    sent.length = 0;
+
+    for (let i = 0; i < 21; i++) expect((await reply(t, friend, ping, i % 2 === 0 ? "yes" : "no")).status).toBe(200);
+    expect(sent.filter((message) => message.data.type === "ping_reply")).toHaveLength(20);
+    expect((await visible(t, host))[0]!.members[0]!.answer).toBe("yes");
+
+    vi.advanceTimersByTime(HOUR);
+    sent.length = 0;
+    await reply(t, friend, ping, "no");
+    expect(sent.map((message) => message.data.answer)).toEqual(["no"]);
+  });
+
+  it("시간을 거듭 바꿔 알림이 막혀도 취소 알림은 간다", async () => {
+    const t = withPush();
+    const sent = fakeFcm(t);
+    const host = await t.login("host");
+    const friend = await friendOf(t, host, "friend");
+    const phone = await registerToken(t, friend);
+    const ping = await open(t, host, [friend]);
+    // 띄울 때 간 ping_new까지 스무 번이다
+    for (let i = 1; i <= 20; i++) {
+      expect((await t.call("POST", `/pings/${ping.id}/time`, host.token, { startsAt: Date.now() + HOUR + i * MINUTE })).status).toBe(200);
+    }
+    expect(sent.map((message) => message.data.type)).toEqual(["ping_new", ...Array<string>(19).fill("ping_time")]);
+
+    sent.length = 0;
+    expect((await t.call("DELETE", `/pings/${ping.id}`, host.token)).status).toBe(204);
+    expect(sent).toEqual([{ token: phone, data: { type: "ping_cancel", pingId: ping.id, hostName: "host" }, android: expect.anything() }]);
   });
 
   it("서비스 계정을 읽을 수 없으면 보내지 않는다", async () => {
@@ -1050,6 +1161,45 @@ describe("크론", () => {
     await runCron(t, EVERY_FIVE_MINUTES);
     await runCron(t, WEEKLY_CRON);
     expect(t.upstream.calls).toHaveLength(0);
+  });
+
+  it("지우다 실패해도 곧 시작할 오발있은 알리고 에러 이름만 남긴다", async () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const t = withPush();
+    const sent = fakeFcm(t);
+    const host = await t.login();
+    const friend = await friendOf(t, host);
+    await registerToken(t, host);
+    await registerToken(t, friend);
+    const ping = await open(t, host, [friend], Date.now() + 5 * MINUTE);
+    await reply(t, friend, ping, "yes");
+    sent.length = 0;
+    // 크론의 첫 batch가 지우기다
+    t.env.DB = watchDb(env.DB, { failBatch: namedError("D1_ERROR", "DELETE FROM pings ... secret"), failBatches: 1 }).db;
+
+    await runCron(t, EVERY_FIVE_MINUTES);
+    expect(sent.filter((message) => message.data.pingId === ping.id).map((message) => message.data.type)).toEqual([
+      "ping_remind",
+      "ping_remind",
+    ]);
+    expect(errors).toHaveBeenCalledWith("cron_cleanup", "D1_ERROR");
+  });
+
+  it("알리다 실패해도 지울 것은 지운다", async () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const t = withPush();
+    fakeFcm(t);
+    const host = await t.login();
+    const old = randomToken(16);
+    const startsAt = Date.now() - DAY - 2 * HOUR;
+    await env.DB.prepare("INSERT INTO pings (id, host, starts_at, created_at, expires_at) VALUES (?, ?, ?, ?, ?)")
+      .bind(old, await userId(host.puuid), startsAt, startsAt - HOUR, startsAt + HOUR)
+      .run();
+    t.env.DB = watchDb(env.DB, { failSql: { pattern: /FROM pings p JOIN users h/, error: namedError("D1_ERROR", "SELECT ... secret") } }).db;
+
+    await runCron(t, EVERY_FIVE_MINUTES);
+    expect(await count("SELECT COUNT(*) AS n FROM pings WHERE id = ?", old)).toBe(0);
+    expect(errors).toHaveBeenCalledWith("cron_remind", "D1_ERROR");
   });
 
   it("끝나고 하루가 지난 오발있은 불려 간 자리와 함께 지운다", async () => {

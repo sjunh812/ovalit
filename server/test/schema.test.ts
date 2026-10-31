@@ -1,12 +1,24 @@
 import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
 import { createApp } from "../src/app";
+import { setup } from "./helpers";
 
 describe("뼈대", () => {
   it("health는 세션 없이 열린다", async () => {
     const res = await createApp().request("/health", {}, env);
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
+  });
+
+  it("본문은 16KB까지 받고 넘으면 세션을 보기 전에 413이다", async () => {
+    const t = setup();
+    const user = await t.login();
+    const big = await t.call("PUT", "/me/push-token", user.token, { token: "x".repeat(16 * 1024) });
+    expect(big.status).toBe(413);
+    expect(await big.json()).toEqual({ error: "payload_too_large" });
+    expect((await t.call("POST", "/auth/session", undefined, { code: "x".repeat(16 * 1024) })).status).toBe(413);
+    // 가장 긴 기기 토큰(4096자)은 들어간다.
+    expect((await t.call("PUT", "/me/push-token", user.token, { token: "x".repeat(4096) })).status).toBe(204);
   });
 
   it("없는 경로는 JSON 404다", async () => {

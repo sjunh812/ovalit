@@ -1,6 +1,7 @@
 import type { Context } from "hono";
 import type { AppEnv } from "./env";
 import { ApiError } from "./errors";
+import { notify } from "./push";
 
 export type Relation = "friend" | "requested_me" | "request_sent" | "app_user";
 
@@ -81,25 +82,9 @@ export function friendsFull(mine: number, theirs: number): ApiError | null {
   return null;
 }
 
-/**
- * 오늘(UTC) 보낸 요청을 하나 더 셉니다.
- * 이미 [DAILY_REQUEST_LIMIT]번 보냈으면 세지 않고 429 `too_many_friend_requests`를 던집니다.
- * `Retry-After`는 다음 날 0시(UTC)까지입니다.
- */
-async function countRequest(db: D1Database, userId: number, now: number): Promise<void> {
-  const today = Math.floor(now / DAY_MS);
-  const counted = await db
-    .prepare(
-      `UPDATE users
-       SET requests_today = CASE WHEN requests_day = ?2 THEN requests_today + 1 ELSE 1 END, requests_day = ?2
-       WHERE id = ?1 AND (requests_day <> ?2 OR requests_today < ?3)`,
-    )
-    .bind(userId, today, DAILY_REQUEST_LIMIT)
-    .run();
-  if (counted.meta.changes === 0) {
-    const retryAfter = Math.max(1, Math.ceil(((today + 1) * DAY_MS - now) / 1000));
-    throw new ApiError(429, "too_many_friend_requests", { "Retry-After": String(retryAfter) });
-  }
+function tooManyFriendRequests(today: number, now: number): ApiError {
+  const retryAfter = Math.max(1, Math.ceil(((today + 1) * DAY_MS - now) / 1000));
+  return new ApiError(429, "too_many_friend_requests", { "Retry-After": String(retryAfter) });
 }
 
 /** 초대 링크로 보낸 요청입니다. [uses]는 링크를 찾을 때 읽은 값이라 다 쓴 링크는 하루 한도를 세기 전에 거릅니다. */
@@ -143,19 +128,46 @@ export async function sendRequest(
   const full = friendsFull(counts!.mine, counts!.theirs);
   if (full) throw full;
 
-  // 하루 한도를 링크보다 먼저 센다.
-  // 한도에 걸린 사람이 거듭 눌러도 남의 링크 횟수는 줄지 않는다.
-  await countRequest(db, me, Date.now());
-  if (invite) {
-    const used = await db
-      .prepare("UPDATE invites SET uses = uses + 1 WHERE code = ? AND uses < ?")
-      .bind(invite.code, INVITE_REQUEST_LIMIT)
-      .run();
-    if (used.meta.changes === 0) throw new ApiError(410, "invite_used_up");
+  const now = Date.now();
+  const today = Math.floor(now / DAY_MS);
+  // 한 배치는 한 트랜잭션이다.
+  // 요청은 하루 한도와 링크 횟수가 남았을 때만 넣는다.
+  // changes()는 바로 앞 SQL 문이 바꾼 줄 수라 하루 횟수는 요청이 들어갔을 때만, 링크 횟수는 하루 횟수를 셌을 때만 센다.
+  // 그래서 같은 요청이 동시에 두 번 와도 한 번만 세고, 한도에 걸린 사람이 거듭 눌러도 남의 링크 횟수는 줄지 않는다.
+  const [inserted] = await db.batch([
+    db
+      .prepare(
+        `INSERT INTO friend_requests (from_user, to_user, source, created_at)
+         SELECT ?1, ?2, ?3, ?4
+         WHERE EXISTS (SELECT 1 FROM users WHERE id = ?1 AND (requests_day <> ?5 OR requests_today < ?6))
+           AND (?7 IS NULL OR EXISTS (SELECT 1 FROM invites WHERE code = ?7 AND uses < ?8))
+         ON CONFLICT DO NOTHING`,
+      )
+      .bind(me, targetId, source, now, today, DAILY_REQUEST_LIMIT, invite?.code ?? null, INVITE_REQUEST_LIMIT),
+    db
+      .prepare(
+        `UPDATE users
+         SET requests_today = CASE WHEN requests_day = ?2 THEN requests_today + 1 ELSE 1 END, requests_day = ?2
+         WHERE id = ?1 AND changes() > 0`,
+      )
+      .bind(me, today),
+    ...(invite ? [db.prepare("UPDATE invites SET uses = uses + 1 WHERE code = ? AND changes() > 0").bind(invite.code)] : []),
+  ]);
+  if (inserted!.meta.changes === 0) {
+    // 들어가지 않은 까닭을 다시 읽는다.
+    // 그사이 같은 요청이 먼저 들어갔으면 이미 보낸 것으로 보고 알림 없이 답한다.
+    const row = await db
+      .prepare(
+        `SELECT EXISTS (SELECT 1 FROM friend_requests WHERE from_user = ?1 AND to_user = ?2) AS sent,
+           EXISTS (SELECT 1 FROM users WHERE id = ?1 AND requests_day = ?3 AND requests_today >= ?4) AS exhausted`,
+      )
+      .bind(me, targetId, today, DAILY_REQUEST_LIMIT)
+      .first<{ sent: number; exhausted: number }>();
+    if (row?.sent) return c.json({ status: "requested" });
+    if (invite && !row?.exhausted) throw new ApiError(410, "invite_used_up");
+    throw tooManyFriendRequests(today, now);
   }
-  await db
-    .prepare("INSERT INTO friend_requests (from_user, to_user, source, created_at) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING")
-    .bind(me, targetId, source, Date.now())
-    .run();
+  // 새로 들어간 요청만 알린다.
+  notify(c, [{ userId: targetId, data: { type: "friend_request", name: c.var.user.gameName } }]);
   return c.json({ status: "requested" }, 201);
 }

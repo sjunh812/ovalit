@@ -1,7 +1,8 @@
 import { env } from "cloudflare:workers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { base64url, randomToken, sha256 } from "../src/crypto";
-import { makePuuid, namedError, setup, watchDb } from "./helpers";
+import { ipKey } from "../src/routes/auth";
+import { accountUrl, makeFriends, makePuuid, namedError, never, setup, watchDb } from "./helpers";
 
 const TOKEN_URL = "https://auth.riotgames.com/token";
 const ACCOUNT_ME_URL = "https://asia.api.riotgames.com/riot/account/v1/accounts/me";
@@ -17,8 +18,8 @@ function pkce() {
 }
 
 /** RSO 비밀값을 넣은 환경입니다. 그 값이 있으면 `/auth/dev`가 닫혀서 기본 `setup()`에는 넣지 않습니다. */
-function withRso(overrides: Parameters<typeof setup>[0] = {}) {
-  return setup({ RSO_CLIENT_SECRET: "test-secret", ...overrides });
+function withRso(overrides: Parameters<typeof setup>[0] = {}, deps: Parameters<typeof setup>[1] = {}) {
+  return setup({ RSO_CLIENT_SECRET: "test-secret", ...overrides }, deps);
 }
 
 /** RSO를 띄워 state를 받아 둡니다. 콜백에 무엇을 돌려줄지는 부르는 쪽이 정합니다. */
@@ -282,6 +283,33 @@ describe("RSO 로그인", () => {
     expect(t.upstream.calls).toHaveLength(0);
   });
 
+  it("IPv6는 주소가 아니라 앞 64비트마다 센다", async () => {
+    const t = withRso();
+    const start = async (ip: string) =>
+      t.app.request(`/auth/rso/start?challenge=${await pkce().challenge}`, { headers: { "CF-Connecting-IP": ip } }, t.env);
+    for (let i = 0; i < 20; i++) expect((await start(`2001:db8:1:2::${(i + 1).toString(16)}`)).status).toBe(302);
+    // 같은 /64를 달리 적어도 같은 한도를 쓴다.
+    expect((await start("2001:0DB8:0001:0002:ffff:ffff:ffff:ffff")).status).toBe(429);
+    expect((await start("2001:db8:1:3::1")).status).toBe(302);
+  });
+
+  it("IPv6 키는 줄여 쓴 꼴과 대소문자, 앞의 0을 풀어 맞추고 읽을 수 없는 값은 그대로 쓴다", () => {
+    expect(ipKey("203.0.113.7")).toBe("203.0.113.7");
+    expect(ipKey("2001:db8::1")).toBe("2001:db8:0:0::/64");
+    expect(ipKey("2001:DB8:0:0:1::2")).toBe("2001:db8:0:0::/64");
+    expect(ipKey("::1")).toBe("0:0:0:0::/64");
+    expect(ipKey("fe80::1%eth0")).toBe("fe80:0:0:0::/64");
+    for (const raw of ["::ffff:203.0.113.7", "1::2::3", "1:2:3:4:5:6:7:8:9", "2001:db8::xyz", "unknown"]) expect(ipKey(raw)).toBe(raw);
+  });
+
+  it("Riot이 답하지 않으면 정한 시간에 끊고 rso_failed로 돌려보낸다", async () => {
+    const t = withRso({}, { timeoutMs: 20 });
+    t.upstream.on(TOKEN_URL, never);
+    const callback = await t.call("GET", `/auth/rso/callback?code=riot-code&state=${await rsoState(t)}`);
+    expect(callback.headers.get("Location")).toBe("http://localhost/auth/done?error=rso_failed");
+    expect(t.upstream.callsTo(ACCOUNT_ME_URL)).toHaveLength(0);
+  });
+
   it("challenge 모양이 틀리면 받지 않는다", async () => {
     const t = withRso();
     const res = await t.call("GET", "/auth/rso/start?challenge=short");
@@ -383,6 +411,97 @@ describe("세션", () => {
     const user = await t.login();
     expect((await t.call("POST", "/auth/logout", user.token)).status).toBe(204);
     expect((await t.call("GET", "/me", user.token)).status).toBe(401);
+  });
+
+  it("한 사람의 세션은 최근 다섯만 남기고 로그인할 때 나머지를 지운다", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const t = setup();
+    const puuid = makePuuid();
+    const sessions = [];
+    for (let i = 0; i < 6; i++) {
+      sessions.push(await t.login("tester", puuid));
+      vi.advanceTimersByTime(1);
+    }
+    expect((await t.call("GET", "/me", sessions[0]!.token)).status).toBe(401);
+    for (const session of sessions.slice(1)) expect((await t.call("GET", "/me", session.token)).status).toBe(200);
+    // 다른 사람의 세션은 세지 않는다.
+    const other = await t.login();
+    expect((await t.call("GET", "/me", other.token)).status).toBe(200);
+    expect((await t.call("GET", "/me", sessions[1]!.token)).status).toBe(200);
+  });
+});
+
+describe("Riot ID 다시 읽기", () => {
+  const DAY = 24 * 60 * 60 * 1000;
+
+  async function friendNames(t: ReturnType<typeof setup>, token: string): Promise<string[]> {
+    const list = await (await t.call("GET", "/friends", token)).json<{ gameName: string; tagLine: string }[]>();
+    return list.map((friend) => `${friend.gameName}#${friend.tagLine}`);
+  }
+
+  it("로그인한 지 하루가 지나면 account-v1로 다시 읽어 친구 목록에도 새 이름이 뜬다", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const t = setup();
+    const renamed = await t.login("옛이름");
+    const friend = await t.login("friend");
+    await makeFriends(renamed, friend);
+    t.upstream.json(accountUrl(renamed.puuid), { puuid: renamed.puuid, gameName: "새이름", tagLine: "KR9" });
+
+    // 로그인할 때 받은 이름이라 하루 안에는 다시 읽지 않는다.
+    await t.call("GET", "/me", renamed.token);
+    expect(t.upstream.calls).toHaveLength(0);
+
+    vi.advanceTimersByTime(DAY);
+    expect((await t.call("GET", "/me", renamed.token)).status).toBe(200);
+    const [call] = t.upstream.callsTo(accountUrl(renamed.puuid));
+    expect(call!.headers.get("X-Riot-Token")).toBe("test-riot-key");
+    expect(await friendNames(t, friend.token)).toEqual(["새이름#KR9"]);
+    expect(await (await t.call("GET", "/me", renamed.token)).json()).toMatchObject({ gameName: "새이름", tagLine: "KR9" });
+  });
+
+  it("사람마다 하루에 한 번만 부르고 이름이 그대로면 D1에 쓰지 않는다", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const watched = watchDb(env.DB);
+    const t = setup({ DB: watched.db });
+    const user = await t.login("same");
+    t.upstream.json(accountUrl(user.puuid), { puuid: user.puuid, gameName: "same", tagLine: "KR1" });
+    const before = await env.DB.prepare("SELECT updated_at FROM users WHERE puuid = ?").bind(user.puuid).first();
+
+    vi.advanceTimersByTime(DAY);
+    const mark = watched.sql.length;
+    await t.call("GET", "/me", user.token);
+    await t.call("GET", "/friends", user.token);
+    await t.call("GET", "/pings", user.token);
+    expect(t.upstream.callsTo(accountUrl(user.puuid))).toHaveLength(1);
+    expect(watched.sql.slice(mark).filter((sql) => /^\s*UPDATE users/i.test(sql))).toEqual([]);
+    expect(await env.DB.prepare("SELECT updated_at FROM users WHERE puuid = ?").bind(user.puuid).first()).toEqual(before);
+
+    vi.advanceTimersByTime(DAY);
+    await t.call("GET", "/me", user.token);
+    expect(t.upstream.callsTo(accountUrl(user.puuid))).toHaveLength(2);
+  });
+
+  it("Riot이 실패하거나 모양이 틀린 값을 줘도 요청은 성공하고 이름은 그대로 둔다", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const t = setup();
+    const failed = await t.login("failed");
+    const blank = await t.login("blank");
+    const stranger = await t.login("stranger");
+    t.upstream.on(accountUrl(failed.puuid), () => new Response(null, { status: 503 }));
+    t.upstream.json(accountUrl(blank.puuid), { puuid: blank.puuid, gameName: "", tagLine: "KR1" });
+    t.upstream.json(accountUrl(stranger.puuid), { puuid: makePuuid(), gameName: "someone", tagLine: "KR1" });
+
+    vi.advanceTimersByTime(DAY);
+    for (const user of [failed, blank, stranger]) {
+      const res = await t.call("GET", "/me", user.token);
+      expect(res.status).toBe(200);
+      expect(await res.json()).toMatchObject({ gameName: user.gameName, tagLine: "KR1" });
+    }
+    for (const user of [failed, blank, stranger]) {
+      expect(await (await t.call("GET", "/me", user.token)).json()).toMatchObject({ gameName: user.gameName });
+    }
+    expect(errors).toHaveBeenCalledWith("riot_id", "Error");
   });
 });
 

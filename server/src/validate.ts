@@ -32,6 +32,22 @@ export function verifier(value: unknown): string {
   return value;
 }
 
+/** 콘텐츠 이름을 내려줄 언어입니다. 앱 화면 언어(한국어, 일본어)와 같습니다. */
+export const LOCALES = ["ko-KR", "ja-JP"] as const;
+export type Locale = (typeof LOCALES)[number];
+
+/**
+ * 빠지면 한국어입니다.
+ * 모르는 값은 400으로 막습니다.
+ * 받아 주면 값마다 Riot 콘텐츠를 따로 담아 캐시가 끝없이 늘어납니다.
+ */
+export function locale(value: string | undefined): Locale {
+  if (value === undefined) return "ko-KR";
+  const known = LOCALES.find((it) => it === value);
+  if (known === undefined) throw new ApiError(400, "invalid_locale");
+  return known;
+}
+
 export function text(value: unknown, maxLength: number, code: string): string {
   if (typeof value !== "string" || value.length === 0 || value.length > maxLength) throw new ApiError(400, code);
   return value;

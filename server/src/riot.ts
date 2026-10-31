@@ -1,12 +1,16 @@
 import type { Context } from "hono";
 import type { AppEnv, Env, User } from "./env";
 import { ApiError } from "./errors";
+import { spend } from "./limit";
 import { logFailure } from "./log";
 import { MemoryCache, Quota } from "./memory";
 import { redactMatch } from "./redact";
-import { send, throwIfBlocked } from "./upstream";
+import { sendText, throwIfBlocked } from "./upstream";
+import type { Locale } from "./validate";
 
 const RIOT_HOST = "https://kr.api.riotgames.com";
+// account-v1은 샤드가 아니라 지역 호스트에 있다.
+const ACCOUNT_HOST = "https://asia.api.riotgames.com";
 const DAY = 24 * 60 * 60;
 // 끝난 경기는 결과가 바뀌지 않는다.
 // 다시 받으면 레이트 리밋만 쓴다.
@@ -19,11 +23,13 @@ const MISSING_TTL = 10 * 60;
 const MB = 1024 * 1024;
 
 // isolate가 살아 있는 동안 요청끼리 나눠 쓴다.
-// isolate 메모리는 128MB라 캐시는 모두 합쳐 40MB 안쪽으로 두고 나머지는 요청을 처리하는 데 남긴다.
+// isolate 메모리는 128MB라 캐시는 모두 합쳐 45MB(콘텐츠 20MB, 점검 안내 1MB, 경기 24MB) 안쪽으로 두고 나머지는 요청을 처리하는 데 남긴다.
+// 없는 경기 ID는 빈 문자열이라 만 개를 담아도 1MB가 안 된다.
 // 경기 원문은 한 판에 800KB 안팎이라 글자당 2바이트로 세도 15판쯤 담긴다.
 // 가린 친구 경기도 matches에 같이 담아 원문과 함께 오래 안 꺼낸 것부터 버린다.
 const memory = {
-  content: new MemoryCache({ maxEntries: 1, maxBytes: 10 * MB }),
+  // 언어마다(ko-KR, ja-JP) 하나씩이다
+  content: new MemoryCache({ maxEntries: 2, maxBytes: 20 * MB }),
   status: new MemoryCache({ maxEntries: 1, maxBytes: 1 * MB }),
   matches: new MemoryCache({ maxEntries: Number.POSITIVE_INFINITY, maxBytes: 24 * MB }),
   missing: new MemoryCache({ maxEntries: 10_000, maxBytes: Number.POSITIVE_INFINITY }),
@@ -111,7 +117,7 @@ export class Riot {
 
   /** 내 경기 ID 목록입니다. 새 경기가 끝나자마자 보여야 해서 담아 두지 않습니다. */
   matchlist(): Promise<string> {
-    return this.fetchText(`/val/match/v1/matchlists/by-puuid/${this.caller.puuid}`, {
+    return this.fetchText(`${RIOT_HOST}/val/match/v1/matchlists/by-puuid/${this.caller.puuid}`, {
       quota: quotas.matchlist,
       key: String(this.caller.id),
     });
@@ -119,7 +125,7 @@ export class Riot {
 
   /** 친구의 경기 ID 목록입니다. 서로 친구이고 전적을 공개했는지는 부르는 쪽이 먼저 확인합니다. */
   friendMatchlist(puuid: string): Promise<string> {
-    return this.fetchText(`/val/match/v1/matchlists/by-puuid/${puuid}`, {
+    return this.fetchText(`${RIOT_HOST}/val/match/v1/matchlists/by-puuid/${puuid}`, {
       quota: quotas.friendMatchlist,
       key: `${this.caller.id}:${puuid}`,
     });
@@ -160,12 +166,20 @@ export class Riot {
     return body;
   }
 
-  content(): Promise<string> {
-    return this.cached(memory.content, "/val/content/v1/contents?locale=ko-KR", CONTENT_TTL);
+  content(locale: Locale): Promise<string> {
+    return this.cached(memory.content, `/val/content/v1/contents?locale=${locale}`, CONTENT_TTL);
   }
 
   status(): Promise<string> {
     return this.cached(memory.status, "/val/status/v1/platform-data", STATUS_TTL);
+  }
+
+  /**
+   * 요청한 사람의 지금 Riot ID(account-v1)입니다.
+   * 언제 다시 읽을지는 부르는 쪽(users.ts)이 정합니다.
+   */
+  account(): Promise<string> {
+    return this.fetchText(`${ACCOUNT_HOST}/riot/account/v1/accounts/by-puuid/${this.caller.puuid}`);
   }
 
   // recorded는 D1에 이미 적힌 참가자다.
@@ -177,7 +191,7 @@ export class Riot {
     if (hit !== undefined) return new RiotMatch(hit, undefined, recorded);
     let raw: string;
     try {
-      raw = await this.fetchText(path, { quota: quotas.matchDetails, key: String(this.caller.id) });
+      raw = await this.fetchText(`${RIOT_HOST}${path}`, { quota: quotas.matchDetails, key: String(this.caller.id) });
     } catch (err) {
       if (err instanceof ApiError && err.code === "not_found") memory.missing.set(path, "", MISSING_TTL);
       throw err;
@@ -226,19 +240,19 @@ export class Riot {
   private async cached(store: MemoryCache, path: string, ttlSeconds: number): Promise<string> {
     const hit = await this.lookup(store, path, ttlSeconds);
     if (hit !== undefined) return hit;
-    const raw = await this.fetchText(path);
+    const raw = await this.fetchText(`${RIOT_HOST}${path}`);
     await this.remember(store, path, raw, ttlSeconds).catch((err) => logFailure("riot_cache", err));
     return raw;
   }
 
   /**
-   * 같은 경로를 이미 받고 있으면 그 결과를 같이 기다립니다.
-   * 같이 기다리는 쪽은 사용자 몫을 쓰지 않고, 먼저 부른 쪽이 받은 Riot 실패(429, 404 등)도 같이 받습니다.
+   * 같은 주소를 이미 받고 있으면 그 결과를 같이 기다립니다.
+   * 같이 기다리는 쪽은 사용자 몫을 쓰지 않고, 먼저 부른 쪽이 받은 Riot 실패(429, 404, 시간 초과 등)도 같이 받습니다.
+   * 성공하든 실패하든 받기를 마치면 바로 빼서 다음 요청은 Riot에 다시 갑니다.
    */
-  private async fetchText(path: string, limit?: { quota: Quota; key: string }): Promise<string> {
+  private async fetchText(url: string, limit?: { quota: Quota; key: string }): Promise<string> {
     const apiKey = this.env.RIOT_API_KEY;
     if (!apiKey) throw new ApiError(503, "riot_key_missing");
-    const url = `${RIOT_HOST}${path}`;
     const joined = inflight.get(url);
     if (joined) return joined;
     // Riot이 막혀 있어 어차피 부르지 않을 요청으로 사용자 몫을 깎지 않는다.
@@ -248,7 +262,7 @@ export class Riot {
     const started = inflight.get(url);
     if (started) return started;
     if (limit) spend(limit.quota, limit.key);
-    const request = send(this.upstream, this.env.DB, url, { headers: { "X-Riot-Token": apiKey } }).then((res) => res.text());
+    const request = sendText(this.upstream, this.env.DB, url, { headers: { "X-Riot-Token": apiKey } });
     inflight.set(url, request);
     try {
       return await request;
@@ -282,11 +296,6 @@ export class Riot {
     const headers = { "Content-Type": "application/json", "Cache-Control": `max-age=${ttlSeconds}` };
     await caches.default.put(cacheKey(this.origin, path), new Response(body, { headers }));
   }
-}
-
-function spend(quota: Quota, key: string): void {
-  const retryAfter = quota.take(key);
-  if (retryAfter !== undefined) throw new ApiError(429, "too_many_requests", { "Retry-After": String(retryAfter) });
 }
 
 function parse(raw: string): MatchData {

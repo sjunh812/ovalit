@@ -43,7 +43,11 @@ export interface User {
 export interface AppEnv {
   Bindings: Env;
   Variables: {
-    /** Riot API, RSO, FCM을 부를 때 쓰는 `fetch`입니다. 테스트는 가짜로 바꿔 끼워 실제로 밖에 나가지 않습니다. */
+    /**
+     * Riot API, RSO, FCM을 부를 때 쓰는 `fetch`입니다.
+     * 정한 시간 안에 답하지 않으면 끊습니다(app.ts `upstreamFetch`).
+     * 테스트는 가짜로 바꿔 끼워 실제로 밖에 나가지 않습니다.
+     */
     upstream: typeof fetch;
     user: User;
     sessionHash: string;

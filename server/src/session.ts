@@ -2,12 +2,18 @@ import { createMiddleware } from "hono/factory";
 import { randomToken, sha256 } from "./crypto";
 import type { AppEnv } from "./env";
 import { ApiError } from "./errors";
+import { refreshRiotId } from "./users";
 
 const SESSION_TTL_MS = 90 * 24 * 60 * 60 * 1000;
 const BEARER = /^Bearer ([A-Za-z0-9_-]{43})$/;
 // 크론에 맡기지 않고 누가 로그인하든 만료된 세션을 같이 치운다.
 // 쌓인 게 많아도 요청 하나가 지우는 줄은 50개로 묶는다.
 const CLEANUP_LIMIT = 50;
+// 앱을 다시 깔거나 기기를 바꿔 다시 로그인하면 앱이 버린 옛 세션이 90일 동안 남는다.
+// 사람마다 최근 다섯만 두고 로그인할 때 나머지를 지운다.
+// 그 세션으로 맡긴 기기 토큰도 CASCADE로 같이 지워진다(migrations/0012).
+// 시작 기준선이다.
+const MAX_SESSIONS = 5;
 
 export async function createSession(db: D1Database, userId: number): Promise<{ token: string; expiresAt: number }> {
   const token = randomToken();
@@ -20,6 +26,12 @@ export async function createSession(db: D1Database, userId: number): Promise<{ t
     db
       .prepare("INSERT INTO sessions (token_hash, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)")
       .bind(await sha256(token), userId, now, expiresAt),
+    db
+      .prepare(
+        `DELETE FROM sessions WHERE user_id = ?1 AND token_hash NOT IN (
+           SELECT token_hash FROM sessions WHERE user_id = ?1 ORDER BY created_at DESC, rowid DESC LIMIT ?2)`,
+      )
+      .bind(userId, MAX_SESSIONS),
   ]);
   return { token, expiresAt };
 }
@@ -31,6 +43,7 @@ interface SessionRow {
   tag_line: string;
   stats_public: number;
   remind_before: number;
+  updated_at: number;
   expires_at: number;
 }
 
@@ -40,7 +53,7 @@ export const requireSession = createMiddleware<AppEnv>(async (c, next) => {
   if (!match) throw new ApiError(401, "unauthorized");
   const hash = await sha256(match[1]!);
   const row = await c.env.DB.prepare(
-    `SELECT u.id, u.puuid, u.game_name, u.tag_line, u.stats_public, u.remind_before, s.expires_at
+    `SELECT u.id, u.puuid, u.game_name, u.tag_line, u.stats_public, u.remind_before, u.updated_at, s.expires_at
      FROM sessions s JOIN users u ON u.id = s.user_id
      WHERE s.token_hash = ?`,
   )
@@ -60,5 +73,6 @@ export const requireSession = createMiddleware<AppEnv>(async (c, next) => {
     statsPublic: row.stats_public === 1,
     remindBefore: row.remind_before,
   });
+  refreshRiotId(c, row.updated_at);
   await next();
 });

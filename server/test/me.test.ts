@@ -1,6 +1,10 @@
 import { env } from "cloudflare:workers";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { setup, userId } from "./helpers";
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 async function count(sql: string, ...binds: unknown[]): Promise<number> {
   const row = await env.DB.prepare(sql).bind(...binds).first<{ n: number }>();
@@ -90,5 +94,34 @@ describe("내 계정", () => {
     expect((await t.call("GET", "/me", me.token)).status).toBe(401);
     // 상대 계정은 그대로 남는다.
     expect((await t.call("GET", "/me", friend.token)).status).toBe(200);
+  });
+
+  it("설정 바꾸기는 한 사람이 한 시간에 30번까지이고 넘으면 쓰지 않고 429다", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const t = setup();
+    const user = await t.login();
+    const other = await t.login();
+    for (let i = 0; i < 30; i++) expect((await t.call("PATCH", "/me", user.token, { statsPublic: i % 2 === 0 })).status).toBe(200);
+    const over = await t.call("PATCH", "/me", user.token, { statsPublic: true });
+    expect(over.status).toBe(429);
+    expect(await over.json()).toEqual({ error: "too_many_requests" });
+    expect(over.headers.get("Retry-After")).toBe("3600");
+    expect(await (await t.call("GET", "/me", user.token)).json()).toMatchObject({ statsPublic: false });
+    // 한도는 사람마다 따로 센다.
+    expect((await t.call("PATCH", "/me", other.token, { statsPublic: false })).status).toBe(200);
+    vi.advanceTimersByTime(60 * 60 * 1000);
+    expect((await t.call("PATCH", "/me", user.token, { statsPublic: true })).status).toBe(200);
+  });
+
+  it("기기 토큰 맡기기와 지우기는 합쳐서 한 시간에 30번까지다", async () => {
+    const t = setup();
+    const user = await t.login();
+    for (let i = 0; i < 15; i++) {
+      expect((await t.call("PUT", "/me/push-token", user.token, { token: `device-${i}` })).status).toBe(204);
+      expect((await t.call("DELETE", "/me/push-token", user.token, { token: `device-${i}` })).status).toBe(204);
+    }
+    const over = await t.call("PUT", "/me/push-token", user.token, { token: "device-over" });
+    expect(over.status).toBe(429);
+    expect(await count("SELECT COUNT(*) AS n FROM push_tokens WHERE token = ?", "device-over")).toBe(0);
   });
 });

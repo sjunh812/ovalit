@@ -22,7 +22,9 @@ let syncedAt = 0;
 
 /**
  * Riot으로 요청을 보내고 실패를 앱이 읽을 코드로 바꿉니다.
- * 429는 `Retry-After`를 붙인 503 `riot_rate_limited`이고, 404는 404 `not_found`, 401·403(우리 키 문제), 5xx, 연결 실패는 모두 502 `riot_unavailable`입니다.
+ * 429는 `Retry-After`를 붙인 503 `riot_rate_limited`이고 404는 404 `not_found`입니다.
+ * 401·403(우리 키 문제), 5xx, 연결 실패, 시간 초과는 모두 502 `riot_unavailable`입니다.
+ * 시간 초과는 `upstream`이 정합니다(app.ts `upstreamFetch`).
  *
  * 429는 `X-Rate-Limit-Type`에 따라 막는 범위가 다릅니다.
  * `application`은 우리 키의 몫이라 그 호스트 전체를, `method`는 그 경로만 `Retry-After`까지 막고 D1에 적어 다른 isolate도 부르지 않게 합니다.
@@ -43,6 +45,19 @@ export async function send(upstream: typeof fetch, db: D1Database, url: string, 
   if (res.status === 429) throw await rateLimitedBy(db, url, res);
   if (res.status === 404) throw new ApiError(404, "not_found");
   throw new ApiError(502, "riot_unavailable");
+}
+
+/**
+ * [send]처럼 보내고 본문까지 받습니다.
+ * 200을 받은 뒤 본문을 받다 끊기거나 시간이 지나도 502 `riot_unavailable`입니다.
+ */
+export async function sendText(upstream: typeof fetch, db: D1Database, url: string, init?: RequestInit): Promise<string> {
+  const res = await send(upstream, db, url, init);
+  try {
+    return await res.text();
+  } catch {
+    throw new ApiError(502, "riot_unavailable");
+  }
 }
 
 /**

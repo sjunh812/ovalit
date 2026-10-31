@@ -3,6 +3,7 @@ import { html } from "hono/html";
 import { randomToken, sha256 } from "../crypto";
 import type { AppEnv, Env } from "../env";
 import { ApiError } from "../errors";
+import { spend } from "../limit";
 import { logFailure } from "../log";
 import { Quota } from "../memory";
 import { appIntent, appPage } from "../page";
@@ -52,8 +53,31 @@ function rsoConfig(env: Env): { client: { id: string; secret: string }; stateSec
 }
 
 function spendIp(c: Context, route: string): void {
-  const retryAfter = perIp.take(`${route}:${c.req.header("CF-Connecting-IP") ?? "unknown"}`);
-  if (retryAfter !== undefined) throw new ApiError(429, "too_many_requests", { "Retry-After": String(retryAfter) });
+  spend(perIp, `${route}:${ipKey(c.req.header("CF-Connecting-IP") ?? "unknown")}`);
+}
+
+/**
+ * IPv4는 주소 그대로, IPv6는 앞 64비트(/64)로 셉니다.
+ * IPv6는 기기 하나가 /64 안에서 주소를 마음대로 바꿔 쓸 수 있어 주소마다 세면 한도가 없는 것과 같습니다.
+ * 읽을 수 없는 값은 받은 그대로 셉니다.
+ */
+export function ipKey(ip: string): string {
+  if (!ip.includes(":")) return ip;
+  const groups = ipv6Groups(ip.split("%")[0]!.toLowerCase());
+  return groups ? `${groups.slice(0, 4).join(":")}::/64` : ip;
+}
+
+// 줄여 쓴 ::를 풀어 16비트 묶음 여덟 개를 앞의 0 없이 돌려준다.
+// 같은 주소를 달리 적어도 같은 키가 되게 한다.
+function ipv6Groups(address: string): string[] | undefined {
+  const halves = address.split("::");
+  if (halves.length > 2) return undefined;
+  const [head = [], tail = []] = halves.map((half) => (half === "" ? [] : half.split(":")));
+  const missing = 8 - head.length - tail.length;
+  if (halves.length === 1 ? missing !== 0 : missing < 1) return undefined;
+  const groups = [...head, ...Array<string>(missing).fill("0"), ...tail];
+  if (!groups.every((group) => /^[0-9a-f]{1,4}$/.test(group))) return undefined;
+  return groups.map((group) => Number.parseInt(group, 16).toString(16));
 }
 
 function callbackUrl(c: Context): string {
@@ -174,6 +198,8 @@ auth.post("/dev", async (c) => {
   return c.json(await createSession(c.env.DB, userId), 200, NO_STORE);
 });
 
+// 이 세션으로 맡긴 기기 토큰도 CASCADE로 같이 지워진다(migrations/0012).
+// 로그아웃한 기기에 친구 이름이 담긴 알림이 가지 않는다.
 auth.post("/logout", requireSession, async (c) => {
   await c.env.DB.prepare("DELETE FROM sessions WHERE token_hash = ?").bind(c.var.sessionHash).run();
   return c.body(null, 204);

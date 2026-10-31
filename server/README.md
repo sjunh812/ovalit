@@ -53,12 +53,13 @@ npm run typecheck
 ## 엔드포인트
 
 응답은 JSON입니다. 실패하면 `{ "error": "<코드>" }`가 옵니다. 세션은
-`Authorization: Bearer <token>` 헤더로 보냅니다.
+`Authorization: Bearer <token>` 헤더로 보냅니다. 요청 본문은 16KB까지이고 넘으면 읽지 않고 413
+`payload_too_large`입니다.
 
 | 메서드 | 경로 | 세션 | 하는 일 |
 | --- | --- | --- | --- |
 | GET | `/health` | | 살아 있는지 |
-| GET | `/content/tiers` | | 티어 번호 → 한글 이름 |
+| GET | `/content/tiers?locale=` | | 티어 번호 → 이름. `locale`은 `ko-KR`(빠지면 이것), `ja-JP`이고 다른 값은 400 `invalid_locale`입니다 |
 | GET | `/content/roles` | | 요원 UUID(소문자) → `duelist` · `initiator` · `controller` · `sentinel` |
 | GET | `/i/:code` | | 초대 링크를 브라우저에서 열었을 때 보이는 쪽 |
 | GET | `/auth/rso/start?challenge=` | | Riot 로그인으로 보냅니다. D1에 쓰지 않습니다 |
@@ -67,13 +68,15 @@ npm run typecheck
 | GET | `/.well-known/assetlinks.json` | | App Link 검증 파일. `ANDROID_CERT_SHA256`이 없으면 404 |
 | POST | `/auth/session` | | `{code, verifier}` → `{token, expiresAt}` |
 | POST | `/auth/dev` | | 로컬 전용. `{puuid, gameName, tagLine}` → `{token, expiresAt}`. RSO 비밀값이 있으면 404 |
-| POST | `/auth/logout` | 필요 | 이 세션을 끊습니다 |
+| POST | `/auth/logout` | 필요 | 이 세션을 끊습니다. 이 세션으로 맡긴 기기 토큰도 같이 지워집니다 |
 | GET | `/me` | 필요 | `{puuid, gameName, tagLine, statsPublic, remindBefore}` |
-| PATCH | `/me` | 필요 | `{statsPublic?, remindBefore?}` → `GET /me`와 같은 모양. 보낸 값만 바꾸고 하나도 없으면 400입니다. `remindBefore`는 시작 몇 분 전에 알릴지이고 0, 10, 30, 60만 받습니다(0은 받지 않기) |
+| PATCH | `/me` | 필요 | `{statsPublic?, remindBefore?}` → `GET /me`와 같은 모양. 보낸 값만 바꾸고 하나도 없으면 400입니다. `remindBefore`는 시작 몇 분 전에 알릴지이고 0, 10, 30, 60만 받습니다(0은 받지 않기). 한 시간에 30번까지 |
 | DELETE | `/me` | 필요 | 연동 해제. 세션, 친구, 요청, 초대, 오발있, 기기 토큰이 같이 지워집니다. 띄워 둔 오발있이 살아 있으면 불린 친구에게 `ping_cancel`이 갑니다 |
-| PUT | `/me/push-token` | 필요 | `{token}`. FCM 기기 토큰을 등록합니다. 다른 계정이 쓰던 토큰이면 옮겨 오고 사람마다 최근 셋만 둡니다 |
-| DELETE | `/me/push-token` | 필요 | `{token}`. 내 토큰일 때만 지우고 없어도 204입니다. 로그아웃하기 전에 부릅니다 |
-| GET | `/content` | 필요 | VAL-CONTENT(ko-KR). 6시간 담아 둡니다 |
+| PUT | `/me/push-token` | 필요 | `{token}`. FCM 기기 토큰을 이 세션에 묶어 등록합니다. 다른 계정이나 세션이 쓰던 토큰이면 옮겨 오고 사람마다 최근 셋만 둡니다. 로그아웃하거나 세션이 끝나면 같이 지워집니다. `DELETE`와 합쳐 한 시간에 30번까지 |
+| DELETE | `/me/push-token` | 필요 | `{token}`. 내 토큰일 때만 지우고 없어도 204입니다. 로그아웃하면 서버가 같이 지우니 알림만 끌 때 부릅니다 |
+| PUT | `/me/summaries/:week` | 필요 | `{rows: [{act, queue, matches, rounds, kills, deaths, assists, score, damage, head, body, leg}]}`. 그 주(월요일, YYYY-MM-DD) 고정 칸 합계를 통째로 바꿉니다. `queue`는 `competitive`, `unrated`이고 합계만 받습니다. 같은 값이면 쓰지 않습니다. 한 시간에 30번까지 |
+| GET | `/friends/summaries?since=` | 필요 | 서로 수락한 친구 중 전적을 공개한 친구의 주간 요약. `since`(월요일)부터이고 빠지면 10주 전부터입니다 |
+| GET | `/content?locale=` | 필요 | VAL-CONTENT. `locale`은 `/content/tiers`와 같고 언어마다 따로 6시간 담아 둡니다 |
 | GET | `/status` | 필요 | VAL-STATUS. 60초 담아 둡니다 |
 | GET | `/riot/matchlist` | 필요 | 내 경기 ID 목록. 담아 두지 않고 10초에 한 번만 Riot에 갑니다 |
 | GET | `/riot/matches/:matchId` | 필요 | 내가 뛴 경기만. 30일 담아 둡니다 |
@@ -92,7 +95,7 @@ npm run typecheck
 | POST | `/pings` | 필요 | `{friends: [puuid], startsAt}` → 201 `{ping}`. 서로 수락한 친구를 1~4명 부릅니다 |
 | POST | `/pings/:id/reply` | 필요 | `{answer, proposedAt?}` → `{ping}`. 불려 간 친구만 |
 | POST | `/pings/:id/time` | 필요 | `{startsAt}` → `{ping}`. 호스트만 |
-| POST | `/pings/:id/members` | 필요 | `{friends: [puuid]}` → `{ping}`. 호스트만. 못 간다고 한 사람을 뺀 인원이 넷까지. 넘으면 409 `ping_full`, 이미 부른 친구면 409 `already_invited`. 더한 친구에게만 `ping_new` |
+| POST | `/pings/:id/members` | 필요 | `{friends: [puuid]}` → `{ping}`. 호스트만. 못 간다고 한 사람을 뺀 인원이 넷까지. 넘으면 409 `ping_full`, 이미 부른 친구면 409 `already_invited`. 모두 들어가거나 하나도 안 들어가서 그사이 그중 한 명이라도 불렸으면 아무도 더하지 않고 409 `already_invited`. 더한 친구에게만 `ping_new` |
 | DELETE | `/pings/:id` | 필요 | 호스트만. 취소하면 아무에게도 보이지 않습니다 |
 
 이미 친구인 사람에게 요청하면 스코어보드 쪽(`POST /friends/requests`)은 409 `already_friends`, 초대 링크 쪽은
@@ -141,7 +144,7 @@ Ping = {
 | 403 | `not_friend` | 부른 사람 중에 서로 수락한 친구가 아닌 사람이 있을 때 |
 | 404 | `not_found` | 없거나, 취소했거나, 끝났거나, 내가 대답하거나 고칠 수 있는 오발있이 아닐 때 |
 | 409 | `ping_active` | 띄운 오발있이 아직 끝나지 않았을 때 |
-| 429 | `too_many_requests` | 24시간 동안 열 번 띄웠을 때. `Retry-After`(초)가 지나면 한 번 더 띄울 수 있습니다 |
+| 429 | `too_many_requests` | 24시간 동안 열 번 띄웠을 때. `Retry-After`(초)가 지나면 한 번 더 띄울 수 있습니다. 띄우기, 대답, 시간 바꾸기, 더 부르기, 취소를 합쳐 한 시간에 60번 넘게 불러도 같습니다 |
 
 알림은 FCM data 메시지라 값이 모두 문자열입니다. 시각도 epoch ms를 문자열로 보냅니다. 오발있 알림은 `HIGH`에
 TTL 1시간이고 주간 리포트는 `NORMAL`입니다. 이름 목록은 쉼표로 잇고 빈칸을 두지 않습니다.
@@ -154,10 +157,22 @@ TTL 1시간이고 주간 리포트는 `NORMAL`입니다. 이름 목록은 쉼표
 | `ping_cancel` | 불려 간 친구. 호스트가 취소하거나 연동을 해제했을 때 | `pingId`, `hostName` |
 | `ping_remind` | 호스트와 `yes`인 친구 | `pingId`, `startsAt`, `names`(호스트, `yes`인 친구 순서) |
 | `weekly_report` | `weekly_report` 주제를 구독한 기기 | 없음 |
+| `friend_request` | 친구 요청을 받은 사람. 새로 들어간 요청일 때만(스코어보드, 초대 링크) | `name`(보낸 사람 이름) |
+| `friend_accept` | 친구 요청을 보낸 사람. 상대가 수락했을 때 | `name`(수락한 사람 이름) |
 
 `ping_remind`는 시작 10분 전 안쪽에서 한 번만 갑니다. 아무도 `yes`가 아니면 보내지 않습니다. 시간을 바꾸면 새
 시각으로 다시 한 번 갑니다. 알림이 실패해도 API 요청은 성공하고 알림은 응답을 보낸 뒤에 나갑니다. FCM이 받을 수
-없다고 한 토큰(404, `UNREGISTERED`, 토큰 형식이 틀린 `INVALID_ARGUMENT`)은 지웁니다.
+없다고 한 토큰(404, `UNREGISTERED`, 토큰 형식이 틀린 `INVALID_ARGUMENT`, 다른 Firebase 프로젝트의 `SENDER_ID_MISMATCH`)은
+지웁니다. 로그아웃하거나 세션이 끝나면 그 세션으로 맡긴 토큰도 지웁니다.
+
+같은 사람에게 너무 자주 가는 알림은 보내지 않습니다. API는 그대로 하고 알림만 뺍니다. 숫자는 시작 기준선이고 isolate
+메모리로 셉니다.
+
+| 알림 | 한도 |
+| --- | --- |
+| `ping_new`, `ping_reply`, `ping_time` | 오발있 하나에서 한 사람에게 한 시간에 20번 |
+| `friend_request` | 같은 사람이 보낸 것은 24시간에 한 번. 거절당한 뒤 다시 보낸 요청도 들어가지만 알리지 않습니다 |
+| `ping_cancel`, `ping_remind`, `friend_accept`, `weekly_report` | 세지 않습니다. 오발있이나 요청마다 한 번뿐입니다 |
 
 `/cards/{uuid}_small.png`와 `/cards/{uuid}_wide.png`는 Worker를 거치지 않는 정적 파일입니다.
 `public/cards/`는 저장소에 없고 아래 스크립트로 채웁니다.
@@ -192,9 +207,12 @@ Riot이 돌려준 실패는 이렇게 바꿔 보냅니다.
 | Riot | 우리 응답 |
 | --- | --- |
 | 429 | 503 `riot_rate_limited`. Riot이 준 `Retry-After`를 붙이고 없으면 10초(`service`는 5초)를 붙입니다 |
-| 401, 403, 5xx, 연결 실패 | 502 `riot_unavailable` |
+| 401, 403, 5xx, 연결 실패, 8초 안에 답이 없음, 200 뒤 본문이 끊김 | 502 `riot_unavailable` |
 | 404 | 404 `not_found` |
 | 키 없음 | 503 `riot_key_missing` |
+
+Riot, RSO, FCM 요청은 모두 8초 안에 답하지 않으면 끊습니다(`src/app.ts`). 같은 Riot 경로를 같이 기다리던 요청도
+같은 502를 받고 다음 요청은 Riot에 다시 갑니다.
 
 429를 받은 뒤에는 `Retry-After`가 지날 때까지 막힌 범위로 가는 요청을 Riot에 보내지 않고 바로 같은 503을
 돌려줍니다. 막힌 동안 계속 부르면 앱 전체의 몫이 더 깎이고 되풀이하면 키가 막힐 수 있습니다. 범위는 Riot이 준
@@ -207,7 +225,9 @@ Riot이 돌려준 실패는 이렇게 바꿔 보냅니다.
 | `service`, 없음 | 그 경로 틀. Riot 쪽 서비스가 바쁜 것이라 우리 몫과 상관없습니다 | 이 isolate만 |
 
 D1에는 429를 받을 때만 한 줄 씁니다. isolate는 Riot을 부르기 전에 5초에 한 번까지만 읽어서 다른 isolate가 막힌 걸
-알기까지 5초가 걸릴 수 있습니다. 풀린 줄은 5분마다 크론이 지워서 평소에는 빈 표를 읽습니다.
+알기까지 5초가 걸릴 수 있습니다. 풀린 줄은 5분마다 크론이 지워서 평소에는 빈 표를 읽습니다. RSO 콜백은 세션 없이
+열려 있지만 Riot 429를 받으면 여기에 한 줄 씁니다. 로그인을 마치는 것 말고 세션 없는 경로가 D1에 쓰는 건 이것뿐이고,
+막힌 범위마다 한 줄을 덮어써서 늘지 않습니다.
 
 ### 로그인
 
@@ -216,9 +236,16 @@ RSO state는 D1에 두지 않고 `STATE_SECRET`으로 서명해 Riot에 실어 �
 보고 같은 state를 두 번 받지 않습니다. 이건 isolate 메모리로 막는데, 다른 isolate로 가도 Riot 인가 코드가 한 번만
 쓰여 로그인 코드가 두 번 나오지 않습니다.
 
-로그인 시작과 콜백은 IP마다 1분에 20번까지입니다. 시작은 넘기면 429 `too_many_requests`에 `Retry-After`를 주고
+로그인 시작과 콜백은 IP마다 1분에 20번까지입니다. IPv6는 앞 64비트(/64)마다 셉니다. 시작은 넘기면 429 `too_many_requests`에 `Retry-After`를 주고
 콜백은 Custom Tabs 안이라 `/auth/done?error=too_many_requests`로 돌려보냅니다. 콜백이 앱에 넘기는 `error`는
 `access_denied`, `invalid_state`, `riot_rate_limited`, `rso_not_configured`, `too_many_requests`, `rso_failed`입니다.
+
+세션은 사람마다 최근 다섯만 둡니다. 여섯 번째로 로그인하면 가장 오래된 세션과 그 세션으로 맡긴 기기 토큰이 지워집니다.
+
+Riot ID는 로그인할 때 받고, 그 뒤로는 세션으로 들어온 요청이 하루에 한 번 account-v1
+(`asia.api.riotgames.com/riot/account/v1/accounts/by-puuid/{puuid}`)로 다시 읽어 바뀌었을 때만 덮어씁니다. 닉네임을 바꾼
+사람의 옛 이름이 친구 목록, 요청, 오발있, 알림에 남지 않게 합니다. 응답을 기다리게 하지 않고 뒤에서 하며, 이름이 그대로면
+D1에 쓰지 않고, 실패하면 이름만 로그에 남깁니다.
 
 ### 호출 한도
 
@@ -230,6 +257,17 @@ Riot 레이트 리밋은 앱 전체에 걸려서 한 사람이 몰아 부르면 
 | 내 경기 ID 목록 | 10초에 한 번 |
 | 친구 경기 ID 목록 | 같은 친구는 1분에 한 번. 앱의 규칙과 같습니다 |
 | 캐시에 없어 Riot에 가는 경기 상세 | 1분에 120번. 첫 수집 50경기는 걸리지 않습니다 |
+| Riot ID 다시 읽기(account-v1) | 하루에 한 번. 로그인하거나 이름이 바뀐 지 하루가 지난 뒤부터. 넘어도 429가 아니라 부르지 않을 뿐입니다 |
+
+D1에 쓰는 경로도 사람마다 셉니다. D1 하루 쓰기 한도는 모두의 로그인과 같이 쓰니 계정 하나가 다 쓰지 못하게 합니다.
+넘기면 본문을 읽기 전에 429 `too_many_requests`에 `Retry-After`(초)를 붙여 돌려줍니다. 숫자는 시작 기준선입니다.
+
+| 무엇 | 한도 |
+| --- | --- |
+| `PATCH /me` | 한 시간에 30번 |
+| `PUT`, `DELETE /me/push-token` | 합쳐서 한 시간에 30번 |
+| `PUT /me/summaries/:week` | 한 시간에 30번 |
+| `POST /pings`, `/pings/:id/reply`, `/pings/:id/time`, `/pings/:id/members`, `DELETE /pings/:id` | 합쳐서 한 시간에 60번 |
 
 Riot이 404를 준 경기 ID는 10분 동안 기억해 두고 다시 묻지 않습니다. 그래야 아무 ID나 넣은 요청이 그때마다 Riot
 몫을 쓰지 않습니다.
@@ -249,8 +287,8 @@ Riot이 404를 준 경기 ID는 10분 동안 기억해 두고 다시 묻지 않�
 | --- | --- | --- |
 | Worker 요청 | 하루 100,000 | 첫 수집 한 번이 약 51건(경기 목록 1 + 경기 50) |
 | 요청당 CPU | 10ms | 가장 무거운 건 친구 경기 가리기. 800KB 경기로 재 보니 이 맥에서 약 3ms. 가린 결과는 메모리에 담아 다시 가리지 않습니다 |
-| 요청당 하위 요청 | 50 | 많아야 2건(RSO 콜백) |
-| 요청당 D1 쿼리 | 50 | 많아야 8건(스코어보드 친구 요청에서 Riot까지 갈 때) |
+| 요청당 하위 요청 | 50 | 알림 말고는 많아야 2건(RSO 콜백, 또는 Riot을 부르는 요청에 Riot ID 다시 읽기가 붙을 때). 알림은 40건 안 |
+| 요청당 D1 쿼리 | 50 | 알림 말고는 많아야 10건(스코어보드 친구 요청이 Riot까지 가서 한도에 걸리고, 같은 요청이 다시 읽은 Riot ID가 바뀌었을 때) |
 | D1 크기 | DB당 500MB | 사용자, 세션, 친구 관계와 경기 참가자. 경기 원문은 두지 않습니다. 참가자는 경기당 약 1KB이고 10주 지나면 지웁니다. 10주 동안 50만 경기쯤 들어갑니다 |
 | D1 쓰기 | 하루 10만 행 | 새 경기 하나에 2행(경기 한 줄과 색인), 10주 뒤 지울 때 1행. 첫 수집 한 번이 100행입니다(2026-10-10, 로컬 D1의 `rows_written`) |
 | D1 읽기 | 하루 500만 행 | 참가자 확인 한 번에 1행. Riot을 부르는 isolate마다 5초에 한 번 `riot_blocks`를 읽습니다(평소 빈 표) |
@@ -260,7 +298,8 @@ Riot이 404를 준 경기 ID는 10분 동안 기억해 두고 다시 묻지 않�
 D1 한도는 00:00 UTC에 초기화됩니다. KV는 하루 쓰기가 1,000번뿐이라 쓰지 않습니다. R2는 카드 등록이
 필요해서 쓰지 않습니다.
 
-만료된 세션과 초대는 누가 로그인하거나 링크를 만들 때 한 번에 50줄까지 같이 지웁니다.
+만료된 세션과 초대는 누가 로그인하거나 링크를 만들 때 한 번에 50줄까지 같이 지웁니다. 로그인한 사람의 세션은 최근
+다섯만 남깁니다.
 `expires_at` 색인이 있어 지울 게 없으면 거의 읽지 않습니다. 색인 때문에 세션과 초대를 한 줄 넣을 때 쓰는 행이
 하나씩 늘어납니다.
 
@@ -270,7 +309,8 @@ D1 한도는 00:00 UTC에 초기화됩니다. KV는 하루 쓰기가 1,000번뿐
 
 - `*/5 * * * *`: 10분 안에 시작하는 오발있을 알리고, 끝나고 하루가 지난 오발있을 한 번에 100개까지 지웁니다. 하루
   288번 돕니다. 하루 열 번 한도를 띄운 줄로 세서 끝나자마자 지우지 않습니다. 적은 지 10주가 지난 경기 참가자도 한 번에
-  100경기까지 지우고 풀린 Riot 429 차단도 지웁니다.
+  100경기까지 지우고 풀린 Riot 429 차단도 지웁니다. 지우기와 알리기는 따로 돌아 하나가 실패해도 다른 하나는 하고,
+  실패는 이름만 남긴 채 5분 뒤에 다시 합니다.
 - `0 0 * * 1`: 월요일 00:00 UTC, 한국 시각 월요일 오전 9시에 지난주 리포트 알림을 보냅니다. 주제 메시지 하나라 사용자
   수와 상관없이 일주일에 FCM 요청 한 번입니다.
 
@@ -297,8 +337,8 @@ Riot 응답은 isolate 메모리, Cache API, Riot 순서로 찾습니다.
 
 - Cache API는 사용자 정의 도메인에 붙인 Worker에서만 실제로 담깁니다. `*.workers.dev`에서는 아무것도
   담기지 않습니다. 도메인은 돈이 들어서 붙이지 않았습니다.
-- 그래서 앞에 isolate 메모리 캐시를 둡니다. 콘텐츠 1개(6시간), 점검 안내 1개(60초), 끝난 경기는 합쳐서
-  24MB까지 오래 안 꺼낸 것부터 버립니다. 글자당 2바이트로 세서 800KB 경기가 15판쯤 들어갑니다. isolate가
+- 그래서 앞에 isolate 메모리 캐시를 둡니다. 콘텐츠는 언어마다 1개(6시간, 둘이 합쳐 20MB까지), 점검 안내 1개(60초),
+  끝난 경기는 합쳐서 24MB까지 오래 안 꺼낸 것부터 버립니다. 글자당 2바이트로 세서 800KB 경기가 15판쯤 들어갑니다. isolate가
   내려가거나 요청이 다른 데이터센터로 가면 비므로 없을 수 있다고 보고 씁니다.
 - 내가 안 뛴 친구 경기를 가린 결과도 같은 24MB에 (경기, 친구)로 담습니다. 보는 사람이 경기에 없으면 누가 보든
   결과가 같아서, 같은 친구의 경기를 여럿이 열어도 한 번만 가립니다.
@@ -314,12 +354,12 @@ Riot 응답은 isolate 메모리, Cache API, Riot 순서로 찾습니다.
 
 ## 표와 카드 다시 만들기
 
-티어 이름과 요원 역할은 Riot 공식 자료에 없어서 valorant-api.com의 ko-KR 덤프로 만듭니다. 새 요원이
-나오거나 티어가 바뀌면 다시 돌리고 결과를 커밋합니다.
+티어 이름과 요원 역할은 Riot 공식 자료에 없어서 valorant-api.com의 덤프로 만듭니다. 티어는 ko-KR과 ja-JP
+덤프를 하나씩 넘깁니다. 새 요원이 나오거나 티어가 바뀌면 다시 돌리고 결과를 커밋합니다.
 새 요원이나 티어가 나오면 매일 도는 Content watch가 `content-watch` 이슈로 알려 줍니다(`docs/CONVENTIONS.md`).
 
 ```bash
-npm run build:tables -- <agents.json> <competitivetiers.json>
+npm run build:tables -- <agents.json> <competitivetiers-ko.json> <competitivetiers-ja.json>
 ```
 
 플레이어 카드는 콘텐츠 카탈로그 압축 파일에서 꺼냅니다. 시스템 `unzip`을 씁니다.

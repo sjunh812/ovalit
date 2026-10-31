@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
-import { describe, expect, it } from "vitest";
-import { addFriends, makeFriends, sendRequestRow, setup, type TestUser, userId } from "./helpers";
+import { beforeAll, describe, expect, it } from "vitest";
+import { addFriends, makeFriends, sendRequestRow, setup, type TestUser, userId, watchDb } from "./helpers";
+import { fakeFcm, fcmServiceAccount, registerToken } from "./push-helpers";
 
 type T = ReturnType<typeof setup>;
 
@@ -8,6 +9,11 @@ async function invite(t: T, user: TestUser) {
   const res = await t.call("POST", "/invites", user.token);
   expect(res.status).toBe(201);
   return res.json<{ code: string; url: string; expiresAt: number }>();
+}
+
+async function requestsToday(user: TestUser): Promise<number> {
+  const row = await env.DB.prepare("SELECT requests_today FROM users WHERE puuid = ?").bind(user.puuid).first<{ requests_today: number }>();
+  return row!.requests_today;
 }
 
 async function uses(code: string): Promise<number> {
@@ -116,6 +122,55 @@ describe("초대 링크", () => {
     await t.call("POST", `/invites/${code}/redeem`, guest.token);
     await t.call("POST", `/invites/${code}/redeem`, guest.token);
     expect(await uses(code)).toBe(1);
+  });
+
+  it("같은 사람이 링크를 동시에 두 번 눌러도 하루 횟수와 링크 횟수는 한 번만 센다", async () => {
+    const t = setup();
+    const inviter = await t.login();
+    const guest = await t.login();
+    const { code } = await invite(t, inviter);
+    const [guestId, inviterId] = [await userId(guest.puuid), await userId(inviter.puuid)];
+    const today = Math.floor(Date.now() / (24 * 60 * 60 * 1000));
+    // 이 요청이 관계를 확인한 뒤 넣기 직전에 같은 요청이 먼저 들어가 센 것처럼 만든다
+    t.env.DB = watchDb(env.DB, {
+      beforeSql: {
+        pattern: /^\s*INSERT INTO friend_requests/,
+        run: () =>
+          env.DB.batch([
+            env.DB.prepare("INSERT INTO friend_requests (from_user, to_user, source, created_at) VALUES (?, ?, 'invite_link', ?)").bind(
+              guestId,
+              inviterId,
+              Date.now(),
+            ),
+            env.DB.prepare("UPDATE users SET requests_day = ?, requests_today = 1 WHERE id = ?").bind(today, guestId),
+            env.DB.prepare("UPDATE invites SET uses = 1 WHERE code = ?").bind(code),
+          ]),
+      },
+    }).db;
+
+    const res = await t.call("POST", `/invites/${code}/redeem`, guest.token);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ status: "requested" });
+    expect(await uses(code)).toBe(1);
+    expect(await requestsToday(guest)).toBe(1);
+  });
+
+  it("그사이 링크를 다 썼으면 410이고 하루 횟수도 쓰지 않는다", async () => {
+    const t = setup();
+    const inviter = await t.login();
+    const guest = await t.login();
+    const { code } = await invite(t, inviter);
+    t.env.DB = watchDb(env.DB, {
+      beforeSql: {
+        pattern: /^\s*INSERT INTO friend_requests/,
+        run: () => env.DB.prepare("UPDATE invites SET uses = 20 WHERE code = ?").bind(code).run(),
+      },
+    }).db;
+
+    const res = await t.call("POST", `/invites/${code}/redeem`, guest.token);
+    expect(res.status).toBe(410);
+    expect(await res.json()).toEqual({ error: "invite_used_up" });
+    expect(await requestsToday(guest)).toBe(0);
   });
 
   // 한도에 걸린 사람이 거듭 눌러 남의 링크를 다 쓰게 하지 못한다
@@ -231,5 +286,32 @@ describe("초대 링크", () => {
     const t = setup();
     const res = await t.call("GET", "/i/%3Cscript%3E");
     expect(res.status).toBe(404);
+  });
+});
+
+describe("초대 링크 친구 요청 알림", () => {
+  let serviceAccount: string;
+
+  beforeAll(async () => {
+    ({ serviceAccount } = await fcmServiceAccount());
+  });
+
+  it("링크로 새 요청이 가면 링크를 만든 사람에게 알리고 이미 친구가 누르면 알리지 않는다", async () => {
+    const t = setup({ FCM_SERVICE_ACCOUNT: serviceAccount });
+    const sent = fakeFcm(t);
+    const inviter = await t.login("inviter");
+    const guest = await t.login("guest");
+    const friend = await t.login("friend");
+    await makeFriends(inviter, friend);
+    const phone = await registerToken(t, inviter);
+    const { code } = await invite(t, inviter);
+
+    expect((await t.call("POST", `/invites/${code}/redeem`, guest.token)).status).toBe(201);
+    expect(sent).toEqual([{ token: phone, data: { type: "friend_request", name: "guest" }, android: expect.anything() }]);
+
+    sent.length = 0;
+    await t.call("POST", `/invites/${code}/redeem`, guest.token);
+    await t.call("POST", `/invites/${code}/redeem`, friend.token);
+    expect(sent).toEqual([]);
   });
 });

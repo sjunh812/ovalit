@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { randomToken } from "../crypto";
 import type { AppEnv } from "../env";
 import { ApiError } from "../errors";
+import { perUser } from "../limit";
 import { notify } from "../push";
 import { requireSession } from "../session";
 import * as validate from "../validate";
@@ -18,6 +19,11 @@ const MAX_LEAD_MS = DAY_MS;
 // 부를 때마다 친구들에게 알림이 가서 하루 열 번까지만 띄운다.
 // isolate 메모리는 비워질 수 있어 D1의 줄로 센다.
 const DAILY_LIMIT = 10;
+// 띄우기, 대답, 시간 바꾸기, 더 부르기, 취소를 사람마다 합쳐 센다.
+// 띄우기는 하루 열 번이지만 대답과 시간 바꾸기는 몇 번이든 D1에 쓰고 알림을 보내서 계정 하나가 되풀이해 부르지 못하게 한다.
+// 하루에 몇 번 쓰는 기능이라 사람이 누르는 속도로는 닿지 않게 넉넉히 둔다.
+// 시작 기준선이다.
+const pingWrites = perUser(60, 60 * MINUTE_MS);
 // randomToken(16)이 만드는 base64url 22자다.
 const PING_ID = /^[A-Za-z0-9_-]{22}$/;
 const ANSWERS = new Set(["yes", "no", "other_time"]);
@@ -96,7 +102,7 @@ pings.get("/", async (c) => {
   return c.json({ pings: toPings(results, c.var.user.id) });
 });
 
-pings.post("/", async (c) => {
+pings.post("/", pingWrites, async (c) => {
   const body = await validate.jsonBody(c);
   const me = c.var.user;
   const puuids = friendList(body.friends, me.puuid);
@@ -158,7 +164,7 @@ pings.post("/", async (c) => {
   return c.json({ ping: await pingById(db, id, me.id) }, 201);
 });
 
-pings.post("/:id/reply", async (c) => {
+pings.post("/:id/reply", pingWrites, async (c) => {
   const id = pingId(c.req.param("id"));
   const body = await validate.jsonBody(c);
   const answer = body.answer;
@@ -214,7 +220,7 @@ pings.post("/:id/reply", async (c) => {
  * 그 시각을 제안한 친구는 가기로 한 것으로 바꾸고, 나머지는 가기로 했던 친구까지 모두 다시 묻습니다.
  * 시각이 바뀌면 전에 한 대답이 그대로 맞는지 알 수 없습니다.
  */
-pings.post("/:id/time", async (c) => {
+pings.post("/:id/time", pingWrites, async (c) => {
   const id = pingId(c.req.param("id"));
   const body = await validate.jsonBody(c);
   const now = Date.now();
@@ -265,7 +271,7 @@ pings.post("/:id/time", async (c) => {
  * 못 간다고 한 사람은 자리를 비운 것으로 쳐서 그 사람을 뺀 인원이 넷을 넘지 않을 때까지 받습니다.
  * 더한 친구만 새로 불렸다는 알림을 받습니다.
  */
-pings.post("/:id/members", async (c) => {
+pings.post("/:id/members", pingWrites, async (c) => {
   const id = pingId(c.req.param("id"));
   const body = await validate.jsonBody(c);
   const me = c.var.user;
@@ -299,10 +305,12 @@ pings.post("/:id/members", async (c) => {
   if (friends.some((friend) => friend.invited)) throw new ApiError(409, "already_invited");
   const added = puuids.map((puuid) => friends.find((friend) => friend.puuid === puuid)!);
 
-  // 자리와 살아 있는지를 INSERT 조건으로 다시 건다.
-  // 두 번 눌러 요청이 겹쳐도 넷을 넘지 않는다.
+  // 남은 자리, ㅇㅂㅇ이 끝나지 않았는지, 아무도 아직 불리지 않았는지를 INSERT 조건으로 다시 건다.
+  // 조건은 친구마다가 아니라 한꺼번에 걸어 모두 들어가거나 하나도 안 들어간다.
+  // 두 번 눌러 요청이 겹쳐도 넷을 넘지 않고, 일부만 들어가 알림 없이 불린 친구가 생기지 않는다.
   // 자리는 앞사람 뒤로 이어 붙인다.
   // 이미 쓴 자리 번호는 anon-N이라 다시 쓰지 않는다.
+  const friendIds = JSON.stringify(added.map((friend) => friend.id));
   const inserted = await db
     .prepare(
       `INSERT INTO ping_members (ping_id, user_id, position, updated_at)
@@ -310,11 +318,11 @@ pings.post("/:id/members", async (c) => {
        FROM json_each(?4) j
        WHERE EXISTS (SELECT 1 FROM pings WHERE id = ?1 AND host = ?2 AND canceled = 0 AND expires_at > ?3)
          AND (SELECT COUNT(*) FROM ping_members WHERE ping_id = ?1 AND answer != 'no') + json_array_length(?4) <= ?5
-         AND NOT EXISTS (SELECT 1 FROM ping_members WHERE ping_id = ?1 AND user_id = j.value)`,
+         AND NOT EXISTS (SELECT 1 FROM ping_members WHERE ping_id = ?1 AND user_id IN (SELECT value FROM json_each(?4)))`,
     )
-    .bind(id, me.id, now, JSON.stringify(added.map((friend) => friend.id)), MAX_FRIENDS)
+    .bind(id, me.id, now, friendIds, MAX_FRIENDS)
     .run();
-  if (inserted.meta.changes !== added.length) throw new ApiError(409, "ping_full");
+  if (inserted.meta.changes === 0) throw await membersRefusal(db, id, me.id, now, friendIds);
 
   const { results: everyone } = await db
     .prepare("SELECT m.user_id, u.game_name FROM ping_members m JOIN users u ON u.id = m.user_id WHERE m.ping_id = ? ORDER BY m.position")
@@ -339,7 +347,7 @@ pings.post("/:id/members", async (c) => {
   return c.json({ ping: await pingById(db, id, me.id) });
 });
 
-pings.delete("/:id", async (c) => {
+pings.delete("/:id", pingWrites, async (c) => {
   const id = pingId(c.req.param("id"));
   const me = c.var.user;
   const db = c.env.DB;
@@ -388,6 +396,20 @@ async function refusal(db: D1Database, hostId: number, now: number): Promise<Api
   if (!row || row.active || row.oldest === null) return new ApiError(409, "ping_active");
   const retryAfter = Math.max(1, Math.ceil((row.oldest + DAY_MS - now) / 1000));
   return new ApiError(429, "too_many_requests", { "Retry-After": String(retryAfter) });
+}
+
+// 더 부르기가 들어가지 않은 까닭을 다시 읽는다.
+// 그사이 다른 요청이 같은 친구를 먼저 불렀거나, 자리가 찼거나, ㅇㅂㅇ이 끝났다.
+async function membersRefusal(db: D1Database, id: string, hostId: number, now: number, friendIds: string): Promise<ApiError> {
+  const row = await db
+    .prepare(
+      `SELECT EXISTS (SELECT 1 FROM pings WHERE id = ?1 AND host = ?2 AND canceled = 0 AND expires_at > ?3) AS active,
+         EXISTS (SELECT 1 FROM ping_members WHERE ping_id = ?1 AND user_id IN (SELECT value FROM json_each(?4))) AS invited`,
+    )
+    .bind(id, hostId, now, friendIds)
+    .first<{ active: number; invited: number }>();
+  if (!row?.active) return new ApiError(404, "not_found");
+  return row.invited ? new ApiError(409, "already_invited") : new ApiError(409, "ping_full");
 }
 
 async function memberIds(db: D1Database, id: string): Promise<number[]> {

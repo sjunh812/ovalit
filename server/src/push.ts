@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import { base64url } from "./crypto";
 import type { AppEnv, Env } from "./env";
 import { logFailure } from "./log";
-import { MemoryCache } from "./memory";
+import { MemoryCache, Quota } from "./memory";
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SCOPE = "https://www.googleapis.com/auth/firebase.messaging";
@@ -14,16 +14,45 @@ const REFRESH_MARGIN_SECONDS = 5 * 60;
 // 같은 요청에서 다른 데를 부를 몫을 남긴다.
 const SUBREQUEST_BUDGET = 40;
 
+const HOUR_MS = 60 * 60 * 1000;
+
 // 서비스 계정마다 하나다.
 // isolate가 바뀌면 비어 있어 한 번 더 받는다.
 const accessTokens = new MemoryCache({ maxEntries: 4, maxBytes: 64 * 1024 });
+
+// 같은 사람에게 가는 알림 수를 줄인다.
+// 호스트가 시간을 거듭 바꾸거나 친구가 대답을 이리저리 바꾸면 그때마다 알림이 가고,
+// 거절당한 요청을 다시 보내면 그때마다 친구 요청 알림이 간다.
+// 한도를 넘으면 요청은 그대로 처리하고 알림만 보내지 않는다.
+// 앱은 다시 보일 때 ㅇㅂㅇ과 친구를 다시 받으니 바뀐 내용은 그때 보인다.
+// isolate 메모리로 세고 숫자는 시작 기준선이다.
+const pushQuotas = {
+  // ㅇㅂㅇ 하나에서 한 사람이 받는 ping_new, ping_reply, ping_time이다.
+  // ping_cancel은 ㅇㅂㅇ마다 한 번뿐이라 세지 않고 꼭 보낸다.
+  ping: new Quota(20, HOUR_MS),
+  // 같은 사람이 보낸 friend_request다.
+  friendRequest: new Quota(1, 24 * HOUR_MS),
+};
 
 /** 테스트끼리 액세스 토큰이 이어지지 않게 비울 때 씁니다. */
 export function clearAccessTokens(): void {
   accessTokens.clear();
 }
 
-export type PushType = "ping_new" | "ping_reply" | "ping_time" | "ping_cancel" | "ping_remind" | "weekly_report";
+/** 테스트끼리 알림 횟수가 이어지지 않게 비울 때 씁니다. */
+export function clearPushQuotas(): void {
+  for (const quota of Object.values(pushQuotas)) quota.clear();
+}
+
+export type PushType =
+  | "ping_new"
+  | "ping_reply"
+  | "ping_time"
+  | "ping_cancel"
+  | "ping_remind"
+  | "weekly_report"
+  | "friend_request"
+  | "friend_accept";
 
 /** FCM data 메시지는 값이 모두 문자열이어야 합니다. 숫자는 `String()`으로 바꿔 넣습니다. */
 export type PushData = { type: PushType } & Record<string, string>;
@@ -62,11 +91,28 @@ export function pushFrom(env: Env, upstream: typeof fetch): Push | undefined {
  * 응답을 기다리게 하지 않고 뒤에서 보냅니다.
  * 알림이 실패해도 요청은 그대로 성공합니다.
  * `FCM_SERVICE_ACCOUNT`가 없으면 토큰도 읽지 않습니다.
+ * 같은 사람에게 너무 자주 가는 알림은 말없이 뺍니다([pushQuotas]).
+ * 요청을 보낸 사람은 `c.var.user`입니다.
  */
 export function notify(c: Context<AppEnv>, notices: Notice[]): void {
   if (notices.length === 0) return;
   const push = pushFrom(c.env, c.var.upstream);
-  if (push) c.executionCtx.waitUntil(push.notify(notices));
+  if (!push) return;
+  const allowed = notices.filter((notice) => withinQuota(notice, c.var.user.id));
+  if (allowed.length > 0) c.executionCtx.waitUntil(push.notify(allowed));
+}
+
+function withinQuota({ userId, data }: Notice, senderId: number): boolean {
+  switch (data.type) {
+    case "ping_new":
+    case "ping_reply":
+    case "ping_time":
+      return pushQuotas.ping.take(`${data.pingId}:${userId}`) === undefined;
+    case "friend_request":
+      return pushQuotas.friendRequest.take(`${senderId}:${userId}`) === undefined;
+    default:
+      return true;
+  }
 }
 
 /** 요청 하나나 크론 한 번 동안 씁니다. 하위 요청 몫을 그 안에서 셉니다. */
@@ -248,6 +294,7 @@ function pemToDer(pem: string): Uint8Array {
 /**
  * 다시 보내도 안 닿는 토큰인지 봅니다.
  * 앱을 지웠거나 토큰이 바뀌면 404 `UNREGISTERED`가 옵니다.
+ * 다른 Firebase 프로젝트로 만든 앱의 토큰이면 403 `SENDER_ID_MISMATCH`입니다.
  * 형식이 틀린 토큰은 400 `INVALID_ARGUMENT`입니다.
  * 우리가 보낸 내용이 틀려도 같은 코드가 오는데 그때는 BadRequest가 토큰 말고 다른 필드를 짚습니다.
  * 그런 응답에는 토큰을 지우지 않습니다.
@@ -265,7 +312,7 @@ async function isDeadToken(res: Response): Promise<boolean> {
   const body = (await res.json().catch(() => null)) as FcmError | null;
   const details = body?.error?.details ?? [];
   const codes = details.map((detail) => detail.errorCode);
-  if (codes.includes("UNREGISTERED")) return true;
+  if (codes.includes("UNREGISTERED") || codes.includes("SENDER_ID_MISMATCH")) return true;
   if (!codes.includes("INVALID_ARGUMENT")) return false;
   const fields = details.flatMap((detail) => detail.fieldViolations ?? []).map((violation) => violation.field);
   return fields.every((field) => field === "message.token");

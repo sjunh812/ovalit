@@ -28,8 +28,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.data.minuteStarts
@@ -105,9 +107,14 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-// 줄은 위아래 16dp라 한 줄짜리도 55dp쯤 되고, 이 값은 눌리는 높이의 바닥이다.
+// 이 값은 눌리는 높이의 바닥이다.
 // 56dp로 늘려 두면 한 줄짜리만 가운데 놓여 설명이 붙은 줄과 위아래 여백이 달라졌다.
 private val RowMinHeight = 48.dp
+
+// 줄의 위아래 여백이다.
+// 묶음 이름 밑은 띄우지 않아 첫 줄의 위 여백이 그대로 제목과 내용 사이다.
+// 16dp일 때는 스위치(25dp)가 있는 줄만 글자보다 높아 알림 카드는 제목 밑 20dp, 표시 카드는 16dp로 갈렸다.
+private val RowVerticalPadding = 20.dp
 private val AvatarSize = 44.dp
 
 /**
@@ -450,7 +457,7 @@ private fun ToggleRow(
                     onCheckedChange(on)
                 },
             )
-            .padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.lg),
+            .padding(horizontal = OvalitSpacing.gutter, vertical = RowVerticalPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val text = @Composable { RowText(title, description, enabled) }
@@ -466,8 +473,17 @@ private fun ToggleRow(
             Box(modifier = Modifier.weight(1f)) { text() }
             Spacer(Modifier.width(OvalitSpacing.lg))
         }
-        OvalitSwitch(checked = checked, enabled = enabled)
+        OvalitSwitch(checked = checked, enabled = enabled, modifier = Modifier.withoutHeight())
     }
+}
+
+/**
+ * 줄 높이를 정할 때 이 칸의 높이를 0으로 재고 그 자리 가운데에 그립니다.
+ * 스위치가 글자 한 줄보다 높아 그대로 두면 스위치가 있는 줄만 높아집니다.
+ */
+private fun Modifier.withoutHeight(): Modifier = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints.copy(minHeight = 0, maxHeight = Constraints.Infinity))
+    layout(placeable.width, 0) { placeable.place(0, -placeable.height / 2) }
 }
 
 @Composable
@@ -506,7 +522,7 @@ private fun ValueRow(
             .fillMaxWidth()
             .heightIn(min = RowMinHeight)
             .then(if (onClick != null) Modifier.clickable(enabled = enabled, role = Role.Button, onClick = onClick) else Modifier)
-            .padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.lg),
+            .padding(horizontal = OvalitSpacing.gutter, vertical = RowVerticalPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (value != null) {

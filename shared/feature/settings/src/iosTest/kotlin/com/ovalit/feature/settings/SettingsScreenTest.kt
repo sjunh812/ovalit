@@ -221,7 +221,7 @@ class SettingsScreenTest {
         var theme: ThemePreference? = null
         setContent { Settings(actions = SettingsActions(onThemeChange = { theme = it })) }
 
-        onNodeWithText("테마").performClick()
+        onNodeWithText("테마").performScrollTo().performClick()
         onNodeWithText("라이트").performClick()
 
         assertEquals(ThemePreference.LIGHT, theme)

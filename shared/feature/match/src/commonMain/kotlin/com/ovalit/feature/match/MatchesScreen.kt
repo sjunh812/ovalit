@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,7 +38,6 @@ import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTextButton
 import com.ovalit.core.designsystem.component.ScrollToTopOnReselect
-import com.ovalit.core.designsystem.component.SkeletonBlock
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -47,7 +45,6 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.NewMatchesProgress
 import com.ovalit.core.model.QueueFilter
-import com.ovalit.core.ui.QueueChips
 import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdSlot
 import com.ovalit.core.ui.FailureNoticesEffect
@@ -55,6 +52,8 @@ import com.ovalit.core.ui.MatchRow
 import com.ovalit.core.ui.MatchRowStyle
 import com.ovalit.core.ui.MatchRowsSkeleton
 import com.ovalit.core.ui.NewMatchesLine
+import com.ovalit.core.ui.QueueChips
+import com.ovalit.core.ui.QueueChipsSkeleton
 import com.ovalit.core.ui.RefreshResultsEffect
 import com.ovalit.core.ui.SeparatedRow
 import com.ovalit.core.ui.SeparatorDot
@@ -63,6 +62,7 @@ import com.ovalit.core.ui.dayLabel
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.listAdBefore
 import com.ovalit.core.ui.mapName
+import com.ovalit.core.ui.matchRowTextStart
 import com.ovalit.core.ui.matchTimeLabel
 import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.loading
@@ -130,12 +130,7 @@ internal fun MatchesScreen(
             Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
                 OvalitTabHeader(title = stringResource(Res.string.matches_title))
                 Spacer(Modifier.height(OvalitSpacing.xs))
-                OvalitSkeleton(stringResource(CoreUiRes.string.loading), Modifier.padding(horizontal = OvalitSpacing.screen)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.xs)) {
-                        SkeletonBlock(width = 88.dp, height = 34.dp, radius = 10.dp)
-                        repeat(3) { SkeletonBlock(width = 52.dp, height = 34.dp, radius = 10.dp) }
-                    }
-                }
+                OvalitSkeleton(stringResource(CoreUiRes.string.loading)) { QueueChipsSkeleton() }
                 Spacer(Modifier.height(OvalitSpacing.md + OvalitSpacing.lg))
                 MatchRowsSkeleton(rows = 8, style = MatchRowStyle.LIST, horizontalPadding = OvalitSpacing.screen)
             }
@@ -199,7 +194,11 @@ internal fun MatchesScreen(
                                 onClick = { onOpenMatch(match.id) },
                             )
                             if (match != day.matches.last()) {
-                                OvalitDivider(Modifier.padding(start = 87.dp), color = colors.lineWeak)
+                                // 구분선은 맵 이름 시작선에서 시작한다
+                                OvalitDivider(
+                                    Modifier.padding(start = matchRowTextStart(MatchRowStyle.LIST, OvalitSpacing.screen)),
+                                    color = colors.lineWeak,
+                                )
                             }
                         }
                     }

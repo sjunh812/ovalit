@@ -28,7 +28,7 @@ enum class Queue(
     /** 스파이크 돌격입니다. 무기를 무작위로 주고 4라운드 선취라 이코노미 지표를 셀 수 없습니다. */
     SPIKE_RUSH(halfRounds = 3, hasEconomy = false, countsInReports = true),
 
-    /** 신속 플레이입니다. 5라운드 선취이고 크레드 규칙이 달라 이코노미 지표를 같이 셀 수 없습니다. */
+    /** 신속 플레이입니다. 5라운드 선취이고 경제 규칙이 달라 이코노미 지표를 같이 셀 수 없습니다. */
     SWIFTPLAY(halfRounds = 4, hasEconomy = false, countsInReports = true),
 
     /** 복제입니다. 한 팀이 모두 같은 요원으로 5라운드 선취를 다투고 크레드는 라운드마다 정해져 있습니다. */
@@ -48,7 +48,7 @@ enum class Queue(
 
     /**
      * 큐 ID를 모르는 모드입니다.
-     * 13.06의 건틀릿: 글리치처럼 새로 나온 모드가 여기로 옵니다.
+     * 13.06의 건틀릿: 시스템 오류처럼 새로 나온 모드가 여기로 옵니다.
      * 규칙을 몰라서 라운드제로 보지 않고 목록에만 둡니다.
      */
     OTHER(halfRounds = null, hasEconomy = false, countsInReports = false),
@@ -62,11 +62,15 @@ enum class Queue(
          * 커스텀 게임이면 `null`이고 커스텀 게임은 받지도 저장하지도 않습니다.
          * 모르는 값은 [OTHER]라서 새 모드가 나와도 기타 목록에 뜹니다.
          *
+         * @param queueId 빠졌으면(`null`) 모르는 모드처럼 [OTHER]입니다.
+         *   커스텀 게임은 빈 값이나 [provisioningFlowId]로만 가립니다.
+         *   빠진 것까지 커스텀 게임으로 보면 목록에서는 받을 경기로 고르고 상세에서는 버려서 두 곳이 갈립니다.
          * @param provisioningFlowId 경기 상세의 `matchInfo.provisioningFlowId`입니다.
          *   경기 ID 목록에는 없어서 빼고 불러도 됩니다.
          */
-        fun fromRiot(queueId: String, provisioningFlowId: String? = null): Queue? {
+        fun fromRiot(queueId: String?, provisioningFlowId: String? = null): Queue? {
             if (provisioningFlowId.equals(CUSTOM_GAME_FLOW, ignoreCase = true)) return null
+            if (queueId == null) return OTHER
             return when (queueId.trim().lowercase()) {
                 "", "custom" -> null
                 "competitive" -> COMPETITIVE

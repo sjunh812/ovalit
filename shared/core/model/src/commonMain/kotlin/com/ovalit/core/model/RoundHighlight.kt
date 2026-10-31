@@ -15,6 +15,7 @@ data class RoundHighlight(
 
 /**
  * @property against 나만 남은 순간 살아 있던 상대 수입니다.
+ *   그 뒤로 되살아난 상대도 더합니다.
  *   화면에는 "1대3"으로 띄웁니다.
  * @property won 그 라운드를 이겼는지입니다.
  *   이기면 클러치 성공으로 칩니다.
@@ -30,6 +31,12 @@ data class Clutch(
  * 누가 언제 죽었는지만으로 가립니다.
  * 킬은 목록 순서가 아니라 [KillEvent.atMillis] 순서로 봅니다.
  *
+ * 죽은 사람이 뒤에 다시 죽거나 총이나 칼로 누군가를 잡으면 그사이 되살아난 것으로 봅니다(세이지 부활, 클로브).
+ * 응답에는 되살아난 시각이 없어서 다시 나온 때에야 압니다.
+ * 우리 팀이 되살아났으면 나만 남은 게 아니라서 클러치를 거두고, 그 사람이 다시 죽어 나만 남을 때 다시 잽니다.
+ * 상대가 되살아났으면 나만 남은 뒤로 그만큼 더 상대한 것이라 상대 수에 더합니다.
+ * 죽은 뒤 남겨 둔 스킬로도 킬이 나서 스킬 킬은 살아 있었다는 표시로 보지 않습니다.
+ *
  * 튕겨서 그 라운드를 안 뛴 우리 팀은 킬 기록에 안 나와 끝까지 살아 있는 것처럼 보여서 그런 라운드는 클러치로 잡히지 않습니다.
  * 응답이 라운드마다 누가 뛰었는지 알려 주는지는 실데이터로 확인해야 합니다.
  */
@@ -42,17 +49,26 @@ fun Round.highlight(me: PlayerId, allies: Set<PlayerId>, enemies: Set<PlayerId>)
         val aliveAllies = allies.toMutableSet()
         val aliveEnemies = enemies.toMutableSet()
         for (kill in kills.sortedBy { it.atMillis }) {
+            for (player in kill.showsAlive()) {
+                if (player in allies && aliveAllies.add(player)) clutch = null
+                if (player in enemies && aliveEnemies.add(player)) clutch = clutch?.let { it.copy(against = it.against + 1) }
+            }
             if (kill.victim == me) break
             aliveAllies -= kill.victim
             aliveEnemies -= kill.victim
-            if (aliveAllies.isEmpty()) {
-                if (aliveEnemies.isNotEmpty()) clutch = Clutch(against = aliveEnemies.size, won = won)
-                break
+            if (clutch == null && aliveAllies.isEmpty() && aliveEnemies.isNotEmpty()) {
+                clutch = Clutch(against = aliveEnemies.size, won = won)
             }
         }
     }
     return RoundHighlight(ace = ace, clutch = clutch)
 }
+
+// 이 킬이 났을 때 살아 있던 사람이다.
+// 죽은 사람은 그 직전까지 살아 있었다.
+// 잡은 사람은 총이나 칼로 잡았을 때만 살아 있었다고 본다.
+// 스킬은 쓴 사람이 죽은 뒤에도 킬을 낸다.
+private fun KillEvent.showsAlive(): List<PlayerId> = if (weapon != null) listOf(victim, killer) else listOf(victim)
 
 val Match.enemies: Set<PlayerId>
     get() = players.filterNot { it.onMyTeam }.map { it.player }.toSet()

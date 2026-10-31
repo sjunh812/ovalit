@@ -2,14 +2,11 @@ package com.ovalit.feature.report.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -28,8 +25,8 @@ import com.ovalit.core.model.ReportPeriod
 import com.ovalit.core.model.Role
 import com.ovalit.core.model.Side
 import com.ovalit.core.ui.Josa
-import com.ovalit.core.ui.WRAPPING_SEPARATOR
 import com.ovalit.core.ui.MetricFormat
+import com.ovalit.core.ui.WRAPPING_SEPARATOR
 import com.ovalit.core.ui.agentName
 import com.ovalit.core.ui.keepTogether
 import com.ovalit.core.ui.label
@@ -65,6 +62,8 @@ import com.ovalit.feature.report.resources.insight_side_attack
 import com.ovalit.feature.report.resources.insight_side_defense
 import com.ovalit.feature.report.resources.insight_title
 import com.ovalit.feature.report.resources.insight_title_matches
+import com.ovalit.feature.report.resources.insight_title_matches_of
+import com.ovalit.feature.report.resources.insight_title_rounds
 import com.ovalit.feature.report.resources.insight_weapon
 import com.ovalit.feature.report.resources.metric_eco_win
 import com.ovalit.feature.report.resources.metric_first_duel_win
@@ -122,7 +121,7 @@ internal fun InsightSection(
     // 적게 뛴 쪽의 숫자는 크게 흔들려서 몇 판, 몇 라운드로 센 숫자인지 같이 적는다.
     // 한 주 표본이라 판단은 하지 않고, 액트 동안의 차이가 이번 주에도 이어졌는지 숫자만 붙인다.
     val actValues = valuesText(leadName to lead, otherName to other, format, SpanStyle(color = OvalitTheme.colors.t1, fontWeight = FontWeight.Medium))
-    val actSample = totalSample(lead, other)
+    val caption = titleCaption(insight.matches, lead, other)
     val recent = insight.recent?.let {
         val values = valuesText(leadName to it.lead, otherName to it.other, format, SpanStyle(color = OvalitTheme.colors.t2))
         buildAnnotatedString {
@@ -137,7 +136,7 @@ internal fun InsightSection(
         insight.isRolePriority && role != null -> stringResource(
             Res.string.insight_reason_role,
             stringResource(role.label),
-            metric.withLocalJosa(Josa.EUN_NEUN),
+            metric,
         )
         else -> null
     }
@@ -150,33 +149,21 @@ internal fun InsightSection(
         TitleWithCaption(
             title = stringResource(Res.string.insight_title),
             titleStyle = OvalitTheme.typography.cardTitle,
-            caption = insight.matches.takeIf { it > 0 }?.let { AnnotatedString(stringResource(Res.string.insight_title_matches, it)) },
+            caption = AnnotatedString(caption),
         )
-        Spacer(Modifier.height(SectionTitleGap - 6.dp))
+        // 묶음이 줄마다 6dp를 띄워서 제목 밑에는 그 두 번(12dp)을 뺀 만큼만 더해 16dp가 된다
+        Spacer(Modifier.height(SectionTitleGap - 12.dp))
         // 문장은 보통 굵기이고 차이 값만 굵게 한다.
         // 지난 기록과의 변화가 아니라 둘을 견준 차이라 오르내림 색은 쓰지 않는다.
         OvalitText(
             text = headlineEmphasis(headline, gapText, SpanStyle(fontWeight = FontWeight.Bold)),
             style = headlineStyle(),
         )
-        // 제목과 문장이 이번 액트 이야기라 액트 값만 본문 크기로 밝게 두고, 그 액트 전체 표본을 줄 끝에 옅게 붙인다.
+        // 제목과 문장이 이번 액트 이야기라 액트 값만 본문 크기로 밝게 둔다.
+        // 그 액트의 표본은 제목 옆 경기 수와 한 줄에 둔다(사용자 결정).
         // 이번 주 값은 한 주 표본이라 같은 무게로 두면 근거처럼 읽혀서 밑에 작은 회색 한 줄로 참고만 하게 둔다.
         Column(modifier = Modifier.padding(top = OvalitSpacing.xs), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Row(modifier = Modifier.semantics(mergeDescendants = true) {}) {
-                OvalitText(
-                    text = actValues,
-                    modifier = Modifier.weight(1f).alignByBaseline(),
-                    style = OvalitTheme.typography.body,
-                    color = OvalitTheme.colors.t2,
-                )
-                Spacer(Modifier.width(OvalitSpacing.md))
-                OvalitText(
-                    text = actSample,
-                    modifier = Modifier.alignByBaseline(),
-                    style = OvalitTheme.typography.caption,
-                    color = OvalitTheme.colors.t3,
-                )
-            }
+            OvalitText(text = actValues, style = OvalitTheme.typography.body, color = OvalitTheme.colors.t2)
             recent?.let { OvalitText(text = it, style = OvalitTheme.typography.caption, color = OvalitTheme.colors.t3) }
         }
         // 왜 이 지표를 먼저 봤는지는 숫자 칸과 다른 이야기라 붙이지 않고 띄운다
@@ -209,11 +196,27 @@ private const val NBSP = "\u00a0"
 // 기간 전체 표본이다.
 // 두 쪽을 더하면 공수는 그 기간에 뛴 라운드 전부, 요원과 맵은 견준 판 전부다.
 @Composable
-private fun totalSample(lead: InsightPart, other: InsightPart): String = when (lead.subject) {
-    is InsightSubject.OnSide, is InsightSubject.WithWeapon, is InsightSubject.OtherWeapons ->
+private fun totalSample(lead: InsightPart, other: InsightPart): String =
+    if (lead.subject.isRoundBased) {
         stringResource(Res.string.insight_rounds, lead.rounds + other.rounds)
-    else -> stringResource(Res.string.insight_matches, lead.matches + other.matches)
+    } else {
+        stringResource(Res.string.insight_matches, lead.matches + other.matches)
+    }
+
+// 제목 옆에 액트 경기 수와 견준 표본을 한 줄로 둔다.
+// 라운드로 견줬으면 "42경기 · 873라운드", 판으로 견줬으면 "42경기 중 15판"이다.
+// 판으로 견줬는데 그 액트 경기를 다 견줬으면 같은 수를 두 번 적지 않는다.
+// 액트 경기 수를 모르면 견준 표본만 적는다.
+@Composable
+private fun titleCaption(matches: Int, lead: InsightPart, other: InsightPart): String = when {
+    matches <= 0 -> totalSample(lead, other)
+    lead.subject.isRoundBased -> stringResource(Res.string.insight_title_rounds, matches, lead.rounds + other.rounds)
+    lead.matches + other.matches < matches -> stringResource(Res.string.insight_title_matches_of, matches, lead.matches + other.matches)
+    else -> stringResource(Res.string.insight_title_matches, matches)
 }
+
+private val InsightSubject.isRoundBased: Boolean
+    get() = this is InsightSubject.OnSide || this is InsightSubject.WithWeapon || this is InsightSubject.OtherWeapons
 
 @Composable
 private fun InsightSubject.name(catalog: ContentCatalog): String = when (this) {

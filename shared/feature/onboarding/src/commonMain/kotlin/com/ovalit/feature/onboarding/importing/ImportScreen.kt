@@ -47,6 +47,7 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Focus
 import com.ovalit.core.model.ImportProgress
 import com.ovalit.core.model.OvalitError
+import com.ovalit.core.ui.FailureNoticesEffect
 import com.ovalit.core.ui.NotificationPermission
 import com.ovalit.core.ui.description
 import com.ovalit.core.ui.label
@@ -65,6 +66,7 @@ import com.ovalit.feature.onboarding.resources.import_retry
 import com.ovalit.feature.onboarding.resources.import_stopped
 import com.ovalit.feature.onboarding.resources.import_stopped_later
 import com.ovalit.feature.onboarding.resources.import_stopped_offline
+import com.ovalit.feature.onboarding.resources.import_stopped_session
 import com.ovalit.feature.onboarding.resources.import_subtitle
 import com.ovalit.feature.onboarding.resources.import_title
 import org.jetbrains.compose.resources.stringResource
@@ -88,6 +90,7 @@ fun ImportRoute(
     notifications: NotificationPermission = NotificationPermission.NotNeeded,
     viewModel: ImportViewModel = koinViewModel(),
 ) {
+    FailureNoticesEffect(viewModel.notices)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     ImportScreen(
         uiState,
@@ -126,7 +129,8 @@ internal fun ImportScreen(
                     style = OvalitTheme.typography.display,
                 )
                 Spacer(Modifier.height(14.dp))
-                OvalitText(text = stringResource(Res.string.import_subtitle), style = OvalitTheme.typography.label, color = colors.t3)
+                // 설명 문장이라 보통 굵기다(docs/design.md 굵기 표)
+                OvalitText(text = stringResource(Res.string.import_subtitle), style = OvalitTheme.typography.caption, color = colors.t3)
                 Spacer(Modifier.height(28.dp))
                 Column(modifier = Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(9.dp)) {
                     FocusOrder.forEach { focus ->
@@ -245,7 +249,14 @@ private fun Progress(progress: ImportProgress?, onOpenReport: () -> Unit, onRetr
             // 기다리면 저절로 다시 시도한다.
             stoppedBy != null -> {
                 OvalitText(
-                    text = stringResource(if (stoppedBy == OvalitError.Offline) Res.string.import_stopped_offline else Res.string.import_stopped_later),
+                    text = stringResource(
+                        when (stoppedBy) {
+                            OvalitError.Offline -> Res.string.import_stopped_offline
+                            // 로그인이 풀리면 작업이 다시 시도하지 않고 멈춘다
+                            OvalitError.SessionExpired -> Res.string.import_stopped_session
+                            else -> Res.string.import_stopped_later
+                        },
+                    ),
                     style = OvalitTheme.typography.caption,
                     color = colors.t3,
                 )
@@ -292,4 +303,4 @@ private fun BackgroundNote(notifyWhenDone: Boolean, notifications: NotificationP
     }
 }
 
-private val TouchHeight = 44.dp
+private val TouchHeight = 48.dp

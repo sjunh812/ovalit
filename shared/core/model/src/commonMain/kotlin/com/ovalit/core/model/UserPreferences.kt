@@ -15,6 +15,7 @@ enum class ThemePreference {
  * @property notifyWeeklyReport 서버가 월요일 오전 9시에 FCM 토픽으로 보내는 주간 리포트 알림입니다.
  *   끄면 토픽 구독을 풉니다.
  * @property notifyPing 친구가 보낸 ㅇㅂㅇ과 내가 보낸 ㅇㅂㅇ의 답을 알릴지입니다.
+ * @property notifyFriendRequest 친구 요청을 받거나 내 요청이 수락되면 알릴지입니다.
  * @property focus S0-4와 설정에서 고른 관심사입니다.
  *   동적 칸 순서와 개선 포인트 문장을 고를 때 씁니다.
  * @property seenProfileHint 홈의 "내 프로필은 여기서 볼 수 있어요" 말풍선을 띄웠는지입니다.
@@ -34,6 +35,7 @@ data class UserPreferences(
     val notifyWeeklyReport: Boolean,
     val focus: Focus,
     val notifyPing: Boolean = true,
+    val notifyFriendRequest: Boolean = true,
     val seenProfileHint: Boolean = false,
     val seenNotificationPrimer: Boolean = false,
     val askedNotificationPermission: Boolean = false,

@@ -97,62 +97,6 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
-/** 스택을 저장할 때 쓸 직렬화기를 한 번에 등록하려고 화면 키를 봉인 인터페이스로 묶습니다([BackStackConfiguration]). */
-@Serializable
-private sealed interface Screen : NavKey
-
-@Serializable
-private data object Intro : Screen
-
-@Serializable
-private data object Consent : Screen
-
-@Serializable
-private data object Import : Screen
-
-@Serializable
-private data object Report : Screen
-
-@Serializable
-private data object Settings : Screen
-
-@Serializable
-private data object Matches : Screen
-
-@Serializable
-private data class MatchDetail(val id: String) : Screen
-
-@Serializable
-private data object Friends : Screen
-
-@Serializable
-private data class FriendProfile(val id: String) : Screen
-
-@Serializable
-private data class FriendMatches(val id: String) : Screen
-
-@Serializable
-private data object Profile : Screen
-
-@Serializable
-private data object Agents : Screen
-
-@Serializable
-private data object Weapons : Screen
-
-@Serializable
-private data class FriendAgents(val id: String) : Screen
-
-@Serializable
-private data class PingDetail(val id: String) : Screen
-
-@Serializable
-private data class FriendWeapons(val id: String) : Screen
-
-/** 홈 친구 비교의 전체 순위입니다. 큐 칩은 저장하지 않아서 홈에서 고른 큐와 지표를 이름으로 들고 갑니다. */
-@Serializable
-private data class FriendRanking(val queue: String, val metric: String) : Screen
-
 private val TopLevel: List<NavKey> = listOf(Report, Matches, Friends, Settings)
 
 // 스택을 저장할 때 키마다 쓸 직렬화기다.
@@ -171,6 +115,8 @@ private val BackStackConfiguration = SavedStateConfiguration {
  *
  * @param openPing ㅇㅂㅇ 알림을 눌러 열 초대 ID입니다.
  *   알림이 없는 iOS는 비워 둡니다.
+ * @param openFriends 친구 요청 알림을 누를 때마다 하나씩 옵니다.
+ *   받으면 친구 탭을 엽니다.
  * @param splashHandoff 시스템 스플래시의 점 애니메이션을 로고 애니메이션이 이어받는 길입니다.
  *   스플래시가 움직이지 않는 iOS는 비워 둡니다.
  */
@@ -179,23 +125,38 @@ fun OvalitApp(
     appVersion: String,
     platform: OvalitPlatform,
     openPing: Flow<String> = emptyFlow(),
+    openFriends: Flow<Unit> = emptyFlow(),
     splashHandoff: SplashHandoff = SplashHandoff.None,
 ) {
     val backStack = rememberNavBackStack(BackStackConfiguration, Intro)
-    // ㅇㅂㅇ 알림을 누르면 친구 탭 위에 그 초대 화면을 연다.
-    // 연동 전이면 무시한다.
-    // 다시 불러오는 중(S0-4)이면 탭을 바꾸지 않고 그 위에 연다.
-    // 탭을 바꾸면 불러오는 화면이 닫혀 돌아갈 곳이 없다.
-    LaunchedEffect(openPing) {
-        openPing.collect { id ->
-            if (Report !in backStack || backStack.last() == PingDetail(id)) return@collect
-            if (Import !in backStack) backStack.selectTab(Friends)
-            backStack.push(PingDetail(id))
-        }
-    }
     // RSO가 붙기 전까지는 가짜 계정이다.
     // S0-2의 계속하기가 연동을 대신한다.
     val account = koinInject<FakeAccountRepository>()
+    // 계정을 읽기 전에는 `null`이다
+    val accountLinked by remember(account) { account.account.map { it != null } }.collectAsState(initial = null)
+    // 알림으로 연 초대는 열 수 있을 때까지 들고 있는다.
+    // 계정을 읽기 전에 온 것을 버리면 앱이 꺼진 채 누른 알림이 그냥 앱만 연다.
+    var pendingPing by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(openPing) { openPing.collect { pendingPing = it } }
+    // ㅇㅂㅇ 알림을 누르면 친구 탭 위에 그 초대 화면을 연다.
+    // 연동 전이면 버린다.
+    // 불러오는 중(S0-4)이면 탭을 바꾸지 않고 그 위에 연다.
+    // 탭을 바꾸면 불러오는 화면이 닫혀 돌아갈 곳이 없다.
+    LaunchedEffect(pendingPing, accountLinked) {
+        val id = pendingPing ?: return@LaunchedEffect
+        val isLinked = accountLinked ?: return@LaunchedEffect
+        pendingPing = null
+        if (!isLinked || backStack.last() == PingDetail(id)) return@LaunchedEffect
+        if (Report in backStack && Import !in backStack) backStack.selectTab(Friends)
+        backStack.push(PingDetail(id))
+    }
+    // 친구 요청 알림을 누르면 받은 요청이 있는 친구 탭을 연다.
+    // 연동 전이거나 불러오는 중(S0-4)이면 그대로 둔다.
+    LaunchedEffect(openFriends) {
+        openFriends.collect {
+            if (Report in backStack && Import !in backStack) backStack.selectTab(Friends)
+        }
+    }
     val friends = koinInject<FriendRepository>()
     val importScheduler = koinInject<ImportScheduler>()
     val scope = rememberCoroutineScope()
@@ -249,6 +210,8 @@ fun OvalitApp(
                         ConsentScreen(
                             onBack = { backStack.removeLastOrNull() },
                             onContinue = {
+                                // 넘어가는 동안 한 번 더 누르면 로그인 창이 두 번 뜬다
+                                if (backStack.lastOrNull() != Consent) return@ConsentScreen
                                 // S0-3 Riot 로그인은 RSO가 붙으면 여기서 Custom Tabs로 연다.
                                 // 지금은 가짜 계정으로 연동한다.
                                 scope.launch {
@@ -442,29 +405,6 @@ private fun rememberOpaqueEntryDecorator(): NavEntryDecorator<NavKey> {
 }
 
 private val EdgeWidth = 1.dp
-
-// 사용 통계에 쓰는 화면 이름이다.
-// 키를 그대로 쓰면 친구·경기 ID가 섞이고 릴리스에서는 난독화된 이름이 된다.
-// Screen을 받아 else 없이 갈라서 새 화면을 표에 빠뜨리면 컴파일이 멈춘다.
-private fun screenName(key: Screen): String = when (key) {
-    Intro -> "intro"
-    Consent -> "consent"
-    Import -> "import"
-    Report -> "report"
-    Matches -> "matches"
-    is MatchDetail -> "match_detail"
-    Friends -> "friends"
-    is FriendProfile -> "friend_profile"
-    is FriendMatches -> "friend_matches"
-    Profile -> "my_profile"
-    Agents -> "agents"
-    Weapons -> "weapons"
-    is FriendAgents -> "friend_agents"
-    is FriendWeapons -> "friend_weapons"
-    is PingDetail -> "ping_detail"
-    is FriendRanking -> "friend_ranking"
-    Settings -> "settings"
-}
 
 // 전환 중에 같은 줄을 두 번 누르면 같은 화면이 두 번 쌓인다.
 // 같은 키가 둘이면 저장 상태 키가 겹쳐 앱이 죽는다.

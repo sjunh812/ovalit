@@ -1,6 +1,9 @@
 package com.ovalit.feature.friend
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
@@ -13,21 +16,22 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.v2.runComposeUiTest
-import com.ovalit.core.designsystem.theme.OvalitTheme
+import androidx.compose.ui.unit.dp
 import com.ovalit.core.data.FakeAccountRepository
 import com.ovalit.core.data.FakeContentRepository
 import com.ovalit.core.data.FakeFriendRepository
 import com.ovalit.core.data.FakeMatchRepository
 import com.ovalit.core.data.FakePingRepository
+import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Friend
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.testing.SameThread
 import com.ovalit.core.testing.TestFriendRepository
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 import kotlinx.datetime.TimeZone
@@ -48,6 +52,20 @@ class FriendScreensTest {
 
         assertTrue(invited)
         onNodeWithText("닉네임으로는 찾을 수 없어요", substring = true).assertExists()
+    }
+
+    // 초대 버튼은 친구 카드 안에 있어 카드 제목과 같은 선에서 시작한다.
+    // 화면 여백을 쓰면 카드 글자선보다 4dp 왼쪽으로 삐져나온다.
+    @Test
+    fun `초대 버튼은 친구 카드 제목과 같은 선에서 시작한다`() = runComposeUiTest {
+        // 목록은 보이는 줄만 그려서 화면을 길게 잡아 제목과 버튼을 같이 그린다
+        setContent { Themed { Box(Modifier.requiredHeight(3000.dp)) { FriendsScreen(FriendPreviewData.friends, {}, {}, {}, {}) } } }
+
+        val title = onNodeWithText("친구 3명").getUnclippedBoundsInRoot()
+        val button = onNodeWithText("초대 링크 보내기").getUnclippedBoundsInRoot()
+        val note = onNodeWithText("닉네임으로는 찾을 수 없어요", substring = true).getUnclippedBoundsInRoot()
+        assertEquals(title.left, button.left)
+        assertEquals(title.left, note.left)
     }
 
     @Test

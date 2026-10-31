@@ -76,7 +76,7 @@ class MatchFormatTest {
         assertEquals(Score(myTeam = 1, enemyTeam = 1), match.score)
     }
 
-    // 데스매치 응답이 한 판을 한 라운드로 주면 경기 전체 점수가 라운드당 전투점수로 뜨고 관여율은 늘 100%가 된다
+    // 데스매치 응답이 한 판을 한 라운드로 주면 경기 전체 점수가 라운드당 전투 점수로 뜨고 관여율은 늘 100%가 된다
     @Test
     fun `라운드가 없는 모드는 스코어보드의 K_D_A와 맞힌 부위만 쓰고 라운드 값은 비운다`() {
         val oneRound = round(kill(10.0, Me, Enemy), damage = 3_000, shots = Shots(head = 9, body = 30, leg = 1))

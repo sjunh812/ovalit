@@ -4,6 +4,7 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.ovalit.LogBackgroundFailure
 import com.ovalit.core.data.AccountRepository
+import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.PingRepository
 import com.ovalit.core.data.PushRepository
 import com.ovalit.core.data.UserPreferencesRepository
@@ -27,6 +28,7 @@ class OvalitMessagingService : FirebaseMessagingService(), KoinComponent {
     private val account: AccountRepository by inject()
     private val preferences: UserPreferencesRepository by inject()
     private val pings: PingRepository by inject()
+    private val friends: FriendRepository by inject()
     private val push: PushRepository by inject()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + LogBackgroundFailure)
 
@@ -44,6 +46,12 @@ class OvalitMessagingService : FirebaseMessagingService(), KoinComponent {
         if (!linked) return
         if (type == "weekly_report") {
             if (settings.notifyWeeklyReport) PingNotifications.show(this, data)
+            return
+        }
+        // 친구 요청과 수락은 받은 요청과 친구 목록을 새로 받아 친구 탭을 맞춘다
+        if (type == "friend_request" || type == "friend_accept") {
+            scope.launch { friends.refresh() }
+            if (settings.notifyFriendRequest && !AppVisibility.isVisible) FriendNotifications.show(this, data)
             return
         }
         scope.launch { pings.refresh() }

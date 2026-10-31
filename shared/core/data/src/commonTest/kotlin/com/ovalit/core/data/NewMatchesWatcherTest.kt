@@ -11,6 +11,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -128,6 +129,22 @@ class NewMatchesWatcherTest {
         settle()
 
         assertEquals(pulled, matches.observeMatches().first().size)
+    }
+
+    // 확인한 시각이 미래로 남으면 시계가 그 시각을 다시 지날 때까지 새 경기를 받지 않는다
+    @Test
+    fun `기기 시계를 되돌렸으면 바로 다시 확인한다`() = runTest {
+        val clock = StepClock(Thursday)
+        val (matches, watcher) = watching(clock)
+        matches.importRecent()
+        settle()
+        val imported = matches.observeMatches().first().size
+
+        clock.now = Thursday - 1.hours
+        watcher.onAppVisible()
+        settle()
+
+        assertTrue(matches.observeMatches().first().size > imported)
     }
 
     // watcher는 backgroundScope에서 돈다.

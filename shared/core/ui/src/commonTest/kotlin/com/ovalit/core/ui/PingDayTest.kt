@@ -21,6 +21,14 @@ class PingDayTest {
         assertEquals(PingDay.TOMORROW, pingDayOf(at(4, 6, 0), now, Seoul))
     }
 
+    // 시작한 뒤 끝나기 전에 자정을 넘기면 "내일 23:30"처럼 하루 뒤로 읽힌다
+    @Test
+    fun `이미 시작한 초대는 자정을 넘겨도 오늘이다`() {
+        val now = at(4, 0, 10)
+
+        assertEquals(PingDay.TODAY, pingDayOf(at(3, 23, 30), now, Seoul))
+    }
+
     // 지금이 새벽이면 다음 날 새벽은 하루 뒤다
     @Test
     fun `새벽에 고른 다음 날 새벽은 내일이다`() {

@@ -35,7 +35,7 @@ class OtherMatchesTest {
         assertEquals(listOf(1, 2, 3, 4, 5), match.rounds.map { it.number })
         assertEquals(listOf(Score(2, 1), Score(2, 0)), match.halfScores)
         assertEquals(RoundEnding.SPIKE_DETONATED, match.rounds.first().ending)
-        // 크레드 규칙이 달라 이코·포스바이를 가르지 않는다
+        // 경제 규칙이 달라 이코·포스바이를 가르지 않는다
         assertTrue(match.rounds.all { it.buyType(match.queue) == null })
         assertEquals(setOf(PlayerId(A1)), match.allies)
     }
@@ -51,7 +51,7 @@ class OtherMatchesTest {
         assertTrue(match.roundOutcomes.isEmpty())
         assertEquals(listOf(PlayerId(ME)), match.players.filter { it.onMyTeam }.map { it.player })
         // 응답의 roundsPlayed가 1이어도 나누지 않는다.
-        // 한 판 점수가 라운드당 전투점수로 뜬다.
+        // 나누면 한 판 점수가 라운드당 전투 점수로 뜬다.
         assertTrue(match.players.all { it.roundsPlayed == 0 })
         assertNull(match.myScoreline?.let(match::acsOf))
         assertEquals(false, match.myTeamWon)
@@ -118,6 +118,17 @@ class OtherMatchesTest {
 
         assertNull(decodeMatch(custom).toMatch(PlayerId(ME), noRoles))
         assertNull(decodeMatch(customWithQueue).toMatch(PlayerId(ME), noRoles))
+    }
+
+    // 목록(toEntries)은 큐가 빠진 경기를 기타로 받는다.
+    // 상세에서 커스텀 게임으로 버리면 받아 놓고 저장하지 않는 경기가 생긴다.
+    @Test
+    fun `큐가 빠진 경기는 커스텀 게임이 아니라 기타로 옮긴다`() {
+        val missing = SpikeRushMatch.replace("\"queueId\": \"spikerush\",", "")
+        val missingCustom = missing.replace("\"provisioningFlowId\": \"Matchmaking\"", "\"provisioningFlowId\": \"CustomGame\"")
+
+        assertEquals(Queue.OTHER, assertNotNull(decodeMatch(missing).toMatch(PlayerId(ME), noRoles)).queue)
+        assertNull(decodeMatch(missingCustom).toMatch(PlayerId(ME), noRoles))
     }
 
     @Test

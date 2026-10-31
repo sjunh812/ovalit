@@ -18,17 +18,18 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalTestApi::class)
 class OvalitLaunchAnimationTest {
 
-    // 켤 때마다 보는 화면이라 1.25초 안에 끝나야 한다.
-    // 스플래시가 움직이지 않으면 점이 떠올라 한 번 출렁인 뒤 벌어진다.
+    // 켤 때마다 보는 화면이라 짧아야 한다.
+    // 스플래시가 움직이지 않으면 점이 떠올라 한 번 출렁인 뒤 벌어지고 사라지기까지 1.25초다.
+    // 화면이 자리 잡기를 기다리는 몇 프레임을 더해도 1.4초 안에 끝난다.
     @Test
     fun `로고 애니메이션은 1초 남짓 재생하고 끝을 알린다`() = runComposeUiTest {
         var finished = false
         mainClock.autoAdvance = false
         setContent { OvalitTheme { OvalitLaunchAnimation(onFinished = { finished = true }) } }
 
-        mainClock.advanceTimeBy(900)
+        mainClock.advanceTimeBy(1_200)
         assertFalse(finished)
-        mainClock.advanceTimeBy(500)
+        mainClock.advanceTimeBy(200)
         assertTrue(finished)
     }
 

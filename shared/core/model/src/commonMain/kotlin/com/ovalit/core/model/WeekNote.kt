@@ -175,7 +175,7 @@ private fun movedFixedMetric(
 // 같은 쪽으로 움직인 무기 중 비중 × 차이가 가장 큰 것이다.
 // S6 위쪽 표가 변화량을 적는 기준과 맞춰 두 기간 모두 표본을 넘긴 무기만 본다.
 private fun movedWeapon(moved: MovedMetric, weapons: List<WeaponTrend>, rounds: Int): MovedWeapon? {
-    // 전투점수와 KDA는 무기별로 짚을 값이 없다
+    // 전투 점수와 KDA는 무기별로 짚을 값이 없다
     val metric = moved.metric.weaponMetric ?: return null
     if (rounds == 0) return null
 
@@ -217,7 +217,7 @@ private fun movedAgent(moved: MovedMetric, agents: List<AgentTrend>, rounds: Int
  *
  * 이번 기간 묶음별 성적을 그대로 두고 비중만 비교 기준처럼 맞춘 값을 구합니다.
  * 원래 값과 그 값의 차이가 비중이 바뀐 몫입니다.
- * 전투점수는 경기 합계뿐이라 라운드로 가른 묶음에는 0으로 들어가([roundMetrics]) 비중 몫이 없고 요원으로만 짚습니다.
+ * 전투 점수는 경기 합계뿐이라 라운드로 가른 묶음에는 0으로 들어가([roundMetrics]) 비중 몫이 없고 요원으로만 짚습니다.
  */
 private fun chooseMix(moved: MovedMetric, mixes: List<List<MixSlice>>, weapons: List<WeaponTrend>): MixShift? {
     val direction = if (moved.rose) 1.0 else -1.0

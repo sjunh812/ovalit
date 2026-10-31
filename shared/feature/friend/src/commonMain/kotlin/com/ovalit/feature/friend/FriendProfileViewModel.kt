@@ -6,6 +6,7 @@ import com.ovalit.core.data.ContentRepository
 import com.ovalit.core.data.FriendRepository
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.PingRepository
+import com.ovalit.core.data.settledMatches
 import com.ovalit.core.model.AgentReport
 import com.ovalit.core.model.ContentCatalog
 import com.ovalit.core.model.Friend
@@ -107,7 +108,8 @@ class FriendProfileViewModel(
     private val counted: Flow<FriendProfileUiState> = combine(
         friendRepository.friends,
         friendRepository.rival,
-        matchRepository.observeMatches(),
+        // 함께 뛴 기록과 이번 주 비교는 숫자를 모아 세서 새 경기를 다 받은 뒤에 한 번 바꾼다
+        matchRepository.settledMatches(),
         contentRepository.catalog,
         weekChanges,
     ) { friends, rival, myMatches, catalog, _ ->
@@ -152,10 +154,19 @@ class FriendProfileViewModel(
     /** 사용자가 한 일이 실패했을 때 화면 아래에 띄울 안내입니다. */
     val notices: Flow<FailureNotice> = failures.flow
 
-    fun toggleRival() {
+    /**
+     * 화면에 보이던 상태를 보고 정할 값을 받습니다.
+     * 저장소를 읽고 뒤집으면 빠르게 두 번 눌렀을 때 정했다가 바로 풀립니다.
+     */
+    fun setRival(rival: Boolean) {
         viewModelScope.launchNotifying(failures, FailedAction.RIVAL) {
-            val isRival = friendRepository.rival.first() == friendId
-            friendRepository.setRival(if (isRival) null else friendId)
+            val current = friendRepository.rival.first()
+            if (rival) {
+                friendRepository.setRival(friendId)
+            } else if (current == friendId) {
+                // 그사이 다른 친구를 라이벌로 정했으면 그 친구는 두고 넘어간다
+                friendRepository.setRival(null)
+            }
         }
     }
 

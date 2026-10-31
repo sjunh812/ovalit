@@ -281,12 +281,13 @@ private fun ReportContent(
 
     // 고정 칸과 달라진 점은 숫자와 변화량, 평소 값을 같은 크기, 같은 배치로 둔다.
     // 카드마다 따로 정하면 좁은 기기에서 한쪽만 변화량이 내려간다.
-    val dynamicShown = queueFilter.hasDynamicMetrics && report.dynamic.isNotEmpty()
-    val metricLines = fixedMetricLines(report.metrics, report.baseline, queueFilter.fixedMetrics) +
-        if (dynamicShown) dynamicMetricLines(report) else emptyList()
-
     // 짚을 점은 기타 모드에 없다
     val note = report.note?.takeIf { queueFilter.hasDynamicMetrics }
+    val highlighted = note?.takeIf { it.isShown }?.moved?.metric
+
+    val dynamicShown = queueFilter.hasDynamicMetrics && report.dynamic.isNotEmpty()
+    val metricLines = fixedMetricLines(report.metrics, report.baseline, queueFilter.fixedMetrics, highlighted) +
+        if (dynamicShown) dynamicMetricLines(report) else emptyList()
 
     // 한 프레임에 한 묶음씩 그린다.
     // 무거운 칸(고정 칸, 달라진 점, 요원·무기)은 따로 묶는다.
@@ -315,7 +316,7 @@ private fun ReportContent(
                 fixedMetrics = queueFilter.fixedMetrics,
                 onOpenMetric = { openMetric = it },
                 lines = metricLines,
-                highlighted = note?.takeIf { it.isShown }?.moved?.metric,
+                highlighted = highlighted,
             )
             FixedMetricSummary(baseline = report.baseline)
         }
@@ -366,6 +367,8 @@ private fun ReportContent(
                 OvalitCard { FriendRankingSection(mine = report.metrics, friends = friends, onOpenAll = onOpenFriendRanking) }
             }
         }
+        // 홈을 끝까지 내려 본 뒤에만 보이는 자리라 그림이 큰 카드로 둔다(docs/screens.md 광고)
+        AdSlot(AdPlacement.HOME_BOTTOM) { ad -> OvalitCard { ad() } }
     } else {
         OvalitCard {
             OvalitText(

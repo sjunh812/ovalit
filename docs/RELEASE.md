@@ -27,6 +27,7 @@ Play에 앱을 올릴 때 보는 문서입니다. 처음 한 번 해 둘 것, �
 | --- | --- | --- |
 | 광고 | 없음 | AdMob 네이티브 광고와 24시간 광고 없이 보기 |
 | ㅇㅂㅇ(파티 모집) | 없음 | 서로 수락한 친구를 시각을 정해 부르고 푸시로 알립니다 |
+| 친구 요청 알림 | 없음 | 친구 요청을 받거나 내 요청이 수락되면 푸시로 알립니다. 설정의 친구 요청 알림 스위치로 끕니다 |
 | 일본어 화면 | Korean-language | 한국어와 일본어 화면이고 데이터는 한국 샤드입니다. AP 샤드는 이때 같이 붙입니다 |
 | iOS 앱 | Android, Google Play in Korea | iOS(App Store)도 낼 예정이다. iOS를 내기 전에 제품 설명에 더한다 |
 | 스코어보드 | 앱을 안 쓰는 사람은 누를 수 없다(not tappable) | 이름을 누르면 친구 요청이나 초대 링크를 보낼 수 있습니다. 프로필과 다른 경기는 열리지 않습니다 |
@@ -45,7 +46,7 @@ Play에 앱을 올릴 때 보는 문서입니다. 처음 한 번 해 둘 것, �
 | --- | --- | --- | --- |
 | `composeApp/google-services.json` | Firebase 콘솔 > 프로젝트 설정 > 내 앱에서 받은 파일 | 푸시, 사용 통계, 비정상 종료 보고 | 셋 다 없이 돕니다 |
 | `local.properties` | `admob.appId`, `admob.nativeUnitId`, `admob.rewardedUnitId` | 광고 | 광고 자리가 비고 보상형이 없으면 광고 줄의 ×가 그 광고만 바로 닫습니다 |
-| `local.properties` | `admob.test` | `true`면 디버그 빌드가 Google 테스트 광고를 받습니다. 빌드할 때 `-Povalit.ads.test=true`로도 됩니다 | 디버그도 위 ID를 씁니다 |
+| `local.properties` | `admob.test` | `true`면 개발 빌드(디버그, benchmark)가 Google 테스트 광고를 받습니다. 빌드할 때 `-Povalit.ads.test=true`로도 됩니다 | 개발 빌드는 광고 자리가 없습니다. 실제 ID는 릴리스만 씁니다 |
 | `local.properties` | `ovalit.feedback.email` | 설정의 "피드백 보내기"가 여는 메일의 받는 주소 | 그 줄이 없습니다 |
 | `local.properties` | `ovalit.server.host` | RSO 로그인과 초대 링크의 App Link 호스트 | 아무 데도 이어지지 않는 예약 도메인을 씁니다 |
 | `server/.dev.vars`, Cloudflare 비밀값 | Riot 키, RSO `client_secret`, `FCM_SERVICE_ACCOUNT` 등 | 서버 | `server/README.md`를 봅니다 |

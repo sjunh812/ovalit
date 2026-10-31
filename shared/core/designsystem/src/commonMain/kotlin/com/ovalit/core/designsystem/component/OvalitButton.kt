@@ -1,8 +1,6 @@
 package com.ovalit.core.designsystem.component
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -78,23 +76,26 @@ fun OvalitTextButton(
     }
 }
 
-/** [OvalitPrimaryButton]보다 한 단계 낮은 버튼입니다. */
+/**
+ * [OvalitPrimaryButton]보다 한 단계 낮은 버튼입니다.
+ * 테두리 없이 옅은 `--fill` 면만 깝니다(토스 TDS의 weak).
+ * 테두리만 두르면 `--canvas` 회색 위에서 면이 없어 묻힙니다.
+ */
 @Composable
-fun OvalitOutlinedButton(
+fun OvalitWeakButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    contentColor: Color = OvalitTheme.colors.t1,
 ) {
+    val colors = OvalitTheme.colors
     OvalitButtonSurface(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         enabled = true,
-        background = Color.Transparent,
-        pressColor = contentColor,
-        border = BorderStroke(1.dp, OvalitTheme.colors.line),
+        background = colors.fill,
+        pressColor = colors.t1,
     ) {
-        OvalitText(text = text, style = OvalitTheme.typography.bodyStrong, color = contentColor)
+        OvalitText(text = text, style = OvalitTheme.typography.bodyStrong, color = colors.t1)
     }
 }
 
@@ -131,7 +132,6 @@ private fun OvalitButtonSurface(
     enabled: Boolean,
     background: Color,
     pressColor: Color,
-    border: BorderStroke? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -139,7 +139,7 @@ private fun OvalitButtonSurface(
     Box(
         modifier = modifier
             .defaultMinSize(minHeight = ButtonMinHeight)
-            // 누르면 면과 테두리까지 같이 줄어야 해서 둘을 그리기 전에 단다
+            // 누르면 면까지 같이 줄어야 해서 면을 그리기 전에 단다
             .clickable(
                 interactionSource = interactionSource,
                 indication = pressIndication(ButtonShape, pressColor),
@@ -149,7 +149,6 @@ private fun OvalitButtonSurface(
             )
             .clip(ButtonShape)
             .background(background)
-            .then(if (border != null) Modifier.border(border, ButtonShape) else Modifier)
             .padding(horizontal = OvalitSpacing.lg, vertical = OvalitSpacing.md),
         contentAlignment = Alignment.Center,
         content = content,

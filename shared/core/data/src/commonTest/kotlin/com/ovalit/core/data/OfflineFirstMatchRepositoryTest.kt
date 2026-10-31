@@ -161,7 +161,7 @@ class OfflineFirstMatchRepositoryTest {
         val broken = object : MatchRemoteSource {
             override suspend fun matchList(): List<MatchListEntry> = throw IllegalStateException("응답을 읽지 못했다")
 
-            override suspend fun match(id: MatchId): Match? = null
+            override suspend fun match(id: MatchId): MatchDetail = MatchDetail.Skipped
         }
         val repository = OfflineFirstMatchRepository(broken, InMemoryMatchStore(), StepClock(Thursday), this)
 
@@ -411,7 +411,7 @@ class OfflineFirstMatchRepositoryTest {
         val fresh = history(4, newest = Thursday + 2.hours, prefix = "new", every = 20.minutes)
         val remote = TestMatchRemote(saved + fresh)
         // 맨 앞 한 판은 저장했지만 남은 목록에서 빼기 전에 꺼졌다
-        val store = restarted(saved + fresh.take(1), NewMatchesBatch(total = 4, left = fresh.map { it.id }))
+        val store = restarted(saved + fresh.take(1), NewMatchesBatch(total = 4, left = fresh.map { it.entry }))
 
         val repository = OfflineFirstMatchRepository(remote, store, StepClock(Thursday + 3.hours), this)
         assertEquals(NewMatchesProgress(total = 4, received = 0), repository.newMatchesProgress.first())
@@ -428,7 +428,7 @@ class OfflineFirstMatchRepositoryTest {
         val saved = history(3)
         val fresh = history(4, newest = Thursday + 2.hours, prefix = "new", every = 20.minutes)
         val remote = TestMatchRemote(saved + fresh)
-        val store = restarted(saved, NewMatchesBatch(total = 4, left = fresh.map { it.id }, stopped = true))
+        val store = restarted(saved, NewMatchesBatch(total = 4, left = fresh.map { it.entry }, stopped = true))
 
         val repository = OfflineFirstMatchRepository(remote, store, StepClock(Thursday + 3.hours), this)
         advanceUntilIdle()
@@ -437,6 +437,171 @@ class OfflineFirstMatchRepositoryTest {
         assertNull(repository.newMatchesProgress.first())
         assertEquals(4, repository.refresh())
         assertEquals(0, remote.listings)
+    }
+
+    // 저장하지 않은 경기를 잊으면 새 경기를 확인할 때마다 8주 동안 같은 경기를 다시 받는다.
+    // Riot 레이트 리밋은 앱 전체에 걸려 있다.
+    @Test
+    fun `상세를 보고 저장하지 않은 경기는 다음 확인부터 다시 요청하지 않는다`() = runTest {
+        val clock = StepClock(Thursday)
+        val remote = TestMatchRemote(history(3))
+        remote.playCustomGame("custom-in-import", Thursday - 20.minutes, listedAs = Queue.UNRATED)
+        val repository = imported(remote, clock)
+        remote.playCustomGame("custom-in-refresh", Thursday + 30.minutes, listedAs = Queue.UNRATED)
+        remote.finish(listOf(match("new", Thursday + 1.hours)))
+        clock.now = Thursday + 2.hours
+
+        assertEquals(1, repository.refresh())
+        val before = remote.fetched.size
+        remote.finish(listOf(match("newer", Thursday + 3.hours)))
+        clock.now = Thursday + 4.hours
+        assertEquals(1, repository.refresh())
+
+        assertEquals(1, remote.fetched.count { it == MatchId("custom-in-import") })
+        assertEquals(1, remote.fetched.count { it == MatchId("custom-in-refresh") })
+        assertEquals(listOf(MatchId("newer")), remote.fetched.drop(before))
+    }
+
+    // 끝나면 결과가 생긴다.
+    // 계속 다시 보면 끝나지 않는 경기가 8주 동안 Riot 몫을 쓴다.
+    @Test
+    fun `끝나지 않은 경기는 한 시간 뒤에 한 번만 다시 받아 본다`() = runTest {
+        val clock = StepClock(Thursday)
+        val remote = TestMatchRemote(history(3))
+        val repository = imported(remote, clock)
+        val finished = match("finished-later", Thursday + 1.hours)
+        val stuck = match("stuck", Thursday + 2.hours)
+        remote.playUnfinished(finished)
+        remote.playUnfinished(stuck)
+        clock.now = Thursday + 3.hours
+        assertEquals(0, repository.refresh())
+
+        clock.now = Thursday + 3.hours + 30.minutes
+        assertEquals(0, repository.refresh())
+        assertEquals(1, remote.fetched.count { it == stuck.id })
+
+        remote.complete(finished.id)
+        clock.now = Thursday + 4.hours + 1.minutes
+        assertEquals(1, repository.refresh())
+        assertEquals(finished, repository.observeMatches().first().last())
+
+        clock.now = Thursday + 8.hours
+        repository.refresh()
+        assertEquals(2, remote.fetched.count { it == stuck.id })
+        assertEquals(2, remote.fetched.count { it == finished.id })
+    }
+
+    // 다시 연동하면 처음부터 받는다.
+    // 남겨 두면 다른 계정의 기록이 첫 수집에서 경기를 뺀다.
+    @Test
+    fun `경기를 지우면 저장하지 않기로 한 경기도 잊는다`() = runTest {
+        val remote = TestMatchRemote(history(3))
+        remote.playCustomGame("custom-in-detail", Thursday - 20.minutes, listedAs = Queue.UNRATED)
+        val store = InMemoryMatchStore()
+        val repository = OfflineFirstMatchRepository(remote, store, StepClock(Thursday), this)
+        repository.importRecent()
+        assertEquals(setOf(MatchId("custom-in-detail")), store.skipped.first().keys)
+
+        repository.deleteAll()
+
+        assertEquals(emptyMap(), store.skipped.first())
+    }
+
+    // 멈춘 뒤 몇 주 지나 당기면 그사이 8주 밖으로 나간 경기까지 받는다
+    @Test
+    fun `멈춘 새 경기를 이어 받을 때도 8주를 넘은 경기는 받지 않는다`() = runTest {
+        val saved = history(3)
+        val fresh = history(4, newest = Thursday + 2.hours, prefix = "new", every = 20.minutes)
+        val remote = TestMatchRemote(saved + fresh)
+        val store = restarted(saved, NewMatchesBatch(total = 4, left = fresh.map { it.entry }, stopped = true))
+        val repository = OfflineFirstMatchRepository(remote, store, StepClock(Thursday + 56.days + 1.hours + 30.minutes), this)
+        val seen = mutableListOf<NewMatchesProgress?>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { repository.newMatchesProgress.toList(seen) }
+
+        assertEquals(2, repository.refresh())
+
+        assertEquals(fresh.take(2).map { it.id }, remote.fetched)
+        assertEquals((0..2).map { NewMatchesProgress(total = 2, received = it) }, seen.filterNotNull())
+    }
+
+    // 남은 게 없다고 빈 채로 끝내면 당겨도 새 경기를 확인하지 않는다
+    @Test
+    fun `남은 새 경기가 모두 빠지면 목록을 새로 받는다`() = runTest {
+        val saved = history(3)
+        val fresh = history(2, newest = Thursday + 2.hours, prefix = "new", every = 20.minutes)
+        val newer = match("newer", Thursday + 3.hours)
+        val remote = TestMatchRemote(saved + fresh + newer)
+        // 남은 두 판을 저장한 뒤 남은 목록에서 빼기 전에 멈췄다
+        val store = restarted(saved + fresh, NewMatchesBatch(total = 2, left = fresh.map { it.entry }, stopped = true))
+        val repository = OfflineFirstMatchRepository(remote, store, StepClock(Thursday + 4.hours), this)
+
+        assertEquals(1, repository.refresh())
+
+        assertEquals(1, remote.listings)
+        assertEquals(listOf(newer.id), remote.fetched)
+        assertNull(store.newMatches.first())
+    }
+
+    // NewMatchesWorker는 남은 게 있을 때만 이어 받는다.
+    // 멈춘 것을 남지 않은 것으로 보면 이어 받지 않고 다 받았다고 알린다.
+    @Test
+    fun `받다 멈춘 새 경기도 남은 것으로 치고 다 받으면 남지 않는다`() = runTest {
+        val saved = history(3)
+        val fresh = history(4, newest = Thursday + 2.hours, prefix = "new", every = 20.minutes)
+        val remote = TestMatchRemote(saved + fresh)
+        val store = restarted(saved, NewMatchesBatch(total = 4, left = fresh.map { it.entry }, stopped = true))
+        val repository = OfflineFirstMatchRepository(remote, store, StepClock(Thursday + 3.hours), this)
+
+        assertTrue(repository.hasPendingNewMatches.first())
+        assertNull(repository.newMatchesProgress.first())
+
+        repository.refresh()
+
+        assertFalse(repository.hasPendingNewMatches.first())
+    }
+
+    // 내 프로필, S6, S7, 친구 순위를 받는 중에 열면 다 받을 때까지 스켈레톤만 뜬다
+    @Test
+    fun `새 경기를 받는 중에 연 화면도 받기 전 경기로 바로 세고 다 받은 뒤에 한 번 더 센다`() = runTest {
+        val clock = StepClock(Thursday)
+        val played = history(5)
+        val remote = TestMatchRemote(played)
+        val repository = imported(remote, clock)
+        val fresh = history(10, newest = Thursday + 5.hours, prefix = "new", every = 30.minutes)
+        remote.finish(fresh)
+        clock.now = Thursday + 6.hours
+        launch { repository.refresh() }
+        advanceTimeBy(350.milliseconds)
+        assertTrue(repository.observeMatches().first().size > played.size)
+
+        val seen = mutableListOf<List<Match>>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { repository.settledMatches().toList(seen) }
+        assertEquals(listOf(played), seen)
+        advanceUntilIdle()
+
+        assertEquals(listOf(played, played + fresh), seen)
+    }
+
+    // 멈춘 동안 화면은 앞서 받은 경기까지 셌다.
+    // 이어 받는 동안 그 경기를 빼면 숫자가 받기 전으로 돌아갔다 다시 바뀐다.
+    @Test
+    fun `멈췄다 이어 받는 동안에는 앞서 받은 경기를 빼지 않는다`() = runTest {
+        val clock = StepClock(Thursday)
+        val played = history(3)
+        val remote = TestMatchRemote(played)
+        val repository = imported(remote, clock)
+        val fresh = history(10, newest = Thursday + 10.hours, prefix = "new", every = 30.minutes)
+        remote.finish(fresh)
+        clock.now = Thursday + 11.hours
+        remote.failAfter(4, OvalitError.RiotBusy)
+        assertFailsWith<OvalitException> { repository.refresh() }
+        val seen = mutableListOf<List<Match>>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { repository.settledMatches().toList(seen) }
+
+        remote.recover()
+        repository.refresh()
+
+        assertEquals(listOf(played + fresh.take(4), played + fresh), seen)
     }
 
     private fun TestScope.repositoryOf(remote: MatchRemoteSource, clock: Clock = StepClock(Thursday)) =
@@ -462,6 +627,7 @@ private class TestMatchRemote(
 ) : MatchRemoteSource {
     private val matches = played.toMutableList()
     private val customGames = mutableListOf<MatchListEntry>()
+    private val inProgress = mutableSetOf<MatchId>()
     private var listingError: OvalitError? = null
     private var fetchError: OvalitError? = null
     private var fetchesBeforeError = 0
@@ -478,6 +644,16 @@ private class TestMatchRemote(
     /** 커스텀 게임을 뜁니다. 목록에도 커스텀 게임으로 오지만 [listedAs]를 주면 그 큐로 와서 상세를 받아야 커스텀 게임인 걸 압니다. */
     fun playCustomGame(id: String, startedAt: Instant, listedAs: Queue? = null) {
         customGames += MatchListEntry(MatchId(id), startedAt, listedAs)
+    }
+
+    /** 목록에는 오지만 상세는 아직 끝나지 않은 경기로 옵니다. [complete]를 부르면 끝납니다. */
+    fun playUnfinished(match: Match) {
+        matches += match
+        inProgress += match.id
+    }
+
+    fun complete(id: MatchId) {
+        inProgress -= id
     }
 
     fun failListing(error: OvalitError) {
@@ -502,13 +678,16 @@ private class TestMatchRemote(
         return matches.map { MatchListEntry(it.id, it.startedAt, it.queue) } + customGames
     }
 
-    override suspend fun match(id: MatchId): Match? {
+    override suspend fun match(id: MatchId): MatchDetail {
         delay(fetchDelay)
         fetchError?.let { if (fetchesBeforeError-- <= 0) throw OvalitException(it) }
         fetched += id
-        return matches.firstOrNull { it.id == id }
+        if (id in inProgress) return MatchDetail.Unfinished
+        return matches.firstOrNull { it.id == id }?.let(MatchDetail::Found) ?: MatchDetail.Skipped
     }
 }
+
+private val Match.entry: MatchListEntry get() = MatchListEntry(id, startedAt, queue)
 
 /** 최신 경기부터 [every]씩 앞서 시작한 경기들입니다. */
 private fun history(count: Int, newest: Instant = Thursday - 1.hours, prefix: String = "played", every: Duration = 3.hours) =

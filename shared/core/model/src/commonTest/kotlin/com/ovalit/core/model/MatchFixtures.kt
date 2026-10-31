@@ -80,6 +80,15 @@ internal fun kill(
     weapon = weapon,
 )
 
+/** 응답에 시각이 빠진 킬입니다. 매퍼처럼 맨 뒤로 보냅니다. */
+internal fun untimedKill(killer: PlayerId, victim: PlayerId, weapon: WeaponId? = null) = KillEvent(
+    atMillis = KillEvent.UNKNOWN_TIME,
+    killer = killer,
+    victim = victim,
+    assistants = emptySet(),
+    weapon = weapon,
+)
+
 internal fun assertRate(expected: Double, actual: Double?) {
     assertNotNull(actual, "비율이 null이다. 분모가 0인지 확인할 것")
     assertEquals(expected, actual, absoluteTolerance = 0.0001)

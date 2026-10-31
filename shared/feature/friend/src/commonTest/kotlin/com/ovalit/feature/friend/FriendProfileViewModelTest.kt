@@ -46,15 +46,27 @@ class FriendProfileViewModelTest {
     }
 
     @Test
-    fun `라이벌 버튼은 누를 때마다 지정과 해제를 오간다`() = runTest {
+    fun `라이벌 버튼으로 지정하고 해제한다`() = runTest {
         val viewModel = viewModel()
         collect(viewModel)
 
-        viewModel.toggleRival()
+        viewModel.setRival(true)
         assertTrue(assertIs<FriendProfileUiState.Success>(viewModel.uiState.value).isRival)
 
-        viewModel.toggleRival()
+        viewModel.setRival(false)
         assertEquals(false, assertIs<FriendProfileUiState.Success>(viewModel.uiState.value).isRival)
+    }
+
+    // 화면이 바뀌기 전에 두 번 누르면 두 번 다 지정이다
+    @Test
+    fun `지정을 두 번 눌러도 풀리지 않는다`() = runTest {
+        val viewModel = viewModel()
+        collect(viewModel)
+
+        viewModel.setRival(true)
+        viewModel.setRival(true)
+
+        assertTrue(assertIs<FriendProfileUiState.Success>(viewModel.uiState.value).isRival)
     }
 
     // 화면은 Gone을 보고 한 번만 닫힌다

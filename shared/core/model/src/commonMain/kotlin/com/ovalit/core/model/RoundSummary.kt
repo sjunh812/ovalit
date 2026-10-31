@@ -36,6 +36,7 @@ data class RoundSummary(
  * S3 라운드 탭 킬 순서의 한 줄입니다.
  *
  * @property firstBlood 그 라운드에서 처음 나온 적 처치인지입니다.
+ *   리포트의 첫 킬과 같은 킬이고 시각이 없는 킬은 첫 킬이 아닙니다.
  */
 data class RoundKill(
     val atMillis: Long,
@@ -59,9 +60,8 @@ fun Match.roundSummaries(): List<RoundSummary> {
         } else {
             val result = round.analyze(me = me, allies = allies)
             val myTeam = allies + me
-            val enemyKills = round.kills
-                .filter { it.killer != it.victim && (it.killer in myTeam) != (it.victim in myTeam) }
-                .sortedBy { it.atMillis }
+            val enemyKills = round.enemyKills(me = me, allies = allies).sortedBy { it.atMillis }
+            val firstBlood = enemyKills.firstBlood()
             RoundSummary(
                 number = number,
                 won = won,
@@ -76,14 +76,14 @@ fun Match.roundSummaries(): List<RoundSummary> {
                 highlight = if (roundBased) round.highlight(me = me, allies = allies, enemies = enemies) else null,
                 enemyBuyType = round.enemyBuyType(queue),
                 myDamage = round.myDamage,
-                kills = enemyKills.mapIndexed { index, kill ->
+                kills = enemyKills.map { kill ->
                     RoundKill(
                         atMillis = kill.atMillis,
                         killer = kill.killer,
                         victim = kill.victim,
                         weapon = kill.weapon,
                         byMyTeam = kill.killer in myTeam,
-                        firstBlood = index == 0,
+                        firstBlood = kill === firstBlood,
                     )
                 },
             )
@@ -137,6 +137,8 @@ data class RoundsOverview(
     val upsets: Int,
 )
 
+private val RoundSummary.firstBlood: RoundKill? get() = kills.firstOrNull { it.firstBlood }
+
 /** 장비가 이만큼 넘게 적으면 불리했던 라운드로 봅니다. 시작 기준선입니다. */
 const val UPSET_LOADOUT_GAP = 1_000
 
@@ -144,8 +146,8 @@ fun Match.roundsOverview(): RoundsOverview {
     val played = roundSummaries().filter { it.played }
     fun List<RoundSummary>.record() = WinRecord(rounds = size, wins = count { it.won })
     return RoundsOverview(
-        ourFirstBlood = played.filter { it.kills.firstOrNull()?.byMyTeam == true }.record(),
-        theirFirstBlood = played.filter { it.kills.firstOrNull()?.byMyTeam == false }.record(),
+        ourFirstBlood = played.filter { it.firstBlood?.byMyTeam == true }.record(),
+        theirFirstBlood = played.filter { it.firstBlood?.byMyTeam == false }.record(),
         attack = played.filter { it.side == Side.ATTACK }.record(),
         defense = played.filter { it.side == Side.DEFENSE }.record(),
         upsets = played.count { round ->

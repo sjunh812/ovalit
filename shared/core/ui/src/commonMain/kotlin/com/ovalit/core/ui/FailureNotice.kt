@@ -33,7 +33,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
@@ -103,6 +107,42 @@ fun CoroutineScope.launchNotifying(
     } catch (e: Exception) {
         onFailure()
         notices.send(FailureNotice(action, e.ovalitError))
+    }
+}
+
+/**
+ * 보내는 중인 사용자 동작입니다.
+ * 같은 키의 동작이 진행 중이면 다시 시작하지 않습니다.
+ * 버튼을 연타하면 같은 요청이 여러 번 가서 두 번째가 실패 안내(404)를 띄우거나 친구에게 알림이 여러 번 갑니다.
+ * 화면은 [running]으로 그 버튼을 흐리게 둡니다.
+ * ViewModel의 메인 스레드에서만 부릅니다.
+ */
+class InFlight {
+    private val keys = MutableStateFlow<Set<Any>>(emptySet())
+
+    val running: StateFlow<Set<Any>> = keys.asStateFlow()
+
+    /**
+     * [key]가 이미 진행 중이면 아무것도 하지 않고 `null`을 돌려줍니다.
+     * 끝나면(실패해도) 키를 뺍니다.
+     */
+    fun launch(
+        scope: CoroutineScope,
+        key: Any,
+        notices: FailureNotices,
+        action: FailedAction,
+        onFailure: () -> Unit = {},
+        block: suspend CoroutineScope.() -> Unit,
+    ): Job? {
+        if (key in keys.value) return null
+        keys.update { it + key }
+        return scope.launchNotifying(notices, action, onFailure) {
+            try {
+                block()
+            } finally {
+                keys.update { it - key }
+            }
+        }
     }
 }
 

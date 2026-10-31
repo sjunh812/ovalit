@@ -25,6 +25,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
@@ -40,7 +41,9 @@ import kotlinx.coroutines.test.setMain
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsViewModelTest {
 
-    private val matches = FakeMatchRepository()
+    // 기본 범위는 Dispatchers.Default라 저장소가 시작할 때 잠금을 잡은 순간과 겹치면 지우기가 그 스레드에서 끝난다.
+    // 그러면 해제를 마쳤다는 콜백이 검사보다 늦게 와서 가끔 실패했다.
+    private val matches = FakeMatchRepository(scope = CoroutineScope(UnconfinedTestDispatcher()))
     private val account = RecordingAccount(FakeAccountRepository(matches))
     private val preferences = TestUserPreferencesRepository()
     private val server = FakeAccountSettingsRepository(latency = 1.seconds)

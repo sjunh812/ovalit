@@ -87,10 +87,10 @@ class FakeMatchRemoteSource(
         }
     }
 
-    override suspend fun match(id: MatchId): Match? {
+    override suspend fun match(id: MatchId): MatchDetail {
         val (match, wait) = lock.withLock { history.firstOrNull { it.id == id } to (waits[id] ?: importDelay) }
         delay(wait)
-        return match
+        return match?.let(MatchDetail::Found) ?: MatchDetail.Skipped
     }
 
     // 경쟁전으로 고른다.

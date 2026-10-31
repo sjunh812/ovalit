@@ -1,11 +1,13 @@
 package com.ovalit.feature.match
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
@@ -13,6 +15,7 @@ import androidx.compose.ui.test.hasStateDescription
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
@@ -21,9 +24,15 @@ import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.ui.MatchRow
+import com.ovalit.core.ui.MatchRowStyle
+import com.ovalit.core.ui.MatchRowsSkeleton
+import com.ovalit.core.ui.matchRowTextStart
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -254,7 +263,7 @@ class MatchScreensTest {
     }
 
     // 데스매치와 건틀릿은 승패 대신 등수로 끝난다.
-    // 라운드가 없어 전투점수도 없다.
+    // 라운드가 없어 전투 점수도 없다.
     @Test
     fun `등수로 끝나는 경기 줄은 스코어 대신 등수를 적고 아랫줄에 승패를 두지 않는다`() = runComposeUiTest {
         setContent { Themed { MatchesScreen(MatchPreviewData.otherMatches, {}, {}, {}) } }
@@ -262,8 +271,8 @@ class MatchScreensTest {
         onNode(hasText("14명 중 3등") and hasStateDescription("14명 중 3등")).assertExists()
         onNodeWithText("데스매치 · 50분 전", useUnmergedTree = true).assertExists()
         onNodeWithText("8팀 중 2등").assertExists()
-        onNodeWithText("31/26/0").assertExists()
-        // 리포트에 넣는 스파이크 돌격만 전투점수가 있다
+        onNodeWithText("31 / 26 / 0").assertExists()
+        // 리포트에 넣는 스파이크 돌격만 전투 점수가 있다
         onAllNodesWithText("ACS", substring = true).assertCountEquals(1)
     }
 
@@ -284,7 +293,7 @@ class MatchScreensTest {
         onNodeWithText("우리 팀").assertDoesNotExist()
         onNodeWithText("라운드").assertDoesNotExist()
         onNodeWithText("내 기록").assertDoesNotExist()
-        onNodeWithText("전투점수").assertDoesNotExist()
+        onNodeWithText("전투 점수").assertDoesNotExist()
         // 맨 위 등수와 내 줄의 자리 칩
         assertTrue(onAllNodesWithText("3등").fetchSemanticsNodes().size >= 2)
     }
@@ -322,6 +331,60 @@ class MatchScreensTest {
         waitForIdle()
 
         assertTrue(refreshed)
+    }
+    // 스켈레톤이 실제 줄보다 낮으면 경기가 나타날 때 목록이 밀린다.
+    // 글자를 1.3배 넘게 키우면 384dp에서 ACS가 K/D/A 밑으로 내려가 줄마다 높이가 달라진다.
+    // 그때는 스켈레톤이 맞출 수 없어 1.15배까지 본다.
+    @Test
+    fun `경기 줄 스켈레톤은 실제 줄과 높이가 같다`() {
+        listOf(MatchRowStyle.LIST, MatchRowStyle.COMPACT).forEach { style ->
+            listOf(1f, 1.15f).forEach { fontScale ->
+                runComposeUiTest {
+                    setContent {
+                        CompositionLocalProvider(LocalDensity provides Density(density = 2f, fontScale = fontScale)) {
+                            Themed {
+                                Column(Modifier.width(384.dp)) {
+                                    Box(Modifier.testTag("row")) {
+                                        MatchRow(MatchPreviewData.detailMatch, MatchPreviewData.catalog, "오늘", style)
+                                    }
+                                    Box(Modifier.testTag("skeleton")) { MatchRowsSkeleton(rows = 1, style = style) }
+                                }
+                            }
+                        }
+                    }
+
+                    val row = onNodeWithTag("row").getUnclippedBoundsInRoot().let { it.bottom - it.top }
+                    val skeleton = onNodeWithTag("skeleton").getUnclippedBoundsInRoot().let { it.bottom - it.top }
+                    assertTrue(abs((row - skeleton).value) < 1f, "$style ×$fontScale: 줄 $row, 스켈레톤 $skeleton")
+                }
+            }
+        }
+    }
+
+    // 줄 사이 구분선은 matchRowTextStart에서 시작한다.
+    // 맵 이름도 거기서 시작해야 구분선이 글자 시작선과 맞는다.
+    @Test
+    fun `경기 줄의 맵 이름은 구분선 시작선에서 시작한다`() {
+        val match = MatchPreviewData.detailMatch
+        listOf(
+            MatchRowStyle.LIST to OvalitSpacing.screen,
+            MatchRowStyle.COMPACT to OvalitSpacing.screen,
+            MatchRowStyle.COMPACT to OvalitSpacing.gutter,
+        ).forEach { (style, padding) ->
+            runComposeUiTest {
+                setContent {
+                    Themed {
+                        Box(Modifier.width(384.dp)) {
+                            MatchRow(match, MatchPreviewData.catalog, "오늘", style, horizontalPadding = padding)
+                        }
+                    }
+                }
+
+                val name = onNodeWithText(MatchPreviewData.catalog.maps.getValue(match.map), useUnmergedTree = true).getUnclippedBoundsInRoot()
+                val start = matchRowTextStart(style, padding)
+                assertTrue(abs((name.left - start).value) < 0.5f, "$style $padding: 맵 이름 ${name.left}, 구분선 $start")
+            }
+        }
     }
 }
 

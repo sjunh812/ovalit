@@ -161,10 +161,10 @@ private fun Duels(duels: List<Duel>, uiState: MatchDetailUiState.Success) {
 }
 
 // 맞힌 부위와 같은 묶음 제목이다.
-// 밑 열 제목 줄의 위 여백 4dp와 합쳐 제목과 내용 사이가 12dp다.
+// 밑 열 제목 줄의 위 여백 4dp와 합쳐 제목과 내용 사이가 다른 카드처럼 16dp다.
 @Composable
 private fun ReportTitle(text: String) {
-    Box(Modifier.padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.lg, bottom = OvalitSpacing.sm)) {
+    Box(Modifier.padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.lg, bottom = 12.dp)) {
         ProfileSectionTitle(text)
     }
 }

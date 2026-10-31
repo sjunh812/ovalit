@@ -44,9 +44,14 @@ class OvalitToastState {
 
     private val queue = Mutex()
 
-    suspend fun show(text: String, duration: Duration = 3.seconds) {
+    /**
+     * 앞 안내가 떠 있으면 그게 사라진 뒤에 띄웁니다.
+     * [onShown]은 이 안내가 실제로 화면에 뜰 때 불립니다.
+     */
+    suspend fun show(text: String, duration: Duration = 3.seconds, onShown: () -> Unit = {}) {
         queue.withLock {
             message = text
+            onShown()
             try {
                 delay(duration)
             } finally {

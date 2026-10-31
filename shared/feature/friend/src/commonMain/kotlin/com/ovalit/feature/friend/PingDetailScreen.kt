@@ -68,12 +68,16 @@ fun PingDetailRoute(
 ) {
     FailureNoticesEffect(viewModel.notices)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val sendingAnswer by viewModel.sendingAnswer.collectAsStateWithLifecycle()
+    val busy by viewModel.busy.collectAsStateWithLifecycle()
     PingDetailScreen(
         uiState = uiState,
         onBack = onBack,
         modifier = modifier,
         timeZone = viewModel.timeZone,
         actions = PingDetailActions(
+            sendingAnswer = sendingAnswer,
+            cancelling = PingDetailViewModel.Action.CANCEL in busy,
             slots = viewModel::slots,
             reply = viewModel::reply,
             moveTo = viewModel::moveTo,
@@ -87,6 +91,10 @@ fun PingDetailRoute(
 
 /** 초대 화면의 동작입니다. 테스트와 프리뷰는 비워 둡니다. */
 internal class PingDetailActions(
+    /** 보내는 중인 내 답입니다. 버튼 줄을 바로 접는 데 씁니다. */
+    val sendingAnswer: PingAnswer? = null,
+    /** 초대를 취소하는 중이면 취소 버튼을 막습니다. */
+    val cancelling: Boolean = false,
     val slots: () -> List<Instant> = { emptyList() },
     val reply: (PingAnswer, Instant?) -> Unit = { _, _ -> },
     val moveTo: (Instant) -> Unit = {},
@@ -180,8 +188,9 @@ private fun ColumnScope.PingDetailContent(
     val proposals = if (!hosting) {
         emptyList()
     } else {
+        // 이미 지난 제안 시각으로는 옮길 수 없어(서버가 받지 않는다) 두지 않는다
         ping.members
-            .filter { it.answer == PingAnswer.OTHER_TIME && it.proposedAt != null }
+            .filter { it.answer == PingAnswer.OTHER_TIME && it.proposedAt?.let { at -> at > now } == true }
             .groupBy { it.proposedAt!! }
             .entries
             .sortedWith(compareByDescending<Map.Entry<Instant, List<PingMember>>> { it.value.size }.thenBy { it.key })
@@ -235,7 +244,7 @@ private fun ColumnScope.PingDetailContent(
         if (hosting) {
             ActionBar(
                 stringResource(Res.string.ping_change_time) to { sheet = DetailSheet.MOVE },
-                stringResource(Res.string.ping_cancel) to actions.cancel,
+                stringResource(Res.string.ping_cancel) to { if (!actions.cancelling) actions.cancel() },
             )
         } else {
             MyAnswer(ping, me, now, timeZone, actions, onOtherTime = { sheet = DetailSheet.REPLY })
@@ -285,7 +294,9 @@ private fun MyAnswer(
 ) {
     val haptics = rememberOvalitHaptics()
     val mine = ping.memberOf(me)
-    val answer = mine?.answer ?: PingAnswer.PENDING
+    // 보내는 중이면 그 답으로 바로 접는다.
+    // 버튼이 남아 있으면 응답을 기다리는 동안 또 눌러 친구에게 알림이 여러 번 간다.
+    val answer = actions.sendingAnswer ?: mine?.answer ?: PingAnswer.PENDING
     // 답이 바뀌면 바꾸는 중이던 것도 끝난다
     var changing by rememberSaveable(ping.id.value, answer, mine?.proposedAt) { mutableStateOf(false) }
     if (answer == PingAnswer.PENDING || changing) {
@@ -316,13 +327,13 @@ private fun MyAnswer(
 }
 
 // 묶음 제목이다.
-// 내용과는 12dp를 둔다(docs/design.md).
-// 줄마다 위아래 여백이 있어 그만큼 줄인다.
+// 내용과는 16dp를 둔다(docs/design.md).
+// 줄마다 위 여백(8dp)이 있어 그만큼 줄인다.
 @Composable
 private fun SectionTitle(text: String) {
     OvalitText(
         text = text,
-        modifier = Modifier.padding(top = OvalitSpacing.xxl, bottom = OvalitSpacing.xs),
-        style = OvalitTheme.typography.bodyStrong,
+        modifier = Modifier.padding(top = OvalitSpacing.xxl, bottom = OvalitSpacing.sm),
+        style = OvalitTheme.typography.cardTitle,
     )
 }

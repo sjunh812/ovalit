@@ -1,5 +1,6 @@
 package com.ovalit.core.data
 
+import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.lastPlayedWith
 import com.ovalit.core.testing.StepClock
@@ -52,14 +53,14 @@ class FakeFriendRepositoryTest {
         val friend = repository.friends.first().first().id
         val stranger = PlayerId("not-using-app")
 
-        assertEquals(setOf(friend), repository.appUsersAmong(listOf(friend, stranger)))
+        assertEquals(setOf(friend), repository.appUsersAmong(MatchId("m"), listOf(friend, stranger)))
     }
 
     @Test
     fun `보낸 요청은 연동을 해제하면 지운다`() = runTest {
         val friends = FakeFriendRepository()
         val account = FakeAccountRepository(FakeMatchRepository(), friendRepository = friends)
-        friends.sendRequest(PlayerId("someone"))
+        friends.sendRequest(PlayerId("someone"), MatchId("m"))
 
         account.unlink()
 

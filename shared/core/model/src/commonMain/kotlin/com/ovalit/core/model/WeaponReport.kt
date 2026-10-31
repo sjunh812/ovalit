@@ -104,16 +104,18 @@ internal fun List<Match>.weaponStats(): List<WeaponStats> {
     val carried = mutableMapOf<WeaponId, CarriedTotals>()
 
     for (match in this) {
-        val myTeam = match.allies + match.me
         for (round in match.rounds) {
+            // 킬과 어시스트는 리포트와 같은 기준이다.
+            // 스킬로 자기나 우리 팀을 죽인 킬은 세지 않는다.
+            val enemyKills = round.enemyKills(me = match.me, allies = match.allies)
             round.economy?.myWeapon?.let { weapon ->
-                // 어시스트는 리포트와 같은 기준이다.
-                // 스킬로 자기나 우리 팀을 죽인 킬은 세지 않는다.
-                val assists = round.kills.count { match.me in it.assistants && (it.killer in myTeam) != (it.victim in myTeam) }
-                val died = round.kills.any { it.victim == match.me }
-                carried[weapon] = (carried[weapon] ?: CarriedTotals()).plus(died = died, assists = assists, damage = round.myDamage)
+                // 데스도 리포트처럼 죽은 횟수로 센다.
+                // 라운드마다 하나로 세면 세이지 부활로 두 번 죽은 라운드에서 무기 K/D만 리포트보다 높게 나온다.
+                val deaths = round.myDeaths(match.me).size
+                val assists = enemyKills.count { match.me in it.assistants }
+                carried[weapon] = (carried[weapon] ?: CarriedTotals()).plus(deaths = deaths, assists = assists, damage = round.myDamage)
             }
-            val myKills = round.kills.filter { it.killer == match.me && it.victim !in myTeam }
+            val myKills = enemyKills.filter { it.killer == match.me }
             myKills.mapNotNull { it.weapon }.forEach { kills[it] = (kills[it] ?: 0) + 1 }
             val weapon = myKills.map { it.weapon }.distinct().singleOrNull() ?: continue
             rounds[weapon] = (rounds[weapon] ?: 0) + 1
@@ -140,9 +142,9 @@ internal fun List<Match>.weaponStats(): List<WeaponStats> {
 }
 
 private data class CarriedTotals(val rounds: Int = 0, val deaths: Int = 0, val assists: Int = 0, val damage: Int = 0) {
-    fun plus(died: Boolean, assists: Int, damage: Int) = CarriedTotals(
+    fun plus(deaths: Int, assists: Int, damage: Int) = CarriedTotals(
         rounds = rounds + 1,
-        deaths = deaths + if (died) 1 else 0,
+        deaths = this.deaths + deaths,
         assists = this.assists + assists,
         damage = this.damage + damage,
     )

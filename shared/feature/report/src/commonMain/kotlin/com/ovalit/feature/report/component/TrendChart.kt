@@ -66,7 +66,7 @@ internal val BarGap = 5.dp
 private const val THIN_BAR = 0.55f
 private val MaxThinBar = 24.dp
 private val ThinBarRadius = 4.dp
-private val BaselineLabelGap = 6.dp
+internal val BaselineLabelGap = 6.dp
 
 // 8주 중 가장 낮은 값이 차지하는 막대 높이 비율이다.
 // 0부터 그리면 피해량 140과 165가 거의 같은 높이라 추이가 안 보인다.

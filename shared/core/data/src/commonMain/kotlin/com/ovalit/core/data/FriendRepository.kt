@@ -2,6 +2,7 @@ package com.ovalit.core.data
 
 import com.ovalit.core.model.Friend
 import com.ovalit.core.model.FriendRequest
+import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.PlayerId
 import kotlinx.coroutines.flow.Flow
 
@@ -18,14 +19,18 @@ interface FriendRepository {
     val sentRequests: Flow<Set<PlayerId>>
 
     /**
-     * [players] 중 우리 앱에 연동한 사람입니다.
+     * [match]를 같이 뛴 [players] 중 우리 앱에 연동한 사람입니다.
      * 연동하지 않은 사람에게는 요청을 보낼 수 없어서 스코어보드에서 요청 대신 초대 링크를 권합니다.
+     * 서버는 그 경기를 같이 뛴 사람에게만 알려 줘서 경기를 같이 넘깁니다(`GET /riot/matches/:matchId/app-users`).
      * 서버에 묻는 호출이라 예외가 날 수 있습니다.
      */
-    suspend fun appUsersAmong(players: Collection<PlayerId>): Set<PlayerId>
+    suspend fun appUsersAmong(match: MatchId, players: Collection<PlayerId>): Set<PlayerId>
 
-    /** 같이 뛴 경기의 스코어보드에서 보내는 요청입니다. 상대가 수락하면 친구가 됩니다. */
-    suspend fun sendRequest(id: PlayerId)
+    /**
+     * 같이 뛴 경기의 스코어보드에서 보내는 요청입니다. 상대가 수락하면 친구가 됩니다.
+     * 서버가 [match]를 둘이 같이 뛰었는지 확인한 뒤에 받습니다(`POST /friends/requests {puuid, matchId}`).
+     */
+    suspend fun sendRequest(id: PlayerId, match: MatchId)
 
     suspend fun accept(id: PlayerId)
 

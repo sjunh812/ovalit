@@ -25,13 +25,18 @@ val OvalitCardShape: Shape = RoundedCornerShape(CardCorner)
 /** 카드와 카드 사이입니다. 화면 가장자리와 카드 사이는 `OvalitSpacing.screen`입니다. */
 val OvalitCardGap = 12.dp
 
-private val CardVerticalPadding = 20.dp
+/**
+ * 카드 위아래 안쪽 여백입니다.
+ * 마지막 줄이 제 여백을 가진 목록이면 [OvalitCard]의 bottomPadding을 줄입니다.
+ */
+val OvalitCardVerticalPadding = 20.dp
 
 /**
  * 화면의 큰 묶음 하나를 담는 면입니다.
  * 홈, 내 프로필, S5, 친구 탭, 설정이 묶음마다 하나씩 씁니다.
  *
- * 카드는 양옆 안쪽 여백이 없으니 안의 내용이 화면에 바로 놓일 때처럼 `OvalitSpacing.gutter`를 둡니다.
+ * 카드는 양옆 안쪽 여백이 없으니 안의 내용이 `OvalitSpacing.gutter`(20)를 둡니다.
+ * 화면에 바로 놓인 내용은 카드 테두리와 줄이 맞게 `OvalitSpacing.screen`(16)입니다.
  * 카드 안에서 면을 칠하는 칸은 `--fill`을 씁니다.
  * 다크에서 `--raised`는 카드와 같은 색이라 안 보입니다.
  *
@@ -44,7 +49,7 @@ fun OvalitCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     onClickLabel: String? = null,
-    bottomPadding: Dp = CardVerticalPadding,
+    bottomPadding: Dp = OvalitCardVerticalPadding,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
@@ -67,7 +72,7 @@ fun OvalitCard(
             )
             .clip(OvalitCardShape)
             .background(OvalitTheme.colors.card)
-            .padding(top = CardVerticalPadding, bottom = bottomPadding),
+            .padding(top = OvalitCardVerticalPadding, bottom = bottomPadding),
         content = content,
     )
 }
@@ -84,7 +89,7 @@ fun OvalitCardSlice(
     modifier: Modifier = Modifier,
     first: Boolean = false,
     last: Boolean = false,
-    bottomPadding: Dp = CardVerticalPadding,
+    bottomPadding: Dp = OvalitCardVerticalPadding,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val shape = when {
@@ -99,7 +104,7 @@ fun OvalitCardSlice(
             .fillMaxWidth()
             .clip(shape)
             .background(OvalitTheme.colors.card)
-            .padding(top = if (first) CardVerticalPadding else 0.dp, bottom = if (last) bottomPadding else 0.dp),
+            .padding(top = if (first) OvalitCardVerticalPadding else 0.dp, bottom = if (last) bottomPadding else 0.dp),
         content = content,
     )
 }

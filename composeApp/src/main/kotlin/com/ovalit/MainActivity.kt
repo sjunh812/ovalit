@@ -19,7 +19,9 @@ import com.ovalit.core.data.Analytics
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.ui.LocalAdRenderer
+import com.ovalit.push.EXTRA_OPEN_FRIENDS
 import com.ovalit.push.EXTRA_OPEN_PING
+import com.ovalit.push.NOTIFICATION_SCHEME
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import org.koin.compose.koinInject
@@ -29,6 +31,9 @@ class MainActivity : ComponentActivity() {
     // ㅇㅂㅇ 알림을 눌러 열 초대다.
     // 화면이 받기 전에 온 것도 남게 채널에 담는다.
     private val openPing = Channel<String>(Channel.CONFLATED)
+
+    // 친구 요청 알림을 누르면 친구 탭을 연다
+    private val openFriends = Channel<Unit>(Channel.CONFLATED)
 
     // 스플래시를 걷으면 라이브러리가 상태 표시줄 색을 테마 기본값(흰 글자)으로 되돌린다.
     // 걷은 직후에 앱이 고른 색을 다시 입힌다.
@@ -47,7 +52,18 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
+        openFrom(intent)
+    }
+
+    // 우리 알림이 만든 인텐트만 받는다.
+    // 다른 앱도 이 화면을 열 수 있어서 아무 초대 ID나 넣어 열게 두지 않는다.
+    // 최근 앱에서 다시 열면 처음 인텐트가 다시 들어와 이미 본 초대가 또 열려서 그때는 무시한다.
+    private fun openFrom(intent: Intent) {
+        if (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY != 0) return
+        if (intent.data?.scheme != NOTIFICATION_SCHEME) return
         intent.getStringExtra(EXTRA_OPEN_PING)?.let(openPing::trySend)
+        if (intent.getBooleanExtra(EXTRA_OPEN_FRIENDS, false)) openFriends.trySend(Unit)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,7 +73,7 @@ class MainActivity : ComponentActivity() {
         // 앱별 언어를 바꾸면 이 화면이 새 언어로 다시 만들어진다.
         // 이름 카탈로그도 그 언어로 바꾼다.
         AppLanguage.update(this)
-        if (savedInstanceState == null) intent.getStringExtra(EXTRA_OPEN_PING)?.let(openPing::trySend)
+        if (savedInstanceState == null) openFrom(intent)
 
         setContent {
             val preferences = koinInject<UserPreferencesRepository>()
@@ -78,6 +94,7 @@ class MainActivity : ComponentActivity() {
             // 테마가 바뀌어 다시 그려도 같은 흐름을 넘긴다.
             // 새로 만들면 알림을 받는 LaunchedEffect가 다시 시작한다.
             val pingsToOpen = remember { openPing.receiveAsFlow() }
+            val friendsToOpen = remember { openFriends.receiveAsFlow() }
             val platform = remember { AndroidOvalitPlatform(this) }
 
             OvalitTheme(darkTheme = darkTheme) {
@@ -86,6 +103,7 @@ class MainActivity : ComponentActivity() {
                         appVersion = BuildConfig.VERSION_NAME,
                         platform = platform,
                         openPing = pingsToOpen,
+                        openFriends = friendsToOpen,
                         splashHandoff = splashHandoff,
                     )
                     adRenderer?.Sheets()

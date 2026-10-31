@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +39,8 @@ private enum class AdFreeStep { ASK, LOADING, FAILED }
  * AdMob 보상형 광고 정책을 따릅니다.
  * 무엇을 보고 무엇을 받는지 먼저 적고, "광고 보기"를 눌러야 광고를 받아 띄웁니다.
  * 끝까지 봐서 보상이 났을 때만 [onEarned]를 부릅니다.
+ * 받는 동안 시트를 닫으면 나중에 광고가 와도 띄우지 않습니다.
+ * 닫은 뒤에 광고가 뜨면 예고 없이 뜨는 전면 광고가 됩니다(AdMob, Google Play 정책).
  */
 @Composable
 internal fun AdFreeSheet(
@@ -48,6 +51,9 @@ internal fun AdFreeSheet(
     onCloseOne: (() -> Unit)? = null,
 ) {
     var step by remember { mutableStateOf(AdFreeStep.ASK) }
+    // 시트가 사라지면 늦게 온 광고를 띄우지 않는다
+    val request = remember { AdFreeRequest() }
+    DisposableEffect(request) { onDispose { request.cancelled = true } }
 
     OvalitBottomSheet(
         title = stringResource(if (onCloseOne != null) R.string.ad_close_title else R.string.ad_free_title),
@@ -84,6 +90,7 @@ internal fun AdFreeSheet(
                         AdRequest.Builder().build(),
                         object : RewardedAdLoadCallback() {
                             override fun onAdLoaded(ad: RewardedAd) {
+                                if (request.cancelled || activity.isFinishing || activity.isDestroyed) return
                                 // 광고를 닫으면 보상과 상관없이 시트도 닫는다.
                                 // 보상은 끝까지 봤을 때만 난다.
                                 ad.fullScreenContentCallback = object : FullScreenContentCallback() {
@@ -97,7 +104,7 @@ internal fun AdFreeSheet(
                             }
 
                             override fun onAdFailedToLoad(error: LoadAdError) {
-                                step = AdFreeStep.FAILED
+                                if (!request.cancelled) step = AdFreeStep.FAILED
                             }
                         },
                     )
@@ -116,4 +123,10 @@ internal fun AdFreeSheet(
             }
         }
     }
+}
+
+// 시트 하나가 보낸 광고 요청이다.
+// 광고 콜백도 시트가 사라지는 것도 메인 스레드에서 일어나서 cancelled를 따로 동기화하지 않는다.
+private class AdFreeRequest {
+    var cancelled = false
 }

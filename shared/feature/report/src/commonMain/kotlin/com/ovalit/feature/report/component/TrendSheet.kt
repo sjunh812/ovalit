@@ -36,6 +36,7 @@ import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.format
 import com.ovalit.core.ui.kdaColor
 import com.ovalit.core.ui.label
+import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.dynamic_usual
@@ -67,7 +68,8 @@ internal fun TrendEntry(report: WeeklyReport.Ready, metric: FixedMetric, onClick
             // 카드 위라 한 단계 더 올린 면이다.
             // --raised는 다크에서 카드와 같은 색이다.
             .background(colors.fill)
-            .padding(horizontal = 12.dp, vertical = 11.dp),
+            // 줄 높이가 눌림 영역 기준(48dp)이 되게 위아래를 띄운다
+            .padding(horizontal = 12.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // 입구 줄은 --fill 면 위라 막대를 한 단계 더 진하게 둔다
@@ -159,7 +161,14 @@ private fun TrendRow(report: WeeklyReport.Ready, metric: FixedMetric, selected: 
             modifier = Modifier.width(RowNameWidth).semantics(mergeDescendants = true) {},
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            OvalitText(text = stringResource(metric.label), style = typography.caption, color = colors.t2, maxLines = 1)
+            // 이름 칸 폭이 정해져 있어 일본어처럼 긴 이름은 잘리지 않게 줄인다
+            OvalitText(
+                text = stringResource(metric.label),
+                style = typography.caption,
+                color = colors.t2,
+                maxLines = 1,
+                autoSize = shrinkToFit(typography.caption.fontSize),
+            )
             OvalitText(
                 text = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
                 style = valueStyle,

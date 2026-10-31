@@ -194,6 +194,18 @@ class SettingsScreenTest {
         assertEquals(false, ping)
     }
 
+    // 친구 요청 알림은 알림 카드에 두고 기본은 켬이다(docs/screens.md 설정).
+    // 파티 모집만 다루는 오발있? 카드에는 넣지 않는다.
+    @Test
+    fun `알림 카드에 친구 요청 스위치를 두고 끌 수 있다`() = runComposeUiTest {
+        var friendRequest: Boolean? = null
+        setContent { Settings(actions = SettingsActions(onNotifyFriendRequestChange = { friendRequest = it })) }
+
+        onNodeWithText("친구 요청").performScrollTo().assertIsOn().performClick()
+
+        assertEquals(false, friendRequest)
+    }
+
     // 누를 곳이 없는 화살표는 두지 않는다
     @Test
     fun `저장된 경기 줄은 숫자만 보여주고 누를 수 없다`() = runComposeUiTest {

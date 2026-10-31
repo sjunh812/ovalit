@@ -10,6 +10,7 @@ data class NotificationBlocks(
     val analysisDone: Boolean = false,
     val weeklyReport: Boolean = false,
     val ping: Boolean = false,
+    val friendRequest: Boolean = false,
 ) {
     companion object {
         val None = NotificationBlocks()

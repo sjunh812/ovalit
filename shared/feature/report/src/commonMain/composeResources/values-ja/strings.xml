@@ -64,7 +64,7 @@
     <string name="sample_full_buy_rounds">フルバイ&#160;%1$dラウンド</string>
     <string name="sample_deaths">デス&#160;%1$d回</string>
 
-    <string name="other_queue_hint">その他のモードはK/D、KDA、ヘッドショット率だけを見ます。ラウンド数やクレジットのルールが違うため、ほかの指標はコンペティティブ・アンレートと同じ基準では見られません。デスマッチやチームデスマッチのようにルールが大きく違うモードはレポートに含めず、試合タブでだけ表示します。</string>
+    <string name="other_queue_hint">その他のモードはK/D、KDA、ヘッドショット率だけを見ます。ラウンド数や武器、経済のルールがコンペティティブ・アンレートと違うため、ほかの指標は同じ基準では見られません。デスマッチやチームデスマッチのようにルールが大きく違うモードはレポートに含めず、試合タブでだけ表示します。</string>
 
     <string name="not_enough_title">レポートまであと%1$d試合です</string>
     <string name="not_enough_title_none">直近%1$d週間にプレイした試合がありません</string>
@@ -78,8 +78,8 @@
     <string name="sheet_combat_score_name">ACS</string>
     <string name="sheet_combat_score_body">キル、ダメージ、アシストでたまるバトルスコアの1ラウンドあたりの平均です。</string>
     <string name="sheet_combat_score_formula">%1$s点 ÷ %2$sラウンド = %3$s</string>
-    <string name="sheet_kd_body">1回デスするごとに、敵を何回倒したかを表します。</string>
-    <string name="sheet_kd_note">アビリティで自分や味方を倒したものはキルに数えず、自分を倒したものはデスに含めます。</string>
+    <string name="sheet_kd_body">1回デスするごとに、敵を何人倒したかを表します。</string>
+    <string name="sheet_kd_note">自分のアビリティで自分や味方が倒れた分はキルに数えません。そのうち自分が倒れた分はデスに含めます。</string>
     <string name="sheet_kd_formula">%1$sキル ÷ %2$sデス = %3$s</string>
     <string name="sheet_kda_body">1回デスするごとに、キルとアシストを合わせて何回したかを表します。K/Dと違ってアシストも含まれます。</string>
     <string name="sheet_kda_note">試合ごとにKDAを出すのではなく、キル・アシスト・デスをすべて足してから割ります。</string>
@@ -112,23 +112,23 @@
     <string name="sheet_per_match_kda">1試合あたり %1$sキル · %2$sデス · %3$sアシスト</string>
     <!-- 달라진 점 칸을 누르면 뜨는 시트. 칸 이름이 KAST라 옆의 정식 명칭 자리에 関与率을 둔다 -->
     <string name="dynamic_sheet_kast_name">関与率</string>
-    <string name="dynamic_sheet_kast_body">キル、アシスト、生存、トレードのどれか1つでも達成したラウンドの割合です。</string>
+    <string name="dynamic_sheet_kast_body">キルかアシストをしたか、最後まで生き残ったか、倒されても味方がすぐトレードしてくれたラウンドの割合です。</string>
     <string name="dynamic_sheet_survival_body">ラウンド終了まで生き残ったラウンドの割合です。</string>
     <string name="dynamic_sheet_first_kill_win_body">自分がファーストキルを取ったラウンドのうち、勝ったラウンドの割合です。味方のほかのプレイヤーが取ったファーストキルは含めません。</string>
     <string name="dynamic_sheet_first_duel_involvement_body">ラウンド最初の撃ち合い（初動）に自分が関わった割合です。ファーストキルとファーストデスを足して、プレイしたラウンド数で割ります。</string>
     <string name="dynamic_sheet_first_duel_win_body">自分が関わった初動で勝った割合です。ファーストキル数を、ファーストキルとファーストデスの合計で割ります。</string>
     <string name="dynamic_sheet_assists_body">1ラウンドにアシストを何回したかを表します。</string>
-    <string name="dynamic_sheet_eco_body">味方の平均装備額が2,000クレジット未満のエコラウンドのうち、勝ったラウンドの割合です。ピストルラウンドは含めません。</string>
-    <string name="dynamic_sheet_force_buy_body">味方の平均装備額が2,000クレジット以上3,900クレジット未満のフォースバイラウンドのうち、勝ったラウンドの割合です。ピストルラウンドは含めません。</string>
-    <string name="dynamic_sheet_multi_kill_body">プレイしたラウンドのうち、自分が敵を2人以上倒したラウンドの割合です。勝った撃ち合いを次の撃ち合いまでつなげられたかを見ます。</string>
-    <string name="dynamic_sheet_traded_death_body">自分がデスしてから5秒以内に、自分を倒した敵を味方が倒したデスの割合です。孤立してデスしたのか、味方と固まって戦う中でデスしたのかを見ます。味方がどれだけついてきてくれたかも含まれます。</string>
-    <string name="dynamic_sheet_full_buy_body">味方の平均装備額が3,900クレジット以上のフルバイラウンドのうち、勝ったラウンドの割合です。ピストルラウンドは含めません。</string>
+    <string name="dynamic_sheet_eco_body">味方1人あたりの平均装備額が2,000クレジット未満のエコラウンドのうち、勝ったラウンドの割合です。ピストルラウンドは含めません。</string>
+    <string name="dynamic_sheet_force_buy_body">味方1人あたりの平均装備額が2,000クレジット以上3,900クレジット未満のフォースバイラウンドのうち、勝ったラウンドの割合です。ピストルラウンドは含めません。</string>
+    <string name="dynamic_sheet_multi_kill_body">プレイしたラウンドのうち、自分が敵を2人以上倒したラウンドの割合です。一度勝った撃ち合いで止まらず、次の敵まで倒せたかを見ます。</string>
+    <string name="dynamic_sheet_traded_death_body">自分のデスのうち、5秒以内に味方が自分を倒した敵を倒してくれた割合です。孤立してデスしたのか、味方と固まって戦う中でデスしたのかを見ます。味方がどれだけついてきてくれたかも含まれます。</string>
+    <string name="dynamic_sheet_full_buy_body">味方1人あたりの平均装備額が3,900クレジット以上のフルバイラウンドのうち、勝ったラウンドの割合です。ピストルラウンドは含めません。</string>
     <string name="dynamic_sheet_sample_title">何回分で数えましたか？</string>
     <string name="dynamic_sheet_sample_body">上の数字は、この割合を数えるのに使った回数です。今回の期間と比べる週がすべて%1$s以上のときだけ比べます。</string>
     <string name="dynamic_sheet_movement_title">どうやって判断していますか？</string>
     <string name="dynamic_sheet_moved">今回の変化が、過去%1$d週間の週ごとの振れ幅の%2$s倍を超えたため、変わったと判断しました。</string>
     <string name="dynamic_sheet_steady">今回の変化は普段の週ごとの振れ幅の範囲内なので、変わったとは判断しませんでした。</string>
-    <string name="dynamic_sheet_unknown">今回の期間かそれより前の週のサンプルが足りないため、変わったかどうかは判断していません。</string>
+    <string name="dynamic_sheet_unknown">今回の期間かそれより前の週の記録が足りないため、変わったかどうかは判断していません。</string>
     <string name="sheet_kd_no_deaths">デスがないため、K/Dは空欄にしています。キル数をそのまま表示すると、実際より高く見えてしまいます。</string>
     <string name="sheet_kda_no_deaths">デスがないため、KDAは空欄にしています。キルとアシストをそのまま表示すると、実際より高く見えてしまいます。</string>
     <!-- 개선 포인트 문장. 한국어는 이름 뒤 조사를 코드가 붙이지만(withLocalJosa) 일본어는 이름만 넘어와 で・を・が・は를
@@ -150,11 +150,13 @@
     <string name="insight_session_early">最初の2試合</string>
     <string name="insight_title">今ACTの振り返り</string>
     <string name="insight_title_matches">%1$d試合</string>
+    <string name="insight_title_rounds">%1$d試合 · %2$dラウンド</string>
+    <string name="insight_title_matches_of">%1$d試合中 %2$d試合</string>
     <string name="insight_matches">%1$d試合</string>
     <string name="insight_rounds">%1$dラウンド</string>
     <!-- 관심사 이름은 「エイムを磨く」처럼 구절이라 괄호로 묶는다 -->
     <string name="insight_reason_focus">「%1$s」を選んだので優先して見ました。</string>
-    <string name="insight_reason_role">%1$sにとって%2$sは優先して見る指標です。</string>
+    <string name="insight_reason_role">%1$sはまず%2$sを見ます。</string>
     <string name="insight_metric_multi_kill">マルチキルラウンド率</string>
     <string name="gap_percent">%1$s%</string>
     <!-- 라이벌과 친구 비교 -->

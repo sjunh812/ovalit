@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -49,6 +50,7 @@ import com.ovalit.core.designsystem.component.OvalitExpandable
 import com.ovalit.core.designsystem.component.OvalitPrimaryButton
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.component.OvalitTextButton
+import com.ovalit.core.designsystem.component.currentMaxWidth
 import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
@@ -110,6 +112,9 @@ import org.jetbrains.compose.resources.stringResource
 
 private val ChevronWidth = 16.dp
 private val TierSize = 16.dp
+private val TierGap = 6.dp
+private val FaceSize = 32.dp
+private val FaceGap = 10.dp
 
 // "닉네임#KR1"의 태그는 이름보다 덜 중요해서 한 단계 작고 옅게 둔다.
 // 글자 크기를 키우면 같이 커지게 em으로 준다.
@@ -124,18 +129,26 @@ private fun riotIdText(riotId: String, tagColor: Color): AnnotatedString = build
 // 숫자 열은 글자 크기만큼 넓힌다.
 // 고정 폭이면 큰 글씨에서 "14/16/4"가 "14/1"로 잘린다.
 // 줄어든 폭은 이름 칸이 내준다.
-private class ColumnWidths(val kda: Dp, val acs: Dp)
+// 이름 칸이 [MinNameWidth]도 남지 않으면 숫자 열을 이름 밑 줄로 내린다([stacked]).
+// 큰 글꼴의 좁은 폰에서 이름이 사라지고 "우리 팀"이 한 자씩 꺾였다.
+private class ColumnWidths(val kda: Dp, val acs: Dp, val stacked: Boolean)
+
+private val MinNameWidth = 72.dp
 
 @Composable
-private fun columnWidths(): ColumnWidths {
+private fun columnWidths(rowWidth: Dp, tierSlot: Boolean, roundBased: Boolean): ColumnWidths {
     val scale = LocalDensity.current.fontScale.coerceIn(1f, 1.6f)
-    return ColumnWidths(kda = 96.dp * scale, acs = 52.dp * scale)
+    val kda = 96.dp * scale
+    val acs = 52.dp * scale
+    val numbers = kda + if (roundBased) acs + ChevronWidth else 0.dp
+    val name = FaceSize + FaceGap + (if (tierSlot) TierSize + TierGap else 0.dp) + MinNameWidth
+    return ColumnWidths(kda = kda, acs = acs, stacked = rowWidth - OvalitSpacing.screen * 2 < name + numbers)
 }
 
 /**
  * S3 스코어보드입니다.
  * 두 팀 모드는 우리 팀과 상대 팀, 데스매치는 모두를 한 순위로, 건틀릿은 팀마다 등수 순으로 묶습니다.
- * 라운드가 없는 모드는 전투점수 열과 펼친 줄이 없습니다.
+ * 라운드가 없는 모드는 전투 점수 열을 두지 않고 줄도 펼치지 않습니다.
  * 둘 다 라운드로 나누거나 라운드 기록으로 세는 값입니다.
  */
 @Composable
@@ -147,30 +160,35 @@ internal fun Scoreboard(uiState: MatchDetailUiState.Success, onOpenPlayer: (Scor
     var expanded by rememberSaveable { mutableStateOf<String?>(null) }
     // 티어가 없는 사람이 섞여도 이름이 같은 자리에서 시작하게, 한 사람이라도 티어가 있으면 모든 줄이 그 자리를 비운다
     val tierSlot = uiState.rows.any { it.line.tier != null }
-    val row = @Composable { line: ScoreboardRow ->
-        val id = line.line.player.value
-        PlayerRow(
-            row = line,
-            uiState = uiState,
-            onOpenPlayer = onOpenPlayer,
-            tierSlot = tierSlot,
-            roundBased = roundBased,
-            expanded = expanded == id,
-            onToggle = { expanded = if (expanded == id) null else id },
-        )
-    }
-    Column {
-        uiState.groups.forEachIndexed { index, group ->
-            val (title, color) = groupTitle(group, uiState)
-            TeamHeader(title, color, showColumns = index == 0, roundBased = roundBased)
-            group.rows.forEach { row(it) }
+    BoxWithConstraints {
+        val widths = columnWidths(currentMaxWidth, tierSlot = tierSlot, roundBased = roundBased)
+        val row = @Composable { line: ScoreboardRow ->
+            val id = line.line.player.value
+            PlayerRow(
+                row = line,
+                uiState = uiState,
+                onOpenPlayer = onOpenPlayer,
+                tierSlot = tierSlot,
+                roundBased = roundBased,
+                widths = widths,
+                expanded = expanded == id,
+                onToggle = { expanded = if (expanded == id) null else id },
+            )
         }
-        OvalitText(
-            text = stringResource(if (roundBased) Res.string.scoreboard_note else Res.string.scoreboard_note_names),
-            modifier = Modifier.padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = 14.dp),
-            style = OvalitTheme.typography.caption,
-            color = colors.t4,
-        )
+        Column {
+            uiState.groups.forEachIndexed { index, group ->
+                val (title, color) = groupTitle(group, uiState)
+                TeamHeader(title, color, showColumns = index == 0, roundBased = roundBased, widths = widths)
+                group.rows.forEach { row(it) }
+            }
+            OvalitText(
+                text = stringResource(if (roundBased) Res.string.scoreboard_note else Res.string.scoreboard_note_names),
+                modifier = Modifier.padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = 14.dp),
+                style = OvalitTheme.typography.caption,
+                // 읽어야 하는 안내라 S6, S7의 안내처럼 t3다
+                color = colors.t3,
+            )
+        }
     }
 }
 
@@ -193,20 +211,28 @@ private fun groupTitle(group: ScoreboardGroup, uiState: MatchDetailUiState.Succe
 }
 
 @Composable
-private fun TeamHeader(title: String, color: Color, showColumns: Boolean, roundBased: Boolean) {
+private fun TeamHeader(title: String, color: Color, showColumns: Boolean, roundBased: Boolean, widths: ColumnWidths) {
     val colors = OvalitTheme.colors
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.lg, bottom = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        OvalitText(text = title, modifier = Modifier.weight(1f), style = OvalitTheme.typography.label, color = color)
-        if (showColumns) {
-            val widths = columnWidths()
-            ColumnLabel(stringResource(FixedMetric.KDA.label), widths.kda)
-            if (roundBased) {
-                ColumnLabel(stringResource(FixedMetric.COMBAT_SCORE.label), widths.acs)
-                Spacer(Modifier.width(ChevronWidth))
+    val labels = @Composable {
+        ColumnLabel(stringResource(FixedMetric.KDA.label), widths.kda)
+        if (roundBased) {
+            ColumnLabel(stringResource(FixedMetric.COMBAT_SCORE.label), widths.acs)
+            Spacer(Modifier.width(ChevronWidth))
+        }
+    }
+    val padding = Modifier.fillMaxWidth().padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.lg, bottom = 6.dp)
+    if (widths.stacked) {
+        // 숫자 열을 이름 밑으로 내린 줄과 맞춰 열 이름도 팀 이름 밑에 오른쪽으로 붙인다
+        Column(modifier = padding) {
+            OvalitText(text = title, style = OvalitTheme.typography.label, color = color)
+            if (showColumns) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) { labels() }
             }
+        }
+    } else {
+        Row(modifier = padding, verticalAlignment = Alignment.CenterVertically) {
+            OvalitText(text = title, modifier = Modifier.weight(1f), style = OvalitTheme.typography.label, color = color)
+            if (showColumns) labels()
         }
     }
     OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.screen), color = colors.lineWeak)
@@ -232,6 +258,7 @@ private fun PlayerRow(
     onOpenPlayer: (ScoreboardRow) -> Unit,
     tierSlot: Boolean,
     roundBased: Boolean,
+    widths: ColumnWidths,
     expanded: Boolean,
     onToggle: () -> Unit,
 ) {
@@ -244,7 +271,6 @@ private fun PlayerRow(
     // 내 줄은 면(`--raised`)과 이름 굵기로 이미 가려서 숫자는 밝기만 올린다.
     val numberStyle = OvalitTheme.typography.metricS.copy(fontWeight = FontWeight.Medium)
     val numberColor = if (isMe) colors.t1 else colors.t2
-    val widths = columnWidths()
 
     Column(
         modifier = Modifier
@@ -262,19 +288,15 @@ private fun PlayerRow(
                 },
             ),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 46.dp)
-                .padding(horizontal = OvalitSpacing.screen, vertical = 7.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+        val nameBlock = @Composable { modifier: Modifier ->
+            Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
                 // 얼굴과 이름만 따로 눌린다.
                 // 빈 자리까지 넓히면 펼치려고 누른 줄이 프로필로 넘어간다.
+                // 눌리는 높이는 줄 높이와 같은 48dp다(안드로이드 눌림 영역 기준).
                 Row(
                     modifier = Modifier
                         .weight(1f, fill = false)
+                        .heightIn(min = 48.dp)
                         .clickable(
                             onClickLabel = if (emphasized) stringResource(Res.string.player_open_profile) else null,
                             role = Role.Button,
@@ -282,15 +304,15 @@ private fun PlayerRow(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box {
-                        AgentImage(line.agent, uiState.catalog.agents[line.agent], Modifier.size(32.dp).clip(RoundedCornerShape(9.dp)))
+                        AgentImage(line.agent, uiState.catalog.agents[line.agent], Modifier.size(FaceSize).clip(RoundedCornerShape(9.dp)))
                         if (isFriend) FriendMark(Modifier.align(Alignment.BottomEnd).offset(x = 4.dp, y = 4.dp), border = if (isMe) colors.raised else colors.bg)
                     }
-                    Spacer(Modifier.width(10.dp))
+                    Spacer(Modifier.width(FaceGap))
                     // 티어는 이름 앞에 둔다.
                     // 줄마다 같은 자리라 위아래로 훑으면 한 줄로 읽힌다.
                     if (tierSlot) {
                         Box(modifier = Modifier.size(TierSize)) { line.tier?.let { TierEmblem(it, Modifier.fillMaxSize()) } }
-                        Spacer(Modifier.width(6.dp))
+                        Spacer(Modifier.width(TierGap))
                     }
                     Row(
                         modifier = Modifier.weight(1f, fill = false),
@@ -299,7 +321,7 @@ private fun PlayerRow(
                     ) {
                         // 이름이 길면 작고 옅게 둔 태그부터 잘리고, 자리 칩은 늘 남는다
                         OvalitText(
-                            text = if (isMe) AnnotatedString(stringResource(Res.string.me)) else riotIdText(line.riotId, colors.t4),
+                            text = if (isMe) AnnotatedString(stringResource(Res.string.me)) else riotIdText(line.riotId, colors.t3),
                             modifier = Modifier.weight(1f, fill = false),
                             style = OvalitTheme.typography.label.copy(
                                 fontWeight = when {
@@ -318,6 +340,8 @@ private fun PlayerRow(
                     }
                 }
             }
+        }
+        val numbers = @Composable {
             // "1.83 (17/15/3)"처럼 KDA 뒤에 합계를 붙인다
             val kda = line.deaths.takeIf { it > 0 }?.let { (line.kills + line.assists).toDouble() / it }
             OvalitText(
@@ -329,7 +353,7 @@ private fun PlayerRow(
                 maxLines = 1,
                 autoSize = shrinkToFit(numberStyle.fontSize),
             )
-            // ADR이 아니라 전투점수를 둔다.
+            // ADR이 아니라 전투 점수를 둔다.
             // 줄도 이 숫자 순이고 ADR은 펼친 기록에 있다.
             if (roundBased) {
                 OvalitText(
@@ -344,17 +368,36 @@ private fun PlayerRow(
                 }
             }
         }
+        val rowPadding = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.screen)
+        if (widths.stacked) {
+            // 이름 칸이 모자라면 이름을 한 줄 다 쓰고 숫자는 그 밑에 열 이름과 같은 자리로 둔다
+            Column(modifier = rowPadding.padding(bottom = OvalitSpacing.sm)) {
+                nameBlock(Modifier.fillMaxWidth())
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+                    numbers()
+                }
+            }
+        } else {
+            Row(modifier = rowPadding.heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+                nameBlock(Modifier.weight(1f))
+                numbers()
+            }
+        }
         if (roundBased) OvalitExpandable(visible = expanded) { PlayerStats(row) }
     }
 }
 
-/** 스코어보드 이름 옆의 등수("4등")입니다. 칩 없이 작고 옅은 글자로 둡니다. */
+/**
+ * 스코어보드 이름 옆의 등수("4등")입니다.
+ * 칩 없이 작은 `--t3` 글자로 둡니다.
+ * 읽어야 하는 글자라 `--t4`(2.2:1)로 두지 않습니다.
+ */
 @Composable
 private fun RankHint(placement: MatchPlacement) {
     OvalitText(
         text = rankText(placement),
         style = OvalitTheme.typography.caption,
-        color = OvalitTheme.colors.t4,
+        color = OvalitTheme.colors.t3,
         maxLines = 1,
     )
 }

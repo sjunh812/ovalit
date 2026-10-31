@@ -48,6 +48,8 @@ android {
         // 제품이 승인되기 전에는 수익을 낼 수 없어 실제 ID를 넣지 않는다(CLAUDE.md 지켜야 할 선).
         // SDK는 앱 ID가 없으면 시작하지 않아서 그때는 Google 테스트 앱 ID를 넣는다.
         manifestPlaceholders["admobAppId"] = localProperty("admob.appId") ?: ADMOB_TEST_APP_ID
+        manifestPlaceholders["collectTelemetry"] = "true"
+        buildConfigField("boolean", "COLLECT_TELEMETRY", "true")
         buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", "\"${localProperty("admob.nativeUnitId").orEmpty()}\"")
         // "24시간 광고 없이 보기"에 쓰는 보상형 광고다.
         // 없으면 광고 줄의 ×가 그 광고만 바로 닫고 설정 줄이 없다.
@@ -68,20 +70,24 @@ android {
         buildConfig = true
     }
 
-    // 개발 빌드(디버그, benchmark)에서 광고 자리를 보려면 local.properties에 admob.test=true를 두거나 -Povalit.ads.test=true로 빌드한다.
-    // Google 테스트 광고만 받는다.
-    // 릴리스는 이 값을 보지 않는다.
+    // 개발 빌드(디버그, benchmark)는 실제 광고 ID를 쓰지 않는다.
+    // local.properties에 실제 ID가 있어도 개발 기기에서 실제 광고를 요청하고 누르면 AdMob이 무효 트래픽으로 본다.
+    // 광고 자리를 보려면 admob.test=true를 두거나 -Povalit.ads.test=true로 빌드해 Google 테스트 광고를 받는다.
+    // 둘 다 없으면 광고를 요청하지 않아 광고 자리가 없다.
+    // 사용 통계와 비정상 종료 보고도 개발 빌드는 모으지 않는다.
+    // 모으면 온보딩 깔때기와 오류 목록에 개발 기록이 섞인다.
     val testAds = (findProperty("ovalit.ads.test") ?: localProperty("admob.test"))?.toString() == "true"
-    fun ApplicationBuildType.useTestAds() {
-        if (!testAds) return
+    fun ApplicationBuildType.useDevelopmentServices() {
         manifestPlaceholders["admobAppId"] = ADMOB_TEST_APP_ID
-        buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", "\"$ADMOB_TEST_NATIVE_UNIT_ID\"")
-        buildConfigField("String", "ADMOB_REWARDED_UNIT_ID", "\"$ADMOB_TEST_REWARDED_UNIT_ID\"")
+        manifestPlaceholders["collectTelemetry"] = "false"
+        buildConfigField("boolean", "COLLECT_TELEMETRY", "false")
+        buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", "\"${if (testAds) ADMOB_TEST_NATIVE_UNIT_ID else ""}\"")
+        buildConfigField("String", "ADMOB_REWARDED_UNIT_ID", "\"${if (testAds) ADMOB_TEST_REWARDED_UNIT_ID else ""}\"")
     }
 
     buildTypes {
         debug {
-            useTestAds()
+            useDevelopmentServices()
         }
         release {
             isMinifyEnabled = true
@@ -98,7 +104,7 @@ android {
             initWith(getByName("release"))
             signingConfig = signingConfigs.getByName("debug")
             matchingFallbacks += listOf("release")
-            useTestAds()
+            useDevelopmentServices()
             // 개발 기기에서 속도를 보는 빌드라 Crashlytics에 매핑 파일을 올리지 않는다.
             // 올리는 건 릴리스뿐이다.
             (this as ExtensionAware).extensions.findByName("firebaseCrashlytics")?.withGroovyBuilder {
@@ -138,4 +144,7 @@ dependencies {
     implementation(libs.koin.compose)
 
     debugImplementation(libs.compose.ui.tooling)
+
+    testImplementation(kotlin("test-junit"))
+    testImplementation(libs.kotlinx.coroutines.test)
 }

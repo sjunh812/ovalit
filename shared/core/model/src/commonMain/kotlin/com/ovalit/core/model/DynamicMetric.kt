@@ -134,9 +134,17 @@ internal fun assessMovement(now: Double, usual: Double, weekly: List<Double>): A
 
 // 평균의 평균을 막는 규칙과 다른 얘기다.
 // 주마다 얼마나 흔들리는지를 보는 값이라 주마다 같은 무게를 준다.
-private fun List<Double>.sampleStandardDeviation(): Double {
+private fun List<Double>.sampleStandardDeviation(): Double = sqrt(sampleVariance())
+
+/**
+ * 표본분산입니다.
+ * 주간 변동폭과 개선 포인트의 라운드별 흔들림이 같이 씁니다.
+ * 값이 둘보다 적으면 흔들림을 잴 수 없어 0입니다.
+ */
+internal fun List<Double>.sampleVariance(): Double {
+    if (size < 2) return 0.0
     val mean = average()
-    return sqrt(sumOf { (it - mean) * (it - mean) } / (size - 1))
+    return sumOf { (it - mean) * (it - mean) } / (size - 1)
 }
 
 // CLAUDE.md 역할군 표에서 지금 계산할 수 있는 것만 옮겼다.

@@ -51,10 +51,13 @@ internal class AccountSettingsSync(
     val settings: Flow<AccountSettings> = state.map { it.shown }.distinctUntilChanged()
 
     suspend fun change(patch: AccountSettingsPatch) {
-        state.update { it.copy(pending = it.pending + patch) }
+        // 같은 값으로 두 번 바꿔도 따로 센다.
+        // 값으로 찾으면 처음 값으로 돌리기 전에 보낸 변경의 답이 늦게 왔을 때 그 뒤에 똑같이 바꾼 변경까지 빼 버린다.
+        val change = Pending(patch)
+        state.update { it.copy(pending = it.pending + change) }
         oneByOne.withLock {
             // 기다리는 사이 연동을 해제해 비웠으면 보내지 않는다
-            if (patch !in state.value.pending) return
+            if (change !in state.value.pending) return
             var answer: AccountSettings? = null
             try {
                 answer = send(patch)
@@ -62,7 +65,7 @@ internal class AccountSettingsSync(
                 // 실패하거나 취소돼도 뺀다.
                 // 남겨 두면 서버에 없는 값이 계속 보인다.
                 state.update { now ->
-                    if (patch in now.pending) State(confirmed = answer ?: now.confirmed, pending = now.pending - patch) else now
+                    if (change in now.pending) State(confirmed = answer ?: now.confirmed, pending = now.pending - change) else now
                 }
             }
         }
@@ -82,8 +85,12 @@ internal class AccountSettingsSync(
 
     private data class State(
         val confirmed: AccountSettings,
-        val pending: List<AccountSettingsPatch> = emptyList(),
+        val pending: List<Pending> = emptyList(),
     ) {
-        val shown: AccountSettings get() = pending.fold(confirmed) { settings, patch -> patch.applyTo(settings) }
+        val shown: AccountSettings get() = pending.fold(confirmed) { settings, change -> change.patch.applyTo(settings) }
     }
+
+    // data class로 두지 않는다.
+    // 같은 객체일 때만 같은 변경이다.
+    private class Pending(val patch: AccountSettingsPatch)
 }

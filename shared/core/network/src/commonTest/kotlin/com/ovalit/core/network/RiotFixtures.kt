@@ -405,7 +405,7 @@ internal val DeathmatchMatch: String = matchJson(
 )
 
 /**
- * 두 명씩 여덟 팀이 등수를 다툰 건틀릿: 글리치입니다.
+ * 두 명씩 여덟 팀이 등수를 다툰 건틀릿: 시스템 오류입니다.
  * 큐 ID를 몰라 지어냈고 기타로 옮겨야 합니다.
  * 등수가 응답에 없어서 `numPoints`로 셉니다.
  * 우리 팀(`Team1`)은 2점으로 `Team8`과 같이 2등입니다.

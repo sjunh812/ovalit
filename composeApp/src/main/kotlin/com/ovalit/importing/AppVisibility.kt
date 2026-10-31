@@ -15,14 +15,21 @@ object AppVisibility : Application.ActivityLifecycleCallbacks {
     /** 메인 스레드에서 부릅니다. 보이기 시작하면 `true`, 모두 가려지면 `false`입니다. */
     var onChange: (visible: Boolean) -> Unit = {}
 
+    // 언어나 테마를 바꿔 화면을 다시 만드는 중이다.
+    // 그때는 잠깐 0이 돼도 가려진 게 아니라서 알리지 않는다.
+    // 알리면 받던 새 경기를 작업으로 넘기거나 친구를 다시 받는다.
+    private var recreating = false
+
     override fun onActivityStarted(activity: Activity) {
         started++
-        if (started == 1) onChange(true)
+        if (started == 1 && !recreating) onChange(true)
+        recreating = false
     }
 
     override fun onActivityStopped(activity: Activity) {
         started--
-        if (started == 0) onChange(false)
+        recreating = activity.isChangingConfigurations
+        if (started == 0 && !recreating) onChange(false)
     }
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit

@@ -32,6 +32,7 @@ import com.ovalit.core.ui.MatchRowStyle
 import com.ovalit.core.ui.MatchRowsSkeleton
 import com.ovalit.core.ui.dayLabel
 import com.ovalit.core.ui.listAdBefore
+import com.ovalit.core.ui.matchRowTextStart
 import com.ovalit.core.ui.matchTimeLabel
 import com.ovalit.feature.friend.resources.Res
 import com.ovalit.feature.friend.resources.matches_hidden
@@ -116,7 +117,13 @@ internal fun FriendMatchesScreen(uiState: FriendProfileUiState, onBack: () -> Un
                             style = MatchRowStyle.COMPACT,
                             horizontalPadding = OvalitSpacing.screen,
                         )
-                        if (match != matches.last()) OvalitDivider(Modifier.padding(start = 67.dp), color = colors.lineWeak)
+                        // 구분선은 맵 이름 시작선에서 시작한다
+                        if (match != matches.last()) {
+                            OvalitDivider(
+                                Modifier.padding(start = matchRowTextStart(MatchRowStyle.COMPACT, OvalitSpacing.screen)),
+                                color = colors.lineWeak,
+                            )
+                        }
                     }
                 }
             }

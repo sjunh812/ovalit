@@ -22,7 +22,8 @@ import com.ovalit.core.model.PlayerId
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 
-private val AvatarSize = 36.dp
+// 친구 탭의 요청·친구 줄과 같은 크기라 이름 시작선이 맞는다
+private val AvatarSize = 40.dp
 
 /**
  * ㅇㅂㅇ 한 줄입니다.
@@ -43,10 +44,11 @@ fun PingSummaryRow(ping: Ping, me: PlayerId, now: Instant, timeZone: TimeZone, m
         PlayerAvatar(riotId = ping.host.riotId, size = AvatarSize)
         Spacer(Modifier.width(OvalitSpacing.md))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            // 큰 글꼴에서 한 줄로 자르면 시각이 먼저 사라져서 두 줄까지 둔다
             OvalitText(
                 text = pingHomeTitle(ping, me, now, timeZone),
                 style = OvalitTheme.typography.bodyStrong,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
             OvalitText(

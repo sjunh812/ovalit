@@ -25,19 +25,21 @@ class OvalitColorsTest {
         }
     }
 
+    // 평소 값과 표본처럼 읽어야 하는 글자라 본문 기준을 넘긴다
     @Test
-    fun `보조 글자색은 배경 대비 3 대 1을 넘는다`() {
+    fun `보조 글자색은 배경 대비 4_5 대 1을 넘는다`() {
         forEachTheme { name, colors ->
-            assertContrast(name, "t3", colors.t3, colors.bg, atLeast = 3.0)
+            assertContrast(name, "t3", colors.t3, colors.bg, atLeast = 4.5)
         }
     }
 
     // 좋아짐과 나빠짐을 색으로만 구분해서 여기서 대비가 모자라면 변화를 못 읽는다.
+    // 변화량은 12~13sp 작은 글자라 본문 기준을 넘긴다.
     @Test
-    fun `변화 색은 배경 대비 3 대 1을 넘는다`() {
+    fun `변화 색은 배경 대비 4_5 대 1을 넘는다`() {
         forEachTheme { name, colors ->
-            assertContrast(name, "pos", colors.pos, colors.bg, atLeast = 3.0)
-            assertContrast(name, "neg", colors.neg, colors.bg, atLeast = 3.0)
+            assertContrast(name, "pos", colors.pos, colors.bg, atLeast = 4.5)
+            assertContrast(name, "neg", colors.neg, colors.bg, atLeast = 4.5)
         }
     }
 
@@ -60,9 +62,9 @@ class OvalitColorsTest {
     // 비공식 고지를 여기 색으로 찍는다.
     // 안 읽히면 고지를 안 한 것과 같다.
     @Test
-    fun `고지에 쓰는 t3는 배경 대비 3 대 1을 넘는다`() {
+    fun `고지에 쓰는 t3는 배경 대비 4_5 대 1을 넘는다`() {
         forEachTheme { name, colors ->
-            assertContrast(name, "t3", colors.t3, colors.bg, atLeast = 3.0)
+            assertContrast(name, "t3", colors.t3, colors.bg, atLeast = 4.5)
         }
     }
 
@@ -72,9 +74,9 @@ class OvalitColorsTest {
         forEachTheme { name, colors ->
             assertContrast(name, "t1", colors.t1, colors.card, atLeast = 4.5)
             assertContrast(name, "t2", colors.t2, colors.card, atLeast = 4.5)
-            assertContrast(name, "t3", colors.t3, colors.card, atLeast = 3.0)
-            assertContrast(name, "pos", colors.pos, colors.card, atLeast = 3.0)
-            assertContrast(name, "neg", colors.neg, colors.card, atLeast = 3.0)
+            assertContrast(name, "t3", colors.t3, colors.card, atLeast = 4.5)
+            assertContrast(name, "pos", colors.pos, colors.card, atLeast = 4.5)
+            assertContrast(name, "neg", colors.neg, colors.card, atLeast = 4.5)
             listOf("statHigh" to colors.statHigh, "statTop" to colors.statTop).forEach { (token, color) ->
                 assertContrast(name, token, color, colors.card, atLeast = 4.5)
             }

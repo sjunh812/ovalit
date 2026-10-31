@@ -2,7 +2,9 @@ package com.ovalit.core.data
 
 import com.ovalit.core.model.nextWeekStart
 import kotlin.time.Clock
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Instant
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -37,3 +39,12 @@ fun minuteStarts(clock: Clock): Flow<Unit> = flow {
 }
 
 private const val MINUTE_MILLIS = 60_000L
+
+/**
+ * 마지막으로 받은 지 [after]가 지났는지입니다.
+ * 앱이 다시 보일 때 저절로 다시 받을지 정합니다([NewMatchesWatcher], [SocialWatcher]).
+ * 받은 시각이 지금보다 뒤면 기기 시계를 되돌린 것이라 바로 받습니다.
+ * 그대로 두면 시계가 그 시각을 다시 지날 때까지 받지 않습니다.
+ */
+internal fun isDue(last: Instant?, now: Instant, after: Duration): Boolean =
+    last == null || last > now || now - last >= after

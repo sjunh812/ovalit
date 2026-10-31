@@ -28,6 +28,8 @@ import com.ovalit.core.data.AnalyticsEvents
 import com.ovalit.core.data.ImportScheduler
 import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
+import com.ovalit.core.model.OvalitError
+import com.ovalit.core.model.ovalitError
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.first
 import org.koin.core.component.KoinComponent
@@ -98,12 +100,14 @@ class FirstImportWorker(context: Context, params: WorkerParameters) : CoroutineW
         if (account.account.first() == null) return Result.success()
         // 실패하면 WorkManager가 30초부터 늘려 가며 다시 띄운다.
         // 받은 경기는 그대로라 남은 것만 받는다.
+        // 로그인이 풀렸으면 다시 해도 같은 실패라 멈춘다(CLAUDE.md 경기 받기).
+        // 끝없이 다시 돌지 않게 횟수에도 상한을 둔다.
         try {
             matches.importRecent()
         } catch (e: CancellationException) {
             throw e
-        } catch (_: Exception) {
-            return Result.retry()
+        } catch (e: Exception) {
+            return retryOrStop(e)
         }
         analytics.log(
             AnalyticsEvents.TUTORIAL_COMPLETE,
@@ -140,16 +144,19 @@ class NewMatchesWorker(context: Context, params: WorkerParameters) : CoroutineWo
 
     override suspend fun doWork(): Result {
         if (account.account.first() == null) return Result.success()
-        // 그사이 앱에서 다 받았으면 경기 ID 목록을 다시 묻지 않는다
-        if (matches.newMatchesProgress.first() != null) {
+        // 그사이 앱에서 다 받았으면 경기 ID 목록을 다시 묻지 않는다.
+        // 실패로 멈춘 배치도 남은 경기라 이어 받는다.
+        if (matches.hasPendingNewMatches.first()) {
             try {
                 matches.refresh()
             } catch (e: CancellationException) {
                 throw e
-            } catch (_: Exception) {
-                return Result.retry()
+            } catch (e: Exception) {
+                return retryOrStop(e)
             }
         }
+        // 다 받지 못했으면 "다 불러왔어요"라고 하지 않는다
+        if (matches.hasPendingNewMatches.first()) return if (runAttemptCount >= MAX_ATTEMPTS) Result.failure() else Result.retry()
         val total = inputData.getInt(KEY_TOTAL, 0)
         if (total > 0 && account.account.first() != null && preferences.preferences.first().notifyAnalysisDone && !AppVisibility.isVisible) {
             notify(
@@ -196,3 +203,14 @@ private fun importBucket(count: Int): String = when {
     count < 30 -> "10-29"
     else -> "30-50"
 }
+
+// 첫 수집과 새 경기 작업이 같이 쓴다
+private fun CoroutineWorker.retryOrStop(error: Exception): ListenableWorker.Result = when {
+    error.ovalitError == OvalitError.SessionExpired -> ListenableWorker.Result.failure()
+    runAttemptCount >= MAX_ATTEMPTS -> ListenableWorker.Result.failure()
+    else -> ListenableWorker.Result.retry()
+}
+
+// 30초부터 두 배씩 늘려 열 번 다시 띄우면 모두 여덟 시간 남짓 걸린다.
+// 그 뒤로는 앱을 다시 열 때 이어 받는다.
+private const val MAX_ATTEMPTS = 10

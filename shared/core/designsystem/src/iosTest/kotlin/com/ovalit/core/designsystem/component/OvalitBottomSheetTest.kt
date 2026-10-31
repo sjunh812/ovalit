@@ -17,9 +17,9 @@ class OvalitBottomSheetTest {
 
     @Test
     fun `제목과 정식 약어는 글자 기준선을 맞춘다`() = runComposeUiTest {
-        setContent { OvalitTheme { OvalitBottomSheet(title = "전투점수", titleNote = "ACS", onDismiss = {}) {} } }
+        setContent { OvalitTheme { OvalitBottomSheet(title = "전투 점수", titleNote = "ACS", onDismiss = {}) {} } }
 
-        val title = onNodeWithText("전투점수")
+        val title = onNodeWithText("전투 점수")
         val note = onNodeWithText("ACS")
         val titleBaseline = title.getUnclippedBoundsInRoot().top + title.getAlignmentLinePosition(FirstBaseline)
         val noteBaseline = note.getUnclippedBoundsInRoot().top + note.getAlignmentLinePosition(FirstBaseline)

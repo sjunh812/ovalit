@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,7 +48,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -79,6 +82,7 @@ import com.ovalit.core.ui.label
 import com.ovalit.core.ui.mapName
 import com.ovalit.core.ui.rankText
 import com.ovalit.core.ui.resultColor
+import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.standingColor
 import com.ovalit.core.ui.standingText
 import com.ovalit.feature.match.resources.Res
@@ -155,6 +159,7 @@ internal fun MatchDetailScreen(
     val colors = OvalitTheme.colors
     var tab by rememberSaveable { mutableStateOf(DetailTab.SCOREBOARD) }
     var sheetFor by rememberSaveable { mutableStateOf<String?>(null) }
+    val tabStates = rememberSaveableStateHolder()
 
     // 밀려 들어오는 중에 내용이 도착하면 다 들어올 때까지 스켈레톤을 두었다가 서서히 바꾼다.
     val loaded = uiState is MatchDetailUiState.Success
@@ -187,22 +192,26 @@ internal fun MatchDetailScreen(
                     Tabs(tabs, selected = tab, onSelect = { tab = it })
                 }
                 Crossfade(targetState = tab.takeIf { it in tabs } ?: DetailTab.SCOREBOARD, animationSpec = tween(180)) { shown ->
-                    when (shown) {
-                        DetailTab.SCOREBOARD -> Scoreboard(
-                            uiState = uiState,
-                            onOpenPlayer = { row ->
-                                when (row.relation) {
-                                    PlayerRelation.ME -> onOpenMe()
-                                    PlayerRelation.FRIEND -> onOpenFriend(row.line.player)
-                                    else -> sheetFor = row.line.player.value
-                                }
-                            },
-                        )
-                        DetailTab.ROUNDS -> RoundList(uiState)
-                        DetailTab.REPORT -> MatchReport(uiState)
+                    // 탭을 오가도 고른 라운드와 펼친 줄이 그대로 남게 탭마다 상태를 따로 든다.
+                    // Crossfade는 사라진 탭의 상태를 버려서 돌아오면 1라운드부터 다시 고른다.
+                    tabStates.SaveableStateProvider(shown) {
+                        when (shown) {
+                            DetailTab.SCOREBOARD -> Scoreboard(
+                                uiState = uiState,
+                                onOpenPlayer = { row ->
+                                    when (row.relation) {
+                                        PlayerRelation.ME -> onOpenMe()
+                                        PlayerRelation.FRIEND -> onOpenFriend(row.line.player)
+                                        else -> sheetFor = row.line.player.value
+                                    }
+                                },
+                            )
+                            DetailTab.ROUNDS -> RoundList(uiState)
+                            DetailTab.REPORT -> MatchReport(uiState)
+                        }
                     }
                 }
-                AdSlot(AdPlacement.MATCH_DETAIL) { ad ->
+                AdSlot(AdPlacement.MATCH_DETAIL, key = "match-detail-${uiState.match.id.value}") { ad ->
                     Column {
                         Spacer(Modifier.height(OvalitSpacing.lg))
                         OvalitDivider(Modifier.padding(horizontal = OvalitSpacing.screen), color = colors.lineWeak)
@@ -332,18 +341,24 @@ private fun ScoreHeadline(uiState: MatchDetailUiState.Success, modifier: Modifie
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.spacedBy(9.dp),
             ) {
-                // 목업처럼 내 팀 점수만 결과 색이다
+                // 목업처럼 내 팀 점수만 결과 색이다.
+                // 상대 점수와 구분자는 t4면 흰 바탕에서 2.2:1이라 t3로 둔다.
+                // 구분자는 제목이 아니라 보통 굵기다.
                 OvalitText(text = score.myTeam.toString(), style = big, color = resultColor(match.myTeamWon))
-                OvalitText(text = "–", style = OvalitTheme.typography.titleM, color = colors.t4, modifier = Modifier.padding(bottom = 6.dp))
-                OvalitText(text = score.enemyTeam.toString(), style = big, color = colors.t4)
+                OvalitText(text = "–", style = SeparatorStyle(), color = colors.t3, modifier = Modifier.padding(bottom = 6.dp))
+                OvalitText(text = score.enemyTeam.toString(), style = big, color = colors.t3)
             }
-            Spacer(Modifier.weight(1f))
+            // 배너 높이가 정해져 있어 꺾으면 위의 맵 이름을 덮는다.
+            // 큰 글꼴에서 한 줄에 안 들어가면 글자를 줄인다.
+            val halvesStyle = OvalitTheme.typography.caption
             OvalitText(
                 text = halves,
-                modifier = Modifier.padding(start = OvalitSpacing.sm, bottom = 4.dp),
-                style = OvalitTheme.typography.caption,
+                modifier = Modifier.weight(1f).padding(start = OvalitSpacing.sm, bottom = 4.dp),
+                style = halvesStyle,
                 color = colors.t2,
+                textAlign = TextAlign.End,
                 maxLines = 1,
+                autoSize = shrinkToFit(halvesStyle.fontSize),
             )
         }
     }
@@ -373,7 +388,7 @@ private fun StandingHeadline(uiState: MatchDetailUiState.Success, standing: Stan
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.spacedBy(9.dp),
         ) {
-            OvalitText(text = of, style = OvalitTheme.typography.titleM, color = OvalitTheme.colors.t4, modifier = Modifier.padding(bottom = 6.dp))
+            OvalitText(text = of, style = SeparatorStyle(), color = OvalitTheme.colors.t3, modifier = Modifier.padding(bottom = 6.dp))
             OvalitText(text = rankText(standing.rank), style = big, color = standingColor(standing.rank))
         }
     }
@@ -451,3 +466,8 @@ private fun Tabs(tabs: List<DetailTab>, selected: DetailTab, onSelect: (DetailTa
         OvalitDivider(color = colors.lineWeak)
     }
 }
+
+// 큰 점수 사이의 "–"와 "14명 중"이다.
+// 제목 크기(20)지만 보조 글자라 Bold가 아니라 보통 굵기다.
+@Composable
+private fun SeparatorStyle(): TextStyle = OvalitTheme.typography.titleM.copy(fontWeight = FontWeight.Normal)

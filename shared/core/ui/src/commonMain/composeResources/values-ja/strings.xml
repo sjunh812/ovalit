@@ -60,7 +60,7 @@
     <string name="weekday_sunday">日</string>
 
     <string name="match_score">%1$d – %2$d</string>
-    <string name="match_kda">%1$d/%2$d/%3$d</string>
+    <string name="match_kda">%1$d / %2$d / %3$d</string>
     <string name="match_acs">ACS %1$s</string>
     <string name="match_result_win">勝利</string>
     <string name="match_result_loss">敗北</string>
@@ -73,7 +73,7 @@
     <string name="focus_consistency">ムラを減らす</string>
     <string name="focus_consistency_description">KAST、生存率</string>
     <string name="focus_none">特にありません</string>
-    <string name="focus_none_description">その週にいちばん大きく変わった指標からお見せします</string>
+    <string name="focus_none_description">毎週いちばん大きく変わった指標からお見せします</string>
 
     <string name="act_matches">今ACT %1$d試合</string>
     <string name="unknown_weapon">不明な武器</string>

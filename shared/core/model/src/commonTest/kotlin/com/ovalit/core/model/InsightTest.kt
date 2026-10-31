@@ -124,7 +124,7 @@ class InsightTest {
         assertNull(narrow.insight(Role.DUELIST))
     }
 
-    // 기타 모드는 라운드 수와 크레드 규칙이 달라 공수 비교도 맞지 않는다
+    // 기타 모드는 라운드 수와 경제 규칙이 달라 공수 비교도 맞지 않는다
     @Test
     fun `기타 모드는 개선 포인트 문장을 만들지 않는다`() {
         fun insight(queue: Queue, filter: QueueFilter) =

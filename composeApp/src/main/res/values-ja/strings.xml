@@ -63,4 +63,9 @@
     <!-- 이름을 늘어놓을 때 쓰는 구분자다. 따옴표로 감싸 한국어 파일과 모양을 맞춘다. -->
     <string name="list_separator">"、"</string>
     <string name="exit_confirm">もう一度戻るとアプリを閉じます</string>
+    <string name="notification_channel_friend">フレンド申請</string>
+    <string name="friend_request_title">%1$sからのフレンド申請</string>
+    <string name="friend_request_body">フレンドタブで承認または拒否できます</string>
+    <string name="friend_accept_title">フレンド申請が承認されました</string>
+    <string name="friend_accept_body">%1$s · フレンドになりました</string>
 </resources>

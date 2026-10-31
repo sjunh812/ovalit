@@ -15,8 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -121,8 +123,13 @@ internal val CellPressOutset = 8.dp
 // 이름 뒤 간격 3dp와 화살표 10dp를 더한 폭이다
 internal val ChevronSpace = 13.dp
 
-/** 칸 하나의 숫자, 그 옆 변화량, 밑의 평소 값 글자입니다. */
-internal class MetricLineText(val value: String, val change: String?, val usual: String)
+/**
+ * 칸 하나의 숫자, 그 옆 변화량, 밑의 평소 값 글자입니다.
+ * 값으로 견주는 data class라 홈이 다시 그려져도 같은 글자면 다시 재지 않습니다.
+ *
+ * @param boldValue 짚을 점이 말한 칸이라 숫자를 Bold로 그리면 그 굵기로 잽니다.
+ */
+internal data class MetricLineText(val value: String, val change: String?, val usual: String, val boldValue: Boolean = false)
 
 /**
  * 칸 숫자 옆에 변화량을 작게 붙이고 밑에 "평소 177"을 두는 글꼴입니다(사용자 결정).
@@ -168,8 +175,9 @@ internal fun rememberMetricLineStyle(cells: List<MetricLineText>, width: Dp): Me
         val available = with(density) { width.toPx() } - 1f
         val gap = with(density) { ChangeGap.toPx() }
         fun widthOf(text: String, style: TextStyle) = measurer.measure(text, style, softWrap = false, maxLines = 1).size.width
+        fun valueStyle(cell: MetricLineText, style: TextStyle) = if (cell.boldValue) style.copy(fontWeight = FontWeight.Bold) else style
         fun fits(value: TextStyle, change: TextStyle) = cells.all { cell ->
-            widthOf(cell.value, value) + (cell.change?.let { gap + widthOf(it, change) } ?: 0f) <= available
+            widthOf(cell.value, valueStyle(cell, value)) + (cell.change?.let { gap + widthOf(it, change) } ?: 0f) <= available
         }
         fun fitsBelow(change: TextStyle, usual: TextStyle) = cells.all { cell ->
             (cell.change?.let { widthOf(it, change) + gap } ?: 0f) + widthOf(cell.usual, usual) <= available
@@ -249,7 +257,13 @@ internal fun MetricValueLines(
         MetricLineLayout.STACKED -> {
             value(Modifier, style.value)
             Spacer(Modifier.height(2.dp))
-            changeText(Modifier)
+            // 변화량이 없는 칸도 그 줄을 비워 두어 옆 칸과 평소 값 높이를 맞춘다.
+            // 줄 높이 값으로 비우면 실제 글자 줄보다 높아서 보이지 않는 글자로 비운다.
+            if (change != null) {
+                changeText(Modifier)
+            } else {
+                OvalitText(text = "0", modifier = Modifier.alpha(0f).clearAndSetSemantics {}, style = style.change, maxLines = 1)
+            }
             usualText(Modifier)
         }
     }

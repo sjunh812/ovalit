@@ -33,6 +33,18 @@ class TradedDeathTest {
         assertEquals(metrics.kastRounds, metrics.tradedDeaths)
     }
 
+    // 맨 뒤로 보낸 시각끼리 빼면 0이라 5초 안으로 잡힌다
+    @Test
+    fun `시각이 없는 데스와 킬은 트레이드로 보지 않는다`() {
+        val metrics = match(
+            round(untimedKill(Enemy, Me), untimedKill(Ally, Enemy)),
+            round(untimedKill(Enemy, Me), kill(3.0, Ally, Enemy)),
+        ).metrics()
+
+        assertEquals(0, metrics.tradedDeaths)
+        assertEquals(0, metrics.kastRounds)
+    }
+
     @Test
     fun `데스가 없으면 트레이드 받은 데스 비율을 비워 둔다`() {
         assertNull(match(quietRound()).metrics().tradedDeathRate)

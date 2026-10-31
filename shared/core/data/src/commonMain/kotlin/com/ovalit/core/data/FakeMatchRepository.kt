@@ -32,8 +32,8 @@ import kotlinx.coroutines.SupervisorJob
  * 프로덕션 키가 나오기 전까지 쓰는 내 경기 저장소입니다.
  * 받기 규칙은 [OfflineFirstMatchRepository]가 지키고 여기서는 가짜 서버([FakeMatchRemoteSource])와 메모리 저장([InMemoryMatchStore])을 묶기만 합니다.
  *
- * 처음부터 첫 수집을 마친 채로 시작합니다.
- * 실제 저장소도 앱을 다시 켜면 마친 진행도를 기기에서 읽습니다.
+ * 처음부터 첫 수집을 마친 채로 시작하고 만든 시각에 경기 ID 목록을 확인한 것으로 칩니다.
+ * 실제 저장소도 앱을 다시 켜면 마친 진행도와 마지막 확인 시각을 기기에서 읽습니다.
  * 비워 두면 첫 수집을 마쳤는지 보는 곳(새 경기 확인, 당겨서 받기)마다 판단이 갈립니다.
  *
  * @param importDelay 첫 수집에서 한 판을 받는 시간입니다.
@@ -56,7 +56,7 @@ class FakeMatchRepository private constructor(
 
     private constructor(remote: FakeMatchRemoteSource, clock: Clock, scope: CoroutineScope) : this(
         remote,
-        OfflineFirstMatchRepository(remote, importedStore(remote.startImported()), clock, scope),
+        OfflineFirstMatchRepository(remote, importedStore(remote.startImported(), checkedAt = clock.now()), clock, scope),
     )
 
     /** 가짜 서버도 끝난 경기를 잊게 합니다. 지운 뒤 다시 받는 첫 수집은 늘 같은 50경기를 받습니다. */
@@ -66,9 +66,12 @@ class FakeMatchRepository private constructor(
     }
 }
 
-private fun importedStore(matches: List<Match>) = InMemoryMatchStore(
+// 첫 수집이 목록을 받은 시각도 적는다.
+// 비워 두면 앱을 켤 때마다 바로 새 경기를 확인해서 홈에 맞춰 둔 가짜 지표가 첫 화면부터 움직인다.
+private fun importedStore(matches: List<Match>, checkedAt: Instant) = InMemoryMatchStore(
     matches = matches,
     importProgress = ImportProgress(total = matches.size, results = matches.map { it.myTeamWon }),
+    checkedAt = checkedAt,
 )
 
 internal const val SEED = 923
@@ -184,7 +187,7 @@ internal fun fakeMatches(
  * 경쟁·일반 밖의 모드를 섞을 날(며칠 전)과 모드입니다.
  * 첫 수집이 최근 50경기라 더 넣으면 홈 리포트에 쓸 경쟁·일반 경기가 그만큼 빠집니다.
  * 리포트에 넣는 모드(스파이크 돌격, 신속 플레이, 프리미어)가 다섯 판이라 기타 칩 리포트도 나옵니다.
- * 건틀릿: 글리치는 큐 ID를 몰라 [Queue.OTHER]로 옵니다.
+ * 건틀릿: 시스템 오류는 큐 ID를 몰라 [Queue.OTHER]로 옵니다.
  */
 internal val OtherModeDays = listOf(
     0 to Queue.DEATHMATCH,

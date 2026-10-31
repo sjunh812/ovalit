@@ -34,8 +34,8 @@
     <string name="scoreboard_everyone">순위</string>
     <string name="me">나</string>
     <string name="friend_badge">친구</string>
-    <string name="scoreboard_note">줄을 누르면 그 판 기록을 더 볼 수 있어요. 이름을 누르면 나와 친구는 프로필이 열리고 다른 플레이어에게는 친구 요청이나 초대 링크를 보낼 수 있어요.</string>
-    <string name="scoreboard_note_names">이름을 누르면 나와 친구는 프로필이 열리고 다른 플레이어에게는 친구 요청이나 초대 링크를 보낼 수 있어요.</string>
+    <string name="scoreboard_note">줄을 누르면 그 판 기록을 더 볼 수 있어요. 나나 친구 이름을 누르면 프로필이 열려요. 다른 플레이어 이름을 누르면 친구 요청이나 초대 링크를 보낼 수 있어요.</string>
+    <string name="scoreboard_note_names">나나 친구 이름을 누르면 프로필이 열려요. 다른 플레이어 이름을 누르면 친구 요청이나 초대 링크를 보낼 수 있어요.</string>
     <string name="player_stats_expand">그 판 기록 펼치기</string>
     <string name="player_stats_collapse">그 판 기록 접기</string>
     <string name="player_open_profile">프로필 열기</string>
@@ -68,8 +68,8 @@
     <string name="report_damage_taken">받은 피해</string>
     <string name="report_damage">피해량</string>
     <string name="report_headshot">헤드샷</string>
-    <string name="report_weapons_note">킬은 적을 쓰러뜨린 무기로 셌어요. 피해량은 그 무기를 들고 시작한 라운드의 라운드당 피해량이고 헤드샷은 그 무기로만 킬을 낸 라운드에서 셌어요.</string>
-    <string name="economy_upsets">장비가 상대보다 1,000 넘게 적었는데도 %1$d번 이겼어요.</string>
+    <string name="report_weapons_note">킬은 적을 쓰러뜨린 무기로 셌어요. 피해량은 그 무기를 들고 시작한 라운드의 라운드당 피해량이에요. 헤드샷은 그 무기로만 킬을 낸 라운드에서 셌어요.</string>
+    <string name="economy_upsets">장비가 상대보다 1,000크레드 넘게 밀린 라운드에서 %1$d번 이겼어요.</string>
     <string name="overview_first_blood_ours">우리 팀 첫 킬</string>
     <string name="overview_first_blood_theirs">상대 팀 첫 킬</string>
     <string name="overview_attack">공격</string>
@@ -78,12 +78,12 @@
     <string name="overview_record">%1$d승 %2$d패</string>
     <string name="round_title">%1$d라운드</string>
     <string name="round_pick">%1$d라운드 보기</string>
-    <string name="round_loadout">우리 %1$s %2$s · 상대 %3$s %4$s</string>
+    <string name="round_loadout">우리 %1$s · 상대 %2$s</string>
     <string name="round_my_damage">준 피해 %1$s</string>
     <string name="round_kill_order">킬 순서</string>
     <string name="round_no_kills">이 라운드에는 킬이 없었어요</string>
     <string name="round_kill_ability">스킬</string>
-    <string name="economy_note">우리 팀 한 사람당 평균 장비 가치로 나눠요. 2,000크레드 미만은 이코, 3,900크레드 이상은 풀바이, 그 사이는 포스바이예요.</string>
+    <string name="economy_note">구매 유형은 우리 팀 장비 가치를 한 사람당 평균 내서 가려요. 2,000크레드 미만은 이코, 3,900크레드 이상은 풀바이, 그 사이는 포스바이예요.</string>
 
     <!-- 스코어보드에서 친구가 아닌 사람을 눌렀을 때 -->
     <string name="player_app_user">친구가 되면 서로의 프로필과 경기를 볼 수 있어요.</string>

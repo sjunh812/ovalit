@@ -17,25 +17,20 @@ enum class BuyType {
 }
 
 /** 장비 가치를 모르거나 이코노미 규칙이 다른 모드면 `null`입니다. */
-fun Round.buyType(queue: Queue): BuyType? {
-    val half = queue.halfRounds ?: return null
-    if (!queue.hasEconomy) return null
-    if (number == 1 || number == half + 1) return BuyType.PISTOL
-    val loadout = economy?.teamLoadout ?: return null
-    return buyTypeOf(loadout)
-}
+fun Round.buyType(queue: Queue): BuyType? = buyTypeOf(queue) { it.teamLoadout }
 
 /** 상대 팀의 구매 유형입니다. 우리 팀과 같은 기준으로 상대 한 사람당 평균 장비 가치를 가릅니다. */
-fun Round.enemyBuyType(queue: Queue): BuyType? {
+fun Round.enemyBuyType(queue: Queue): BuyType? = buyTypeOf(queue) { it.enemyLoadout }
+
+// 피스톨 라운드와 모드 규칙은 두 팀에 똑같이 걸려서 한곳에 둔다
+private inline fun Round.buyTypeOf(queue: Queue, loadout: (RoundEconomy) -> Int): BuyType? {
     val half = queue.halfRounds ?: return null
     if (!queue.hasEconomy) return null
     if (number == 1 || number == half + 1) return BuyType.PISTOL
-    val loadout = economy?.enemyLoadout ?: return null
-    return buyTypeOf(loadout)
-}
-
-private fun buyTypeOf(loadout: Int): BuyType = when {
-    loadout < ECO_MAX_LOADOUT -> BuyType.ECO
-    loadout < FULL_BUY_MIN_LOADOUT -> BuyType.FORCE_BUY
-    else -> BuyType.FULL_BUY
+    val value = economy?.let(loadout) ?: return null
+    return when {
+        value < ECO_MAX_LOADOUT -> BuyType.ECO
+        value < FULL_BUY_MIN_LOADOUT -> BuyType.FORCE_BUY
+        else -> BuyType.FULL_BUY
+    }
 }

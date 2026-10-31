@@ -88,6 +88,15 @@ class FakeMatchRepositoryTest {
         assertEquals(fresh.sortedByDescending { it.startedAt }, fresh)
     }
 
+    // 실제 저장소도 다시 켜면 마지막 확인 시각을 기기에서 읽는다.
+    // 비워 두면 앱을 켤 때마다 바로 새 경기를 받아 홈에 맞춰 둔 가짜 지표가 첫 화면부터 움직인다.
+    @Test
+    fun `가짜 저장소는 만든 시각에 경기 목록을 확인한 것으로 시작한다`() = runTest {
+        val repository = FakeMatchRepository(ThursdayClock, scope = this)
+
+        assertEquals(Thursday, repository.checkedAt.first())
+    }
+
     // 당겨도 아무것도 안 들어오면 가짜 데이터로 새로고침을 볼 수 없다
     @Test
     fun `가짜 저장소는 당기면 늘 한 판은 받는다`() = runTest {
@@ -172,7 +181,7 @@ class FakeMatchRepositoryTest {
         assertEquals(match.score.myTeam, match.players.filter { it.onMyTeam }.sumOf { it.kills })
     }
 
-    // 건틀릿: 글리치는 큐 ID를 몰라 기타로 온다.
+    // 건틀릿: 시스템 오류는 큐 ID를 몰라 기타로 온다.
     // 로봇은 카탈로그에 없어 이름도 역할도 없다.
     @Test
     fun `가짜 건틀릿은 두 명씩 여덟 팀이고 로봇 요원은 카탈로그에 없다`() = runTest {

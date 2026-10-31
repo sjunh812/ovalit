@@ -50,6 +50,19 @@ class FirstBloodTest {
         assertEquals(1, metrics.firstKills)
     }
 
+    // 언제 났는지 모르는 킬을 첫 킬로 치면 시각이 있는 킬보다 먼저 난 것처럼 셀 수 있다
+    @Test
+    fun `시각이 없는 킬은 첫 킬과 첫 데스로 세지 않는다`() {
+        val untimed = match(round(untimedKill(Me, Enemy)), round(untimedKill(Enemy, Me))).metrics()
+        val mixed = match(round(untimedKill(Me, Enemy), kill(20.0, OtherEnemy, Me))).metrics()
+
+        assertEquals(1, untimed.kills)
+        assertEquals(1, untimed.deaths)
+        assertEquals(0, untimed.firstKills + untimed.firstDeaths)
+        assertEquals(0, mixed.firstKills)
+        assertEquals(1, mixed.firstDeaths)
+    }
+
     // 교전에서 진 게 아니다.
     // 데스로는 세지만 첫 데스는 아니다.
     @Test

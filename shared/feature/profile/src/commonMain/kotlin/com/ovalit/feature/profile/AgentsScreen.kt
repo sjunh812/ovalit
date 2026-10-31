@@ -381,12 +381,12 @@ private fun AgentTable(agents: List<AgentStats>, shown: AgentColumns, onChoose: 
         },
         modifier = Modifier.padding(horizontal = OvalitSpacing.screen),
     )
-    Spacer(Modifier.height(12.dp))
-    // 열 제목을 칸마다 따로 줄이면 "전투점수"만 작아진다.
-    // 가장 긴 제목에 맞춘 크기를 셋에 같이 쓴다.
+    Spacer(Modifier.height(OvalitSpacing.lg))
+    // 열 제목은 읽어야 하는 글이라 13 그대로 두고, 길면 줄이지 않고 두 줄로 꺾는다.
+    // 52dp 칸에 맞춰 줄였더니 "첫 교전 관여율"이 8sp대까지 작아졌다.
     val titles = listOf(stringResource(CoreUiRes.string.column_win_rate)) + columns.map { stringResource(it.title) }
-    val headerStyle = rememberFittingStyle(titles, OvalitTheme.typography.caption, MetricColumn - ColumnGap)
-    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.screen)) {
+    val headerStyle = OvalitTheme.typography.caption
+    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = OvalitSpacing.screen), verticalAlignment = Alignment.Bottom) {
         Spacer(Modifier.weight(1f))
         HeaderCell(titles[0], WinColumn, headerStyle)
         titles.drop(1).forEach { HeaderCell(it, MetricColumn, headerStyle) }
@@ -426,8 +426,7 @@ private fun HeaderCell(text: String, width: Dp, style: TextStyle) {
         style = style,
         color = OvalitTheme.colors.t3,
         textAlign = TextAlign.End,
-        maxLines = 1,
-        autoSize = shrinkToFit(style.fontSize),
+        maxLines = 2,
     )
 }
 

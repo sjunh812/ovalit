@@ -62,4 +62,9 @@
     <!-- 이름을 늘어놓을 때 쓰는 구분자다. 앞뒤 공백을 지키려고 따옴표로 감싼다. -->
     <string name="list_separator">", "</string>
     <string name="exit_confirm">뒤로 가기를 한 번 더 누르면 앱이 닫혀요</string>
+    <string name="notification_channel_friend">친구 요청</string>
+    <string name="friend_request_title">%1$s의 친구 요청</string>
+    <string name="friend_request_body">친구 탭에서 수락하거나 거절할 수 있어요</string>
+    <string name="friend_accept_title">친구 요청이 수락됐어요</string>
+    <string name="friend_accept_body">%1$s · 이제 친구예요</string>
 </resources>

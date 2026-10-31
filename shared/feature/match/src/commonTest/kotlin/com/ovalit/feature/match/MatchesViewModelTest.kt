@@ -90,6 +90,41 @@ class MatchesViewModelTest {
         assertEquals(state.agents.map { counts.getValue(it) }, state.agents.map { counts.getValue(it) }.sortedDescending())
     }
 
+    // 큐를 바꿔 고른 요원이 그 큐에 없으면 칩이 사라져 왜 비었는지 알 수 없다
+    @Test
+    fun `큐를 바꿔도 골라 둔 요원 칩은 남는다`() = runTest {
+        val viewModel = viewModel()
+        val all = collect(viewModel)
+        viewModel.selectQueue(QueueFilter.OTHER)
+        val other = assertIs<MatchesUiState.Success>(viewModel.uiState.value)
+        val agent = all.agents.first { it !in other.agents }
+
+        viewModel.selectQueue(QueueFilter.COMPETITIVE_AND_UNRATED)
+        viewModel.setFilter(MatchFilter(agent = agent))
+        viewModel.selectQueue(QueueFilter.OTHER)
+
+        val state = assertIs<MatchesUiState.Success>(viewModel.uiState.value)
+        assertEquals(agent, state.filter.agent)
+        assertEquals(agent, state.agents.last())
+        assertTrue(state.days.isEmpty())
+    }
+
+    @Test
+    fun `저장된 경기를 지우면 골라 둔 필터도 비운다`() = runTest {
+        val matches = FakeMatchRepository(ThursdayClock, scope = this)
+        val viewModel = viewModel(matches = matches)
+        val all = collect(viewModel)
+        viewModel.setFilter(MatchFilter(agent = all.agents.first()))
+
+        matches.deleteAll()
+        matches.importRecent()
+        advanceUntilIdle()
+
+        val state = assertIs<MatchesUiState.Success>(viewModel.uiState.value)
+        assertFalse(state.filter.isActive)
+        assertTrue(state.days.isNotEmpty())
+    }
+
     // 데스매치와 건틀릿은 등수로 끝나 승패가 없다.
     // 경기 줄도 그런 판에는 승패를 적지 않는다.
     @Test
@@ -217,8 +252,11 @@ class MatchesViewModelTest {
         assertFalse(viewModel.isRefreshing.value)
     }
 
-    private fun TestScope.viewModel(preferences: UserPreferences = UserPreferences.Default) = MatchesViewModel(
-        FakeMatchRepository(ThursdayClock, scope = this),
+    private fun TestScope.viewModel(
+        preferences: UserPreferences = UserPreferences.Default,
+        matches: MatchRepository = FakeMatchRepository(ThursdayClock, scope = this),
+    ) = MatchesViewModel(
+        matches,
         TestUserPreferencesRepository(preferences),
         FakeContentRepository(),
         ThursdayClock,

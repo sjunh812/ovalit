@@ -88,7 +88,7 @@ enum class MatchFormat {
     /** 모두가 혼자 등수를 다툽니다. 데스매치입니다. */
     FREE_FOR_ALL,
 
-    /** 작은 팀 여럿이 등수를 다툽니다. 건틀릿: 글리치가 두 명씩 여덟 팀입니다. */
+    /** 작은 팀 여럿이 등수를 다툽니다. 건틀릿: 시스템 오류가 두 명씩 여덟 팀입니다. */
     TEAM_PLACEMENT,
 }
 
@@ -222,6 +222,7 @@ data class RoundEconomy(
 
 /**
  * @property atMillis 라운드 시작부터 잰 시각(`timeSinceRoundStartMillis`)입니다.
+ *   응답에 시각이 빠졌으면 [UNKNOWN_TIME]이라 시각순으로 두면 맨 뒤로 갑니다.
  * @property weapon 킬을 낸 무기(`finishingDamage.damageItem`)이고 스킬 킬이면 `null`입니다.
  *   `economy.weapon`을 쓰면 주워 쓴 총이 안 잡힙니다.
  */
@@ -231,7 +232,19 @@ data class KillEvent(
     val victim: PlayerId,
     val assistants: Set<PlayerId>,
     val weapon: WeaponId?,
-)
+) {
+    /**
+     * 응답에 시각이 있었는지입니다.
+     * 시각이 없는 킬은 언제 났는지 몰라 첫 킬·첫 데스와 트레이드를 가를 때 보지 않습니다.
+     * 가리지 않으면 맨 뒤로 보낸 시각끼리 빼서 0이라 트레이드로 잡히고, 시각이 있는 킬이 없는 라운드에서는 첫 킬로 잡힙니다.
+     */
+    val hasTime: Boolean get() = atMillis != UNKNOWN_TIME
+
+    companion object {
+        /** 시각이 빠진 킬의 [atMillis]입니다. */
+        const val UNKNOWN_TIME: Long = Long.MAX_VALUE
+    }
+}
 
 data class Shots(
     val head: Int,

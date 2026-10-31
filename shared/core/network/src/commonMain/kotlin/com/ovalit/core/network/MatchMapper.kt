@@ -59,7 +59,8 @@ import kotlin.time.Instant
 fun MatchDto.toMatch(me: PlayerId, roleOf: (AgentId) -> Role?): Match? {
     val info = matchInfo ?: throw RiotResponseFormatException("$.matchInfo")
     if (info.isCompleted == false) return null
-    val queue = Queue.fromRiot(info.queueId.orEmpty(), info.provisioningFlowId) ?: return null
+    // 큐가 빠졌으면 목록(toEntries)처럼 모르는 모드로 둔다
+    val queue = Queue.fromRiot(info.queueId, info.provisioningFlowId) ?: return null
     val id = info.matchId?.takeIf { it.isNotBlank() } ?: throw RiotResponseFormatException("$.matchInfo.matchId")
     val startedAt = info.gameStartMillis ?: throw RiotResponseFormatException("$.matchInfo.gameStartMillis")
 
@@ -257,8 +258,9 @@ private fun KillDto.toKillEvent(): KillEvent? {
     val bySpike = finishingDamage?.damageType.equals("Bomb", ignoreCase = true)
     val killer = killer?.takeIf { it.isNotBlank() && !bySpike } ?: victim
     return KillEvent(
-        // 시각이 없으면 맨 뒤로 보내 첫 킬이나 트레이드로 잡히지 않게 한다
-        atMillis = timeSinceRoundStartMillis ?: Long.MAX_VALUE,
+        // 시각이 없으면 맨 뒤로 보낸다.
+        // 첫 킬과 트레이드는 core/model이 KillEvent.hasTime으로 거른다.
+        atMillis = timeSinceRoundStartMillis ?: KillEvent.UNKNOWN_TIME,
         killer = PlayerId(killer),
         victim = PlayerId(victim),
         assistants = assistants.filter { it.isNotBlank() && it != killer }.mapTo(mutableSetOf(), ::PlayerId),
@@ -346,8 +348,8 @@ private fun List<Boolean>.majority(): Boolean? {
 
 /**
  * 스코어보드 한 줄입니다.
- * 킬·데스·어시와 전투점수는 게임 스코어보드와 같게 `stats`를 그대로 옮기고 응답에 라운드별로만 있는 피해량과 맞힌 부위는 모든 라운드를 더합니다.
- * 라운드가 없는 모드는 뛴 라운드를 0으로 두어 전투점수와 피해량을 나누지 않습니다.
+ * 킬·데스·어시와 전투 점수는 게임 스코어보드와 같게 `stats`를 그대로 옮기고, 응답에 라운드별로만 있는 피해량과 맞힌 부위는 모든 라운드를 더합니다.
+ * 라운드가 없는 모드는 뛴 라운드를 0으로 두어 전투 점수와 피해량을 나누지 않습니다.
  */
 private fun Participant.toScoreline(sides: Sides, hasRounds: Boolean, roundResults: List<RoundResultDto>): Scoreline {
     val stats = dto.stats

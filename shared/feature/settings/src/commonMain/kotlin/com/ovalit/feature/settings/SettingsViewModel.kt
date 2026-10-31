@@ -90,6 +90,8 @@ class SettingsViewModel(
 
     fun setNotifyPing(enabled: Boolean) = launch { preferencesRepository.setNotifyPing(enabled) }
 
+    fun setNotifyFriendRequest(enabled: Boolean) = launch { preferencesRepository.setNotifyFriendRequest(enabled) }
+
     fun setTheme(theme: ThemePreference) = launch { preferencesRepository.setTheme(theme) }
 
     fun setFocus(focus: Focus) = launch { preferencesRepository.setFocus(focus) }

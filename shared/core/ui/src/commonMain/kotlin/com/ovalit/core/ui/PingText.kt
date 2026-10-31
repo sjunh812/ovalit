@@ -57,12 +57,14 @@ enum class PingDay { TODAY, DAWN, TOMORROW }
  * [at]이 오늘인지, 자정을 넘긴 오늘 밤인지, 내일인지 가립니다.
  * 밤 11시에 고른 0시 30분을 "내일"이라 하면 하루 뒤처럼 읽혀서 다음 날 6시 전이면 [PingDay.DAWN]입니다.
  * 지금이 이미 새벽이면 다음 날 새벽은 하루 뒤라 [PingDay.TOMORROW]입니다.
+ * 이미 시작한 초대(끝나기 전 한 시간)는 자정을 넘겨도 [PingDay.TODAY]입니다.
+ * 날짜만 견주면 23시 30분 초대를 0시 10분에 열 때 "내일 23:30"이 됩니다.
  */
 fun pingDayOf(at: Instant, now: Instant, timeZone: TimeZone): PingDay {
     val target = at.toLocalDateTime(timeZone)
     val current = now.toLocalDateTime(timeZone)
     return when {
-        target.date == current.date -> PingDay.TODAY
+        at <= now || target.date == current.date -> PingDay.TODAY
         target.hour < DAWN_END_HOUR && current.hour >= DAWN_END_HOUR -> PingDay.DAWN
         else -> PingDay.TOMORROW
     }
@@ -136,7 +138,8 @@ fun pingCalledBy(ping: Ping, me: PlayerId): String =
 /** 홈 한 줄의 "민석의 초대 · 21:00"이나 "내 초대 · 지금"입니다. */
 @Composable
 fun pingHomeTitle(ping: Ping, me: PlayerId, now: Instant, timeZone: TimeZone): String {
-    val time = pingClockText(ping.startsAt, now, timeZone)
+    // 두 줄로 꺾일 때 "내일"과 "21:00"이 떨어지지 않게 한 덩어리로 둔다
+    val time = pingClockText(ping.startsAt, now, timeZone).replace(' ', '\u00a0')
     if (ping.isHostedBy(me)) {
         return if (ping.isNow) stringResource(Res.string.ping_home_sent_now) else stringResource(Res.string.ping_home_sent, time)
     }

@@ -11,11 +11,14 @@ import com.ovalit.core.data.PingRepository
 import com.ovalit.core.model.PingAnswer
 import com.ovalit.core.model.PingId
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -40,26 +43,36 @@ class PingActionReceiver : BroadcastReceiver(), KoinComponent {
         val pending = goAsync()
         scope.launch {
             try {
-                when (intent.action) {
-                    ACTION_REPLY -> {
-                        val yes = intent.getStringExtra(EXTRA_ANSWER) == "yes"
-                        pings.reply(PingId(pingId), if (yes) PingAnswer.YES else PingAnswer.NO)
-                        analytics.log(AnalyticsEvents.PING_REPLY, mapOf("answer" to if (yes) "yes" else "no", "via" to "notification"))
-                        PingNotifications.answered(context, pingId, if (yes) R.string.ping_answered_yes else R.string.ping_answered_no)
-                    }
-                    ACTION_MOVE -> {
-                        val time = intent.getLongExtra(EXTRA_TIME, 0L).takeIf { it > 0 } ?: return@launch
-                        pings.moveTo(PingId(pingId), Instant.fromEpochMilliseconds(time))
-                        PingNotifications.answered(context, pingId, R.string.ping_moved)
-                    }
+                // goAsync()로 붙잡아도 리시버는 10초 안에 끝내야 한다.
+                // 네트워크가 멈춰 넘기면 ANR이 나니 그 전에 끊고 실패로 알린다.
+                withTimeout(ANSWER_TIMEOUT) {
+                    answer(context, intent, pingId)
                 }
+            } catch (_: TimeoutCancellationException) {
+                PingNotifications.answered(context, pingId, R.string.ping_answer_failed, failed = true)
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
                 // 보내지 못했으면 버튼 대신 알림을 눌러 앱에서 다시 답하게 한다
-                PingNotifications.answered(context, pingId, R.string.ping_answer_failed)
+                PingNotifications.answered(context, pingId, R.string.ping_answer_failed, failed = true)
             } finally {
                 pending.finish()
+            }
+        }
+    }
+
+    private suspend fun answer(context: Context, intent: Intent, pingId: String) {
+        when (intent.action) {
+            ACTION_REPLY -> {
+                val yes = intent.getStringExtra(EXTRA_ANSWER) == "yes"
+                pings.reply(PingId(pingId), if (yes) PingAnswer.YES else PingAnswer.NO)
+                analytics.log(AnalyticsEvents.PING_REPLY, mapOf("answer" to if (yes) "yes" else "no", "via" to "notification"))
+                PingNotifications.answered(context, pingId, if (yes) R.string.ping_answered_yes else R.string.ping_answered_no)
+            }
+            ACTION_MOVE -> {
+                val time = intent.getLongExtra(EXTRA_TIME, 0L).takeIf { it > 0 } ?: return
+                pings.moveTo(PingId(pingId), Instant.fromEpochMilliseconds(time))
+                PingNotifications.answered(context, pingId, R.string.ping_moved)
             }
         }
     }
@@ -68,6 +81,9 @@ class PingActionReceiver : BroadcastReceiver(), KoinComponent {
         // 리시버 객체는 onReceive가 끝나면 버려지니 스코프는 여기 둔다.
         // 프로세스는 goAsync가 붙잡는다.
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+        // 브로드캐스트를 붙잡을 수 있는 10초보다 조금 짧게 둔다
+        private val ANSWER_TIMEOUT = 8.seconds
 
         fun reply(context: Context, pingId: String, answer: String): PendingIntent = broadcast(
             context,

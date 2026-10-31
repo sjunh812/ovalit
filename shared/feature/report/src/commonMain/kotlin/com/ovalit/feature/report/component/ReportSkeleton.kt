@@ -18,6 +18,7 @@ import com.ovalit.core.designsystem.component.OvalitCardGap
 import com.ovalit.core.designsystem.component.OvalitSkeleton
 import com.ovalit.core.designsystem.component.SkeletonBlock
 import com.ovalit.core.designsystem.theme.OvalitSpacing
+import com.ovalit.core.ui.QueueChipsSkeleton
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.report_loading
 import org.jetbrains.compose.resources.stringResource
@@ -35,14 +36,7 @@ internal fun ReportSkeleton(modifier: Modifier = Modifier, withChips: Boolean = 
     // 깜빡이는 덩어리가 여럿이어도 화면 읽기 프로그램에는 한 줄만 읽히게 한다
     Column(modifier = modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = description }) {
         if (withChips) {
-            OvalitSkeleton(description = description, modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(OvalitSpacing.xs)) {
-                    SkeletonBlock(width = 88.dp, height = 34.dp, radius = 10.dp)
-                    SkeletonBlock(width = 52.dp, height = 34.dp, radius = 10.dp)
-                    SkeletonBlock(width = 52.dp, height = 34.dp, radius = 10.dp)
-                    SkeletonBlock(width = 52.dp, height = 34.dp, radius = 10.dp)
-                }
-            }
+            OvalitSkeleton(description = description) { QueueChipsSkeleton() }
             Spacer(Modifier.height(OvalitSpacing.md))
         }
         SkeletonCard(description) {

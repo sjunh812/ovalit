@@ -49,6 +49,7 @@ class DataStoreUserPreferencesRepository(
                 notifyAnalysisDone = stored[Keys.notifyAnalysisDone] ?: default.notifyAnalysisDone,
                 notifyWeeklyReport = stored[Keys.notifyWeeklyReport] ?: default.notifyWeeklyReport,
                 notifyPing = stored[Keys.notifyPing] ?: default.notifyPing,
+                notifyFriendRequest = stored[Keys.notifyFriendRequest] ?: default.notifyFriendRequest,
                 focus = stored[Keys.focus].toEnumOr(default.focus),
                 seenProfileHint = stored[Keys.seenProfileHint] ?: default.seenProfileHint,
                 seenNotificationPrimer = stored[Keys.seenNotificationPrimer] ?: default.seenNotificationPrimer,
@@ -66,6 +67,8 @@ class DataStoreUserPreferencesRepository(
     override suspend fun setNotifyWeeklyReport(enabled: Boolean) = set(Keys.notifyWeeklyReport, enabled)
 
     override suspend fun setNotifyPing(enabled: Boolean) = set(Keys.notifyPing, enabled)
+
+    override suspend fun setNotifyFriendRequest(enabled: Boolean) = set(Keys.notifyFriendRequest, enabled)
 
     override suspend fun setFocus(focus: Focus) = set(Keys.focus, focus.name)
 
@@ -91,6 +94,7 @@ class DataStoreUserPreferencesRepository(
         val notifyAnalysisDone = booleanPreferencesKey("notify_analysis_done")
         val notifyWeeklyReport = booleanPreferencesKey("notify_weekly_report")
         val notifyPing = booleanPreferencesKey("notify_ping")
+        val notifyFriendRequest = booleanPreferencesKey("notify_friend_request")
         val focus = stringPreferencesKey("focus")
         val seenProfileHint = booleanPreferencesKey("seen_profile_hint")
         val seenNotificationPrimer = booleanPreferencesKey("seen_notification_primer")

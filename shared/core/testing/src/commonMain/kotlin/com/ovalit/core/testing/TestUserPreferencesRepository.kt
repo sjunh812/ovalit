@@ -28,6 +28,8 @@ class TestUserPreferencesRepository(initial: UserPreferences = UserPreferences.D
 
     override suspend fun setNotifyPing(enabled: Boolean) = state.update { it.copy(notifyPing = enabled) }
 
+    override suspend fun setNotifyFriendRequest(enabled: Boolean) = state.update { it.copy(notifyFriendRequest = enabled) }
+
     override suspend fun setFocus(focus: Focus) = state.update { it.copy(focus = focus) }
 
     override suspend fun setSeenProfileHint() = state.update { it.copy(seenProfileHint = true) }

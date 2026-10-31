@@ -40,11 +40,11 @@ import com.ovalit.core.designsystem.component.OvalitCardGap
 import com.ovalit.core.designsystem.component.OvalitCardSlice
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitExpandable
-import com.ovalit.core.designsystem.component.OvalitOutlinedButton
 import com.ovalit.core.designsystem.component.OvalitPullToRefresh
 import com.ovalit.core.designsystem.component.OvalitSkeleton
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
+import com.ovalit.core.designsystem.component.OvalitWeakButton
 import com.ovalit.core.designsystem.component.ScrollToTopOnReselect
 import com.ovalit.core.designsystem.component.SkeletonBlock
 import com.ovalit.core.designsystem.haptic.rememberOvalitHaptics
@@ -109,8 +109,10 @@ fun FriendsRoute(
     FailureNoticesEffect(viewModel.notices)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val busy by viewModel.busy.collectAsStateWithLifecycle()
     FriendsScreen(
         uiState = uiState,
+        busy = busy,
         isRefreshing = isRefreshing,
         onRefresh = viewModel::refresh,
         onOpenFriend = onOpenFriend,
@@ -166,6 +168,7 @@ internal fun FriendsScreen(
     onRefresh: () -> Unit = {},
     timeZone: TimeZone = TimeZone.currentSystemDefault(),
     ping: PingActions = PingActions(),
+    busy: Set<Any> = emptySet(),
 ) {
     val colors = OvalitTheme.colors
     var composing by remember { mutableStateOf(false) }
@@ -229,13 +232,18 @@ internal fun FriendsScreen(
                                 timeZone = timeZone,
                                 canCompose = outgoing == null && uiState.friends.isNotEmpty(),
                                 onOpen = { ping.open(it.id) },
-                                onCompose = { composing = true },
+                                // 하루 한도 안내는 다시 열 때 지운다.
+                                // 날이 바뀌었거나 다른 친구를 고를 수 있다.
+                                onCompose = {
+                                    tooMany = false
+                                    composing = true
+                                },
                             )
                             Spacer(Modifier.height(OvalitCardGap))
                         }
                     }
                 }
-                item(key = "requests") { RequestsCard(uiState.requests, onAccept = onAccept, onDecline = onDecline) }
+                item(key = "requests") { RequestsCard(uiState.requests, busy, onAccept = onAccept, onDecline = onDecline) }
 
                 if (uiState.friends.isEmpty()) {
                     item(key = "empty") {
@@ -288,9 +296,12 @@ internal fun FriendsScreen(
                 timeZone = timeZone,
                 tooMany = tooMany,
                 onSend = { friends, startsAt ->
-                    ping.send(friends, startsAt) { result ->
-                        tooMany = result == PingSendResult.TOO_MANY
-                        if (result == PingSendResult.SENT) composing = false
+                    if (FriendsViewModel.SEND_PING !in busy) {
+                        ping.send(friends, startsAt) { result ->
+                            tooMany = result == PingSendResult.TOO_MANY
+                            // 다른 기기에서 보낸 초대가 이미 있으면 그 초대를 보게 닫는다
+                            if (result == PingSendResult.SENT || result == PingSendResult.ALREADY_ACTIVE) composing = false
+                        }
                     }
                 },
                 onDismiss = { composing = false },
@@ -304,18 +315,20 @@ internal fun FriendsScreen(
 // 마지막 요청이면 구역이 접히는 동안 그 줄을 그대로 둔다.
 // 빈 목록을 그리면 "받은 요청 0"이 잠깐 뜬다.
 @Composable
-private fun RequestsCard(requests: List<FriendRequest>, onAccept: (PlayerId) -> Unit, onDecline: (PlayerId) -> Unit) {
+private fun RequestsCard(requests: List<FriendRequest>, busy: Set<Any>, onAccept: (PlayerId) -> Unit, onDecline: (PlayerId) -> Unit) {
     var lastRequests by remember { mutableStateOf(requests) }
     SideEffect { if (requests.isNotEmpty()) lastRequests = requests }
     val shownRequests = requests.ifEmpty { lastRequests }
     OvalitExpandable(visible = requests.isNotEmpty()) {
         Column {
-            OvalitCard(modifier = Modifier.animateContentSize()) {
+            OvalitCard(modifier = Modifier.animateContentSize(), bottomPadding = OvalitSpacing.sm) {
                 CardTitle(stringResource(Res.string.requests_title, shownRequests.size))
                 shownRequests.forEachIndexed { index, request ->
                     key(request.id.value) {
                         if (index > 0) RowDivider()
-                        RequestRow(request, onAccept = { onAccept(request.id) }, onDecline = { onDecline(request.id) })
+                        // 보내는 중이거나 이미 처리해 접히는 중인 줄은 누르지 않는다
+                        val enabled = request.id !in busy && requests.any { it.id == request.id }
+                        RequestRow(request, enabled, onAccept = { onAccept(request.id) }, onDecline = { onDecline(request.id) })
                     }
                 }
             }
@@ -327,8 +340,9 @@ private fun RequestsCard(requests: List<FriendRequest>, onAccept: (PlayerId) -> 
 @Composable
 private fun InviteButton(onInvite: () -> Unit) {
     Spacer(Modifier.height(OvalitSpacing.md))
-    Column(modifier = Modifier.padding(horizontal = OvalitSpacing.screen)) {
-        OvalitOutlinedButton(text = stringResource(Res.string.invite), onClick = onInvite)
+    // 카드 안에서만 불려 카드 여백이다
+    Column(modifier = Modifier.padding(horizontal = OvalitSpacing.gutter)) {
+        OvalitWeakButton(text = stringResource(Res.string.invite), onClick = onInvite)
         Spacer(Modifier.height(OvalitSpacing.sm))
         OvalitText(
             text = stringResource(Res.string.invite_note),
@@ -344,7 +358,8 @@ private fun InviteButton(onInvite: () -> Unit) {
 private fun CardTitle(text: String) {
     OvalitText(
         text = text,
-        modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = OvalitSpacing.xs),
+        // 첫 줄의 위 여백(8dp)과 합쳐 제목과 내용 사이가 다른 카드처럼 16dp다
+        modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = OvalitSpacing.sm),
         style = OvalitTheme.typography.cardTitle,
     )
 }
@@ -358,7 +373,7 @@ private fun RowDivider() {
 }
 
 @Composable
-private fun RequestRow(request: FriendRequest, onAccept: () -> Unit, onDecline: () -> Unit) {
+private fun RequestRow(request: FriendRequest, enabled: Boolean, onAccept: () -> Unit, onDecline: () -> Unit) {
     val haptics = rememberOvalitHaptics()
     Row(
         modifier = Modifier
@@ -380,15 +395,18 @@ private fun RequestRow(request: FriendRequest, onAccept: () -> Unit, onDecline: 
                 SmallButton(
                     text = stringResource(Res.string.decline),
                     filled = false,
+                    enabled = enabled,
                     onClick = {
                         haptics.reject()
                         onDecline()
                     },
                 )
-                Spacer(Modifier.width(OvalitSpacing.xs))
+                // 나란한 버튼은 잘못 누르지 않게 8dp 띄운다(Android 접근성 안내)
+                Spacer(Modifier.width(OvalitSpacing.sm))
                 SmallButton(
                     text = stringResource(Res.string.accept),
                     filled = true,
+                    enabled = enabled,
                     onClick = {
                         haptics.confirm()
                         onAccept()

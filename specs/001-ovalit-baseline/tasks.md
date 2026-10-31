@@ -95,15 +95,15 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 - [ ] T032 [US1] 로컬 DB 고르기: KMP를 지원하고 상업 이용이 무료인 라이선스(Apache-2.0·MIT·SIL OFL)인 후보를 실제 응답 크기로 견줘 사용자에게 묻고 결정을 남긴다 in docs/DECISIONS.md, CLAUDE.md 아키텍처, specs/001-ovalit-baseline/research.md
 - [ ] T033 [US1] `MatchStore`를 고른 로컬 DB로 구현해 경기, 첫 수집 진행도와 멈춘 까닭(`ImportProgress.stoppedBy`), 마지막 확인 시각, 받다 남은 새 경기를 기기에 남긴다. "앱을 강제로 닫아도 남은 것만 이어 받는다", FR-036 "인터넷이 없어도 기기에 저장된 경기로 주간 리포트, 경기 목록, 내 프로필을 보여 줘야" 한다 in shared/core/data/src/commonMain/kotlin/com/ovalit/core/data/MatchStore.kt와 새 구현 파일
 - [ ] T034 [US1] `MatchStore` 구현 테스트(다시 켜면 이어 받기, 지우기 뒤 더 저장하지 않기, 인터넷 없이 다시 켜도 저장된 경기로 리포트가 나오고 당기면 인터넷 끊김 까닭을 던지기) in shared/core/data/src/commonTest/kotlin/com/ovalit/core/data/
-- [ ] T035 [US1] HTTP 클라이언트(Ktor)를 붙이고 본문은 문자열로 받아 직접 읽는다(`ContentNegotiation` 금지, 실패 예외에 원문을 담지 않기), 세션은 `Authorization: Bearer`, 에러는 [contracts/server-api.md](contracts/server-api.md)대로 `OvalitError`로 옮긴다 in shared/core/network/
-- [ ] T082 [US1] 실패 문구 유출 테스트: HTTP 실패와 읽기 실패를 `OvalitError`로 옮긴 뒤 예외 문구와 원인 예외에 응답 본문(Ktor `Text:` 등)과 요청 URL의 PUUID·경기 ID(`/friends/{puuid}/…`, `/riot/matches/{matchId}`)가 남지 않는지 본다. 이 예외가 Crashlytics로 나가면 Riot이 준 값이 함께 나간다(헌법 IV, FR-032, SC-007) in shared/core/network/src/commonTest/kotlin/com/ovalit/core/network/
+- [x] T035 [US1] HTTP 클라이언트(Ktor)를 붙이고 본문은 문자열로 받아 직접 읽는다(`ContentNegotiation` 금지, 실패 예외에 원문을 담지 않기), 세션은 `Authorization: Bearer`, 에러는 [contracts/server-api.md](contracts/server-api.md)대로 `OvalitError`로 옮긴다 in shared/core/network/
+- [x] T082 [US1] 실패 문구 유출 테스트: HTTP 실패와 읽기 실패를 `OvalitError`로 옮긴 뒤 예외 문구와 원인 예외에 응답 본문(Ktor `Text:` 등)과 요청 URL의 PUUID·경기 ID(`/friends/{puuid}/…`, `/riot/matches/{matchId}`)가 남지 않는지 본다. 이 예외가 Crashlytics로 나가면 Riot이 준 값이 함께 나간다(헌법 IV, FR-032, SC-007) in shared/core/network/src/commonTest/kotlin/com/ovalit/core/network/
 - [ ] T036 [US1] `MatchRemoteSource` 실제 구현(`GET /riot/matchlist`, `GET /riot/matches/:matchId`, 사용자 한도 429는 새 경기가 없는 것처럼) in shared/core/data/src/commonMain/kotlin/com/ovalit/core/data/
 - [ ] T037 [US1] RSO 연결: S0-3을 Custom Tabs로 띄우고 PKCE verifier를 만들어 challenge만 넘기며, App Link `/auth/done?code=`를 받아 `POST /auth/session`으로 세션을 받는다. WebView 금지, 커스텀 스킴 금지 in shared/feature/onboarding/, composeApp/src/main/AndroidManifest.xml(호스트는 `local.properties`의 `ovalit.server.host`)
 - [ ] T038 [US1] 실제 `AccountRepository`: 계정 값은 기기에서 읽은 뒤 처음 내보낸다(읽기 전에 `null`을 먼저 내보내지 않기), 로그인이 풀리면 다시 시도하지 않고 멈춘다 in shared/core/data/src/commonMain/kotlin/com/ovalit/core/data/AccountRepository.kt와 새 구현 파일
 - [ ] T039 [US1] 시작 화면을 연동과 첫 수집 상태로 고른다(연동 전 인트로, 첫 수집 중 S0-4에서 `start()`로 이어 받기, 나머지 홈) in shared/app/src/commonMain/kotlin/com/ovalit/app/OvalitApp.kt
 - [ ] T040 [US1] 로그인 풀림 줄과 점검 안내 줄(`GET /status`). 자리와 문구는 T085에서 정한 `docs/screens.md` 절을 따른다 in shared/feature/report/, shared/core/ui/
 - [ ] T041 [US1] "아직 확인하지 못한 것"(맵 ID 형태, `roundNum` 시작, 항복 라운드, 튕긴 사람, 라운드 없는 모드, 건틀릿 큐 ID, 킬의 `damageType`)을 실제 응답으로 확인하고 옮겨 담기와 테스트를 고친다 in shared/core/network/src/commonMain/kotlin/com/ovalit/core/network/MatchMapper.kt, shared/core/network/src/commonTest/, CLAUDE.md 데이터
-- [ ] T042 [US1] 전투점수 칸 결정: 실제 경기 응답에 `players[].stats.score`와 Performance Score가 어떻게 오는지 보고 사용자에게 묻는다. 바뀌면 고정 칸(`FixedMetric`), 문서, Figma를 같은 커밋에서 고친다 in shared/core/model/src/commonMain/kotlin/com/ovalit/core/model/FixedMetric.kt, CLAUDE.md 지켜야 할 선, .specify/memory/constitution.md, docs/DECISIONS.md
+- [ ] T042 [US1] 전투 점수 칸 결정: 실제 경기 응답에 `players[].stats.score`와 Performance Score가 어떻게 오는지 보고 사용자에게 묻는다. 바뀌면 고정 칸(`FixedMetric`), 문서, Figma를 같은 커밋에서 고친다 in shared/core/model/src/commonMain/kotlin/com/ovalit/core/model/FixedMetric.kt, CLAUDE.md 지켜야 할 선, .specify/memory/constitution.md, docs/DECISIONS.md
 
 **Checkpoint**: 실제 계정으로 P1 독립 검사가 통과하고 SC-001, SC-005, SC-006을 잰다.
 
@@ -164,14 +164,14 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 
 ### 남은 일
 
-- [ ] T054 [US4] 주간 요약 서버: 표(주, 액트, 큐, 합계: 경기·라운드 수, 킬·데스·어시, 전투점수, 피해량, 맞힌 부위별 탄)와 올리기·받기 경로. "세션이 있어야 받고, 서로 수락한 친구가 전적을 공개했을 때만 내려준다". 사람마다 주당 한 줄을 덮어쓰고, 친구를 끊으면 지우지 않고 내주지만 않으며, 연동을 해제하면 지운다([research.md](research.md) 친구 비교 요약, 2026-10-30) in server/migrations/0011_weekly_summaries.sql, server/src/routes/, contracts/server-api.md, docs/backend.md 친구 비교 요약
-- [ ] T055 [US4] 주간 요약 서버 테스트(세션 없음 401, 친구 아님·비공개 차단, 끊기·해제 뒤 삭제, 비율이 아니라 합계만 받기) in server/test/summaries.test.ts
+- [x] T054 [US4] 주간 요약 서버: 표(주, 액트, 큐, 합계: 경기·라운드 수, 킬·데스·어시, 전투 점수, 피해량, 맞힌 부위별 탄)와 올리기·받기 경로. "세션이 있어야 받고, 서로 수락한 친구가 전적을 공개했을 때만 내려준다". 사람마다 주당 한 줄을 덮어쓰고, 친구를 끊으면 지우지 않고 내주지만 않으며, 연동을 해제하면 지운다([research.md](research.md) 친구 비교 요약, 2026-10-30) in server/migrations/0011_weekly_summaries.sql, server/src/routes/, contracts/server-api.md, docs/backend.md 친구 비교 요약
+- [x] T055 [US4] 주간 요약 서버 테스트(세션 없음 401, 친구 아님·비공개 차단, 끊기·해제 뒤 삭제, 비율이 아니라 합계만 받기) in server/test/summaries.test.ts
 - [ ] T056 [US4] 실제 `FriendRepository`(`/friends`, `/friends/requests`, 수락·거절·끊기, 초대 링크 `POST /invites`와 `redeem`) in shared/core/data/src/commonMain/kotlin/com/ovalit/core/data/FriendRepository.kt와 새 구현 파일
 - [ ] T057 [US4] 친구 경기를 기기에 저장하고 S5를 열면 저장된 것을 바로 보여 준 뒤 10분이 지났을 때만 새 경기를 받는다. "마지막 갱신 3분 전", 같은 친구 당기기는 1분에 한 번 in shared/core/data/, shared/feature/friend/src/commonMain/kotlin/com/ovalit/feature/friend/FriendProfileScreen.kt
 - [ ] T058 [US4] 앱이 새 경기를 받을 때마다 그 경기가 든 주의 고정 칸 합계를 올리고(첫 수집 뒤에는 받은 주마다), 친구 비교와 라이벌 대결을 친구 경기 대신 요약으로 센다(기간을 넓힐 때 더한 뒤 나누기) in shared/core/data/, shared/feature/report/src/commonMain/kotlin/com/ovalit/feature/report/ReportViewModel.kt
-- [ ] T059 [US4] 친구 요청·수락 푸시 서버: 요청을 새로 만들 때(스코어보드, 초대 링크) 받는 사람에게, 수락할 때 보낸 사람에게 알린다. 다른 푸시처럼 종류와 이름만 담고, 이미 보내 둔 요청을 다시 보내거나 이미 친구인 경우는 알리지 않는다. 신청서에 푸시 알림이 없어서 같은 커밋에서 `docs/RELEASE.md` "신청서와 다른 것" 표에 친구 요청 푸시를 한 줄 더한다 in server/src/routes/friends.ts, server/src/routes/invites.ts, server/src/push.ts, server/README.md, docs/backend.md ㅇㅂㅇ과 푸시, specs/001-ovalit-baseline/contracts/push.md, docs/RELEASE.md
-- [ ] T060 [US4] 친구 요청·수락 푸시 테스트(요청·수락마다 한 번, 글 없이 종류와 이름만, 다시 보낸 요청과 이미 친구는 알리지 않기) in server/test/friends.test.ts, server/test/invites.test.ts
-- [ ] T061 [US4] 앱의 친구 요청 알림: 설정에 "친구 요청 알림" 스위치(기본 켬, 기기 설정 `UserPreferences`에 `notifyPing`과 같은 방식), 알림 채널과 문구(한국어·일본어), 누르면 친구 탭. 스위치 자리는 [research.md](research.md) 열린 결정 "친구 요청 알림 스위치 자리"를 따른다. T059가 `docs/RELEASE.md` 표에 더한 줄에 설정 스위치를 같이 적는다 in shared/core/model/src/commonMain/kotlin/com/ovalit/core/model/UserPreferences.kt, shared/feature/settings/src/commonMain/kotlin/com/ovalit/feature/settings/SettingsScreen.kt, composeApp/src/main/kotlin/com/ovalit/push/, docs/screens.md 설정 (S4), docs/RELEASE.md
+- [x] T059 [US4] 친구 요청·수락 푸시 서버: 요청을 새로 만들 때(스코어보드, 초대 링크) 받는 사람에게, 수락할 때 보낸 사람에게 알린다. 다른 푸시처럼 종류와 이름만 담고, 이미 보내 둔 요청을 다시 보내거나 이미 친구인 경우는 알리지 않는다. 신청서에 푸시 알림이 없어서 같은 커밋에서 `docs/RELEASE.md` "신청서와 다른 것" 표에 친구 요청 푸시를 한 줄 더한다 in server/src/routes/friends.ts, server/src/routes/invites.ts, server/src/push.ts, server/README.md, docs/backend.md ㅇㅂㅇ과 푸시, specs/001-ovalit-baseline/contracts/push.md, docs/RELEASE.md
+- [x] T060 [US4] 친구 요청·수락 푸시 테스트(요청·수락마다 한 번, 글 없이 종류와 이름만, 다시 보낸 요청과 이미 친구는 알리지 않기) in server/test/friends.test.ts, server/test/invites.test.ts
+- [x] T061 [US4] 앱의 친구 요청 알림: 설정에 "친구 요청 알림" 스위치(기본 켬, 기기 설정 `UserPreferences`에 `notifyPing`과 같은 방식), 알림 채널과 문구(한국어·일본어), 누르면 친구 탭. 스위치 자리는 [research.md](research.md) 열린 결정 "친구 요청 알림 스위치 자리"를 따른다. T059가 `docs/RELEASE.md` 표에 더한 줄에 설정 스위치를 같이 적는다 in shared/core/model/src/commonMain/kotlin/com/ovalit/core/model/UserPreferences.kt, shared/feature/settings/src/commonMain/kotlin/com/ovalit/feature/settings/SettingsScreen.kt, composeApp/src/main/kotlin/com/ovalit/push/, docs/screens.md 설정 (S4), docs/RELEASE.md
 - [ ] T062 [P] [US4] Figma 친구 탭(친구 목록 슬라이스, 받은 요청, 친구 요청 알림 모양), S5(전적 비공개 상태 포함), 친구 요청 시트와 초대 링크 시트, 라이벌 고르기 시트, 친구 비교 전체 순위 in Figma "화면" 페이지의 "친구 (탭, S5)" 줄
 
 **Checkpoint**: P4 독립 검사가 실제 계정 둘로 통과한다.
@@ -228,9 +228,9 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 - [ ] T081 승인 직후 `docs/RELEASE.md`의 "신청서와 다른 것" 표를 개발자 포털 제품 설명에 한 번에 적고 그 뒤에 실제 광고 단위 ID를 넣는다. 승인 전에는 신청서와 제품 설명을 고치지 않는다(헌법 V, "문서와 결정") in docs/RELEASE.md, local.properties(`admob.appId`, `admob.nativeUnitId`, `admob.rewardedUnitId`)
 - [ ] T074 광고 동의 창(UMP)을 붙인다. 출시 전에 하고 T081 뒤에 둔다 in composeApp/src/main/kotlin/com/ovalit/ads/, docs/RELEASE.md
 - [ ] T075 [P] 새로 넣는 문구는 같은 커밋에서 일본어도 고친다 in shared/**/composeResources/values-ja/strings.xml, docs/i18n-ja.md
-- [ ] T083 [P] 서버 콘텐츠의 언어: `GET /content`와 `GET /content/tiers`가 `locale`(`ko-KR`, `ja-JP`)을 받아 언어마다 따로 담아 두고 티어 표에 일본어 이름을 더한다. 앱은 `AppLanguage.current`를 따라 다시 받는다(FR-035). [contracts/server-api.md](contracts/server-api.md)의 계획을 계약으로 옮기고 `docs/i18n-ja.md` "아직 한국어인 것"에서 뺀다 in server/src/routes/content.ts, server/src/riot.ts, server/src/data/tiers.json, server/scripts/build-tables.mjs, server/test/content.test.ts, server/README.md, specs/001-ovalit-baseline/contracts/server-api.md, docs/i18n-ja.md
-- [ ] T084 [P] 고정 화면 이름 표 테스트: 경로 키에 친구 PUUID나 경기 ID가 들어간 화면도 보내는 화면 이름은 고정 표의 값뿐인지 본다(`screenName`, 헌법 IV, SC-007). 이 테스트가 없으면 SC-007은 출시 뒤 T078에서야 잰다 in shared/app/src/commonMain/kotlin/com/ovalit/app/OvalitApp.kt, shared/app/src/commonTest/kotlin/com/ovalit/app/
-- [ ] T076 [P] 접근성 점검(FR-037): 가장 큰 글꼴과 좁은 폭(320dp)에서 글자가 겹치거나 잘리지 않는지, 승패와 증감이 색만이 아니라 글자로도 보이는지, TalkBack이 지표 값과 승패를 읽는지 본다. Figma 화면 줄마다 큰 글꼴 상태를 한 장씩 더한다 in shared/feature/, Figma "화면" 페이지의 각 화면 줄
+- [x] T083 [P] 서버 콘텐츠의 언어: `GET /content`와 `GET /content/tiers`가 `locale`(`ko-KR`, `ja-JP`)을 받아 언어마다 따로 담아 두고 티어 표에 일본어 이름을 더한다. 앱은 `AppLanguage.current`를 따라 다시 받는다(FR-035). [contracts/server-api.md](contracts/server-api.md)의 계획을 계약으로 옮기고 `docs/i18n-ja.md` "아직 한국어인 것"에서 뺀다 in server/src/routes/content.ts, server/src/riot.ts, server/src/data/tiers.json, server/scripts/build-tables.mjs, server/test/content.test.ts, server/README.md, specs/001-ovalit-baseline/contracts/server-api.md, docs/i18n-ja.md
+- [x] T084 [P] 고정 화면 이름 표 테스트: 경로 키에 친구 PUUID나 경기 ID가 들어간 화면도 보내는 화면 이름은 고정 표의 값뿐인지 본다(`screenName`, 헌법 IV, SC-007). 이 테스트가 없으면 SC-007은 출시 뒤 T078에서야 잰다 in shared/app/src/commonMain/kotlin/com/ovalit/app/OvalitApp.kt, shared/app/src/commonTest/kotlin/com/ovalit/app/
+- [ ] T076 [P] 접근성 점검(FR-037): 가장 큰 글꼴과 좁은 폭(320dp)에서 글자가 겹치거나 잘리지 않는지, 승패와 증감이 색만이 아니라 글자로도 보이는지, TalkBack이 지표 값과 승패를 읽는지 본다. Figma 화면 줄마다 큰 글꼴 상태를 한 장씩 더한다 in shared/feature/, Figma "화면" 페이지의 각 화면 줄. 앱의 2배 글꼴·320dp 점검은 2026-10-31에 했다(S3 스코어보드 숫자 열 내리기, 설정·광고 줄의 값 내리기, 동적 칸 이름 줄 수, 칩 잘림, 초대 제목 두 줄). TalkBack 점검과 Figma 큰 글꼴 상태가 남았다
 - [ ] T077 [P] Figma 상태 화면 다크판(지금은 라이트만) in Figma "화면" 페이지의 각 화면 줄의 상태 섹션
 - [ ] T078 실제 계정으로 [quickstart.md](quickstart.md) 전체를 돌고 SC-001(첫 수집 1분 안팎, Riot 붐빔 없이 받은 경우), SC-007(통계·오류 보고에 Riot 값 0건), SC-008(Cloudflare 사용량이 무료 한도 안이고 카드 등록이 없다)을 잰다. 잰 값으로 [research.md](research.md) 열린 결정 "첫 수집 시간 상한"을 닫는다 in specs/001-ovalit-baseline/quickstart.md, specs/001-ovalit-baseline/spec.md, research.md
 - [ ] T079 열린 결정을 닫을 때마다 결정을 남기고 스펙과 규칙 문서를 같은 커밋에서 맞춘다 in docs/DECISIONS.md, specs/001-ovalit-baseline/research.md, spec.md
@@ -247,7 +247,7 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 - **실제 서버 연결**: Riot 프로덕션 키 승인이 먼저다. 그 안에서 T035(HTTP 클라이언트)가 T082, T036, T037, T038, T056, T066, T072보다 먼저다. T040은 T085 뒤다.
 - **로컬 DB**: T032(결정) → T033 → T034. T039(시작 화면)는 T033과 T038 뒤다.
 - **주간 요약**: T054 → T055, T058. T058은 T056 뒤다.
-- **전투점수 칸**(T042)과 응답 확인(T041)은 실제 응답을 받은 뒤다.
+- **전투 점수 칸**(T042)과 응답 확인(T041)은 실제 응답을 받은 뒤다.
 - **제품 설명과 광고**: 승인 전에는 신청서와 제품 설명을 고치지 않는다. 승인 직후 T081 → T074. T059와 T080은 신청서와 달라지는 기능을 `docs/RELEASE.md` 표에 쌓아 두고 T081이 그 표를 한 번에 옮긴다.
 - **서버 콘텐츠 언어**(T083)는 로컬 서버로 지금 할 수 있고 실제 서버를 붙이기 전에 끝낸다.
 
@@ -294,7 +294,7 @@ Task: "T072 실제 AccountSettingsRepository와 연동 해제"
 1. 승인 전: T029(문서·코드 맞추기), T030·T031(Figma 온보딩과 홈 나머지), T085(로그인 풀림과 점검 안내 묻기), T032 후보 정리.
 2. 승인 뒤: T035 → T082 → T036 → T037 → T038 → T033 → T039 → T040 순서로 실제 연동을 붙인다.
 3. **멈추고 확인**: 실제 계정으로 P1 독립 검사, SC-001·SC-005·SC-006.
-4. T041·T042로 응답 모양과 전투점수 칸을 닫는다.
+4. T041·T042로 응답 모양과 전투 점수 칸을 닫는다.
 
 ### Incremental Delivery
 

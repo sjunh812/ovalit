@@ -101,6 +101,18 @@ class AgentWeaponReportTest {
         assertEquals(1, stats.single { it.weapon == Vandal }.kills)
     }
 
+    // 리포트 K/D와 같은 기준이다.
+    // 라운드마다 하나로 세면 무기 K/D만 리포트보다 높게 나온다.
+    @Test
+    fun `세이지 부활로 한 라운드에 두 번 죽으면 무기 데스도 둘이다`() {
+        val revived = round(kill(10.0, Enemy, Me), kill(30.0, OtherEnemy, Me), carried = Phantom)
+
+        val phantom = listOf(match(revived)).weaponStats().single()
+
+        assertEquals(2, phantom.deaths)
+        assertEquals(match(revived).metrics().deaths, phantom.deaths)
+    }
+
     @Test
     fun `들고 시작한 라운드가 20에 못 미치면 피해량은 표본 부족이다`() {
         val rounds = List(19) { round(myKill(Phantom), damage = 100, carried = Phantom) }

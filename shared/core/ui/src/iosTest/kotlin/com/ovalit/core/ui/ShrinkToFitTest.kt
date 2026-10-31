@@ -32,7 +32,7 @@ class ShrinkToFitTest {
     @Test
     fun `넘치는 글자는 칸에 들어가게 줄인다`() = runComposeUiTest {
         var layout: TextLayoutResult? = null
-        setContent { Fitted("전투점수 전투점수", width = 60, onLayout = { layout = it }) }
+        setContent { Fitted("전투 점수 전투 점수", width = 60, onLayout = { layout = it }) }
 
         waitForIdle()
         assertTrue(layout!!.layoutInput.style.fontSize.value < 23.7f)

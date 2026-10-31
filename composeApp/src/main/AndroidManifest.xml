@@ -17,6 +17,7 @@
     <application
         android:name=".OvalitApplication"
         android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
@@ -95,6 +96,14 @@
         <meta-data
             android:name="google_analytics_automatic_screen_reporting_enabled"
             android:value="false" />
+
+        <!-- 개발 빌드(디버그, benchmark)는 사용 통계와 비정상 종료 보고를 모으지 않는다(build.gradle.kts) -->
+        <meta-data
+            android:name="firebase_analytics_collection_enabled"
+            android:value="${collectTelemetry}" />
+        <meta-data
+            android:name="firebase_crashlytics_collection_enabled"
+            android:value="${collectTelemetry}" />
 
         <!-- Firebase가 스스로 토큰을 만들지 않게 막고, OvalitPush가 시작할 때 켠다 -->
         <meta-data

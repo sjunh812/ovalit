@@ -1,17 +1,11 @@
 package com.ovalit.push
 
-import android.Manifest
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import com.ovalit.MainActivity
 import com.ovalit.R
 import com.ovalit.core.model.PingLength
@@ -31,6 +25,9 @@ private const val NOW_WINDOW_MS = 5 * 60 * 1000L
 
 /** 알림을 눌러 열 초대의 ID입니다. MainActivity가 받아 그 초대 화면을 엽니다. */
 internal const val EXTRA_OPEN_PING = "com.ovalit.OPEN_PING"
+
+/** 알림이 여는 인텐트의 주소 스킴입니다. 화면은 이 스킴의 인텐트만 받습니다. */
+internal const val NOTIFICATION_SCHEME = "ovalit-notification"
 private const val DAWN_END_HOUR = 6
 
 /**
@@ -100,16 +97,29 @@ internal object PingNotifications {
                 .build()
             else -> null
         } ?: return
-        notify(context, if (data["type"] == "weekly_report") WEEKLY_TAG else pingTag(pingId), notification)
+        notify(context, tagFor(data, pingId), notification)
     }
 
-    /** 알림 버튼으로 답한 뒤 같은 자리의 알림을 "참석으로 답했어요"로 바꿉니다. 소리는 다시 내지 않습니다. */
-    fun answered(context: Context, pingId: String, text: Int) {
+    // 다른 시간 제안은 수락 버튼이 있어서 친구마다 따로 둔다.
+    // 같은 초대 자리에 두면 곧이어 온 다른 친구의 답이 그 버튼을 덮는다.
+    private fun tagFor(data: Map<String, String>, pingId: String?): String = when {
+        data["type"] == "weekly_report" -> WEEKLY_TAG
+        data["type"] == "ping_reply" && data["answer"] == "other_time" -> "${pingTag(pingId)}:proposal:${data["memberName"].orEmpty()}"
+        else -> pingTag(pingId)
+    }
+
+    /**
+     * 알림 버튼으로 답한 뒤 같은 자리의 알림을 "참석으로 답했어요"로 바꿉니다.
+     * 소리는 다시 내지 않습니다.
+     * 보내지 못했으면([failed]) 사용자가 볼 때까지 남깁니다.
+     * 10초 뒤 사라지면 답한 줄 알고 넘어가서 부른 친구는 끝내 답을 못 받습니다.
+     */
+    fun answered(context: Context, pingId: String, text: Int, failed: Boolean = false) {
         if (!canNotify(context)) return
         val notification = pingNotification(context, pingId) {
             setContentTitle(context.getString(text))
             setOnlyAlertOnce(true)
-            setTimeoutAfter(10_000L)
+            if (!failed) setTimeoutAfter(10_000L)
         }
         notify(context, pingTag(pingId), notification)
     }
@@ -120,7 +130,11 @@ internal object PingNotifications {
      * 남겨 두면 나중에 알림의 "못 가요"를 눌러 앱에서 한 답을 조용히 덮어쓸 수 있습니다.
      */
     fun clear(context: Context, pingId: String) {
-        NotificationManagerCompat.from(context).cancel(pingTag(pingId), 0)
+        val manager = context.getSystemService(NotificationManager::class.java)
+        val tag = pingTag(pingId)
+        manager.activeNotifications
+            .filter { it.tag == tag || it.tag?.startsWith("$tag:") == true }
+            .forEach { manager.cancel(it.tag, it.id) }
     }
 
     // 같은 ㅇㅂㅇ의 알림은 쌓이지 않고 한 자리에서 바뀌게 초대 ID를 태그로 쓴다
@@ -131,7 +145,7 @@ internal object PingNotifications {
      * 안드로이드는 extra를 보지 않고 액션과 주소로 PendingIntent를 가르니 이게 없으면 다른 초대의 버튼이 앞 초대의 것으로 덮입니다.
      * 명시적 인텐트에만 붙여 다른 앱이 받을 수 없습니다.
      */
-    fun actionUri(pingId: String?, action: String): Uri = Uri.Builder().scheme("ovalit-notification").authority(action).appendPath(pingId.orEmpty()).build()
+    fun actionUri(pingId: String?, action: String): Uri = Uri.Builder().scheme(NOTIFICATION_SCHEME).authority(action).appendPath(pingId.orEmpty()).build()
 
     /**
      * @param expiresAt ㅇㅂㅇ이 끝나는 시각(epoch 밀리초)입니다.
@@ -211,18 +225,4 @@ internal object PingNotifications {
         return PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
-    private fun channel(context: Context, id: String, name: Int, importance: Int): String {
-        context.getSystemService(NotificationManager::class.java)
-            .createNotificationChannel(NotificationChannel(id, context.getString(name), importance))
-        return id
-    }
-
-    private fun canNotify(context: Context): Boolean =
-        Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-
-    @Suppress("MissingPermission")
-    private fun notify(context: Context, tag: String, notification: android.app.Notification) {
-        NotificationManagerCompat.from(context).notify(tag, 0, notification)
-    }
 }

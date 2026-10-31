@@ -26,7 +26,7 @@ import com.ovalit.core.model.standings
 import com.ovalit.core.ui.FailedAction
 import com.ovalit.core.ui.FailureNotice
 import com.ovalit.core.ui.FailureNotices
-import com.ovalit.core.ui.launchNotifying
+import com.ovalit.core.ui.InFlight
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -92,7 +92,7 @@ enum class ScoreboardSide {
 
 /**
  * 경기 모양에 맞춰 스코어보드를 묶습니다.
- * 두 팀 모드는 우리 팀과 상대 팀으로 나누고, 라운드제면 라운드당 전투점수 순, 아니면 킬 순입니다.
+ * 두 팀 모드는 우리 팀과 상대 팀으로 나누고, 라운드제면 라운드당 전투 점수 순, 아니면 킬 순입니다.
  * 데스매치는 모두를 등수 순으로 한 묶음에, 건틀릿은 팀마다 등수 순으로 묶습니다.
  * 펼친 줄의 첫 킬과 멀티킬은 라운드 기록으로 세서 라운드제에만 담습니다.
  */
@@ -100,7 +100,7 @@ internal fun Match.scoreboardGroups(relation: (PlayerId) -> PlayerRelation): Lis
     val placements = placements()
     val stats = if (format == MatchFormat.ROUNDS) playerStats() else emptyMap()
     fun row(line: Scoreline) = ScoreboardRow(line, relation(line.player), placements[line.player], stats[line.player])
-    // 라운드제는 자리(라운드당 전투점수) 순이다.
+    // 라운드제는 자리(라운드당 전투 점수) 순이다.
     // 합계로 세우면 튕겨서 덜 뛴 사람이 밀린다.
     // 라운드가 없는 팀 모드는 자리가 없어 킬 순이다.
     val order = compareBy<Scoreline> { placements[it.player]?.rank ?: Int.MAX_VALUE }
@@ -185,7 +185,7 @@ class MatchDetailViewModel(
         if (match == null) {
             flowOf(emptySet())
         } else {
-            flow<Set<PlayerId>?> { emit(friendRepository.appUsersAmong(match.players.map { it.player })) }
+            flow<Set<PlayerId>?> { emit(friendRepository.appUsersAmong(match.id, match.players.map { it.player })) }
                 .onStart { emit(null) }
                 .catch { emit(null) }
         }
@@ -226,16 +226,20 @@ class MatchDetailViewModel(
     /** 사용자가 한 일이 실패했을 때 화면 아래에 띄울 안내입니다. */
     val notices: Flow<FailureNotice> = failures.flow
 
+    // 같은 사람에게 보내는 요청과 수락은 앞의 것이 끝날 때까지 한 번만 간다.
+    // 두 번 누르면 두 번째가 이미 보낸 요청으로 실패해 안내가 뜬다.
+    private val inFlight = InFlight()
+
     fun sendRequest(id: PlayerId) {
-        viewModelScope.launchNotifying(failures, FailedAction.FRIEND_REQUEST) {
-            friendRepository.sendRequest(id)
+        inFlight.launch(viewModelScope, id, failures, FailedAction.FRIEND_REQUEST) {
+            friendRepository.sendRequest(id, matchId)
             analytics.log(AnalyticsEvents.FRIEND_REQUEST, mapOf("action" to "send", "source" to "scoreboard"))
         }
     }
 
     /** 수락을 마치면 [onAccepted]를 부릅니다. 실패하면 부르지 않고 안내만 띄웁니다. */
     fun accept(id: PlayerId, onAccepted: () -> Unit = {}) {
-        viewModelScope.launchNotifying(failures, FailedAction.ACCEPT_FRIEND) {
+        inFlight.launch(viewModelScope, id, failures, FailedAction.ACCEPT_FRIEND) {
             friendRepository.accept(id)
             analytics.log(AnalyticsEvents.FRIEND_REQUEST, mapOf("action" to "accept", "source" to "scoreboard"))
             onAccepted()

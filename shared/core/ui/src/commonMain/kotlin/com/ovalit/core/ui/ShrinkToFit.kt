@@ -20,7 +20,7 @@ import kotlin.math.floor
 val MinFittingTextSize = 7.sp
 
 /**
- * 폭이 정해진 칸에서 글자를 키운 사용자에게 "전투점수"가 "전투"로 잘리지 않게, 줄을 바꾸는 대신 글자를 줄입니다.
+ * 폭이 정해진 칸에서 글자를 키운 사용자에게 "전투 점수"가 "전투"로 잘리지 않게, 줄을 바꾸는 대신 글자를 줄입니다.
  * `maxLines = 1`과 같이 씁니다.
  */
 fun shrinkToFit(size: TextUnit, min: TextUnit = MinFittingTextSize): TextAutoSize = FitFirstAutoSize(min = min, max = size)
@@ -42,7 +42,7 @@ private fun TextLayoutResult.fits(): Boolean =
 
 /**
  * 나란히 놓인 칸들의 글자를 한 크기로 맞춥니다.
- * 칸마다 따로 줄이면 긴 글자만 작아져서 "전투점수" 옆의 "K/D"가 더 커 보이고 줄 높이도 달라져 아래 숫자의 높이가 칸마다 어긋납니다.
+ * 칸마다 따로 줄이면 긴 글자만 작아져서 "전투 점수" 옆의 "K/D"가 더 커 보이고 줄 높이도 달라져 아래 숫자의 높이가 칸마다 어긋납니다.
  * 가장 긴 글자가 [width]에 한 줄로 들어가는 크기를 모든 칸에 씁니다.
  * 다 들어가면 [style]을 그대로 돌려줍니다.
  *
@@ -99,6 +99,21 @@ fun rememberPiecesFitOnOneLine(lines: List<List<AnnotatedString>>, style: TextSt
     return remember(lines, style, width, density, measurer) {
         val available = with(density) { width.toPx() }
         lines.all { pieces -> pieces.sumOf { measurer.measure(it, style, softWrap = false, maxLines = 1).size.width } <= available }
+    }
+}
+
+/**
+ * [texts]를 [width]에서 꺾었을 때 가장 많이 차지하는 줄 수입니다.
+ * 나란한 칸의 이름을 꺾을 때 모든 칸이 같은 줄 수를 차지하게 씁니다.
+ * 두 줄로 정해 두면 큰 글꼴에서 "첫 교전 관여율"이 "첫 교전"까지만 보여 옆 칸 "첫 교전 승률"과 같아 보입니다.
+ */
+@Composable
+fun rememberMostLines(texts: List<String>, style: TextStyle, width: Dp): Int {
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    return remember(texts, style, width, density, measurer) {
+        val maxWidth = with(density) { width.roundToPx() }.coerceAtLeast(0)
+        texts.maxOfOrNull { measurer.measure(it, style, constraints = Constraints(maxWidth = maxWidth)).lineCount } ?: 1
     }
 }
 

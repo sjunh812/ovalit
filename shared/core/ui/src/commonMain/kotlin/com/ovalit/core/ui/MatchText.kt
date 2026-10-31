@@ -60,6 +60,19 @@ val QueueFilter.label: StringResource
         QueueFilter.OTHER -> Res.string.queue_filter_other
     }
 
+/**
+ * 경기 줄처럼 좁은 자리의 모드 이름입니다.
+ * 경쟁전과 일반전은 칩과 같은 "경쟁", "일반"으로 줄입니다.
+ * 카드 안 경기 줄에서 "경쟁전"을 쓰면 뒤의 시각이 잘렸습니다.
+ */
+val Queue.shortLabel: StringResource
+    get() = when (this) {
+        Queue.COMPETITIVE -> Res.string.queue_filter_competitive
+        Queue.UNRATED -> Res.string.queue_filter_unrated
+        else -> label
+    }
+
+/** 한 판의 모드 이름입니다. 공식 표기를 따라 "경쟁전", "일반전"입니다. */
 val Queue.label: StringResource
     get() = when (this) {
         Queue.COMPETITIVE -> Res.string.queue_competitive

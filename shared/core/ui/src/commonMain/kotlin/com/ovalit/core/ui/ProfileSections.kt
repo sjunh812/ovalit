@@ -142,7 +142,7 @@ fun ProfileTierCard(record: CompetitiveRecord, catalog: ContentCatalog) {
 
 /**
  * 이번 액트 합계입니다.
- * 피해량, K/D, 전투점수, 최다 킬, KDA, 플레이 시간, 에이스, 클러치 순서로 한 줄에 세 칸씩 놓습니다.
+ * 피해량, K/D, 전투 점수, 최다 킬, KDA, 플레이 시간, 에이스, 클러치 순서로 한 줄에 세 칸씩 놓습니다.
  * 좁은 화면에서 글자를 키우면 같은 순서로 두 칸씩 놓습니다.
  * 내 프로필과 S5가 같이 씁니다.
  */
@@ -418,9 +418,10 @@ fun AgentTileRow(agents: List<AgentStats>, catalog: ContentCatalog, showRecord: 
         // 칸 안에서 그리는 것처럼 조각마다 KDA 숫자의 굵기까지 담아 잰다.
         // 글자만 이어 한 번에 재면 좁게 나와서 한 칸만 혼자 줄을 바꿨다.
         val lines = shown.map { agent ->
-            val kda = if (showRecord) agent.metrics.kda?.let { kdaRatioText(it) } else null
-            val second = kda ?: AnnotatedString(if (showRecord) NO_VALUE else percentText(agent.winRate))
-            listOf(AnnotatedString(agentFirstLine(agent, showRecord)), AnnotatedString(TILE_SEPARATOR), second)
+            val first = AnnotatedString(agentFirstLine(agent, showRecord))
+            // KDA가 없는 요원(데스 0)은 칸에 승패만 그리니 승패만 잰다
+            val second = if (showRecord) agent.metrics.kda?.let { kdaRatioText(it) } else AnnotatedString(percentText(agent.winRate))
+            if (second == null) listOf(first) else listOf(first, AnnotatedString(TILE_SEPARATOR), second)
         }
         val stacked = !rememberPiecesFitOnOneLine(lines, caption, tileWidth)
         Row(horizontalArrangement = Arrangement.spacedBy(TileGap)) {
@@ -437,7 +438,8 @@ private fun agentFirstLine(agent: AgentStats, showRecord: Boolean): String = if 
     stringResource(Res.string.agents_matches, agent.matches)
 }
 
-private val TileGap = 10.dp
+// 홈 지표 칸 사이(17dp)와 같아 위 지표 칸과 열이 맞는다
+private val TileGap = 17.dp
 private const val TILE_SEPARATOR = "\u00a0·\u00a0"
 
 @Composable

@@ -29,7 +29,7 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import org.jetbrains.compose.resources.stringResource
 
 private val HeaderHeight = 56.dp
-private val IconTouchSize = 44.dp
+private val IconTouchSize = 48.dp
 
 /**
  * 하단 탭 네 화면(홈, 경기, 친구, 설정)의 맨 위 줄입니다.
@@ -37,7 +37,7 @@ private val IconTouchSize = 44.dp
  * [OvalitBackTopBar]와 높이가 같습니다.
  *
  * @param actions 오른쪽 버튼입니다.
- *   44dp 누름 영역이 오른쪽 여백을 대신해서 끝 여백이 왼쪽보다 좁습니다.
+ *   48dp 누름 영역이 오른쪽 여백을 대신해서 끝 여백이 왼쪽보다 좁습니다.
  */
 @Composable
 fun OvalitTabHeader(
@@ -149,7 +149,7 @@ private fun BackTopBarRow(
     }
 }
 
-/** 머리 줄에 두는 44dp 아이콘 버튼입니다. */
+/** 머리 줄에 두는 48dp 아이콘 버튼입니다. */
 @Composable
 fun OvalitIconButton(icon: ImageVector, contentDescription: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Box(
@@ -171,5 +171,8 @@ fun OvalitTopBarCaption(text: String, color: Color = OvalitTheme.colors.t3) {
         style = OvalitTheme.typography.caption,
         color = color,
         maxLines = 1,
+        // 큰 글꼴에서 넘치면 끝을 줄인다.
+        // 그냥 자르면 "· 32분"이 "·"에서 끊겨 빠진 걸 알 수 없다.
+        overflow = TextOverflow.Ellipsis,
     )
 }

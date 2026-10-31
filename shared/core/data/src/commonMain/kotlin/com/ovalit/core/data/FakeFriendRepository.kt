@@ -3,6 +3,7 @@ package com.ovalit.core.data
 import com.ovalit.core.model.Friend
 import com.ovalit.core.model.FriendRequest
 import com.ovalit.core.model.FriendRequestSource
+import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.lastPlayedWith
 import kotlin.time.Clock
@@ -29,12 +30,12 @@ class FakeFriendRepository(
     override val rival: Flow<PlayerId?> = rivalId
     override val sentRequests: Flow<Set<PlayerId>> = sent
 
-    override suspend fun appUsersAmong(players: Collection<PlayerId>): Set<PlayerId> {
+    override suspend fun appUsersAmong(match: MatchId, players: Collection<PlayerId>): Set<PlayerId> {
         val known = StrangersUsingApp + friendList.value.map { it.id } + requestList.value.map { it.id }
         return players.filterTo(mutableSetOf()) { it in known }
     }
 
-    override suspend fun sendRequest(id: PlayerId) {
+    override suspend fun sendRequest(id: PlayerId, match: MatchId) {
         sent.update { it + id }
     }
 

@@ -7,7 +7,7 @@ import kotlin.test.assertNull
 class MatchMetricsTest {
 
     @Test
-    fun `전투점수는 경기 전체 점수를 내가 뛴 라운드 수로 나눈다`() {
+    fun `전투 점수는 경기 전체 점수를 내가 뛴 라운드 수로 나눈다`() {
         val metrics = match(quietRound(), quietRound(), quietRound(), combatScore = 750).metrics()
 
         assertRate(250.0, metrics.acs)

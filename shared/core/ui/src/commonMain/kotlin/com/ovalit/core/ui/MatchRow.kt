@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
@@ -26,11 +28,14 @@ import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -69,11 +74,22 @@ enum class MatchRowStyle {
 
 private fun rowPadding(style: MatchRowStyle) = if (style == MatchRowStyle.COMPACT) 11.dp else 16.dp
 
+private val MapThumbWidth = 54.dp
+private val AgentFaceSize = 34.dp
+private val ThumbGap = 13.dp
+
+/**
+ * 경기 줄에서 맵 이름이 시작하는 자리입니다.
+ * 줄 사이 구분선을 여기서 시작해야 글자 시작선과 맞습니다.
+ */
+fun matchRowTextStart(style: MatchRowStyle, horizontalPadding: Dp = OvalitSpacing.gutter): Dp =
+    horizontalPadding + (if (style == MatchRowStyle.COMPACT) AgentFaceSize else MapThumbWidth) + ThumbGap
+
 /**
  * 경기 한 줄입니다.
  * 스코어는 이겼으면 `--pos`, 졌으면 `--neg`로 칠하고 화면 읽기 프로그램에는 승패를 말로 읽어 줍니다.
- * 숫자는 게임 스코어보드와 같게 응답의 K/D/A와 전투점수를 그대로 씁니다.
- * 데스매치와 건틀릿은 스코어 자리에 등수를 적고 라운드가 없는 모드는 전투점수를 비웁니다.
+ * 숫자는 게임 스코어보드와 같게 응답의 K/D/A와 전투 점수를 그대로 씁니다.
+ * 데스매치와 건틀릿은 스코어 자리에 등수를 적고 라운드가 없는 모드는 전투 점수를 비웁니다.
  *
  * @param onClick `null`이면 누를 수 없는 줄입니다.
  *   친구 경기는 다른 사람 기록이 섞여 있어서 열지 않습니다.
@@ -94,14 +110,13 @@ fun MatchRow(
     val score = match.score
     val mapName = catalog.mapName(match.map)
     val kda = line?.let { stringResource(Res.string.match_kda, it.kills, it.deaths, it.assists) }
-    // K/D/A 옆은 ADR이 아니라 전투점수다.
+    // K/D/A 옆은 ADR이 아니라 전투 점수다.
     // 등수와 MVP도 이걸로 센다.
     // 목록은 폭이 좁아 한글 라벨 규칙의 예외로 "ACS 243"처럼 약어를 쓴다.
-    // 라운드가 없는 모드는 전투점수를 비운다.
-    val acs = line?.let { match.acsOf(it) }?.let { value ->
-        val digits = MetricFormat.INTEGER.format(value)
-        if (style == MatchRowStyle.LIST) stringResource(Res.string.match_acs, digits) else digits
-    }
+    // 짧은 줄도 라벨을 붙인다.
+    // 숫자만 두면 "16/11/8 · 274"의 274가 무엇인지 모른다.
+    // 라운드가 없는 모드는 전투 점수를 비운다.
+    val acs = line?.let { match.acsOf(it) }?.let { value -> stringResource(Res.string.match_acs, MetricFormat.INTEGER.format(value)) }
     // 데스매치와 건틀릿은 승패 대신 등수로 끝나서 스코어 자리에 "14명 중 3등"을 적고 아랫줄의 승패를 뺀다
     val standing = remember(match) { match.myStanding }
     val standingText = standing?.let { standingText(it, match.format) }
@@ -125,16 +140,16 @@ fun MatchRow(
             MatchRowStyle.COMPACT -> AgentImage(
                 agent = match.myAgent,
                 name = catalog.agents[match.myAgent],
-                modifier = Modifier.size(34.dp).clip(RoundedCornerShape(9.dp)),
+                modifier = Modifier.size(AgentFaceSize).clip(RoundedCornerShape(9.dp)),
             )
         }
-        Spacer(Modifier.width(13.dp))
+        Spacer(Modifier.width(ThumbGap))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 6.dp)) {
             OvalitText(text = mapName, style = OvalitTheme.typography.bodyStrong, maxLines = 1, overflow = TextOverflow.Ellipsis)
             // 색만으로는 승패를 못 읽어서 글자로 적는다.
             // 아랫줄 맨 앞이어야 줄마다 같은 자리라 위아래로 훑어 읽힌다.
             val resultStyle = SpanStyle(color = resultColor(match.myTeamWon), fontWeight = FontWeight.SemiBold)
-            val queue = stringResource(match.queue.label)
+            val queue = stringResource(match.queue.shortLabel)
             OvalitText(
                 text = buildAnnotatedString {
                     if (standing == null) {
@@ -159,12 +174,13 @@ fun MatchRow(
             // 칩이 스코어보다 높아 왼쪽보다 넓게 띄워야 두 칸의 아랫줄이 같은 높이에 온다
             verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 7.dp),
         ) {
-            val scoreStyle = OvalitTheme.typography.metricS.copy(fontSize = 15.sp, fontWeight = FontWeight.Bold)
+            val scoreStyle = scoreStyle()
             // 결과 색은 스코어에만 칠한다.
             // 줄 전체를 칠하면 목록이 빨강과 초록 띠가 된다.
             // 그 판의 자리와 에이스·클러치 칩은 스코어 앞에 둔다.
-            // 자리는 바로 밑 전투점수로 정해져 같이 읽힌다.
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // 자리는 바로 밑 전투 점수로 정해져 같이 읽힌다.
+            // 칩이 있는 줄만 높아지면 목록에서 줄마다 높이가 2dp씩 달라져서 칩 높이를 늘 잡아 둔다
+            Row(modifier = Modifier.heightIn(min = MatchChipMinHeight), verticalAlignment = Alignment.CenterVertically) {
                 ChipsThatFit(
                     chips = listOfNotNull<@Composable () -> Unit>(placement?.let { { PlacementLabel(it) } }) +
                         highlightChips(highlights).map { (text, tone) -> { MatchChip(text, tone) } },
@@ -184,7 +200,7 @@ fun MatchRow(
                 val regular = small.copy(fontWeight = FontWeight.Normal)
                 SeparatedRow(
                     items = listOfNotNull(
-                        { OvalitText(text = kda, style = small.copy(fontWeight = FontWeight.Medium), color = colors.t1) },
+                        { OvalitText(text = quietSlashes(kda, colors.t4), style = small.copy(fontWeight = FontWeight.Medium), color = colors.t1) },
                         acs?.let { { OvalitText(text = it, style = regular, color = colors.t2) } },
                     ),
                     separator = { SeparatorDot(regular, colors.t2) },
@@ -192,6 +208,15 @@ fun MatchRow(
                 )
             }
         }
+    }
+}
+
+// "12 / 14 / 8"의 빗금만 옅고 가늘게 둔다(op.gg처럼).
+// 숫자 사이를 띄우고 빗금을 숫자와 같은 진하기로 두면 빗금이 숫자보다 먼저 튄다.
+private fun quietSlashes(text: String, color: Color): AnnotatedString = buildAnnotatedString {
+    append(text)
+    text.forEachIndexed { index, char ->
+        if (char == '/') addStyle(SpanStyle(color = color, fontWeight = FontWeight.Normal), index, index + 1)
     }
 }
 
@@ -229,7 +254,7 @@ fun resultColor(won: Boolean?): Color = when (won) {
 // 바탕색 테두리로 둘을 떼어 놓는다.
 @Composable
 private fun MapWithAgent(match: Match, catalog: ContentCatalog) {
-    Box(modifier = Modifier.size(width = 54.dp, height = 38.dp)) {
+    Box(modifier = Modifier.size(width = MapThumbWidth, height = 38.dp)) {
         MapImage(match.map, MapImageStyle.THUMBNAIL, Modifier.matchParentSize().clip(RoundedCornerShape(8.dp)))
         AgentImage(
             agent = match.myAgent,
@@ -252,9 +277,11 @@ private fun MapWithAgent(match: Match, catalog: ContentCatalog) {
 private fun ChipsThatFit(chips: List<@Composable () -> Unit>, modifier: Modifier = Modifier) {
     if (chips.isEmpty()) return
     Layout(contents = chips, modifier = modifier) { measurables, constraints ->
-        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+        // 칩은 남은 폭에 맞춰 줄이지 않고 제 폭으로 잰다.
+        // 줄여 재면 큰 글꼴에서 "MVP"가 "MV"로 잘린 채 들어간 것으로 친다.
+        val unbounded = Constraints(maxHeight = constraints.maxHeight)
         val gap = 6.dp.roundToPx()
-        val placeables = measurables.map { it.first().measure(loose) }
+        val placeables = measurables.map { it.first().measure(unbounded) }
         var x = 0
         val shown = mutableListOf<Pair<Placeable, Int>>()
         placeables.forEachIndexed { index, chip ->
@@ -278,6 +305,7 @@ private fun ChipsThatFit(chips: List<@Composable () -> Unit>, modifier: Modifier
 @Composable
 fun MatchRowsSkeleton(rows: Int, style: MatchRowStyle, modifier: Modifier = Modifier, horizontalPadding: Dp = OvalitSpacing.gutter) {
     val compact = style == MatchRowStyle.COMPACT
+    val typography = OvalitTheme.typography
     OvalitSkeleton(description = stringResource(Res.string.loading), modifier = modifier) {
         Column {
             repeat(rows) {
@@ -287,18 +315,34 @@ fun MatchRowsSkeleton(rows: Int, style: MatchRowStyle, modifier: Modifier = Modi
                         .padding(horizontal = horizontalPadding, vertical = rowPadding(style)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    if (compact) SkeletonBlock(width = 34.dp, height = 34.dp, radius = 9.dp) else SkeletonBlock(width = 54.dp, height = 38.dp, radius = 8.dp)
-                    Spacer(Modifier.width(13.dp))
-                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        SkeletonBlock(width = 64.dp, height = 15.dp)
-                        SkeletonBlock(width = 96.dp, height = 12.dp)
+                    if (compact) SkeletonBlock(width = AgentFaceSize, height = AgentFaceSize, radius = 9.dp) else SkeletonBlock(width = MapThumbWidth, height = 38.dp, radius = 8.dp)
+                    Spacer(Modifier.width(ThumbGap))
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 6.dp)) {
+                        SkeletonLine(typography.bodyStrong, width = 64.dp, height = 15.dp)
+                        SkeletonLine(typography.caption, width = 96.dp, height = 12.dp)
                     }
-                    Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        SkeletonBlock(width = 52.dp, height = 15.dp)
-                        SkeletonBlock(width = 84.dp, height = 12.dp)
+                    Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 7.dp)) {
+                        Box(modifier = Modifier.heightIn(min = MatchChipMinHeight), contentAlignment = Alignment.Center) {
+                            SkeletonLine(scoreStyle(), width = 52.dp, height = 15.dp)
+                        }
+                        SkeletonLine(typography.metricS, width = 84.dp, height = 12.dp)
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun scoreStyle(): TextStyle = OvalitTheme.typography.metricS.copy(fontSize = 15.sp, fontWeight = FontWeight.Bold)
+
+// 보이지 않는 글자 한 줄로 실제 줄과 같은 높이를 잡고 그 가운데에 회색 칸을 둔다.
+// 칸 높이로만 잡으면 실제 줄보다 낮아서 내용이 나타날 때 목록이 밀린다.
+// 줄 높이 값으로 잡으면 플랫폼이 첫 줄 위아래를 깎는 만큼 이번엔 높아진다.
+@Composable
+private fun SkeletonLine(style: TextStyle, width: Dp, height: Dp) {
+    Box(contentAlignment = Alignment.Center) {
+        OvalitText(text = "0", modifier = Modifier.alpha(0f), style = style, maxLines = 1)
+        SkeletonBlock(width = width, height = height)
     }
 }

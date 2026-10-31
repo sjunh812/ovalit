@@ -32,12 +32,20 @@ class QueueTest {
         assertEquals(Queue.UNRATED, Queue.fromRiot("newmap"))
     }
 
-    // 13.06 건틀릿: 글리치처럼 큐 ID를 모르는 새 모드가 와도 앱이 죽지 않고 기타 목록에 뜬다
+    // 13.06 건틀릿: 시스템 오류처럼 큐 ID를 모르는 새 모드가 와도 앱이 죽지 않고 기타 목록에 뜬다
     @Test
     fun `모르는 큐 ID는 기타로 옮긴다`() {
         assertEquals(Queue.OTHER, Queue.fromRiot("gauntlet"))
         assertEquals(Queue.OTHER, Queue.fromRiot("something-new"))
         assertEquals(Queue.COMPETITIVE, Queue.fromRiot(" Competitive "))
+    }
+
+    // 목록과 상세가 같은 규칙이어야 한다.
+    // 상세만 커스텀 게임으로 보면 목록에서 고른 경기를 받아 놓고 버린다.
+    @Test
+    fun `큐가 빠졌으면 커스텀 게임이 아니라 기타로 옮긴다`() {
+        assertEquals(Queue.OTHER, Queue.fromRiot(null))
+        assertNull(Queue.fromRiot(null, provisioningFlowId = "CustomGame"))
     }
 
     @Test
@@ -63,7 +71,7 @@ class QueueTest {
     }
 
     @Test
-    fun `이코노미는 경쟁전과 크레드 규칙이 같은 모드만 가른다`() {
+    fun `이코노미는 경쟁전과 경제 규칙이 같은 모드만 가른다`() {
         assertEquals(setOf(Queue.COMPETITIVE, Queue.UNRATED, Queue.PREMIER), Queue.entries.filter { it.hasEconomy }.toSet())
     }
 

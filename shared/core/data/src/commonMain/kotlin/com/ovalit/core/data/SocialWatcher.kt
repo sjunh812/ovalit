@@ -26,28 +26,41 @@ class SocialWatcher(
     private val clock: Clock = Clock.System,
 ) {
     private val lock = Mutex()
-    private var checkedAt: Instant? = null
+
+    // ㅇㅂㅇ과 친구를 받은 시각을 따로 둔다.
+    // 하나만 실패하면 실패한 쪽만 다음에 다시 받고, 받은 쪽은 1분 안에 다시 받지 않는다.
+    private val checkedAt = mutableMapOf<Part, Instant>()
 
     /** 앱 화면이 하나라도 보이기 시작할 때 부릅니다. */
     fun onAppVisible() {
         scope.launch {
             if (account.account.first() == null) return@launch
+            val now = clock.now()
             val due = lock.withLock {
-                val now = clock.now()
-                val last = checkedAt
-                (last == null || now - last >= RECHECK_AFTER).also { if (it) checkedAt = now }
+                Part.entries.filter { isDue(checkedAt[it], now, RECHECK_AFTER) }.onEach { checkedAt[it] = now }
             }
-            if (!due) return@launch
-            try {
-                launch { pings.refresh() }
-                friends.refresh()
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                lock.withLock { checkedAt = null }
-            }
+            // 따로 받는다.
+            // 한쪽이 실패해도 다른 쪽이 끊기지 않는다.
+            for (part in due) launch { refresh(part, startedAt = now) }
         }
     }
+
+    private suspend fun refresh(part: Part, startedAt: Instant) {
+        try {
+            when (part) {
+                Part.PINGS -> pings.refresh()
+                Part.FRIENDS -> friends.refresh()
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // 받지 못한 쪽만 다음에 앱이 보일 때 다시 받는다.
+            // 그사이 다시 받기 시작했으면 그 시각은 그대로 둔다.
+            lock.withLock { if (checkedAt[part] == startedAt) checkedAt -= part }
+        }
+    }
+
+    private enum class Part { PINGS, FRIENDS }
 
     companion object {
         /** 다시 받기까지 기다리는 시간입니다. 시작 기준선입니다. */

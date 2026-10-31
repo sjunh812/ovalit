@@ -122,7 +122,7 @@ private fun TypeScale() {
         TypeRow("body", type.body, "헤드샷 비율이 지난 4주보다 올랐어요")
         TypeRow("bodyStrong", type.bodyStrong, "헤드샷 비율이 올랐어요")
         TypeRow("cardTitle", type.cardTitle, "달라진 점")
-        TypeRow("label", type.label, "전투점수")
+        TypeRow("label", type.label, "전투 점수")
         TypeRow("caption", type.caption, "11경기 · 판당 16킬")
     }
 }

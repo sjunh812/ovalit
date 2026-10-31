@@ -156,7 +156,7 @@ class WeekNoteTest {
     }
 
     @Test
-    fun `전투점수에는 무기를 붙이지 않는다`() {
+    fun `전투 점수에는 무기를 붙이지 않는다`() {
         val note = note(current = fixed(score = 26_000), weapons = listOf(vandal(head = 30)))
 
         assertEquals(FixedMetric.COMBAT_SCORE, note?.moved?.metric)
@@ -260,10 +260,10 @@ class WeekNoteTest {
     }
 
     // 요원은 판으로 비중을 센다.
-    // 전투점수는 라운드로 가를 수 없어서 요원으로만 본다.
+    // 전투 점수는 라운드로 가를 수 없어서 요원으로만 본다.
     // 지난 기간에만 뛴 세이지는 이번 기간 성적이 없어 비중을 맞출 수 없으니 다시 섞을 때 뺀다.
     @Test
-    fun `전투점수는 요원 비중으로 짚는다`() {
+    fun `전투 점수는 요원 비중으로 짚는다`() {
         val slices = listOf(
             slice(MixGroup.Agent(Omen), current = matchesOf(6, score = 14_400), usual = matchesOf(4, score = 9_600)),
             slice(MixGroup.Agent(Jett), current = matchesOf(2, score = 5_760), usual = matchesOf(28, score = 80_640)),
@@ -385,7 +385,7 @@ class WeekNoteTest {
         val Sova = AgentId("sova")
         val Sage = AgentId("sage")
 
-        // 100라운드, K/D 1.10, 전투점수 200, 피해량 140, 헤드샷 21%
+        // 100라운드, K/D 1.10, 전투 점수 200, 피해량 140, 헤드샷 21%
         fun fixed(kills: Int = 110, score: Int = 20_000, damage: Int = 14_000, head: Int = 21, assists: Int = 0) = MatchMetrics.Empty.copy(
             matches = 5,
             rounds = 100,

@@ -17,6 +17,7 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.ui.MatchRow
 import com.ovalit.core.ui.MatchRowStyle
+import com.ovalit.core.ui.matchRowTextStart
 import com.ovalit.core.ui.recentMatchTimeLabel
 import com.ovalit.feature.profile.resources.Res
 import com.ovalit.feature.profile.resources.profile_recent
@@ -35,7 +36,8 @@ internal fun RecentMatchesSection(
 ) {
     if (uiState.recentMatches.isEmpty()) return
     Spacer(Modifier.height(OvalitCardGap))
-    OvalitCard {
+    // 경기 줄마다 위아래 여백이 있어 카드 아래 여백은 줄인다
+    OvalitCard(bottomPadding = OvalitSpacing.sm) {
         // 버튼 높이로 줄을 늘리지 않아 다른 카드와 제목 자리가 같다
         OvalitPickerTitle(
             title = { OvalitText(text = stringResource(Res.string.profile_recent), style = OvalitTheme.typography.cardTitle) },
@@ -47,7 +49,7 @@ internal fun RecentMatchesSection(
             modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.sm),
         )
         uiState.recentMatches.forEachIndexed { index, match ->
-            if (index > 0) OvalitDivider(Modifier.padding(start = 67.dp), color = OvalitTheme.colors.lineWeak)
+            if (index > 0) OvalitDivider(Modifier.padding(start = matchRowTextStart(MatchRowStyle.COMPACT)), color = OvalitTheme.colors.lineWeak)
             MatchRow(
                 match = match,
                 catalog = uiState.catalog,

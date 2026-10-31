@@ -68,13 +68,16 @@ internal fun FixedMetricRow(
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         // 이름, 숫자, 변화량마다 모든 칸에 한 크기를 쓴다.
-        // 칸마다 따로 줄이면 "전투점수"만 작아지고 그 칸 숫자만 위로 올라가 줄이 어긋난다.
+        // 칸마다 따로 줄이면 "전투 점수"만 작아지고 그 칸 숫자만 위로 올라가 줄이 어긋난다.
         val perRow = cells.size.coerceAtMost(MetricColumns)
         val gaps = (MetricColumnGap * 2 + 1.dp) * (perRow - 1)
         val cellWidth = (currentMaxWidth - OvalitSpacing.gutter * 2 - gaps) / perRow
         val styles = FixedCellStyles(
             label = rememberFittingStyle(cells.map { it.label }, typography.caption, cellWidth - ChevronSpace),
-            line = rememberMetricLineStyle(lines ?: cells.map { MetricLineText(it.value, it.change, it.usual) }, cellWidth),
+            line = rememberMetricLineStyle(
+                lines ?: cells.map { MetricLineText(it.value, it.change, it.usual, boldValue = it.metric == highlighted) },
+                cellWidth,
+            ),
         )
         Column(verticalArrangement = Arrangement.spacedBy(MetricRowGap)) {
             cells.chunked(perRow).forEach { row ->
@@ -118,8 +121,13 @@ internal fun FixedMetricRow(
  * 달라진 점과 같은 크기를 쓰려고 홈이 모읍니다([rememberMetricLineStyle]).
  */
 @Composable
-internal fun fixedMetricLines(metrics: MatchMetrics, baseline: Baseline?, fixedMetrics: List<FixedMetric>): List<MetricLineText> =
-    fixedCells(metrics, baseline, fixedMetrics).map { MetricLineText(it.value, it.change, it.usual) }
+internal fun fixedMetricLines(
+    metrics: MatchMetrics,
+    baseline: Baseline?,
+    fixedMetrics: List<FixedMetric>,
+    highlighted: FixedMetric? = null,
+): List<MetricLineText> =
+    fixedCells(metrics, baseline, fixedMetrics).map { MetricLineText(it.value, it.change, it.usual, boldValue = it.metric == highlighted) }
 
 @Composable
 private fun fixedCells(metrics: MatchMetrics, baseline: Baseline?, fixedMetrics: List<FixedMetric>): List<FixedCell> {

@@ -21,6 +21,7 @@ import com.ovalit.core.model.weeklyReport
 import com.ovalit.core.ui.FailedAction
 import com.ovalit.core.ui.FailureNotice
 import com.ovalit.core.ui.FailureNotices
+import com.ovalit.core.ui.InFlight
 import com.ovalit.core.ui.launchNotifying
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Clock
@@ -83,15 +84,17 @@ class FriendsViewModel(
     private val analytics: Analytics = NoAnalytics,
     computation: CoroutineContext = Dispatchers.Default,
     minuteChanges: Flow<Unit> = flowOf(Unit),
+    weekChanges: Flow<Unit> = flowOf(Unit),
 ) : ViewModel() {
 
     private val refreshing = MutableStateFlow(false)
 
     val isRefreshing: StateFlow<Boolean> = refreshing
 
-    // 친구 목록이 바뀔 때만 센다.
+    // 친구 목록이 바뀌거나 월요일 0시에 주가 바뀔 때만 센다.
     // ㅇㅂㅇ 답이나 라이벌이 바뀔 때마다 친구 수백 명의 리포트를 다시 세지 않는다.
-    private val friendRows = friendRepository.friends
+    // 주가 바뀔 때 다시 세지 않으면 탭을 켜 둔 채 월요일을 넘겼을 때 "이번 주 5경기"가 지난주 숫자로 남는다.
+    private val friendRows = combine(friendRepository.friends, weekChanges) { friends, _ -> friends }
         .map { friends ->
             friends.byLastPlayedTogether().map { friend ->
                 FriendRow(
@@ -133,9 +136,15 @@ class FriendsViewModel(
     /** 사용자가 한 일이 실패했을 때 화면 아래에 띄울 안내입니다. */
     val notices: Flow<FailureNotice> = failures.flow
 
+    private val inFlight = InFlight()
+
+    /** 보내는 중인 동작입니다. 받은 요청은 그 친구의 ID, 부르기는 [SEND_PING]입니다. */
+    val busy: StateFlow<Set<Any>> = inFlight.running
+
     /** 수락을 마치면 [onAccepted]를 부릅니다. 실패하면 부르지 않고 안내만 띄웁니다. */
     fun accept(id: PlayerId, onAccepted: () -> Unit = {}) {
-        viewModelScope.launchNotifying(failures, FailedAction.ACCEPT_FRIEND) {
+        // 수락과 거절은 같은 요청을 다루니 한 키로 막는다
+        inFlight.launch(viewModelScope, id, failures, FailedAction.ACCEPT_FRIEND) {
             friendRepository.accept(id)
             analytics.log(AnalyticsEvents.FRIEND_REQUEST, mapOf("action" to "accept", "source" to "friends_tab"))
             onAccepted()
@@ -143,7 +152,7 @@ class FriendsViewModel(
     }
 
     fun decline(id: PlayerId) {
-        viewModelScope.launchNotifying(failures, FailedAction.DECLINE_FRIEND) {
+        inFlight.launch(viewModelScope, id, failures, FailedAction.DECLINE_FRIEND) {
             friendRepository.decline(id)
             analytics.log(AnalyticsEvents.FRIEND_REQUEST, mapOf("action" to "decline", "source" to "friends_tab"))
         }
@@ -176,12 +185,21 @@ class FriendsViewModel(
      * @param startsAt `null`이면 "지금"이라 보내는 순간의 시각을 씁니다.
      */
     fun sendPing(friends: List<PlayerId>, startsAt: Instant?, onResult: (PingSendResult) -> Unit) {
-        viewModelScope.launchNotifying(failures, FailedAction.PING_SEND) {
+        inFlight.launch(viewModelScope, SEND_PING, failures, FailedAction.PING_SEND) {
             val result = pingRepository.send(friends, startsAt ?: clock.now())
             if (result == PingSendResult.SENT) analytics.log(AnalyticsEvents.PING_SEND, mapOf("friend_count" to friends.size.toString()))
-            // 보낸 것이 끝나기 전에는 부르기 버튼이 없으니 이 결과는 그사이 다른 기기에서 보낸 경우다
-            if (result == PingSendResult.ALREADY_ACTIVE) failures.send(FailureNotice(FailedAction.PING_ALREADY_ACTIVE))
+            // 보낸 것이 끝나기 전에는 부르기 버튼이 없으니 이 결과는 그사이 다른 기기에서 보낸 경우다.
+            // 그 초대가 탭에 뜨게 다시 받는다.
+            if (result == PingSendResult.ALREADY_ACTIVE) {
+                failures.send(FailureNotice(FailedAction.PING_ALREADY_ACTIVE))
+                runCatching { pingRepository.refresh() }
+            }
             onResult(result)
         }
+    }
+
+    companion object {
+        /** 부르기를 보내는 중인지 [busy]에서 가르는 키입니다. */
+        const val SEND_PING = "send_ping"
     }
 }

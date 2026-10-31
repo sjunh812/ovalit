@@ -30,6 +30,24 @@ class RoundsOverviewTest {
         assertEquals(WinRecord(rounds = 1, wins = 1), overview.theirFirstBlood)
     }
 
+    // 리포트의 첫 킬과 같은 킬이어야 한다.
+    // 시각이 없는 킬만 있는 라운드는 누가 먼저 잡았는지 모른다.
+    @Test
+    fun `시각이 없는 킬은 첫 킬로 표시하지 않고 첫 킬 요약에도 넣지 않는다`() {
+        val match = match(
+            round(untimedKill(Ally, Enemy), kill(20.0, Enemy, Me), won = true, number = 1),
+            round(untimedKill(Me, Enemy), won = true, number = 2),
+        )
+
+        val summaries = match.roundSummaries()
+        val overview = match.roundsOverview()
+
+        assertEquals(listOf(true, false), summaries[0].kills.map { it.firstBlood })
+        assertEquals(listOf(false), summaries[1].kills.map { it.firstBlood })
+        assertEquals(WinRecord(rounds = 0, wins = 0), overview.ourFirstBlood)
+        assertEquals(WinRecord(rounds = 1, wins = 1), overview.theirFirstBlood)
+    }
+
     @Test
     fun `공격과 수비에서 몇 번 이겼는지 센다`() {
         val match = match(
@@ -44,7 +62,7 @@ class RoundsOverviewTest {
         assertEquals(WinRecord(rounds = 1, wins = 1), overview.defense)
     }
 
-    // 장비가 상대보다 1,000 넘게 적었는데 이긴 라운드다.
+    // 장비가 상대보다 1,000크레드 넘게 밀렸는데 이긴 라운드다.
     // 피스톨은 모두 같은 크레드라 뺀다.
     @Test
     fun `장비가 크게 밀렸는데 이긴 라운드를 센다`() {

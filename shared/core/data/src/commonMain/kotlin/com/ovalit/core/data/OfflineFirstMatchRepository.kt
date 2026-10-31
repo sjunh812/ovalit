@@ -4,6 +4,7 @@ import com.ovalit.core.model.FIRST_IMPORT_WEEKS
 import com.ovalit.core.model.ImportProgress
 import com.ovalit.core.model.Match
 import com.ovalit.core.model.MatchId
+import com.ovalit.core.model.MatchListEntry
 import com.ovalit.core.model.NewMatchesProgress
 import com.ovalit.core.model.OvalitException
 import com.ovalit.core.model.forFirstImport
@@ -38,6 +39,8 @@ import kotlinx.coroutines.sync.withLock
  * - 끝난 경기는 바뀌지 않아 한 판씩 받는 대로 저장합니다.
  *   받다 실패하면 받은 경기는 그대로 두고 까닭을 적은 뒤 [OvalitException]으로 던집니다.
  *   남은 것은 다음에 이어 받습니다.
+ * - 상세를 받아 봤지만 저장하지 않은 경기(커스텀 게임, Riot에 없는 경기)도 기억해 다시 요청하지 않습니다.
+ *   끝나지 않은 경기만 [UNFINISHED_RECHECK_AFTER]가 지나면 한 번 더 받아 봅니다.
  *
  * @param scope 새 경기를 받는 곳입니다.
  *   앱이 사는 동안 도는 스코프를 넘깁니다.
@@ -59,6 +62,15 @@ class OfflineFirstMatchRepository(
     // 진행 줄이 남으면 홈이 새 경기를 기다리며 숫자를 내보내지 않고 당겨도 무시한다.
     override val newMatchesProgress: Flow<NewMatchesProgress?> = store.newMatches
         .map { batch -> batch?.takeUnless { it.stopped }?.let { NewMatchesProgress(total = it.total, received = it.total - it.left.size) } }
+        .distinctUntilChanged()
+
+    override val hasPendingNewMatches: Flow<Boolean> = store.newMatches
+        .map { batch -> batch != null && batch.left.isNotEmpty() }
+        .distinctUntilChanged()
+
+    // 멈춘 동안에는 받는 중이 아니라 앞서 받은 경기까지 화면이 센다
+    override val receivingMatches: Flow<Set<MatchId>> = store.newMatches
+        .map { batch -> batch?.takeUnless { it.stopped }?.receiving.orEmpty() }
         .distinctUntilChanged()
 
     // 저장소에 쓰는 일은 모두 이 잠금 안에서 한다.
@@ -92,17 +104,18 @@ class OfflineFirstMatchRepository(
             }
             try {
                 for (id in pickForImport(started) ?: return) {
-                    val match = remote.match(id)
+                    val detail = remote.match(id)
                     lock.withLock {
                         if (generation != started) return
                         val progress = store.importProgress.first() ?: return
-                        // 상세를 보고서야 커스텀 게임인 걸 알았으면 받을 판 수에서 뺀다.
-                        // 그대로 두면 막대가 끝까지 차지 않는다.
-                        if (match == null) {
-                            store.setImportProgress(progress.copy(total = progress.total - 1))
+                        // 상세를 보고서야 저장하지 않을 경기인 걸 알았으면 기억해 두고 받을 판 수에서 뺀다.
+                        // 판 수를 그대로 두면 막대가 끝까지 차지 않는다.
+                        if (detail is MatchDetail.Found) {
+                            store.save(detail.match)
+                            store.setImportProgress(progress.copy(results = progress.results + detail.match.myTeamWon))
                         } else {
-                            store.save(match)
-                            store.setImportProgress(progress.copy(results = progress.results + match.myTeamWon))
+                            skip(id, detail)
+                            store.setImportProgress(progress.copy(total = progress.total - 1))
                         }
                     }
                 }
@@ -120,14 +133,20 @@ class OfflineFirstMatchRepository(
     }
 
     // 최근 50경기를 고르고 진행도를 새로 적는다.
-    // 중간에 끊겼다 다시 돌면 이미 받은 경기는 건너뛴다.
+    // 중간에 끊겼다 다시 돌면 이미 받은 경기와 저장하지 않기로 한 경기는 건너뛴다.
+    // 저장하지 않기로 한 경기는 50경기를 고른 뒤에 뺀다.
+    // 먼저 빼면 다시 돌 때마다 더 오래된 경기가 끼어 멈추기 전과 판 수가 달라진다.
     // 그사이 지웠으면 `null`이다.
     private suspend fun pickForImport(started: Int): List<MatchId>? {
         val listed = remote.matchList()
         val now = clock.now()
-        val picked = listed.filter { it.queue != null }.forFirstImport(now) { it.startedAt }
         return lock.withLock {
             if (generation != started) return null
+            val skipped = store.skipped.first()
+            val picked = listed
+                .filter { it.queue != null }
+                .forFirstImport(now) { it.startedAt }
+                .filterNot { skipped.blocks(it.id, now) }
             val saved = store.matches.first().associateBy { it.id }
             store.setCheckedAt(now)
             store.setImportProgress(ImportProgress(total = picked.size, results = picked.mapNotNull { saved[it.id] }.map { it.myTeamWon }))
@@ -163,19 +182,23 @@ class OfflineFirstMatchRepository(
         }.also { inFlight = it }
     }
 
-    // 최신 경기부터 한 판씩 받아 바로 저장한다
+    // 최신 경기부터 한 판씩 받아 바로 저장한다.
+    // 남은 경기가 규칙에 걸려 다 빠졌으면 목록을 새로 받는다.
     private suspend fun receiveNew(started: Int): Int {
         var batch = leftovers(started) ?: listNew(started) ?: return 0
         var received = 0
         try {
             while (batch.left.isNotEmpty()) {
-                val match = remote.match(batch.left.first())
+                val id = batch.left.first().id
+                val detail = remote.match(id)
                 batch = batch.copy(left = batch.left.drop(1))
                 lock.withLock {
                     if (generation != started) return received
-                    if (match != null) {
-                        store.save(match)
+                    if (detail is MatchDetail.Found) {
+                        store.save(detail.match)
                         received++
+                    } else {
+                        skip(id, detail)
                     }
                     store.setNewMatches(batch)
                 }
@@ -195,11 +218,25 @@ class OfflineFirstMatchRepository(
     // 받다 멈췄거나 받던 중에 앱이 꺼져 남은 경기다.
     // 남았으면 목록을 다시 받지 않고 그것부터 받는다.
     // 저장한 뒤 남은 목록에서 빼기 전에 꺼졌으면 이미 저장한 경기가 목록에 남아 있어서 뺀다.
+    // 멈춘 뒤 몇 주 지나 당기면 그사이 8주 밖으로 나간 경기가 있어서 목록을 받을 때와 같은 규칙으로 다시 거른다.
+    // 규칙에 걸려 빠진 경기는 받을 판 수에서도 빼서 진행 줄이 끝까지 찬다.
+    // 다 빠지면 남은 게 없으니 비우고 `null`이다.
     private suspend fun leftovers(started: Int): NewMatchesBatch? = lock.withLock {
         if (generation != started) return null
         val batch = store.newMatches.first() ?: return null
-        val saved = store.matches.first().mapTo(HashSet()) { it.id }
-        batch.copy(left = batch.left.filterNot { it in saved }, stopped = false).also { store.setNewMatches(it) }
+        val stored = store.matches.first()
+        val saved = stored.mapTo(HashSet()) { it.id }
+        val unsaved = batch.left.filterNot { it.id in saved }
+        val left = unsaved.newOnes(stored, store.skipped.first(), clock.now())
+        if (left.isEmpty()) {
+            store.setNewMatches(null)
+            return null
+        }
+        NewMatchesBatch(
+            total = batch.total - (unsaved.size - left.size),
+            left = left,
+            receiving = if (batch.stopped) left.mapTo(HashSet()) { it.id } else batch.receiving,
+        ).also { store.setNewMatches(it) }
     }
 
     // 경기 ID 목록을 받아 저장한 것과 견주고 새로 끝난 경기만 고른다.
@@ -209,19 +246,19 @@ class OfflineFirstMatchRepository(
         val now = clock.now()
         return lock.withLock {
             if (generation != started) return null
-            val stored = store.matches.first()
-            val saved = stored.mapTo(HashSet()) { it.id }
-            // 첫 수집이 50경기에서 잘라낸 경기는 새 경기가 아니다.
-            // 저장한 가장 오래된 경기보다 앞선 경기는 받지 않는다.
-            val oldest = stored.minOfOrNull { it.startedAt }
-            val fresh = listed
-                .filter { it.queue != null && it.id !in saved }
-                .filter { now - it.startedAt <= IMPORT_WINDOW && (oldest == null || it.startedAt > oldest) }
-                .sortedByDescending { it.startedAt }
-                .map { it.id }
+            val fresh = listed.newOnes(store.matches.first(), store.skipped.first(), now)
             store.setCheckedAt(now)
             NewMatchesBatch(total = fresh.size, left = fresh).takeIf { fresh.isNotEmpty() }?.also { store.setNewMatches(it) }
         }
+    }
+
+    // [lock] 안에서 부른다.
+    // 저장하지 않을 경기도 기억해야 새 경기를 확인할 때마다 다시 요청하지 않는다.
+    // 끝나지 않은 경기는 끝나면 결과가 생겨서 처음 한 번만 다시 볼 시각을 적는다.
+    private suspend fun skip(id: MatchId, detail: MatchDetail) {
+        val firstTime = id !in store.skipped.first()
+        val recheckAt = if (detail == MatchDetail.Unfinished && firstTime) clock.now() + UNFINISHED_RECHECK_AFTER else null
+        store.skip(id, recheckAt)
     }
 
     // 받던 중에 앱이 꺼졌으면 다시 켜자마자 남은 것을 이어 받는다.
@@ -250,5 +287,25 @@ class OfflineFirstMatchRepository(
 }
 
 private val IMPORT_WINDOW = (FIRST_IMPORT_WEEKS * 7).days
+
+/**
+ * 새 경기로 받을 것만 최신부터 남깁니다.
+ * 저장했거나 저장하지 않기로 한 경기, 8주를 넘는 경기는 받지 않습니다.
+ * 첫 수집이 50경기에서 잘라낸 경기도 새 경기가 아니라서 저장한 가장 오래된 경기보다 앞선 경기는 받지 않습니다.
+ */
+private fun List<MatchListEntry>.newOnes(stored: List<Match>, skipped: Map<MatchId, Instant?>, now: Instant): List<MatchListEntry> {
+    val saved = stored.mapTo(HashSet()) { it.id }
+    val oldest = stored.minOfOrNull { it.startedAt }
+    return filter { it.queue != null && it.id !in saved && !skipped.blocks(it.id, now) }
+        .filter { now - it.startedAt <= IMPORT_WINDOW && (oldest == null || it.startedAt > oldest) }
+        .sortedByDescending { it.startedAt }
+}
+
+// 끝나지 않았던 경기는 다시 볼 시각이 지나면 한 번 더 받는다
+private fun Map<MatchId, Instant?>.blocks(id: MatchId, now: Instant): Boolean {
+    if (id !in this) return false
+    val recheckAt = this[id] ?: return true
+    return now < recheckAt
+}
 
 private fun Exception.asOvalitException(): OvalitException = this as? OvalitException ?: OvalitException(ovalitError, this)

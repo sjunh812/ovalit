@@ -10,25 +10,30 @@ import androidx.compose.runtime.staticCompositionLocalOf
  *
  * @property inCard 카드 안에 담는 자리입니다.
  *   카드에 위아래 안쪽 여백이 있어 광고 줄은 여백을 빼고 그립니다.
+ * @property media 왼쪽에 정사각 그림이나 영상을 둔 카드 모양입니다.
+ *   목록 사이처럼 경기 줄과 높이를 맞춰야 하는 자리는 한 줄 모양입니다.
  */
-enum class AdPlacement(val inCard: Boolean) {
+enum class AdPlacement(val inCard: Boolean, val media: Boolean = false) {
     /** S2 경기 목록의 날짜 묶음 사이입니다. 자리는 [listAdBefore]가 정합니다. */
     MATCH_LIST(inCard = false),
 
     /** 친구 경기 목록의 날짜 묶음 사이입니다. 경기 목록과 같은 규칙입니다. */
     FRIEND_MATCH_LIST(inCard = false),
 
-    /** 홈의 달라진 점 카드 밑입니다. 이번 주 숫자를 다 본 바로 뒤입니다. */
+    /** 홈의 이번 주 카드와 달라진 점 카드 사이입니다. 첫 화면에서 보입니다. */
     HOME(inCard = true),
 
+    /** 홈 맨 아래, 마지막 카드 밑입니다. 홈을 끝까지 본 뒤라 그림 카드로 둡니다. */
+    HOME_BOTTOM(inCard = true, media = true),
+
     /** 내 프로필과 친구 프로필의 무기 카드와 최근 경기 카드 사이입니다. */
-    PROFILE(inCard = true),
+    PROFILE(inCard = true, media = true),
 
     /** 친구 탭 맨 아래, 친구 목록 카드 밑입니다. 오발있?과 받은 요청 카드에는 버튼이 있어 그 사이에 두지 않습니다. */
     FRIENDS(inCard = true),
 
     /** S3 경기 상세 맨 아래입니다. */
-    MATCH_DETAIL(inCard = false),
+    MATCH_DETAIL(inCard = false, media = true),
 }
 
 /**

@@ -40,8 +40,7 @@ class NewMatchesWatcher(
             // 첫 수집 전이나 받는 중이면 S0-4가 받는다.
             if (account.account.first() == null) return@launch
             if (matches.importProgress.first()?.isDone != true) return@launch
-            val last = matches.checkedAt.first()
-            if (last != null && clock.now() - last < RECHECK_AFTER) return@launch
+            if (!isDue(last = matches.checkedAt.first(), now = clock.now(), after = RECHECK_AFTER)) return@launch
             if (!lock.withLock { (!checking).also { checking = true } }) return@launch
             try {
                 logRefresh(analytics, source = "app_open") { matches.refresh() }

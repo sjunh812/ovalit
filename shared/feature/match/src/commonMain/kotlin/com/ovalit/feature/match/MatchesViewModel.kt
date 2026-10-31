@@ -128,17 +128,24 @@ class MatchesViewModel(
     /** 목록을 당겨 새 경기를 받는 중인지입니다. 진행 줄이 뜨면 당김 표시는 거둡니다. */
     val isRefreshing: StateFlow<Boolean> = refreshing
 
-    val uiState: StateFlow<MatchesUiState> = combine(
+    init {
+        // 경기를 모두 지웠으면 남겨 둔 요원·맵 필터도 소용없다.
+        // 그대로 두면 다시 불러온 뒤에도 "조건에 맞는 경기가 없어요"가 뜬다.
+        viewModelScope.launch {
+            matchRepository.observeMatches().collect { if (it.isEmpty()) filter.value = MatchFilter() }
+        }
+    }
+
+    // 묶기와 칩 목록은 경기나 고른 값이 바뀔 때만 다시 센다.
+    // 분마다 바뀌는 건 "N분 전"과 오늘·어제 머리라 지금만 새로 넣는다.
+    private val listed = combine(
         matchRepository.observeMatches(),
         preferencesRepository.preferences,
         selectedQueue,
         filter,
-        // "N분 전"과 오늘·어제 머리가 화면을 켜 둔 동안에도 흐르게 분마다 다시 센다
-        combine(contentRepository.catalog, minuteChanges) { catalog, _ -> catalog },
+        contentRepository.catalog,
     ) { matches, preferences, selected, chosen, catalog ->
         val queueFilter = selected ?: preferences.defaultQueue
-        // 경기를 모두 지웠으면 남겨 둔 요원·맵 필터도 소용없다.
-        // 그대로 두면 다시 불러온 뒤에도 "조건에 맞는 경기가 없어요"가 뜬다.
         val filter = if (matches.isEmpty()) MatchFilter() else chosen
         val inQueue = matches.filter { it.queue in queueFilter.queues }.sortedByDescending { it.startedAt }
         val shown = inQueue.filter { match ->
@@ -150,19 +157,24 @@ class MatchesViewModel(
             days = shown
                 .groupBy { it.startedAt.toLocalDateTime(timeZone).date }
                 .map { (date, dayMatches) -> MatchDay(date, dayMatches) },
-            // 카탈로그에 이름이 없는 요원과 맵(건틀릿의 로봇 등)은 같은 "알 수 없는 요원" 칩이 여럿 생겨 고를 수 없어 뺀다
-            agents = inQueue.mostPlayed { it.myAgent }.filter { it in catalog.agents },
-            maps = inQueue.mostPlayed { it.map }.filter { it in catalog.maps },
+            // 카탈로그에 이름이 없는 요원과 맵(건틀릿의 로봇 등)은 같은 "알 수 없는 요원" 칩이 여럿 생겨 고를 수 없어 뺀다.
+            // 큐를 바꿔 골라 둔 요원이 그 큐에 없으면 칩을 뒤에 붙여 둔다.
+            // 칩이 사라지면 목록이 왜 비었는지 알 수 없다.
+            agents = inQueue.mostPlayed { it.myAgent }.withSelected(filter.agent).filter { it in catalog.agents },
+            maps = inQueue.mostPlayed { it.map }.withSelected(filter.map).filter { it in catalog.maps },
             catalog = catalog,
             now = clock.now(),
             timeZone = timeZone,
             noStoredMatches = matches.isEmpty(),
         )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = MatchesUiState.Loading,
-    )
+    }
+
+    val uiState: StateFlow<MatchesUiState> = combine(listed, minuteChanges) { state, _ -> state.copy(now = clock.now()) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = MatchesUiState.Loading,
+        )
 
     /**
      * 새로 끝난 경기를 받습니다.
@@ -198,3 +210,6 @@ class MatchesViewModel(
 
 private fun <T> List<Match>.mostPlayed(key: (Match) -> T): List<T> =
     groupingBy(key).eachCount().entries.sortedByDescending { it.value }.map { it.key }
+
+private fun <T> List<T>.withSelected(selected: T?): List<T> =
+    if (selected == null || selected in this) this else this + selected

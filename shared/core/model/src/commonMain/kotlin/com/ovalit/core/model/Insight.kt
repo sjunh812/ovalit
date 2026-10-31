@@ -559,18 +559,11 @@ private fun Sample.deviations(): List<Pair<Double, Double>> =
 private fun Sample.variance(metric: InsightMetric, pooled: Double, scale: Double): Double {
     val deviations = deviations()
     val whole = deviations.sumOf { (_, whole) -> whole }
-    val floor = if (metric.isPercent) pooled * (1 - pooled) / whole else damages.spread() / damages.size.coerceAtLeast(1)
+    val floor = if (metric.isPercent) pooled * (1 - pooled) / whole else damages.map(Int::toDouble).sampleVariance() / damages.size.coerceAtLeast(1)
     val shared = scale * deviations.sumOf { (_, whole) -> whole * whole } / (whole * whole)
     if (deviations.size < 2) return maxOf(floor, shared)
     val own = deviations.size / (deviations.size - 1.0) * deviations.sumOf { (gap, _) -> gap * gap } / (whole * whole)
     return maxOf(own, floor, shared)
-}
-
-// 라운드 하나하나의 표본분산이다
-private fun List<Int>.spread(): Double {
-    if (size < 2) return 0.0
-    val mean = average()
-    return sumOf { (it - mean) * (it - mean) } / (size - 1)
 }
 
 // 두 쪽의 비중을 곱한다.

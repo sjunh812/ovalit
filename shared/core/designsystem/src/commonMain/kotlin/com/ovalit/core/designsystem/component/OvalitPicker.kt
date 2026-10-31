@@ -55,11 +55,11 @@ fun OvalitPickerButton(text: String, onClickLabel: String, onClick: () -> Unit, 
     }
 }
 
-private val PickerHeight = 44.dp
+private val PickerHeight = 48.dp
 
 /**
  * 묶음 제목과 [OvalitPickerButton]을 한 줄에 둡니다.
- * 줄 높이는 제목 글자에 맞추고 버튼의 눌리는 영역(44dp)만 위아래로 넘치게 둡니다.
+ * 줄 높이는 제목 글자에 맞추고 버튼의 눌리는 영역(48dp)만 위아래로 넘치게 둡니다.
  * 버튼 높이로 줄을 늘리면 이 묶음만 제목 위아래가 떠 보입니다.
  * 제목은 버튼을 뺀 폭에서 꺾입니다.
  */

@@ -7,11 +7,15 @@ import com.ovalit.core.data.MatchRepository
 import com.ovalit.core.data.UserPreferencesRepository
 import com.ovalit.core.model.Focus
 import com.ovalit.core.model.ImportProgress
+import com.ovalit.core.ui.FailedAction
+import com.ovalit.core.ui.FailureNotice
+import com.ovalit.core.ui.FailureNotices
+import com.ovalit.core.ui.launchNotifying
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 sealed interface ImportUiState {
     data object Loading : ImportUiState
@@ -42,8 +46,13 @@ class ImportViewModel(
         initialValue = ImportUiState.Loading,
     )
 
+    private val failures = FailureNotices()
+
+    /** 사용자가 한 일이 실패했을 때 화면 아래에 띄울 안내입니다. */
+    val notices: Flow<FailureNotice> = failures.flow
+
     fun selectFocus(focus: Focus) {
-        viewModelScope.launch { runCatching { preferencesRepository.setFocus(focus) } }
+        viewModelScope.launchNotifying(failures, FailedAction.SETTING) { preferencesRepository.setFocus(focus) }
     }
 
     /** 멈춘 첫 수집을 지금 이어 받습니다. 기다리면 WorkManager가 저절로 다시 띄우지만 사용자가 바로 다시 할 수 있게 둡니다. */

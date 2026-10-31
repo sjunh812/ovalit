@@ -20,8 +20,12 @@ class TestPingRepository(delegate: PingRepository = NoPings) : PingRepository by
     var refreshed = 0
         private set
 
+    /** `null`이 아니면 [refresh]가 부른 횟수를 센 뒤 이 예외로 실패합니다. */
+    var refreshFailure: Exception? = null
+
     override suspend fun refresh() {
         refreshed++
+        refreshFailure?.let { throw it }
     }
 }
 

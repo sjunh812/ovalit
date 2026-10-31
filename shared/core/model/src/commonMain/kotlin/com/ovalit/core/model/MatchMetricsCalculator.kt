@@ -10,10 +10,10 @@ const val TRADE_WINDOW_MILLIS: Long = 5_000
 
 /**
  * [side]를 주면 그 진영 라운드만 셉니다.
- * 전투점수는 응답에 경기 합계로만 있어서 진영별 값에서는 0이니 [MatchMetrics.acs]를 읽지 않습니다.
+ * 전투 점수는 응답에 경기 합계로만 있어서 진영별 값에서는 0이니 [MatchMetrics.acs]를 읽지 않습니다.
  *
  * 데스매치처럼 라운드가 없는 모드는 스코어보드의 K/D/A와 맞힌 부위만 담고 라운드는 0입니다.
- * 그래서 전투점수, 피해량, 관여율 같은 라운드 값은 모두 `null`입니다.
+ * 그래서 전투 점수, 피해량, 관여율 같은 라운드 값은 모두 `null`입니다.
  */
 fun Match.metrics(side: Side? = null): MatchMetrics = when {
     format != MatchFormat.ROUNDS -> if (side == null) scorelineMetrics() else MatchMetrics.Empty.copy(matches = 1)
@@ -22,7 +22,7 @@ fun Match.metrics(side: Side? = null): MatchMetrics = when {
 }
 
 // 라운드가 없는 모드는 라운드별 킬 기록이 어떻게 오는지 아직 몰라 응답의 K/D/A를 그대로 쓴다.
-// 한 판을 한 라운드로 받아 나누면 경기 전체 점수가 라운드당 전투점수로 뜬다.
+// 한 판을 한 라운드로 받아 나누면 경기 전체 점수가 라운드당 전투 점수로 뜬다.
 private fun Match.scorelineMetrics(): MatchMetrics {
     val line = myScoreline
     return MatchMetrics.Empty.copy(
@@ -37,7 +37,7 @@ private fun Match.scorelineMetrics(): MatchMetrics {
 /**
  * [keep]에 드는 라운드만 셉니다.
  * 이코 라운드나 밴달을 들고 시작한 라운드처럼 경기 안에서 라운드를 가를 때 씁니다.
- * 전투점수는 경기 합계뿐이라 0으로 두고 드는 라운드가 없으면 경기 수도 0입니다.
+ * 전투 점수는 경기 합계뿐이라 0으로 두고, 드는 라운드가 없으면 경기 수도 0입니다.
  */
 internal fun Match.roundMetrics(keep: (Round) -> Boolean): MatchMetrics {
     val kept = rounds.filter(keep)
@@ -102,21 +102,20 @@ internal class RoundResult(
 )
 
 internal fun Round.analyze(me: PlayerId, allies: Set<PlayerId>): RoundResult {
-    val myTeam = allies + me
-    // 스킬로 자기를 죽이거나 같은 팀을 죽인 건 킬로 세지 않는다.
-    // 응답에는 둘 다 킬로 들어온다.
-    val enemyKills = kills.filter { (it.killer in myTeam) != (it.victim in myTeam) }
+    val enemyKills = enemyKills(me = me, allies = allies)
 
     val myKills = enemyKills.count { it.killer == me }
     val myAssists = enemyKills.count { me in it.assistants }
     // 세이지 부활로 한 라운드에 두 번 죽을 수 있다.
     // 데스는 모두 세고 관여율의 트레이드는 목록 순서가 아니라 시각으로 먼저 죽은 것을 본다.
-    val myDeaths = kills.filter { it.victim == me }.sortedBy { it.atMillis }
+    val myDeaths = myDeaths(me)
     val myDeath = myDeaths.firstOrNull()
-    val firstBlood = enemyKills.minByOrNull { it.atMillis }
+    val firstBlood = enemyKills.firstBlood()
 
-    fun isTraded(death: KillEvent) = enemyKills.any { revenge ->
-        revenge.victim == death.killer &&
+    // 시각이 없는 킬은 언제 났는지 몰라 트레이드로 보지 않는다
+    fun isTraded(death: KillEvent) = death.hasTime && enemyKills.any { revenge ->
+        revenge.hasTime &&
+            revenge.victim == death.killer &&
             revenge.killer in allies &&
             revenge.atMillis - death.atMillis in 0..TRADE_WINDOW_MILLIS
     }
@@ -135,3 +134,28 @@ internal fun Round.analyze(me: PlayerId, allies: Set<PlayerId>): RoundResult {
         tradedDeaths = myDeaths.count(::isTraded),
     )
 }
+
+/**
+ * 적을 잡은 킬만 남깁니다.
+ * 스킬로 자기를 죽인 것과 같은 팀을 죽인 것은 응답에 킬로 들어오지만 킬로도 어시로도 세지 않습니다.
+ * 리포트, 무기, S3 라운드 줄과 스코어보드가 모두 이 기준을 씁니다.
+ * 화면마다 따로 거르면 같은 킬을 한쪽만 세서 숫자가 갈립니다.
+ */
+internal fun Round.enemyKills(me: PlayerId, allies: Set<PlayerId>): List<KillEvent> {
+    fun onMyTeam(player: PlayerId) = player == me || player in allies
+    return kills.filter { onMyTeam(it.killer) != onMyTeam(it.victim) }
+}
+
+/**
+ * 내가 죽은 킬을 시각순으로 담습니다.
+ * 스코어보드처럼 죽은 횟수라 세이지 부활로 두 번 죽으면 둘입니다.
+ * 스킬로 자기를 죽였거나 우리 팀에게 죽은 것도 데스로 셉니다.
+ */
+internal fun Round.myDeaths(me: PlayerId): List<KillEvent> = kills.filter { it.victim == me }.sortedBy { it.atMillis }
+
+/**
+ * 라운드에서 처음 나온 적 처치입니다.
+ * [enemyKills]에서 고르고 목록 순서가 아니라 시각으로 봅니다.
+ * 시각이 없는 킬은 언제 났는지 몰라 건너뜁니다.
+ */
+internal fun List<KillEvent>.firstBlood(): KillEvent? = filter { it.hasTime }.minByOrNull { it.atMillis }

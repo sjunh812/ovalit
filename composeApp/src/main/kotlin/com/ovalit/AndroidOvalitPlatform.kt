@@ -30,6 +30,7 @@ import com.ovalit.core.designsystem.component.OvalitToastState
 import com.ovalit.core.ui.NotificationPermission
 import com.ovalit.feature.settings.NotificationBlocks
 import com.ovalit.importing.ANALYSIS_CHANNEL
+import com.ovalit.push.FRIEND_CHANNEL
 import com.ovalit.push.PING_CHANNEL
 import com.ovalit.push.PingNotifications
 import com.ovalit.push.WEEKLY_CHANNEL
@@ -120,16 +121,19 @@ internal class AndroidOvalitPlatform(private val context: Context) : OvalitPlatf
     }
 }
 
-// 앱 알림을 통째로 껐으면 셋 다 막힌 것이다.
+// 앱 알림을 통째로 껐으면 모두 막힌 것이다.
 // 아직 만들지 않은 채널은 막을 수도 없어 열린 것으로 본다.
 private fun notificationBlocks(context: Context): NotificationBlocks {
     val manager = NotificationManagerCompat.from(context)
-    if (!manager.areNotificationsEnabled()) return NotificationBlocks(analysisDone = true, weeklyReport = true, ping = true)
+    if (!manager.areNotificationsEnabled()) {
+        return NotificationBlocks(analysisDone = true, weeklyReport = true, ping = true, friendRequest = true)
+    }
     fun blocked(channel: String) = manager.getNotificationChannelCompat(channel)?.importance == NotificationManagerCompat.IMPORTANCE_NONE
     return NotificationBlocks(
         analysisDone = blocked(ANALYSIS_CHANNEL),
         weeklyReport = blocked(WEEKLY_CHANNEL),
         ping = blocked(PING_CHANNEL),
+        friendRequest = blocked(FRIEND_CHANNEL),
     )
 }
 
@@ -140,6 +144,7 @@ private fun notificationBlocks(context: Context): NotificationBlocks {
 @Composable
 private fun ExitOnSecondBack(toast: OvalitToastState) {
     var armed by remember { mutableStateOf(false) }
+    var waiting by remember { mutableStateOf(false) }
     val message = stringResource(R.string.exit_confirm)
     val activity = LocalActivity.current
     val scope = rememberCoroutineScope()
@@ -150,11 +155,18 @@ private fun ExitOnSecondBack(toast: OvalitToastState) {
             activity?.finish()
             return@BackHandler
         }
-        armed = true
+        if (waiting) return@BackHandler
+        // 다른 안내("새 경기 3판을 불러왔어요")가 떠 있으면 종료 안내는 그 뒤에 뜬다.
+        // 안내를 보기 전에 두 번째 뒤로 가기로 닫히지 않게 안내가 실제로 뜬 뒤에 닫을 준비를 한다.
+        waiting = true
         scope.launch {
             try {
-                toast.show(message, ExitWindow)
+                toast.show(message, ExitWindow, onShown = {
+                    waiting = false
+                    armed = true
+                })
             } finally {
+                waiting = false
                 armed = false
             }
         }

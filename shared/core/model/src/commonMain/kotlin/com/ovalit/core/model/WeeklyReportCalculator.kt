@@ -45,12 +45,14 @@ fun Iterable<Match>.weeklyReport(
     val period = choice.period ?: return notEnough(played = choice.played)
     val end = period.end
 
+    // 같은 경기가 기간, 비교 기준, 주간 변동폭, 요원, 추이에 겹쳐 들어가 경기마다 한 번만 센다
+    val measured = MeasuredMatches()
     val periodMatches = matchesByWeek.between(period.firstDay, end)
-    val metrics = periodMatches.totalMetrics()
-    val baseline = matchesByWeek.baselineBefore(period.firstDay)
+    val metrics = measured.total(periodMatches)
+    val baseline = matchesByWeek.baselineBefore(period.firstDay, measured)
     val roleRounds = periodMatches.roleRounds()
     val mainRole = roleRounds.maxByOrNull { it.value }?.key
-    val history = matchesByWeek.weeksBefore(period.firstDay).map { it.totalMetrics() }
+    val history = matchesByWeek.weeksBefore(period.firstDay).map(measured::total)
 
     return WeeklyReport.Ready(
         act = act,
@@ -65,12 +67,12 @@ fun Iterable<Match>.weeklyReport(
             emptyList()
         },
         insight = if (queueFilter.hasDynamicMetrics) matchesByWeek.actInsight(periodMatches, mainRole, focus, weaponCategories) else null,
-        trend = counted.trendWeeks(end = end, period = period, timeZone = timeZone),
+        trend = counted.trendWeeks(end = end, period = period, timeZone = timeZone, measured = measured),
         results = periodMatches.sortedBy { it.startedAt }.map { it.myTeamWon },
         agents = periodMatches.agentReport().agents,
         weapons = periodMatches.weaponStats(),
         note = if (queueFilter.hasDynamicMetrics) {
-            matchesByWeek.weekNote(periodMatches, period, metrics, baseline, history, mainRole)
+            matchesByWeek.weekNote(periodMatches, period, metrics, baseline, history, mainRole, measured)
         } else {
             null
         },
@@ -107,6 +109,7 @@ private fun Map<LocalDate, List<Match>>.weekNote(
     baseline: Baseline?,
     history: List<MatchMetrics>,
     role: Role?,
+    measured: MeasuredMatches,
 ): WeekNote? {
     val usualMatches = between(baselineStart(period.firstDay), period.firstDay)
     val usualWeapons = usualMatches.weaponStats().associateBy { it.weapon }
@@ -115,7 +118,7 @@ private fun Map<LocalDate, List<Match>>.weekNote(
     }
     val usualAgents = usualMatches.groupBy { it.myAgent }
     val agentTrends = periodMatches.groupBy { it.myAgent }.map { (agent, matches) ->
-        AgentTrend(agent = agent, current = matches.totalMetrics(), baseline = usualAgents[agent]?.totalMetrics())
+        AgentTrend(agent = agent, current = measured.total(matches), baseline = usualAgents[agent]?.let(measured::total))
     }
     return chooseWeekNote(
         current = metrics,
@@ -127,11 +130,11 @@ private fun Map<LocalDate, List<Match>>.weekNote(
         mixes = listOf(
             mixSlices(periodMatches, usualMatches) { match, round -> round.buyType(match.queue)?.let { MixGroup.Buy(it) } },
             mixSlices(periodMatches, usualMatches) { _, round -> round.economy?.myWeapon?.let { MixGroup.Weapon(it) } },
-            agentSlices(periodMatches, usualMatches),
+            agentSlices(periodMatches, usualMatches, measured),
         ),
         // 8주 변동폭과 달리 이번 액트 앞 주를 모두 본다.
         // 액트가 길면 8주 앞에 더 높은 주가 있을 수 있다.
-        actWeeks = if (period.weeks == 1) filterKeys { it < period.firstDay }.values.map { it.totalMetrics() } else emptyList(),
+        actWeeks = if (period.weeks == 1) filterKeys { it < period.firstDay }.values.map(measured::total) else emptyList(),
     )
 }
 
@@ -148,10 +151,10 @@ private fun mixSlices(current: List<Match>, usual: List<Match>, group: (Match, R
 }
 
 // 요원은 판 전체로 가른다.
-// 전투점수도 요원으로는 가를 수 있다.
-private fun agentSlices(current: List<Match>, usual: List<Match>): List<MixSlice> {
-    val now = current.groupBy { it.myAgent }.mapValues { (_, matches) -> matches.totalMetrics() }
-    val before = usual.groupBy { it.myAgent }.mapValues { (_, matches) -> matches.totalMetrics() }
+// 전투 점수도 요원으로는 가를 수 있다.
+private fun agentSlices(current: List<Match>, usual: List<Match>, measured: MeasuredMatches): List<MixSlice> {
+    val now = current.groupBy { it.myAgent }.mapValues { (_, matches) -> measured.total(matches) }
+    val before = usual.groupBy { it.myAgent }.mapValues { (_, matches) -> measured.total(matches) }
     return (now.keys + before.keys).map { agent ->
         MixSlice(MixGroup.Agent(agent), now[agent] ?: MatchMetrics.Empty, before[agent] ?: MatchMetrics.Empty)
     }
@@ -159,7 +162,7 @@ private fun agentSlices(current: List<Match>, usual: List<Match>): List<MixSlice
 
 // 첫 수집 범위가 8주라 막대도 8주다.
 // 지난 액트 주도 그리되 경계에 전환 표시를 한다.
-private fun List<Match>.trendWeeks(end: LocalDate, period: ReportPeriod, timeZone: TimeZone): List<TrendWeek> {
+private fun List<Match>.trendWeeks(end: LocalDate, period: ReportPeriod, timeZone: TimeZone, measured: MeasuredMatches): List<TrendWeek> {
     val byWeek = groupBy { it.startedAt.weekStart(timeZone) }
     var previousAct: ActId? = null
 
@@ -167,7 +170,7 @@ private fun List<Match>.trendWeeks(end: LocalDate, period: ReportPeriod, timeZon
         val firstDay = end.minusWeeks(weeksBefore)
         val week = byWeek[firstDay].orEmpty()
         val act = week.maxByOrNull { it.startedAt }?.act
-        val metrics = week.filter { it.act == act }.totalMetrics()
+        val metrics = measured.total(week.filter { it.act == act })
         TrendWeek(
             firstDay = firstDay,
             act = act,
@@ -185,12 +188,12 @@ private fun List<Match>.roleRounds(): Map<Role, Int> = this
     .groupBy({ it.first }, { it.second })
     .mapValues { (_, rounds) -> rounds.sum() }
 
-private fun Map<LocalDate, List<Match>>.baselineBefore(periodStart: LocalDate): Baseline? {
+private fun Map<LocalDate, List<Match>>.baselineBefore(periodStart: LocalDate, measured: MeasuredMatches): Baseline? {
     val start = baselineStart(periodStart)
     val matches = between(start, periodStart)
     if (matches.size < MIN_MATCHES_PER_REPORT) return null
 
-    return Baseline(metrics = matches.totalMetrics(), weeks = start.daysUntil(periodStart) / 7)
+    return Baseline(metrics = measured.total(matches), weeks = start.daysUntil(periodStart) / 7)
 }
 
 /**
@@ -236,7 +239,23 @@ fun Instant.nextWeekStart(timeZone: TimeZone): Instant = weekStart(timeZone).plu
 private fun Map<LocalDate, List<Match>>.between(from: LocalDate, until: LocalDate): List<Match> =
     filterKeys { it >= from && it < until }.values.flatten()
 
-private fun List<Match>.totalMetrics(): MatchMetrics = map { it.metrics() }.sum()
+/**
+ * 리포트 하나를 세는 동안 경기마다 [metrics]를 한 번만 셉니다.
+ * 경기는 data class라 키로 쓰면 해시가 라운드와 킬까지 다 훑어서 ID로 묶고 같은 객체인지로 찾습니다.
+ * 테스트처럼 ID가 같은 다른 경기가 섞여도 서로의 값을 쓰지 않습니다.
+ * 리포트 하나 안에서만 쓰고 여러 스레드가 같이 쓰지 않습니다.
+ */
+private class MeasuredMatches {
+    private val byId = HashMap<MatchId, MutableList<Pair<Match, MatchMetrics>>>()
+
+    fun total(matches: List<Match>): MatchMetrics = matches.map(::of).sum()
+
+    private fun of(match: Match): MatchMetrics {
+        val seen = byId.getOrPut(match.id) { mutableListOf() }
+        seen.firstOrNull { it.first === match }?.let { return it.second }
+        return match.metrics().also { seen += match to it }
+    }
+}
 
 private fun LocalDate.plusWeeks(weeks: Int) = plus(weeks, DateTimeUnit.WEEK)
 

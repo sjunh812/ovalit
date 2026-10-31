@@ -81,11 +81,11 @@ class MatchDetailViewModelTest {
     fun `친구와 앱을 쓰는 사람과 안 쓰는 사람을 가른다`() = runTest {
         val friendIds = friends.friends.first().map { it.id }.toSet()
         val match = matches.observeMatches().first().first { match ->
-            match.players.any { it.player in friendIds } && friends.appUsersAmong(match.players.map { it.player }).size > 1
+            match.players.any { it.player in friendIds } && friends.appUsersAmong(match.id, match.players.map { it.player }).size > 1
         }
 
         val rows = collect(viewModel(match)).rows
-        val appUsers = friends.appUsersAmong(match.players.map { it.player })
+        val appUsers = friends.appUsersAmong(match.id, match.players.map { it.player })
 
         rows.forEach { row ->
             val expected = when {
@@ -101,7 +101,7 @@ class MatchDetailViewModelTest {
     @Test
     fun `요청을 보내면 그 사람은 보낸 요청으로 바뀐다`() = runTest {
         val match = matches.observeMatches().first().first { match ->
-            val users = friends.appUsersAmong(match.players.map { it.player })
+            val users = friends.appUsersAmong(match.id, match.players.map { it.player })
             val friendIds = friends.friends.first().map { it.id }.toSet()
             users.any { it !in friendIds }
         }
@@ -150,7 +150,7 @@ class MatchDetailViewModelTest {
     @Test
     fun `앱을 쓰는지 묻지 못해도 경기를 보여주고 앱을 안 쓴다고 하지 않는다`() = runTest {
         val broken = object : FriendRepository by friends {
-            override suspend fun appUsersAmong(players: Collection<PlayerId>): Set<PlayerId> = error("서버에 닿지 않음")
+            override suspend fun appUsersAmong(match: MatchId, players: Collection<PlayerId>): Set<PlayerId> = error("서버에 닿지 않음")
         }
         val viewModel = MatchDetailViewModel(MatchId(anyMatch().id.value), broken, matches, FakeContentRepository(), TimeZone.of("Asia/Seoul"), computation = SameThread)
 

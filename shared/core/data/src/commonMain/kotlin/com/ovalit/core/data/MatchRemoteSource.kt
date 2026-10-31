@@ -5,6 +5,8 @@ import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.MatchListEntry
 import com.ovalit.core.model.OvalitError
 import com.ovalit.core.model.OvalitException
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 
 /**
  * 내 경기를 주는 서버입니다.
@@ -19,6 +21,35 @@ interface MatchRemoteSource {
     /** 내 경기 ID 목록입니다. 순서는 상관없고 커스텀 게임도 거르지 않고 줍니다. */
     suspend fun matchList(): List<MatchListEntry>
 
-    /** 경기 상세입니다. 상세를 보고서야 커스텀 게임인 걸 알았거나 Riot에 없는 경기면 `null`입니다. */
-    suspend fun match(id: MatchId): Match?
+    /** 경기 상세입니다. 저장할 경기가 아니면 왜 아닌지 돌려줍니다. */
+    suspend fun match(id: MatchId): MatchDetail
 }
+
+/**
+ * 경기 상세를 받아 본 결과입니다.
+ * 저장하지 않을 경기도 저장소가 기억해 두고 다시 요청하지 않습니다([MatchStore.skipped]).
+ * 기억하지 않으면 새 경기를 확인할 때마다 8주 동안 같은 경기를 다시 받아 앱 전체의 Riot 몫을 씁니다.
+ */
+sealed interface MatchDetail {
+
+    data class Found(val match: Match) : MatchDetail
+
+    /**
+     * 상세를 보고서야 커스텀 게임인 걸 알았거나 Riot에 없거나 내가 뛰지 않은 경기입니다.
+     * 다시 받아도 같아서 다시 요청하지 않습니다.
+     */
+    data object Skipped : MatchDetail
+
+    /**
+     * 아직 끝나지 않은 경기(`isCompleted`가 `false`)입니다.
+     * 끝나면 결과가 생기니 [UNFINISHED_RECHECK_AFTER]가 지나면 한 번만 더 받아 봅니다.
+     * 그때도 끝나지 않았으면 다시 요청하지 않습니다.
+     */
+    data object Unfinished : MatchDetail
+}
+
+/**
+ * 끝나지 않은 경기를 다시 받아 보기까지 기다리는 시간입니다.
+ * 한 판이 한 시간을 넘기는 일이 드물어 정한 시작 기준선입니다.
+ */
+val UNFINISHED_RECHECK_AFTER: Duration = 1.hours

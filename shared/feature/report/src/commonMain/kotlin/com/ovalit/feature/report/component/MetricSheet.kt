@@ -18,6 +18,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
@@ -41,6 +43,7 @@ import com.ovalit.core.ui.withThousands
 import com.ovalit.feature.report.format
 import com.ovalit.feature.report.label
 import com.ovalit.feature.report.resources.Res
+import com.ovalit.feature.report.resources.dynamic_usual
 import com.ovalit.feature.report.resources.period_label_matches
 import com.ovalit.feature.report.resources.sheet_combat_score_body
 import com.ovalit.feature.report.resources.sheet_combat_score_formula
@@ -50,26 +53,25 @@ import com.ovalit.feature.report.resources.sheet_damage_formula
 import com.ovalit.feature.report.resources.sheet_damage_name
 import com.ovalit.feature.report.resources.sheet_headshot_body
 import com.ovalit.feature.report.resources.sheet_headshot_formula
-import com.ovalit.feature.report.resources.sheet_headshot_note
 import com.ovalit.feature.report.resources.sheet_headshot_name
+import com.ovalit.feature.report.resources.sheet_headshot_note
 import com.ovalit.feature.report.resources.sheet_kd_body
 import com.ovalit.feature.report.resources.sheet_kd_formula
-import com.ovalit.feature.report.resources.sheet_kd_note
 import com.ovalit.feature.report.resources.sheet_kd_no_deaths
+import com.ovalit.feature.report.resources.sheet_kd_note
 import com.ovalit.feature.report.resources.sheet_kda_body
 import com.ovalit.feature.report.resources.sheet_kda_formula
-import com.ovalit.feature.report.resources.sheet_kda_note
 import com.ovalit.feature.report.resources.sheet_kda_no_deaths
+import com.ovalit.feature.report.resources.sheet_kda_note
 import com.ovalit.feature.report.resources.sheet_method_title
 import com.ovalit.feature.report.resources.sheet_per_match_kd
 import com.ovalit.feature.report.resources.sheet_per_match_kda
 import com.ovalit.feature.report.resources.sheet_sample_rounds
-import com.ovalit.feature.report.resources.trend_week_empty
-import com.ovalit.feature.report.resources.dynamic_usual
 import com.ovalit.feature.report.resources.sheet_usual_missing
 import com.ovalit.feature.report.resources.sheet_usual_range
 import com.ovalit.feature.report.resources.sheet_usual_same
 import com.ovalit.feature.report.resources.sheet_usual_title
+import com.ovalit.feature.report.resources.trend_week_empty
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -111,7 +113,9 @@ internal fun MetricSheetBody(metric: FixedMetric, report: WeeklyReport.Ready, mo
         Spacer(Modifier.height(18.dp))
         HorizontalLine()
         Spacer(Modifier.height(18.dp))
-        MethodSection(metric, report.metrics)
+        // 막대를 고르면 맨 위 숫자처럼 계산식도 그 주 합계로 바꾼다.
+        // 경기가 없는 주는 계산식 없이 둔다.
+        MethodSection(metric, selected.let { week -> if (week == null) report.metrics else report.trend.getOrNull(week)?.metrics })
     }
 }
 
@@ -231,6 +235,14 @@ private fun CurrentValue(metric: FixedMetric, report: WeeklyReport.Ready, select
 @Composable
 private fun TrendBars(metric: FixedMetric, report: WeeklyReport.Ready, selected: Int?, onSelect: (Int?) -> Unit) {
     val baseline = report.baseline?.let { metric.value(it.metrics) }
+    val baselineLabel = baseline?.let { stringResource(Res.string.dynamic_usual, metric.format.valueText(it)) }
+    // 가로선 끝 글이 막대 오른쪽 자리를 차지해서 축 글자도 그만큼 비켜 마지막 막대 밑에 둔다
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val caption = OvalitTheme.typography.caption
+    val labelSpace = baselineLabel?.let {
+        with(density) { measurer.measure(it, caption, maxLines = 1).size.width.toDp() } + BaselineLabelGap
+    } ?: 0.dp
     Column {
         TrendBarRow(
             metric = metric,
@@ -239,10 +251,10 @@ private fun TrendBars(metric: FixedMetric, report: WeeklyReport.Ready, selected:
             selected = selected,
             onSelect = onSelect,
             baseline = baseline,
-            baselineLabel = baseline?.let { stringResource(Res.string.dynamic_usual, metric.format.valueText(it)) },
+            baselineLabel = baselineLabel,
         )
         Spacer(Modifier.height(OvalitSpacing.sm))
-        TrendAxis(report)
+        TrendAxis(report, Modifier.padding(end = labelSpace))
         TrendNotes(report)
     }
 }
@@ -265,9 +277,9 @@ private fun UsualRangeSection(metric: FixedMetric, report: WeeklyReport.Ready) {
 }
 
 @Composable
-private fun MethodSection(metric: FixedMetric, metrics: MatchMetrics) {
-    val current = metric.value(metrics)
-    val formula = current?.let {
+private fun MethodSection(metric: FixedMetric, metrics: MatchMetrics?) {
+    val current = metrics?.let { metric.value(it) }
+    val formula = if (metrics == null) null else current?.let {
         val result = metric.format.valueText(it)
         when (metric) {
             FixedMetric.COMBAT_SCORE -> stringResource(

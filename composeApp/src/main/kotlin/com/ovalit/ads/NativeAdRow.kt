@@ -39,6 +39,7 @@ import androidx.core.graphics.drawable.toBitmap
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdView
 import com.ovalit.R
+import com.ovalit.core.designsystem.component.OvalitSideOrBelow
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.icon.OvalitIcons
@@ -47,10 +48,14 @@ import com.ovalit.core.designsystem.theme.OvalitTheme
 
 /**
  * 네이티브 광고 한 줄입니다.
- * 제목 밑 줄 맨 앞에 "광고"를 적어 경기 기록과 헷갈리지 않게 합니다.
+ * 제목 밑에 "광고"를 적어 경기 기록과 헷갈리지 않게 합니다.
  *
  * AdMob은 광고 요소마다 안드로이드 뷰를 등록해야 눌림을 셉니다.
  * 바탕까지 눌리게 하면 정책 위반이라 요소마다 따로 등록합니다.
+ *
+ * AdMob은 제목의 앞 25자(한국어는 그 절반)는 자르지 말라고 합니다.
+ * 한 줄로 자르면 384dp 폰에서 한국어 열 자 안팎만 남아서 제목은 두 줄까지 두고 본문과 광고주는 띄우지 않습니다.
+ * 본문과 광고주는 꼭 보여야 하는 요소가 아닙니다.
  */
 @Composable
 internal fun NativeAdRow(ad: NativeAd, verticalPadding: Dp, horizontalPadding: Dp, onClose: () -> Unit) {
@@ -59,11 +64,12 @@ internal fun NativeAdRow(ad: NativeAd, verticalPadding: Dp, horizontalPadding: D
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                // ×의 눌리는 영역(36dp) 안쪽 여백만큼 오른쪽을 덜 띄워 × 그림의 오른쪽 끝이 다른 줄의 스코어 끝선에 맞는다
+                // ×의 눌리는 영역 안쪽 여백만큼 오른쪽을 덜 띄워 × 그림의 오른쪽 끝이 다른 줄의 스코어 끝선에 맞는다
                 .padding(start = horizontalPadding, end = horizontalPadding - CloseInset, top = verticalPadding, bottom = verticalPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            ad.icon?.drawable?.let { drawable ->
+            // 크기를 모르는 아이콘은 toBitmap()이 예외를 던져서 두지 않는다
+            ad.icon?.drawable?.takeIf { it.intrinsicWidth > 0 && it.intrinsicHeight > 0 }?.let { drawable ->
                 val bitmap = remember(drawable) { drawable.toBitmap().asImageBitmap() }
                 AdAsset(adView, register = { iconView = it }) {
                     Image(
@@ -75,75 +81,94 @@ internal fun NativeAdRow(ad: NativeAd, verticalPadding: Dp, horizontalPadding: D
                 }
                 Spacer(Modifier.width(13.dp))
             }
-            Column(modifier = Modifier.weight(1f)) {
-                AdAsset(adView, register = { headlineView = it }) {
-                    // 경기 줄 이름처럼 Medium이다(docs/design.md 굵기 표)
-                    OvalitText(
-                        text = ad.headline.orEmpty(),
-                        style = OvalitTheme.typography.body.copy(fontWeight = FontWeight.Medium),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                Spacer(Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    AdLabel()
-                    val line = ad.advertiser ?: ad.body
-                    if (line != null) {
-                        Spacer(Modifier.width(6.dp))
-                        AdAsset(
-                            adView = adView,
-                            register = { if (ad.advertiser != null) advertiserView = it else bodyView = it },
-                            modifier = Modifier.weight(1f, fill = false),
-                        ) {
-                            OvalitText(
-                                text = line,
-                                style = OvalitTheme.typography.caption,
-                                color = colors.t3,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                    }
-                }
-            }
-            ad.callToAction?.let { action ->
-                Spacer(Modifier.width(OvalitSpacing.sm))
-                AdAsset(adView, register = { callToActionView = it }) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(colors.fill)
-                            .padding(horizontal = 12.dp, vertical = 7.dp),
-                    ) {
-                        OvalitText(
-                            text = action,
-                            style = OvalitTheme.typography.label.copy(fontWeight = FontWeight.SemiBold),
-                            maxLines = 1,
-                        )
-                    }
-                }
-            }
-            // 광고 요소로 등록하지 않아서 ×를 눌러도 광고가 열리지 않는다
-            Spacer(Modifier.width(2.dp))
-            Box(
-                modifier = Modifier
-                    .size(CloseTouch)
-                    .clickable(role = Role.Button, onClick = onClose),
-                contentAlignment = Alignment.Center,
-            ) {
-                OvalitIcon(OvalitIcons.Close, contentDescription = stringResource(R.string.ad_close), tint = colors.t3, size = CloseIcon)
-            }
+            AdText(ad, adView, Modifier.weight(1f))
+            AdCloseButton(onClose)
         }
     }
 }
 
-private val CloseTouch = 36.dp
+/**
+ * 제목과 "광고" 표시, 그 옆의 광고 버튼입니다.
+ * 큰 글꼴에서 버튼이 줄의 절반을 넘으면 "광고" 밑으로 내립니다.
+ * 옆에 두면 제목이 한 자씩 꺾여 25자를 보여야 한다는 AdMob 규칙도 못 지킵니다.
+ */
+@Composable
+internal fun AdText(ad: NativeAd, adView: NativeAdView, modifier: Modifier = Modifier) {
+    OvalitSideOrBelow(
+        start = {
+            Column {
+                AdHeadline(ad, adView)
+                Spacer(Modifier.height(4.dp))
+                AdLabel()
+            }
+        },
+        end = { AdCallToAction(ad, adView) },
+        modifier = modifier,
+        gap = OvalitSpacing.sm,
+        belowGap = OvalitSpacing.sm,
+    )
+}
+
+/** 광고 제목입니다. 경기 줄 이름처럼 Medium이고 두 줄까지 둡니다. */
+@Composable
+internal fun AdHeadline(ad: NativeAd, adView: NativeAdView) {
+    AdAsset(adView, register = { headlineView = it }) {
+        OvalitText(
+            text = ad.headline.orEmpty(),
+            style = OvalitTheme.typography.body.copy(fontWeight = FontWeight.Medium),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+/** 광고 버튼("설치하기")입니다. 광고에 없으면 두지 않습니다. */
+@Composable
+internal fun AdCallToAction(ad: NativeAd, adView: NativeAdView) {
+    val action = ad.callToAction ?: return
+    AdAsset(adView, register = { callToActionView = it }) {
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .background(OvalitTheme.colors.fill)
+                .padding(horizontal = 12.dp, vertical = 7.dp),
+        ) {
+            OvalitText(
+                text = action,
+                style = OvalitTheme.typography.label.copy(fontWeight = FontWeight.SemiBold),
+                maxLines = 1,
+            )
+        }
+    }
+}
+
+// 광고 요소로 등록하지 않아서 ×를 눌러도 광고가 열리지 않는다.
+// 광고 버튼과 붙어 있으면 ×를 노리다 광고를 누르기 쉬워서 8dp 띄운다(AdMob 정책은 닫기와 광고 요소가 겹치면 무효 클릭으로 본다).
+@Composable
+internal fun AdCloseButton(onClose: () -> Unit, modifier: Modifier = Modifier) {
+    Spacer(Modifier.width(OvalitSpacing.sm))
+    Box(
+        modifier = modifier
+            .size(CloseTouch)
+            .clickable(role = Role.Button, onClick = onClose),
+        contentAlignment = Alignment.Center,
+    ) {
+        OvalitIcon(OvalitIcons.Close, contentDescription = stringResource(R.string.ad_close), tint = OvalitTheme.colors.t3, size = CloseIcon)
+    }
+}
+
+// 안드로이드 눌림 영역 기준(48dp)이다
+internal val CloseTouch = 48.dp
 private val CloseIcon = 16.dp
-private val CloseInset = (CloseTouch - CloseIcon) / 2
+
+/**
+ * × 그림 바깥의 눌림 여백입니다.
+ * 광고 오른쪽 여백을 이만큼 덜 띄워 × 그림 끝을 다른 줄 끝선에 맞춥니다.
+ */
+internal val CloseInset = (CloseTouch - CloseIcon) / 2
 
 @Composable
-private fun AdLabel() {
+internal fun AdLabel() {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(5.dp))
@@ -164,7 +189,7 @@ private fun AdLabel() {
  * 요소가 모두 등록된 뒤에 광고를 붙여야 눌림이 이어져서 안쪽이 두 프레임 그려진 뒤에 붙입니다.
  */
 @Composable
-private fun NativeAdFrame(ad: NativeAd, content: @Composable (NativeAdView) -> Unit) {
+internal fun NativeAdFrame(ad: NativeAd, content: @Composable (NativeAdView) -> Unit) {
     val context = LocalContext.current
     val adView = remember { NativeAdView(context) }
     AndroidView(
@@ -188,7 +213,7 @@ private fun NativeAdFrame(ad: NativeAd, content: @Composable (NativeAdView) -> U
 
 /** 광고 요소 하나를 안드로이드 뷰로 감싸 [register]로 [NativeAdView]에 등록합니다. */
 @Composable
-private fun AdAsset(
+internal fun AdAsset(
     adView: NativeAdView,
     register: NativeAdView.(View) -> Unit,
     modifier: Modifier = Modifier,

@@ -180,7 +180,8 @@ private fun WeaponsContent(uiState: RecordsUiState, onBack: () -> Unit) {
 }
 
 private val HighlightColumn = 54.dp
-private val HighlightThumbWidth = 48.dp
+// 밑 계열 표의 그림 칸(44dp)과 같아 무기 이름 시작선이 맞는다
+private val HighlightThumbWidth = 44.dp
 
 private val WeaponMetric.fixed: FixedMetric
     get() = when (this) {
@@ -227,11 +228,12 @@ private fun Highlights(report: WeaponReport, catalog: ContentCatalog) {
             OvalitText(
                 text = stringResource(Res.string.weapons_top_title),
                 modifier = Modifier.weight(1f),
-                style = typography.bodyStrong,
+                // 묶음 제목은 다른 화면처럼 cardTitle(17 Bold)이고 내용과 16dp를 둔다
+                style = typography.cardTitle,
             )
             OvalitText(text = stringResource(Res.string.weapons_top_order), style = typography.caption, color = colors.t3)
         }
-        Spacer(Modifier.height(OvalitSpacing.md))
+        Spacer(Modifier.height(OvalitSpacing.lg))
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             // 칸마다 따로 줄이면 자릿수가 많은 칸만 작아진다.
             // 표 전체가 같은 크기를 쓰고 옆 칸과 붙지 않게 폭을 조금 남긴다.
@@ -451,7 +453,7 @@ private fun Categories(report: WeaponReport, catalog: ContentCatalog) {
         OvalitText(
             text = stringResource(Res.string.weapons_by_category),
             modifier = Modifier.weight(1f),
-            style = OvalitTheme.typography.bodyStrong,
+            style = OvalitTheme.typography.cardTitle,
         )
         OvalitText(
             text = stringResource(Res.string.weapons_kills, report.kills.withThousands()),
@@ -548,7 +550,8 @@ private fun CategoryRow(
             autoSize = shrinkToFit(OvalitTheme.typography.metricS.fontSize),
         )
         Spacer(Modifier.width(OvalitSpacing.sm))
-        OvalitDisclosureIcon(expanded = expanded)
+        // 그 자리에서 펼치는 줄이라 S3처럼 아래 화살표다(오른쪽 화살표는 다른 화면으로 가는 줄)
+        OvalitDisclosureIcon(expanded = expanded, pointsDown = true)
     }
 }
 

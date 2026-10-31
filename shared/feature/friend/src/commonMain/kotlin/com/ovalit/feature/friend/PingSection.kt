@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
 import com.ovalit.core.designsystem.component.OvalitCard
+import com.ovalit.core.designsystem.component.OvalitCardVerticalPadding
 import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitPickerTitle
 import com.ovalit.core.designsystem.component.OvalitPressOutset
@@ -111,7 +112,8 @@ import kotlinx.datetime.TimeZone
 import org.jetbrains.compose.resources.stringResource
 
 private val StackOverlap = 8.dp
-private val RowAvatarSize = 36.dp
+// 친구 탭의 요청·친구 줄과 같은 크기라 이름 시작선이 맞는다
+private val RowAvatarSize = 40.dp
 private val PickAvatarSize = 52.dp
 // 고르는 칸 사이 간격의 절반이다
 private val PickPressOutset = 6.dp
@@ -119,7 +121,8 @@ private val BadgeSize = 15.dp
 private val BarShape = RoundedCornerShape(12.dp)
 private val BarItemShape = RoundedCornerShape(9.dp)
 private val BarInset = 3.dp
-private val BarItemHeight = 40.dp
+// 안드로이드 눌림 영역 기준(48dp)이다
+private val BarItemHeight = 48.dp
 
 /**
  * 친구 탭 맨 위의 "오발있?" 카드입니다.
@@ -139,7 +142,9 @@ internal fun PingListCard(
     onOpen: (Ping) -> Unit,
     onCompose: () -> Unit,
 ) {
-    OvalitCard {
+    // 줄마다 위아래 여백이 있어 카드 아래 여백은 줄인다.
+    // 안 줄이면 위(제목 위 20dp)보다 아래가 14dp 넓어 보인다.
+    OvalitCard(bottomPadding = if (pings.isEmpty()) OvalitCardVerticalPadding else OvalitSpacing.sm) {
         // "오발있?"은 앱 이름이라 무슨 기능인지 버튼의 "파티 모집"이 알려 준다.
         // 제목 옆에 같은 말을 또 붙이지 않는다.
         val title = @Composable {
@@ -163,7 +168,8 @@ internal fun PingListCard(
                 color = OvalitTheme.colors.t3,
             )
         } else {
-            Spacer(Modifier.height(OvalitSpacing.xs))
+            // 첫 줄의 위 여백(8dp)과 합쳐 제목과 내용 사이가 다른 카드처럼 16dp다
+            Spacer(Modifier.height(OvalitSpacing.sm))
             pings.forEachIndexed { index, ping ->
                 key(ping.id.value) {
                     if (index > 0) {
@@ -290,8 +296,9 @@ internal fun PingInviteSheet(friends: List<Friend>, seats: Int, onInvite: (List<
 }
 
 // 친구 한 사람의 답이다.
-// 강조는 색이 아니라 밝기로 한다.
-// 참석이 가장 밝고 응답 전이 가장 옅다.
+// 강조는 색이 아니라 밝기와 굵기로 한다.
+// 참석이 가장 밝고 굵으며 못 가요와 응답 전은 --t3 보통 굵기다.
+// 응답 전도 읽어야 하는 글자라 --t4(2.2:1)로 두지 않는다.
 @Composable
 internal fun MemberLine(member: PingMember, now: Instant, timeZone: TimeZone, isMe: Boolean = false) {
     val colors = OvalitTheme.colors
@@ -299,7 +306,7 @@ internal fun MemberLine(member: PingMember, now: Instant, timeZone: TimeZone, is
         PingAnswer.YES -> colors.t1 to FontWeight.SemiBold
         PingAnswer.OTHER_TIME -> colors.t2 to FontWeight.Medium
         PingAnswer.NO -> colors.t3 to FontWeight.Normal
-        PingAnswer.PENDING -> colors.t4 to FontWeight.Normal
+        PingAnswer.PENDING -> colors.t3 to FontWeight.Normal
     }
     Row(
         modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).semantics(mergeDescendants = true) {},
@@ -366,6 +373,8 @@ private fun StatusAvatar(member: PingMember, size: Dp, modifier: Modifier = Modi
 /**
  * 갈게요, 다른 시간, 못 가요를 한 덩어리로 둔 버튼입니다.
  * 고른 답은 액센트 면입니다.
+ * 아직 답하지 않았으면 가장 흔한 답인 갈게요를 액센트 면으로 먼저 보입니다(사용자 결정).
+ * 고른 것처럼 보이는 건 면뿐이고 화면 읽기 프로그램에는 고르지 않은 것으로 읽힙니다.
  * 다른 시간을 골랐으면 그 칸에 낸 시각을 적습니다("15:00 제안").
  */
 @Composable
@@ -377,7 +386,13 @@ internal fun AnswerBar(
     onNo: () -> Unit,
 ) {
     Row(modifier = barModifier().selectableGroup()) {
-        BarItem(stringResource(Res.string.ping_reply_yes), selected = answer == PingAnswer.YES, onClick = onYes, modifier = Modifier.weight(1f))
+        BarItem(
+            stringResource(Res.string.ping_reply_yes),
+            selected = answer == PingAnswer.YES,
+            onClick = onYes,
+            modifier = Modifier.weight(1f),
+            emphasized = answer == PingAnswer.PENDING,
+        )
         BarItem(
             otherLabel?.let { stringResource(CoreUiRes.string.ping_answer_other, it) } ?: stringResource(Res.string.ping_reply_other),
             selected = answer == PingAnswer.OTHER_TIME,
@@ -424,7 +439,10 @@ internal fun ActionBar(vararg items: Pair<String, () -> Unit>) {
 private fun barModifier(): Modifier =
     Modifier.fillMaxWidth().clip(BarShape).background(OvalitTheme.colors.fill).padding(BarInset)
 
-/** @param selected 고르는 버튼이면 고른지 아닌지, 누르기만 하는 버튼이면 `null`입니다. */
+/**
+ * @param selected 고르는 버튼이면 고른지 아닌지, 누르기만 하는 버튼이면 `null`입니다.
+ * @param emphasized 고르지 않았어도 액센트 면으로 그립니다.
+ */
 @Composable
 private fun BarItem(
     text: String,
@@ -432,9 +450,10 @@ private fun BarItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     horizontalPadding: Dp = 0.dp,
+    emphasized: Boolean = false,
 ) {
     val colors = OvalitTheme.colors
-    val on = selected == true
+    val on = selected == true || emphasized
     val press = pressIndication(BarItemShape, if (on) colors.onAccent else colors.t2)
     Box(
         modifier = modifier
@@ -443,7 +462,7 @@ private fun BarItem(
                 if (selected == null) {
                     Modifier.clickable(interactionSource = null, indication = press, role = Role.Button, onClick = onClick)
                 } else {
-                    Modifier.selectable(selected = on, interactionSource = null, indication = press, role = Role.RadioButton, onClick = onClick)
+                    Modifier.selectable(selected = selected, interactionSource = null, indication = press, role = Role.RadioButton, onClick = onClick)
                 },
             )
             .clip(BarItemShape)
@@ -484,6 +503,9 @@ internal fun PingComposeSheet(
     // 휠 맨 위가 "지금"이고 그 밑이 [slots]다
     var slotIndex by remember { mutableStateOf(0) }
     val startsAt = slots.getOrNull(slotIndex - 1)
+    // 시트를 오래 열어 두면 고른 시각이 지나 버린다.
+    // 서버는 1분 넘게 지난 시각을 받지 않아서 지난 칸은 흐리게 막는다.
+    val passed = startsAt != null && startsAt <= now
 
     OvalitBottomSheet(
         title = stringResource(Res.string.ping_compose_title),
@@ -509,6 +531,7 @@ internal fun PingComposeSheet(
             items = listOf(stringResource(CoreUiRes.string.ping_time_now)) + slots.map { pingClockText(it, now, timeZone) },
             selected = slotIndex,
             onSelect = { slotIndex = it },
+            enabled = { it == 0 || slots[it - 1] > now },
         )
         Spacer(Modifier.height(OvalitSpacing.xl))
         if (tooMany) {
@@ -520,12 +543,12 @@ internal fun PingComposeSheet(
             )
         }
         OvalitPrimaryButton(
-            text = if (picked.isEmpty()) {
-                stringResource(Res.string.ping_pick_friends)
-            } else {
-                stringResource(Res.string.ping_send_to, picked.size)
+            text = when {
+                picked.isEmpty() -> stringResource(Res.string.ping_pick_friends)
+                passed -> stringResource(Res.string.ping_time_pick_other)
+                else -> stringResource(Res.string.ping_send_to, picked.size)
             },
-            enabled = picked.isNotEmpty() && !tooMany,
+            enabled = picked.isNotEmpty() && !tooMany && !passed,
             onClick = {
                 haptics.confirm()
                 // "지금"은 시각을 비워 보낸다.
@@ -652,6 +675,9 @@ internal fun PingTimeSheet(
 ) {
     val haptics = rememberOvalitHaptics()
     val blocked = setOfNotNull(current, proposed)
+    // 시트를 오래 열어 두면 지나 버린 칸도 막는다.
+    // 서버는 1분 넘게 지난 시각을 받지 않는다.
+    val pickable = { time: Instant -> time !in blocked && time > now }
     // 정해진 시간이 "지금"으로 잡혀 초가 붙어 있으면 같은 분의 칸과 겹쳐 보인다.
     // 같은 분으로 보이는 칸은 한 번만 띄운다.
     val choices = remember(slots, current, proposed) {
@@ -659,7 +685,7 @@ internal fun PingTimeSheet(
     }
     var index by remember(choices) {
         val start = choices.indexOf(current) + 1
-        mutableStateOf((start until choices.size).firstOrNull { choices[it] !in blocked } ?: choices.indexOfFirst { it !in blocked }.coerceAtLeast(0))
+        mutableStateOf((start until choices.size).firstOrNull { pickable(choices[it]) } ?: choices.indexOfFirst(pickable).coerceAtLeast(0))
     }
     val labels = choices.map { time ->
         val clock = pingClockText(time, now, timeZone)
@@ -669,7 +695,7 @@ internal fun PingTimeSheet(
             else -> clock
         }
     }
-    val picked = choices.getOrNull(index)?.takeIf { it !in blocked }
+    val picked = choices.getOrNull(index)?.takeIf(pickable)
     OvalitBottomSheet(
         title = stringResource(if (moving) Res.string.ping_time_move_title else Res.string.ping_time_reply_title),
         onDismiss = onDismiss,
@@ -678,7 +704,7 @@ internal fun PingTimeSheet(
             items = labels,
             selected = index,
             onSelect = { index = it },
-            enabled = { choices[it] !in blocked },
+            enabled = { pickable(choices[it]) },
         )
         Spacer(Modifier.height(OvalitSpacing.xl))
         OvalitPrimaryButton(

@@ -6,6 +6,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
+private val Vandal = WeaponId("vandal")
+
 class RoundHighlightTest {
 
     private val allies = setOf(Ally, OtherAlly)
@@ -97,6 +99,54 @@ class RoundHighlightTest {
         )
 
         assertNull(round.highlight().clutch)
+    }
+
+    // 세이지가 우리 팀을 살렸으면 나만 남은 게 아니었다
+    @Test
+    fun `죽은 우리 팀이 다시 나오면 되살아난 것이라 클러치가 아니다`() {
+        val revivedAndKilled = round(
+            kill(10.0, Enemy, Ally),
+            kill(20.0, OtherEnemy, OtherAlly),
+            kill(40.0, Ally, Enemy, weapon = Vandal),
+            kill(50.0, Me, OtherEnemy),
+            won = true,
+        )
+        val revivedAndDied = round(
+            kill(10.0, Enemy, Ally),
+            kill(20.0, OtherEnemy, OtherAlly),
+            kill(40.0, Enemy, Ally),
+            won = false,
+        )
+
+        assertNull(revivedAndKilled.highlight().clutch)
+        assertEquals(Clutch(against = 2, won = false), revivedAndDied.highlight().clutch)
+    }
+
+    @Test
+    fun `되살아난 상대도 나만 남은 뒤에 상대한 수로 센다`() {
+        val round = round(
+            kill(10.0, Me, Enemy),
+            kill(15.0, OtherEnemy, Ally),
+            kill(20.0, OtherEnemy, OtherAlly),
+            kill(30.0, Enemy, Me, weapon = Vandal),
+            won = false,
+        )
+
+        assertEquals(Clutch(against = 2, won = false), round.highlight().clutch)
+    }
+
+    // 몰리나 궁극기는 쓴 사람이 죽은 뒤에도 킬을 낸다
+    @Test
+    fun `죽은 우리 팀이 남겨 둔 스킬로 낸 킬은 되살아난 것으로 보지 않는다`() {
+        val round = round(
+            kill(10.0, Enemy, Ally),
+            kill(20.0, OtherEnemy, OtherAlly),
+            kill(22.0, Ally, OtherEnemy),
+            kill(40.0, Me, Enemy),
+            won = true,
+        )
+
+        assertEquals(Clutch(against = 2, won = true), round.highlight().clutch)
     }
 
     @Test

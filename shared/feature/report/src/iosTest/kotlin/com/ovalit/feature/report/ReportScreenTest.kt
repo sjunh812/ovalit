@@ -22,8 +22,8 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
-import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.hasAnySibling
+import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
@@ -87,6 +87,7 @@ import com.ovalit.feature.report.component.DynamicMetricSheetBody
 import com.ovalit.feature.report.component.MetricSheetBody
 import com.ovalit.feature.report.component.TrendSheetBody
 import com.ovalit.feature.report.component.changeColor
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -100,7 +101,7 @@ class ReportScreenTest {
     fun `불러오는 중에는 숫자를 띄우지 않는다`() = runComposeUiTest {
         setContent { OvalitTheme { ReportScreen(ReportUiState.Loading, onSelectQueue = {}) } }
 
-        onNodeWithText("전투점수", substring = true).assertDoesNotExist()
+        onNodeWithText("전투 점수", substring = true).assertDoesNotExist()
     }
 
     // 첫 수집 뒤 홈으로 넘어올 때 리포트가 전환 한가운데 도착한다.
@@ -117,25 +118,25 @@ class ReportScreenTest {
 
         uiState = ReportUiState.Success(QueueFilter.COMPETITIVE_AND_UNRATED, ReportPreviewData.moved)
         waitForIdle()
-        onNodeWithText("전투점수").assertDoesNotExist()
+        onNodeWithText("전투 점수").assertDoesNotExist()
 
         entering = false
         waitForIdle()
-        onNodeWithText("전투점수").assertExists()
+        onNodeWithText("전투 점수").assertExists()
     }
 
     // 달라진 점 칸과 같은 격자다
     @Test
-    fun `고정 지표는 한 줄에 세 칸씩 피해량 K_D KDA 전투점수 헤드샷 순서로 놓는다`() = runComposeUiTest {
+    fun `고정 지표는 한 줄에 세 칸씩 피해량 K_D KDA 전투 점수 헤드샷 순서로 놓는다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        val (damage, kd, kda, combat, headshot) = listOf("피해량", "K/D", "KDA", "전투점수", "헤드샷")
+        val (damage, kd, kda, combat, headshot) = listOf("피해량", "K/D", "KDA", "전투 점수", "헤드샷")
             .map { onNodeWithText(it).getUnclippedBoundsInRoot() }
 
         val first = listOf(damage, kd, kda)
         assertTrue(first.all { it.top == damage.top })
         assertEquals(first.sortedBy { it.left }, first)
-        assertTrue(combat.top >= damage.bottom && headshot.top == combat.top, "전투점수와 헤드샷이 둘째 줄에 없다")
+        assertTrue(combat.top >= damage.bottom && headshot.top == combat.top, "전투 점수와 헤드샷이 둘째 줄에 없다")
         assertEquals(damage.left, combat.left)
         assertEquals(kd.left, headshot.left)
     }
@@ -327,13 +328,90 @@ class ReportScreenTest {
                 val changes = texts.filter { (text, _) -> ChangeText.matches(text) }.map { it.second }
                 val usuals = texts.filter { (text, _) -> text.startsWith("평소 ") }.map { it.second }
                 assertEquals(FixedMetric.entries.size + ReportPreviewData.moved.dynamic.size, usuals.size)
-                val beside = usuals.map { usual ->
-                    changes.any { change -> change.right <= usual.left && change.top < usual.bottom && change.bottom > usual.top }
+                // 칸마다 변화량이 숫자 옆인지, 평소 값 앞인지, 숫자와 평소 값 사이 줄인지 가른다
+                val layouts = usuals.mapNotNull { usual ->
+                    val nextLeft = usuals
+                        .filter { it.top == usual.top && it.left > usual.left }
+                        .minOfOrNull { it.left } ?: Float.MAX_VALUE
+                    val change = changes
+                        .filter { it.left >= usual.left - 1 && it.left < nextLeft && it.top < usual.bottom && it.bottom > usual.top - usual.height * 3 }
+                        .maxByOrNull { it.bottom } ?: return@mapNotNull null
+                    when {
+                        change.top < usual.bottom && change.bottom > usual.top -> "평소 값 앞"
+                        change.left > usual.left + 1 -> "숫자 옆"
+                        else -> "숫자 밑 줄"
+                    }
                 }
-                assertEquals(1, beside.distinct().size, "${width}dp ×$fontScale: 어떤 칸만 변화량이 내려갔다")
+                assertEquals(usuals.size, layouts.size, "${width}dp ×$fontScale: 변화량이 없는 칸이 있다")
+                assertEquals(1, layouts.distinct().size, "${width}dp ×$fontScale: 칸마다 변화량 자리가 다르다 $layouts")
                 assertEquals(1, usuals.map { it.height }.distinct().size, "${width}dp ×$fontScale: 칸마다 글자 크기가 다르다")
             }
         }
+    }
+
+    // 짚을 점이 말한 칸은 숫자를 Bold로 그려 조금 넓다.
+    // SemiBold로 재고 Bold로 그리면 좁은 폰에서 숫자가 자리를 다 가져가 옆 변화량이 잘린다.
+    @Test
+    fun `짚을 점이 말한 칸도 변화량이 잘리지 않는다`() {
+        FixedMetric.entries.forEach { metric ->
+            listOf(360 to 1f, 320 to 1f, 360 to 1.15f).forEach { (width, fontScale) ->
+                runComposeUiTest {
+                    val note = assertNotNull(ReportPreviewData.moved.note)
+                    val report = ReportPreviewData.moved.copy(note = note.copy(moved = assertNotNull(note.moved).copy(metric = metric)))
+                    setContent {
+                        CompositionLocalProvider(LocalDensity provides Density(density = 2f, fontScale = fontScale)) {
+                            Box(Modifier.width(width.dp)) { Report(report) }
+                        }
+                    }
+
+                    val clipped = onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.Text), useUnmergedTree = true)
+                        .fetchSemanticsNodes()
+                        .filter { node -> ChangeText.matches(node.config[SemanticsProperties.Text].joinToString("")) }
+                        .filter { node ->
+                            val layouts = mutableListOf<TextLayoutResult>()
+                            node.config.getOrNull(SemanticsActions.GetTextLayoutResult)?.action?.invoke(layouts)
+                            // 시맨틱으로 받은 결과는 didOverflowWidth가 늘 참이라 글자 본래 폭과 받은 폭을 견준다
+                            layouts.any { it.multiParagraph.intrinsics.maxIntrinsicWidth > it.layoutInput.constraints.maxWidth }
+                        }
+                        .map { it.config[SemanticsProperties.Text].joinToString("") }
+                    assertTrue(clipped.isEmpty(), "$metric ${width}dp ×$fontScale: 잘린 변화량 $clipped")
+                }
+            }
+        }
+    }
+
+    // 세 줄로 나눌 때 변화량이 없는 칸(판단 보류)도 그 줄을 비워 둔다.
+    // 비우지 않거나 실제 글자보다 높게 비우면 그 칸의 평소 값만 옆 칸과 다른 높이에 놓인다.
+    @Test
+    fun `세 줄로 나눠도 변화량이 없는 칸의 평소 값이 옆 칸과 같은 높이다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved.copy(
+            note = null,
+            dynamic = listOf(
+                DynamicSlot(DynamicMetric.FIRST_DUEL_INVOLVEMENT, Movement.MOVED),
+                DynamicSlot(DynamicMetric.SURVIVAL_RATE, Movement.UNKNOWN),
+                DynamicSlot(DynamicMetric.KAST, Movement.STEADY),
+            ),
+        )
+        setContent {
+            CompositionLocalProvider(LocalDensity provides Density(density = 2f, fontScale = 2f)) {
+                Box(Modifier.width(300.dp)) { Report(report) }
+            }
+        }
+
+        val usuals = onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.Text), useUnmergedTree = true)
+            .fetchSemanticsNodes()
+            .filter { node -> node.config[SemanticsProperties.Text].joinToString("").startsWith("평소 ") }
+            .map { node -> node.positionInRoot.y }
+        val changes = onAllNodes(SemanticsMatcher.keyIsDefined(SemanticsProperties.Text), useUnmergedTree = true)
+            .fetchSemanticsNodes()
+            .count { node -> ChangeText.matches(node.config[SemanticsProperties.Text].joinToString("")) }
+        assertEquals(usuals.size - 1, changes, "판단을 보류한 칸에도 변화량이 떴다")
+        // 고정 칸 두 줄과 달라진 점 한 줄이라 평소 값은 세 높이에만 놓인다
+        val rows = usuals.sorted().fold(mutableListOf<Float>()) { tops, top ->
+            if (tops.none { abs(it - top) < 1f }) tops += top
+            tops
+        }
+        assertEquals(3, rows.size, "평소 값 높이가 $rows")
     }
 
     // 평소 범위 안의 변화를 회색으로 두면 증감이 아니라 그냥 글자처럼 읽힌다(CLAUDE.md 변화량과 색)
@@ -379,7 +457,7 @@ class ReportScreenTest {
     fun `기타 모드는 K_D 헤드샷 KDA 세 칸을 둔다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.otherQueue, QueueFilter.OTHER) }
 
-        onNodeWithText("전투점수", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("전투 점수", useUnmergedTree = true).assertDoesNotExist()
         onNodeWithText("KDA", useUnmergedTree = true).assertExists()
     }
 
@@ -496,7 +574,7 @@ class ReportScreenTest {
     fun `고정 칸은 모든 칸 폭이 같다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        val widths = listOf("전투점수", "K/D", "피해량", "헤드샷", "KDA").map { onNodeWithText(it).getBoundsInRoot().let { bounds -> bounds.right - bounds.left } }
+        val widths = listOf("전투 점수", "K/D", "피해량", "헤드샷", "KDA").map { onNodeWithText(it).getBoundsInRoot().let { bounds -> bounds.right - bounds.left } }
 
         // 남는 픽셀 하나는 어느 칸엔가 붙는다
         assertTrue(widths.max() - widths.min() <= 1.dp, "$widths")
@@ -636,7 +714,7 @@ class ReportScreenTest {
 
         onNodeWithText("K/D").assertExists()
         onNodeWithText("헤드샷").assertExists()
-        onNodeWithText("전투점수").assertDoesNotExist()
+        onNodeWithText("전투 점수").assertDoesNotExist()
         onNodeWithText("피해량").assertDoesNotExist()
     }
 
@@ -940,7 +1018,7 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
 
         onNodeWithText("공격에서 멀티킬 라운드 비율이 수비보다 25% 높아요.").assertExists()
-        onNode(actLine("공격" to "30%", "수비" to "5%", "80라운드")).assertExists()
+        assertActLine("공격" to "30%", "수비" to "5%", "80라운드")
         onNodeWithText("에임 올리기를 고르셔서 먼저 봤어요.").assertExists()
     }
 
@@ -957,7 +1035,7 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
 
         onNodeWithText("제트로 뛴 판은 생존율이 레이즈보다 25% 높아요.").assertExists()
-        onNode(actLine("제트" to "75%", "레이즈" to "50%", "15판")).assertExists()
+        assertActLine("제트" to "75%", "레이즈" to "50%", "15판")
     }
 
     @Test
@@ -1008,8 +1086,8 @@ class ReportScreenTest {
         )
         setContent { Report(ReportPreviewData.moved.copy(insight = insight)) }
 
-        onNodeWithText("연달아 뛴 세 번째 판부터는 관여율이 첫 두 판보다 12% 낮아요.").assertExists()
-        onNode(actLine("세 번째 판부터" to "61%", "첫 두 판" to "73%", "50판")).assertExists()
+        onNodeWithText("연달아 뛸 때 세 번째 판부터는 관여율이 첫 두 판보다 12% 낮아요.").assertExists()
+        assertActLine("세 번째 판부터" to "61%", "첫 두 판" to "73%", "50판")
         onNodeWithText(recentLine("이번 주", "세 번째 판부터" to "55%", "첫 두 판" to "70%", "14판")).assertExists()
         onNodeWithText("쉬", substring = true, useUnmergedTree = true).assertDoesNotExist()
     }
@@ -1039,10 +1117,10 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = insight), catalog = NamedCatalog) }
 
         onNodeWithText("헤이븐에서는 관여율이 다른 맵보다 14% 낮아요.").assertExists()
-        onNode(actLine("헤이븐" to "58%", "다른 맵" to "72%", "50판")).assertExists()
+        assertActLine("헤이븐" to "58%", "다른 맵" to "72%", "50판")
         insight = rifles
         onNodeWithText("밴달을 든 라운드는 헤드샷이 다른 소총보다 11% 낮아요.").assertExists()
-        onNode(actLine("밴달" to "14%", "다른 소총" to "25%", "392라운드")).assertExists()
+        assertActLine("밴달" to "14%", "다른 소총" to "25%", "392라운드")
         insight = twoRifles
         onNodeWithText("팬텀을 든 라운드는 헤드샷이 밴달보다 11% 높아요.").assertExists()
     }
@@ -1139,7 +1217,7 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved.copy(insight = damage)) }
 
         onNodeWithText("공격에서 피해량이 수비보다 22 높아요.").assertExists()
-        onNode(actLine("공격" to "143", "수비" to "121", "146라운드")).assertExists()
+        assertActLine("공격" to "143", "수비" to "121", "146라운드")
     }
 
     // 무기 값도 보이는 자릿수로 같으면 "140 → 140"이 돼서 무기 줄을 두지 않는다
@@ -1219,7 +1297,8 @@ class ReportScreenTest {
         val weapons = onNodeWithText("이번 주 무기", useUnmergedTree = true).getUnclippedBoundsInRoot()
         val title = onNodeWithText("이번 액트 돌아보기").getUnclippedBoundsInRoot()
         val headline = onNodeWithText("공격에서 첫 교전 승률이 수비보다 14% 높아요.").getUnclippedBoundsInRoot()
-        onNodeWithText("33경기", useUnmergedTree = true).assertExists()
+        // 라운드로 견줬으면 표본을 제목 옆 경기 수와 한 줄에 둔다
+        onNodeWithText("33경기 · 776라운드", useUnmergedTree = true).assertExists()
         assertTrue(dynamic.bottom <= agents.top && agents.bottom <= weapons.top && weapons.bottom <= title.top && title.bottom <= headline.top)
     }
 
@@ -1229,7 +1308,7 @@ class ReportScreenTest {
     fun `홈 광고는 이번 주 카드와 달라진 점 사이에 둔다`() = runComposeUiTest {
         setContent { CompositionLocalProvider(LocalAdRenderer provides LabelAds) { Report(ReportPreviewData.moved) } }
 
-        val fixed = onNodeWithText("전투점수", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val fixed = onNodeWithText("전투 점수", useUnmergedTree = true).getUnclippedBoundsInRoot()
         val trend = onNodeWithText("지난 8주 흐름 한눈에 보기", substring = true, useUnmergedTree = true).getUnclippedBoundsInRoot()
         val ad = onNodeWithText("광고 HOME", useUnmergedTree = true).getUnclippedBoundsInRoot()
         val dynamic = onNodeWithText("달라진 점", useUnmergedTree = true).getUnclippedBoundsInRoot()
@@ -1242,8 +1321,8 @@ class ReportScreenTest {
         setContent { Report(ReportPreviewData.moved) }
 
         onNodeWithText("공격에서 첫 교전 승률이 수비보다 14% 높아요.").assertExists()
-        onNode(actLine("공격" to "58%", "수비" to "44%", "776라운드")).assertExists()
-        onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요.").assertExists()
+        assertActLine("공격" to "58%", "수비" to "44%", "776라운드")
+        onNodeWithText("타격대는 첫 교전 승률부터 봐요.").assertExists()
     }
 
     // 제목과 문장이 이번 액트 이야기라 액트 줄이 먼저다.
@@ -1252,9 +1331,9 @@ class ReportScreenTest {
     fun `개선 포인트는 액트 줄 밑에 이번 주를 참고로 붙인다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        val act = onNode(actLine("공격" to "58%", "수비" to "44%", "776라운드")).getUnclippedBoundsInRoot()
+        val act = onNodeWithText(insightValues("공격" to "58%", "수비" to "44%")).getUnclippedBoundsInRoot()
         val recent = onNodeWithText(recentLine("이번 주", "공격" to "71%", "수비" to "45%", "138라운드")).getUnclippedBoundsInRoot()
-        val reason = onNodeWithText("타격대에게 첫 교전 승률은 먼저 보는 지표예요.").getUnclippedBoundsInRoot()
+        val reason = onNodeWithText("타격대는 첫 교전 승률부터 봐요.").getUnclippedBoundsInRoot()
         assertTrue(act.bottom <= recent.top && recent.bottom <= reason.top)
     }
 
@@ -1279,7 +1358,7 @@ class ReportScreenTest {
         val report = ReportPreviewData.moved.let { it.copy(insight = it.insight?.copy(isRolePriority = false)) }
         setContent { Report(report) }
 
-        onNodeWithText("먼저 보는 지표예요", substring = true).assertDoesNotExist()
+        onNodeWithText("부터 봐요.", substring = true).assertDoesNotExist()
     }
 
     // 관심사로 골라 앞에 둔 지표면 역할이 아니라 관심사로 까닭을 말한다
@@ -1323,7 +1402,7 @@ class ReportScreenTest {
 
     // 화면에 보이는 자릿수로 겨룬다.
     // 나는 K/D 1.34, 피해량 138, 헤드샷 21%다.
-    // 전투점수는 같아서 앞서지 않는다.
+    // 전투 점수는 같아서 앞서지 않는다.
     @Test
     fun `라이벌 칸은 홈 고정 칸 다섯 지표 중 앞선 개수를 센다`() = runComposeUiTest {
         val rival = ReportPreviewData.moved.metrics.let { it.copy(kills = 100, damage = 21_000, shots = it.shots.copy(head = 60)) }
@@ -1522,7 +1601,7 @@ class ReportScreenTest {
         setContent { OvalitTheme { ReportScreen(ReportUiState.Loading, onSelectQueue = {}) } }
 
         onNodeWithContentDescription("리포트를 불러오고 있어요").assertExists()
-        onNodeWithText("전투점수").assertDoesNotExist()
+        onNodeWithText("전투 점수").assertDoesNotExist()
     }
 }
 
@@ -1564,8 +1643,11 @@ private val NamedCatalog = ContentCatalog.Empty.copy(
 // 개선 포인트 밑 줄은 기간 이름(액트 줄은 제목에 있어 없음) 뒤에 두 쪽을 (이름, 값, 표본)으로 잇는다.
 // 줄은 두 쪽 사이에서만 바뀐다.
 // 개선 포인트의 액트 줄은 두 쪽 값과 액트 전체 표본을 묶어 화면 읽기 프로그램이 한 번에 읽는다.
-private fun actLine(lead: Pair<String, String>, other: Pair<String, String>, total: String): SemanticsMatcher =
-    hasText(insightValues(lead, other)) and hasText(total)
+// 액트 값 줄 "공격 58% · 수비 44%"와 제목 옆 "33경기 · 776라운드"의 표본이다
+private fun SemanticsNodeInteractionsProvider.assertActLine(lead: Pair<String, String>, other: Pair<String, String>, sample: String) {
+    onNodeWithText(insightValues(lead, other)).assertExists()
+    onNodeWithText(sample, substring = true).assertExists()
+}
 
 // 이번 주 줄은 "이번 주는 공격 47% · 수비 52% · 166라운드"처럼 한 글자로 적는다
 private fun recentLine(period: String, lead: Pair<String, String>, other: Pair<String, String>, total: String) =
@@ -1602,7 +1684,7 @@ private fun SemanticsNodeInteractionsProvider.fontSizeOf(text: String): TextUnit
     return layouts.single().layoutInput.style.fontSize
 }
 
-// 전투점수 칸 숫자 밑 한 줄의 변화량과 평소 값이다
+// 전투 점수 칸에 뜨는 변화량과 평소 값 글자다
 private fun combatSubLine(report: WeeklyReport.Ready): Pair<String, String> {
     val current = assertNotNull(report.metrics.acs)
     val usual = assertNotNull(report.baseline?.metrics?.acs)

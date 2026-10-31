@@ -14,7 +14,16 @@ import org.koin.dsl.module
 
 val friendModule = module {
     viewModel {
-        FriendsViewModel(get(), get(), get(), Clock.System, TimeZone.currentSystemDefault(), analytics = get(), minuteChanges = minuteStarts(Clock.System))
+        FriendsViewModel(
+            get(),
+            get(),
+            get(),
+            Clock.System,
+            TimeZone.currentSystemDefault(),
+            analytics = get(),
+            minuteChanges = minuteStarts(Clock.System),
+            weekChanges = weekStarts(Clock.System, TimeZone.currentSystemDefault()),
+        )
     }
     viewModel { (id: String) ->
         PingDetailViewModel(

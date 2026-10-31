@@ -41,6 +41,7 @@ import com.ovalit.core.ui.label
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.rememberFitsOnOneLine
 import com.ovalit.core.ui.rememberFittingStyle
+import com.ovalit.core.ui.rememberMostLines
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.report.format
@@ -85,9 +86,12 @@ internal fun DynamicMetricSection(
             val oneLineLabel = rememberFittingStyle(labels, typography.caption, labelWidth)
             val wordLabel = rememberFittingStyle(labels.flatMap { it.split(' ') }, typography.caption, labelWidth)
             val wrapLabels = !rememberFitsOnOneLine(labels.map { AnnotatedString(it) }, oneLineLabel, labelWidth)
+            // 큰 글꼴에서는 두 줄로도 모자라 셋째 어절이 잘린다.
+            // 그때는 가장 긴 이름이 차지하는 만큼 모든 칸 이름이 같은 줄 수를 쓴다.
+            val wrappedLines = rememberMostLines(labels, wordLabel, labelWidth).coerceAtLeast(2)
             val styles = DynamicColumnStyles(
                 label = if (wrapLabels) wordLabel else oneLineLabel,
-                wrapLabels = wrapLabels,
+                labelLines = if (wrapLabels) wrappedLines else 1,
                 line = rememberMetricLineStyle(lines ?: columns.map { MetricLineText(it.value, it.change, it.usual) }, columnWidth),
             )
             Column(verticalArrangement = Arrangement.spacedBy(MetricRowGap)) {
@@ -172,7 +176,7 @@ private class DynamicColumn(
 
 private class DynamicColumnStyles(
     val label: TextStyle,
-    val wrapLabels: Boolean,
+    val labelLines: Int,
     val line: MetricLineStyle,
 )
 
@@ -228,16 +232,16 @@ private fun DynamicMetricColumn(
     ) {
         // 이름과 설명은 칸마다 따로 꺾지 않는다.
         // 한 칸만 두 줄이 되면 그 칸 숫자만 한 줄 아래로 내려간다.
-        // 이름이 꺾일 때는 모든 칸이 두 줄을 차지한다.
+        // 이름이 꺾일 때는 모든 칸이 같은 줄 수를 차지한다.
         Row(verticalAlignment = Alignment.CenterVertically) {
             OvalitText(
                 text = column.label,
                 modifier = Modifier.weight(1f, fill = false),
                 style = styles.label,
                 color = colors.t2,
-                maxLines = if (styles.wrapLabels) 2 else 1,
-                minLines = if (styles.wrapLabels) 2 else 1,
-                autoSize = if (styles.wrapLabels) null else shrinkToFit(styles.label.fontSize),
+                maxLines = styles.labelLines,
+                minLines = styles.labelLines,
+                autoSize = if (styles.labelLines > 1) null else shrinkToFit(styles.label.fontSize),
             )
             Spacer(Modifier.width(3.dp))
             OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = colors.t4, size = 10.dp)
@@ -258,7 +262,6 @@ private fun DynamicMetricColumn(
 }
 
 // 오르내림은 움직였는지와 상관없이 고정 칸처럼 칠한다(CLAUDE.md 지표 규칙).
-// 움직였다고 판단한 칸은 변화량을 굵게 해서 가른다.
 // 달라진 점 시트도 이 색을 쓴다.
 @Composable
 internal fun changeColor(slot: DynamicSlot, current: Double, usual: Double): Color =

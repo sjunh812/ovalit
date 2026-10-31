@@ -7,7 +7,7 @@ import kotlin.test.assertNull
 class MatchPlacementTest {
 
     @Test
-    fun `전투점수 순으로 자리를 매기고 1등이 MVP 다른 팀 1등이 팀 MVP다`() {
+    fun `전투 점수 순으로 자리를 매기고 1등이 MVP 다른 팀 1등이 팀 MVP다`() {
         val match = match(
             queue = Queue.COMPETITIVE,
             players = listOf(
@@ -29,7 +29,7 @@ class MatchPlacementTest {
     // 게임 스코어보드는 라운드당 점수로 줄을 세운다.
     // 튕겨서 덜 뛴 사람이 합계로 밀리면 안 된다.
     @Test
-    fun `합계가 아니라 라운드당 전투점수로 견준다`() {
+    fun `합계가 아니라 라운드당 전투 점수로 견준다`() {
         val match = match(
             players = listOf(
                 line(Me, onMyTeam = true, acs = 200, rounds = 20),
@@ -41,7 +41,7 @@ class MatchPlacementTest {
     }
 
     @Test
-    fun `전투점수가 같으면 킬이 많은 쪽이 앞이다`() {
+    fun `전투 점수가 같으면 킬이 많은 쪽이 앞이다`() {
         val match = match(
             players = listOf(
                 line(Me, onMyTeam = true, acs = 200, kills = 12),
@@ -55,7 +55,7 @@ class MatchPlacementTest {
     // 데스매치 응답이 한 판을 한 라운드로 주면 경기 전체 점수가 라운드당 값이 된다.
     // 게임도 데스매치는 킬로 줄을 세운다.
     @Test
-    fun `데스매치는 전투점수가 아니라 킬로 등수를 매기고 MVP가 없다`() {
+    fun `데스매치는 전투 점수가 아니라 킬로 등수를 매기고 MVP가 없다`() {
         val match = match(
             queue = Queue.DEATHMATCH,
             players = listOf(

@@ -2,6 +2,7 @@ package com.ovalit.feature.onboarding.consent
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,9 +12,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -84,8 +87,11 @@ fun ConsentScreen(onBack: () -> Unit, onContinue: () -> Unit, modifier: Modifier
             ConsentItem(OvalitIcons.Restore, Res.string.consent_unlink_title, Res.string.consent_unlink_body)
             OvalitDivider()
             Spacer(Modifier.height(26.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                OvalitIcon(OvalitIcons.Lock, contentDescription = null, tint = colors.t4, size = 15.dp, modifier = Modifier.padding(top = 1.dp))
+            // 자물쇠를 위 항목 아이콘과 같은 18dp 칸에 담아 글자가 위 항목 글자선에서 시작한다
+            Row(horizontalArrangement = Arrangement.spacedBy(ConsentIconGap)) {
+                Box(modifier = Modifier.width(ConsentIconSize), contentAlignment = Alignment.TopCenter) {
+                    OvalitIcon(OvalitIcons.Lock, contentDescription = null, tint = colors.t4, size = 15.dp, modifier = Modifier.padding(top = 1.dp))
+                }
                 OvalitText(text = stringResource(Res.string.consent_password), style = OvalitTheme.typography.caption, color = colors.t3)
             }
             Spacer(Modifier.height(OvalitSpacing.xl))
@@ -107,7 +113,8 @@ fun ConsentScreen(onBack: () -> Unit, onContinue: () -> Unit, modifier: Modifier
                 text = stringResource(Res.string.consent_note),
                 modifier = Modifier.fillMaxWidth(),
                 style = OvalitTheme.typography.caption,
-                color = colors.t4,
+                // 읽어야 하는 안내라 흰 바탕에서 4.5:1을 넘는 t3다
+                color = colors.t3,
                 textAlign = TextAlign.Center,
             )
         }
@@ -118,9 +125,9 @@ fun ConsentScreen(onBack: () -> Unit, onContinue: () -> Unit, modifier: Modifier
 private fun ConsentItem(icon: ImageVector, title: StringResource, body: StringResource) {
     Row(
         modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}.padding(vertical = 17.dp),
-        horizontalArrangement = Arrangement.spacedBy(13.dp),
+        horizontalArrangement = Arrangement.spacedBy(ConsentIconGap),
     ) {
-        OvalitIcon(icon, contentDescription = null, tint = OvalitTheme.colors.t3, size = 18.dp, modifier = Modifier.padding(top = 2.dp))
+        OvalitIcon(icon, contentDescription = null, tint = OvalitTheme.colors.t3, size = ConsentIconSize, modifier = Modifier.padding(top = 2.dp))
         Column(modifier = Modifier.weight(1f)) {
             OvalitText(text = stringResource(title), style = OvalitTheme.typography.bodyStrong)
             Spacer(Modifier.height(5.dp))
@@ -128,3 +135,6 @@ private fun ConsentItem(icon: ImageVector, title: StringResource, body: StringRe
         }
     }
 }
+
+private val ConsentIconSize = 18.dp
+private val ConsentIconGap = 13.dp

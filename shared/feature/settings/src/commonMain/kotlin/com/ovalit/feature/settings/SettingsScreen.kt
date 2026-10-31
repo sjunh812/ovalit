@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -31,10 +32,12 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ovalit.core.data.minuteStarts
 import com.ovalit.core.designsystem.component.OvalitCard
 import com.ovalit.core.designsystem.component.OvalitCardGap
 import com.ovalit.core.designsystem.component.OvalitDangerButton
 import com.ovalit.core.designsystem.component.OvalitDisclaimer
+import com.ovalit.core.designsystem.component.OvalitSideOrBelow
 import com.ovalit.core.designsystem.component.OvalitSwitch
 import com.ovalit.core.designsystem.component.OvalitTabHeader
 import com.ovalit.core.designsystem.component.OvalitText
@@ -67,6 +70,7 @@ import com.ovalit.feature.settings.resources.focus
 import com.ovalit.feature.settings.resources.notifications_blocked
 import com.ovalit.feature.settings.resources.notifications_blocked_open
 import com.ovalit.feature.settings.resources.notify_analysis_done
+import com.ovalit.feature.settings.resources.notify_friend_request
 import com.ovalit.feature.settings.resources.notify_ping
 import com.ovalit.feature.settings.resources.notify_ping_description
 import com.ovalit.feature.settings.resources.notify_ping_invites
@@ -94,13 +98,16 @@ import com.ovalit.feature.settings.resources.view_profile
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-private val RowMinHeight = 56.dp
+// 줄은 위아래 16dp라 한 줄짜리도 55dp쯤 되고, 이 값은 눌리는 높이의 바닥이다.
+// 56dp로 늘려 두면 한 줄짜리만 가운데 놓여 설명이 붙은 줄과 위아래 여백이 달라졌다.
+private val RowMinHeight = 48.dp
 private val AvatarSize = 44.dp
 
 /**
@@ -126,15 +133,20 @@ fun SettingsRoute(
 ) {
     FailureNoticesEffect(viewModel.notices)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    // 켜 둔 채 자정을 넘기면 "내일 16:20까지"가 "오늘 16:20까지"로 바뀌어야 한다
+    val now by remember { minuteStarts(Clock.System).map { Clock.System.now() } }
+        .collectAsStateWithLifecycle(Clock.System.now())
 
     SettingsScreen(
         uiState = uiState,
         appVersion = appVersion,
+        now = now,
         actions = SettingsActions(
             onStatsPublicChange = viewModel::setStatsPublic,
             onNotifyAnalysisDoneChange = viewModel::setNotifyAnalysisDone,
             onNotifyWeeklyReportChange = viewModel::setNotifyWeeklyReport,
             onNotifyPingChange = viewModel::setNotifyPing,
+            onNotifyFriendRequestChange = viewModel::setNotifyFriendRequest,
             onPingReminderChange = viewModel::setPingReminder,
             onThemeChange = viewModel::setTheme,
             onDefaultQueueChange = viewModel::setDefaultQueue,
@@ -155,6 +167,7 @@ internal class SettingsActions(
     val onNotifyAnalysisDoneChange: (Boolean) -> Unit = {},
     val onNotifyWeeklyReportChange: (Boolean) -> Unit = {},
     val onNotifyPingChange: (Boolean) -> Unit = {},
+    val onNotifyFriendRequestChange: (Boolean) -> Unit = {},
     val onPingReminderChange: (PingReminder) -> Unit = {},
     val onThemeChange: (ThemePreference) -> Unit = {},
     val onDefaultQueueChange: (QueueFilter) -> Unit = {},
@@ -219,7 +232,7 @@ internal fun SettingsScreen(
                 // 켜러 가는 줄을 맨 위에 두고 막힌 스위치는 흐리게 둔다.
                 // 앱으로 돌아오면 다시 확인한다.
                 SettingsCard(stringResource(Res.string.section_notifications)) {
-                    if (notificationBlocks.analysisDone || notificationBlocks.weeklyReport) {
+                    if (notificationBlocks.analysisDone || notificationBlocks.weeklyReport || notificationBlocks.friendRequest) {
                         NotificationsBlockedRow(onClick = actions.onOpenNotificationSettings)
                     }
                     ToggleRow(
@@ -236,6 +249,14 @@ internal fun SettingsScreen(
                         checked = preferences.notifyWeeklyReport,
                         onCheckedChange = actions.onNotifyWeeklyReportChange,
                         enabled = !notificationBlocks.weeklyReport,
+                    )
+                    // 친구 요청을 받거나 내 요청이 수락되면 온다.
+                    // 파티 모집만 다루는 오발있? 카드에는 두지 않는다(docs/screens.md 설정).
+                    ToggleRow(
+                        title = stringResource(Res.string.notify_friend_request),
+                        checked = preferences.notifyFriendRequest,
+                        onCheckedChange = actions.onNotifyFriendRequestChange,
+                        enabled = !notificationBlocks.friendRequest,
                     )
                 }
 
@@ -356,27 +377,33 @@ private fun AccountCard(account: Account?, onOpenProfile: () -> Unit) {
     ) {
         PlayerAvatar(riotId = account?.riotId.orEmpty(), size = AvatarSize)
         Spacer(Modifier.width(OvalitSpacing.md))
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            if (account != null) {
-                OvalitText(text = account.riotId, style = OvalitTheme.typography.bodyStrong)
-                OvalitText(
-                    text = stringResource(Res.string.account_linked, account.linkedOn.month.number, account.linkedOn.day),
-                    style = OvalitTheme.typography.caption,
-                    color = colors.t3,
-                )
-            } else {
-                OvalitText(
-                    text = stringResource(Res.string.account_unlinked),
-                    style = OvalitTheme.typography.body,
-                    color = colors.t2,
-                )
-            }
-        }
         if (account != null) {
-            Spacer(Modifier.width(OvalitSpacing.sm))
-            OvalitText(text = stringResource(Res.string.view_profile), style = OvalitTheme.typography.caption, color = colors.t3)
+            // 큰 글꼴에서는 "프로필 보기"를 연동 날짜 밑으로 내린다.
+            // 옆에 두면 이름이 한 자씩 꺾인다.
+            OvalitSideOrBelow(
+                start = {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        OvalitText(text = account.riotId, style = OvalitTheme.typography.bodyStrong)
+                        OvalitText(
+                            text = stringResource(Res.string.account_linked, account.linkedOn.month.number, account.linkedOn.day),
+                            style = OvalitTheme.typography.caption,
+                            color = colors.t3,
+                        )
+                    }
+                },
+                end = { OvalitText(text = stringResource(Res.string.view_profile), style = OvalitTheme.typography.caption, color = colors.t3) },
+                modifier = Modifier.weight(1f),
+                gap = OvalitSpacing.sm,
+            )
             Spacer(Modifier.width(2.dp))
             OvalitIcon(OvalitIcons.ChevronRight, contentDescription = null, tint = colors.t4, size = 16.dp)
+        } else {
+            OvalitText(
+                text = stringResource(Res.string.account_unlinked),
+                modifier = Modifier.weight(1f),
+                style = OvalitTheme.typography.body,
+                color = colors.t2,
+            )
         }
     }
     }
@@ -384,13 +411,15 @@ private fun AccountCard(account: Account?, onOpenProfile: () -> Unit) {
 
 // 묶음 하나를 담는 카드다.
 // 묶음 이름은 친구 탭 카드처럼 카드 안 맨 위에 굵게 둔다.
+// 이름 밑은 띄우지 않는다.
+// 첫 줄의 위 여백(16dp)이 그대로 제목과 내용 사이다.
 @Composable
 private fun SettingsCard(title: String, content: @Composable ColumnScope.() -> Unit) {
     // 줄마다 위아래 여백이 있어 카드 아래 여백은 줄인다
     OvalitCard(bottomPadding = OvalitSpacing.sm) {
         OvalitText(
             text = title,
-            modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.gutter, bottom = OvalitSpacing.xs),
+            modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
             style = OvalitTheme.typography.cardTitle,
         )
         content()
@@ -421,22 +450,20 @@ private fun ToggleRow(
                     onCheckedChange(on)
                 },
             )
-            .padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.md),
+            .padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.lg),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(OvalitSpacing.xs),
-        ) {
-            OvalitText(text = title, style = OvalitTheme.typography.body, color = if (enabled) colors.t1 else colors.t4)
-            if (description != null) {
-                OvalitText(text = description, style = OvalitTheme.typography.caption, color = if (enabled) colors.t3 else colors.t4)
-            }
-        }
+        val text = @Composable { RowText(title, description, enabled) }
         if (trailingLabel != null) {
-            OvalitText(text = trailingLabel, style = OvalitTheme.typography.label, color = if (enabled) colors.t3 else colors.t4)
+            // 오른쪽 값은 다른 설정 줄의 값("10분 전", "시스템 설정")과 같은 모양이다
+            OvalitSideOrBelow(
+                start = text,
+                end = { OvalitText(text = trailingLabel, style = OvalitTheme.typography.body, color = if (enabled) colors.t2 else colors.t4) },
+                modifier = Modifier.weight(1f),
+            )
             Spacer(Modifier.width(OvalitSpacing.sm))
         } else {
+            Box(modifier = Modifier.weight(1f)) { text() }
             Spacer(Modifier.width(OvalitSpacing.lg))
         }
         OvalitSwitch(checked = checked, enabled = enabled)
@@ -450,6 +477,17 @@ private fun NotificationsBlockedRow(onClick: () -> Unit) {
         value = stringResource(Res.string.notifications_blocked_open),
         onClick = onClick,
     )
+}
+
+@Composable
+private fun RowText(title: String, description: String?, enabled: Boolean) {
+    val colors = OvalitTheme.colors
+    Column(verticalArrangement = Arrangement.spacedBy(OvalitSpacing.xs)) {
+        OvalitText(text = title, style = OvalitTheme.typography.body, color = if (enabled) colors.t1 else colors.t4)
+        if (description != null) {
+            OvalitText(text = description, style = OvalitTheme.typography.caption, color = if (enabled) colors.t3 else colors.t4)
+        }
+    }
 }
 
 // 누를 곳이 없는 화살표는 두지 않는다.
@@ -468,21 +506,18 @@ private fun ValueRow(
             .fillMaxWidth()
             .heightIn(min = RowMinHeight)
             .then(if (onClick != null) Modifier.clickable(enabled = enabled, role = Role.Button, onClick = onClick) else Modifier)
-            .padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.md),
+            .padding(horizontal = OvalitSpacing.gutter, vertical = OvalitSpacing.lg),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(OvalitSpacing.xs),
-        ) {
-            OvalitText(text = title, style = OvalitTheme.typography.body, color = if (enabled) colors.t1 else colors.t4)
-            if (description != null) {
-                OvalitText(text = description, style = OvalitTheme.typography.caption, color = if (enabled) colors.t3 else colors.t4)
-            }
-        }
         if (value != null) {
-            Spacer(Modifier.width(OvalitSpacing.md))
-            OvalitText(text = value, style = OvalitTheme.typography.body, color = if (enabled) colors.t2 else colors.t4)
+            // 큰 글꼴에서 값이 줄의 절반을 넘으면 제목 밑으로 내린다
+            OvalitSideOrBelow(
+                start = { RowText(title, description, enabled) },
+                end = { OvalitText(text = value, style = OvalitTheme.typography.body, color = if (enabled) colors.t2 else colors.t4) },
+                modifier = Modifier.weight(1f),
+            )
+        } else {
+            Box(modifier = Modifier.weight(1f)) { RowText(title, description, enabled) }
         }
         if (onClick != null) {
             Spacer(Modifier.width(OvalitSpacing.xs))
@@ -520,8 +555,9 @@ private fun adFreeUntilText(until: Instant, now: Instant, timeZone: TimeZone): S
 
 @Composable
 private fun UnlinkSection(onClick: () -> Unit) {
+    // 위험 버튼은 카드보다 좁게 둬 묶음과 갈린다(docs/design.md)
     Column(
-        modifier = Modifier.padding(horizontal = OvalitSpacing.screen),
+        modifier = Modifier.padding(horizontal = OvalitSpacing.gutter),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         OvalitDangerButton(text = stringResource(Res.string.unlink), onClick = onClick)

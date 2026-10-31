@@ -116,6 +116,25 @@ class FakeAccountSettingsRepositoryTest {
         assertEquals(AccountSettings.Default, repository.settings.first())
     }
 
+    // 값이 같은 변경을 하나로 보면 처음 값으로 돌리기 전에 보낸 변경의 답이 늦게 와서 새로 바꾼 변경을 지운다.
+    // 지워진 변경은 서버에 보내지도 않아 스위치만 돌아간다.
+    @Test
+    fun `처음 값으로 돌린 뒤 똑같이 다시 바꾸면 늦게 온 옛 답이 새 변경을 지우지 않는다`() = runTest {
+        val before = async { runCatching { repository.setStatsPublic(false) } }
+        runCurrent()
+        repository.reset()
+        val again = async { repository.setStatsPublic(false) }
+        runCurrent()
+
+        advanceUntilIdle()
+
+        assertTrue(before.await().isFailure)
+        again.await()
+        assertEquals(false, repository.settings.first().statsPublic)
+        repository.refresh()
+        assertEquals(false, repository.settings.first().statsPublic)
+    }
+
     private fun TestScope.collectStatsPublic(): List<Boolean> {
         val seen = mutableListOf<Boolean>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { repository.settings.collect { seen += it.statsPublic } }

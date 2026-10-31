@@ -76,7 +76,10 @@ fun PlacementLabel(placement: MatchPlacement, modifier: Modifier = Modifier) {
     }
 }
 
-/** 경기 줄과 스코어보드의 작은 칩 모양입니다. 등수 말고는 모두 옅은 면에 짙은 같은 계열 글자를 올린 톤온톤입니다. */
+/**
+ * 경기 줄과 스코어보드의 작은 칩 모양입니다.
+ * MVP와 팀 MVP는 옅은 면에 짙은 같은 계열 글자를 올린 톤온톤이고 나머지는 무채색입니다.
+ */
 enum class MatchChipTone {
     MVP,
     TEAM_MVP,
@@ -88,6 +91,12 @@ enum class MatchChipTone {
     /** 등수입니다. `--fill` 면에 흐린 글자입니다. */
     QUIET,
 }
+
+/**
+ * 경기 칩의 가장 낮은 높이입니다.
+ * 경기 줄이 칩이 있든 없든 같은 높이가 되게 스코어 줄도 이만큼 잡습니다.
+ */
+internal val MatchChipMinHeight = 19.dp
 
 /** 알약 모양 대신 모서리만 살짝 둥글린 네모 칩입니다. */
 @Composable
@@ -105,7 +114,7 @@ fun MatchChip(text: String, tone: MatchChipTone, modifier: Modifier = Modifier) 
     // 더 키우면 이름보다 칩이 먼저 보인다.
     Box(
         modifier = modifier
-            .heightIn(min = 19.dp)
+            .heightIn(min = MatchChipMinHeight)
             .clip(RoundedCornerShape(5.dp))
             .background(container)
             .padding(horizontal = 5.dp),

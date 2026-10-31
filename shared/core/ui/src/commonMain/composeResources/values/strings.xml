@@ -9,7 +9,7 @@
     <string name="period_last_week">지난주</string>
     <string name="period_past_weeks">지난 %1$d주</string>
 
-    <string name="metric_combat_score">전투점수</string>
+    <string name="metric_combat_score">전투 점수</string>
     <string name="metric_kd">K/D</string>
     <string name="metric_damage">피해량</string>
     <string name="metric_headshot">헤드샷</string>
@@ -31,8 +31,8 @@
     <string name="queue_filter_other">기타</string>
 
     <!-- 경기 한 판의 큐 -->
-    <string name="queue_competitive">경쟁</string>
-    <string name="queue_unrated">일반</string>
+    <string name="queue_competitive">경쟁전</string>
+    <string name="queue_unrated">일반전</string>
     <string name="queue_spike_rush">스파이크 돌격</string>
     <string name="queue_swiftplay">신속 플레이</string>
     <string name="queue_premier">프리미어</string>
@@ -64,7 +64,7 @@
     <string name="weekday_sunday">일요일</string>
 
     <string name="match_score">%1$d – %2$d</string>
-    <string name="match_kda">%1$d/%2$d/%3$d</string>
+    <string name="match_kda">%1$d / %2$d / %3$d</string>
     <string name="match_acs">ACS %1$s</string>
     <!-- 스코어 색을 못 보는 낭독기 사용자에게 승패를 읽어 준다 -->
     <string name="match_result_win">승리</string>
@@ -79,7 +79,7 @@
     <string name="focus_consistency">기복 줄이기</string>
     <string name="focus_consistency_description">관여율, 생존율</string>
     <string name="focus_none">특별히 없어요</string>
-    <string name="focus_none_description">그 주에 가장 많이 달라진 지표부터 보여드릴게요</string>
+    <string name="focus_none_description">매주 가장 많이 달라진 지표부터 보여드릴게요</string>
 
     <!-- 내 프로필, S5, 홈 요원·무기 칸이 같이 쓴다 -->
     <string name="act_matches">이번 액트 %1$d경기</string>
@@ -89,11 +89,11 @@
     <string name="buy_force">포스바이</string>
     <string name="buy_full">풀바이</string>
     <string name="weapon_category_rifle">소총</string>
-    <string name="weapon_category_pistol">권총</string>
+    <string name="weapon_category_pistol">보조 무기</string>
     <string name="weapon_category_smg">기관단총</string>
-    <string name="weapon_category_sniper">저격총</string>
+    <string name="weapon_category_sniper">저격소총</string>
     <string name="weapon_category_shotgun">산탄총</string>
-    <string name="weapon_category_machine_gun">기관총</string>
+    <string name="weapon_category_machine_gun">중화기</string>
     <string name="weapon_category_melee">근접 무기</string>
     <string name="profile_competitive">경쟁전</string>
     <string name="profile_competitive_matches">경쟁전 %1$d판</string>

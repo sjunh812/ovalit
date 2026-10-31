@@ -47,12 +47,14 @@ import com.ovalit.core.designsystem.component.OvalitDivider
 import com.ovalit.core.designsystem.component.OvalitText
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
+import com.ovalit.core.model.KillEvent
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.RoundKill
 import com.ovalit.core.model.RoundSummary
 import com.ovalit.core.model.WinRecord
 import com.ovalit.core.model.roundsOverview
 import com.ovalit.core.ui.AgentImage
+import com.ovalit.core.ui.NO_VALUE
 import com.ovalit.core.ui.ResultLabel
 import com.ovalit.core.ui.SEPARATOR
 import com.ovalit.core.ui.resultColor
@@ -148,7 +150,9 @@ private fun winOf(record: WinRecord): String = stringResource(Res.string.overvie
 @Composable
 private fun record(record: WinRecord): String = stringResource(Res.string.overview_record, record.wins, record.losses)
 
-private val PickerCellWidth = 34.dp
+// 한 칸을 손가락으로 누를 만큼 넓힌다.
+// 가로로 미는 줄이라 24라운드여도 괜찮다.
+private val PickerCellWidth = 44.dp
 private val PickerBarHeight = 22.dp
 
 /**
@@ -257,14 +261,11 @@ private fun RoundDetail(round: RoundSummary, uiState: MatchDetailUiState.Success
         val economy = round.economy
         if (economy != null) {
             Spacer(Modifier.height(OvalitSpacing.xs))
+            // 피스톨 라운드처럼 구매 유형이 없으면 장비 가치만 적는다
+            val team = listOfNotNull(round.buyType?.let { buyName(it) }, economy.teamLoadout.withThousands()).joinToString(" ")
+            val enemy = listOfNotNull(round.enemyBuyType?.let { buyName(it) }, economy.enemyLoadout.withThousands()).joinToString(" ")
             OvalitText(
-                text = stringResource(
-                    Res.string.round_loadout,
-                    round.buyType?.let { buyName(it) }.orEmpty(),
-                    economy.teamLoadout.withThousands(),
-                    round.enemyBuyType?.let { buyName(it) }.orEmpty(),
-                    economy.enemyLoadout.withThousands(),
-                ),
+                text = stringResource(Res.string.round_loadout, team, enemy),
                 style = caption,
                 color = colors.t2,
             )
@@ -323,7 +324,12 @@ private fun KillRow(kill: RoundKill, uiState: MatchDetailUiState.Success) {
     val myName = stringResource(Res.string.me)
     fun name(player: PlayerId) = if (player == me) myName else lines[player]?.riotId?.substringBefore('#').orEmpty()
     val weapon = kill.weapon?.let { uiState.catalog.weaponName(it) } ?: stringResource(Res.string.round_kill_ability)
-    val time = "${kill.atMillis / 60_000}:${((kill.atMillis / 1_000) % 60).toString().padStart(2, '0')}"
+    // 응답에 시각이 빠진 킬은 시각순 맨 뒤에 두고 시각을 비운다
+    val time = if (kill.atMillis == KillEvent.UNKNOWN_TIME) {
+        NO_VALUE
+    } else {
+        "${kill.atMillis / 60_000}:${((kill.atMillis / 1_000) % 60).toString().padStart(2, '0')}"
+    }
     val killerStyle = OvalitTheme.typography.label.copy(fontWeight = if (kill.byMyTeam) FontWeight.SemiBold else FontWeight.Normal)
     // 글자를 키우면 시각이 얼굴에 붙어서 시각 칸도 같이 넓힌다
     val timeWidth = 34.dp * LocalDensity.current.fontScale.coerceIn(1f, 1.6f) + 4.dp
@@ -361,7 +367,14 @@ private fun KillRow(kill: RoundKill, uiState: MatchDetailUiState.Success) {
         }
         Spacer(Modifier.width(OvalitSpacing.sm))
         if (kill.firstBlood) {
-            OvalitText(text = stringResource(Res.string.round_first_kill), style = caption.copy(fontWeight = FontWeight.SemiBold), color = colors.t1, maxLines = 1)
+            // 우리 팀이 낸 첫 킬만 진하게 둔다.
+            // 상대 첫 킬까지 진하면 그 줄에서 가장 먼저 눈에 걸린다.
+            OvalitText(
+                text = stringResource(Res.string.round_first_kill),
+                style = if (kill.byMyTeam) caption.copy(fontWeight = FontWeight.SemiBold) else caption,
+                color = if (kill.byMyTeam) colors.t1 else colors.t3,
+                maxLines = 1,
+            )
             Spacer(Modifier.width(6.dp))
         }
         OvalitText(text = weapon, style = caption, color = colors.t3, maxLines = 1, textAlign = TextAlign.End)
@@ -378,10 +391,17 @@ private fun BuyTable(uiState: MatchDetailUiState.Success) {
     val caption = OvalitTheme.typography.caption
     val overview = uiState.match.roundsOverview()
     Column {
+        // 묶음 제목은 다른 탭처럼 cardTitle이고 열 제목은 그 밑 줄에 둔다
+        OvalitText(
+            text = stringResource(Res.string.buy_title),
+            modifier = Modifier.padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.lg),
+            style = OvalitTheme.typography.cardTitle,
+        )
+        Spacer(Modifier.height(OvalitSpacing.md))
         Row(
-            modifier = Modifier.fillMaxWidth().padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.lg, bottom = OvalitSpacing.xs),
+            modifier = Modifier.fillMaxWidth().padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, bottom = OvalitSpacing.xs),
         ) {
-            OvalitText(text = stringResource(Res.string.buy_title), modifier = Modifier.weight(1f), style = OvalitTheme.typography.label, color = colors.t3)
+            Spacer(Modifier.weight(1f))
             OvalitText(text = stringResource(Res.string.my_team), modifier = Modifier.weight(1f), style = caption, color = colors.t3, textAlign = TextAlign.End)
             OvalitText(text = stringResource(Res.string.enemy_team), modifier = Modifier.weight(1f), style = caption, color = colors.t3, textAlign = TextAlign.End)
         }

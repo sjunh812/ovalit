@@ -73,7 +73,7 @@ data class PlayerDto(
  * 스코어보드 숫자입니다.
  * 스킬로 자기나 우리 팀을 죽인 것을 Riot이 킬에서 빼는지 모릅니다.
  *
- * @property score 경기 전체 전투점수 합입니다.
+ * @property score 경기 전체 전투 점수 합입니다.
  *   라운드당 값이 아닙니다.
  */
 @Serializable

@@ -50,7 +50,7 @@ import org.jetbrains.compose.resources.stringResource
 private val TopBarLogoWidth = 38.dp
 private val AvatarSize = 30.dp
 private val TierEmblemSize = 16.dp
-private val ProfileTouchSize = 44.dp
+private val ProfileTouchSize = 48.dp
 
 @Composable
 internal fun ReportTopBar(

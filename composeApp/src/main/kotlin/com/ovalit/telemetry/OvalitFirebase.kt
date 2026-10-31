@@ -30,7 +30,11 @@ internal object OvalitFirebase {
             account.account.map { it != null }.distinctUntilChanged().collect { linked ->
                 if (!linked && wasLinked == true) {
                     analytics.resetAnalyticsData()
+                    // deleteUnsentReports는 자동 수집이 꺼져 있을 때만 보내지 않은 보고를 지우고, 켜져 있으면 아무 일도 하지 않는다.
+                    // 그래서 잠시 끄고 지운 뒤 빌드의 설정대로 되돌린다.
+                    crashlytics.setCrashlyticsCollectionEnabled(false)
                     crashlytics.deleteUnsentReports()
+                    crashlytics.setCrashlyticsCollectionEnabled(BuildConfig.COLLECT_TELEMETRY)
                 }
                 wasLinked = linked
             }

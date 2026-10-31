@@ -52,8 +52,8 @@ import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.ui.FailureNoticesEffect
 import com.ovalit.core.ui.HeadToHeadRow
 import com.ovalit.core.ui.MatchRow
-import com.ovalit.core.ui.ProfileAdSlot
 import com.ovalit.core.ui.MatchRowStyle
+import com.ovalit.core.ui.ProfileAdSlot
 import com.ovalit.core.ui.ProfileAgentsSection
 import com.ovalit.core.ui.ProfileBanner
 import com.ovalit.core.ui.ProfileIdentity
@@ -64,6 +64,7 @@ import com.ovalit.core.ui.ProfileStatsSection
 import com.ovalit.core.ui.ProfileStatusBarScrim
 import com.ovalit.core.ui.ProfileTierCard
 import com.ovalit.core.ui.ProfileWeaponsSection
+import com.ovalit.core.ui.matchRowTextStart
 import com.ovalit.core.ui.periodLabel
 import com.ovalit.core.ui.recentMatchTimeLabel
 import com.ovalit.core.ui.resources.Res as CoreUiRes
@@ -122,7 +123,7 @@ fun FriendProfileRoute(
     FriendProfileScreen(
         uiState = lastShown.state,
         onBack = onBack,
-        onToggleRival = viewModel::toggleRival,
+        onSetRival = viewModel::setRival,
         onUnfriend = viewModel::unfriend,
         onOpenMatches = onOpenMatches,
         onOpenAgents = onOpenAgents,
@@ -135,7 +136,7 @@ fun FriendProfileRoute(
 internal fun FriendProfileScreen(
     uiState: FriendProfileUiState,
     onBack: () -> Unit,
-    onToggleRival: () -> Unit,
+    onSetRival: (Boolean) -> Unit,
     onUnfriend: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenMatches: () -> Unit = {},
@@ -187,9 +188,11 @@ internal fun FriendProfileScreen(
                         SmallButton(
                             text = stringResource(if (uiState.isRival) Res.string.unset_rival else Res.string.set_rival),
                             filled = false,
+                            // 머리가 --canvas 회색이라 옅은 면은 바탕에 묻혀서 카드와 같은 면을 깐다
+                            container = OvalitTheme.colors.card,
                             onClick = {
                                 if (!uiState.isRival) haptics.confirm()
-                                onToggleRival()
+                                onSetRival(!uiState.isRival)
                             },
                         )
                     }
@@ -237,7 +240,7 @@ internal fun FriendProfileScreen(
                         ProfileShotsSection(profile.summary.metrics.shots)
                         ProfileAgentsSection(profile.agents, uiState.catalog, onOpen = onOpenAgents)
                         ProfileWeaponsSection(profile.weapons, uiState.catalog, onOpen = onOpenWeapons)
-                        ProfileAdSlot(key = "profile-friend")
+                        ProfileAdSlot(key = "profile-friend-${uiState.friend.id.value}")
                     }
                     RecentMatches(uiState, name, onOpenMatches)
                 }
@@ -305,7 +308,8 @@ private fun RecentMatches(uiState: FriendProfileUiState.Success, name: String, o
     val matches = uiState.friend.matches.sortedByDescending { it.startedAt }
     if (matches.isEmpty()) return
     Spacer(Modifier.height(OvalitCardGap))
-    OvalitCard {
+    // 경기 줄마다 위아래 여백이 있어 카드 아래 여백은 줄인다
+    OvalitCard(bottomPadding = OvalitSpacing.sm) {
         // 버튼 높이로 줄을 늘리지 않아 다른 카드와 제목 자리가 같다
         OvalitPickerTitle(
             title = { OvalitText(text = stringResource(Res.string.recent_title, name), style = OvalitTheme.typography.cardTitle) },
@@ -317,7 +321,7 @@ private fun RecentMatches(uiState: FriendProfileUiState.Success, name: String, o
             modifier = Modifier.padding(start = OvalitSpacing.gutter, end = OvalitSpacing.sm),
         )
         matches.take(RECENT_MATCHES).forEachIndexed { index, match ->
-            if (index > 0) OvalitDivider(Modifier.padding(start = 67.dp), color = OvalitTheme.colors.lineWeak)
+            if (index > 0) OvalitDivider(Modifier.padding(start = matchRowTextStart(MatchRowStyle.COMPACT)), color = OvalitTheme.colors.lineWeak)
             MatchRow(
                 match = match,
                 catalog = uiState.catalog,

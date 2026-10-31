@@ -45,6 +45,22 @@ class MatchPlayerStatsTest {
     }
 
     @Test
+    fun `시각이 없는 킬은 첫 킬과 첫 데스로 세지 않는다`() {
+        val match = match(
+            round(untimedKill(Enemy, Me), kill(9.0, Ally, OtherEnemy)),
+            round(untimedKill(OtherEnemy, Ally)),
+            players = board,
+        )
+
+        val stats = match.playerStats()
+
+        assertEquals(1, stats.getValue(Ally).firstKills)
+        assertEquals(0, stats.getValue(Ally).firstDeaths)
+        assertEquals(0, stats.getValue(Enemy).firstKills + stats.getValue(OtherEnemy).firstKills)
+        assertEquals(0, stats.getValue(Me).firstDeaths)
+    }
+
+    @Test
     fun `적을 둘 이상 잡은 라운드를 멀티킬로 센다`() {
         val match = match(
             round(kill(5.0, Me, Enemy), kill(9.0, Me, OtherEnemy)),

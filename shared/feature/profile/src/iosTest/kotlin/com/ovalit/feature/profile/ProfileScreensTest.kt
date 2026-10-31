@@ -106,7 +106,7 @@ class ProfileScreensTest {
     fun `요원 화면은 주 역할을 무엇으로 보는지 알려준다`() = runComposeUiTest {
         setContent { Themed { AgentsScreen(ProfilePreviewData.records, onBack = {}) } }
 
-        onNodeWithText("전략가는 관여율과 생존율부터 봐요. 전략가는 원래 첫 킬이 적은 편이에요.").assertExists()
+        onNodeWithText("전략가는 관여율과 생존율부터 봐요. 원래 첫 킬이 적은 역할이에요.").assertExists()
     }
 
     @Test
@@ -301,7 +301,7 @@ class ProfileScreensTest {
 
         // 고스트는 위쪽 주력 무기에도 있어서 이름 대신 표 줄의 KDA로 본다
         onNodeWithText("2.13 (46/30/18)", useUnmergedTree = true).assertDoesNotExist()
-        onNodeWithText("권총").performClick()
+        onNodeWithText("보조 무기").performClick()
 
         onNodeWithText("2.13 (46/30/18)", useUnmergedTree = true).assertExists()
         onNodeWithText("그 밖의 무기").assertExists()
@@ -327,7 +327,7 @@ class ProfileScreensTest {
     @Test
     fun `들고 시작한 라운드가 적은 무기도 KDA와 합계를 적는다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
-        onNodeWithText("권총").performClick()
+        onNodeWithText("보조 무기").performClick()
 
         onNodeWithText("(5/7/4)", substring = true, useUnmergedTree = true).assertExists()
     }
@@ -335,7 +335,7 @@ class ProfileScreensTest {
     @Test
     fun `표본이 적은 무기도 표본 부족 대신 숫자를 적는다`() = runComposeUiTest {
         setContent { Themed { WeaponsScreen(ProfilePreviewData.records, onBack = {}) } }
-        onNodeWithText("권총").performClick()
+        onNodeWithText("보조 무기").performClick()
 
         onAllNodesWithText("표본 부족").assertCountEquals(0)
     }

@@ -19,6 +19,6 @@ import kotlin.time.Instant
 fun MatchlistDto.toEntries(): List<MatchListEntry> = history.mapIndexedNotNull { index, entry ->
     val id = entry.matchId?.takeIf { it.isNotBlank() } ?: throw RiotResponseFormatException("$.history[$index].matchId")
     val startedAt = entry.gameStartTimeMillis ?: throw RiotResponseFormatException("$.history[$index].gameStartTimeMillis")
-    val queue = entry.queueId?.let { Queue.fromRiot(it) ?: return@mapIndexedNotNull null } ?: Queue.OTHER
+    val queue = Queue.fromRiot(entry.queueId) ?: return@mapIndexedNotNull null
     MatchListEntry(id = MatchId(id), startedAt = Instant.fromEpochMilliseconds(startedAt), queue = queue)
 }

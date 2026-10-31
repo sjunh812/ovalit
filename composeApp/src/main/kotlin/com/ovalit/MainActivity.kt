@@ -1,6 +1,7 @@
 package com.ovalit
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -12,6 +13,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.doOnNextLayout
 import com.ovalit.ads.AdMobRenderer
 import com.ovalit.app.OvalitApp
 import com.ovalit.app.rememberDarkTheme
@@ -48,6 +50,14 @@ class MainActivity : ComponentActivity() {
             statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { dark },
             navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { dark },
         )
+    }
+
+    // 화면을 돌리면 시스템이 상태 표시줄 글자색을 시스템 테마로 되돌린다.
+    // 이 화면은 다시 만들어지지 않아 앱 테마는 그대로인데 글자색만 바뀐다(앱만 다크로 고르면 회전 뒤 검은 시계가 뜬다).
+    // 되돌리는 건 onConfigurationChanged 뒤 첫 레이아웃 전이라 그 레이아웃에서 다시 입힌다.
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        window.decorView.doOnNextLayout { applySystemBars() }
     }
 
     override fun onNewIntent(intent: Intent) {

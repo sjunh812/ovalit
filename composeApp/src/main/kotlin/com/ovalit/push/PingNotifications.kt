@@ -62,7 +62,14 @@ internal object PingNotifications {
             }
             "ping_time" -> pingNotification(context, pingId, expiresAt) {
                 setContentTitle(context.getString(R.string.ping_time_title, data["hostName"].orEmpty()))
-                setContentText(context.getString(R.string.ping_time_body, timeText(context, data)))
+                // "지금에 갈 수 있는지"가 되지 않게 지금 시작하는 초대는 문장을 따로 둔다
+                setContentText(
+                    if (isNow(data)) {
+                        context.getString(R.string.ping_time_body_now)
+                    } else {
+                        context.getString(R.string.ping_time_body, timeText(context, data))
+                    },
+                )
                 addAnswerActions(context, pingId)
             }
             "ping_reply" -> pingNotification(context, pingId, expiresAt) {
@@ -75,10 +82,13 @@ internal object PingNotifications {
                         else -> context.getString(R.string.ping_reply_other_title, name, clockText(context, proposed ?: 0L))
                     },
                 )
-                setContentText(context.getString(R.string.ping_reply_body, timeText(context, data)))
-                // 다른 시간을 냈으면 보낸 사람이 알림에서 바로 그 시각으로 옮긴다
+                // 다른 시간을 냈으면 보낸 사람이 알림에서 바로 그 시각으로 옮긴다.
+                // 옮기면 부른 친구들에게도 알림이 가서 본문에 그걸 적는다.
                 if (data["answer"] == "other_time" && pingId != null && proposed != null) {
+                    setContentText(context.getString(R.string.ping_reply_other_body))
                     addAction(0, context.getString(R.string.ping_action_move), PingActionReceiver.move(context, pingId, proposed))
+                } else {
+                    setContentText(context.getString(R.string.ping_reply_body, timeText(context, data)))
                 }
             }
             "ping_cancel" -> pingNotification(context, pingId, expiresAt) {

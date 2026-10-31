@@ -26,44 +26,48 @@
     <string name="notification_new_matches_title">새 경기를 다 불러왔어요</string>
     <string name="notification_new_matches_body">그사이 끝난 %1$d경기로 리포트를 새로 만들었어요</string>
     <!-- ㅇㅂㅇ과 주간 리포트 알림. 받는 쪽 이름은 서버가 Riot ID의 이름 부분만 보낸다.
-         친구의 답은 앱 화면처럼 "참석, 불참"으로, 내가 누르는 버튼은 해요체로 쓴다. -->
+         이모지는 설레는 알림(새 초대, 시작 전, 친구가 간다는 답, 친구 요청)의 제목 맨 앞에만 하나 둔다.
+         취소, 불참, 실패, 내가 한 일을 확인하는 알림에는 두지 않는다.
+         이름 뒤에는 받침과 상관없는 조사(의, 도)만 붙이고 시각 뒤에는 "로" 대신 "에"를 쓴다. -->
     <string name="notification_channel_ping">오발있? 파티 모집</string>
     <string name="notification_channel_weekly">주간 리포트</string>
     <string name="ping_time_now">지금</string>
     <string name="ping_time_tomorrow">내일 %1$s</string>
     <string name="ping_time_dawn">새벽 %1$s</string>
-    <string name="ping_new_title">%1$s의 초대 · %2$s</string>
-    <string name="ping_new_title_now">%1$s의 초대 · 지금</string>
-    <string name="ping_new_body">갈 수 있는지 알림에서 바로 답할 수 있어요</string>
+    <string name="ping_new_title">🎮 %1$s의 초대 · %2$s</string>
+    <string name="ping_new_title_now">🎮 %1$s의 초대 · 지금</string>
+    <string name="ping_new_body">같이 할 수 있는지 알려 주세요</string>
     <string name="ping_new_body_others">%1$s도 같이 불렀어요</string>
-    <string name="ping_reply_yes_title">%1$s · 참석</string>
-    <string name="ping_reply_no_title">%1$s · 불참</string>
-    <string name="ping_reply_other_title">%1$s · %2$s 제안</string>
+    <string name="ping_reply_yes_title">🙌 %1$s도 같이 해요</string>
+    <string name="ping_reply_no_title">%1$s · 이번엔 못 와요</string>
+    <string name="ping_reply_other_title">%1$s · %2$s에 하면 어때요</string>
     <string name="ping_reply_body">%1$s 초대에 답했어요</string>
+    <string name="ping_reply_other_body">옮기면 같이 부른 친구들에게도 알려요</string>
     <string name="ping_time_title">%1$s의 초대 시간이 바뀌었어요</string>
-    <string name="ping_time_body">%1$s · 갈 수 있는지 다시 답해 주세요</string>
+    <string name="ping_time_body">%1$s에 갈 수 있는지 다시 알려 주세요</string>
+    <string name="ping_time_body_now">지금 갈 수 있는지 다시 알려 주세요</string>
     <string name="ping_cancel_title">%1$s의 초대가 취소됐어요</string>
-    <string name="ping_remind_title">%1$d분 뒤 발로란트</string>
-    <string name="ping_remind_title_hour">1시간 뒤 발로란트</string>
-    <string name="ping_remind_title_soon">곧 발로란트</string>
-    <string name="ping_remind_body">%1$s 참석</string>
+    <string name="ping_remind_title">⏰ %1$d분 뒤 발로란트 약속이 있어요</string>
+    <string name="ping_remind_title_hour">⏰ 1시간 뒤 발로란트 약속이 있어요</string>
+    <string name="ping_remind_title_soon">⏰ 곧 발로란트 약속 시간이에요</string>
+    <string name="ping_remind_body">%1$s도 와요</string>
     <string name="weekly_report_title">지난주 리포트가 나왔어요</string>
-    <string name="weekly_report_body">무엇이 달라졌는지 짚어드려요</string>
+    <string name="weekly_report_body">평소와 무엇이 달라졌는지 짚어드려요</string>
     <string name="ping_action_yes">갈게요</string>
     <string name="ping_action_other">다른 시간</string>
     <string name="ping_action_no">못 가요</string>
-    <string name="ping_action_move">수락</string>
-    <string name="ping_answered_yes">참석으로 답했어요</string>
-    <string name="ping_answered_no">불참으로 답했어요</string>
-    <string name="ping_answer_failed">답을 보내지 못했어요 · 눌러서 다시 답하기</string>
-    <string name="ping_moved">시간을 바꿨어요</string>
+    <string name="ping_action_move">시간 옮기기</string>
+    <string name="ping_answered_yes">간다고 답했어요</string>
+    <string name="ping_answered_no">못 간다고 답했어요</string>
+    <string name="ping_answer_failed">답을 보내지 못했어요 · 눌러서 다시 답해 주세요</string>
+    <string name="ping_moved">약속 시간을 바꿨어요</string>
     <string name="feedback_subject">오발있 피드백</string>
     <string name="feedback_body">\n\n\n앱 버전 %1$s · %2$s · Android %3$s</string>
     <!-- 이름을 늘어놓을 때 쓰는 구분자다. 앞뒤 공백을 지키려고 따옴표로 감싼다. -->
     <string name="list_separator">", "</string>
     <string name="exit_confirm">뒤로 가기를 한 번 더 누르면 앱이 닫혀요</string>
     <string name="notification_channel_friend">친구 요청</string>
-    <string name="friend_request_title">%1$s의 친구 요청</string>
+    <string name="friend_request_title">👋 %1$s의 친구 요청이 왔어요</string>
     <string name="friend_request_body">친구 탭에서 수락하거나 거절할 수 있어요</string>
     <string name="friend_accept_title">친구 요청이 수락됐어요</string>
     <string name="friend_accept_body">%1$s · 이제 친구예요</string>

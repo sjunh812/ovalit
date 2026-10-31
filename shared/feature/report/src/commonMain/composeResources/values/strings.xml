@@ -179,11 +179,11 @@
     <!-- 홈 친구 비교 카드 밑 입구다. 나까지 센 사람 수다. -->
     <string name="friends_all">전체 %1$d명 보기</string>
     <string name="friends_ranking_caption">%1$s · %2$d명</string>
-    <string name="record_recent">최근 %1$d경기</string>
-    <string name="record_cells_description">최근 경기부터 %1$s</string>
-    <string name="record_win">승</string>
-    <string name="record_loss">패</string>
-    <string name="record_draw">무</string>
+    <!-- 홈 이번 주 카드의 승패 막대 양 끝 글자와 화면 읽기 프로그램이 읽는 한 줄이다 -->
+    <string name="record_wins">%1$d승</string>
+    <string name="record_losses">%1$d패</string>
+    <string name="record_losses_draws">%1$d패 %2$d무</string>
+    <string name="record_description">%1$d승 %2$d패, 승률 %3$s</string>
     <string name="picks_agents">%1$s 요원</string>
     <string name="picks_weapons">%1$s 무기</string>
     <string name="profile_hint">내 프로필은 여기서 볼 수 있어요</string>

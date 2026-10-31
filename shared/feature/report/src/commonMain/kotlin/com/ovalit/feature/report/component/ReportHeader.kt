@@ -130,7 +130,8 @@ private fun periodCaption(report: WeeklyReport.Ready): AnnotatedString {
     val first = report.period.firstDay
     val last = report.period.lastDay
     val range = stringResource(Res.string.period_date_range, first.month.number, first.day, last.month.number, last.day)
-    val matches = stringResource(Res.string.period_matches, report.metrics.matches)
+    // 바로 밑 승패 막대가 "6승 2패"로 경기 수를 이미 말해서 막대가 없을 때만 경기 수를 적는다
+    val matches = if (report.wins + report.losses == 0) stringResource(Res.string.period_matches, report.metrics.matches) else null
     val roleText = report.mainRole?.let { mainRoleText(it, report.mainRoleShare) }
 
     // 카드 머리 오른쪽 글은 모두 보통 굵기 --t3다(docs/screens.md).
@@ -141,7 +142,9 @@ private fun periodCaption(report: WeeklyReport.Ready): AnnotatedString {
             append(WRAPPING_SEPARATOR)
         }
         append(range.keepTogether())
-        append(WRAPPING_SEPARATOR)
-        append(matches.keepTogether())
+        if (matches != null) {
+            append(WRAPPING_SEPARATOR)
+            append(matches.keepTogether())
+        }
     }
 }

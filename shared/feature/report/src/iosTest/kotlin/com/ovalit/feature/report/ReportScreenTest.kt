@@ -142,80 +142,52 @@ class ReportScreenTest {
     }
 
     @Test
-    fun `기간 경기의 승패를 적고 승률을 붙인다`() = runComposeUiTest {
+    fun `기간 경기의 승패를 막대 양 끝에 적고 승률을 붙인다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved) }
 
-        onNodeWithText("5승 2패", useUnmergedTree = true).assertExists()
-        onNodeWithText("71%", useUnmergedTree = true).assertExists()
+        onNodeWithContentDescription("5승 2패, 승률 71%").assertExists()
     }
 
-    // 한 주에 수십 판을 뛰면 칸이 바코드처럼 줄어서 가장 최근 20경기만 칸으로 둔다.
-    // 승패 글자는 기간 전체다.
+    // 막대 바로 위 기간 줄에 경기 수를 또 적으면 "7경기"와 "5승 2패"가 같은 말을 두 번 한다
     @Test
-    fun `기간 경기가 20을 넘으면 최근 20경기만 칸으로 두고 승패는 전부 센다`() = runComposeUiTest {
+    fun `승패 막대가 있으면 기간 줄에 경기 수를 적지 않는다`() = runComposeUiTest {
+        setContent { Report(ReportPreviewData.moved) }
+
+        onNodeWithText("9/27", substring = true).assertExists()
+        onNodeWithText("· 7경기", substring = true, useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun `비긴 판은 진 판 옆에 적고 승률에서 뺀다`() = runComposeUiTest {
+        val report = ReportPreviewData.moved.copy(results = listOf(true, true, true, false, null))
+        setContent { Report(report) }
+
+        onNodeWithContentDescription("3승 1패, 승률 75%").assertExists()
+    }
+
+    // 판 수가 많아도 막대는 비율이라 길이가 그대로이고 승패 글자는 기간 전체를 센다
+    @Test
+    fun `기간 경기가 많아도 막대 하나에 전부 센다`() = runComposeUiTest {
         val many = ReportPreviewData.moved.copy(results = List(30) { it % 3 != 0 })
         setContent { Report(many) }
 
-        onNodeWithText("최근 20경기", useUnmergedTree = true).assertExists()
-        onNodeWithText("20승 10패", useUnmergedTree = true).assertExists()
+        onNodeWithContentDescription("20승 10패, 승률 67%").assertExists()
     }
 
-    // 글씨를 키운 좁은 화면에서 승패 글자가 먼저 자리를 잡으면 칸이 몇 dp만 남아 바코드처럼 보인다
+    // 글씨를 키운 좁은 화면에서 글자가 먼저 자리를 잡으면 막대가 몇 dp만 남아 비율이 안 읽힌다
     @Test
-    fun `좁은 화면에서 칸이 너무 좁아지면 승패 글자를 칸 밑으로 내린다`() = runComposeUiTest {
-        val many = ReportPreviewData.moved.copy(results = List(30) { it % 3 != 0 })
+    fun `좁은 화면에서 막대가 너무 짧아지면 글자를 막대 밑으로 내린다`() = runComposeUiTest {
         setContent {
             val density = LocalDensity.current
-            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale = 1.5f)) {
-                Box(Modifier.width(320.dp)) { Report(many) }
+            // 320dp 폰에서 2배 글꼴이면 막대가 60dp쯤 남아 한 줄에 둔다.
+            // 그보다 좁은 자리에서 막대가 48dp 밑으로 줄 때 내린다.
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale = 2f)) {
+                Box(Modifier.width(280.dp)) { Report(ReportPreviewData.moved) }
             }
         }
 
-        val cells = onNodeWithContentDescription("최근 경기부터", substring = true, useUnmergedTree = true).getUnclippedBoundsInRoot()
-        val record = onNodeWithText("20승 10패", useUnmergedTree = true).getUnclippedBoundsInRoot()
-        assertTrue(record.top >= cells.bottom)
-    }
-
-    // 전략가·감시자의 빈칸을 채우는 "라운드당 어시스트"는 좁은 칸에서 가장 작은 글자로도 한 줄에 안 들어간다.
-    // 잘리지 않게 꺾고, 한 칸만 꺾여 그 칸 숫자만 내려가지 않게 모든 칸을 같이 꺾는다.
-    @Test
-    fun `달라진 점 칸 이름이 좁은 칸에 안 들어가면 모든 칸을 같이 꺾는다`() = runComposeUiTest {
-        val report = ReportPreviewData.moved.copy(
-            dynamic = listOf(
-                DynamicSlot(DynamicMetric.KAST, Movement.STEADY),
-                DynamicSlot(DynamicMetric.SURVIVAL_RATE, Movement.STEADY),
-                DynamicSlot(DynamicMetric.ASSISTS_PER_ROUND, Movement.STEADY),
-            ),
-        )
-        setContent {
-            val density = LocalDensity.current
-            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale = 1.5f)) {
-                Box(Modifier.width(320.dp)) { Report(report) }
-            }
-        }
-
-        val assists = onNodeWithText("라운드당 어시스트", useUnmergedTree = true)
-        val layouts = mutableListOf<TextLayoutResult>()
-        assists.fetchSemanticsNode().config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
-        assertFalse(layouts.single().hasVisualOverflow, "칸 이름이 잘렸다")
-        val kast = onNodeWithText("관여율", useUnmergedTree = true).getUnclippedBoundsInRoot()
-        assertEquals(assists.getUnclippedBoundsInRoot().bottom, kast.bottom, "칸마다 이름 높이가 다르다")
-    }
-
-    // 리포트는 오래된 경기부터 담지만 칸은 op.gg와 경기 탭처럼 최근 경기가 왼쪽이다
-    @Test
-    fun `승패 칸은 가장 최근 경기부터 왼쪽에 둔다`() = runComposeUiTest {
-        val report = ReportPreviewData.moved.copy(results = listOf(false, false, true, null, true))
-        setContent { Report(report) }
-
-        onNodeWithContentDescription("최근 경기부터 승, 무, 승, 패, 패", useUnmergedTree = true).assertExists()
-    }
-
-    @Test
-    fun `기간 경기가 20 이하면 최근 몇 경기라고 적지 않는다`() = runComposeUiTest {
-        setContent { Report(ReportPreviewData.moved) }
-
-        onNodeWithText("최근", substring = true, useUnmergedTree = true).assertDoesNotExist()
+        val strip = onNodeWithContentDescription("5승 2패, 승률 71%").getUnclippedBoundsInRoot()
+        assertTrue(strip.bottom - strip.top > 40.dp, "막대와 글자가 한 줄에 남았다: $strip")
     }
 
     // 요원은 판 수가 적어 승패로 적고, 5판을 못 넘겨도 그 기간 KDA는 적는다.
@@ -899,18 +871,18 @@ class ReportScreenTest {
     // 근거 줄은 떼어 두면 무엇의 숫자인지 안 읽혀서 헤드라인에 붙인다.
     // 둘 다 제목과 선 없이 고정 칸과 한 카드에 둔다.
     @Test
-    fun `짚을 점 헤드라인과 무기·요원 줄은 승패 칸과 고정 칸 사이에 둔다`() = runComposeUiTest {
+    fun `짚을 점 헤드라인과 무기·요원 줄은 승패 막대와 고정 칸 사이에 둔다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved, catalog = NamedCatalog) }
 
         onNodeWithText("짚을 점", substring = true).assertDoesNotExist()
-        val record = onNodeWithText("5승 2패", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val record = onNodeWithContentDescription("5승 2패, 승률 71%").getUnclippedBoundsInRoot()
         val headline = onNodeWithText("피해량이 평소보다 10 올랐어요.").getUnclippedBoundsInRoot()
         val firstCell = onNodeWithText("피해량").getUnclippedBoundsInRoot()
         val lastCell = onNodeWithText("헤드샷").getUnclippedBoundsInRoot()
         val weapon = onNode(noteRow("밴달", "118 → 140")).getUnclippedBoundsInRoot()
         val trend = onNodeWithText("지난 8주 흐름", substring = true).getUnclippedBoundsInRoot()
 
-        assertTrue(headline.top >= record.bottom, "헤드라인이 승패 칸 위에 있다")
+        assertTrue(headline.top >= record.bottom, "헤드라인이 승패 막대 위에 있다")
         assertTrue(weapon.top >= headline.bottom, "무기 줄이 헤드라인 위에 있다")
         assertTrue(firstCell.top >= weapon.bottom, "무기 줄이 고정 칸 밑에 있다")
         assertTrue(trend.top >= lastCell.bottom, "흐름 입구가 고정 칸 위에 있다")
@@ -918,7 +890,7 @@ class ReportScreenTest {
     }
 
     @Test
-    fun `짚을 점이 없으면 승패 칸 바로 밑에 고정 칸을 둔다`() = runComposeUiTest {
+    fun `짚을 점이 없으면 승패 막대 바로 밑에 고정 칸을 둔다`() = runComposeUiTest {
         setContent { Report(ReportPreviewData.moved.copy(note = null), catalog = NamedCatalog) }
 
         onNodeWithText("평소보다", substring = true).assertDoesNotExist()

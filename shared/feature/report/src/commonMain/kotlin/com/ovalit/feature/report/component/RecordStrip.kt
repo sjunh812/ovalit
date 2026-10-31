@@ -7,17 +7,18 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.component.OvalitText
@@ -25,119 +26,98 @@ import com.ovalit.core.designsystem.component.currentMaxWidth
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.WeeklyReport
-import com.ovalit.core.ui.SEPARATOR
-import com.ovalit.core.ui.joinedForDisplay
 import com.ovalit.core.ui.percentText
 import com.ovalit.core.ui.rememberWidestWidth
-import com.ovalit.core.ui.resources.Res as CoreUiRes
-import com.ovalit.core.ui.resources.record_wins_losses
-import com.ovalit.core.ui.winRateColor
 import com.ovalit.feature.report.resources.Res
-import com.ovalit.feature.report.resources.record_cells_description
-import com.ovalit.feature.report.resources.record_draw
-import com.ovalit.feature.report.resources.record_loss
-import com.ovalit.feature.report.resources.record_recent
-import com.ovalit.feature.report.resources.record_win
+import com.ovalit.feature.report.resources.record_description
+import com.ovalit.feature.report.resources.record_losses
+import com.ovalit.feature.report.resources.record_losses_draws
+import com.ovalit.feature.report.resources.record_wins
 import org.jetbrains.compose.resources.stringResource
 
-private val MaxCell = 14.dp
-private val MaxCellGap = 3.dp
-// 칸 하나가 이보다 좁아지면 승패 글자를 다음 줄로 내린다
-private val MinCellSlot = 7.dp
+private val RecordBarHeight = 6.dp
+private val RecordBarGap = 2.dp
+private val RecordRateGap = OvalitSpacing.md
 
-/** 칸은 가장 최근 경기부터 이만큼만 둡니다. */
-internal const val MAX_RECORD_CELLS = 20
+// 막대가 이보다 짧아지면 비율이 안 읽혀서 글자를 막대 밑 줄로 내린다
+private val MinRecordBarWidth = 48.dp
 
 /**
- * 기간 경기의 승패 칸과 "4승 2패 · 67%"입니다.
+ * 기간 경기의 승패를 비율 막대 하나와 양 끝 "6승", "2패", 승률 "75%"로 적습니다.
  * 승패가 난 경기가 없으면 두지 않습니다.
- * 칸은 최근 [MAX_RECORD_CELLS]경기까지만 두고 넘치면 칸 앞에 "최근 20경기"를 적지만 승패 글자는 기간 전체를 셉니다.
+ *
+ * 색은 막대에만 둡니다(사용자 결정).
+ * 막대가 이긴 비율을 이미 색으로 보여서 양 끝 글자는 회색이고 승률은 구간 색 없이 크고 굵게만 적습니다.
+ * 주황 승률을 빨간 "2패" 옆에 두었더니 패배 색처럼 읽혔다.
+ * 비율이라 판 수와 기간에 상관없이 모양이 같습니다.
+ * 하루에 여러 판을 하거나 기간이 4주로 넓어져도 흐트러지지 않습니다.
  */
 @Composable
 internal fun RecordStrip(report: WeeklyReport.Ready, modifier: Modifier = Modifier) {
-    val results = report.results
-    if (results.none { it != null }) return
+    val wins = report.wins
+    val losses = report.losses
+    if (wins + losses == 0) return
+    val draws = report.results.count { it == null }
     val colors = OvalitTheme.colors
-    val caption = OvalitTheme.typography.caption
+    val side = OvalitTheme.typography.label
+    val rateStyle = OvalitTheme.typography.body.copy(fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum")
 
-    // 리포트는 오래된 경기부터 담는다.
-    // 칸은 최근 경기가 왼쪽이라 뒤집는다.
-    val cells = results.takeLast(MAX_RECORD_CELLS).reversed()
-    val win = stringResource(Res.string.record_win)
-    val loss = stringResource(Res.string.record_loss)
-    val draw = stringResource(Res.string.record_draw)
-    // 칸 색만으로는 화면 읽기 프로그램이 알 수 없어서 순서대로 말해 준다
-    val description = stringResource(
-        Res.string.record_cells_description,
-        cells.map { won -> if (won == true) win else if (won == false) loss else draw }.joinedForDisplay(),
-    )
-
-    val recent = if (cells.size < results.size) stringResource(Res.string.record_recent, cells.size) else null
-    val record = stringResource(CoreUiRes.string.record_wins_losses, report.wins, report.losses)
+    val winsText = stringResource(Res.string.record_wins, wins)
+    val lossesText = if (draws > 0) {
+        stringResource(Res.string.record_losses_draws, losses, draws)
+    } else {
+        stringResource(Res.string.record_losses, losses)
+    }
     val rate = percentText(report.winRate)
-    val rateStyle = caption.copy(fontWeight = FontWeight.SemiBold)
+    // 화면 읽기 프로그램은 막대와 글자 셋을 따로 읽지 않고 한 줄로 읽는다
+    val description = stringResource(Res.string.record_description, wins, losses, rate)
 
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = OvalitSpacing.gutter)
-            .semantics(mergeDescendants = true) {},
+            .clearAndSetSemantics { contentDescription = description },
     ) {
-        // 글자가 먼저 자리를 잡고 칸이 남은 폭을 나눠 갖는다.
-        // 칸이 [MinCellSlot]보다 좁아지면 바코드처럼 보여서 승패 글자를 칸 밑 줄로 내린다.
-        val sideWidth = rememberWidestWidth(listOfNotNull(recent), caption).let { if (recent != null) it + OvalitSpacing.sm else it } +
-            OvalitSpacing.md + rememberWidestWidth(listOf(record + SEPARATOR), caption) + rememberWidestWidth(listOf(rate), rateStyle)
-        val stacked = currentMaxWidth - sideWidth < MinCellSlot * cells.size
-
-        @Composable
-        fun Cells(modifier: Modifier) {
-            BoxWithConstraints(modifier = modifier.semantics { contentDescription = description }) {
-                // 좁은 화면이나 큰 글씨에서도 칸이 줄 밖으로 넘치지 않게 칸과 간격을 같이 줄인다
-                val slot = currentMaxWidth / cells.size
-                val gap = minOf(MaxCellGap, slot / 4)
-                val cell = minOf(MaxCell, slot - gap)
-                Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
-                    cells.forEach { won ->
-                        val color = when (won) {
-                            true -> colors.pos
-                            false -> colors.neg
-                            null -> colors.bar
-                        }
-                        Box(Modifier.size(width = cell, height = MaxCell).background(color, RoundedCornerShape(3.dp)))
-                    }
-                }
-            }
-        }
-
-        @Composable
-        fun Record() {
-            OvalitText(text = record, style = caption, color = colors.t2)
-            OvalitText(text = SEPARATOR, modifier = Modifier.clearAndSetSemantics {}, style = caption, color = colors.t3)
-            val rateColor = winRateColor(report.winRate, decided = report.wins + report.losses, below = colors.t2)
-            OvalitText(text = rate, style = rateStyle, color = rateColor)
-        }
-
-        if (stacked) {
+        val textWidth = rememberWidestWidth(listOf(winsText), side) + rememberWidestWidth(listOf(lossesText), side) +
+            rememberWidestWidth(listOf(rate), rateStyle) + OvalitSpacing.sm * 2 + RecordRateGap
+        if (currentMaxWidth - textWidth < MinRecordBarWidth) {
             Column(verticalArrangement = Arrangement.spacedBy(OvalitSpacing.xs)) {
-                Cells(Modifier.fillMaxWidth())
+                Bar(wins = wins, draws = draws, losses = losses, modifier = Modifier.fillMaxWidth())
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (recent != null) {
-                        OvalitText(text = recent, style = caption, color = colors.t3)
-                        Spacer(Modifier.width(OvalitSpacing.sm))
-                    }
-                    Record()
+                    OvalitText(text = winsText, style = side, color = colors.t2, maxLines = 1)
+                    Spacer(Modifier.width(OvalitSpacing.sm))
+                    OvalitText(text = lossesText, style = side, color = colors.t2, maxLines = 1)
+                    Spacer(Modifier.weight(1f))
+                    OvalitText(text = rate, style = rateStyle, color = colors.t1, maxLines = 1)
                 }
             }
         } else {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (recent != null) {
-                    OvalitText(text = recent, style = caption, color = colors.t3)
-                    Spacer(Modifier.width(OvalitSpacing.sm))
-                }
-                Cells(Modifier.weight(1f))
-                Spacer(Modifier.width(OvalitSpacing.md))
-                Record()
+                OvalitText(text = winsText, style = side, color = colors.t2, maxLines = 1)
+                Spacer(Modifier.width(OvalitSpacing.sm))
+                Bar(wins = wins, draws = draws, losses = losses, modifier = Modifier.weight(1f))
+                Spacer(Modifier.width(OvalitSpacing.sm))
+                OvalitText(text = lossesText, style = side, color = colors.t2, maxLines = 1)
+                Spacer(Modifier.width(RecordRateGap))
+                OvalitText(text = rate, style = rateStyle, color = colors.t1, maxLines = 1)
             }
+        }
+    }
+}
+
+// 이긴 판, 비긴 판, 진 판 순으로 판 수만큼 나눠 칠한다.
+// 양 끝만 둥글고 사이는 2dp 틈으로 가른다.
+@Composable
+private fun Bar(wins: Int, draws: Int, losses: Int, modifier: Modifier) {
+    val colors = OvalitTheme.colors
+    Row(
+        modifier = modifier
+            .height(RecordBarHeight)
+            .clip(RoundedCornerShape(RecordBarHeight / 2)),
+        horizontalArrangement = Arrangement.spacedBy(RecordBarGap),
+    ) {
+        listOf(wins to colors.pos, draws to colors.bar, losses to colors.neg).forEach { (count, color) ->
+            if (count > 0) Box(Modifier.weight(count.toFloat()).fillMaxHeight().background(color))
         }
     }
 }

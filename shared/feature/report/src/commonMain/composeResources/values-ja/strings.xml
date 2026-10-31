@@ -176,12 +176,11 @@
     <string name="friends_metric_button">%1$s、比べる指標を変更</string>
     <string name="friends_all">全%1$d人を見る</string>
     <string name="friends_ranking_caption">%1$s · %2$d人</string>
-    <string name="record_recent">直近%1$d試合</string>
-    <!-- 화면 읽기 프로그램이 읽는 말이라 한 글자(勝・敗・分) 대신 풀어 쓴다 -->
-    <string name="record_cells_description">最近の試合から順に%1$s</string>
-    <string name="record_win">勝ち</string>
-    <string name="record_loss">負け</string>
-    <string name="record_draw">引き分け</string>
+    <!-- 홈 이번 주 카드의 승패 막대 양 끝 글자와 화면 읽기 프로그램이 읽는 한 줄이다 -->
+    <string name="record_wins">%1$d勝</string>
+    <string name="record_losses">%1$d敗</string>
+    <string name="record_losses_draws">%1$d敗%2$d分</string>
+    <string name="record_description">%1$d勝%2$d敗、勝率%3$s</string>
     <string name="picks_agents">%1$sのエージェント</string>
     <string name="picks_weapons">%1$sの武器</string>
     <string name="profile_hint">自分のプロフィールはここから見られます</string>

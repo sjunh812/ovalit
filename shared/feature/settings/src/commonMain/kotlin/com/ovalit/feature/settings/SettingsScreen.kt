@@ -483,7 +483,7 @@ private fun NotificationsBlockedRow(onClick: () -> Unit) {
 private fun RowText(title: String, description: String?, enabled: Boolean) {
     val colors = OvalitTheme.colors
     Column(verticalArrangement = Arrangement.spacedBy(OvalitSpacing.xs)) {
-        OvalitText(text = title, style = OvalitTheme.typography.body, color = if (enabled) colors.t1 else colors.t4)
+        OvalitText(text = title, style = OvalitTheme.typography.bodyStrong, color = if (enabled) colors.t1 else colors.t4)
         if (description != null) {
             OvalitText(text = description, style = OvalitTheme.typography.caption, color = if (enabled) colors.t3 else colors.t4)
         }

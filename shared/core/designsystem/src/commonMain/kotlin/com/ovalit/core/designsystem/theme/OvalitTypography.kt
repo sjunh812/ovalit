@@ -42,6 +42,10 @@ data class OvalitTypography(
     /** 홈 기간 이름("이번 주"), 시트 제목, 티어 이름입니다. */
     val titleM: TextStyle,
     val body: TextStyle,
+    /**
+     * 목록 줄 제목(친구 이름, 맵 이름, 설정 줄)입니다.
+     * 밑의 보통 굵기 설명보다 한 단계만 굵은 Medium입니다.
+     */
     val bodyStrong: TextStyle,
     /** 카드 제목("달라진 점", "요원")과 시트 안의 질문("어떻게 계산하나요?")입니다. */
     val cardTitle: TextStyle,
@@ -90,7 +94,8 @@ fun ovalitTypography(fontFamily: FontFamily = FontFamily.Default, locale: Locale
         titleL = text(size = 22, lineHeight = 30, tracking = -0.4, weight = FontWeight.Bold, lineBreak = KoreanLineBreak),
         titleM = text(size = 20, lineHeight = 28, tracking = -0.3, weight = FontWeight.Bold, lineBreak = KoreanLineBreak),
         body = text(size = 15, lineHeight = 23, tracking = -0.1, weight = FontWeight.Normal),
-        bodyStrong = text(size = 15, lineHeight = 23, tracking = -0.1, weight = FontWeight.SemiBold),
+        // SemiBold였을 때는 친구 탭처럼 줄이 여럿인 목록에서 이름마다 굵어 카드 제목과 무게가 겹쳤다
+        bodyStrong = text(size = 15, lineHeight = 23, tracking = -0.1, weight = FontWeight.Medium),
         cardTitle = text(size = 17, lineHeight = 24, tracking = -0.2, weight = FontWeight.Bold, lineBreak = KoreanLineBreak),
         button = text(size = 17, lineHeight = 24, tracking = -0.2, weight = FontWeight.SemiBold, lineBreak = KoreanLineBreak),
         // 짚을 점 근거 줄처럼 반쪽 폭에 이름과 숫자를 나란히 두는 곳이 있어 13이다

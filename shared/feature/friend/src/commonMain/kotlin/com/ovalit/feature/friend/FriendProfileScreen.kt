@@ -63,6 +63,7 @@ import com.ovalit.core.ui.ProfileNoActMatchesSection
 import com.ovalit.core.ui.ProfileQueueChips
 import com.ovalit.core.ui.ProfileQueueEmptySection
 import com.ovalit.core.ui.ProfileSection
+import com.ovalit.core.ui.ProfileSectionTitle
 import com.ovalit.core.ui.ProfileShotsSection
 import com.ovalit.core.ui.ProfileSkeleton
 import com.ovalit.core.ui.ProfileStatsSection
@@ -79,6 +80,7 @@ import com.ovalit.feature.friend.resources.Res
 import com.ovalit.feature.friend.resources.cancel
 import com.ovalit.feature.friend.resources.compare_caption
 import com.ovalit.feature.friend.resources.compare_no_matches
+import com.ovalit.feature.friend.resources.compare_not_enough_mine
 import com.ovalit.feature.friend.resources.compare_title
 import com.ovalit.feature.friend.resources.more
 import com.ovalit.feature.friend.resources.private_body
@@ -250,7 +252,11 @@ internal fun FriendProfileScreen(
                     } else {
                         ProfileNoActMatchesSection()
                     }
-                    (uiState.myReport as? WeeklyReport.Ready)?.let { mine -> CompareSection(mine, uiState, name) }
+                    when (val mine = uiState.myReport) {
+                        is WeeklyReport.Ready -> CompareSection(mine, uiState, name)
+                        // 칩을 바꿨는데 카드가 말없이 사라지면 칩이 안 먹힌 것처럼 보인다
+                        is WeeklyReport.NotEnoughMatches -> CompareUnavailableSection()
+                    }
                     if (showStats) {
                         ProfileShotsSection(profile.summary.metrics.shots)
                         ProfileAgentsSection(profile.agents, uiState.catalog) { onOpenAgents(profile.queueFilter) }
@@ -316,11 +322,26 @@ private fun CompareSection(mine: WeeklyReport.Ready, uiState: FriendProfileUiSta
     }
 }
 
+// 고른 큐로 센 내 리포트가 없으면 견줄 기간이 없어서 까닭만 적는다
+@Composable
+private fun CompareUnavailableSection() {
+    ProfileSection {
+        ProfileSectionTitle(title = stringResource(Res.string.compare_title))
+        Spacer(Modifier.height(OvalitSpacing.xs))
+        OvalitText(
+            text = stringResource(Res.string.compare_not_enough_mine),
+            style = OvalitTheme.typography.caption,
+            color = OvalitTheme.colors.t3,
+        )
+    }
+}
+
 // 친구 경기에는 내가 안 뛴 경기의 다른 사람 기록이 섞여 있다.
 // 앱을 안 쓰는 사람의 기록은 내가 뛴 경기 안에서만 보여줄 수 있어서 줄을 눌러도 열지 않는다(CLAUDE.md 지켜야 할 선).
 @Composable
 private fun RecentMatches(uiState: FriendProfileUiState.Success, name: String, onOpenMatches: () -> Unit) {
-    val matches = uiState.friend.matches.sortedByDescending { it.startedAt }
+    // 분마다 시각 글자를 다시 그려도 경기가 그대로면 다시 정렬하지 않는다
+    val matches = remember(uiState.friend.matches) { uiState.friend.matches.sortedByDescending { it.startedAt } }
     if (matches.isEmpty()) return
     Spacer(Modifier.height(OvalitCardGap))
     // 경기 줄마다 위아래 여백이 있어 카드 아래 여백은 줄인다

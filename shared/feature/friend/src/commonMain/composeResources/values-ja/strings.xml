@@ -32,6 +32,7 @@
     <!-- 다른 칸은 이번 액트인데 나와 비교만 내 리포트 기간이라 기간을 같이 적는다 -->
     <string name="compare_caption">%1$s · 自分と%2$s</string>
     <string name="compare_no_matches">%2$sの%1$sの試合がありません</string>
+    <string name="compare_not_enough_mine">自分の記録が足りず、まだ比較できません</string>
     <string name="recent_title">%1$sの最近の試合</string>
     <string name="recent_all">すべて見る</string>
     <string name="matches_title">%1$sの試合</string>

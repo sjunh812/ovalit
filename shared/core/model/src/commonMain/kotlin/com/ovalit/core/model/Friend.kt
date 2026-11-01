@@ -51,7 +51,7 @@ enum class FriendRequestSource {
 
 /**
  * S5 머리 바로 밑의 "같이 뛴 경기 12경기 8승 4패"입니다.
- * 큐 칩이 없는 화면이라 [QueueFilter.PROFILE]을 따라 그 친구가 우리 팀이었던 내 경쟁 + 일반 경기만 셉니다.
+ * S5 큐 칩 위에 있어서 칩과 상관없이 [QueueFilter.PROFILE]을 따라 그 친구가 우리 팀이었던 내 경쟁 + 일반 경기만 셉니다.
  * 데스매치처럼 팀 승패가 없는 판까지 세면 경기 수와 승패 합이 어긋납니다.
  */
 data class SharedRecord(

@@ -25,6 +25,7 @@ import com.ovalit.core.data.FakePingRepository
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.Friend
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.model.WeeklyReport
 import com.ovalit.core.testing.SameThread
 import com.ovalit.core.testing.TestFriendRepository
 import kotlin.random.Random
@@ -153,6 +154,16 @@ class FriendScreensTest {
             .map { kda[it].getUnclippedBoundsInRoot().top }
             .filter { it > compare.bottom && it < hitShots.top }
         assertEquals(1, kdaRows.size, "나와 비교에 KDA 줄이 없다")
+    }
+
+    // 칩을 바꿨는데 내 리포트가 없을 때 카드가 말없이 사라지면 칩이 안 먹힌 것처럼 보인다
+    @Test
+    fun `내 기록이 모자라면 나와 비교 자리에 까닭을 적는다`() = runComposeUiTest {
+        val state = FriendPreviewData.profile.copy(myReport = WeeklyReport.NotEnoughMatches(played = 2))
+        setContent { Themed { FriendProfileScreen(state, {}, {}, {}) } }
+
+        onNodeWithText("나와 비교", useUnmergedTree = true).assertExists()
+        onNodeWithText("내 기록이 모자라 아직 비교할 수 없어요", useUnmergedTree = true).assertExists()
     }
 
     // 친구 경기 목록은 경기 목록과 같은 규칙이다(docs/screens.md)

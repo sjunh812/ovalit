@@ -31,6 +31,7 @@
     <!-- 다른 칸은 이번 액트인데 나와 비교만 내 리포트 기간이라 기간을 같이 적는다 -->
     <string name="compare_caption">%1$s · 나와 %2$s</string>
     <string name="compare_no_matches">%2$s의 %1$s 경기가 없어요</string>
+    <string name="compare_not_enough_mine">내 기록이 모자라 아직 비교할 수 없어요</string>
     <string name="recent_title">%1$s의 최근 경기</string>
     <string name="recent_all">전체 보기</string>
     <string name="matches_title">%1$s의 경기</string>

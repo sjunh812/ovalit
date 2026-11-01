@@ -1405,7 +1405,7 @@ class ReportScreenTest {
         setContent { Social(rival = FriendStanding(PlayerId("junho"), "준호#KR1", rival)) }
 
         onNodeWithText("라이벌 · 준호#KR1").assertExists()
-        onNodeWithText("5개 중 3개 앞섬").assertExists()
+        onNodeWithText("5개 중 3개 앞서요").assertExists()
         // 고정 칸의 KDA와 라이벌 줄의 KDA다
         onAllNodesWithText("KDA", useUnmergedTree = true).assertCountEquals(2)
     }

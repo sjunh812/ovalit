@@ -59,7 +59,7 @@
     <string name="cancel">キャンセル</string>
     <string name="version">バージョン %1$s</string>
     <string name="ad_free">広告なしで見る</string>
-    <string name="ad_free_description">広告を1本最後まで見ると、24時間広告が表示されません。</string>
+    <string name="ad_free_description">広告1〜2本を最後まで見ると、24時間広告が表示されません。</string>
     <string name="ad_free_until_today">今日%1$sまで</string>
     <string name="ad_free_until_tomorrow">明日%1$sまで</string>
 </resources>

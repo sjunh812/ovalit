@@ -32,7 +32,7 @@ import kotlinx.datetime.TimeZone
 @OptIn(ExperimentalTestApi::class)
 class SettingsScreenTest {
 
-    // 보상형 광고 한 편으로 24시간 광고를 숨긴다.
+    // 보상형 광고(한 번에 1~2편)로 24시간 광고를 숨긴다.
     // 광고가 꺼져 있으면 줄이 없다.
     @Test
     fun `광고 없이 보기 줄은 광고가 있을 때만 두고 누르면 시트를 띄운다`() = runComposeUiTest {

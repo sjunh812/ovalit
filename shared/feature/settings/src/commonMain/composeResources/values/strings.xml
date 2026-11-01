@@ -60,7 +60,7 @@
     <string name="version">버전 %1$s</string>
     <!-- 보상형 광고로 24시간 광고를 숨기는 줄이다. 숨기는 동안에는 끝나는 시각을 적는다. -->
     <string name="ad_free">광고 없이 보기</string>
-    <string name="ad_free_description">광고 한 편을 끝까지 보면 24시간 동안 광고가 나오지 않아요.</string>
+    <string name="ad_free_description">광고 1~2편을 끝까지 보면 24시간 동안 광고가 나오지 않아요.</string>
     <string name="ad_free_until_today">오늘 %1$s까지</string>
     <string name="ad_free_until_tomorrow">내일 %1$s까지</string>
 </resources>

@@ -17,7 +17,7 @@
     <string name="consent_public_body">친구가 되면 서로의 프로필과 경기를 볼 수 있어요. 설정에서 전적 공개를 끄면 친구도 볼 수 없어요.</string>
     <string name="consent_unlink_title">언제든 해제할 수 있어요</string>
     <string name="consent_unlink_body">설정에서 연동을 해제하면 저장된 데이터도 같이 지워요.</string>
-    <string name="consent_password">비밀번호는 Riot 로그인 페이지에서만 입력해요. 이 앱은 비밀번호를 받지도, 저장하지도 않아요.</string>
+    <string name="consent_password">비밀번호는 Riot 로그인 페이지에서만 입력해요. 이 앱은 비밀번호를 받지도 저장하지도 않아요.</string>
     <string name="consent_continue">Riot 계정으로 계속하기</string>
     <string name="consent_note">계속하면 Riot 로그인 페이지로 이동해요.</string>
 

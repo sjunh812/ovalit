@@ -163,7 +163,7 @@
     <string name="gap_percent">%1$s%</string>
     <!-- 라이벌과 친구 비교 -->
     <string name="rival_title">라이벌 · %1$s</string>
-    <string name="rival_lead">%1$d개 중 %2$d개 앞섬</string>
+    <string name="rival_lead">%1$d개 중 %2$d개 앞서요</string>
     <string name="rival_no_matches">%1$s 경기가 없어요</string>
     <string name="nudge_invite_title">같이 뛰는 친구를 초대해 보세요</string>
     <string name="nudge_invite_body">초대 링크로 친구가 되면 매주 기록을 나란히 놓고 볼 수 있어요</string>

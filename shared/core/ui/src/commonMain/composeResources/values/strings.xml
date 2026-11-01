@@ -158,7 +158,7 @@
     <string name="ping_my_answer_yes">참석으로 답했어요</string>
     <string name="ping_my_answer_no">불참으로 답했어요</string>
     <string name="ping_my_answer_other">%1$s 제안했어요</string>
-    <string name="ping_my_answer_pending">답을 기다리고 있어요</string>
+    <string name="ping_my_answer_pending">내 답을 기다리고 있어요</string>
     <string name="profile_loading">프로필을 불러오고 있어요</string>
     <string name="loading">불러오고 있어요</string>
     <!-- 그 판 스코어보드에서의 자리. 게임이 붙이는 이름을 따른다. -->

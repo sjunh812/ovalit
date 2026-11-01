@@ -151,7 +151,7 @@
     <string name="ping_my_answer_yes">参加で回答しました</string>
     <string name="ping_my_answer_no">不参加で回答しました</string>
     <string name="ping_my_answer_other">%1$sを提案しました</string>
-    <string name="ping_my_answer_pending">回答を待っています</string>
+    <string name="ping_my_answer_pending">あなたの回答を待っています</string>
     <string name="profile_loading">プロフィールを読み込んでいます</string>
     <string name="loading">読み込んでいます</string>
     <string name="placement_mvp">MVP</string>

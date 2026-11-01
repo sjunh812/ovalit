@@ -352,21 +352,23 @@ iOS에는 광고, 푸시, 사용 통계가 없고 첫 수집은 앱이 떠 있�
 
 | 클래스 | 하는 일 |
 | --- | --- |
-| `BaselineProfileGenerator` | 켜서 홈까지(시작 프로필 포함), 홈 스크롤, 경기 탭과 S3, 친구·설정 탭과 내 프로필을 지나 프로필을 만듭니다 |
+| `BaselineProfileGenerator` | 앱을 켜 홈까지 가고(시작 프로필 포함) 홈을 스크롤한 뒤 경기 탭과 S3, 친구·설정 탭과 내 프로필 화면을 돌며 Baseline Profile을 만듭니다 |
 | `StartupBenchmark` | 처음부터 켜서 첫 화면까지 잽니다. 프로필 없이 켠 것과 프로필로 컴파일한 것을 나란히 봅니다 |
 | `HomeBenchmark` | "리포트 보기"를 눌러 홈이 들어올 때와 홈을 끝까지 넘길 때의 프레임을 잽니다 |
 
 화면 글자로 버튼을 찾아서 기기 언어가 한국어(또는 앱이 모르는 언어)여야 합니다. 지금은 메모리 저장소라 앱을 켤 때마다 인트로부터
 첫 수집을 거쳐 홈으로 갑니다. 연결된 기기를 모두 쓰니 `ANDROID_SERIAL`로 에뮬레이터만 고릅니다.
 
-프로필은 손으로 만들어 `composeApp/src/main/generated/baselineProfiles`에 둡니다. 릴리스를 빌드할 때마다 만들면 CI와 로컬 빌드가
-기기를 요구합니다. 시작에 닿는 화면이나 홈을 크게 바꾸면 다시 만들어 같은 커밋에 넣습니다.
+프로필은 필요할 때 아래 명령을 직접 돌려 만들고 `composeApp/src/main/generated/baselineProfiles`에 둡니다. 릴리스를 빌드할 때마다
+만들면 CI와 로컬 빌드가
+기기를 요구합니다. 앱을 켤 때 거치는 화면이나 홈을 크게 바꾸면 다시 만들어 같은 커밋에 넣습니다.
 
 ```bash
 ANDROID_SERIAL=emulator-5554 ./gradlew :composeApp:generateBaselineProfile
 ```
 
-잴 때는 Macrobenchmark만 돌립니다. 에뮬레이터는 숫자가 실제 폰과 달라 기본으로 막혀 있어서 막음을 풀고, 같은 기기의 전후만
+잴 때는 Macrobenchmark만 돌립니다. 에뮬레이터는 숫자가 실제 폰과 달라 기본으로 막혀 있으니 아래처럼 풀어서 돌리고 같은 기기의
+전후만
 견줍니다. 재기 전에 맥과 에뮬레이터 부하부터 봅니다.
 
 ```bash

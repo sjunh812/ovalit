@@ -124,7 +124,7 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 
 - [x] T045 [P] [US2] Figma S2 경기 목록(날짜 머리, 경기 줄 칩 MVP·팀 MVP·에이스·클러치 톤온톤, 등수로 끝나는 경기 줄, 거르기 시트, 진행 줄 상태)을 라이트·다크와 화면 설명으로 in Figma "화면" 페이지의 "경기 (S2)" 줄
 - [x] T046 [P] [US2] Figma S3 경기 상세 세 탭(스코어보드 친구 표시, 라운드 막대는 이긴 라운드만 pos, 내 기록)과 상태(라운드 없는 모드, 스켈레톤) in Figma "화면" 페이지의 "경기 상세 (S3)" 줄 (2026-11-01: 세 탭 라이트·다크와 상태 6장(펼친 줄, 친구 아닌 사람 시트, 친구 요청 시트, 데스매치, 건틀릿, 스켈레톤)을 벡터로 그렸다)
-- [ ] T090 [US2] S3 스코어보드에서 사람을 눌러 펼치는 기록(지금 피해량, 헤드샷, 첫 킬, 첫 데스, 멀티킬)을 실제 경기 응답을 본 뒤 늘리고 순서를 다시 정한다(사용자 요청 2026-10-31). 후보는 트레이드(해 준 것과 받은 것), 관여율, 클러치·에이스, 응답에 오면 Performance Score다. 순서 초안은 게임 스코어보드와 전적 앱(tracker.gg 열 순서, Blitz 내 줄)을 따라 점수와 K/D/A → 피해량·헤드샷 → 첫 킬·첫 데스 → 트레이드·관여율 → 멀티킬·클러치다. op.gg OP Score, tracker TRS 같은 종합 점수와 분포 등수는 가져오지 않는다. T041·T042 뒤 in shared/feature/match/src/commonMain/kotlin/com/ovalit/feature/match/MatchDetailParts.kt, docs/screens.md S3
+- [ ] T090 [US2] S3 스코어보드에서 사람을 눌러 펼치는 기록(지금은 피해량, 헤드샷, 첫 킬, 첫 데스, 멀티킬)을 실제 경기 응답을 본 뒤 늘리고 순서를 다시 정한다(사용자 요청 2026-10-31). 후보는 트레이드(해 준 것과 받은 것), 관여율, 클러치·에이스, 응답에 오면 Performance Score다. 순서 초안은 게임 스코어보드와 전적 앱(tracker.gg 열 순서, Blitz 내 줄)을 따라 점수와 K/D/A → 피해량·헤드샷 → 첫 킬·첫 데스 → 트레이드·관여율 → 멀티킬·클러치다. op.gg OP Score, tracker TRS 같은 종합 점수와 분포 등수는 가져오지 않는다. T041·T042 뒤 in shared/feature/match/src/commonMain/kotlin/com/ovalit/feature/match/MatchDetailParts.kt, docs/screens.md S3
 
 **Checkpoint**: P2 독립 검사가 통과한다.
 

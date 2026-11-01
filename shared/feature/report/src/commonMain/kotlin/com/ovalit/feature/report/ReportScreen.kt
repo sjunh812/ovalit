@@ -2,7 +2,6 @@ package com.ovalit.feature.report
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,16 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitCard
 import com.ovalit.core.designsystem.component.OvalitCardGap
@@ -65,7 +58,6 @@ import com.ovalit.feature.report.component.NudgeBanner
 import com.ovalit.feature.report.component.PeriodHeader
 import com.ovalit.feature.report.component.PeriodPicksSection
 import com.ovalit.feature.report.component.PingHomeCard
-import com.ovalit.feature.report.component.ProfileHint
 import com.ovalit.feature.report.component.RecordStrip
 import com.ovalit.feature.report.component.ReportSkeleton
 import com.ovalit.feature.report.component.ReportTopBar
@@ -192,70 +184,58 @@ internal fun ReportScreen(
                 onProfileHintShown()
             }
         }
-        // 머리 줄이 스크롤되면 아바타 자리가 바뀌어 화면과 아바타를 모두 루트 기준으로 재고 그 차이에 안내를 둔다.
-        // boundsInRoot는 위로 가려지는 동안 폭이 0까지 줄어 화살표 자리가 음수가 되니 아바타는 잘리지 않은 크기로 잰다.
-        var screenOrigin by remember { mutableStateOf(Offset.Zero) }
-        var avatarInRoot by remember { mutableStateOf<Rect?>(null) }
         val openProfile = {
             hintShown = false
             onOpenProfile()
         }
-        Box(modifier = Modifier.fillMaxSize().onGloballyPositioned { screenOrigin = it.positionInRoot() }) {
-            OvalitPullToRefresh(
-                isRefreshing = isRefreshing,
-                onRefresh = onRefresh,
-                modifier = Modifier.fillMaxSize().safeDrawingPadding(),
-            ) {
-                val scroll = rememberScrollState()
-                ScrollToTopOnReselect(scroll)
-                Column(modifier = Modifier.fillMaxSize().verticalScroll(scroll)) {
-                    ReportTopBar(
-                        badge = badge,
-                        onOpenProfile = openProfile,
-                        onAvatarPositioned = { avatarInRoot = Rect(it.positionInRoot(), it.size.toSize()) },
-                    )
-                    Spacer(Modifier.height(OvalitSpacing.xs))
-                    QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
-                    Spacer(Modifier.height(OvalitSpacing.md))
-                    // 여러 판을 받는 동안만 뜬다.
-                    // 밑의 숫자가 왜 그대로인지 여기서 알린다.
-                    NewMatchesLine(newMatches, bottomSpacing = OvalitSpacing.lg)
-
-                    Column(verticalArrangement = Arrangement.spacedBy(OvalitCardGap)) {
-                        // 답해야 하는 ㅇㅂㅇ이 리포트에 묻히지 않게 맨 위에 둔다
-                        homePing?.let { home -> PingHomeCard(home = home, timeZone = timeZone, onClick = { onOpenPing(home.ping.id) }) }
-                        if (uiState.needsImport) {
-                            Reimport(onClick = onReimport)
-                        } else if (uiState.waitingForNewMatches) {
-                            ReportSkeleton(withChips = false)
-                        } else when (val report = uiState.report) {
-                            is WeeklyReport.Ready -> ReportContent(
-                                report = report,
-                                queueFilter = uiState.queueFilter,
-                                rival = uiState.rival,
-                                friends = uiState.friends,
-                                nudge = uiState.nudge,
-                                onShareInvite = onShareInvite,
-                                onSelectRival = onSelectRival,
-                                catalog = catalog,
-                                // S7, S6도 칩이 고른 큐로 세어 카드에서 본 숫자와 같게 연다
-                                onOpenAgents = { onOpenAgents(uiState.queueFilter) },
-                                onOpenWeapons = { onOpenWeapons(uiState.queueFilter) },
-                                onOpenFriendRanking = { metric -> onOpenFriendRanking(uiState.queueFilter, metric) },
-                            )
-                            is WeeklyReport.NotEnoughMatches -> NotEnoughMatches(report)
-                        }
-                    }
-
-                    Spacer(Modifier.height(OvalitSpacing.xxl))
-                }
-            }
-            if (hintShown) {
-                ProfileHint(
-                    avatar = avatarInRoot?.translate(-screenOrigin),
-                    onDismiss = { hintShown = false },
-                    modifier = Modifier.matchParentSize(),
+        OvalitPullToRefresh(
+            isRefreshing = isRefreshing,
+            onRefresh = onRefresh,
+            modifier = Modifier.fillMaxSize().safeDrawingPadding(),
+        ) {
+            val scroll = rememberScrollState()
+            ScrollToTopOnReselect(scroll)
+            Column(modifier = Modifier.fillMaxSize().verticalScroll(scroll)) {
+                ReportTopBar(
+                    badge = badge,
+                    onOpenProfile = openProfile,
+                    profileHint = hintShown,
+                    onDismissProfileHint = { hintShown = false },
                 )
+                Spacer(Modifier.height(OvalitSpacing.xs))
+                QueueChips(selected = uiState.queueFilter, onSelect = onSelectQueue)
+                Spacer(Modifier.height(OvalitSpacing.md))
+                // 여러 판을 받는 동안만 뜬다.
+                // 밑의 숫자가 왜 그대로인지 여기서 알린다.
+                NewMatchesLine(newMatches, bottomSpacing = OvalitSpacing.lg)
+
+                Column(verticalArrangement = Arrangement.spacedBy(OvalitCardGap)) {
+                    // 답해야 하는 ㅇㅂㅇ이 리포트에 묻히지 않게 맨 위에 둔다
+                    homePing?.let { home -> PingHomeCard(home = home, timeZone = timeZone, onClick = { onOpenPing(home.ping.id) }) }
+                    if (uiState.needsImport) {
+                        Reimport(onClick = onReimport)
+                    } else if (uiState.waitingForNewMatches) {
+                        ReportSkeleton(withChips = false)
+                    } else when (val report = uiState.report) {
+                        is WeeklyReport.Ready -> ReportContent(
+                            report = report,
+                            queueFilter = uiState.queueFilter,
+                            rival = uiState.rival,
+                            friends = uiState.friends,
+                            nudge = uiState.nudge,
+                            onShareInvite = onShareInvite,
+                            onSelectRival = onSelectRival,
+                            catalog = catalog,
+                            // S7, S6도 칩이 고른 큐로 세어 카드에서 본 숫자와 같게 연다
+                            onOpenAgents = { onOpenAgents(uiState.queueFilter) },
+                            onOpenWeapons = { onOpenWeapons(uiState.queueFilter) },
+                            onOpenFriendRanking = { metric -> onOpenFriendRanking(uiState.queueFilter, metric) },
+                        )
+                        is WeeklyReport.NotEnoughMatches -> NotEnoughMatches(report)
+                    }
+                }
+
+                Spacer(Modifier.height(OvalitSpacing.xxl))
             }
         }
     }
@@ -341,7 +321,7 @@ private fun ReportContent(
             OvalitStage { OvalitCard { DynamicMetricSection(report, onOpenMetric = { openDynamic = it }, lines = metricLines) } }
         }
         // 이번 주 요원과 무기는 이번 주 카드라 액트 단위인 돌아보기보다 먼저 둔다(사용자 결정).
-        // S6과 S7이 경쟁 + 일반만 보니 기타 모드에는 두지 않는다.
+        // S6과 S7은 홈 칩의 큐를 넘겨받는데 기타 모드는 세지 않아 기타 칩에는 두지 않는다.
         OvalitStage { PeriodPicksSection(report, catalog, onOpenAgents = onOpenAgents, onOpenWeapons = onOpenWeapons) }
         report.insight?.let { insight ->
             OvalitStage {

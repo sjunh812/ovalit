@@ -576,7 +576,30 @@ class ReportScreenTest {
         onNodeWithText("내 프로필은 여기서 볼 수 있어요").assertDoesNotExist()
     }
 
-    // 아바타가 위로 스크롤돼 가려지는 동안 잘린 폭이 0까지 줄면 화살표 자리가 음수가 되어 앱이 죽는다
+    // 칩 위에 띄웠더니 기타 칩을 가려서 그 칩을 누르면 칩 대신 안내가 닫혔다
+    @Test
+    fun `내 프로필 안내는 칩을 가리지 않고 닫으면 칩이 올라온다`() = runComposeUiTest {
+        setContent {
+            OvalitTheme {
+                ReportScreen(
+                    uiState = ReportUiState.Success(QueueFilter.COMPETITIVE_AND_UNRATED, ReportPreviewData.moved),
+                    onSelectQueue = {},
+                    badge = PlayerBadge("오발러#KR1", tier = 16, tierName = "플래티넘 2"),
+                    profileHint = true,
+                )
+            }
+        }
+        val hint = onNodeWithText("내 프로필은 여기서 볼 수 있어요").getUnclippedBoundsInRoot()
+        val chipTop = onNodeWithText("기타").getUnclippedBoundsInRoot().top
+        assertTrue(hint.bottom <= chipTop, "안내(${hint.bottom})가 칩(${chipTop})과 겹쳤다")
+
+        onNodeWithText("내 프로필은 여기서 볼 수 있어요").performClick()
+        waitForIdle()
+
+        val chipTopAfter = onNodeWithText("기타").getUnclippedBoundsInRoot().top
+        assertTrue(chipTopAfter < chipTop, "안내를 닫아도 칩이 올라오지 않았다")
+    }
+
     @Test
     fun `내 프로필 안내를 띄운 채 스크롤해도 머리 줄을 따라간다`() = runComposeUiTest {
         setContent {

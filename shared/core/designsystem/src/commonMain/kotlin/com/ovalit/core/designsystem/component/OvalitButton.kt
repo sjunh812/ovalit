@@ -19,6 +19,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ovalit.core.designsystem.icon.OvalitIcon
 import com.ovalit.core.designsystem.theme.OvalitSpacing
@@ -95,7 +97,7 @@ fun OvalitWeakButton(
         background = colors.fill,
         pressColor = colors.t1,
     ) {
-        OvalitText(text = text, style = OvalitTheme.typography.bodyStrong, color = colors.t1)
+        OvalitText(text = text, style = bodyButtonStyle(), color = colors.t1)
     }
 }
 
@@ -118,11 +120,16 @@ fun OvalitDangerButton(
         background = neg.copy(alpha = DangerContainerAlpha),
         pressColor = neg,
     ) {
-        OvalitText(text = text, style = OvalitTheme.typography.bodyStrong, color = neg)
+        OvalitText(text = text, style = bodyButtonStyle(), color = neg)
     }
 }
 
 private const val DangerContainerAlpha = 0.1f
+
+// 약한 버튼과 위험 버튼은 본문 크기(15)지만 버튼이라 굵기는 버튼과 같은 SemiBold다.
+// 목록 줄 제목(bodyStrong)이 Medium으로 내려가도 버튼 글자는 따라 내려가지 않게 따로 둔다.
+@Composable
+private fun bodyButtonStyle(): TextStyle = OvalitTheme.typography.bodyStrong.copy(fontWeight = FontWeight.SemiBold)
 
 // `clickable`이 안의 글자를 묶어 읽어서 Role.Button만 달면 화면 읽기 프로그램이 "○○, 버튼"으로 한 번에 읽는다
 @Composable

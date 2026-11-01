@@ -10,9 +10,29 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 
 class FakeFriendRepositoryTest {
+
+    // 앱은 앱 수명 스코프를 넘겨 가짜 친구 경기를 메인 스레드 밖에서 만든다
+    @Test
+    fun `스코프를 넘기면 친구를 뒤에서 채운다`() = runTest {
+        val repository = FakeFriendRepository(scope = backgroundScope)
+
+        assertEquals(4, repository.friends.first { it.isNotEmpty() }.size)
+    }
+
+    // 채우던 게 해제 뒤에 끝나 친구가 다시 생기면 안 된다
+    @Test
+    fun `채우기 전에 연동을 해제하면 친구를 채우지 않는다`() = runTest {
+        val repository = FakeFriendRepository(scope = backgroundScope)
+
+        repository.clear()
+        advanceUntilIdle()
+
+        assertTrue(repository.friends.first().isEmpty())
+    }
 
     @Test
     fun `요청을 수락하면 친구가 되고 요청 목록에서 빠진다`() = runTest {

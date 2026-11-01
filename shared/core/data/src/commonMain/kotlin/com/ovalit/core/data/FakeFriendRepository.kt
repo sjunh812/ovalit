@@ -8,19 +8,27 @@ import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.lastPlayedWith
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 private val REFRESH_DELAY = 700.milliseconds
 
 /** 친구 서버가 생기기 전까지 쓰는 가짜 친구입니다. 목업의 준호, 민석, 재현과 전적을 비공개한 서연이 있습니다. */
 class FakeFriendRepository(
     private val clock: Clock = Clock.System,
+    // 앱은 앱 수명 스코프를 넘겨 가짜 친구 경기를 메인 스레드 밖에서 만든다.
+    // 친구 셋의 70일치 경기를 라운드까지 만들어서 앱을 켤 때 메인 스레드에서 만들면 첫 화면이 몇 초 멈췄다.
+    // 테스트는 넘기지 않아 만들자마자 친구가 있다.
+    private val scope: CoroutineScope? = null,
 ) : FriendRepository {
 
-    private val friendList = MutableStateFlow(fakeFriends())
+    private val friendList = MutableStateFlow(if (scope == null) fakeFriends() else emptyList())
+    private var filling: Job? = scope?.launch { friendList.value = fakeFriends() }
     private val requestList = MutableStateFlow(fakeRequests())
     private val rivalId = MutableStateFlow<PlayerId?>(null)
     private val sent = MutableStateFlow<Set<PlayerId>>(emptySet())
@@ -83,6 +91,7 @@ class FakeFriendRepository(
 
     /** 연동을 해제하면 친구 관계도 사라집니다. */
     fun clear() {
+        filling?.cancel()
         friendList.value = emptyList()
         requestList.value = emptyList()
         rivalId.value = null
@@ -90,7 +99,8 @@ class FakeFriendRepository(
     }
 
     fun refill() {
-        friendList.value = fakeFriends()
+        filling?.cancel()
+        if (scope == null) friendList.value = fakeFriends() else filling = scope.launch { friendList.value = fakeFriends() }
         requestList.value = fakeRequests()
         rivalId.value = null
         sent.value = emptySet()

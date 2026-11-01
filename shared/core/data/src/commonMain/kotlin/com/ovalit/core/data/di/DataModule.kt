@@ -51,7 +51,7 @@ fun dataModule(
     single(ApplicationScope) { CoroutineScope(SupervisorJob() + Dispatchers.Default + backgroundFailure) }
     // 프로덕션 키가 나오면 Fake로 시작하는 저장소를 실제 구현으로 바꾼다.
     single { FakeMatchRepository(scope = get(ApplicationScope)) } bind MatchRepository::class
-    single { FakeFriendRepository() } bind FriendRepository::class
+    single { FakeFriendRepository(scope = get(ApplicationScope)) } bind FriendRepository::class
     single { FakePingRepository(get()) } bind PingRepository::class
     single<PushRepository> { FakePushRepository() }
     single { FakeAccountSettingsRepository() } bind AccountSettingsRepository::class

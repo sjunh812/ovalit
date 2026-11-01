@@ -34,6 +34,20 @@ class FakeFriendRepositoryTest {
         assertTrue(repository.friends.first().isEmpty())
     }
 
+    // 채우던 게 끝나며 목록을 통째로 바꾸면 그사이 수락한 친구가 사라지고 요청도 이미 지워져 되찾을 수 없다
+    @Test
+    fun `채우는 동안 수락한 친구는 채운 뒤에도 남는다`() = runTest {
+        val repository = FakeFriendRepository(scope = backgroundScope)
+        val request = repository.requests.first().first()
+
+        repository.accept(request.id)
+        advanceUntilIdle()
+
+        val friends = repository.friends.first()
+        assertTrue(friends.any { it.id == request.id })
+        assertEquals(5, friends.size)
+    }
+
     @Test
     fun `요청을 수락하면 친구가 되고 요청 목록에서 빠진다`() = runTest {
         val repository = FakeFriendRepository()

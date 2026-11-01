@@ -9,12 +9,14 @@ import com.ovalit.core.model.lastPlayedWith
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private val REFRESH_DELAY = 700.milliseconds
 
@@ -22,13 +24,17 @@ private val REFRESH_DELAY = 700.milliseconds
 class FakeFriendRepository(
     private val clock: Clock = Clock.System,
     // 앱은 앱 수명 스코프를 넘겨 가짜 친구 경기를 메인 스레드 밖에서 만든다.
-    // 친구 셋의 70일치 경기를 라운드까지 만들어서 앱을 켤 때 메인 스레드에서 만들면 첫 화면이 몇 초 멈췄다.
+    // 친구 셋의 70일치 경기를 라운드까지 만드는 일이라 앱을 켤 때 메인 스레드에서 했더니 첫 화면이 몇 초 멈췄다.
     // 테스트는 넘기지 않아 만들자마자 친구가 있다.
     private val scope: CoroutineScope? = null,
 ) : FriendRepository {
 
     private val friendList = MutableStateFlow(if (scope == null) fakeFriends() else emptyList())
-    private var filling: Job? = scope?.launch { friendList.value = fakeFriends() }
+
+    // 연동을 해제하거나 다시 채울 때마다 올린다.
+    // 친구를 만드는 계산은 중간에 멈추지 않아서, 그사이 해제했으면 다 만든 친구를 버린다.
+    private val generation = MutableStateFlow(0)
+    private var filling: Job? = scope?.let(::fill)
     private val requestList = MutableStateFlow(fakeRequests())
     private val rivalId = MutableStateFlow<PlayerId?>(null)
     private val sent = MutableStateFlow<Set<PlayerId>>(emptySet())
@@ -50,21 +56,24 @@ class FakeFriendRepository(
     override suspend fun accept(id: PlayerId) {
         val request = requestList.value.firstOrNull { it.id == id } ?: return
         requestList.update { requests -> requests.filterNot { it.id == id } }
-        friendList.update { friends ->
-            friends + Friend(
-                id = request.id,
-                riotId = request.riotId,
-                playerCard = request.playerCard,
-                statsPublic = true,
-                matches = fakeMatches(
-                    now = clock.now(),
-                    seed = request.riotId.hashCode(),
-                    withFriends = false,
-                    owner = Owner(request.id, request.riotId, request.playerCard ?: MyCard, tier = 14),
-                ),
-            )
-        }
+        // 친구 한 명의 70일치 경기라 앱에서는 수락을 누른 메인 스레드에서 만들지 않는다.
+        // 테스트는 스코프를 넘기지 않아 그 자리에서 만든다.
+        val friend = if (scope == null) acceptedFriend(request) else withContext(Dispatchers.Default) { acceptedFriend(request) }
+        friendList.update { friends -> friends + friend }
     }
+
+    private fun acceptedFriend(request: FriendRequest) = Friend(
+        id = request.id,
+        riotId = request.riotId,
+        playerCard = request.playerCard,
+        statsPublic = true,
+        matches = fakeMatches(
+            now = clock.now(),
+            seed = request.riotId.hashCode(),
+            withFriends = false,
+            owner = Owner(request.id, request.riotId, request.playerCard ?: MyCard, tier = 14),
+        ),
+    )
 
     override suspend fun decline(id: PlayerId) {
         requestList.update { requests -> requests.filterNot { it.id == id } }
@@ -91,6 +100,7 @@ class FakeFriendRepository(
 
     /** 연동을 해제하면 친구 관계도 사라집니다. */
     fun clear() {
+        generation.update { it + 1 }
         filling?.cancel()
         friendList.value = emptyList()
         requestList.value = emptyList()
@@ -99,11 +109,24 @@ class FakeFriendRepository(
     }
 
     fun refill() {
+        generation.update { it + 1 }
         filling?.cancel()
-        if (scope == null) friendList.value = fakeFriends() else filling = scope.launch { friendList.value = fakeFriends() }
+        if (scope == null) friendList.value = fakeFriends() else filling = fill(scope)
         requestList.value = fakeRequests()
         rivalId.value = null
         sent.value = emptySet()
+    }
+
+    // 채우는 동안 수락한 친구는 남기고 그 앞에 가짜 친구를 둔다.
+    // 그사이 연동을 해제했거나 다시 채웠으면 쓰지 않는다.
+    private fun fill(scope: CoroutineScope): Job {
+        val started = generation.value
+        return scope.launch {
+            val made = fakeFriends()
+            friendList.update { current ->
+                if (generation.value != started) current else made.filterNot { f -> current.any { it.id == f.id } } + current
+            }
+        }
     }
 
     private fun fakeFriends(): List<Friend> {

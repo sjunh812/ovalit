@@ -176,8 +176,9 @@ internal fun ReportScreen(
         },
     ) {
         if (uiState !is ReportUiState.Success) return@OvalitStaged
-        // 안내는 띄우자마자 봤다고 적고, 이번에 띄운 것은 누르거나 프로필을 열 때까지 둔다
-        var hintShown by rememberSaveable { mutableStateOf(false) }
+        // 안내는 띄우자마자 봤다고 적고, 이번에 띄운 것은 누르거나 프로필을 열 때까지 둔다.
+        // 첫 값부터 안내를 두어야 리포트가 서서히 나타나는 동안 안내가 펼쳐지며 칩과 카드를 밀어내지 않는다.
+        var hintShown by rememberSaveable { mutableStateOf(profileHint && badge != null) }
         LaunchedEffect(profileHint, badge != null) {
             if (profileHint && badge != null) {
                 hintShown = true

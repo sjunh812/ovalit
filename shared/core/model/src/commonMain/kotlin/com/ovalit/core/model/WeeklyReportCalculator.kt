@@ -36,7 +36,7 @@ fun Iterable<Match>.weeklyReport(
 ): WeeklyReport {
     val counted = filter { it.queue in queueFilter.countedQueues }
     fun notEnough(played: Int) = WeeklyReport.NotEnoughMatches(played, notCounted = notCountedRecently(queueFilter, now, timeZone))
-    val act = counted.maxByOrNull { it.startedAt }?.act ?: return notEnough(played = 0)
+    val act = currentAct(queueFilter) ?: return notEnough(played = 0)
     val matchesByWeek = counted
         .filter { it.act == act }
         .groupBy { it.startedAt.weekStart(timeZone) }
@@ -262,12 +262,19 @@ private fun LocalDate.plusWeeks(weeks: Int) = plus(weeks, DateTimeUnit.WEEK)
 private fun LocalDate.minusWeeks(weeks: Int) = minus(weeks, DateTimeUnit.WEEK)
 
 /**
- * S6·S7과 프로필이 보는 경기입니다. 고른 큐에서 리포트에 넣는 경기만 골라 이번 액트만 남깁니다.
- * 이번 액트는 고른 큐와 상관없이 경쟁 + 일반의 가장 최근 경기로 정합니다.
- * 고른 큐로 정하면 프로필 칩에서 일반을 골랐을 때 이번 액트에 일반전이 없어도 지난 액트 일반전을 이번 액트처럼 띄운다.
+ * 이번 액트입니다. 홈 리포트, 프로필, S6·S7이 같이 써서 칩이 같으면 같은 액트를 봅니다.
+ * 경쟁·일반 칩은 고른 큐와 상관없이 경쟁 + 일반의 가장 최근 경기로 정합니다.
+ * 고른 큐로 정하면 이번 액트에 일반전이 없을 때 지난 액트 일반전을 이번 액트처럼 띄웁니다.
+ * 기타는 경쟁·일반과 따로 보는 모드라 기타의 가장 최근 경기로 정합니다.
  */
+private fun Iterable<Match>.currentAct(queueFilter: QueueFilter): ActId? {
+    val basis = if (queueFilter == QueueFilter.OTHER) QueueFilter.OTHER else QueueFilter.PROFILE
+    return filter { it.queue in basis.countedQueues }.maxByOrNull { it.startedAt }?.act
+}
+
+/** S6·S7과 프로필이 보는 경기입니다. 고른 큐에서 리포트에 넣는 경기만 골라 이번 액트([currentAct])만 남깁니다. */
 fun Iterable<Match>.currentActMatches(queueFilter: QueueFilter): List<Match> {
-    val act = filter { it.queue in QueueFilter.PROFILE.countedQueues }.maxByOrNull { it.startedAt }?.act ?: return emptyList()
+    val act = currentAct(queueFilter) ?: return emptyList()
     return filter { it.act == act && it.queue in queueFilter.countedQueues }
 }
 

@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -225,6 +226,24 @@ class WeeklyReportTest {
             games(1, 5, act = PreviousAct)
 
         assertEquals(WeeklyReport.NotEnoughMatches(played = 3), report(matches))
+    }
+
+    // 홈 칩으로 연 S7이 "이번 액트에 뛴 경쟁전이 없어요"인데 홈 카드는 지난 액트 경쟁전을 띄우면 같은 칩이 다른 숫자를 보인다
+    @Test
+    fun `경쟁 칩도 이번 액트는 경쟁 + 일반의 가장 최근 경기로 정한다`() {
+        val matches = games(0, 5, act = PreviousAct, day = DayOfWeek.MONDAY) +
+            games(0, 1, act = CurrentAct, queue = Queue.UNRATED, day = DayOfWeek.WEDNESDAY)
+
+        assertEquals(WeeklyReport.NotEnoughMatches(played = 0), report(matches, queueFilter = QueueFilter.COMPETITIVE))
+        assertTrue(matches.currentActMatches(QueueFilter.COMPETITIVE).isEmpty())
+    }
+
+    @Test
+    fun `기타 칩은 기타의 가장 최근 경기로 이번 액트를 정한다`() {
+        val matches = games(0, 5, act = PreviousAct, queue = Queue.SPIKE_RUSH, day = DayOfWeek.MONDAY) +
+            games(0, 1, act = CurrentAct, queue = Queue.UNRATED, day = DayOfWeek.WEDNESDAY)
+
+        assertEquals(PreviousAct, ready(matches, queueFilter = QueueFilter.OTHER).act)
     }
 
     @Test

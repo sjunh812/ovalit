@@ -35,6 +35,7 @@ private const val FADE_MILLIS = 220
  *
  * @param ready 내용을 그려도 되는지입니다.
  *   처음부터 `true`면 탭을 오가거나 뒤로 돌아온 경우라 나누지 않고 한 번에 그립니다.
+ *   다른 [OvalitStaged] 안에 있으면 그때는 바깥이 나누는 대로 따릅니다.
  * @param contentBackground 내용 밑에 까는 바탕입니다.
  *   화면 바탕과 같아야 나타나는 동안 틈이 안 보입니다.
  */
@@ -68,7 +69,10 @@ fun OvalitStaged(
     Box(modifier = modifier) {
         if (!ready || !faded) placeholder()
         if (ready) {
-            CompositionLocalProvider(LocalStaging provides staging) {
+            // 처음부터 그려도 됐던 틀은 바깥 틀의 묶음을 가로채지 않는다.
+            // 가로채면 바깥이 나눠 그리던 묶음이 이 틀 안에서는 한 번에 그려진다.
+            val outer = LocalStaging.current
+            CompositionLocalProvider(LocalStaging provides if (staging.startedDone && outer != null) outer else staging) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -101,6 +105,9 @@ private val LocalStaging = staticCompositionLocalOf<Staging?> { null }
 
 @Stable
 private class Staging(done: Boolean) {
+    // 처음부터 그려도 됐는지다. 그런 틀은 나누지 않고 바깥 틀을 따른다
+    val startedDone = done
+
     // 번호를 나눠 줄 때만 늘고 화면에 쓰이지 않아서 상태로 두지 않는다
     var registered = 0
         private set

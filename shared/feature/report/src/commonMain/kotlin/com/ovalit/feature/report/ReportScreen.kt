@@ -13,7 +13,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -40,12 +43,12 @@ import com.ovalit.core.model.PingId
 import com.ovalit.core.model.PlayerId
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.model.WeeklyReport
-import com.ovalit.core.ui.QueueChips
 import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdSlot
 import com.ovalit.core.ui.FailureNoticesEffect
 import com.ovalit.core.ui.NewMatchesLine
 import com.ovalit.core.ui.PlayerBadge
+import com.ovalit.core.ui.QueueChips
 import com.ovalit.core.ui.RefreshResultsEffect
 import com.ovalit.feature.report.component.DynamicMetricSection
 import com.ovalit.feature.report.component.DynamicMetricSheet
@@ -67,9 +70,9 @@ import com.ovalit.feature.report.component.TrendEntry
 import com.ovalit.feature.report.component.TrendSheet
 import com.ovalit.feature.report.component.WeekNoteHeadline
 import com.ovalit.feature.report.component.WeekNoteLines
-import com.ovalit.feature.report.component.isShown
 import com.ovalit.feature.report.component.dynamicMetricLines
 import com.ovalit.feature.report.component.fixedMetricLines
+import com.ovalit.feature.report.component.isShown
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.not_enough_body
 import com.ovalit.feature.report.resources.not_enough_not_counted
@@ -215,24 +218,43 @@ internal fun ReportScreen(
                     homePing?.let { home -> PingHomeCard(home = home, timeZone = timeZone, onClick = { onOpenPing(home.ping.id) }) }
                     if (uiState.needsImport) {
                         Reimport(onClick = onReimport)
-                    } else if (uiState.waitingForNewMatches) {
-                        ReportSkeleton(withChips = false)
-                    } else when (val report = uiState.report) {
-                        is WeeklyReport.Ready -> ReportContent(
-                            report = report,
-                            queueFilter = uiState.queueFilter,
-                            rival = uiState.rival,
-                            friends = uiState.friends,
-                            nudge = uiState.nudge,
-                            onShareInvite = onShareInvite,
-                            onSelectRival = onSelectRival,
-                            catalog = catalog,
-                            // S7, S6도 칩이 고른 큐로 세어 카드에서 본 숫자와 같게 연다
-                            onOpenAgents = { onOpenAgents(uiState.queueFilter) },
-                            onOpenWeapons = { onOpenWeapons(uiState.queueFilter) },
-                            onOpenFriendRanking = { metric -> onOpenFriendRanking(uiState.queueFilter, metric) },
-                        )
-                        is WeeklyReport.NotEnoughMatches -> NotEnoughMatches(report)
+                    } else {
+                        // 새 경기를 다 받으면 리포트가 스켈레톤 자리에 한꺼번에 들어온다.
+                        // 처음 홈에 들어올 때처럼 묶음마다 나눠 그리고 서서히 바꾼다.
+                        // 한 프레임에 다 그리면 그 프레임이 길어 스켈레톤이 멈췄다가 리포트가 툭 튀어나왔다.
+                        // 받기가 시작될 때마다 틀을 새로 만들어야 받은 뒤에도 다시 나눠 그린다.
+                        var waits by remember { mutableIntStateOf(0) }
+                        LaunchedEffect(uiState.waitingForNewMatches) {
+                            if (uiState.waitingForNewMatches) waits++
+                        }
+                        key(waits) {
+                            OvalitStaged(
+                                ready = !uiState.waitingForNewMatches,
+                                placeholder = { ReportSkeleton(withChips = false) },
+                                contentBackground = canvas,
+                            ) {
+                                // 리포트는 카드 여러 장이라 바깥 줄과 같은 간격으로 세운다
+                                Column(verticalArrangement = Arrangement.spacedBy(OvalitCardGap)) {
+                                    when (val report = uiState.report) {
+                                        is WeeklyReport.Ready -> ReportContent(
+                                            report = report,
+                                            queueFilter = uiState.queueFilter,
+                                            rival = uiState.rival,
+                                            friends = uiState.friends,
+                                            nudge = uiState.nudge,
+                                            onShareInvite = onShareInvite,
+                                            onSelectRival = onSelectRival,
+                                            catalog = catalog,
+                                            // S7, S6도 칩이 고른 큐로 세어 카드에서 본 숫자와 같게 연다
+                                            onOpenAgents = { onOpenAgents(uiState.queueFilter) },
+                                            onOpenWeapons = { onOpenWeapons(uiState.queueFilter) },
+                                            onOpenFriendRanking = { metric -> onOpenFriendRanking(uiState.queueFilter, metric) },
+                                        )
+                                        is WeeklyReport.NotEnoughMatches -> NotEnoughMatches(report)
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 

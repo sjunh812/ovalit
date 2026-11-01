@@ -125,6 +125,33 @@ class ReportScreenTest {
         onNodeWithText("전투 점수").assertExists()
     }
 
+    // 다 받은 리포트를 한 프레임에 그리면 그 프레임이 길어 스켈레톤이 멈췄다가 리포트가 툭 튀어나온다
+    @Test
+    fun `새 경기를 다 받으면 리포트를 나눠 그린 뒤 스켈레톤에서 바꾼다`() = runComposeUiTest {
+        var waiting by mutableStateOf(true)
+        setContent {
+            OvalitTheme {
+                ReportScreen(
+                    ReportUiState.Success(QueueFilter.COMPETITIVE_AND_UNRATED, ReportPreviewData.moved, waitingForNewMatches = waiting),
+                    onSelectQueue = {},
+                )
+            }
+        }
+        onNodeWithContentDescription("리포트를 불러오고 있어요").assertExists()
+        onNodeWithText("전투 점수").assertDoesNotExist()
+
+        mainClock.autoAdvance = false
+        waiting = false
+        mainClock.advanceTimeByFrame()
+        onNodeWithContentDescription("리포트를 불러오고 있어요").assertExists()
+        onNodeWithText("전투 점수").assertDoesNotExist()
+
+        mainClock.autoAdvance = true
+        waitForIdle()
+        onNodeWithText("전투 점수").assertExists()
+        onNodeWithContentDescription("리포트를 불러오고 있어요").assertDoesNotExist()
+    }
+
     // 달라진 점 칸과 같은 격자다
     @Test
     fun `고정 지표는 한 줄에 세 칸씩 피해량 K_D KDA 전투 점수 헤드샷 순서로 놓는다`() = runComposeUiTest {

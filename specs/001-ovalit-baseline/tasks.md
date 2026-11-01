@@ -86,9 +86,9 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 ### 남은 일: 문서와 디자인
 
 - [x] T029 [US1] 홈 순서 어긋남 정리: `docs/screens.md` 홈 (S1)은 "큐 칩, ㅇㅂㅇ 카드, 새 경기 진행 줄"인데 `ReportScreen.kt`는 진행 줄을 칩 바로 밑, ㅇㅂㅇ 카드를 카드 목록 맨 위에 둔다. 사용자에게 어느 쪽이 맞는지 묻고 다른 쪽을 고친다(2026-10-30 앱 순서로 정해 문서를 고쳤다) in docs/screens.md, shared/feature/report/src/commonMain/kotlin/com/ovalit/feature/report/ReportScreen.kt, research.md 열린 결정 표
-- [ ] T030 [P] [US1] Figma 온보딩 S0-1 인트로(로고, "오늘 발로란트 할 사람?", 영문 비공식 고지), S0-2 연동 동의, S0-4 불러오는 중(관심사 고르기, 50칸, 멈춤과 "이어서 불러오기", 알림 약속 유무)을 라이트·다크와 화면 설명으로 in Figma "화면" 페이지의 "온보딩 (S0)" 줄
-- [ ] T031 [P] [US1] Figma 홈 나머지 상태: 기타 칩 리포트(K/D, KDA, 헤드샷만), 달라진 점 시트, 8주 흐름 시트(막대를 끈 상태 포함), "이번 주는 큰 변화 없음", 짚을 점의 비중 줄 in Figma "화면" 페이지의 "홈 상태" 섹션
-- [ ] T085 [US1] 로그인 풀림 화면과 점검 안내 줄의 자리와 문구를 정한다. 심사 목업과 `docs/screens.md`에 없는 화면이라 사용자에게 먼저 묻고 `docs/screens.md`에 절을 더한 뒤 Figma에 그린다. 2026-10-30에 칩 밑 한 줄로 정해 `docs/screens.md` 절을 더했고 Figma가 남았다. T040이 이 결과를 따른다 in docs/screens.md, docs/DECISIONS.md, Figma "화면" 페이지의 "로그인 풀림과 점검 안내" 줄
+- [x] T030 [P] [US1] Figma 온보딩 S0-1 인트로(로고, "오늘 발로란트 할 사람 있어?", 영문 비공식 고지), S0-2 연동 동의, S0-4 불러오는 중(관심사 고르기, 50칸, 멈춤과 "이어서 불러오기", 알림 약속 유무)을 라이트·다크와 화면 설명으로 in Figma "화면" 페이지의 "온보딩 (S0)" 줄 (2026-11-01: 본 화면 라이트·다크와 상태 5장(막 시작, 다 불러옴, 받다 멈춤, 8주 경기 없음, 알림 권한 없음)을 벡터로 그렸다)
+- [x] T031 [P] [US1] Figma 홈 나머지 상태: 기타 칩 리포트(K/D, KDA, 헤드샷만), 달라진 점 시트, 8주 흐름 시트(막대를 끈 상태 포함), "이번 주는 큰 변화 없음", 짚을 점의 비중 줄 in Figma "화면" 페이지의 "홈 상태" 섹션 (2026-11-01: 8주 흐름 시트 두 장, 기타 칩 리포트, 큰 변화 없음, 달라진 점 시트, 비중 줄을 "홈 상태" 둘째 줄에 벡터로 그렸다)
+- [x] T085 [US1] 로그인 풀림 화면과 점검 안내 줄의 자리와 문구를 정한다. 심사 목업과 `docs/screens.md`에 없는 화면이라 사용자에게 먼저 묻고 `docs/screens.md`에 절을 더한 뒤 Figma에 그린다. 2026-10-30에 칩 밑 한 줄로 정해 `docs/screens.md` 절을 더했고 Figma가 남았다. T040이 이 결과를 따른다 in docs/screens.md, docs/DECISIONS.md, Figma "화면" 페이지의 "로그인 풀림과 점검 안내" 줄 (2026-11-01: "홈 상태" 셋째 줄에 로그인 풀림 줄과 점검 안내 줄을 그렸다)
 
 ### 남은 일: 실제 연동과 저장(프로덕션 키 승인 뒤)
 
@@ -123,7 +123,7 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 ### 남은 일
 
 - [x] T045 [P] [US2] Figma S2 경기 목록(날짜 머리, 경기 줄 칩 MVP·팀 MVP·에이스·클러치 톤온톤, 등수로 끝나는 경기 줄, 거르기 시트, 진행 줄 상태)을 라이트·다크와 화면 설명으로 in Figma "화면" 페이지의 "경기 (S2)" 줄
-- [ ] T046 [P] [US2] Figma S3 경기 상세 세 탭(스코어보드 친구 표시, 라운드 막대는 이긴 라운드만 pos, 내 기록)과 상태(라운드 없는 모드, 스켈레톤) in Figma "화면" 페이지의 "경기 상세 (S3)" 줄
+- [x] T046 [P] [US2] Figma S3 경기 상세 세 탭(스코어보드 친구 표시, 라운드 막대는 이긴 라운드만 pos, 내 기록)과 상태(라운드 없는 모드, 스켈레톤) in Figma "화면" 페이지의 "경기 상세 (S3)" 줄 (2026-11-01: 세 탭 라이트·다크와 상태 6장(펼친 줄, 친구 아닌 사람 시트, 친구 요청 시트, 데스매치, 건틀릿, 스켈레톤)을 벡터로 그렸다)
 - [ ] T090 [US2] S3 스코어보드에서 사람을 눌러 펼치는 기록(지금 피해량, 헤드샷, 첫 킬, 첫 데스, 멀티킬)을 실제 경기 응답을 본 뒤 늘리고 순서를 다시 정한다(사용자 요청 2026-10-31). 후보는 트레이드(해 준 것과 받은 것), 관여율, 클러치·에이스, 응답에 오면 Performance Score다. 순서 초안은 게임 스코어보드와 전적 앱(tracker.gg 열 순서, Blitz 내 줄)을 따라 점수와 K/D/A → 피해량·헤드샷 → 첫 킬·첫 데스 → 트레이드·관여율 → 멀티킬·클러치다. op.gg OP Score, tracker TRS 같은 종합 점수와 분포 등수는 가져오지 않는다. T041·T042 뒤 in shared/feature/match/src/commonMain/kotlin/com/ovalit/feature/match/MatchDetailParts.kt, docs/screens.md S3
 
 **Checkpoint**: P2 독립 검사가 통과한다.
@@ -144,7 +144,7 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 
 ### 남은 일
 
-- [ ] T049 [P] [US3] Figma 내 프로필, S6, S7(목업에 없는 화면이라 `docs/screens.md`만 근거로, 배너는 카드 그림 전까지 fill 면) in Figma "화면" 페이지의 "프로필 (내 프로필, S6, S7)" 줄. 내 프로필 라이트·다크와 번호 9개, 상태 3장(경쟁 칩, 고른 큐에 경기 없음, S5 큐 칩)은 2026-10-31에 "내 프로필"·"내 프로필 상태" 섹션에 그렸고 S6, S7이 남았다. S6, S7은 프로필 칩으로 고른 큐를 제목 줄에 적은 모양("경쟁 · 이번 액트 34경기")도 그린다
+- [x] T049 [P] [US3] Figma 내 프로필, S6, S7(목업에 없는 화면이라 `docs/screens.md`만 근거로, 배너는 카드 그림 전까지 fill 면) in Figma "화면" 페이지의 "프로필 (내 프로필, S6, S7)" 줄. 내 프로필 라이트·다크와 번호 9개, 상태 3장(경쟁 칩, 고른 큐에 경기 없음, S5 큐 칩)은 2026-10-31에 "내 프로필"·"내 프로필 상태" 섹션에 그렸고 S6, S7이 남았다. S6, S7은 프로필 칩으로 고른 큐를 제목 줄에 적은 모양("경쟁 · 이번 액트 34경기")도 그린다
 - [ ] T050 [US3] 실제 서버 연결 뒤 플레이어 카드를 서버 정적 에셋(`/cards/{uuid}_small|wide.png`)에서 받아 아바타와 프로필 배너에 쓴다. 받기 전에는 Riot ID 첫 글자 in shared/core/ui/src/commonMain/kotlin/com/ovalit/core/ui/
 - [x] T091 [US3] 내 프로필과 S5에 큐 칩(경쟁 + 일반 · 경쟁 · 일반, 기본 경쟁 + 일반)을 두고 통계, 맞힌 부위, 요원, 무기(S5는 나와 비교도)가 칩을 따르게 한다. 그 카드로 연 S7, S6도 고른 큐로 세고 제목 줄에 큐를 적는다. 홈 칩도 S7, S6에 넘긴다. 프로토타입은 Figma "프로토타입 · S6·S7 큐 이어받기"다. 티어 카드, 같이 뛴 경기, 최근 경기는 따르지 않는다(사용자 결정 2026-10-31). 칩 자리는 티어 카드 밑(B안, 사용자 결정 2026-10-31)이고 프로토타입은 Figma "화면" 페이지 "프로토타입 · 프로필 큐 칩"(node 54:1890), 디자인은 "내 프로필"·"내 프로필 상태" 섹션이다 in shared/feature/profile/src/commonMain/kotlin/com/ovalit/feature/profile/ProfileScreen.kt, ProfileViewModel.kt, shared/feature/friend/src/commonMain/kotlin/com/ovalit/feature/friend/FriendProfileScreen.kt, docs/screens.md 내 프로필·S5
 
@@ -174,7 +174,7 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 - [x] T059 [US4] 친구 요청·수락 푸시 서버: 요청을 새로 만들 때(스코어보드, 초대 링크) 받는 사람에게, 수락할 때 보낸 사람에게 알린다. 다른 푸시처럼 종류와 이름만 담고, 이미 보내 둔 요청을 다시 보내거나 이미 친구인 경우는 알리지 않는다. 신청서에 푸시 알림이 없어서 같은 커밋에서 `docs/RELEASE.md` "신청서와 다른 것" 표에 친구 요청 푸시를 한 줄 더한다 in server/src/routes/friends.ts, server/src/routes/invites.ts, server/src/push.ts, server/README.md, docs/backend.md ㅇㅂㅇ과 푸시, specs/001-ovalit-baseline/contracts/push.md, docs/RELEASE.md
 - [x] T060 [US4] 친구 요청·수락 푸시 테스트(요청·수락마다 한 번, 글 없이 종류와 이름만, 다시 보낸 요청과 이미 친구는 알리지 않기) in server/test/friends.test.ts, server/test/invites.test.ts
 - [x] T061 [US4] 앱의 친구 요청 알림: 설정에 "친구 요청 알림" 스위치(기본 켬, 기기 설정 `UserPreferences`에 `notifyPing`과 같은 방식), 알림 채널과 문구(한국어·일본어), 누르면 친구 탭. 스위치 자리는 [research.md](research.md) 열린 결정 "친구 요청 알림 스위치 자리"를 따른다. T059가 `docs/RELEASE.md` 표에 더한 줄에 설정 스위치를 같이 적는다 in shared/core/model/src/commonMain/kotlin/com/ovalit/core/model/UserPreferences.kt, shared/feature/settings/src/commonMain/kotlin/com/ovalit/feature/settings/SettingsScreen.kt, composeApp/src/main/kotlin/com/ovalit/push/, docs/screens.md 설정 (S4), docs/RELEASE.md
-- [ ] T062 [P] [US4] Figma 친구 탭(친구 목록 슬라이스, 받은 요청, 친구 요청 알림 모양), S5(전적 비공개 상태 포함), 친구 요청 시트와 초대 링크 시트, 라이벌 고르기 시트, 친구 비교 전체 순위 in Figma "화면" 페이지의 "친구 (탭, S5)" 줄
+- [x] T062 [P] [US4] Figma 친구 탭(친구 목록 슬라이스, 받은 요청, 친구 요청 알림 모양), S5(전적 비공개 상태 포함), 친구 요청 시트와 초대 링크 시트, 라이벌 고르기 시트, 친구 비교 전체 순위 in Figma "화면" 페이지의 "친구 (탭, S5)" 줄 (2026-11-01: 친구 탭, S5, 상태 4장(비공개, 친구 끊기, 친구 경기 목록, 라이벌 고르기), 친구 비교 전체 순위, S3의 친구 요청 시트를 벡터로 그렸다. 초대 링크는 시스템 공유 창이라 그리지 않는다)
 
 **Checkpoint**: P4 독립 검사가 실제 계정 둘로 통과한다.
 
@@ -195,7 +195,7 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 ### 남은 일
 
 - [ ] T066 [US5] 실제 `PingRepository`와 `PushRepository`(`/pings` 경로, `PUT /me/push-token`, 로그아웃 전 `DELETE /me/push-token`) in shared/core/data/src/commonMain/kotlin/com/ovalit/core/data/PingRepository.kt, PushRepository.kt와 새 구현 파일
-- [ ] T067 [P] [US5] Figma 오발있? 카드(친구 탭), 부르기 시트(고른 칸 accent 테두리와 체크, 옆으로 미는 친구 줄), 초대 화면(받은 쪽·보낸 쪽, 다른 시간 제안을 맨 위에), 30분 단위 휠, 알림 모양 in Figma "화면" 페이지의 "오발있? (파티 모집)" 줄
+- [x] T067 [P] [US5] Figma 오발있? 카드(친구 탭), 부르기 시트(고른 칸 accent 테두리와 체크, 옆으로 미는 친구 줄), 초대 화면(받은 쪽·보낸 쪽, 다른 시간 제안을 맨 위에), 30분 단위 휠, 알림 모양 in Figma "화면" 페이지의 "오발있? (파티 모집)" 줄 (2026-11-01: 받은 초대 라이트·다크와 상태 5장(부르기 시트, 보낸 초대, 다른 시간, 답한 뒤, 카드에 초대 둘), 알림 모양을 벡터로 그렸다)
 
 **Checkpoint**: P5 독립 검사가 실제 계정 둘로 통과한다.
 
@@ -217,7 +217,7 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 ### 남은 일
 
 - [ ] T072 [US6] 실제 `AccountSettingsRepository`(`PATCH /me {statsPublic?, remindBefore?}`, 서버 값을 따른다)와 연동 해제(`DELETE /me` 뒤 기기 기록과 보내지 않은 보고 지우기) in shared/core/data/src/commonMain/kotlin/com/ovalit/core/data/AccountSettingsRepository.kt, AccountSettingsSync.kt와 새 구현 파일
-- [ ] T073 [P] [US6] Figma S4 설정(묶음 카드, 오발있? 카드의 파티 모집 알림과 시작 전 알림, 친구 요청 알림 스위치, 연동 해제 위험 버튼, 맨 아래 영문 고지). 친구 요청 알림 스위치는 알림 카드에 둔다([research.md](research.md) 친구 요청 알림 스위치) in Figma "화면" 페이지의 "설정 (S4)" 줄
+- [x] T073 [P] [US6] Figma S4 설정(묶음 카드, 오발있? 카드의 파티 모집 알림과 시작 전 알림, 친구 요청 알림 스위치, 연동 해제 위험 버튼, 맨 아래 영문 고지). 친구 요청 알림 스위치는 알림 카드에 둔다([research.md](research.md) 친구 요청 알림 스위치) in Figma "화면" 페이지의 "설정 (S4)" 줄 (2026-11-01: 시트 5장(테마, 관심사, 시작 전 알림, 데이터 삭제, 연동 해제)도 벡터로 바꿨다)
 
 **Checkpoint**: 모든 이야기가 따로 돌아간다.
 
@@ -236,6 +236,8 @@ description: "오발있 기준 스펙의 작업 목록. 만든 것과 남은 일
 - [ ] T077 [P] Figma 상태 화면 다크판(지금은 라이트만) in Figma "화면" 페이지의 각 화면 줄의 상태 섹션
 - [ ] T078 실제 계정으로 [quickstart.md](quickstart.md) 전체를 돌고 SC-001(첫 수집 1분 안팎, Riot 붐빔 없이 받은 경우), SC-007(통계·오류 보고에 Riot 값 0건), SC-008(Cloudflare 사용량이 무료 한도 안이고 카드 등록이 없다)을 잰다. 잰 값으로 [research.md](research.md) 열린 결정 "첫 수집 시간 상한"을 닫는다 in specs/001-ovalit-baseline/quickstart.md, specs/001-ovalit-baseline/spec.md, research.md
 - [ ] T079 열린 결정을 닫을 때마다 결정을 남기고 스펙과 규칙 문서를 같은 커밋에서 맞춘다 in docs/DECISIONS.md, specs/001-ovalit-baseline/research.md, spec.md
+- [x] T092 [P] 시작 시간과 홈 프레임을 재는 Macrobenchmark 모듈과 앱 Baseline Profile(시작 프로필 포함)을 더한다. 플러그인이 만드는 `benchmarkRelease`로 `benchmark` 빌드 타입을 대신한다(2026-11-01) in benchmarks/, composeApp/build.gradle.kts, composeApp/src/main/generated/baselineProfiles/, build-logic/convention/src/main/kotlin/OvalitAndroidTestConventionPlugin.kt, docs/CONVENTIONS.md
+- [x] T093 처음 홈의 프로필 말풍선을 칩 위에 띄우지 않고 머리 줄 밑에 끼운다(Figma "프로토타입 · 프로필 말풍선 자리" A안, 2026-11-01) in shared/feature/report/src/commonMain/kotlin/com/ovalit/feature/report/component/ReportHeader.kt, ProfileHint.kt, ReportScreen.kt, shared/feature/report/src/iosTest/kotlin/com/ovalit/feature/report/ReportScreenTest.kt, docs/screens.md
 - [ ] T080 Figma에서 화면이 확정되면 바로 앱에 반영한다. 지금 앱과 달라진 곳은 그 화면 모듈과 `docs/screens.md`·`docs/design.md`를 같은 커밋에서 고치고, 심사 목업에서 벗어나는 부분은 반영 전에 사용자에게 묻고 `docs/DECISIONS.md`에 남긴다(spec.md Clarifications 2026-10-30). 신청서와 달라지는 기능이면 `docs/RELEASE.md` "신청서와 다른 것" 표에 한 줄 더한다 in shared/feature/, docs/screens.md, docs/design.md, docs/RELEASE.md
 
 ---

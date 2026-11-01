@@ -32,7 +32,7 @@ cd server && npm ci && npm run typecheck && npm test
 ANDROID_SERIAL=emulator-5554 ./gradlew :composeApp:installDebug
 ```
 
-끊김을 볼 때는 Build Variants에서 `benchmark`를 고른다. 디버그 빌드는 Compose가 몇 배 느려 릴리스에 없는 끊김이 보인다.
+끊김을 볼 때는 Build Variants에서 `benchmarkRelease`를 고른다. 디버그 빌드는 Compose가 몇 배 느려 릴리스에 없는 끊김이 보인다.
 
 서버를 같이 돌려 친구와 ㅇㅂㅇ 흐름을 볼 때:
 

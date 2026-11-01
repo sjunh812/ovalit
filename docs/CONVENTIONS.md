@@ -333,6 +333,7 @@ iOS에는 광고, 푸시, 사용 통계가 없고 첫 수집은 앱이 떠 있�
 | 플러그인 | 쓰는 곳 | 거는 것 |
 | --- | --- | --- |
 | `ovalit.android.application` | `composeApp` | SDK 버전, 자바·코틀린 타깃 |
+| `ovalit.android.test` | `benchmarks` | SDK 버전(최소 28), 자바·코틀린 타깃 |
 | `ovalit.kmp.library` | `shared/` 아래 모든 모듈 | 안드로이드와 iOS 시뮬레이터 타깃, 호스트 테스트, 안드로이드 리소스, 테스트 의존성 |
 | `ovalit.kmp.feature` | `shared/feature/*` | `ovalit.kmp.library`, Compose, core 모듈과 lifecycle·Koin 의존성, Res 클래스 설정, `commonTest`에 `core/testing` |
 
@@ -342,6 +343,37 @@ iOS에는 광고, 푸시, 사용 통계가 없고 첫 수집은 앱이 떠 있�
 
 `composeApp`은 기능 모듈을 직접 걸지 않습니다. 화면과 Koin 모듈은 `shared/app`을 거쳐 들어오고 APK에도 그대로 들어갑니다.
 `composeApp` 코드가 기능 모듈의 타입을 직접 쓸 때만 그 모듈을 겁니다. 지금은 `settings`의 `NotificationBlocks` 하나입니다.
+
+### 속도 재기와 Baseline Profile
+
+`:benchmarks`는 앱을 따로 띄워 재는 Macrobenchmark 모듈이고 앱에 들어가지 않습니다. Baseline Profile Gradle 플러그인이 릴리스를
+본떠 두 빌드 타입을 만듭니다. `nonMinifiedRelease`는 줄이지 않은 빌드로 프로필을 만들 때 띄우고, `benchmarkRelease`는 릴리스처럼
+줄여 잴 때 띄웁니다. 둘 다 디버그 키로 서명하고 개발 빌드처럼 테스트 광고 ID를 쓰며 사용 통계를 모으지 않습니다.
+
+| 클래스 | 하는 일 |
+| --- | --- |
+| `BaselineProfileGenerator` | 켜서 홈까지(시작 프로필 포함), 홈 스크롤, 경기 탭과 S3, 친구·설정 탭과 내 프로필을 지나 프로필을 만듭니다 |
+| `StartupBenchmark` | 처음부터 켜서 첫 화면까지 잽니다. 프로필 없이 켠 것과 프로필로 컴파일한 것을 나란히 봅니다 |
+| `HomeBenchmark` | "리포트 보기"를 눌러 홈이 들어올 때와 홈을 끝까지 넘길 때의 프레임을 잽니다 |
+
+화면 글자로 버튼을 찾아서 기기 언어가 한국어(또는 앱이 모르는 언어)여야 합니다. 지금은 메모리 저장소라 앱을 켤 때마다 인트로부터
+첫 수집을 거쳐 홈으로 갑니다. 연결된 기기를 모두 쓰니 `ANDROID_SERIAL`로 에뮬레이터만 고릅니다.
+
+프로필은 손으로 만들어 `composeApp/src/main/generated/baselineProfiles`에 둡니다. 릴리스를 빌드할 때마다 만들면 CI와 로컬 빌드가
+기기를 요구합니다. 시작에 닿는 화면이나 홈을 크게 바꾸면 다시 만들어 같은 커밋에 넣습니다.
+
+```bash
+ANDROID_SERIAL=emulator-5554 ./gradlew :composeApp:generateBaselineProfile
+```
+
+잴 때는 Macrobenchmark만 돌립니다. 에뮬레이터는 숫자가 실제 폰과 달라 기본으로 막혀 있어서 막음을 풀고, 같은 기기의 전후만
+견줍니다. 재기 전에 맥과 에뮬레이터 부하부터 봅니다.
+
+```bash
+ANDROID_SERIAL=emulator-5554 ./gradlew :benchmarks:connectedBenchmarkReleaseAndroidTest -Pandroid.testInstrumentationRunnerArguments.androidx.benchmark.enabledRules=Macrobenchmark -Pandroid.testInstrumentationRunnerArguments.androidx.benchmark.suppressErrors=EMULATOR
+```
+
+결과는 `benchmarks/build/outputs/connected_android_test_additional_output/`에 JSON과 Perfetto 기록으로 남습니다.
 
 ### CI
 

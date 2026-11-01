@@ -32,6 +32,10 @@ gradlePlugin {
             id = "ovalit.android.application"
             implementationClass = "OvalitAndroidApplicationConventionPlugin"
         }
+        register("androidTest") {
+            id = "ovalit.android.test"
+            implementationClass = "OvalitAndroidTestConventionPlugin"
+        }
         register("kmpLibrary") {
             id = "ovalit.kmp.library"
             implementationClass = "OvalitKmpLibraryConventionPlugin"

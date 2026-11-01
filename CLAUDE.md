@@ -183,7 +183,9 @@ individually"에 걸릴 수 있다. 홈 고정 칸, 라이벌 대결, 친구 비
   (`OvalitStaged`, `OvalitStage`). 홈을 한 프레임에 다 그리면 릴리스에서 54ms가 걸렸다. 처음부터 내용이 있던 화면(탭을 오가거나
   뒤로 돌아온 경우)은 나누지 않는다.
 - 끊김은 릴리스 빌드로 잰다. 디버그 빌드는 Compose가 몇 배 느려서 릴리스에 없는 끊김이 보인다. 개발 기기에서는 Build Variants의
-  `benchmark`가 릴리스처럼 줄이고 디버그 키로 서명한다.
+  `benchmarkRelease`가 릴리스처럼 줄이고 디버그 키로 서명한다.
+- 시작 시간과 홈 프레임은 `:benchmarks`(Macrobenchmark)로 잰다. 앱에 넣는 Baseline Profile도 거기서 만들어 저장소에 둔다
+  (`composeApp/src/main/generated/baselineProfiles`). 시작에 닿는 화면이나 홈을 크게 바꾸면 다시 만든다(`docs/CONVENTIONS.md` 빌드).
 
 ### 실패 안내
 
@@ -250,11 +252,11 @@ Google 서비스 셋은 무료로 쓰는 독점 라이선스 SDK라 라이선스
     쌓인 기록과 보내지 않은 보고를 지운다.
   - 화면 이름은 고정된 표로 보낸다(`screenName`). 경로 키를 그대로 쓰면 친구와 경기 ID가 섞인다. 이벤트는 `AnalyticsEvents`에
     모으고 받은 경기 수 같은 값은 구간으로만 보낸다.
-  - 개발 빌드(디버그, benchmark)는 둘 다 모으지 않는다(`BuildConfig.COLLECT_TELEMETRY`). 온보딩 깔때기와 오류 목록에 개발
+  - 개발 빌드(디버그, benchmarkRelease, nonMinifiedRelease)는 둘 다 모으지 않는다(`BuildConfig.COLLECT_TELEMETRY`). 온보딩 깔때기와 오류 목록에 개발
     기록이 섞인다.
 - 광고는 AdMob 네이티브 광고다. 가입과 지급에 카드 등록이 필요 없다. 광고 단위 ID는 `admob.appId`, `admob.nativeUnitId`,
   `admob.rewardedUnitId`이고, 없으면 광고를 요청하지 않아 광고 자리가 없다. 실제 ID는 릴리스만 쓴다. 개발 빌드(디버그,
-  benchmark)는 `local.properties`에 실제 ID가 있어도 쓰지 않고 `admob.test=true`나 `-Povalit.ads.test=true`일 때만 Google
+  benchmarkRelease)는 `local.properties`에 실제 ID가 있어도 쓰지 않고 `admob.test=true`나 `-Povalit.ads.test=true`일 때만 Google
   테스트 광고를 받는다. 개발 기기에서 실제 광고를 누르면 AdMob이 무효 트래픽으로 본다. SDK가 광고 ID 권한(AD_ID)을 붙이니
   Play 데이터 보안에 적고 출시 전에 동의 창(UMP)을 붙인다.
 

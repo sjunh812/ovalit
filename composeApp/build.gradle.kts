@@ -6,6 +6,8 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
+    // 릴리스 빌드마다 nonMinifiedRelease(프로필을 만들 때 띄운다)와 benchmarkRelease(잴 때 띄운다)를 하나씩 만든다.
+    alias(libs.plugins.baselineprofile)
 }
 
 // google-services.json이 있을 때만 Firebase를 붙인다.
@@ -32,6 +34,21 @@ val localProperties = Properties().apply {
 // 키만 적고 값을 비워 둔 것도 없는 것으로 친다.
 // 빈 admob.appId가 그대로 들어가면 광고 SDK가 앱 시작 때 죽는다.
 fun localProperty(key: String): String? = localProperties.getProperty(key)?.trim()?.takeIf { it.isNotEmpty() }
+
+// 개발 빌드(디버그, benchmarkRelease, nonMinifiedRelease)는 실제 광고 ID를 쓰지 않는다.
+// local.properties에 실제 ID가 있어도 개발 기기에서 실제 광고를 요청하고 누르면 AdMob이 무효 트래픽으로 본다.
+// 광고 자리를 보려면 admob.test=true를 두거나 -Povalit.ads.test=true로 빌드해 Google 테스트 광고를 받는다.
+// 둘 다 없으면 광고를 요청하지 않아 광고 자리가 없다.
+// 사용 통계와 비정상 종료 보고도 개발 빌드는 모으지 않는다.
+// 모으면 온보딩 깔때기와 오류 목록에 개발 기록이 섞인다.
+val testAds = (findProperty("ovalit.ads.test") ?: localProperty("admob.test"))?.toString() == "true"
+fun ApplicationBuildType.useDevelopmentServices() {
+    manifestPlaceholders["admobAppId"] = ADMOB_TEST_APP_ID
+    manifestPlaceholders["collectTelemetry"] = "false"
+    buildConfigField("boolean", "COLLECT_TELEMETRY", "false")
+    buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", "\"${if (testAds) ADMOB_TEST_NATIVE_UNIT_ID else ""}\"")
+    buildConfigField("String", "ADMOB_REWARDED_UNIT_ID", "\"${if (testAds) ADMOB_TEST_REWARDED_UNIT_ID else ""}\"")
+}
 
 android {
     namespace = "com.ovalit"
@@ -70,21 +87,6 @@ android {
         buildConfig = true
     }
 
-    // 개발 빌드(디버그, benchmark)는 실제 광고 ID를 쓰지 않는다.
-    // local.properties에 실제 ID가 있어도 개발 기기에서 실제 광고를 요청하고 누르면 AdMob이 무효 트래픽으로 본다.
-    // 광고 자리를 보려면 admob.test=true를 두거나 -Povalit.ads.test=true로 빌드해 Google 테스트 광고를 받는다.
-    // 둘 다 없으면 광고를 요청하지 않아 광고 자리가 없다.
-    // 사용 통계와 비정상 종료 보고도 개발 빌드는 모으지 않는다.
-    // 모으면 온보딩 깔때기와 오류 목록에 개발 기록이 섞인다.
-    val testAds = (findProperty("ovalit.ads.test") ?: localProperty("admob.test"))?.toString() == "true"
-    fun ApplicationBuildType.useDevelopmentServices() {
-        manifestPlaceholders["admobAppId"] = ADMOB_TEST_APP_ID
-        manifestPlaceholders["collectTelemetry"] = "false"
-        buildConfigField("boolean", "COLLECT_TELEMETRY", "false")
-        buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", "\"${if (testAds) ADMOB_TEST_NATIVE_UNIT_ID else ""}\"")
-        buildConfigField("String", "ADMOB_REWARDED_UNIT_ID", "\"${if (testAds) ADMOB_TEST_REWARDED_UNIT_ID else ""}\"")
-    }
-
     buildTypes {
         debug {
             useDevelopmentServices()
@@ -97,21 +99,37 @@ android {
                 "proguard-rules.pro",
             )
         }
-        // 릴리스처럼 줄이고 최적화하되 디버그 키로 서명한다.
-        // 개발 기기에서 사용자가 느낄 속도를 볼 때 Build Variants에서 고른다.
-        // 디버그 빌드는 Compose가 몇 배 느려서 릴리스에 없는 끊김이 보인다.
-        create("benchmark") {
-            initWith(getByName("release"))
-            signingConfig = signingConfigs.getByName("debug")
-            matchingFallbacks += listOf("release")
-            useDevelopmentServices()
-            // 개발 기기에서 속도를 보는 빌드라 Crashlytics에 매핑 파일을 올리지 않는다.
-            // 올리는 건 릴리스뿐이다.
-            (this as ExtensionAware).extensions.findByName("firebaseCrashlytics")?.withGroovyBuilder {
-                setProperty("mappingFileUploadEnabled", false)
-            }
-        }
     }
+}
+
+// Baseline Profile 플러그인이 릴리스를 본떠 만든 두 빌드 타입도 개발 빌드다.
+// benchmarkRelease는 릴리스처럼 줄이고 최적화하되 디버그 키로 서명한다.
+// 개발 기기에서 사용자가 느낄 속도를 볼 때 Build Variants에서 고른다.
+// 디버그 빌드는 Compose가 몇 배 느려서 릴리스에 없는 끊김이 보인다.
+// nonMinifiedRelease는 줄이지 않은 빌드로 프로필을 만들 때만 띄운다.
+// 플러그인이 finalizeDsl에서 만들어서 그 뒤에 고친다.
+androidComponents {
+    finalizeDsl { extension ->
+        extension.buildTypes
+            .filter { it.name == "benchmarkRelease" || it.name == "nonMinifiedRelease" }
+            .forEach { buildType ->
+                buildType.useDevelopmentServices()
+                // Crashlytics에 매핑 파일을 올리는 건 릴리스뿐이다.
+                (buildType as ExtensionAware).extensions.findByName("firebaseCrashlytics")?.withGroovyBuilder {
+                    setProperty("mappingFileUploadEnabled", false)
+                }
+            }
+    }
+}
+
+baselineProfile {
+    // 프로필은 :benchmarks의 generateBaselineProfile로 손수 만들어 저장소에 둔다(docs/CONVENTIONS.md 빌드).
+    // 릴리스를 빌드할 때마다 만들면 CI와 로컬 빌드가 기기를 요구한다.
+    automaticGenerationDuringBuild = false
+    // 받은 프로필을 빌드 타입마다 나누지 않고 src/main/generated/baselineProfiles 하나에 둔다.
+    mergeIntoMain = true
+    // 앱을 켤 때 읽는 클래스를 첫 dex에 모은다. 시작 프로필(includeInStartupProfile)로 고른다.
+    dexLayoutOptimization = true
 }
 
 dependencies {
@@ -130,6 +148,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.profileinstaller)
     implementation(libs.androidx.work.runtime)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
@@ -144,6 +163,8 @@ dependencies {
     implementation(libs.koin.compose)
 
     debugImplementation(libs.compose.ui.tooling)
+
+    baselineProfile(projects.benchmarks)
 
     testImplementation(kotlin("test-junit"))
     testImplementation(libs.kotlinx.coroutines.test)

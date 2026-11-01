@@ -53,7 +53,7 @@ Cloudflare Workers 무료 플랜.
 - 첫 수집 50경기를 Riot이 붐비지 않을 때(받는 동안 429가 없을 때) 1분 안팎에 마친다(SC-001). 상한은 실제 계정으로 잰 뒤 정한다.
 - 경기를 모아 세는 계산은 `Dispatchers.Default`에서 한다. 첫 수집 뒤 홈으로 넘어갈 때 메인 스레드에서 세면 한 프레임이 250ms까지 걸렸다.
 - 긴 화면은 묶음마다 한 프레임씩 나눠 그린다(`OvalitStaged`). 홈을 한 프레임에 다 그리면 릴리스에서 54ms였다. 끊김은 릴리스나
-  `benchmark` 빌드로 잰다.
+  `benchmarkRelease` 빌드로 잰다. 시작 시간과 홈 프레임은 `:benchmarks`(Macrobenchmark)로 재고 Baseline Profile도 거기서 만든다.
 - 서버는 요청당 CPU 10ms 안. 가장 무거운 친구 경기 가리기가 800KB 경기에서 약 3ms다.
 
 **Constraints**:

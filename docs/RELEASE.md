@@ -46,7 +46,7 @@ Play에 앱을 올릴 때 보는 문서입니다. 처음 한 번 해 둘 것, �
 | --- | --- | --- | --- |
 | `composeApp/google-services.json` | Firebase 콘솔 > 프로젝트 설정 > 내 앱에서 받은 파일 | 푸시, 사용 통계, 비정상 종료 보고 | 셋 다 없이 돕니다 |
 | `local.properties` | `admob.appId`, `admob.nativeUnitId`, `admob.rewardedUnitId` | 광고 | 광고 자리가 비고 보상형이 없으면 광고 줄의 ×가 그 광고만 바로 닫습니다 |
-| `local.properties` | `admob.test` | `true`면 개발 빌드(디버그, benchmark)가 Google 테스트 광고를 받습니다. 빌드할 때 `-Povalit.ads.test=true`로도 됩니다 | 개발 빌드는 광고 자리가 없습니다. 실제 ID는 릴리스만 씁니다 |
+| `local.properties` | `admob.test` | `true`면 개발 빌드(디버그, benchmarkRelease)가 Google 테스트 광고를 받습니다. 빌드할 때 `-Povalit.ads.test=true`로도 됩니다 | 개발 빌드는 광고 자리가 없습니다. 실제 ID는 릴리스만 씁니다 |
 | `local.properties` | `ovalit.feedback.email` | 설정의 "피드백 보내기"가 여는 메일의 받는 주소 | 그 줄이 없습니다 |
 | `local.properties` | `ovalit.server.host` | RSO 로그인과 초대 링크의 App Link 호스트 | 아무 데도 이어지지 않는 예약 도메인을 씁니다 |
 | `server/.dev.vars`, Cloudflare 비밀값 | Riot 키, RSO `client_secret`, `FCM_SERVICE_ACCOUNT` 등 | 서버 | `server/README.md`를 봅니다 |
@@ -77,7 +77,7 @@ Play에 앱을 올릴 때 보는 문서입니다. 처음 한 번 해 둘 것, �
 
    - 빌드하면서 Crashlytics 플러그인이 난독화를 풀 매핑 파일을 Firebase에 올립니다. 안 올라가면 Crashlytics 콘솔의 스택이
      `a.b.c` 같은 이름으로 남습니다.
-   - 개발 기기용 `benchmark` 빌드는 매핑을 올리지 않습니다.
+   - 개발 기기용 `benchmarkRelease`와 프로필을 만들 때 쓰는 `nonMinifiedRelease`는 매핑을 올리지 않습니다.
    - Play Console의 Android vitals도 AAB에 든 매핑으로 비정상 종료를 풀어 줍니다.
 3. `composeApp/build/outputs/bundle/release/`의 AAB를 Play Console에 올립니다.
 

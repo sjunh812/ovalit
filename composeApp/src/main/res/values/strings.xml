@@ -40,7 +40,7 @@
     <string name="ping_new_body_others">%1$s도 같이 불렀어요</string>
     <string name="ping_reply_yes_title">🙌 %1$s도 같이 해요</string>
     <string name="ping_reply_no_title">%1$s · 이번엔 못 와요</string>
-    <string name="ping_reply_other_title">%1$s · %2$s에 하면 어때요</string>
+    <string name="ping_reply_other_title">%1$s · %2$s에 하면 어때요?</string>
     <string name="ping_reply_body">%1$s 초대에 답했어요</string>
     <string name="ping_reply_other_body">옮기면 같이 부른 친구들에게도 알려요</string>
     <string name="ping_time_title">%1$s의 초대 시간이 바뀌었어요</string>

@@ -39,7 +39,7 @@
     <string name="ping_new_body_others">%1$sも一緒に誘っています</string>
     <string name="ping_reply_yes_title">🙌 %1$sも参加します</string>
     <string name="ping_reply_no_title">%1$s · 今回は行けません</string>
-    <string name="ping_reply_other_title">%1$s · %2$sはどうですか</string>
+    <string name="ping_reply_other_title">%1$s · %2$sはどうですか？</string>
     <string name="ping_reply_body">%1$sの募集に回答がありました</string>
     <string name="ping_reply_other_body">変更すると誘った友達にも知らせます</string>
     <string name="ping_time_title">%1$sの募集の時間が変わりました</string>

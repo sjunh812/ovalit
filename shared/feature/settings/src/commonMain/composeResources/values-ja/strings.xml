@@ -36,7 +36,7 @@
     <string name="theme_dark">ダーク</string>
     <string name="theme_light">ライト</string>
     <string name="default_queue">デフォルトのキュー</string>
-    <string name="default_queue_description">ホームを開いたときに最初に表示するキューです。</string>
+    <string name="default_queue_description">ホームと試合タブを開いたときに最初に表示するキューです。</string>
     <string name="focus">重視すること</string>
     <string name="focus_description">選んだ項目の指標を、変化した指標の先頭に表示します。</string>
 

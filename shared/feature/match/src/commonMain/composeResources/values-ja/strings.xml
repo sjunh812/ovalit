@@ -68,7 +68,7 @@
     <string name="report_damage_taken">被ダメ</string>
     <string name="report_damage">ダメージ</string>
     <string name="report_headshot">HS率</string>
-    <string name="report_weapons_note">キルは敵を倒した武器で数えています。ダメージはその武器を持って始めたラウンドのラウンド平均ダメージです。ヘッドショット率はその武器だけでキルしたラウンドで数えています。</string>
+    <string name="report_weapons_note">キルは敵を倒した武器で数えています。ダメージはその武器を持って始めたラウンドで数えています。ヘッドショット率はその武器だけでキルしたラウンドで数えています。</string>
     <string name="economy_upsets">装備額が相手より1,000クレジットを超えて少ないラウンドで%1$d回勝ちました。</string>
     <string name="overview_first_blood_ours">味方ファーストキル</string>
     <string name="overview_first_blood_theirs">敵ファーストキル</string>

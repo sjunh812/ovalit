@@ -78,14 +78,14 @@
     <string name="sheet_combat_score_name">ACS</string>
     <string name="sheet_combat_score_body">킬, 피해, 어시스트로 쌓이는 전투 점수의 라운드당 평균이에요.</string>
     <string name="sheet_combat_score_formula">%1$s점 ÷ %2$s라운드 = %3$s</string>
-    <string name="sheet_kd_body">한 번 죽을 때마다 적을 몇 명 처치했는지예요.</string>
-    <string name="sheet_kd_note">내 스킬에 나나 우리 팀이 죽은 건 킬로 세지 않아요. 그중 내가 죽은 건 데스에 넣어요.</string>
+    <string name="sheet_kd_body">한 번 죽을 때마다 적을 몇 명 잡았는지예요.</string>
+    <string name="sheet_kd_note">내 스킬에 내가 죽거나 우리 팀이 죽은 건 킬로 세지 않아요. 그중 내가 죽은 건 데스에 넣어요.</string>
     <string name="sheet_kd_formula">%1$s킬 ÷ %2$s데스 = %3$s</string>
     <string name="sheet_kda_body">한 번 죽을 때마다 킬과 어시스트를 합쳐 몇 번 했는지예요. K/D와 달리 어시스트도 들어가요.</string>
     <string name="sheet_kda_note">경기마다 KDA를 먼저 내지 않고 킬, 어시스트, 데스를 다 더한 뒤에 나눠요.</string>
     <string name="sheet_kda_formula">(%1$s킬 + %2$s어시) ÷ %3$s데스 = %4$s</string>
     <string name="sheet_damage_name">ADR</string>
-    <string name="sheet_damage_body">한 라운드에 적에게 입힌 피해의 평균이에요. 킬로 이어지지 않은 피해도 들어가요.</string>
+    <string name="sheet_damage_body">한 라운드에 적에게 준 피해의 평균이에요. 킬로 이어지지 않은 피해도 들어가요.</string>
     <string name="sheet_damage_formula">%1$s 피해 ÷ %2$s라운드 = %3$s</string>
     <string name="sheet_headshot_name">HS%</string>
     <string name="sheet_headshot_body">맞힌 탄 중 머리에 맞은 탄의 비율이에요. 킬 중 헤드샷 킬의 비율과는 달라요.</string>
@@ -114,7 +114,7 @@
     <string name="sheet_per_match_kda">판당 %1$s킬 · %2$s데스 · %3$s어시</string>
     <!-- 달라진 점 칸을 누르면 뜨는 시트 -->
     <string name="dynamic_sheet_kast_name">KAST</string>
-    <string name="dynamic_sheet_kast_body">킬이나 어시스트를 했거나, 끝까지 살아남았거나, 죽었어도 우리 팀이 바로 트레이드해 준 라운드의 비율이에요.</string>
+    <string name="dynamic_sheet_kast_body">킬이나 어시스트를 했거나 끝까지 살아남았거나, 죽었어도 우리 팀이 바로 트레이드해 준 라운드의 비율이에요.</string>
     <string name="dynamic_sheet_survival_body">라운드가 끝날 때까지 살아남은 라운드의 비율이에요.</string>
     <string name="dynamic_sheet_first_kill_win_body">내가 첫 킬을 낸 라운드 중 이긴 라운드의 비율이에요. 우리 팀 다른 사람이 낸 첫 킬은 넣지 않아요.</string>
     <string name="dynamic_sheet_first_duel_involvement_body">라운드 첫 교전에 내가 낀 비율이에요. 첫 킬과 첫 데스를 더해 뛴 라운드 수로 나눠요.</string>
@@ -126,7 +126,7 @@
     <string name="dynamic_sheet_traded_death_body">내 데스 중 5초 안에 우리 팀이 나를 죽인 적을 잡아 준 비율이에요. 혼자 떨어져 죽었는지, 팀과 붙어 싸우다 죽었는지 봐요. 우리 팀이 얼마나 따라와 줬는지도 같이 들어가요.</string>
     <string name="dynamic_sheet_full_buy_body">우리 팀 장비 가치가 한 사람당 평균 3,900크레드 이상인 풀바이 라운드 중 이긴 비율이에요. 피스톨 라운드는 넣지 않아요.</string>
     <string name="dynamic_sheet_sample_title">몇 번으로 셌나요?</string>
-    <string name="dynamic_sheet_sample_body">위 숫자는 이 비율을 셀 때 쓴 횟수예요. 이번 기간과 견주는 주가 모두 %1$s 이상이어야 비교해요.</string>
+    <string name="dynamic_sheet_sample_body">위 숫자는 이 비율을 셀 때 쓴 횟수예요. 이번 기간과 비교하는 주 하나하나가 모두 %1$s 이상이어야 비교해요.</string>
     <string name="dynamic_sheet_movement_title">어떻게 판단하나요?</string>
     <string name="dynamic_sheet_moved">이번 변화가 지난 %1$d주 동안 주마다 흔들린 폭의 %2$s배를 넘어서 달라졌다고 봤어요.</string>
     <string name="dynamic_sheet_steady">이번 변화가 평소 주마다 흔들리는 폭 안이라 달라졌다고 보지 않았어요.</string>

@@ -821,7 +821,7 @@ class ReportScreenTest {
 
         onNodeWithText("몇 번으로 셌나요?").assertExists()
         onNodeWithText("146라운드").assertExists()
-        onNodeWithText("위 숫자는 이 비율을 셀 때 쓴 횟수예요. 이번 기간과 견주는 주가 모두 40라운드 이상이어야 비교해요.").assertExists()
+        onNodeWithText("위 숫자는 이 비율을 셀 때 쓴 횟수예요. 이번 기간과 비교하는 주 하나하나가 모두 40라운드 이상이어야 비교해요.").assertExists()
         onNodeWithText("이번 변화가 지난 8주 동안 주마다 흔들린 폭의 1.5배를 넘어서 달라졌다고 봤어요.").assertExists()
     }
 

@@ -5,7 +5,7 @@
     <!-- 친구 탭 -->
     <string name="friends_title">친구</string>
     <string name="invite">초대 링크 보내기</string>
-    <string name="invite_note">친구는 서로 수락해야 맺어져요. 닉네임으로는 찾을 수 없어요.</string>
+    <string name="invite_note">서로 수락해야 친구가 돼요. 닉네임으로는 찾을 수 없어요.</string>
     <string name="requests_title">받은 요청 %1$d</string>
     <string name="request_from_scoreboard">같이 뛴 경기에서 보냈어요</string>
     <string name="request_from_invite">초대 링크로 보냈어요</string>

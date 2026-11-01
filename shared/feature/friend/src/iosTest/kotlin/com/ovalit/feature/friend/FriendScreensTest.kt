@@ -155,6 +155,16 @@ class FriendScreensTest {
         assertEquals(1, kdaRows.size, "나와 비교에 KDA 줄이 없다")
     }
 
+    // 친구 경기 목록은 경기 목록과 같은 규칙이다(docs/screens.md)
+    @Test
+    fun `친구 경기 목록도 날짜 뒤에 그날 승패를 붙인다`() = runComposeUiTest {
+        setContent { Themed { FriendMatchesScreen(FriendPreviewData.profile, onBack = {}) } }
+
+        val date = onNodeWithText("어제", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val record = onNodeWithText("1승 1패", useUnmergedTree = true).getUnclippedBoundsInRoot()
+        assertTrue(record.left > date.right, "승패가 날짜 뒤에 없다")
+    }
+
     // 같이 뛴 경기 다음에 내 프로필과 같은 칸을 두고, 나와 비교는 통계 다음이다
     @Test
     fun `전적을 공개한 친구는 내 프로필과 같은 칸을 정한 순서로 보여준다`() = runComposeUiTest {

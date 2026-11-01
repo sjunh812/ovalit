@@ -12,10 +12,11 @@ import com.ovalit.core.data.countNewMatches
 import com.ovalit.core.data.logRefresh
 import com.ovalit.core.model.AgentId
 import com.ovalit.core.model.ContentCatalog
+import com.ovalit.core.model.DayRecord
 import com.ovalit.core.model.MapId
 import com.ovalit.core.model.Match
-import com.ovalit.core.model.MatchFormat
 import com.ovalit.core.model.NewMatchesProgress
+import com.ovalit.core.model.dayRecord
 import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.ui.FailedAction
 import com.ovalit.core.ui.FailureNotice
@@ -72,19 +73,6 @@ data class MatchDay(val date: LocalDate, val matches: List<Match>) {
      * [matches]가 이미 고른 큐와 필터로 거른 경기라 보이는 줄만 셉니다.
      */
     val record: DayRecord? = matches.dayRecord()
-}
-
-data class DayRecord(val wins: Int, val losses: Int, val draws: Int)
-
-// 데스매치와 건틀릿은 승패가 아니라 등수로 끝나서 세지 않는다.
-// 경기 줄도 그런 판에는 승패를 적지 않는다.
-// 이기거나 진 판이 하나도 없으면 "0승 0패"가 되니 적지 않는다.
-private fun List<Match>.dayRecord(): DayRecord? {
-    val twoTeams = filter { it.format == MatchFormat.ROUNDS || it.format == MatchFormat.TEAM_POINTS }
-    val wins = twoTeams.count { it.myTeamWon == true }
-    val losses = twoTeams.count { it.myTeamWon == false }
-    if (wins + losses == 0) return null
-    return DayRecord(wins = wins, losses = losses, draws = twoTeams.size - wins - losses)
 }
 
 /** S2 경기 목록입니다. 경기는 값이 바뀌지 않고 늘어나기만 해서 받는 대로 목록에 채웁니다. */

@@ -25,8 +25,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBottomSheet
@@ -48,6 +46,7 @@ import com.ovalit.core.model.QueueFilter
 import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdSlot
 import com.ovalit.core.ui.FailureNoticesEffect
+import com.ovalit.core.ui.MatchDayHeader
 import com.ovalit.core.ui.MatchRow
 import com.ovalit.core.ui.MatchRowStyle
 import com.ovalit.core.ui.MatchRowsSkeleton
@@ -55,10 +54,7 @@ import com.ovalit.core.ui.NewMatchesLine
 import com.ovalit.core.ui.QueueChips
 import com.ovalit.core.ui.QueueChipsSkeleton
 import com.ovalit.core.ui.RefreshResultsEffect
-import com.ovalit.core.ui.SeparatedRow
-import com.ovalit.core.ui.SeparatorDot
 import com.ovalit.core.ui.agentName
-import com.ovalit.core.ui.dayLabel
 import com.ovalit.core.ui.label
 import com.ovalit.core.ui.listAdBefore
 import com.ovalit.core.ui.mapName
@@ -66,8 +62,6 @@ import com.ovalit.core.ui.matchRowTextStart
 import com.ovalit.core.ui.matchTimeLabel
 import com.ovalit.core.ui.resources.Res as CoreUiRes
 import com.ovalit.core.ui.resources.loading
-import com.ovalit.core.ui.resources.record_wins_losses
-import com.ovalit.core.ui.resources.record_wins_losses_draws
 import com.ovalit.feature.match.resources.Res
 import com.ovalit.feature.match.resources.empty_filter
 import com.ovalit.feature.match.resources.empty_queue
@@ -79,7 +73,6 @@ import com.ovalit.feature.match.resources.filter_all
 import com.ovalit.feature.match.resources.filter_map
 import com.ovalit.feature.match.resources.filter_reset
 import com.ovalit.feature.match.resources.matches_title
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -181,7 +174,7 @@ internal fun MatchesScreen(
                         item(key = "ad-$dayIndex") { AdSlot(AdPlacement.MATCH_LIST, key = "match-list-$dayIndex") }
                     }
                     item(key = "day-${day.date}") {
-                        DayHeader(day, today = uiState.now.toLocalDateTime(uiState.timeZone).date)
+                        MatchDayHeader(day.date, today = uiState.now.toLocalDateTime(uiState.timeZone).date, record = day.record)
                     }
                     items(day.matches, key = { it.id.value }) { match ->
                         Column {
@@ -235,35 +228,6 @@ private fun FilterButton(active: Boolean, onClick: () -> Unit) {
             )
         }
     }
-}
-
-// 그날 승패는 날짜 바로 뒤에 붙인다.
-// 오른쪽 끝에 두면 날짜를 읽고 바로 경기 줄로 내려가서 눈에 안 들어온다.
-// 한 줄에 안 들어가면 날짜를 꺾지 않고 승패를 다음 줄로 내린다.
-@Composable
-private fun DayHeader(day: MatchDay, today: LocalDate) {
-    val style = OvalitTheme.typography.label
-    val colors = OvalitTheme.colors
-    val record = day.record?.let { recordText(it) }
-    SeparatedRow(
-        items = listOfNotNull<@Composable () -> Unit>(
-            { OvalitText(text = dayLabel(day.date, today), style = style, color = colors.t3) },
-            record?.let { { OvalitText(text = it, style = style, color = colors.t2, maxLines = 1) } },
-        ),
-        separator = { SeparatorDot(style, colors.t4) },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.lg, bottom = OvalitSpacing.xs)
-            .semantics(mergeDescendants = true) { heading() },
-        alignBaseline = true,
-    )
-}
-
-@Composable
-private fun recordText(record: DayRecord): String = if (record.draws > 0) {
-    stringResource(CoreUiRes.string.record_wins_losses_draws, record.wins, record.losses, record.draws)
-} else {
-    stringResource(CoreUiRes.string.record_wins_losses, record.wins, record.losses)
 }
 
 @Composable

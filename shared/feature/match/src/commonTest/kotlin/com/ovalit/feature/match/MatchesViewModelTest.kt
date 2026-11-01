@@ -3,6 +3,7 @@ package com.ovalit.feature.match
 import com.ovalit.core.data.FakeContentRepository
 import com.ovalit.core.data.FakeMatchRepository
 import com.ovalit.core.data.MatchRepository
+import com.ovalit.core.model.DayRecord
 import com.ovalit.core.model.MatchId
 import com.ovalit.core.model.OvalitError
 import com.ovalit.core.model.OvalitException

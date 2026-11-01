@@ -13,9 +13,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ovalit.core.designsystem.component.OvalitBackTopBar
@@ -25,12 +24,13 @@ import com.ovalit.core.designsystem.component.rememberContentShown
 import com.ovalit.core.designsystem.theme.OvalitSpacing
 import com.ovalit.core.designsystem.theme.OvalitTheme
 import com.ovalit.core.model.PlayerId
+import com.ovalit.core.model.dayRecord
 import com.ovalit.core.ui.AdPlacement
 import com.ovalit.core.ui.AdSlot
+import com.ovalit.core.ui.MatchDayHeader
 import com.ovalit.core.ui.MatchRow
 import com.ovalit.core.ui.MatchRowStyle
 import com.ovalit.core.ui.MatchRowsSkeleton
-import com.ovalit.core.ui.dayLabel
 import com.ovalit.core.ui.listAdBefore
 import com.ovalit.core.ui.matchRowTextStart
 import com.ovalit.core.ui.matchTimeLabel
@@ -73,9 +73,12 @@ internal fun FriendMatchesScreen(uiState: FriendProfileUiState, onBack: () -> Un
         }
         val name = uiState.friend.riotId.substringBefore('#')
         val today = uiState.now.toLocalDateTime(uiState.timeZone).date
-        val days = uiState.friend.matches
-            .sortedByDescending { it.startedAt }
-            .groupBy { it.startedAt.toLocalDateTime(uiState.timeZone).date }
+        // 분마다 시각 글자를 다시 그려도 경기가 그대로면 다시 묶지 않는다
+        val days = remember(uiState.friend.matches, uiState.timeZone) {
+            uiState.friend.matches
+                .sortedByDescending { it.startedAt }
+                .groupBy { it.startedAt.toLocalDateTime(uiState.timeZone).date }
+        }
 
         LazyColumn(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
             item {
@@ -99,14 +102,8 @@ internal fun FriendMatchesScreen(uiState: FriendProfileUiState, onBack: () -> Un
                     item(key = "ad-$dayIndex") { AdSlot(AdPlacement.FRIEND_MATCH_LIST, key = "friend-matches-$dayIndex") }
                 }
                 item(key = "day-$date") {
-                    OvalitText(
-                        text = dayLabel(date, today),
-                        modifier = Modifier
-                            .padding(start = OvalitSpacing.screen, end = OvalitSpacing.screen, top = OvalitSpacing.lg, bottom = OvalitSpacing.xs)
-                            .semantics { heading() },
-                        style = OvalitTheme.typography.label,
-                        color = colors.t3,
-                    )
+                    // 내 경기 목록과 같이 그날 승패를 날짜 뒤에 붙인다
+                    MatchDayHeader(date, today, record = remember(matches) { matches.dayRecord() })
                 }
                 items(matches, key = { it.id.value }) { match ->
                     Column {

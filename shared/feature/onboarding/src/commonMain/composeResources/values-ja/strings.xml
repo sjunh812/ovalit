@@ -2,7 +2,7 @@
 <!-- 일본어. 한국어 values/strings.xml과 키가 같다. 용어는 docs/i18n-ja.md -->
 <resources>
     <string name="intro_name">Ovalit</string>
-    <string name="intro_name_meaning">今日ヴァロやる人？</string>
+    <string name="intro_name_meaning">今日ヴァロやる人いる？</string>
     <string name="intro_headline">今週変わった自分のプレーをお伝えします</string>
     <string name="intro_subtitle">ヘッドショット、ファーストキル、エコ勝率まで、いろいろな記録を普段と比べます</string>
     <string name="intro_start">Riotアカウントで始める</string>

@@ -42,7 +42,7 @@ private val LogoWidth = 88.dp
 
 /**
  * 앱 이름 뒤에 그 풀이를 한 단계 흐리고 가늘게 붙입니다.
- * "오발있? 오늘 발로란트 할 사람?"에서 어디까지가 앱 이름인지 먼저 읽히게 합니다.
+ * "오발있? 오늘 발로란트 할 사람 있어?"에서 어디까지가 앱 이름인지 먼저 읽히게 합니다.
  */
 @Composable
 private fun nameWithMeaning(name: String, meaning: String): AnnotatedString {

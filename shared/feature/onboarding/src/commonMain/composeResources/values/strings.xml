@@ -2,7 +2,7 @@
 <resources>
     <!-- 앱 이름 뒤에 그 풀이를 흐리고 가늘게 붙인다(nameWithMeaning) -->
     <string name="intro_name">오발있?</string>
-    <string name="intro_name_meaning">오늘 발로란트 할 사람?</string>
+    <string name="intro_name_meaning">오늘 발로란트 할 사람 있어?</string>
     <!-- "내"가 앞줄 끝에 홀로 남지 않게 "내 플레이를"은 줄바꿈 없는 공백으로 붙인다 -->
     <string name="intro_headline">이번 주 달라진 내&#160;플레이를 짚어드려요</string>
     <string name="intro_subtitle">헤드샷, 첫 킬, 이코 승률까지 다양한 기록을 평소와 비교해요</string>

@@ -32,8 +32,8 @@ export function verifier(value: unknown): string {
   return value;
 }
 
-/** 콘텐츠 이름을 내려줄 언어입니다. 앱 화면 언어(한국어, 일본어)와 같습니다. */
-export const LOCALES = ["ko-KR", "ja-JP"] as const;
+/** 콘텐츠 이름을 내려줄 언어입니다. 앱 화면 언어(한국어, 일본어, 영어)와 같습니다. */
+export const LOCALES = ["ko-KR", "ja-JP", "en-US"] as const;
 export type Locale = (typeof LOCALES)[number];
 
 /**

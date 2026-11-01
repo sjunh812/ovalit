@@ -2,9 +2,9 @@
 /**
  * valorant-api.com에서 받은 요원·티어 JSON으로 서버가 내려줄 표 두 개를 만듭니다.
  * Riot 공식 자료에는 요원 역할과 티어 이름이 없습니다. 패치로 요원이나 티어가 바뀌면 다시 돌립니다.
- * 티어 JSON은 언어마다(`?language=ko-KR`, `?language=ja-JP`) 하나씩 받습니다.
+ * 티어 JSON은 언어마다(`?language=ko-KR`, `?language=ja-JP`, `?language=en-US`) 하나씩 받습니다.
  *
- *     node scripts/build-tables.mjs <agents.json> <competitivetiers-ko.json> <competitivetiers-ja.json>
+ *     node scripts/build-tables.mjs <agents.json> <competitivetiers-ko.json> <competitivetiers-ja.json> <competitivetiers-en.json>
  *
  * 결과는 src/data/roles.json(요원 UUID → 역할)과 src/data/tiers.json(언어 → 티어 번호 → 이름)입니다.
  */
@@ -33,13 +33,16 @@ function buildRoles(agents) {
   return Object.fromEntries(entries.sort(([a], [b]) => a.localeCompare(b)));
 }
 
-function buildTiers(competitiveTiers) {
+// 영어 덤프는 이름을 모두 대문자로 준다("IRON 1"). 앱 화면은 첫 글자만 대문자로 쓴다(docs/i18n-en.md).
+const titleCase = (name) => name.toLowerCase().replace(/\b\p{L}/gu, (letter) => letter.toUpperCase());
+
+function buildTiers(competitiveTiers, rename = (name) => name) {
   // 에피소드마다 표가 하나씩 쌓이고 마지막이 지금 쓰는 표다.
   const current = competitiveTiers.data.at(-1);
   // 0은 랭크가 없는 상태라 번호로 뺀다. 게임에서 쓰지 않는 1, 2는 번호가 아니라 이름("미사용", "Unused")으로 거른다.
   // 그래서 표는 3(아이언 1)부터 시작하고 앱에 번들한 엠블럼과 맞는다.
   const tiers = current.tiers.filter((tier) => tier.tier > 0 && !/^(미사용|未使用|Unused)/.test(tier.tierName));
-  return Object.fromEntries(tiers.map((tier) => [String(tier.tier), tier.tierName]));
+  return Object.fromEntries(tiers.map((tier) => [String(tier.tier), rename(tier.tierName)]));
 }
 
 function write(name, table) {
@@ -48,11 +51,17 @@ function write(name, table) {
   console.log(`${name}: ${Object.keys(table).length}개`);
 }
 
-const [agentsPath, koTiersPath, jaTiersPath] = process.argv.slice(2);
-if (!agentsPath || !koTiersPath || !jaTiersPath) {
-  console.error("사용법: node scripts/build-tables.mjs <agents.json> <competitivetiers-ko.json> <competitivetiers-ja.json>");
+const [agentsPath, koTiersPath, jaTiersPath, enTiersPath] = process.argv.slice(2);
+if (!agentsPath || !koTiersPath || !jaTiersPath || !enTiersPath) {
+  console.error(
+    "사용법: node scripts/build-tables.mjs <agents.json> <competitivetiers-ko.json> <competitivetiers-ja.json> <competitivetiers-en.json>",
+  );
   process.exit(1);
 }
 const read = (path) => JSON.parse(readFileSync(path, "utf8"));
 write("roles.json", buildRoles(read(agentsPath)));
-write("tiers.json", { "ko-KR": buildTiers(read(koTiersPath)), "ja-JP": buildTiers(read(jaTiersPath)) });
+write("tiers.json", {
+  "ko-KR": buildTiers(read(koTiersPath)),
+  "ja-JP": buildTiers(read(jaTiersPath)),
+  "en-US": buildTiers(read(enTiersPath), titleCase),
+});

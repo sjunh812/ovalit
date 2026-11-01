@@ -33,11 +33,22 @@ describe("콘텐츠", () => {
     expect(Object.keys(ja)).toEqual(Object.keys(ko));
   });
 
+  // 영어 화면(필리핀, 말레이시아, 싱가포르, 호주)도 같은 번호로 영어 이름을 받는다
+  it("티어 표는 영어 이름을 첫 글자만 대문자로 내려준다", async () => {
+    const t = setup();
+    const ko = await (await t.call("GET", "/content/tiers?locale=ko-KR")).json<Record<string, string>>();
+    const en = await (await t.call("GET", "/content/tiers?locale=en-US")).json<Record<string, string>>();
+    expect(en["3"]).toBe("Iron 1");
+    expect(en["21"]).toBe("Ascendant 1");
+    expect(en["27"]).toBe("Radiant");
+    expect(Object.keys(en)).toEqual(Object.keys(ko));
+  });
+
   // 모르는 값을 받아 주면 값마다 Riot 콘텐츠를 따로 담아 캐시가 끝없이 는다
   it("모르는 locale은 Riot을 부르지 않고 400이다", async () => {
     const t = setup();
     const me = await t.login();
-    for (const path of ["/content/tiers?locale=en-US", "/content?locale=xx"]) {
+    for (const path of ["/content/tiers?locale=fr-FR", "/content?locale=xx"]) {
       const res = await t.call("GET", path, me.token);
       expect(res.status).toBe(400);
       expect(await res.json()).toEqual({ error: "invalid_locale" });

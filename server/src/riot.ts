@@ -28,8 +28,8 @@ const MB = 1024 * 1024;
 // 경기 원문은 한 판에 800KB 안팎이라 글자당 2바이트로 세도 15판쯤 담긴다.
 // 가린 친구 경기도 matches에 같이 담아 원문과 함께 오래 안 꺼낸 것부터 버린다.
 const memory = {
-  // 언어마다(ko-KR, ja-JP) 하나씩이다
-  content: new MemoryCache({ maxEntries: 2, maxBytes: 20 * MB }),
+  // 언어마다(ko-KR, ja-JP, en-US) 하나씩이다
+  content: new MemoryCache({ maxEntries: 3, maxBytes: 20 * MB }),
   status: new MemoryCache({ maxEntries: 1, maxBytes: 1 * MB }),
   matches: new MemoryCache({ maxEntries: Number.POSITIVE_INFINITY, maxBytes: 24 * MB }),
   missing: new MemoryCache({ maxEntries: 10_000, maxBytes: Number.POSITIVE_INFINITY }),

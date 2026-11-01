@@ -59,7 +59,7 @@ npm run typecheck
 | 메서드 | 경로 | 세션 | 하는 일 |
 | --- | --- | --- | --- |
 | GET | `/health` | | 살아 있는지 |
-| GET | `/content/tiers?locale=` | | 티어 번호 → 이름. `locale`은 `ko-KR`(빠지면 이것), `ja-JP`이고 다른 값은 400 `invalid_locale`입니다 |
+| GET | `/content/tiers?locale=` | | 티어 번호 → 이름. `locale`은 `ko-KR`(빠지면 이것), `ja-JP`, `en-US`이고 다른 값은 400 `invalid_locale`입니다 |
 | GET | `/content/roles` | | 요원 UUID(소문자) → `duelist` · `initiator` · `controller` · `sentinel` |
 | GET | `/i/:code` | | 초대 링크를 브라우저에서 열었을 때 보이는 쪽 |
 | GET | `/auth/rso/start?challenge=` | | Riot 로그인으로 보냅니다. D1에 쓰지 않습니다 |
@@ -354,12 +354,12 @@ Riot 응답은 isolate 메모리, Cache API, Riot 순서로 찾습니다.
 
 ## 표와 카드 다시 만들기
 
-티어 이름과 요원 역할은 Riot 공식 자료에 없어서 valorant-api.com의 덤프로 만듭니다. 티어는 ko-KR과 ja-JP
-덤프를 하나씩 넘깁니다. 새 요원이 나오거나 티어가 바뀌면 다시 돌리고 결과를 커밋합니다.
+티어 이름과 요원 역할은 Riot 공식 자료에 없어서 valorant-api.com의 덤프로 만듭니다. 티어는 ko-KR, ja-JP, en-US
+덤프를 하나씩 넘깁니다. 영어 이름은 스크립트가 첫 글자만 대문자로 바꿉니다. 새 요원이 나오거나 티어가 바뀌면 다시 돌리고 결과를 커밋합니다.
 새 요원이나 티어가 나오면 매일 도는 Content watch가 `content-watch` 이슈로 알려 줍니다(`docs/CONVENTIONS.md`).
 
 ```bash
-npm run build:tables -- <agents.json> <competitivetiers-ko.json> <competitivetiers-ja.json>
+npm run build:tables -- <agents.json> <competitivetiers-ko.json> <competitivetiers-ja.json> <competitivetiers-en.json>
 ```
 
 플레이어 카드는 콘텐츠 카탈로그 압축 파일에서 꺼냅니다. 시스템 `unzip`을 씁니다.

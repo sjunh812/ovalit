@@ -10,7 +10,7 @@ export const content = new Hono<AppEnv>();
 
 // 전적은 아니지만 우리 Riot 키로 부른다.
 // workers.dev에서는 isolate끼리 나눠 쓰는 캐시가 없어서 세션 없이 열면 누구나 이 두 경로를 불러 앱 전체의 레이트 리밋을 깎을 수 있다.
-// 요원·맵·무기 이름은 앱 화면 언어를 따라 `locale`(ko-KR, ja-JP)로 받는다
+// 요원·맵·무기 이름은 앱 화면 언어를 따라 `locale`(ko-KR, ja-JP, en-US)로 받는다
 content.get("/content", requireSession, async (c) =>
   rawJson(c, await riotFor(c).content(locale(c.req.query("locale"))), "private, max-age=21600"),
 );

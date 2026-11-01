@@ -47,7 +47,7 @@
 | 주간 요약 | `PUT /me/summaries/:week {rows}`(그 주 고정 칸 합계를 통째로 바꾼다), `GET /friends/summaries?since=`(서로 수락한 친구가 전적을 공개했을 때만) | FR-022, FR-025 |
 | ㅇㅂㅇ | `GET /pings`, `POST /pings {friends, startsAt}`, `POST /pings/:id/reply {answer, proposedAt?}`, `POST /pings/:id/time {startsAt}`, `POST /pings/:id/members {friends}`, `DELETE /pings/:id` | FR-026, FR-027 |
 
-`GET /content`와 `GET /content/tiers`는 `locale` 인자(`ko-KR`, `ja-JP`)를 받아 그 언어의 이름을 내려준다(FR-035, T083).
+`GET /content`와 `GET /content/tiers`는 `locale` 인자(`ko-KR`, `ja-JP`, `en-US`)를 받아 그 언어의 이름을 내려준다(FR-035, T083).
 빠지면 `ko-KR`이고 다른 값은 400 `invalid_locale`이다. 받아 주면 Riot 콘텐츠를 값마다 따로 담아 두게 되어 캐시가 끝없이 는다.
 서버는 언어마다 따로 담아 두고 앱은 `AppLanguage.current`를 따라 다시 받는다.
 

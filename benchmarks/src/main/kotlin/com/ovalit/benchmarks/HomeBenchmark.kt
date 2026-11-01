@@ -10,11 +10,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * 홈의 프레임을 잽니다. 끊김은 릴리스처럼 줄인 빌드로만 잽니다(CLAUDE.md 그리기).
- * 둘 다 Baseline Profile이 깔린 상태로 잽니다.
+ * 홈의 프레임을 잽니다.
+ * 끊김은 릴리스처럼 줄인 빌드로만 잽니다(CLAUDE.md 그리기).
+ * 아래 두 측정 모두 Baseline Profile이 깔린 상태로 잽니다.
  *
  * 시작 방식(startupMode)을 주지 않습니다.
- * 주면 준비를 마친 뒤 재기 전에 앱을 다시 죽여서 홈이 아니라 꺼진 앱에서 재게 됩니다.
+ * 주면 준비를 마친 뒤 재기 전에 앱을 다시 죽여서 홈이 아니라 꺼진 앱을 잽니다.
  * 대신 준비 맨 앞에서 앱을 죽여 매번 인트로부터 시작합니다.
  */
 @RunWith(AndroidJUnit4::class)

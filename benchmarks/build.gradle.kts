@@ -4,7 +4,7 @@ plugins {
 }
 
 // 앱을 따로 띄워 시작 시간과 프레임을 재고 Baseline Profile을 만든다(docs/CONVENTIONS.md 빌드).
-// 앱 빌드 타입마다 nonMinifiedRelease와 benchmarkRelease 변형이 생기고 각각 그 앱 빌드를 띄운다.
+// 앱의 릴리스 빌드 타입을 따라 이 모듈에도 nonMinifiedRelease와 benchmarkRelease 변형이 생기고 각각 같은 이름의 앱 빌드를 띄운다.
 android {
     namespace = "com.ovalit.benchmarks"
 
@@ -18,7 +18,9 @@ android {
 }
 
 baselineProfile {
-    // 붙어 있는 기기에서 만든다. Gradle 관리 기기는 시스템 이미지를 따로 받아야 해서 쓰지 않는다.
+    // 붙어 있는 기기에서 만든다.
+    // Gradle 관리 기기는 시스템 이미지를 따로 받아야 해서 쓰지 않는다.
+    // 연결된 기기를 모두 쓰니 ANDROID_SERIAL로 에뮬레이터만 고른다.
     useConnectedDevices = true
 }
 

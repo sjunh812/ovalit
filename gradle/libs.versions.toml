@@ -15,7 +15,8 @@ androidTargetSdk = "37"
 androidMinSdk = "26"
 
 androidxActivityCompose = "1.13.0"
-# Macrobenchmark와 Baseline Profile Gradle 플러그인이 같은 버전으로 나온다. 1.5.0부터 AGP 9에서 newDsl=false 없이 돈다.
+# Macrobenchmark와 Baseline Profile Gradle 플러그인이 같은 버전으로 나온다.
+# 1.5.0부터 AGP 9에서 newDsl=false 없이 돈다.
 androidxBenchmark = "1.5.0"
 androidxBrowser = "1.10.0"
 androidxCoreKtx = "1.19.0"
@@ -70,7 +71,7 @@ play-services-ads = { module = "com.google.android.gms:play-services-ads", versi
 # 설정 값만 담는다. 경기를 담을 DB는 프로덕션 키가 나온 뒤에 고른다.
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "androidxDatastore" }
 
-# 앱이 Baseline Profile을 들고 가서 Play를 거치지 않고 깐 빌드(사이드로드, Macrobenchmark)에도 설치한다.
+# Play를 거치지 않고 깐 빌드(사이드로드, Macrobenchmark)에도 앱에 넣은 Baseline Profile을 깔아 준다.
 androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "androidxProfileinstaller" }
 
 # :benchmarks 모듈만 쓴다. 앱에 들어가지 않는다.

@@ -10,15 +10,20 @@ import androidx.test.uiautomator.Until
 /** 재는 앱입니다. benchmarkRelease와 nonMinifiedRelease 모두 릴리스와 같은 ID입니다. */
 const val PACKAGE_NAME = "com.ovalit"
 
-// 화면 글자로 찾는다.
-// 기기 언어가 한국어거나 앱이 모르는 언어(기본 문구가 한국어다)일 때만 맞는다.
+// 버튼과 화면은 글자로 찾는다.
+// 기기 언어가 한국어거나 앱이 모르는 언어(기본 문구가 한국어다)일 때만 찾을 수 있다.
 // 일본어 기기에서는 글자가 달라 찾지 못한다.
+
 private const val WAIT_MILLIS = 10_000L
 
-// 가짜 서버가 첫 수집 50경기를 한 판씩 준다. 느린 에뮬레이터에서도 넉넉하게 기다린다.
+// 가짜 서버가 첫 수집 50경기를 한 판씩 준다.
+// 느린 에뮬레이터에서도 넉넉하게 기다린다.
 private const val IMPORT_WAIT_MILLIS = 60_000L
 
 private const val REPORT_BUTTON = "리포트 보기"
+
+// 경기 탭 거르기 버튼의 설명이다
+private const val FILTER_BUTTON = "필터"
 
 /**
  * 인트로부터 첫 수집을 거쳐 홈까지 갑니다.
@@ -52,7 +57,8 @@ fun MacrobenchmarkScope.waitForHome() {
  * 홈을 끝까지 내렸다가 거의 맨 위까지 다시 올립니다.
  * 세 번 내리면 끝에 닿고 올릴 때는 두 번만 넘겨 맨 위에 닿기 전에 멈춥니다.
  * 맨 위에서 한 번 더 넘기면 당겨서 새로고침이 돌아 가짜 서버가 새 경기를 주고 홈을 다시 세서 스크롤이 아닌 프레임이 섞입니다.
- * 끝에 닿았는지는 `UiObject2.fling`이 돌려주는 값으로 알 수 없습니다. Compose 화면은 첫 번째부터 더 넘길 수 없다고 돌려줍니다.
+ * 끝에 닿았는지는 `UiObject2.fling`이 돌려주는 값으로 알 수 없습니다.
+ * Compose 화면은 처음 넘길 때부터 더 넘길 수 없다고 돌려줍니다.
  */
 fun MacrobenchmarkScope.scrollHome() {
     repeat(3) { fling(Direction.DOWN) }
@@ -62,15 +68,18 @@ fun MacrobenchmarkScope.scrollHome() {
 /** 경기 탭을 열어 목록을 넘기고 첫 경기의 S3를 열었다 닫습니다. */
 fun MacrobenchmarkScope.visitMatches() {
     clickText("경기")
+    // 탭 이름 "경기"는 홈에도 있어서 경기 탭에만 있는 거르기 버튼으로 바뀐 걸 본다
+    checkNotNull(device.wait(Until.findObject(By.desc(FILTER_BUTTON)), WAIT_MILLIS)) { "경기 탭이 열리지 않았어요" }
     fling(Direction.DOWN)
     fling(Direction.UP)
-    // 경기 줄만 화면 폭을 다 쓰고 누를 수 있다. 칩과 거르기 아이콘은 좁다.
-    val row = scrollable().findObjects(By.clickable(true)).first { it.visibleBounds.width() > device.displayWidth * 0.8 }
-    row.click()
+    // 누를 수 있는 것 중 화면 폭을 거의 다 쓰는 건 경기 줄뿐이다.
+    // 칩과 거르기 버튼은 좁다.
+    val row = scrollable().findObjects(By.clickable(true)).firstOrNull { it.visibleBounds.width() > device.displayWidth * 0.8 }
+    checkNotNull(row) { "누를 경기 줄을 찾지 못했어요" }.click()
     waitForText("스코어보드")
     fling(Direction.DOWN)
     device.pressBack()
-    waitForText("경기")
+    check(device.wait(Until.gone(By.text("스코어보드")), WAIT_MILLIS)) { "경기 상세에서 돌아오지 못했어요" }
 }
 
 /** 친구 탭과 설정 탭을 지나 설정의 "프로필 보기"로 내 프로필을 열고 홈으로 돌아옵니다. */
@@ -79,7 +88,7 @@ fun MacrobenchmarkScope.visitOtherTabs() {
     device.waitForIdle()
     clickText("설정")
     clickText("프로필 보기")
-    device.wait(Until.gone(By.text("프로필 보기")), WAIT_MILLIS)
+    check(device.wait(Until.gone(By.text("프로필 보기")), WAIT_MILLIS)) { "내 프로필이 열리지 않았어요" }
     fling(Direction.DOWN)
     device.pressBack()
     clickText("홈")
@@ -95,7 +104,7 @@ private fun MacrobenchmarkScope.clickText(text: String, timeout: Long = WAIT_MIL
     waitForText(text, timeout).click()
 }
 
-// 스플래시가 걷히는 동안 누르면 누름이 화면에 닿지 않을 때가 있어 다음 화면이 뜰 때까지 다시 누른다.
+// 스플래시가 걷히는 동안에는 눌러도 화면에 닿지 않을 때가 있어 다음 화면이 뜰 때까지 다시 누른다.
 private fun MacrobenchmarkScope.advance(from: String, to: String) {
     repeat(3) {
         device.wait(Until.findObject(By.text(from)), WAIT_MILLIS)?.click()

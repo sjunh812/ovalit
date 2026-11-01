@@ -8,7 +8,7 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
-// 다른 모듈의 APK를 띄워 재는 테스트 모듈(:benchmarks)이다.
+// 다른 모듈의 APK를 띄워 재는 테스트 모듈(:benchmarks)에 쓴다.
 // AGP 9부터 코틀린 지원이 플러그인에 들어와 있어 kotlin-android를 따로 적용하지 않는다.
 class OvalitAndroidTestConventionPlugin : Plugin<Project> {
 
@@ -19,7 +19,8 @@ class OvalitAndroidTestConventionPlugin : Plugin<Project> {
             compileSdk = libs.int("androidCompileSdk")
 
             defaultConfig {
-                // Baseline Profile은 안드로이드 9부터 만들 수 있다. 루팅하지 않은 기기는 13부터다.
+                // Baseline Profile은 안드로이드 9부터 만들 수 있다.
+                // 루팅하지 않은 기기는 13부터다.
                 minSdk = maxOf(libs.int("androidMinSdk"), 28)
                 targetSdk = libs.int("androidTargetSdk")
             }

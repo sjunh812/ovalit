@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
-    // 릴리스 빌드마다 nonMinifiedRelease(프로필을 만들 때 띄운다)와 benchmarkRelease(잴 때 띄운다)를 하나씩 만든다.
+    // 릴리스 빌드 타입을 본떠 nonMinifiedRelease(프로필을 만들 때 띄운다)와 benchmarkRelease(잴 때 띄운다)를 만든다.
     alias(libs.plugins.baselineprofile)
 }
 
@@ -36,7 +36,8 @@ val localProperties = Properties().apply {
 fun localProperty(key: String): String? = localProperties.getProperty(key)?.trim()?.takeIf { it.isNotEmpty() }
 
 // 개발 빌드(디버그, benchmarkRelease, nonMinifiedRelease)는 실제 광고 ID를 쓰지 않는다.
-// local.properties에 실제 ID가 있어도 개발 기기에서 실제 광고를 요청하고 누르면 AdMob이 무효 트래픽으로 본다.
+// local.properties에 실제 ID가 있어도 쓰지 않는다.
+// 개발 기기에서 실제 광고를 요청하고 누르면 AdMob이 무효 트래픽으로 본다.
 // 광고 자리를 보려면 admob.test=true를 두거나 -Povalit.ads.test=true로 빌드해 Google 테스트 광고를 받는다.
 // 둘 다 없으면 광고를 요청하지 않아 광고 자리가 없다.
 // 사용 통계와 비정상 종료 보고도 개발 빌드는 모으지 않는다.
@@ -107,11 +108,12 @@ android {
 // 개발 기기에서 사용자가 느낄 속도를 볼 때 Build Variants에서 고른다.
 // 디버그 빌드는 Compose가 몇 배 느려서 릴리스에 없는 끊김이 보인다.
 // nonMinifiedRelease는 줄이지 않은 빌드로 프로필을 만들 때만 띄운다.
-// 플러그인이 finalizeDsl에서 만들어서 그 뒤에 고친다.
+// 두 빌드 타입은 플러그인이 finalizeDsl에서 만들어서 그 뒤에 도는 이 finalizeDsl에서 고친다.
 androidComponents {
     finalizeDsl { extension ->
+        // 이름으로 고르면 릴리스 계열 빌드 타입을 더할 때 그 측정용 타입이 실제 광고 ID로 빠져나가서 앞머리로 고른다
         extension.buildTypes
-            .filter { it.name == "benchmarkRelease" || it.name == "nonMinifiedRelease" }
+            .filter { it.name.startsWith("benchmark") || it.name.startsWith("nonMinified") }
             .forEach { buildType ->
                 buildType.useDevelopmentServices()
                 // Crashlytics에 매핑 파일을 올리는 건 릴리스뿐이다.
@@ -123,12 +125,14 @@ androidComponents {
 }
 
 baselineProfile {
-    // 프로필은 :benchmarks의 generateBaselineProfile로 손수 만들어 저장소에 둔다(docs/CONVENTIONS.md 빌드).
+    // 프로필은 :composeApp:generateBaselineProfile로 손수 만들어 저장소에 둔다(docs/CONVENTIONS.md 빌드).
+    // 이 작업이 :benchmarks의 생성기를 돌린다.
     // 릴리스를 빌드할 때마다 만들면 CI와 로컬 빌드가 기기를 요구한다.
     automaticGenerationDuringBuild = false
     // 받은 프로필을 빌드 타입마다 나누지 않고 src/main/generated/baselineProfiles 하나에 둔다.
     mergeIntoMain = true
-    // 앱을 켤 때 읽는 클래스를 첫 dex에 모은다. 시작 프로필(includeInStartupProfile)로 고른다.
+    // 앱을 켤 때 읽는 클래스를 첫 dex에 모은다.
+    // 어떤 클래스인지는 시작 프로필(includeInStartupProfile)이 정한다.
     dexLayoutOptimization = true
 }
 

@@ -162,7 +162,7 @@ class ReportScreenTest {
         val report = ReportPreviewData.moved.copy(results = listOf(true, true, true, false, null))
         setContent { Report(report) }
 
-        onNodeWithContentDescription("3승 1패, 승률 75%").assertExists()
+        onNodeWithContentDescription("3승 1패 1무, 승률 75%").assertExists()
     }
 
     // 판 수가 많아도 막대는 비율이라 길이가 그대로이고 승패 글자는 기간 전체를 센다

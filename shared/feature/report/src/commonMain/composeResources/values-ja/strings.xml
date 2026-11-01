@@ -181,6 +181,7 @@
     <string name="record_losses">%1$d敗</string>
     <string name="record_losses_draws">%1$d敗%2$d分</string>
     <string name="record_description">%1$d勝%2$d敗、勝率%3$s</string>
+    <string name="record_description_draws">%1$d勝%2$d敗%3$d分、勝率%4$s</string>
     <string name="picks_agents">%1$sのエージェント</string>
     <string name="picks_weapons">%1$sの武器</string>
     <string name="profile_hint">自分のプロフィールはここから見られます</string>

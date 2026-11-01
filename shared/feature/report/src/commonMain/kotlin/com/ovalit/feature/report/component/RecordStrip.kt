@@ -30,6 +30,7 @@ import com.ovalit.core.ui.percentText
 import com.ovalit.core.ui.rememberWidestWidth
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.record_description
+import com.ovalit.feature.report.resources.record_description_draws
 import com.ovalit.feature.report.resources.record_losses
 import com.ovalit.feature.report.resources.record_losses_draws
 import com.ovalit.feature.report.resources.record_wins
@@ -69,8 +70,13 @@ internal fun RecordStrip(report: WeeklyReport.Ready, modifier: Modifier = Modifi
         stringResource(Res.string.record_losses, losses)
     }
     val rate = percentText(report.winRate)
-    // 화면 읽기 프로그램은 막대와 글자 셋을 따로 읽지 않고 한 줄로 읽는다
-    val description = stringResource(Res.string.record_description, wins, losses, rate)
+    // 화면 읽기 프로그램이 막대와 글자 셋을 따로 읽지 않게 한 줄로 묶는다.
+    // 비긴 판도 화면처럼 진 판 뒤에 읽는다.
+    val description = if (draws > 0) {
+        stringResource(Res.string.record_description_draws, wins, losses, draws, rate)
+    } else {
+        stringResource(Res.string.record_description, wins, losses, rate)
+    }
 
     BoxWithConstraints(
         modifier = modifier

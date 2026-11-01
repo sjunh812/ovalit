@@ -121,7 +121,7 @@ fun AgentsRoute(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     queueFilter: QueueFilter = QueueFilter.PROFILE,
-    viewModel: RecordsViewModel = koinViewModel { parametersOf(owner, queueFilter) },
+    viewModel: RecordsViewModel = koinViewModel(key = owner.viewModelKey(queueFilter)) { parametersOf(owner, queueFilter) },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     AgentsScreen(uiState, onBack, modifier, loadingTitle = Res.string.agents_title.takeIf { owner == RecordsOwner.Me })

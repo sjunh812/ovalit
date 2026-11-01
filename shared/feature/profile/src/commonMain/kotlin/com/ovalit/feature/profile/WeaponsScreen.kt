@@ -107,7 +107,7 @@ fun WeaponsRoute(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     queueFilter: QueueFilter = QueueFilter.PROFILE,
-    viewModel: RecordsViewModel = koinViewModel { parametersOf(owner, queueFilter) },
+    viewModel: RecordsViewModel = koinViewModel(key = owner.viewModelKey(queueFilter)) { parametersOf(owner, queueFilter) },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     WeaponsScreen(uiState, onBack, modifier, loadingTitle = Res.string.weapons_title.takeIf { owner == RecordsOwner.Me })

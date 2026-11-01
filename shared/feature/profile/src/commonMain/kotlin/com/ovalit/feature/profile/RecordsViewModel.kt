@@ -36,6 +36,16 @@ sealed interface RecordsOwner {
     data class Friend(val id: PlayerId) : RecordsOwner
 }
 
+/**
+ * 같은 화면 자리에 주인이나 큐가 다른 S6·S7이 다시 들어와도 옛 ViewModel을 받지 않게 둘을 키에 넣습니다.
+ * 친구 화면 키(`FriendAgents`, `FriendWeapons`)는 친구 PUUID를 비정상 종료 보고에 내보내지 않으려고 이름만 들어서
+ * 화면 자리가 친구와 큐마다 갈리지 않습니다.
+ */
+internal fun RecordsOwner.viewModelKey(queueFilter: QueueFilter): String = when (this) {
+    RecordsOwner.Me -> "records-me-${queueFilter.name}"
+    is RecordsOwner.Friend -> "records-${id.value}-${queueFilter.name}"
+}
+
 sealed interface RecordsUiState {
     data object Loading : RecordsUiState
 

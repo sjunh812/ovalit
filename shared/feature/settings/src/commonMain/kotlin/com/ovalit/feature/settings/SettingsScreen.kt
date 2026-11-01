@@ -107,11 +107,10 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-// 이 값은 눌리는 높이의 바닥이다.
-// 56dp로 늘려 두면 한 줄짜리만 가운데 놓여 설명이 붙은 줄과 위아래 여백이 달라졌다.
+// 누를 수 있는 높이가 이보다 낮아지지 않게 잡는 최소 높이다.
+// 위아래 여백이 16dp이던 때 56dp로 늘려 두었더니 한 줄짜리만 가운데 놓여 설명이 붙은 줄과 위아래 여백이 달라졌다.
 private val RowMinHeight = 48.dp
 
-// 줄의 위아래 여백이다.
 // 묶음 이름 밑은 띄우지 않아 첫 줄의 위 여백이 그대로 제목과 내용 사이다.
 // 16dp일 때는 스위치(25dp)가 있는 줄만 글자보다 높아 알림 카드는 제목 밑 20dp, 표시 카드는 16dp로 갈렸다.
 private val RowVerticalPadding = 20.dp

@@ -602,8 +602,8 @@ fun ProfileQueueChips(selected: QueueFilter, onSelect: (QueueFilter) -> Unit) {
 }
 
 /**
- * 고른 큐에 이번 액트 경기가 없을 때 통계부터 무기까지 대신 두는 한 줄입니다.
- * 칩은 홈·경기 탭처럼 숨기지 않습니다.
+ * 고른 큐에 이번 액트 경기가 없을 때 통계부터 무기까지의 칸 대신 두는 한 줄입니다.
+ * 칩은 홈·경기 탭과 마찬가지로 그대로 둡니다.
  */
 @Composable
 fun ProfileQueueEmptySection(queueFilter: QueueFilter) {

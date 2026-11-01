@@ -4,7 +4,7 @@
     <string name="agents_owner_suffix">의 요원</string>
     <string name="weapons_owner_suffix">의 무기</string>
     <string name="records_hidden">지금은 이 친구의 기록을 볼 수 없어요</string>
-    <!-- 프로필 칩으로 경쟁이나 일반을 골라 연 S6·S7 제목 줄이다. 앞은 칩 이름이다 -->
+    <!-- 칩으로 경쟁이나 일반을 골라 연 S6·S7 제목 줄이다. 앞은 칩 이름이다 -->
     <string name="records_queue_matches">%1$s · 이번 액트 %2$d경기</string>
 
     <!-- 내 프로필 -->

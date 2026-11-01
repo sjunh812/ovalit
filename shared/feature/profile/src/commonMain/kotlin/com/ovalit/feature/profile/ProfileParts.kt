@@ -83,7 +83,7 @@ internal fun RecordsTopBar(
             }
         },
     ) {
-        // 프로필 칩으로 경쟁이나 일반을 골라 열었으면 카드에서 본 숫자와 같은 큐라는 걸 적는다
+        // 칩으로 경쟁이나 일반을 골라 열었으면 카드에서 본 숫자와 같은 큐라는 걸 적는다
         val caption = if (queueFilter == QueueFilter.PROFILE) {
             stringResource(CoreUiRes.string.act_matches, matches)
         } else {

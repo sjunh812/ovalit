@@ -39,7 +39,7 @@ private val BubbleOverhang = 4.dp
  *
  * 화면 위에 띄우지 않고 머리 줄 밑에 끼워 넣습니다([ReportTopBar]).
  * 글자가 길어지면 두 줄로 꺾여서 폭이 좁거나 글자가 커도 다른 것과 겹치지 않습니다.
- * 말풍선만 누를 수 있고 화살표 줄을 누르면 밑의 아바타 누름 영역으로 그대로 갑니다.
+ * 말풍선만 누를 수 있고 화살표 줄을 누르면 그 밑에 겹친 아바타가 눌립니다.
  *
  * @param avatarEnd 화면 오른쪽 끝에서 아바타 오른쪽 끝까지입니다.
  * @param avatarSize 화살표를 아바타 가운데에 맞추는 데 씁니다.
@@ -70,12 +70,12 @@ internal fun ProfileHint(avatarEnd: Dp, avatarSize: Dp, onDismiss: () -> Unit, m
                     role = Role.Button,
                     onClick = onDismiss,
                 )
+                // 말풍선을 바탕과 반대로 칠해 라이트에서는 어둡고 다크에서는 밝다
                 .background(colors.t1, BubbleShape)
                 .padding(start = 12.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            // 바탕과 반대로 칠해 라이트에서는 어둡고 다크에서는 밝다
             OvalitText(
                 text = stringResource(Res.string.profile_hint),
                 style = OvalitTheme.typography.label,

@@ -262,7 +262,8 @@ private fun LocalDate.plusWeeks(weeks: Int) = plus(weeks, DateTimeUnit.WEEK)
 private fun LocalDate.minusWeeks(weeks: Int) = minus(weeks, DateTimeUnit.WEEK)
 
 /**
- * 이번 액트입니다. 홈 리포트, 프로필, S6·S7이 같이 써서 칩이 같으면 같은 액트를 봅니다.
+ * 이번 액트를 고릅니다.
+ * 홈 리포트, 프로필, S6·S7이 같이 써서 칩이 같으면 같은 액트를 봅니다.
  * 경쟁·일반 칩은 고른 큐와 상관없이 경쟁 + 일반의 가장 최근 경기로 정합니다.
  * 고른 큐로 정하면 이번 액트에 일반전이 없을 때 지난 액트 일반전을 이번 액트처럼 띄웁니다.
  * 기타는 경쟁·일반과 따로 보는 모드라 기타의 가장 최근 경기로 정합니다.

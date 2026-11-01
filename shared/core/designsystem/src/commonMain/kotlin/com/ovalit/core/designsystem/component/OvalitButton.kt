@@ -126,8 +126,8 @@ fun OvalitDangerButton(
 
 private const val DangerContainerAlpha = 0.1f
 
-// 약한 버튼과 위험 버튼은 본문 크기(15)지만 버튼이라 굵기는 버튼과 같은 SemiBold다.
-// 목록 줄 제목(bodyStrong)이 Medium으로 내려가도 버튼 글자는 따라 내려가지 않게 따로 둔다.
+// 약한 버튼과 위험 버튼은 글자 크기는 본문(15)이지만 굵기는 다른 버튼과 같은 SemiBold다.
+// 목록 줄 제목(bodyStrong)은 Medium이라 굵기만 덮어쓴다.
 @Composable
 private fun bodyButtonStyle(): TextStyle = OvalitTheme.typography.bodyStrong.copy(fontWeight = FontWeight.SemiBold)
 

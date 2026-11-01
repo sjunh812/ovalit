@@ -92,7 +92,7 @@ fun IntroScreen(
 
                 // 로고 ㅇㅂㅇ을 소리 내어 읽어 주는 줄이라 로고 바로 밑에 둔다(CLAUDE.md 용어).
                 // 토스 TDS Top의 제목 위 작은 줄처럼 헤드라인보다 작게 둔다.
-                // 헤드라인과 같은 크기로 두었더니 두 글자 덩어리 사이만 줄 간격이 좁아 보였다.
+                // 헤드라인과 같은 크기로 두었더니 이름 줄과 헤드라인 사이만 줄 간격이 좁아 보였다.
                 OvalitText(
                     text = nameWithMeaning(stringResource(Res.string.intro_name), stringResource(Res.string.intro_name_meaning)),
                     style = OvalitTheme.typography.cardTitle,

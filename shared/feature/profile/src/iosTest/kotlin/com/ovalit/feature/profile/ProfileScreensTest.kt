@@ -380,7 +380,7 @@ class ProfileScreensTest {
         onNodeWithText("요원별").assertDoesNotExist()
     }
 
-    // 경쟁 + 일반이면 지금처럼 "이번 액트 N경기"만 적는다
+    // 경쟁 + 일반이 아닐 때만 큐 이름을 붙인다. 경쟁 + 일반이면 "이번 액트 N경기"만 적는다
     @Test
     fun `프로필 칩으로 고른 큐로 연 요원 화면은 제목 줄에 큐를 적는다`() = runComposeUiTest {
         val records = ProfilePreviewData.records.copy(queueFilter = QueueFilter.COMPETITIVE)

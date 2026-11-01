@@ -32,9 +32,10 @@ sealed interface ProfileUiState {
     data object Loading : ProfileUiState
 
     /**
-     * @property report 머리와 티어 카드는 이번 액트 경쟁 + 일반, 통계부터 무기까지는 큐 칩이 고른 큐로 셉니다.
+     * @property report 머리는 이번 액트 경쟁 + 일반, 티어 카드는 이번 액트 경쟁전, 통계부터 무기까지는 큐 칩이 고른 큐로 셉니다.
      * @property recentMatches 큐와 액트를 가리지 않은 가장 최근 경기입니다.
-     *   칩을 따르지 않고 내 경기라 누르면 S3가 열립니다.
+     *   칩을 따르지 않습니다.
+     *   내 경기라 누르면 S3가 열립니다.
      */
     data class Success(
         val account: Account?,

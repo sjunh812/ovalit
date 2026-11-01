@@ -82,7 +82,7 @@ internal object PingNotifications {
                         else -> context.getString(R.string.ping_reply_other_title, name, clockText(context, proposed ?: 0L))
                     },
                 )
-                // 다른 시간을 냈으면 보낸 사람이 알림에서 바로 그 시각으로 옮긴다.
+                // 친구가 다른 시간을 내면 초대한 사람이 알림에서 바로 그 시각으로 옮길 수 있다.
                 // 옮기면 부른 친구들에게도 알림이 가서 본문에 그걸 적는다.
                 if (data["answer"] == "other_time" && pingId != null && proposed != null) {
                     setContentText(context.getString(R.string.ping_reply_other_body))

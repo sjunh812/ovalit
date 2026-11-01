@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 영어. 한국어 values/strings.xml과 키가 같다. 용어는 docs/i18n-en.md -->
+<resources>
+    <string name="intro_name">Ovalit</string>
+    <string name="intro_name_meaning">Anyone up for VALORANT today?</string>
+    <string name="intro_headline">See what changed in your play this&#160;week</string>
+    <string name="intro_subtitle">See how your headshot rate, first kills, eco win % and more compare to your usual</string>
+    <string name="intro_start">Start with Riot account</string>
+
+    <string name="consent_title">Let's link your Riot account</string>
+    <string name="consent_matches_title">We'll load your last 50 matches</string>
+    <string name="consent_matches_body">Your Competitive and Unrated matches are analyzed round by round. It takes about a minute, only the first time.</string>
+    <string name="consent_public_title">Your stats are shared with mutually accepted friends</string>
+    <string name="consent_public_body">Once you're friends, you can see each other's profiles and matches. If you turn off “Share my stats” in Settings, friends can't see them either.</string>
+    <string name="consent_unlink_title">You can unlink anytime</string>
+    <string name="consent_unlink_body">Unlinking in Settings also deletes your saved data.</string>
+    <string name="consent_password">You enter your password only on the Riot sign-in page. This app never receives or stores it.</string>
+    <string name="consent_continue">Continue with Riot account</string>
+    <string name="consent_note">Continuing takes you to the Riot sign-in page.</string>
+
+    <string name="import_title">What matters most to you?</string>
+    <string name="import_subtitle">We'll put the stats for your pick at the top of your report. You can change it later in Settings.</string>
+    <string name="import_loading">Loading matches</string>
+    <string name="import_count">%1$d / %2$d</string>
+    <string name="import_background">Loading continues even if you close the app. We'll send you a notification when it's done.</string>
+    <string name="import_background_silent">Loading continues even if you close the app.</string>
+    <string name="import_notify_when_done">Notify me when done</string>
+    <string name="import_done">Loaded all %1$d matches</string>
+    <string name="import_done_none">You haven't played any matches in the last 8 weeks</string>
+    <string name="import_open_report">View report</string>
+    <string name="import_stopped">Couldn't load all matches</string>
+    <string name="import_stopped_offline">Loading will pick up where it left off once you're online.</string>
+    <string name="import_stopped_later">Loading will resume on its own in a moment. You can also try again now.</string>
+    <string name="import_stopped_session">You've been signed out of Riot. Sign in again to keep loading.</string>
+    <string name="import_retry">Resume loading</string>
+    <string name="import_progress_description">Loaded %1$d of %2$d matches</string>
+</resources>

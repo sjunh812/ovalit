@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 영어. 한국어 values/strings.xml과 키가 같다. 용어는 docs/i18n-en.md -->
+<resources>
+    <string name="close">Close</string>
+
+    <string name="matches_title">Matches</string>
+    <string name="filter">Filter</string>
+    <string name="filter_active">Filter on</string>
+    <string name="filter_agent">Agent</string>
+    <string name="filter_map">Map</string>
+    <string name="filter_all">All</string>
+    <string name="filter_reset">Reset</string>
+    <string name="empty_queue">No matches in this queue</string>
+    <string name="empty_stored">No saved matches · You can load them again from Home</string>
+    <string name="empty_filter">No matches fit these filters</string>
+
+    <string name="detail_caption">%1$s · %2$s · %3$d min</string>
+    <string name="detail_date">%2$d/%1$d %3$s:%4$s</string>
+    <string name="half_first">1st half %1$d–%2$d</string>
+    <string name="half_second">2nd half %1$d–%2$d</string>
+    <string name="half_overtime">OT %1$d–%2$d</string>
+    <string name="score_description">%1$d to %2$d</string>
+    <string name="standing_of_players">Out of %1$d players</string>
+    <string name="standing_of_teams">Out of %1$d teams</string>
+    <string name="tab_scoreboard">Scoreboard</string>
+    <string name="tab_rounds">Rounds</string>
+    <string name="tab_report">My stats</string>
+
+    <string name="my_team">Your team</string>
+    <string name="enemy_team">Enemy team</string>
+    <string name="my_team_rank">Your team · %1$s</string>
+    <string name="scoreboard_everyone">Standings</string>
+    <string name="me">You</string>
+    <string name="friend_badge">Friend</string>
+    <string name="scoreboard_note">Tap a row to see more of that player's stats from this match. Tap your name or a friend's name to open their profile. Tap any other player's name to send a friend request or an invite link.</string>
+    <string name="scoreboard_note_names">Tap your name or a friend's name to open their profile. Tap any other player's name to send a friend request or an invite link.</string>
+    <string name="player_stats_expand">Show match stats</string>
+    <string name="player_stats_collapse">Hide match stats</string>
+    <string name="player_open_profile">Open profile</string>
+    <string name="player_stat_first_kills">First kills</string>
+    <string name="player_stat_first_deaths">First deaths</string>
+    <string name="player_stat_multi_kills">Multi-kills</string>
+
+    <string name="side_attack">Attack</string>
+    <string name="side_defense">Defense</string>
+    <string name="ending_elimination">Elimination</string>
+    <string name="ending_detonated">Spike detonated</string>
+    <string name="ending_defused">Spike defused</string>
+    <string name="ending_time_expired">Time ran out</string>
+    <string name="ending_surrendered">Surrendered</string>
+    <string name="round_kills">%1$dK</string>
+    <string name="round_first_kill">First kill</string>
+    <string name="round_first_death">First death</string>
+    <string name="round_ace">Ace</string>
+    <string name="round_clutch">1v%1$d clutch</string>
+    <string name="round_not_played">Missed this round (disconnected)</string>
+
+    <string name="buy_record">Won %2$d of %1$d</string>
+    <string name="buy_title">Buy types</string>
+    <string name="report_duels_title">Head-to-head</string>
+    <string name="report_weapons_title">Weapons this match</string>
+    <string name="report_kills">K</string>
+    <string name="report_deaths">D</string>
+    <string name="report_assists">A</string>
+    <string name="report_damage_dealt">Dealt</string>
+    <string name="report_damage_taken">Taken</string>
+    <string name="report_damage">Damage</string>
+    <string name="report_headshot">HS%</string>
+    <string name="report_weapons_note">Kills are counted by the weapon that took the enemy down. Damage is counted from rounds you started holding that weapon. Headshot rate is counted from rounds where you got kills with that weapon only.</string>
+    <string name="economy_upsets">Rounds won while your loadout was more than 1,000 creds behind the enemy's: %1$d.</string>
+    <string name="overview_first_blood_ours">Ally first kill</string>
+    <string name="overview_first_blood_theirs">Enemy first kill</string>
+    <string name="overview_attack">Attack</string>
+    <string name="overview_defense">Defense</string>
+    <string name="overview_win_of">Won %2$d of %1$d</string>
+    <string name="overview_record">%1$dW %2$dL</string>
+    <string name="round_title">Round %1$d</string>
+    <string name="round_pick">View round %1$d</string>
+    <string name="round_loadout">Ally %1$s · Enemy %2$s</string>
+    <string name="round_my_damage">Damage %1$s</string>
+    <string name="round_kill_order">Kill order</string>
+    <string name="round_no_kills">No kills this round</string>
+    <string name="round_kill_ability">Ability</string>
+    <string name="economy_note">Buy type is based on your team's average loadout value per player. Under 2,000 creds is an eco, 3,900 creds or more is a full buy, and anything in between is a force buy.</string>
+
+    <string name="player_app_user">Once you're friends, you can see each other's profiles and matches.</string>
+    <string name="player_send_request">Send friend request</string>
+    <string name="player_request_sent">Request sent. You'll be friends once they accept.</string>
+    <string name="player_requested_me">This player already sent you a friend request.</string>
+    <string name="player_accept">Accept</string>
+    <string name="player_not_app_user">This player doesn't use Ovalit. Send them an invite link to add them as a friend.</string>
+    <string name="player_unknown">Couldn't check whether this player uses Ovalit. You can also add friends with an invite link.</string>
+    <string name="player_invite">Send invite link</string>
+</resources>

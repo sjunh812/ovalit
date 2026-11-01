@@ -216,7 +216,7 @@ private fun TeamHeader(title: String, color: Color, showColumns: Boolean, roundB
     val labels = @Composable {
         ColumnLabel(stringResource(FixedMetric.KDA.label), widths.kda)
         if (roundBased) {
-            ColumnLabel(stringResource(FixedMetric.COMBAT_SCORE.label), widths.acs)
+            ColumnLabel(stringResource(FixedMetric.COMBAT_SCORE.columnLabel), widths.acs)
             Spacer(Modifier.width(ChevronWidth))
         }
     }

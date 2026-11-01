@@ -45,7 +45,7 @@ import com.ovalit.core.ui.rememberMostLines
 import com.ovalit.core.ui.shrinkToFit
 import com.ovalit.core.ui.valueText
 import com.ovalit.feature.report.format
-import com.ovalit.feature.report.label
+import com.ovalit.feature.report.cellLabel
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.dynamic_caption
 import com.ovalit.feature.report.resources.dynamic_caption_with_role
@@ -201,7 +201,7 @@ private fun dynamicColumn(slot: DynamicSlot, metrics: MatchMetrics, baseline: Ba
     val judged = slot.movement != Movement.UNKNOWN && baseline != null && current != null && usual != null
     return DynamicColumn(
         slot = slot,
-        label = stringResource(metric.label),
+        label = stringResource(metric.cellLabel),
         value = current?.let { metric.format.valueText(it) } ?: NO_VALUE,
         valueColor = if (judged) colors.t1 else colors.t2,
         change = if (judged) metric.format.changeText(current, usual) else null,

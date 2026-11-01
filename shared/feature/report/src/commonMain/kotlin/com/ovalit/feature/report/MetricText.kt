@@ -6,14 +6,19 @@ import com.ovalit.core.model.MatchMetrics
 import com.ovalit.core.ui.MetricFormat
 import com.ovalit.feature.report.resources.Res
 import com.ovalit.feature.report.resources.metric_assists_per_round
+import com.ovalit.feature.report.resources.metric_assists_per_round_cell
 import com.ovalit.feature.report.resources.metric_eco_win
 import com.ovalit.feature.report.resources.metric_first_duel_involvement
+import com.ovalit.feature.report.resources.metric_first_duel_involvement_cell
 import com.ovalit.feature.report.resources.metric_first_duel_win
+import com.ovalit.feature.report.resources.metric_first_duel_win_cell
 import com.ovalit.feature.report.resources.metric_first_kill_win
 import com.ovalit.feature.report.resources.metric_force_buy_win
+import com.ovalit.feature.report.resources.metric_force_buy_win_cell
 import com.ovalit.feature.report.resources.metric_full_buy_win
 import com.ovalit.feature.report.resources.metric_kast
 import com.ovalit.feature.report.resources.metric_multi_kill
+import com.ovalit.feature.report.resources.metric_multi_kill_cell
 import com.ovalit.feature.report.resources.metric_survival
 import com.ovalit.feature.report.resources.metric_traded_death
 import com.ovalit.feature.report.resources.sample_deaths
@@ -39,6 +44,21 @@ internal val DynamicMetric.label: StringResource
         DynamicMetric.FULL_BUY_WIN_RATE -> Res.string.metric_full_buy_win
         DynamicMetric.MULTI_KILL_RATE -> Res.string.metric_multi_kill
         DynamicMetric.TRADED_DEATH_RATE -> Res.string.metric_traded_death
+    }
+
+/**
+ * 달라진 점 칸에 쓰는 이름입니다.
+ * 한국어와 일본어는 [label]과 같고 영어는 긴 이름이 칸에 안 들어가 줄입니다.
+ * 줄이지 않으면 한 줄에 넣으려고 그 카드의 칸 이름이 모두 작아집니다.
+ */
+internal val DynamicMetric.cellLabel: StringResource
+    get() = when (this) {
+        DynamicMetric.FIRST_DUEL_INVOLVEMENT -> Res.string.metric_first_duel_involvement_cell
+        DynamicMetric.FIRST_DUEL_WIN_RATE -> Res.string.metric_first_duel_win_cell
+        DynamicMetric.ASSISTS_PER_ROUND -> Res.string.metric_assists_per_round_cell
+        DynamicMetric.FORCE_BUY_WIN_RATE -> Res.string.metric_force_buy_win_cell
+        DynamicMetric.MULTI_KILL_RATE -> Res.string.metric_multi_kill_cell
+        else -> label
     }
 
 internal val DynamicMetric.format: MetricFormat

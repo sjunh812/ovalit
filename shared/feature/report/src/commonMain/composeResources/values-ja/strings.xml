@@ -21,6 +21,11 @@
     <!-- 세 칸 격자라 칸 이름은 짧게 둔다. 문장에서는 insight_metric_multi_kill을 쓴다 -->
     <string name="metric_multi_kill">マルチキル率</string>
     <string name="metric_traded_death">トレードされたデス</string>
+    <string name="metric_first_duel_involvement_cell">初動関与率</string>
+    <string name="metric_first_duel_win_cell">初動勝率</string>
+    <string name="metric_assists_per_round_cell">ラウンド平均アシスト</string>
+    <string name="metric_force_buy_win_cell">フォースバイ勝率</string>
+    <string name="metric_multi_kill_cell">マルチキル率</string>
 
     <string name="baseline_missing">比べる記録が足りません</string>
     <string name="dynamic_usual">普段 %1$s</string>

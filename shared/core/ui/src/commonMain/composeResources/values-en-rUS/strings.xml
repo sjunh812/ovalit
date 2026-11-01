@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 미국은 날짜를 월/일 순서로 쓴다. 나머지 영어 문구는 values-en을 따른다. -->
+<resources>
+    <string name="time_short_date">%1$d/%2$d</string>
+    <string name="day_date">%3$s, %1$d/%2$d</string>
+</resources>

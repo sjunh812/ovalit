@@ -20,6 +20,12 @@
     <string name="metric_full_buy_win">풀바이 승률</string>
     <string name="metric_multi_kill">멀티킬 라운드</string>
     <string name="metric_traded_death">트레이드 받은 데스</string>
+    <!-- 달라진 점 칸에 쓰는 이름. 칸이 좁아 영어는 줄인다. 시트 제목은 위의 전체 이름이다. -->
+    <string name="metric_first_duel_involvement_cell">첫 교전 관여율</string>
+    <string name="metric_first_duel_win_cell">첫 교전 승률</string>
+    <string name="metric_assists_per_round_cell">라운드당 어시스트</string>
+    <string name="metric_force_buy_win_cell">포스바이 승률</string>
+    <string name="metric_multi_kill_cell">멀티킬 라운드</string>
 
     <string name="baseline_missing">비교할 기록이 모자라요</string>
     <string name="dynamic_usual">평소 %1$s</string>

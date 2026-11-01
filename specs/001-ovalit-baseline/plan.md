@@ -62,7 +62,7 @@ Cloudflare Workers 무료 플랜.
 - 비용 0원(헌법 VI). Workers 무료 한도: 요청 하루 10만, 요청당 CPU 10ms, 하위 요청 50, D1 쓰기 하루 10만 행, DB 500MB. 카드
   등록 없이 쓰고 넘으면 막힌다. 피할 수 없는 비용은 Google Play 등록 25달러와 iOS를 낼 때의 Apple Developer Program 연 99달러다.
 - Riot 레이트 리밋은 앱 전체가 나눠 쓴다. 끝난 경기는 한 번 받아 저장하면 다시 요청하지 않는다(SC-006).
-- 데이터는 한국 샤드(`kr.api.riotgames.com`, account-v1은 `asia`)만 쓴다. 화면은 한국어(기본)와 일본어다.
+- 데이터는 한국 샤드(`kr.api.riotgames.com`, account-v1은 `asia`)만 쓴다. 화면은 한국어(기본), 일본어, 영어다.
 - 앱은 Riot 비밀번호를 만지지 않는다. RSO는 Custom Tabs로 띄우고 WebView를 쓰지 않는다.
 
 **Scale/Scope**: 첫 수집 최근 50경기·8주, 친구 200명, 새 친구 요청 하루 30번, 초대 링크 하나로 요청 20개(모두 시작 기준선).

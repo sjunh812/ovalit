@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 영어. 한국어 values/strings.xml과 키가 같다. 용어는 docs/i18n-en.md -->
+<resources>
+    <string name="agents_owner_suffix">'s agents</string>
+    <string name="weapons_owner_suffix">'s weapons</string>
+    <string name="records_hidden">You can't see this friend's stats right now</string>
+    <string name="records_queue_matches">%1$s · %2$d matches this act</string>
+
+    <string name="profile_recent">Recent matches</string>
+    <string name="profile_recent_all">See all</string>
+
+    <string name="agents_title">Agents</string>
+    <string name="agents_main_role">Main role</string>
+    <string name="agents_role_duelist">For Duelists, we look at %1$s first. Duelists usually get fewer assists.</string>
+    <string name="agents_role_initiator">For Initiators, we look at %1$s first. Initiators usually have a lower K/D.</string>
+    <string name="agents_role_controller">For Controllers, we look at %1$s first. Controllers usually get fewer first kills.</string>
+    <string name="agents_role_sentinel">For Sentinels, we look at %1$s first. Sentinels usually get fewer first kills.</string>
+    <string name="agents_focus_duelist">opening duel rate and opening duel win rate</string>
+    <string name="agents_focus_initiator">assists and KAST</string>
+    <string name="agents_focus_controller">KAST and survival rate</string>
+    <string name="agents_focus_sentinel">survival rate</string>
+    <string name="agents_by_agent">By agent</string>
+    <string name="column_kast">KAST</string>
+    <string name="column_survival">Survival rate</string>
+    <string name="column_first_duel_involvement">Opening duel %</string>
+    <string name="column_first_duel_win">Opening win %</string>
+    <string name="agents_columns_note">At first, the table shows two stats picked for your main role. Use the button above the table to see other stats.</string>
+    <string name="agents_columns_first_duel">Opening duel rate · win %</string>
+    <string name="agents_columns_kast">KAST · Survival rate</string>
+    <string name="agents_columns_fight">K/D · Damage</string>
+    <string name="agents_columns_score">Combat score · Headshot %</string>
+    <string name="agents_columns_sheet_title">Stats to show in the table</string>
+    <string name="agents_columns_button">Change table stats, currently %1$s</string>
+    <string name="agents_columns_role_default">Default</string>
+
+    <string name="weapons_title">Weapons</string>
+    <string name="weapons_moved_up">Hitting well lately</string>
+    <string name="weapons_moved_down">Hitting less lately</string>
+    <string name="weapons_sample_kills">Kills %1$s</string>
+    <string name="weapons_top_title">Main weapons this act</string>
+    <string name="weapons_top_order">By kills</string>
+    <string name="weapons_unused">%1$s: not used</string>
+    <string name="weapons_compared">vs. %1$d-week avg</string>
+    <string name="weapons_act_value">This act</string>
+    <string name="weapons_single_round_note">Kills are counted by the weapon that took the enemy down. Headshot rate is counted in rounds where all your kills were with that weapon. Deaths, assists and damage are counted in rounds you started holding that weapon.</string>
+    <string name="column_kda">KDA</string>
+    <string name="column_damage">Damage</string>
+    <string name="column_headshot">HS%</string>
+    <string name="weapons_by_category">By type</string>
+    <string name="weapons_kills">Kills %1$s</string>
+    <string name="weapons_category_unknown">Other weapons</string>
+    <string name="weapons_expand">Expand %1$s</string>
+    <string name="weapons_collapse">Collapse %1$s</string>
+
+</resources>

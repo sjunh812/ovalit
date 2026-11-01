@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 영어. 한국어 values/strings.xml과 키가 같다. 용어는 docs/i18n-en.md -->
+<resources>
+    <string name="settings_title">Settings</string>
+
+    <string name="account_linked">Riot account linked · %2$d/%1$d</string>
+    <string name="account_unlinked">Riot account not linked</string>
+    <string name="view_profile">View profile</string>
+    <string name="open_profile">Open my profile</string>
+
+    <string name="section_public">Visibility</string>
+    <string name="stats_public">Share my stats</string>
+    <string name="stats_public_description">When this is off, friends can't see your profile or matches either. You're also left out of friend comparisons.</string>
+
+    <string name="section_notifications">Notifications</string>
+    <string name="notifications_blocked">Notifications are off in your phone settings</string>
+    <string name="notifications_blocked_open">Turn on</string>
+    <string name="notify_analysis_done">Analysis complete</string>
+    <string name="notify_weekly_report">Weekly report</string>
+    <string name="notify_weekly_report_time">Mondays 9 AM</string>
+    <string name="notify_friend_request">Friend requests</string>
+    <string name="notify_ping">Playing today?</string>
+    <string name="notify_ping_invites">Party up alerts</string>
+    <string name="notify_ping_description">We'll let you know when a friend invites you or replies to your invite.</string>
+    <string name="ping_reminder">Reminder before it starts</string>
+    <string name="ping_reminder_description">We'll remind you before a party you started or said you'd join begins.</string>
+    <string name="ping_reminder_10">10 min before</string>
+    <string name="ping_reminder_30">30 min before</string>
+    <string name="ping_reminder_60">1 hour before</string>
+    <string name="ping_reminder_off">Off</string>
+
+    <string name="section_display">Display</string>
+    <string name="theme">Theme</string>
+    <string name="theme_system">System default</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_light">Light</string>
+    <string name="default_queue">Default queue</string>
+    <string name="default_queue_description">The queue we show first when you open Home or the Matches tab.</string>
+    <string name="focus">Focus</string>
+    <string name="focus_description">Stats for the focus you pick show up first in What changed.</string>
+
+    <string name="section_data">Data</string>
+    <string name="stored_matches">Saved matches</string>
+    <string name="stored_matches_count">%1$d</string>
+    <string name="section_support">Support</string>
+    <string name="send_feedback">Send feedback</string>
+    <string name="delete_data">Delete saved data</string>
+    <string name="delete_title">Delete saved data?</string>
+    <string name="delete_body">Your saved matches (%1$d) and reports will be deleted. Your Riot account stays linked.</string>
+    <string name="delete_confirm">Delete</string>
+
+    <string name="unlink">Unlink Riot account</string>
+    <string name="unlink_note">Unlinking deletes your saved matches, reports and friends list.</string>
+    <string name="unlink_title">Unlink your Riot account?</string>
+    <string name="unlink_body">Your saved matches, reports and friends list will all be deleted, and you'll go back to the start screen.</string>
+    <string name="unlink_confirm">Unlink</string>
+
+    <string name="cancel">Cancel</string>
+    <string name="version">Version %1$s</string>
+    <string name="ad_free">Go ad-free</string>
+    <string name="ad_free_description">Watch 1–2 ads to the end and you won't see ads for 24 hours.</string>
+    <string name="ad_free_until_today">Until %1$s today</string>
+    <string name="ad_free_until_tomorrow">Until %1$s tomorrow</string>
+</resources>

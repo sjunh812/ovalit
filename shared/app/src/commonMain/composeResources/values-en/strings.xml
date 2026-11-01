@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 영어. 한국어 values/strings.xml과 키가 같다. 용어는 docs/i18n-en.md -->
+<resources>
+    <string name="tab_home">Home</string>
+    <string name="tab_matches">Matches</string>
+    <string name="tab_friends">Friends</string>
+    <string name="tab_settings">Settings</string>
+    <string name="feedback_no_mail_app">No mail app found · Send it to %1$s</string>
+</resources>

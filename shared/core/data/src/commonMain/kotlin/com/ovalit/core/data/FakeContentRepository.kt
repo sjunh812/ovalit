@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.map
 
 /**
  * 서버가 붙기 전까지 쓰는 카탈로그입니다.
- * [language]가 `"ja"`면 일본어 이름을, 아니면 한국어 이름을 냅니다.
+ * [language]가 `"ja"`면 일본어 이름을, `"en"`이면 영어 이름을, 아니면 한국어 이름을 냅니다.
  * 실제 저장소는 서버에 `locale`을 넘겨 그 언어의 카탈로그를 받습니다.
  *
  * @param language 화면 언어입니다.
@@ -20,13 +20,21 @@ class FakeContentRepository(language: Flow<String> = flowOf("ko")) : ContentRepo
     override val catalog: Flow<ContentCatalog> = language.distinctUntilChanged().map(::catalogIn)
 
     private fun catalogIn(language: String): ContentCatalog {
-        val japanese = language == "ja"
-        fun name(korean: String): String = if (japanese) FakeNamesJa[korean] ?: korean else korean
+        val names = when (language) {
+            "ja" -> FakeNamesJa
+            "en" -> FakeNamesEn
+            else -> emptyMap()
+        }
+        fun name(korean: String): String = names[korean] ?: korean
         return ContentCatalog(
             agents = AgentPool.associate { it.id to name(it.name) },
             weapons = (FakeRifles + FakePistols).associate { it.id to WeaponInfo(name(it.name), it.category) },
             maps = (FakeMaps + FakeTeamDeathmatchMaps).associate { it.id to name(it.name) },
-            tiers = if (japanese) FakeTiersJa else FakeTiers,
+            tiers = when (language) {
+                "ja" -> FakeTiersJa
+                "en" -> FakeTiersEn
+                else -> FakeTiers
+            },
         )
     }
 }

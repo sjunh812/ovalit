@@ -14,6 +14,7 @@
     <string name="metric_damage">피해량</string>
     <string name="metric_headshot">헤드샷</string>
     <string name="metric_headshot_short">헤드샷</string>
+    <string name="metric_combat_score_short">전투 점수</string>
 
     <string name="value_percent">%1$s%</string>
 

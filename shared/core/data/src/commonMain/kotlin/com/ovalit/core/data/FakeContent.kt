@@ -156,6 +156,9 @@ internal val FakeTiers: Map<Int, String> = tiers(listOf("아이언", "브론즈"
 internal val FakeTiersJa: Map<Int, String> =
     tiers(listOf("アイアン", "ブロンズ", "シルバー", "ゴールド", "プラチナ", "ダイヤモンド", "アセンダント", "イモータル"), radiant = "レディアント")
 
+internal val FakeTiersEn: Map<Int, String> =
+    tiers(listOf("Iron", "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Ascendant", "Immortal"), radiant = "Radiant")
+
 private fun tiers(ranks: List<String>, radiant: String): Map<Int, String> = buildMap {
     ranks.forEachIndexed { rank, name ->
         (1..3).forEach { division -> put(3 + rank * 3 + division - 1, "$name $division") }
@@ -180,4 +183,22 @@ internal val FakeNamesJa: Map<String, String> = mapOf(
     "팬텀" to "ファントム", "밴달" to "ヴァンダル", "가디언" to "ガーディアン", "불독" to "ブルドッグ", "스펙터" to "スペクター",
     "오퍼레이터" to "オペレーター", "저지" to "ジャッジ", "오딘" to "オーディン", "고스트" to "ゴースト", "셰리프" to "シェリフ",
     "클래식" to "クラシック",
+)
+
+/**
+ * 영어 카탈로그(`locale=en-US`)가 줄 이름을 대신합니다.
+ * 키는 한국어 이름입니다.
+ */
+internal val FakeNamesEn: Map<String, String> = mapOf(
+    "제트" to "Jett", "레이즈" to "Raze", "레이나" to "Reyna", "피닉스" to "Phoenix", "네온" to "Neon",
+    "요루" to "Yoru", "아이소" to "Iso", "소바" to "Sova", "브리치" to "Breach", "스카이" to "Skye",
+    "케이/오" to "KAY/O", "페이드" to "Fade", "게코" to "Gekko", "오멘" to "Omen", "브림스톤" to "Brimstone",
+    "바이퍼" to "Viper", "아스트라" to "Astra", "하버" to "Harbor", "클로브" to "Clove", "킬조이" to "Killjoy",
+    "사이퍼" to "Cypher", "세이지" to "Sage", "체임버" to "Chamber", "데드록" to "Deadlock", "바이스" to "Vyse",
+    "디스트릭트" to "District", "카스바" to "Kasbah", "피아자" to "Piazza", "드리프트" to "Drift", "글리치" to "Glitch",
+    "어센트" to "Ascent", "헤이븐" to "Haven", "바인드" to "Bind", "로터스" to "Lotus", "스플릿" to "Split",
+    "아이스박스" to "Icebox", "펄" to "Pearl", "선셋" to "Sunset", "어비스" to "Abyss", "코로드" to "Corrode",
+    "팬텀" to "Phantom", "밴달" to "Vandal", "가디언" to "Guardian", "불독" to "Bulldog", "스펙터" to "Spectre",
+    "오퍼레이터" to "Operator", "저지" to "Judge", "오딘" to "Odin", "고스트" to "Ghost", "셰리프" to "Sheriff",
+    "클래식" to "Classic",
 )
